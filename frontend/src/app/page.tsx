@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import LandingHero from "@/components/LandingHero";
 import LandingFeatures from "@/components/LandingFeatures";
@@ -16,10 +16,22 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("landing");
   const [user, setUser] = useState<any | null>(null);
 
+  // Transition & Loading States
+  const [isTabChanging, setIsTabChanging] = useState(false);
+
   // Modals state
   const [bookingModalData, setBookingModalData] = useState<{ pitch: any; slot: any } | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+
+  const handleTabChange = (newTab: string) => {
+    if (newTab === activeTab) return;
+    setIsTabChanging(true);
+    setActiveTab(newTab);
+    setTimeout(() => {
+      setIsTabChanging(false);
+    }, 350);
+  };
 
   const handleSelectSlot = (pitch: any, slot: any) => {
     if (!user) {
@@ -37,28 +49,33 @@ export default function Home() {
 
   const handleLoginSuccess = (userData: any) => {
     setUser(userData);
-    setActiveTab("booking");
+    handleTabChange("booking");
   };
 
   const handleLogout = () => {
     setUser(null);
-    setActiveTab("landing");
+    handleTabChange("landing");
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-pitch-emerald selection:text-white">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-pitch-emerald selection:text-white relative">
+      {/* Top Page Progress Loading Bar */}
+      {isTabChanging && (
+        <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-pitch-emerald to-pitch-lime z-50 animate-top-loader stadium-shadow" />
+      )}
+
       {/* Top Navbar */}
       <Navbar
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         user={user}
         onOpenAuth={handleOpenAuth}
         onLogout={handleLogout}
       />
 
-      {/* Main Content Body with Smooth Page Transition Container */}
+      {/* Main Content Body with Keyframe Transition Container */}
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-10 lg:px-16 py-10 sm:py-14 space-y-12 sm:space-y-16">
-        <div key={activeTab} className="animate-page-transition">
+        <div key={activeTab} className="animate-fade-in-up">
           {activeTab === "landing" && (
             <div className="space-y-16 sm:space-y-24">
               <LandingHero
@@ -67,7 +84,7 @@ export default function Home() {
               <LandingFeatures
                 onExplore={() => {
                   if (!user) handleOpenAuth("login");
-                  else setActiveTab("booking");
+                  else handleTabChange("booking");
                 }}
               />
             </div>

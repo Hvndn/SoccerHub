@@ -41,7 +41,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose, onLo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-md">
-      <div className="glass-panel max-w-lg w-full rounded-3xl p-6 sm:p-10 space-y-6 border border-slate-700 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div className="glass-panel max-w-lg w-full rounded-3xl p-6 sm:p-10 space-y-6 border border-slate-700 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-modal-pop">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 w-9 h-9 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold transition-colors"
