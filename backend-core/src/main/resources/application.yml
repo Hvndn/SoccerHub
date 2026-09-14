@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: soccerhub-backend-core
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/soccerhub_db}
+    username: ${SPRING_DATASOURCE_USERNAME:soccerhub_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:soccerhub_password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+
+ai-service:
+  url: ${AI_SERVICE_URL:http://localhost:8000}
+
+jwt:
+  secret: SoccerHubSuperSecretKeyForJWTAuthentication2026PitchManagement
+  expiration: 86400000

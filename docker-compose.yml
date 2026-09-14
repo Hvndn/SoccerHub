@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: soccerhub-postgres
+    environment:
+      POSTGRES_DB: soccerhub_db
+      POSTGRES_USER: soccerhub_user
+      POSTGRES_PASSWORD: soccerhub_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U soccerhub_user -d soccerhub_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: soccerhub-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ai-service:
+    build:
+      context: ./ai-service
+    container_name: soccerhub-ai-service
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://soccerhub_user:soccerhub_password@postgres:5432/soccerhub_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  backend-core:
+    build:
+      context: ./backend-core
+    container_name: soccerhub-backend-core
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/soccerhub_db
+      - SPRING_DATASOURCE_USERNAME=soccerhub_user
+      - SPRING_DATASOURCE_PASSWORD=soccerhub_password
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - AI_SERVICE_URL=http://ai-service:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: soccerhub-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+      - NEXT_PUBLIC_AI_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - backend-core
+
+volumes:
+  postgres_data:
+  redis_data:

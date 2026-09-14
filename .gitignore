@@ -1,0 +1,48 @@
+# AI & Agent Configurations
+.agent/
+.agents/
+.gemini/
+brain/
+scratch/
+GEMINI.md
+skills-lock.json
+
+# Node & Dependencies
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Python & AI Service
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+ENV/
+
+# Java & Backend Core
+target/
+.mvn/
+*.jar
+*.war
+*.ear
+*.class
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# OS & Environment Files
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
