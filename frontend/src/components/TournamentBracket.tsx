@@ -64,10 +64,10 @@ export default function TournamentBracket() {
             <button
               onClick={handleShuffleDraw}
               disabled={isGenerating}
-              className="px-4 py-2.5 rounded-xl bg-pitch-lime hover:bg-lime-500 text-pitch-navy font-bold text-xs transition-all flex items-center space-x-1.5 stadium-shadow"
+              className="px-4 py-2.5 rounded-xl bg-pitch-emerald hover:bg-pitch-darkEmerald text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 stadium-shadow"
             >
-              <RefreshCw className={`w-4 h-4 ${isGenerating ? "animate-spin" : ""}`} />
-              <span>Bốc Thăm Nhánh Đấu</span>
+              <RefreshCw className={`w-4 h-4 text-white ${isGenerating ? "animate-spin" : ""}`} />
+              <span className="text-white">Bốc Thăm Nhánh Đấu</span>
             </button>
           </div>
         </div>

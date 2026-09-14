@@ -47,8 +47,8 @@ export default function LandingHero({ onOpenAuth }: LandingHeroProps) {
               onClick={() => onOpenAuth("login")}
               className="px-6 py-3.5 rounded-2xl bg-[#10b981] hover:bg-[#059669] text-white font-bold text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-2 transition-all active:scale-95"
             >
-              <span>Khám Phá Sân Bóng Ngay</span>
-              <ArrowRight className="w-4 h-4" />
+              <span className="text-white">Khám Phá Sân Bóng Ngay</span>
+              <ArrowRight className="w-4 h-4 text-white" />
             </button>
 
             <button

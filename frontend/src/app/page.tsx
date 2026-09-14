@@ -11,6 +11,7 @@ import CommunityElo from "@/components/CommunityElo";
 import AdminDashboard from "@/components/AdminDashboard";
 import VietQRModal from "@/components/VietQRModal";
 import AuthModal from "@/components/AuthModal";
+import RealtimeClockBar from "@/components/RealtimeClockBar";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("landing");
@@ -30,7 +31,7 @@ export default function Home() {
     setActiveTab(newTab);
     setTimeout(() => {
       setIsTabChanging(false);
-    }, 350);
+    }, 550);
   };
 
   const handleSelectSlot = (pitch: any, slot: any) => {
@@ -73,8 +74,11 @@ export default function Home() {
         onLogout={handleLogout}
       />
 
+      {/* Real-time Clock Bar starting with "Hiện tại: ..." */}
+      <RealtimeClockBar />
+
       {/* Main Content Body with Keyframe Transition Container */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-10 lg:px-16 py-10 sm:py-14 space-y-12 sm:space-y-16">
+      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-10 lg:px-16 pt-3 sm:pt-4 pb-10 sm:pb-14 space-y-12 sm:space-y-16">
         <div key={activeTab} className="animate-fade-in-up">
           {activeTab === "landing" && (
             <div className="space-y-16 sm:space-y-24">
@@ -100,10 +104,6 @@ export default function Home() {
 
           {activeTab === "community" && (
             <CommunityElo />
-          )}
-
-          {activeTab === "referee" && (
-            <RefereePanel />
           )}
 
           {activeTab === "admin" && (

@@ -12,7 +12,7 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, initialMode = "login", onClose, onLoginSuccess }: AuthModalProps) {
   const [mode, setMode] = useState<"login" | "register">(initialMode);
-  const [role, setRole] = useState<"PLAYER" | "OWNER" | "REFEREE">("PLAYER");
+  const [role, setRole] = useState<"USER" | "OWNER">("USER");
 
   // Form State
   const [email, setEmail] = useState("");
@@ -27,13 +27,13 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose, onLo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const userPayload = {
-      name: fullName || (mode === "login" ? "Nguyễn Văn Hùng" : "Cầu thủ Kick-ON"),
+      name: fullName || (mode === "login" ? "Nguyễn Văn Hùng" : "Người dùng Kick-ON"),
       email: email || "hung.nguyen@kickon.vn",
       role: role,
-      eloRating: role === "PLAYER" ? 1200 : 1500,
+      eloRating: role === "USER" ? 1200 : 1500,
       position: position,
       area: area,
-      avatar: (fullName || "KH").substring(0, 2).toUpperCase()
+      avatar: (fullName || "ND").substring(0, 2).toUpperCase()
     };
     onLoginSuccess(userPayload);
     onClose();
@@ -52,7 +52,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose, onLo
         {/* Header Branding */}
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-pitch-emerald mx-auto flex items-center justify-center stadium-shadow">
-            <Zap className="w-7 h-7 text-pitch-navy fill-pitch-navy" />
+            <Zap className="w-7 h-7 text-white fill-white" />
           </div>
           <h2 className="text-2xl font-extrabold text-white">
             {mode === "login" ? "Đăng Nhập Kick-ON" : "Đăng Ký Tài Khoản Mới"}
@@ -70,7 +70,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose, onLo
               mode === "login" ? "bg-pitch-emerald text-white shadow-md" : "text-slate-400 hover:text-white"
             }`}
           >
-            Đăng Nhập
+            <span className={mode === "login" ? "text-white" : ""}>Đăng Nhập</span>
           </button>
           <button
             onClick={() => setMode("register")}
@@ -78,46 +78,36 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose, onLo
               mode === "register" ? "bg-pitch-emerald text-white shadow-md" : "text-slate-400 hover:text-white"
             }`}
           >
-            Đăng Ký Tài Khoản
+            <span className={mode === "register" ? "text-white" : ""}>Đăng Ký Tài Khoản</span>
           </button>
         </div>
 
-        {/* Role Selection (For Register) */}
+        {/* Role Selection (2 Roles: Người Dùng / Cầu Thủ & Chủ Sân) */}
         {mode === "register" && (
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">
               Chọn Vai Trò Tài Khoản
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setRole("PLAYER")}
-                className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center space-y-1 transition-all ${
-                  role === "PLAYER" ? "bg-pitch-emerald/20 border-pitch-emerald text-pitch-lime" : "bg-slate-900 border-slate-800 text-slate-400"
+                onClick={() => setRole("USER")}
+                className={`p-3.5 rounded-xl border text-xs font-bold flex flex-col items-center space-y-1.5 transition-all ${
+                  role === "USER" ? "bg-pitch-emerald text-white border-pitch-emerald shadow-md" : "bg-slate-900 border-slate-800 text-slate-400"
                 }`}
               >
-                <User className="w-4 h-4" />
-                <span>Cầu Thủ</span>
+                <User className={`w-5 h-5 ${role === "USER" ? "text-white" : ""}`} />
+                <span className={role === "USER" ? "text-white" : ""}>Người Dùng (Cầu Thủ)</span>
               </button>
               <button
                 type="button"
                 onClick={() => setRole("OWNER")}
-                className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center space-y-1 transition-all ${
-                  role === "OWNER" ? "bg-pitch-emerald/20 border-pitch-emerald text-pitch-lime" : "bg-slate-900 border-slate-800 text-slate-400"
+                className={`p-3.5 rounded-xl border text-xs font-bold flex flex-col items-center space-y-1.5 transition-all ${
+                  role === "OWNER" ? "bg-pitch-emerald text-white border-pitch-emerald shadow-md" : "bg-slate-900 border-slate-800 text-slate-400"
                 }`}
               >
-                <ShieldCheck className="w-4 h-4" />
-                <span>Chủ Sân</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole("REFEREE")}
-                className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center space-y-1 transition-all ${
-                  role === "REFEREE" ? "bg-pitch-emerald/20 border-pitch-emerald text-pitch-lime" : "bg-slate-900 border-slate-800 text-slate-400"
-                }`}
-              >
-                <Trophy className="w-4 h-4" />
-                <span>Trọng Tài</span>
+                <ShieldCheck className={`w-5 h-5 ${role === "OWNER" ? "text-white" : ""}`} />
+                <span className={role === "OWNER" ? "text-white" : ""}>Chủ Sân Bóng</span>
               </button>
             </div>
           </div>
@@ -172,7 +162,7 @@ export default function AuthModal({ isOpen, initialMode = "login", onClose, onLo
             </div>
           </div>
 
-          {mode === "register" && role === "PLAYER" && (
+          {mode === "register" && role === "USER" && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-400">Vị trí thi đấu</label>
