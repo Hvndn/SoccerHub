@@ -18,7 +18,8 @@ import {
   Award,
   ChevronDown,
   Sparkles,
-  Cpu
+  Cpu,
+  User
 } from "lucide-react";
 
 interface NavbarProps {
@@ -58,6 +59,7 @@ export default function Navbar({
     { id: "booking", label: "Khám phá & Đặt sân", icon: Calendar, badge: null },
     { id: "community", label: "Chợ Kèo Ghép Đội", icon: Users, badge: "Match" },
     { id: "tournaments", label: "Giải Đấu & BXH", icon: Trophy, badge: null },
+    { id: "profile", label: "Hồ Sơ VĐV", icon: User, badge: "DUPR" },
     { id: "organizer", label: "Quản Lý Giải Đấu Pro", icon: Cpu, badge: "PRO" },
     { id: "admin", label: "Lịch Hoạt Động & Chủ Sân", icon: ShieldCheck, badge: null }
   ];
@@ -218,7 +220,7 @@ export default function Navbar({
                   <button
                     type="button"
                     onClick={() => {
-                      setActiveTab("booking");
+                      setActiveTab("profile");
                       setShowUserDropdown(false);
                     }}
                     className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-2"

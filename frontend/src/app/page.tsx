@@ -14,6 +14,7 @@ import AdminDashboard from "@/components/AdminDashboard";
 import ActivitySchedule from "@/components/ActivitySchedule";
 import MemberCardPortal from "@/components/MemberCardPortal";
 import TournamentOrganizerPortal from "@/components/TournamentOrganizerPortal";
+import PlayerProfileConsole from "@/components/PlayerProfileConsole";
 import GuestFeatureBanner from "@/components/GuestFeatureBanner";
 import { MapPin, Trophy, Users, ShieldCheck } from "lucide-react";
 import VietQRModal from "@/components/VietQRModal";
@@ -129,6 +130,13 @@ export default function Home() {
 
           {(activeTab === "admin" || activeTab === "my-activities") && (
             <ActivitySchedule 
+              onBackToHome={() => handleTabChange("booking")} 
+              onNavigateTab={handleTabChange}
+            />
+          )}
+
+          {activeTab === "profile" && (
+            <PlayerProfileConsole 
               onBackToHome={() => handleTabChange("booking")} 
               onNavigateTab={handleTabChange}
             />
