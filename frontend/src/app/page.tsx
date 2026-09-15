@@ -6,6 +6,7 @@ import LandingHero from "@/components/LandingHero";
 import LandingFeatures from "@/components/LandingFeatures";
 import PitchSearch from "@/components/PitchSearch";
 import TournamentBracket from "@/components/TournamentBracket";
+import TournamentLeaderboard from "@/components/TournamentLeaderboard";
 import RefereePanel from "@/components/RefereePanel";
 import CommunityElo from "@/components/CommunityElo";
 import PlayerDashboard from "@/components/PlayerDashboard";
@@ -101,22 +102,7 @@ export default function Home() {
           )}
 
           {activeTab === "tournaments" && (
-            <>
-              {!user && (
-                <GuestFeatureBanner
-                  title="Sơ Đồ Nhánh Đấu & Giải Đấu Multi-Sport"
-                  description="Theo dõi bảng thi đấu, kết quả trực tiếp và sơ đồ nhánh loại trực tiếp (Tournament Bracket) trực quan. Đăng nhập để tạo giải đấu riêng hoặc đăng ký đội thi đấu."
-                  features={[
-                    "Sơ đồ nhánh đấu tự động cập nhật",
-                    "Tự động ghép cặp thi đấu",
-                    "Bản đồ xếp hạng & Thống kê bàn thắng",
-                  ]}
-                  icon={Trophy}
-                  onOpenAuth={handleOpenAuth}
-                />
-              )}
-              <TournamentBracket />
-            </>
+            <TournamentLeaderboard onBackToHome={() => handleTabChange("booking")} />
           )}
 
           {activeTab === "community" && (
