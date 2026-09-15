@@ -3,7 +3,7 @@ import {
   Trophy, Award, Flame, Search, Filter, Calendar, MapPin, Users, ChevronRight, 
   PlayCircle, Zap, ArrowUpRight, ShieldCheck, CheckCircle2, UserCheck, PlusCircle,
   Radio, RefreshCw, Star, Info, Share2, Sparkles, Check, Home, Video, ChevronDown,
-  Activity, CircleAlert
+  Activity
 } from 'lucide-react';
 
 interface TournamentLeaderboardProps {
