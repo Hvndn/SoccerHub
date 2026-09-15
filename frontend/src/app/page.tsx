@@ -11,6 +11,7 @@ import RefereePanel from "@/components/RefereePanel";
 import CommunityElo from "@/components/CommunityElo";
 import PlayerDashboard from "@/components/PlayerDashboard";
 import AdminDashboard from "@/components/AdminDashboard";
+import ActivitySchedule from "@/components/ActivitySchedule";
 import GuestFeatureBanner from "@/components/GuestFeatureBanner";
 import { MapPin, Trophy, Users, ShieldCheck } from "lucide-react";
 import VietQRModal from "@/components/VietQRModal";
@@ -124,23 +125,11 @@ export default function Home() {
             </>
           )}
 
-          {activeTab === "admin" && (
-            <>
-              {!user && (
-                <GuestFeatureBanner
-                  title="Bảng Điều Khiển Chủ Sân & Báo Cáo Doanh Thu"
-                  description="Công cụ quản lý danh mục sân, lịch đặt và báo cáo thống kê doanh thu cho chủ sân Bóng Đá, Cầu Lông, Pickleball, Tennis. Đăng nhập với tài khoản Chủ Sân để quản lý."
-                  features={[
-                    "Quản lý khung giờ & giá linh hoạt",
-                    "Báo cáo doanh thu & biểu đồ",
-                    "Xác nhận đặt sân trực tiếp",
-                  ]}
-                  icon={ShieldCheck}
-                  onOpenAuth={handleOpenAuth}
-                />
-              )}
-              <AdminDashboard />
-            </>
+          {(activeTab === "admin" || activeTab === "my-activities") && (
+            <ActivitySchedule 
+              onBackToHome={() => handleTabChange("booking")} 
+              onNavigateTab={handleTabChange}
+            />
           )}
         </div>
       </main>
