@@ -30,7 +30,7 @@ import {
   Timer
 } from "lucide-react";
 
-import PitchDetailModal from "./PitchDetailModal";
+import PitchDetail from "./PitchDetail";
 
 interface PitchSearchProps {
   user?: any;
@@ -45,6 +45,19 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
   const [selectedPitchForSlot, setSelectedPitchForSlot] = useState<any>(null);
   const [appliedVoucher, setAppliedVoucher] = useState(false);
   const [joinedMatch, setJoinedMatch] = useState<string | null>(null);
+
+  if (selectedPitchForSlot) {
+    return (
+      <PitchDetail
+        pitch={selectedPitchForSlot}
+        onBack={() => setSelectedPitchForSlot(null)}
+        onSelectSlot={(pitch, slot) => {
+          setSelectedPitchForSlot(null);
+          onSelectSlot(pitch, slot);
+        }}
+      />
+    );
+  }
 
   const userName = user?.name || "Trần Hoàng Long";
   const userElo = user?.eloRating || 1450;
@@ -721,15 +734,6 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
         </aside>
       </div>
 
-      {/* PITCH DETAIL & SLOT MATRIX MODAL (STITCH CANVAS SPEC) */}
-      <PitchDetailModal
-        pitch={selectedPitchForSlot}
-        onClose={() => setSelectedPitchForSlot(null)}
-        onSelectSlot={(pitch, slot) => {
-          setSelectedPitchForSlot(null);
-          onSelectSlot(pitch, slot);
-        }}
-      />
     </div>
   );
 }
