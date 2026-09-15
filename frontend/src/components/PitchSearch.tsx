@@ -30,6 +30,8 @@ import {
   Timer
 } from "lucide-react";
 
+import PitchDetailModal from "./PitchDetailModal";
+
 interface PitchSearchProps {
   user?: any;
   onSelectSlot: (pitch: any, slot: any) => void;
@@ -603,7 +605,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               <span className="text-[11px] font-extrabold text-[#0b4f6c] dark:text-sky-400">Tìm chân gấp</span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-              Hệ thống AI ghép kèo tự động khớp dựa theo chỉ số <strong class="text-slate-900 dark:text-white">DUPR 3.0</strong> & <strong class="text-slate-900 dark:text-white">Elo {userElo}</strong> của bạn.
+              Hệ thống AI ghép kèo tự động khớp dựa theo chỉ số <strong className="text-slate-900 dark:text-white">DUPR 3.0</strong> & <strong className="text-slate-900 dark:text-white">Elo {userElo}</strong> của bạn.
             </p>
 
             {/* Match Tile 1: Pickleball Doubles */}
@@ -719,85 +721,15 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
         </aside>
       </div>
 
-      {/* SLOT MATRIX MODAL */}
-      {selectedPitchForSlot && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-md">
-          <div className="bg-white dark:bg-slate-900 max-w-3xl w-full rounded-3xl p-6 sm:p-8 space-y-6 border border-slate-200 dark:border-slate-800 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button
-              type="button"
-              onClick={() => setSelectedPitchForSlot(null)}
-              className="absolute top-5 right-5 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center font-bold transition-colors"
-            >
-              ✕
-            </button>
-
-            <div className="space-y-2">
-              <div className="inline-flex items-center space-x-2 text-xs font-extrabold text-[#0b4f6c] dark:text-sky-400">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Ma Trận Khung Giờ Ca Sân Trực Tiếp</span>
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{selectedPitchForSlot.name}</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{selectedPitchForSlot.address}</p>
-            </div>
-
-            {/* Timeline Matrix */}
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2">
-                <span>Chọn ca đấu ngày: <strong className="text-slate-900 dark:text-white">Hôm nay (15/09/2026)</strong></span>
-                <div className="flex items-center space-x-4 text-xs font-semibold">
-                  <span className="flex items-center"><span className="w-3 h-3 rounded-full bg-emerald-500 mr-1.5" /> Trống</span>
-                  <span className="flex items-center"><span className="w-3 h-3 rounded-full bg-amber-500 mr-1.5" /> Khóa 5p</span>
-                  <span className="flex items-center"><span className="w-3 h-3 rounded-full bg-slate-400 dark:bg-slate-700 mr-1.5" /> Đã Đặt</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {modalSlots.map((slot) => {
-                  const isAvailable = slot.status === "AVAILABLE";
-                  const isHold = slot.status === "HOLD";
-                  return (
-                    <div
-                      key={slot.id}
-                      className={`p-4 rounded-2xl border transition-all duration-200 flex items-center justify-between ${
-                        isAvailable
-                          ? "bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-[#0b4f6c] cursor-pointer shadow-xs"
-                          : isHold
-                          ? "bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-500/40 opacity-90"
-                          : "bg-slate-100 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 opacity-60 cursor-not-allowed"
-                      }`}
-                    >
-                      <div className="space-y-1">
-                        <span className="text-[11px] font-extrabold text-[#0b4f6c] dark:text-sky-400 block">{slot.pitchType}</span>
-                        <span className="text-base font-extrabold text-slate-900 dark:text-white block font-mono">{slot.time}</span>
-                        <span className="text-xs font-extrabold text-emerald-500">{slot.price.toLocaleString("vi-VN")} đ</span>
-                      </div>
-
-                      {isAvailable ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onSelectSlot(selectedPitchForSlot, slot);
-                            setSelectedPitchForSlot(null);
-                          }}
-                          className="px-4 py-2.5 rounded-xl bg-[#0b4f6c] text-white text-xs font-extrabold hover:bg-[#07384d] transition-all shadow-md active:scale-95"
-                        >
-                          Đặt Ca →
-                        </button>
-                      ) : (
-                        <span className={`text-[11px] px-3 py-1.5 rounded-xl font-bold ${
-                          isHold ? "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-400" : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-500"
-                        }`}>
-                          {isHold ? "Khóa 5p" : "Đã Đặt"}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* PITCH DETAIL & SLOT MATRIX MODAL (STITCH CANVAS SPEC) */}
+      <PitchDetailModal
+        pitch={selectedPitchForSlot}
+        onClose={() => setSelectedPitchForSlot(null)}
+        onSelectSlot={(pitch, slot) => {
+          setSelectedPitchForSlot(null);
+          onSelectSlot(pitch, slot);
+        }}
+      />
     </div>
   );
 }
