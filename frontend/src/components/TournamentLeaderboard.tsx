@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   Trophy, Award, Flame, Search, Filter, Calendar, MapPin, Users, ChevronRight, 
   PlayCircle, Zap, ArrowUpRight, ShieldCheck, CheckCircle2, UserCheck, PlusCircle,
-  Radio, RefreshCw, Star, Info, Share2, Sparkles
+  Radio, RefreshCw, Star, Info, Share2, Sparkles, Check, Home, Video, ChevronDown,
+  Activity, CircleAlert
 } from 'lucide-react';
 
 interface TournamentLeaderboardProps {
@@ -16,666 +17,706 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 }) => {
   const [activeSport, setActiveSport] = useState<'all' | 'pickleball' | 'football' | 'badminton' | 'tennis'>('pickleball');
   const [activeTab, setActiveTab] = useState<'open' | 'live' | 'bracket' | 'rankings'>('open');
-  const [searchEloQuery, setSearchEloQuery] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('all');
+  const [selectedLevel, setSelectedLevel] = useState('Tất cả DUPR/Elo');
+  const [selectedScale, setSelectedScale] = useState('Open Cup & CLB Mở Rộng');
+  const [selectedLocation, setSelectedLocation] = useState('TP. Hồ Chí Minh (Q.7, Q.1, Thủ Đức)');
   const [showRegModal, setShowRegModal] = useState(false);
   const [selectedTourneyForReg, setSelectedTourneyForReg] = useState<string | null>(null);
 
-  // Mock Tournaments List
-  const tournaments = [
-    {
-      id: 'tourney-1',
-      title: 'VaoSan Pickleball Championship 2025 - Cúp Mùa Thu Mở Rộng',
-      sport: 'pickleball',
-      prize: '35.000.000đ',
-      date: '26/10 - 27/10/2025',
-      location: 'Cụm 8 Sân Pickleball D-Sports, Q.7, TP.HCM',
-      level: 'DUPR 3.0 - 4.5 Mở Rộng',
-      registered: 28,
-      maxSlots: 32,
-      fee: '600.000đ / Đôi',
-      badge: 'Giải Nổi Bật',
-      badgeColor: 'bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30',
-      isHot: true,
-      image: 'https://images.unsplash.com/photo-1626248801379-51a0748a5f96?auto=format&fit=crop&w=800&q=80',
-      organizer: 'VaoSan & D-Sports Academy',
-      features: ['Trọng tài VPA', 'Live AI Camera', 'Cấp chứng nhận DUPR']
-    },
-    {
-      id: 'tourney-2',
-      title: 'Giải Bóng Đá 7 Người Các CLB Nam Sài Gòn 2025',
-      sport: 'football',
-      prize: '50.000.000đ',
-      date: '02/11 - 15/11/2025',
-      location: 'Sân SVĐ Kick-ON Tân Thuận, Q.7',
-      level: 'Phong Trào Hạng A & B',
-      registered: 14,
-      maxSlots: 16,
-      fee: '2.500.000đ / Đội',
-      badge: 'Giải Đấu Lớn',
-      badgeColor: 'bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-      isHot: true,
-      image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80',
-      organizer: 'Kick-ON Football League',
-      features: ['VAR AI Hỗ Trợ', 'Livestream Full HD', 'Bảo hiểm chấn thương']
-    },
-    {
-      id: 'tourney-3',
-      title: 'Khơi Nguồn Đam Mê - Pickleball Đôi Nam Nữ Rookie 2025',
-      sport: 'pickleball',
-      prize: '15.000.000đ',
-      date: '18/10/2025 (Chủ Nhật)',
-      location: 'VaoSan PB Club - Bình Thạnh',
-      level: 'DUPR < 3.25 (Rookie)',
-      registered: 24,
-      maxSlots: 24,
-      fee: '400.000đ / Đôi',
-      badge: 'Đã Đầy Đội',
-      badgeColor: 'bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-500/30',
-      isHot: false,
-      image: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=800&q=80',
-      organizer: 'Bình Thạnh PB Community',
-      features: ['Bóng thi đấu Franklin X-40', 'Hệ thống tính điểm tự động']
-    },
-    {
-      id: 'tourney-4',
-      title: 'Giải Cầu Lông Đôi Nam Nữ Thường Niên TP. Thủ Đức',
-      sport: 'badminton',
-      prize: '20.000.000đ',
-      date: '05/11 - 06/11/2025',
-      location: 'Cụm Sân Cầu Lông ProBad Thủ Đức',
-      level: 'Hạng B & C',
-      registered: 18,
-      maxSlots: 32,
-      fee: '500.000đ / Đôi',
-      badge: 'Mở Đăng Ký',
-      badgeColor: 'bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
-      isHot: false,
-      image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80',
-      organizer: 'Thủ Đức Badminton Hub',
-      features: ['Thảm thi đấu tiêu chuẩn BWF', 'Quà tặng tài trợ']
-    }
+  // Top Pickleball Leaderboard (Stitch exact)
+  const topDuprPlayers = [
+    { rank: 1, name: 'Lê Hoàng Yến', dpr: '4.65', note: '+45 điểm tuần này', crown: true },
+    { rank: 2, name: 'Trần Quốc Nam', dpr: '4.52', note: '+30 điểm', crown: false },
+    { rank: 3, name: 'Phạm Đăng Khoa', dpr: '4.40', note: '+18 điểm', crown: false },
+    { rank: 4, name: 'Vũ Minh Tuấn', dpr: '4.25', note: 'Giữ hạng', crown: false },
+    { rank: 5, name: 'Đặng Ngọc Long', dpr: '4.18', note: 'Giữ hạng', crown: false },
   ];
-
-  // Top Players / Rankings Mock Data
-  const topPlayers = [
-    { rank: 1, name: 'Trần Minh Khang', sport: 'Pickleball', rating: 'DUPR 4.62', matches: 84, winRate: '82%', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', club: 'D-Sports Pro' },
-    { rank: 2, name: 'Lê Tuấn Anh', sport: 'Pickleball', rating: 'DUPR 4.45', matches: 62, winRate: '78%', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', club: 'Saigon Smashers' },
-    { rank: 3, name: 'FC Tân Thuận Star', sport: 'Bóng Đá 7 Người', rating: 'Elo 1,840', matches: 45, winRate: '85%', avatar: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=150&q=80', club: 'Q.7 Super League' },
-    { rank: 4, name: 'Nguyễn Hoàng Nam', sport: 'Tennis', rating: 'Elo 1,650', matches: 38, winRate: '73%', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80', club: 'Phú Mỹ Hưng Tennis Club' },
-    { rank: 5, name: 'Vũ Quốc Hùng', sport: 'Cầu Lông', rating: 'Elo 1,580', matches: 50, winRate: '70%', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80', club: 'Thủ Đức Badminton Pro' }
-  ];
-
-  // Live Matches Mock
-  const liveMatches = [
-    {
-      id: 'm1',
-      tournament: 'VaoSan Pickleball Championship 2025',
-      stage: 'Bán Kết 1 - Đôi Nam DUPR 4.0+',
-      court: 'Sân PB-01 (HD Live stream)',
-      teamA: 'Minh Khang / Tuấn Lê',
-      scoreA: [11, 9, 10],
-      teamB: 'Hoàng Nam / Đức Anh',
-      scoreB: [8, 11, 8],
-      status: 'Match Point (Set 3)',
-      isLive: true
-    },
-    {
-      id: 'm2',
-      tournament: 'Giải Bóng Đá 7 Người Nam Sài Gòn',
-      stage: 'Vòng Bảng - Bảng A',
-      court: 'Sân SVĐ Kick-ON 1',
-      teamA: 'FC Tân Thuận Star',
-      scoreA: [2],
-      teamB: 'FC Rồng Vàng Q.4',
-      scoreB: [1],
-      status: 'Phút 58 / Hiệp 2',
-      isLive: true
-    }
-  ];
-
-  const filteredTournaments = tournaments.filter(t => {
-    if (activeSport !== 'all' && t.sport !== activeSport) return false;
-    return true;
-  });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0d131f] text-slate-900 dark:text-slate-100 font-sans pb-16 transition-colors duration-300">
-      {/* Top Ticker Bar */}
-      <div className="bg-emerald-500/10 dark:bg-emerald-950/60 border-b border-emerald-500/20 px-4 py-2 text-xs flex items-center justify-between overflow-x-auto">
-        <div className="flex items-center space-x-3 whitespace-nowrap">
-          <span className="flex items-center text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/40 animate-pulse">
-            <Radio className="w-3 h-3 mr-1 text-emerald-600 dark:text-emerald-400" /> LIVE STREAM
-          </span>
-          <span className="text-slate-700 dark:text-slate-300">
-            <strong className="text-slate-900 dark:text-white">LIVE 14:35:</strong> BK1 Pickleball Sân PB-01: Minh Khang / Tuấn Lê chuẩn bị Match Point!
-          </span>
-        </div>
-        <div className="flex items-center space-x-4 text-slate-500 dark:text-slate-400 text-xs">
-          <span>Hệ Thống Xếp Hạng DUPR & Elo Độc Quyền Kick-ON</span>
-          <span className="text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer flex items-center font-semibold">
-            Tra cứu Elo cá nhân <ArrowUpRight className="w-3 h-3 ml-0.5" />
-          </span>
-        </div>
-      </div>
-
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        {/* Page Title & Quick Actions */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
-              <span className="hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer font-medium" onClick={onBackToHome}>Trang chủ</span>
-              <span>/</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold">Giải Đấu & Bảng Xếp Hạng</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-3">
-              <Trophy className="w-8 h-8 text-amber-500 dark:text-amber-400 shrink-0" />
-              Giải Đấu & Bảng Xếp Hạng Đa Môn
-              <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold">
-                Official VaoSan League
-              </span>
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => {
-                const eloSection = document.getElementById('search-elo-section');
-                eloSection?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold border border-slate-200 dark:border-slate-700 shadow-xs transition flex items-center gap-2"
-            >
-              <Search className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              Tra Cứu DUPR / Elo
-            </button>
-            <button 
-              onClick={() => setShowRegModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 dark:bg-gradient-to-r dark:from-emerald-500 dark:to-teal-600 text-white dark:text-slate-950 font-extrabold text-sm shadow-md transition flex items-center gap-2 active:scale-95"
-            >
-              <PlusCircle className="w-4 h-4" />
-              Tạo Giải Đấu / Đăng Ký
-            </button>
-          </div>
-        </div>
-
-        {/* Sports Switcher Ribbon */}
-        <div className="flex items-center space-x-2 overflow-x-auto pb-2 border-b border-slate-200 dark:border-slate-800 mb-6">
-          <button
-            onClick={() => setActiveSport('all')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition whitespace-nowrap flex items-center gap-2 ${
-              activeSport === 'all'
-                ? 'bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 shadow-md'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-            }`}
-          >
-            Tất Cả Môn <span className="text-xs opacity-75">(48)</span>
-          </button>
-          <button
-            onClick={() => setActiveSport('pickleball')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition whitespace-nowrap flex items-center gap-2 ${
-              activeSport === 'pickleball'
-                ? 'bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 shadow-md'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-            }`}
-          >
-            🏓 Pickleball <span className="text-xs opacity-75">(18 giải)</span>
-          </button>
-          <button
-            onClick={() => setActiveSport('football')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition whitespace-nowrap flex items-center gap-2 ${
-              activeSport === 'football'
-                ? 'bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 shadow-md'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-            }`}
-          >
-            ⚽ Bóng Đá 7 Người <span className="text-xs opacity-75">(16)</span>
-          </button>
-          <button
-            onClick={() => setActiveSport('badminton')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition whitespace-nowrap flex items-center gap-2 ${
-              activeSport === 'badminton'
-                ? 'bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 shadow-md'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-            }`}
-          >
-            🏸 Cầu Lông <span className="text-xs opacity-75">(10)</span>
-          </button>
-          <button
-            onClick={() => setActiveSport('tennis')}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition whitespace-nowrap flex items-center gap-2 ${
-              activeSport === 'tennis'
-                ? 'bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 shadow-md'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-            }`}
-          >
-            🎾 Tennis <span className="text-xs opacity-75">(4)</span>
-          </button>
-        </div>
-
-        {/* Featured Hero Banner */}
-        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-slate-900 via-slate-850 to-emerald-950 border border-slate-800 dark:border-emerald-500/30 p-6 md:p-8 mb-8 shadow-xl text-white">
-          <div className="absolute top-0 right-0 w-1/3 h-full opacity-20 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-400 via-transparent to-transparent"></div>
+    <div className="w-full bg-[#f8f9ff] dark:bg-[#0b1c30] text-[#0b1c30] dark:text-[#f8f9ff] font-sans transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="flex flex-col w-full gap-6">
           
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-            <div className="lg:col-span-2 space-y-4">
-              <div className="flex items-center space-x-3">
-                <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5" /> Giải Nổi Bật Đang Mở Đăng Ký
-                </span>
-                <span className="text-xs text-slate-300 flex items-center gap-1">
-                  <Radio className="w-3 h-3 text-red-400 animate-ping" /> AI Live Camera Included
-                </span>
-              </div>
-
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight">
-                VaoSan Pickleball Championship 2025
-                <span className="block text-emerald-400 text-xl sm:text-2xl font-semibold mt-1">Cúp Mùa Thu Mở Rộng - Tổng Giải Thưởng 35.000.000đ</span>
-              </h2>
-
-              <div className="flex flex-wrap gap-4 text-xs sm:text-sm text-slate-300 pt-1">
-                <div className="flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700">
-                  <Calendar className="w-4 h-4 text-emerald-400" />
-                  <span>26/10 - 27/10/2025</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700">
-                  <MapPin className="w-4 h-4 text-emerald-400" />
-                  <span>Cụm 8 Sân USAPA D-Sports, Q.7</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700">
-                  <Award className="w-4 h-4 text-amber-400" />
-                  <span>Hệ DUPR 3.0 - 4.5 Mở Rộng</span>
-                </div>
-              </div>
-
-              <div className="space-y-1.5 pt-2">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-slate-300">Tiến độ đăng ký đội: <strong className="text-emerald-400">28 / 32 Đội (88% slot)</strong></span>
-                  <span className="text-amber-400">Chỉ còn 4 suất cuối!</span>
-                </div>
-                <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700">
-                  <div className="bg-gradient-to-r from-emerald-500 to-amber-400 h-full rounded-full w-[88%]"></div>
-                </div>
-              </div>
+          {/* 1. BREADCRUMBS & LIVE TICKER BAR */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <button onClick={onBackToHome} className="hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
+                <Home className="w-3.5 h-3.5" />
+                <span>Trang chủ</span>
+              </button>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span className="text-slate-900 dark:text-white font-bold">Giải Đấu & Bảng Xếp Hạng</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold">
+                Mùa Giải Q4-2025
+              </span>
             </div>
 
-            <div className="lg:col-span-1 bg-slate-900/90 backdrop-blur-md rounded-xl p-5 border border-slate-700 space-y-4">
-              <div className="text-center border-b border-slate-800 pb-3">
-                <span className="text-xs text-slate-400 uppercase tracking-wider block font-medium">Lệ phí đăng ký đôi</span>
-                <span className="text-2xl font-black text-emerald-400">600.000đ <span className="text-xs font-normal text-slate-400">/ Đôi</span></span>
-              </div>
-              <div className="space-y-2 text-xs text-slate-300">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Đơn vị tổ chức:</span>
-                  <span className="font-semibold text-white">VaoSan & D-Sports</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Trọng tài chính:</span>
-                  <span className="font-semibold text-emerald-400">Chứng nhận VPA</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Tích điểm BXH:</span>
-                  <span className="font-semibold text-amber-400">+120 Elo / +0.15 DUPR</span>
-                </div>
-              </div>
+            <div className="flex items-center gap-2 self-start md:self-auto bg-white dark:bg-slate-900 px-3 py-1.5 rounded-full shadow-xs border border-slate-200 dark:border-slate-800">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">LIVE 14:35:</span>
+              <span className="text-xs text-slate-600 dark:text-slate-300 truncate max-w-xs sm:max-w-md font-medium">
+                BK1 Pickleball Sân PB-01: Minh Khang / Tuấn Lê chuẩn bị Match Point!
+              </span>
+            </div>
+          </div>
+
+          {/* 2. MULTI-SPORT FILTER RIBBON & QUICK ACTIONS */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800">
+            {/* Sport Switcher Ribbon */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0">
+              <button 
+                onClick={() => setActiveSport('all')}
+                className={`group flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  activeSport === 'all'
+                    ? 'bg-emerald-700 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Tất cả môn</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold">48</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveSport('pickleball')}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  activeSport === 'pickleball'
+                    ? 'bg-emerald-700 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <span>🏓 Pickleball</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-lime-400 text-slate-950 text-[11px] font-black">18 giải</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveSport('football')}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  activeSport === 'football'
+                    ? 'bg-emerald-700 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <span>⚽ Bóng Đá 7 Người</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold">16</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveSport('badminton')}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  activeSport === 'badminton'
+                    ? 'bg-emerald-700 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <span>🏸 Cầu Lông</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold">10</span>
+              </button>
+
+              <button 
+                onClick={() => setActiveSport('tennis')}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  activeSport === 'tennis'
+                    ? 'bg-emerald-700 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <span>🎾 Tennis</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold">4</span>
+              </button>
+            </div>
+
+            {/* Quick CTAs */}
+            <div className="flex items-center gap-2.5 shrink-0">
               <button 
                 onClick={() => {
-                  setSelectedTourneyForReg('tourney-1');
-                  setShowRegModal(true);
+                  const eloSection = document.getElementById('search-elo-section');
+                  eloSection?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition shadow-md flex items-center justify-center gap-2"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all"
               >
-                Giữ Suất Thi Đấu Ngay <ChevronRight className="w-4 h-4" />
+                <Search className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Tra cứu BXH Cá Nhân</span>
+              </button>
+
+              <button 
+                onClick={() => setShowRegModal(true)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all active:scale-95"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>+ Đăng Ký Đội Thi Đấu</span>
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Secondary Nav Tabs */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
-          <div className="flex items-center space-x-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
-            <button
-              onClick={() => setActiveTab('open')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition ${
-                activeTab === 'open' 
-                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30' 
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              Giải Đấu Đang Mở Đăng Ký (18)
-            </button>
-            <button
-              onClick={() => setActiveTab('live')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'live' 
-                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30' 
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Radio className="w-3.5 h-3.5 text-red-500 animate-pulse" /> Kết Quả Live (8)
-            </button>
-            <button
-              onClick={() => setActiveTab('bracket')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition ${
-                activeTab === 'bracket' 
-                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30' 
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              Nhánh Bảng Đấu (Bracket)
-            </button>
-            <button
-              onClick={() => setActiveTab('rankings')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition ${
-                activeTab === 'rankings' 
-                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30' 
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              BXH Elo & DUPR
-            </button>
-          </div>
+          {/* 3. SECONDARY FILTER DROPDOWNS BAR */}
+          <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+            <span className="flex items-center gap-1 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
+              <Filter className="w-3.5 h-3.5" />
+              Lọc nhanh:
+            </span>
 
-          {/* Filters Bar */}
-          <div className="flex items-center space-x-3 text-xs">
-            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-lg shadow-xs">
-              <Filter className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-              <span className="text-slate-500 dark:text-slate-400 font-semibold">Trình độ:</span>
-              <select 
-                value={selectedLevel}
-                onChange={(e) => setSelectedLevel(e.target.value)}
-                className="bg-transparent text-slate-900 dark:text-white font-medium focus:outline-none cursor-pointer"
-              >
-                <option value="all" className="bg-white dark:bg-slate-900">Tất cả trình độ</option>
-                <option value="dupr3" className="bg-white dark:bg-slate-900">DUPR 3.0 - 3.5</option>
-                <option value="dupr4" className="bg-white dark:bg-slate-900">DUPR 4.0+</option>
-                <option value="elo1200" className="bg-white dark:bg-slate-900">Elo 1,200+</option>
-              </select>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <span className="text-slate-500">Trình độ:</span>
+              <span className="font-bold text-emerald-700 dark:text-emerald-400">{selectedLevel}</span>
+              <ChevronDown className="w-4 h-4 text-slate-400" />
             </div>
 
-            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-lg shadow-xs">
-              <MapPin className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-              <span className="text-slate-500 dark:text-slate-400 font-semibold">Khu vực:</span>
-              <select 
-                value={selectedLocation}
-                onChange={(e) => setSelectedLocation(e.target.value)}
-                className="bg-transparent text-slate-900 dark:text-white font-medium focus:outline-none cursor-pointer"
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <span className="text-slate-500">Quy mô:</span>
+              <span className="font-bold text-slate-900 dark:text-white">{selectedScale}</span>
+              <ChevronDown className="w-4 h-4 text-slate-400" />
+            </div>
+
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="font-bold text-slate-900 dark:text-white">{selectedLocation}</span>
+              <ChevronDown className="w-4 h-4 text-slate-400" />
+            </div>
+
+            <div className="ml-auto flex items-center gap-2">
+              <button 
+                onClick={() => {
+                  setSelectedLevel('Tất cả DUPR/Elo');
+                  setSelectedScale('Open Cup & CLB Mở Rộng');
+                  setSelectedLocation('TP. Hồ Chí Minh (Q.7, Q.1, Thủ Đức)');
+                }}
+                className="text-emerald-700 dark:text-emerald-400 text-xs font-bold hover:underline flex items-center gap-0.5"
               >
-                <option value="all" className="bg-white dark:bg-slate-900">Tất cả khu vực</option>
-                <option value="q7" className="bg-white dark:bg-slate-900">Quận 7, TP.HCM</option>
-                <option value="binhthanh" className="bg-white dark:bg-slate-900">Bình Thạnh</option>
-                <option value="thuduc" className="bg-white dark:bg-slate-900">TP. Thủ Đức</option>
-              </select>
+                <span>Thiết lập lại bộ lọc</span>
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Main Dual-Column Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column (70%) */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Live Bracket Simulation Preview */}
-            {(activeTab === 'live' || activeTab === 'bracket') && (
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-emerald-500/30 p-5 space-y-4 shadow-sm">
-                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-                  <div className="flex items-center space-x-2">
-                    <Radio className="w-4 h-4 text-red-500 animate-pulse" />
-                    <h3 className="font-bold text-slate-900 dark:text-white text-base">Cập Nhật Trận Đấu Trực Tiếp</h3>
-                  </div>
-                  <span className="text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/30 font-semibold">
-                    Sân PB-01 & PB-02
+          {/* 4. FEATURED TOURNAMENT HERO BANNER CARD (STITCH EXACT SPOTLIGHT) */}
+          <div className="relative overflow-hidden rounded-2xl bg-[#1e293b] dark:bg-[#0f172a] text-white shadow-xl p-6 sm:p-8 border border-slate-700">
+            {/* Ambient Stadium Glow */}
+            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none"></div>
+            <div className="absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-lime-500/10 blur-3xl pointer-events-none"></div>
+
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              {/* Left Content */}
+              <div className="lg:col-span-8 flex flex-col gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-1 rounded-md bg-lime-400 text-slate-950 text-[11px] uppercase tracking-wider font-black flex items-center gap-1">
+                    <Award className="w-3.5 h-3.5" />
+                    GIẢI ĐẤU TIÊU ĐIỂM TRONG THÁNG
+                  </span>
+                  <span className="px-2.5 py-1 rounded-md bg-slate-800 text-emerald-400 text-[11px] font-bold flex items-center gap-1 border border-slate-700">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    DUPR Official Sanctioned
+                  </span>
+                  <span className="px-2.5 py-1 rounded-md bg-rose-500/20 text-rose-300 text-[11px] font-bold flex items-center gap-1 border border-rose-500/30">
+                    <Activity className="w-3.5 h-3.5" />
+                    Hạn chót: Còn 3 ngày
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {liveMatches.map(match => (
-                    <div key={match.id} className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500/40 transition">
-                      <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between mb-2">
-                        <span className="truncate">{match.stage}</span>
-                        <span className="text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded">{match.status}</span>
-                      </div>
-                      
-                      <div className="space-y-2 py-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-slate-400" /> {match.teamA}
-                          </span>
-                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
-                            {match.scoreA.join(' - ')}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-slate-400" /> {match.teamB}
-                          </span>
-                          <span className="text-sm font-bold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
-                            {match.scoreB.join(' - ')}
-                          </span>
-                        </div>
-                      </div>
+                <div>
+                  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+                    VaoSan Pickleball Championship 2025
+                  </h1>
+                  <p className="text-lg sm:text-xl text-emerald-400 font-bold mt-1">
+                    Cúp Mùa Thu Mở Rộng • Tranh Cúp Vô Địch & Điểm Tích Lũy DUPR
+                  </p>
+                </div>
 
-                      <div className="mt-3 pt-2 border-t border-slate-200 dark:border-slate-900 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                        <span>📍 {match.court}</span>
-                        <button className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline flex items-center gap-1">
-                          <PlayCircle className="w-3.5 h-3.5" /> Xem AI Stream
-                        </button>
-                      </div>
+                {/* Metric Badges Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                  <div className="flex flex-col p-2.5 rounded-lg bg-slate-900/60 backdrop-blur-sm border border-slate-800">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Tổng Giải Thưởng</span>
+                    <span className="text-lg sm:text-xl font-black text-lime-400 font-mono mt-0.5">35.000.000đ</span>
+                  </div>
+                  <div className="flex flex-col p-2.5 rounded-lg bg-slate-900/60 backdrop-blur-sm border border-slate-800">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Thời Gian Diễn Ra</span>
+                    <span className="text-sm font-bold text-white mt-0.5">26/10 - 27/10/2025</span>
+                  </div>
+                  <div className="flex flex-col p-2.5 rounded-lg bg-slate-900/60 backdrop-blur-sm border border-slate-800">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Thể Thức Hạng Đấu</span>
+                    <span className="text-sm font-bold text-white mt-0.5">Đôi Nam & Đôi Nam-Nữ</span>
+                  </div>
+                  <div className="flex flex-col p-2.5 rounded-lg bg-slate-900/60 backdrop-blur-sm border border-slate-800">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Địa Điểm Chuẩn Olympic</span>
+                    <span className="text-sm font-bold text-white mt-0.5">D-Sport Oasis, Q.7</span>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="flex flex-col gap-1.5 pt-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-300">Tiến độ ghi danh:</span>
+                      <span className="font-mono font-bold text-lime-400">28 / 32 Cặp VĐV (88%)</span>
                     </div>
-                  ))}
+                    <span className="px-2 py-0.5 rounded bg-rose-500/30 text-rose-300 font-bold text-[11px] animate-pulse">Chỉ còn 4 suất cuối!</span>
+                  </div>
+                  <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-lime-400 rounded-full transition-all duration-500" style={{ width: '88%' }}></div>
+                  </div>
+                </div>
+
+                {/* Action CTAs */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <button 
+                    onClick={() => {
+                      setSelectedTourneyForReg('tourney-1');
+                      setShowRegModal(true);
+                    }}
+                    className="px-5 py-3 rounded-lg bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-lime-400/20 transition-all transform hover:-translate-y-0.5"
+                  >
+                    <span>🏓 Đăng Ký Tham Gia Ngay (600k/cặp)</span>
+                  </button>
+                  <button className="px-4 py-3 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 backdrop-blur-sm border border-slate-700 transition-all">
+                    <span>📜 Điều Lệ & Thể Thức Bốc Thăm</span>
+                  </button>
                 </div>
               </div>
-            )}
 
-            {/* Tournaments Grid */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-amber-500 dark:text-amber-400" />
-                  Danh Sách Giải Đấu Mở Đăng Ký
-                </h3>
-                <span className="text-xs text-slate-500 dark:text-slate-400">Hiển thị {filteredTournaments.length} giải đấu phù hợp</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {filteredTournaments.map((t) => (
-                  <div 
-                    key={t.id} 
-                    className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500/40 transition overflow-hidden group flex flex-col justify-between shadow-xs"
-                  >
-                    <div>
-                      {/* Image Header */}
-                      <div className="relative h-44 overflow-hidden">
-                        <img 
-                          src={t.image} 
-                          alt={t.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
-                        
-                        <div className="absolute top-3 left-3 flex items-center gap-2">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${t.badgeColor}`}>
-                            {t.badge}
-                          </span>
-                        </div>
-
-                        <div className="absolute bottom-3 right-3 bg-slate-950/90 backdrop-blur-md px-3 py-1 rounded-lg border border-slate-700 text-xs text-amber-400 font-extrabold">
-                          Giải Thưởng: {t.prize}
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-4 space-y-3">
-                        <h4 className="font-extrabold text-slate-900 dark:text-white text-base group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition line-clamp-2">
-                          {t.title}
-                        </h4>
-
-                        <div className="space-y-1.5 text-xs">
-                          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                            <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                            <span>{t.date}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                            <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                            <span className="truncate">{t.location}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                            <Award className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 flex-shrink-0" />
-                            <span>Trình độ: <strong className="text-slate-900 dark:text-white">{t.level}</strong></span>
-                          </div>
-                        </div>
-
-                        {/* Features Tags */}
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {t.features.map((feat, idx) => (
-                            <span key={idx} className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-medium">
-                              ✓ {feat}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Footer Progress & Action */}
-                    <div className="p-4 pt-0 space-y-3">
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                          <span>Số lượng đăng ký</span>
-                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">{t.registered}/{t.maxSlots} đội</span>
-                        </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                          <div 
-                            className="bg-emerald-500 h-full rounded-full" 
-                            style={{ width: `${(t.registered / t.maxSlots) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80">
-                        <div>
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Lệ phí</span>
-                          <span className="text-sm font-extrabold text-slate-900 dark:text-white">{t.fee}</span>
-                        </div>
-                        <button 
-                          onClick={() => {
-                            setSelectedTourneyForReg(t.id);
-                            setShowRegModal(true);
-                          }}
-                          className="px-3.5 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-600 text-emerald-700 dark:text-emerald-400 hover:text-white border border-emerald-500/30 text-xs font-bold transition flex items-center gap-1 active:scale-95"
-                        >
-                          Đăng Ký Ngay <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+              {/* Right Media Spotlight */}
+              <div className="lg:col-span-4 flex flex-col gap-3">
+                <div className="relative overflow-hidden rounded-xl bg-slate-900/80 backdrop-blur-md p-4 border border-slate-800 flex flex-col gap-3">
+                  <div className="relative w-full h-44 rounded-lg overflow-hidden shadow-inner">
+                    <img 
+                      src="https://images.unsplash.com/photo-1626248801379-51a0748a5f96?auto=format&fit=crop&w=800&q=80" 
+                      alt="Pickleball Championship"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded bg-slate-900/80 backdrop-blur-sm text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+                        🏆 8 Sân Đạt Chuẩn USAPA
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-mono text-[11px] font-bold">
+                        HD Livestream AI
+                      </span>
                     </div>
                   </div>
-                ))}
+                  <div className="flex items-center justify-between text-xs text-slate-300 pt-1">
+                    <span className="flex items-center gap-1">
+                      ⭐ Huy chương mạ vàng + Áo thi đấu chính hãng
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column (30%) */}
-          <div className="space-y-6">
-            {/* Personal Elo / DUPR Lookup Card */}
-            <div id="search-elo-section" className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 space-y-4 shadow-xs">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-                  <UserCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  Tra Cứu DUPR & Elo Cá Nhân
-                </h3>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-semibold">Live Data</span>
-              </div>
+          {/* 5. MAIN NAVIGATION TABS */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <button 
+              onClick={() => setActiveTab('open')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                activeTab === 'open' 
+                  ? 'bg-emerald-700 text-white shadow-md' 
+                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Giải Đấu Đang Mở Đăng Ký (18)</span>
+            </button>
 
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                <input 
-                  type="text" 
-                  placeholder="Nhập tên VĐV, Mã DUPR hoặc SĐT..."
-                  value={searchEloQuery}
-                  onChange={(e) => setSearchEloQuery(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-emerald-500 text-xs"
-                />
-              </div>
+            <button 
+              onClick={() => setActiveTab('live')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                activeTab === 'live' 
+                  ? 'bg-emerald-700 text-white shadow-md' 
+                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <Radio className="w-4 h-4 text-red-500 animate-pulse" />
+              <span>Lịch Thi Đấu & Kết Quả Live (8)</span>
+            </button>
 
-              {/* Sample User Elo Card */}
-              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-emerald-500/30 space-y-3">
-                <div className="flex items-center space-x-3">
-                  <img 
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" 
-                    alt="Nguyễn Văn An"
-                    className="w-12 h-12 rounded-full object-cover border-2 border-emerald-500"
-                  />
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">Nguyễn Văn An</h4>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">CLB Pickleball Q.7 • DUPR ID: #88219</span>
+            <button 
+              onClick={() => setActiveTab('bracket')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                activeTab === 'bracket' 
+                  ? 'bg-emerald-700 text-white shadow-md' 
+                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <Trophy className="w-4 h-4" />
+              <span>Bảng Đấu & Nhánh Bracket</span>
+            </button>
+
+            <button 
+              onClick={() => setActiveTab('rankings')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 ${
+                activeTab === 'rankings' 
+                  ? 'bg-emerald-700 text-white shadow-md' 
+                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <Award className="w-4 h-4" />
+              <span>Bảng Xếp Hạng Elo & DUPR</span>
+            </button>
+          </div>
+
+          {/* 6. MAIN 2-COLUMN WORKSPACE: 70% LEFT / 30% RIGHT */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* LEFT COLUMN (70% - Col span 8): TOURNAMENT CARDS & LIVE BRACKET */}
+            <div className="lg:col-span-8 flex flex-col gap-6">
+              
+              {/* LIVE QUICK BRACKET / MATCH PROGRESSION PREVIEW WIDGET */}
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-black text-[11px] flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                      TRỰC TIẾP
+                    </span>
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                      Vòng Bán Kết - VaoSan Mini Cup Sân PB-01
+                    </h2>
                   </div>
+                  <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md font-bold">
+                    Chung kết: 17:30 Chiều nay
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-slate-200 dark:border-slate-900">
-                  <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-medium">Chỉ số DUPR</span>
-                    <span className="text-base font-extrabold text-amber-500 dark:text-amber-400">3.85 ⭐</span>
-                  </div>
-                  <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-medium">Xếp Hạng Elo</span>
-                    <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">1,420 p.t</span>
-                  </div>
-                </div>
+                {/* Bracket Dual-Match Flow Module */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                  {/* BK1 Result Box */}
+                  <div className="md:col-span-5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 flex flex-col gap-2 border border-slate-200/60 dark:border-slate-800">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+                      <span>BÁN KẾT 1 • ĐÃ KẾT THÚC</span>
+                      <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">2 - 0 (FT)</span>
+                    </div>
 
-                <button className="w-full py-2 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs text-emerald-700 dark:text-emerald-400 font-bold border border-slate-200 dark:border-slate-800 transition flex items-center justify-center gap-1">
-                  Xem Lịch Sử Thi Đấu & Hồ Sơ <ArrowUpRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Global Leaderboard Widget */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 space-y-4 shadow-xs">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-amber-500 dark:text-amber-400" />
-                  Bảng Xếp Hạng Top VĐV
-                </h3>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hover:underline cursor-pointer">Xem tất cả</span>
-              </div>
-
-              <div className="space-y-3">
-                {topPlayers.map((player) => (
-                  <div key={player.rank} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition">
-                    <div className="flex items-center space-x-3">
-                      <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                        player.rank === 1 ? 'bg-amber-400 text-slate-950' :
-                        player.rank === 2 ? 'bg-slate-300 text-slate-950' :
-                        player.rank === 3 ? 'bg-amber-700 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                      }`}>
-                        {player.rank}
-                      </span>
-                      <img 
-                        src={player.avatar} 
-                        alt={player.name}
-                        className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700"
-                      />
-                      <div>
-                        <h4 className="font-bold text-slate-900 dark:text-white text-xs">{player.name}</h4>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400">{player.sport} • {player.club}</span>
+                    {/* Advancing Team Row */}
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 shadow-xs border border-emerald-500/30">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-1.5 h-6 rounded-full bg-emerald-600 shrink-0"></span>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">Minh Khang / Tuấn Lê</span>
+                          <span className="text-[10px] text-slate-500">Seed #1 • DUPR 3.48</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-mono text-xs font-black text-emerald-700 dark:text-emerald-400 pl-2">
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950">11</span>
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950">11</span>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <span className="text-xs font-extrabold text-amber-600 dark:text-amber-400 block">{player.rating}</span>
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{player.winRate} Thắng</span>
+                    {/* Eliminated Team Row */}
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-100/60 dark:bg-slate-900/40">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-1.5 h-6 rounded-full bg-slate-300 dark:bg-slate-700 shrink-0"></span>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">Hoàng Nam / Gia Bảo</span>
+                          <span className="text-[10px] text-slate-400">Seed #4 • DUPR 3.32</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-slate-400 pl-2">
+                        <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800">8</span>
+                        <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800">9</span>
+                      </div>
                     </div>
                   </div>
-                ))}
+
+                  {/* Arrow Connector */}
+                  <div className="hidden md:flex md:col-span-2 flex-col items-center justify-center text-center">
+                    <ChevronRight className="w-8 h-8 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase">Tiến Vào CK</span>
+                  </div>
+
+                  {/* Grand Final Live Teaser Box */}
+                  <div className="md:col-span-5 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex flex-col gap-2 border border-emerald-500/30">
+                    <div className="flex items-center justify-between text-[11px] text-emerald-800 dark:text-emerald-400 font-bold">
+                      <span>CHUNG KẾT TRANH VÔ ĐỊCH</span>
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-700 text-white text-[10px]">SÂN 1</span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 shadow-xs flex flex-col gap-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">Minh Khang / Tuấn Lê</span>
+                        <span className="font-mono text-[11px] text-emerald-600 font-bold">Team 1</span>
+                      </div>
+                      <div className="text-center font-mono text-slate-400 font-bold text-[10px] tracking-widest uppercase">VS</div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">Đức Duy / Quang Huy</span>
+                        <span className="font-mono text-[11px] text-amber-500 font-bold">Team 2</span>
+                      </div>
+                    </div>
+                    <button className="w-full py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors">
+                      <Video className="w-3.5 h-3.5 text-lime-400" />
+                      <span>Xem Livestream AI Cam & Điểm Live</span>
+                    </button>
+                  </div>
+                </div>
               </div>
+
+              {/* TOURNAMENT CARD 1: Sài Gòn League 7v7 (Football) */}
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs hover:shadow-md transition-shadow flex flex-col gap-4 border border-slate-200/80 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-14 h-14 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                      <span className="text-2xl">⚽</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]">Bóng Đá 7 Người</span>
+                        <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold text-[11px]">Chuẩn VFF Phủi Pro</span>
+                        <span className="px-2 py-0.5 rounded bg-lime-100 dark:bg-lime-950 text-lime-900 dark:text-lime-400 font-bold text-[11px]">Cup & Tiền Mặt</span>
+                      </div>
+                      <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
+                        Sài Gòn League 7v7 - Mùa Thu 2025
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                          Cụm Sân Nam Sài Gòn, Huyện Nhà Bè
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          Khởi tranh: 02/11/2025 (Kéo dài 8 tuần)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-start shrink-0">
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold">Giải Thưởng</span>
+                    <span className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400">50.000.000đ</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-xs border border-slate-200/60 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-emerald-600" />
+                    <span>Số đội: <strong className="text-slate-900 dark:text-white">14 / 16 Đội</strong> (Còn 2 slot)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <span>Trọng tài: <strong className="text-slate-900 dark:text-white">VFF Cấp 2 điều hành</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Video className="w-4 h-4 text-emerald-600" />
+                    <span>Công nghệ: <strong className="text-slate-900 dark:text-white">Camera AI bắt việt vị</strong></span>
+                  </div>
+                </div>
+
+                {/* Progress & CTAs */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="w-36 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-600 rounded-full" style={{ width: '87.5%' }}></div>
+                    </div>
+                    <span className="text-[11px] text-slate-500 font-medium">87.5% Slot đã khóa</span>
+                  </div>
+                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors">
+                      Chi Tiết Điều Lệ
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setSelectedTourneyForReg('tourney-2');
+                        setShowRegModal(true);
+                      }}
+                      className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors"
+                    >
+                      Nộp Danh Sách Đội
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* TOURNAMENT CARD 2: Cầu Lông Đôi Yonex Open (Badminton) */}
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs hover:shadow-md transition-shadow flex flex-col gap-4 border border-slate-200/80 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-14 h-14 rounded-xl bg-sky-50 dark:bg-sky-950/60 flex items-center justify-center shrink-0 border border-sky-500/20">
+                      <span className="text-2xl">🏸</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]">Cầu Lông Đôi Nam-Nữ</span>
+                        <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-400 font-bold text-[11px]">Trình độ: Trung Bình - Khá</span>
+                        <span className="px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-400 font-bold text-[11px]">Đã Đủ Đội • Chờ Bốc Thăm</span>
+                      </div>
+                      <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
+                        Yonex Open Sài Gòn 2025 - Cup Đôi Vợt Bạc
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                          CLB Cầu Lông Tân Hưng, Q.7
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          Thi đấu: 08/11/2025 (Chủ Nhật)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-start shrink-0">
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold">Giải Thưởng</span>
+                    <span className="text-base font-extrabold font-mono text-slate-900 dark:text-white">15.000.000đ + Vợt Yonex</span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs border border-slate-200/60 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">24/24 Cặp VĐV đã xác nhận hồ sơ y tế và trình độ hợp lệ.</span>
+                  </div>
+                  <span className="font-mono text-[11px] text-slate-500 font-bold">Bốc thăm: 20:00 ngày 05/11</span>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors flex items-center gap-1.5">
+                    <span>Xem Danh Sách VĐV & Nhánh Đấu Dự Kiến</span>
+                  </button>
+                </div>
+              </div>
+
             </div>
 
-            {/* Official Organizers & Sponsors */}
-            <div className="bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 p-4 space-y-3 text-center">
-              <span className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider block font-bold">Đơn Vị Đồng Hành & Bảo Trợ</span>
-              <div className="flex items-center justify-center space-x-3">
-                <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 px-2.5 py-1 rounded bg-white dark:bg-slate-900">VPA Official</span>
-                <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded bg-white dark:bg-slate-900">Kick-ON IoT</span>
-                <span className="text-xs font-extrabold text-amber-600 dark:text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded bg-white dark:bg-slate-900">D-Sports</span>
+            {/* RIGHT COLUMN (30% - Col span 4): LEADERBOARDS & ATHLETE PROFILE WIDGETS */}
+            <div className="lg:col-span-4 flex flex-col gap-6">
+              
+              {/* WIDGET 1: ATHLETE PERSONAL ELO/DUPR STATUS CARD */}
+              <div id="search-elo-section" className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-extrabold flex items-center gap-1">
+                    <UserCheck className="w-4 h-4 text-emerald-600" />
+                    Vị Trí Của Bạn Trên Hệ Thống
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 text-[11px] font-bold">Xác Thực DUPR</span>
+                </div>
+
+                {/* Athlete Profile Snippet */}
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold text-lg shrink-0">
+                    VA
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-extrabold text-slate-900 dark:text-white text-sm truncate">Nguyễn Văn An</span>
+                    <span className="text-xs text-slate-500">VĐV CLB VaoSan Phú Mỹ Hưng</span>
+                  </div>
+                </div>
+
+                {/* Metric dual box */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex flex-col">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold">Pickleball DUPR</span>
+                    <div className="flex items-baseline gap-1.5 mt-1">
+                      <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono">3.05</span>
+                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">#142 Q.7</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 mt-0.5">Top 15% VĐV tích cực</span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex flex-col">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold">Bóng Đá Phủi Elo</span>
+                    <div className="flex items-baseline gap-1.5 mt-1">
+                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">1,215</span>
+                      <span className="text-[11px] font-bold text-amber-500">#86 Div 2</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 mt-0.5">+45 điểm trong tháng</span>
+                  </div>
+                </div>
+
+                {/* Achievements List */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Huy Hiệu Giải Đấu Đã Đạt</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-semibold">
+                      🥇 Top 8 VaoSan Summer Cup 2024
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-semibold">
+                      🔥 Chuỗi 5 Trận Bất Bại
+                    </span>
+                  </div>
+                </div>
+
+                <button className="w-full py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors">
+                  <span>Nộp Biên Bản Trận Đấu Mới</span>
+                </button>
               </div>
+
+              {/* WIDGET 2: TOP DUPR PICKLEBALL LEADERBOARD (STITCH EXACT MATCH) */}
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Trophy className="w-5 h-5 text-amber-500" />
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                      Bảng Vàng DUPR Pickleball
+                    </h3>
+                  </div>
+                  <span className="text-xs text-slate-500 font-semibold">TP.HCM • T10</span>
+                </div>
+
+                {/* Leaderboard Rows */}
+                <div className="flex flex-col gap-1 pt-1">
+                  {topDuprPlayers.map(p => (
+                    <div 
+                      key={p.rank} 
+                      className={`flex items-center justify-between p-2.5 rounded-xl transition-colors ${
+                        p.rank === 1 
+                          ? 'bg-amber-100/60 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-500/30' 
+                          : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className={`w-6 h-6 rounded-full font-mono text-xs font-black flex items-center justify-center shrink-0 ${
+                          p.rank === 1 ? 'bg-amber-500 text-slate-950' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                        }`}>
+                          {p.rank}
+                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
+                            {p.name} {p.crown && '👑'}
+                          </span>
+                          <span className="text-[11px] text-slate-500 font-medium">{p.note}</span>
+                        </div>
+                      </div>
+                      <span className="font-mono font-black text-emerald-700 dark:text-emerald-400 text-sm">{p.dpr}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <a href="#" className="pt-2 text-center text-xs text-emerald-700 dark:text-emerald-400 font-bold hover:underline flex items-center justify-center gap-1">
+                  <span>Xem Top 100 VĐV Toàn Quốc</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+              {/* WIDGET 3: GUARANTEE & FAIRPLAY TRUST BADGES */}
+              <div className="p-5 rounded-2xl bg-slate-100/80 dark:bg-slate-900/60 shadow-xs border border-slate-200 dark:border-slate-800 flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-white text-sm font-bold">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                  <span>Bảo Chứng Giải Đấu VaoSan</span>
+                </div>
+                <div className="flex flex-col gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span><strong>100% Trọng tài</strong> có chứng chỉ liên đoàn và kiểm duyệt độc lập trước trận.</span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span><strong>Smart Bracket Algorithm:</strong> Bốc thăm minh bạch tự động, chống ghép cặp ưu tiên hạt giống.</span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span><strong>Ký quỹ giải thưởng an toàn:</strong> Tiền thưởng được ký gửi ký quỹ ngân hàng, giải ngân trong 24h.</span>
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <a href="#" className="text-xs text-slate-900 dark:text-white hover:text-emerald-600 font-bold flex items-center gap-1">
+                    <span>Đọc chi tiết Chính Sách FairPlay & Trọng Tài</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -684,10 +725,10 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
       {/* Modal Quick Registration */}
       {showRegModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-emerald-500/40 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-900 dark:text-white">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-900 dark:text-white">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
                 Đăng Ký Tham Gia Giải Đấu
               </h3>
               <button 
