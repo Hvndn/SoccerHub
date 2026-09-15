@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 
 import PitchDetail from "./PitchDetail";
+import SmartPaymentPass from "./SmartPaymentPass";
 
 interface PitchSearchProps {
   user?: any;
@@ -43,8 +44,18 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
   const [selectedTime, setSelectedTime] = useState("NIGHT");
   const [maxBudget, setMaxBudget] = useState(400000);
   const [selectedPitchForSlot, setSelectedPitchForSlot] = useState<any>(null);
+  const [checkoutBookingData, setCheckoutBookingData] = useState<{ pitch: any; slot: any } | null>(null);
   const [appliedVoucher, setAppliedVoucher] = useState(false);
   const [joinedMatch, setJoinedMatch] = useState<string | null>(null);
+
+  if (checkoutBookingData) {
+    return (
+      <SmartPaymentPass
+        bookingData={checkoutBookingData}
+        onBack={() => setCheckoutBookingData(null)}
+      />
+    );
+  }
 
   if (selectedPitchForSlot) {
     return (
@@ -53,7 +64,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
         onBack={() => setSelectedPitchForSlot(null)}
         onSelectSlot={(pitch, slot) => {
           setSelectedPitchForSlot(null);
-          onSelectSlot(pitch, slot);
+          setCheckoutBookingData({ pitch, slot });
         }}
       />
     );
