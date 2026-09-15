@@ -17,7 +17,8 @@ import {
   Star,
   Award,
   ChevronDown,
-  Sparkles
+  Sparkles,
+  Cpu
 } from "lucide-react";
 
 interface NavbarProps {
@@ -57,6 +58,7 @@ export default function Navbar({
     { id: "booking", label: "Khám phá & Đặt sân", icon: Calendar, badge: null },
     { id: "community", label: "Chợ Kèo Ghép Đội", icon: Users, badge: "Match" },
     { id: "tournaments", label: "Giải Đấu & BXH", icon: Trophy, badge: null },
+    { id: "organizer", label: "Quản Lý Giải Đấu Pro", icon: Cpu, badge: "PRO" },
     { id: "admin", label: "Lịch Hoạt Động & Chủ Sân", icon: ShieldCheck, badge: null }
   ];
 
