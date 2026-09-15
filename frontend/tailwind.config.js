@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,8 +10,8 @@ module.exports = {
     extend: {
       colors: {
         pitch: {
-          emerald: "#10b981", // Pitch Emerald (#10b981) - Primary Football Pitch Green
-          darkEmerald: "#059669", // Deep Emerald for hover
+          emerald: "#0b4f6c", // Primary Brand Color (#0b4f6c)
+          darkEmerald: "#07384d", // Darker shade for hover state
           lime: "#84cc16", // Electric Lime (#84cc16) - Highlight Accent
           navy: "#0f172a", // Dark Slate Background
           slate: "#1e293b",
