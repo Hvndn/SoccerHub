@@ -12,6 +12,7 @@ import CommunityElo from "@/components/CommunityElo";
 import PlayerDashboard from "@/components/PlayerDashboard";
 import AdminDashboard from "@/components/AdminDashboard";
 import ActivitySchedule from "@/components/ActivitySchedule";
+import MemberCardPortal from "@/components/MemberCardPortal";
 import GuestFeatureBanner from "@/components/GuestFeatureBanner";
 import { MapPin, Trophy, Users, ShieldCheck } from "lucide-react";
 import VietQRModal from "@/components/VietQRModal";
@@ -127,6 +128,14 @@ export default function Home() {
 
           {(activeTab === "admin" || activeTab === "my-activities") && (
             <ActivitySchedule 
+              onBackToHome={() => handleTabChange("booking")} 
+              onNavigateTab={handleTabChange}
+            />
+          )}
+
+          {activeTab === "membership" && (
+            <MemberCardPortal 
+              user={user}
               onBackToHome={() => handleTabChange("booking")} 
               onNavigateTab={handleTabChange}
             />
