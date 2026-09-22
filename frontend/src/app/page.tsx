@@ -96,7 +96,7 @@ export default function Home() {
       <RealtimeClockBar />
 
       {/* Main Content Body */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-10 lg:px-16 pt-3 sm:pt-4 pb-10 sm:pb-14 space-y-12 sm:space-y-16">
+      <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-10 lg:px-16 pt-2 sm:pt-4 pb-24 lg:pb-14 space-y-8 sm:space-y-16">
         <div key={activeTab} className="animate-fade-in-up">
           {activeTab === "booking" && (
             user ? (

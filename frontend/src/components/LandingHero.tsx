@@ -44,19 +44,19 @@ export default function LandingHero({ onOpenAuth }: LandingHeroProps) {
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.15]">
+          <h1 className="text-2xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.2]">
             Nền Tảng Đặt Sân <br className="hidden sm:block" />
             & Quản Lý Thể Thao <span className="text-[#0b4f6c] dark:text-sky-400">Thông Minh</span> Số 1
           </h1>
 
           {/* Subtitle */}
-          <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base font-medium leading-relaxed max-w-2xl">
+          <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-base font-medium leading-relaxed max-w-2xl">
             Kết nối hơn 450+ cụm sân bóng đá cỏ nhân tạo, cầu lông, pickleball, tự động hóa điều khiển IoT dàn đèn, AI ghép đội cân bằng Elo và tổ chức giải đấu chuyên nghiệp chuẩn VFF.
           </p>
 
           {/* Integrated Interactive Quick Search Box Widget */}
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-xl stadium-shadow space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-xl stadium-shadow space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
               {/* 1. Location Select */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
@@ -112,8 +112,8 @@ export default function LandingHero({ onOpenAuth }: LandingHeroProps) {
 
             {/* CTA Row */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <div className="flex items-center space-x-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                <CheckCircle2 className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
+              <div className="flex items-center space-x-1.5 text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
                 <span>Khóa slot tự động • Hoàn tiền nếu hủy do mưa ngập</span>
               </div>
 
@@ -128,45 +128,45 @@ export default function LandingHero({ onOpenAuth }: LandingHeroProps) {
           </div>
 
           {/* 4 Hero Proof Metrics */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-              <div className="text-2xl font-mono font-extrabold text-[#0b4f6c] dark:text-sky-400">450+</div>
-              <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">Cụm sân đối tác</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 pt-2">
+            <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+              <div className="text-xl sm:text-2xl font-mono font-extrabold text-[#0b4f6c] dark:text-sky-400">450+</div>
+              <div className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">Cụm sân đối tác</div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-              <div className="text-2xl font-mono font-extrabold text-slate-900 dark:text-white">120.000+</div>
-              <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">Cầu thủ năng động</div>
+            <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+              <div className="text-xl sm:text-2xl font-mono font-extrabold text-slate-900 dark:text-white">120.000+</div>
+              <div className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">Cầu thủ năng động</div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-              <div className="text-2xl font-mono font-extrabold text-[#0b4f6c] dark:text-sky-400">99.8%</div>
-              <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">Chống bùng VietQR</div>
+            <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+              <div className="text-xl sm:text-2xl font-mono font-extrabold text-[#0b4f6c] dark:text-sky-400">99.8%</div>
+              <div className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">Chống bùng VietQR</div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-              <div className="text-2xl font-mono font-extrabold text-amber-500">18ms</div>
-              <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">IoT Gateway phản hồi</div>
+            <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+              <div className="text-xl sm:text-2xl font-mono font-extrabold text-amber-500">18ms</div>
+              <div className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">IoT Gateway phản hồi</div>
             </div>
           </div>
         </div>
 
         {/* Right Column (5 Cols): Live Interactive Showcase Card */}
         <div className="lg:col-span-5 relative">
-          <div className="bg-slate-900 text-white rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-4 relative overflow-hidden">
+          <div className="bg-slate-900 text-white rounded-3xl p-4 sm:p-6 border border-slate-800 shadow-2xl space-y-4 relative overflow-hidden">
             {/* Status Ribbon */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center space-x-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                <span className="font-mono text-xs font-extrabold text-emerald-400 uppercase tracking-wider">CỤM SÂN HÔM NAY • REALTIME</span>
+                <span className="font-mono text-[11px] sm:text-xs font-extrabold text-emerald-400 uppercase tracking-wider">CỤM SÂN HÔM NAY • REALTIME</span>
               </div>
-              <span className="px-2.5 py-1 rounded-full bg-[#0b4f6c] text-white font-extrabold text-[10px] uppercase shadow-xs">
+              <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-[#0b4f6c] text-white font-extrabold text-[9px] sm:text-[10px] uppercase shadow-xs">
                 IoT Online
               </span>
             </div>
 
             {/* Pitch Preview Image Backdrop */}
-            <div className="relative h-44 rounded-2xl overflow-hidden border border-slate-800">
+            <div className="relative h-36 sm:h-44 rounded-2xl overflow-hidden border border-slate-800">
               <img
                 src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80"
                 alt="Live Pitch Preview"
@@ -175,10 +175,10 @@ export default function LandingHero({ onOpenAuth }: LandingHeroProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
               <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
                 <div>
-                  <h3 className="font-extrabold text-white text-base">Sân 7A • Cụm Chuyên Việt Q7</h3>
-                  <p className="text-[11px] text-slate-300 font-medium">452 Nguyễn Thị Thập, Tân Quy, Quận 7</p>
+                  <h3 className="font-extrabold text-white text-sm sm:text-base">Sân 7A • Cụm Chuyên Việt Q7</h3>
+                  <p className="text-[10px] sm:text-[11px] text-slate-300 font-medium">452 Nguyễn Thị Thập, Tân Quy, Quận 7</p>
                 </div>
-                <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold rounded">
+                <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] sm:text-[10px] font-extrabold rounded shrink-0">
                   Chuẩn FIFA 2026
                 </span>
               </div>
@@ -186,22 +186,22 @@ export default function LandingHero({ onOpenAuth }: LandingHeroProps) {
 
             {/* Slot Selection Interactive Ribbon */}
             <div className="space-y-2">
-              <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Ca thi đấu tối nay (Giờ Vàng):</span>
-              <div className="grid grid-cols-3 gap-2 font-mono text-xs">
-                <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-center opacity-60">
-                  <span className="block font-bold text-slate-400 text-xs">18:00 - 19:30</span>
-                  <span className="block text-[10px] font-bold text-rose-400">Hết slot</span>
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Ca thi đấu tối nay (Giờ Vàng):</span>
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs">
+                <div className="p-2 sm:p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-center opacity-60">
+                  <span className="block font-bold text-slate-400 text-[11px] sm:text-xs">18:00 - 19:30</span>
+                  <span className="block text-[9px] sm:text-[10px] font-bold text-rose-400">Hết slot</span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-[#0b4f6c]/40 border-2 border-[#0b4f6c] text-center shadow-md relative overflow-hidden">
-                  <span className="block font-bold text-sky-300 text-xs">19:30 - 21:00</span>
-                  <span className="block text-[10px] font-bold text-emerald-400">Trống • Giờ vàng</span>
+                <div className="p-2 sm:p-2.5 rounded-xl bg-[#0b4f6c]/40 border-2 border-[#0b4f6c] text-center shadow-md relative overflow-hidden">
+                  <span className="block font-bold text-sky-300 text-[11px] sm:text-xs">19:30 - 21:00</span>
+                  <span className="block text-[9px] sm:text-[10px] font-bold text-emerald-400">Trống • Giờ vàng</span>
                   <span className="absolute bottom-0 inset-x-0 h-1 bg-[#0b4f6c]" />
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-center">
-                  <span className="block font-bold text-slate-200 text-xs">21:00 - 22:30</span>
-                  <span className="block text-[10px] font-bold text-amber-400">Giảm 15%</span>
+                <div className="p-2 sm:p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-center">
+                  <span className="block font-bold text-slate-200 text-[11px] sm:text-xs">21:00 - 22:30</span>
+                  <span className="block text-[9px] sm:text-[10px] font-bold text-amber-400">Giảm 15%</span>
                 </div>
               </div>
             </div>
