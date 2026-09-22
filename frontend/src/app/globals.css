@@ -8,10 +8,14 @@
 * {
   transition-property: color, background-color, border-color, opacity, box-shadow, transform;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  transition-duration: 350ms;
+  transition-duration: 250ms;
 }
 
-/* --- DEFAULT LIGHT THEME --- */
+/* --- BASE STYLES --- */
+html {
+  color-scheme: light dark;
+}
+
 body {
   background-color: #f8fafc;
   color: #0f172a;
@@ -26,27 +30,27 @@ body.dark-theme {
   color: #f8fafc !important;
 }
 
-/* Standard Solid Panel Utilities - Flat Design (No Glassmorphism, No Gradients) */
+/* Standard Solid Panel Utilities - High Contrast & Crisp Borders */
 .glass-panel {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 html.dark .glass-panel,
 body.dark-theme .glass-panel {
   background-color: #0f172a !important;
   border: 1px solid #1e293b !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
 
 .glass-panel-emerald {
-  background-color: #f0f9ff;
-  border: 1px solid #bae6fd;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
 }
 html.dark .glass-panel-emerald,
 body.dark-theme .glass-panel-emerald {
-  background-color: #07384d !important;
-  border: 1px solid #0b4f6c !important;
+  background-color: #064e3b !important;
+  border: 1px solid #065f46 !important;
 }
 
 .stadium-shadow {
@@ -58,21 +62,24 @@ body.dark-theme .glass-panel-emerald {
   background-color: #e2e8f0;
   border: 1px solid #cbd5e1;
 }
+html.dark .auth-tab-track,
 body.dark-theme .auth-tab-track {
   background-color: #0f172a !important;
   border-color: #334155 !important;
 }
 
 .auth-tab-btn-inactive {
-  color: #334155;
+  color: #475569;
   font-weight: 700;
 }
 .auth-tab-btn-inactive:hover {
   color: #0f172a;
 }
+html.dark .auth-tab-btn-inactive,
 body.dark-theme .auth-tab-btn-inactive {
   color: #94a3b8 !important;
 }
+html.dark .auth-tab-btn-inactive:hover,
 body.dark-theme .auth-tab-btn-inactive:hover {
   color: #ffffff !important;
 }
@@ -81,17 +88,15 @@ body.dark-theme .auth-tab-btn-inactive:hover {
   color: #1e293b;
   font-weight: 700;
 }
+html.dark .auth-label,
 body.dark-theme .auth-label {
   color: #cbd5e1 !important;
 }
 
-/* Explicit Auth Role Card Styles (Outline Style, No Solid Fill) */
+/* Explicit Auth Role Card Styles */
 .auth-role-card {
-  background-color: transparent;
+  background-color: #ffffff;
   border: 2px solid #e2e8f0;
-  color: #64748b;
-}
-.auth-role-card * {
   color: #64748b;
 }
 .auth-role-card:hover {
@@ -99,42 +104,28 @@ body.dark-theme .auth-label {
   color: #0b4f6c;
   background-color: rgba(11, 79, 108, 0.04);
 }
-.auth-role-card:hover * {
-  color: #0b4f6c;
-}
 .auth-role-card-active {
   background-color: rgba(11, 79, 108, 0.06) !important;
   border: 2px solid #0b4f6c !important;
   color: #0b4f6c !important;
-  box-shadow: 0 0 0 1px #0b4f6c !important;
-}
-.auth-role-card-active * {
-  color: #0b4f6c !important;
 }
 
+html.dark .auth-role-card,
 body.dark-theme .auth-role-card {
-  background-color: transparent !important;
+  background-color: #0f172a !important;
   border: 2px solid #334155 !important;
   color: #94a3b8 !important;
 }
-body.dark-theme .auth-role-card * {
-  color: #94a3b8 !important;
-}
+html.dark .auth-role-card:hover,
 body.dark-theme .auth-role-card:hover {
   border-color: #38bdf8 !important;
   color: #38bdf8 !important;
   background-color: rgba(56, 189, 248, 0.05) !important;
 }
-body.dark-theme .auth-role-card:hover * {
-  color: #38bdf8 !important;
-}
+html.dark .auth-role-card-active,
 body.dark-theme .auth-role-card-active {
   background-color: rgba(56, 189, 248, 0.1) !important;
   border: 2px solid #38bdf8 !important;
-  color: #38bdf8 !important;
-  box-shadow: 0 0 0 1px #38bdf8 !important;
-}
-body.dark-theme .auth-role-card-active * {
   color: #38bdf8 !important;
 }
 
@@ -145,14 +136,6 @@ button.bg-emerald-500,
 button.bg-emerald-600,
 button.bg-emerald-700,
 .btn-emerald {
-  color: #ffffff !important;
-}
-button.bg-pitch-emerald *,
-button.bg-pitch-darkEmerald *,
-button.bg-emerald-500 *,
-button.bg-emerald-600 *,
-button.bg-emerald-700 *,
-.btn-emerald * {
   color: #ffffff !important;
 }
 
@@ -168,28 +151,19 @@ button.bg-emerald-700 *,
 }
 
 @keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(22px) scale(0.98); }
+  0% { opacity: 0; transform: translateY(18px) scale(0.99); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeInUp 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes modalPop {
-  0% { opacity: 0; transform: scale(0.92) translateY(16px); }
+  0% { opacity: 0; transform: scale(0.95) translateY(12px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .animate-modal-pop {
-  animation: modalPop 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes skeletonPulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-
-.animate-skeleton {
-  animation: skeletonPulse 1.5s ease-in-out infinite;
+  animation: modalPop 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

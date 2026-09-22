@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import LandingHero from "@/components/LandingHero";
 import LandingFeatures from "@/components/LandingFeatures";
@@ -15,6 +15,12 @@ import ActivitySchedule from "@/components/ActivitySchedule";
 import MemberCardPortal from "@/components/MemberCardPortal";
 import TournamentOrganizerPortal from "@/components/TournamentOrganizerPortal";
 import PlayerProfileConsole from "@/components/PlayerProfileConsole";
+import TeamClubManagement from "@/components/TeamClubManagement";
+import PostMatchUtilities from "@/components/PostMatchUtilities";
+import UrgentSlotMarketplace from "@/components/UrgentSlotMarketplace";
+import StadiumOwnerOnboarding from "@/components/StadiumOwnerOnboarding";
+import MultiSportArena from "@/components/MultiSportArena";
+import StadiumIoTConsole from "@/components/StadiumIoTConsole";
 import GuestFeatureBanner from "@/components/GuestFeatureBanner";
 import { MapPin, Trophy, Users, ShieldCheck } from "lucide-react";
 import VietQRModal from "@/components/VietQRModal";
@@ -39,7 +45,7 @@ export default function Home() {
     setActiveTab(newTab);
     setTimeout(() => {
       setIsTabChanging(false);
-    }, 550);
+    }, 400);
   };
 
   const handleSelectSlot = (pitch: any, slot: any) => {
@@ -58,7 +64,11 @@ export default function Home() {
 
   const handleLoginSuccess = (userData: any) => {
     setUser(userData);
-    handleTabChange("booking");
+    if (userData?.role === "OWNER") {
+      handleTabChange("owner-onboarding");
+    } else {
+      handleTabChange("booking");
+    }
   };
 
   const handleLogout = () => {
@@ -67,10 +77,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-pitch-emerald selection:text-white relative transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white relative transition-colors duration-300">
       {/* Top Page Progress Loading Bar */}
       {isTabChanging && (
-        <div className="fixed top-0 left-0 right-0 h-1 bg-pitch-emerald z-50 animate-top-loader stadium-shadow" />
+        <div className="fixed top-0 left-0 right-0 h-1 bg-[#0b4f6c] dark:bg-sky-400 z-50 animate-top-loader stadium-shadow" />
       )}
 
       {/* Top Navbar */}
@@ -82,10 +92,10 @@ export default function Home() {
         onLogout={handleLogout}
       />
 
-      {/* Real-time Clock Bar starting with "Hiện tại: ..." */}
+      {/* Real-time Clock Bar */}
       <RealtimeClockBar />
 
-      {/* Main Content Body with Keyframe Transition Container */}
+      {/* Main Content Body */}
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-10 lg:px-16 pt-3 sm:pt-4 pb-10 sm:pb-14 space-y-12 sm:space-y-16">
         <div key={activeTab} className="animate-fade-in-up">
           {activeTab === "booking" && (
@@ -103,6 +113,29 @@ export default function Home() {
                 />
               </div>
             )
+          )}
+
+          {activeTab === "owner-onboarding" && (
+            <StadiumOwnerOnboarding
+              onComplete={() => handleTabChange("admin")}
+              onBackToHome={() => handleTabChange("booking")}
+            />
+          )}
+
+          {activeTab === "multi-sport" && (
+            <MultiSportArena />
+          )}
+
+          {activeTab === "iot-console" && (
+            <StadiumIoTConsole />
+          )}
+
+          {activeTab === "urgent-resale" && (
+            <UrgentSlotMarketplace
+              onBackToHome={() => handleTabChange("booking")}
+              onNavigateTab={handleTabChange}
+              onSelectSlot={handleSelectSlot}
+            />
           )}
 
           {activeTab === "tournaments" && (
@@ -126,6 +159,20 @@ export default function Home() {
               )}
               <CommunityElo />
             </>
+          )}
+
+          {activeTab === "team-management" && (
+            <TeamClubManagement
+              onBackToHome={() => handleTabChange("booking")}
+              onNavigateTab={handleTabChange}
+            />
+          )}
+
+          {activeTab === "post-match" && (
+            <PostMatchUtilities
+              onBackToHome={() => handleTabChange("booking")}
+              onNavigateTab={handleTabChange}
+            />
           )}
 
           {(activeTab === "admin" || activeTab === "my-activities") && (
@@ -176,10 +223,10 @@ export default function Home() {
       />
 
       {/* Footer */}
-      <footer className="glass-panel border-t border-slate-200 dark:border-slate-800 py-6 mt-12">
+      <footer className="glass-panel border-t border-slate-200 dark:border-slate-800 py-6 mt-12 transition-colors duration-300">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-10 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1">
           <p>© 2026 <strong>VaoSan Multi-Sports Platform</strong>. Đồ Án Tốt Nghiệp: Xây dựng hệ thống quản lý sân Bóng Đá, Cầu Lông, Pickleball, Tennis và giải đấu đa thể thao AI.</p>
-          <p className="text-pitch-emerald font-semibold">Công nghệ: Spring Boot, PostGIS, Redis, Python FastAPI (Scikit-learn / Multi-Sport Elo), Next.js 14, VietQR & WebSockets.</p>
+          <p className="text-[#0b4f6c] dark:text-sky-400 font-semibold">Công nghệ: Spring Boot, PostGIS, Redis, Python FastAPI (Scikit-learn / Multi-Sport Elo), Next.js 14, VietQR & WebSockets.</p>
         </div>
       </footer>
     </div>

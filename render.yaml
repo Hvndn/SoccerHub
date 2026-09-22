@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: soccerhub-ai-service
+    env: python
+    rootDir: ai-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+
+  - type: web
+    name: soccerhub-backend-core
+    env: docker
+    rootDir: backend-core
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: SPRING_REDIS_HOST
+        sync: false
+      - key: SPRING_REDIS_PORT
+        sync: false

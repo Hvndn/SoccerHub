@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import TournamentBracket from './TournamentBracket';
 import { 
   Trophy, Award, Flame, Search, Filter, Calendar, MapPin, Users, ChevronRight, 
   PlayCircle, Zap, ArrowUpRight, ShieldCheck, CheckCircle2, UserCheck, PlusCircle,
@@ -357,8 +358,11 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             </button>
           </div>
 
-          {/* 6. MAIN 2-COLUMN WORKSPACE: 70% LEFT / 30% RIGHT */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* 6. MAIN WORKSPACE */}
+          {activeTab === 'bracket' ? (
+            <TournamentBracket />
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             {/* LEFT COLUMN (70% - Col span 8): TOURNAMENT CARDS & LIVE BRACKET */}
             <div className="lg:col-span-8 flex flex-col gap-6">
@@ -719,6 +723,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
             </div>
           </div>
+          )}
         </div>
       </div>
 
