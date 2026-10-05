@@ -44,14 +44,16 @@ export default function Home() {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authRole, setAuthRole] = useState<"PLAYER" | "OWNER" | "ORGANIZER">("PLAYER");
 
-  // Hỗ trợ chế độ mô phỏng 2 role song song qua URL (?role=OWNER&tab=admin hoặc ?role=PLAYER)
+  // Hỗ trợ chế độ 2 Role song song theo Cổng (Cổng 3000: Chủ Sân • Cổng 3001: Cầu Thủ) hoặc qua URL
   React.useEffect(() => {
     if (typeof window !== "undefined") {
+      const port = window.location.port;
       const params = new URLSearchParams(window.location.search);
       const urlTab = params.get("tab");
       const urlRole = params.get("role");
 
-      if (urlRole === "OWNER") {
+      // CỔNG 3000: MẶC ĐỊNH LÀ CHỦ SÂN (HỒ VĂN DIỆN - QUẢN LÝ CỤM SÂN & DOANH THU)
+      if (port === "3000" || urlRole === "OWNER") {
         setLocalUser({
           id: 999,
           name: "Hồ Văn Diện",
@@ -61,7 +63,9 @@ export default function Home() {
           phone: "0988 776 652"
         });
         setActiveTab(urlTab || "admin");
-      } else if (urlRole === "PLAYER") {
+      } 
+      // CỔNG 3001: MẶC ĐỊNH LÀ CẦU THỦ (CAO VIỆT AN - TÌM SÂN & ĐẶT CỌC VIETQR)
+      else if (port === "3001" || urlRole === "PLAYER") {
         setLocalUser({
           id: 1,
           name: "Cao Việt An",

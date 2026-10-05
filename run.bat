@@ -25,21 +25,24 @@ if %errorlevel% neq 0 (
     )
 )
 
-:: Tu dong giai phong cong 3000, 8080, 8000 neu con tien trinh Windows cu bi treo
+:: Tu dong giai phong cong 3000, 3001, 8080, 8000 neu con tien trinh Windows cu bi treo
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :3000 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :3001 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8080 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8000 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
 
-echo [INFO] Dang khoi chay tat ca 3 dich vu trong 1 CUA SO TERMINAL duy nhat:
-echo   - Backend Core  (Port 8080) : [BACKEND]    - Cyan
-echo   - AI Service    (Port 8000) : [AI-SERVICE] - Yellow
-echo   - Frontend      (Port 3000) : [FRONTEND]   - Magenta
+echo [INFO] Dang khoi chay he thong 2 ROLE SONG SONG trong 1 CUA SO TERMINAL:
+echo   - Backend Core  (Port 8080) : [BACKEND]     - Cyan
+echo   - AI Service    (Port 8000) : [AI-SERVICE]  - Yellow
+echo   - CHU SAN       (Port 3000) : [CHU-SAN-3000]- Magenta (Admin Dashboard, Matrix, Realtime Alerts)
+echo   - CAU THU       (Port 3001) : [CAU-THU-3001]- Green   (Booking, VietQR, Matchmaking)
 echo.
 echo [!] Nhan Ctrl+C de dung tat ca cac dich vu dong thoi.
 echo ========================================================
 echo.
 
-npx -y concurrently -k --names "BACKEND,AI-SERVICE,FRONTEND" --prefix-colors "cyan,yellow,magenta" "cd backend-core && mvn spring-boot:run" "cd ai-service && python main.py" "cd frontend && npm run dev"
+npx -y concurrently -k --names "BACKEND,AI,OWNER-3000,PLAYER-3001" --prefix-colors "cyan,yellow,magenta,green" "cd backend-core && mvn spring-boot:run" "cd ai-service && python main.py" "cd frontend && npx next dev -p 3000" "cd frontend && npx next dev -p 3001"
+
 
 
 
