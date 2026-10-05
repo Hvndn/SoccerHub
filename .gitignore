@@ -13,6 +13,7 @@ node_modules/
 out/
 build/
 dist/
+*.tsbuildinfo
 
 # Python & AI Service
 __pycache__/

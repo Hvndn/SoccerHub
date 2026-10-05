@@ -63,10 +63,10 @@ export default function UrgentSlotMarketplace({
       id: 2,
       tag: "LIVE BID - ĐẤU GIÁ",
       isAuction: true,
-      pitchName: "Cụm Pickleball Central D-Sport (Sân PB-02 VIP)",
-      location: "Quận 2, TP.HCM (Cách 3.2km)",
-      sport: "Pickleball Pro",
-      time: "18:00 - 20:00 (Tối Nay)",
+      pitchName: "Cụm Sân Bóng Đá Nam Sài Gòn (Sân 7 VIP)",
+      location: "Quận 7, TP.HCM (Cách 1.2km)",
+      sport: "Bóng Đá Sân 7",
+      time: "18:00 - 19:30 (Tối Nay)",
       timeLeft: "00:09:12",
       originalPrice: 450000,
       resalePrice: 280000,
@@ -74,23 +74,23 @@ export default function UrgentSlotMarketplace({
       totalBids: 9,
       discountPct: 38,
       reason: "Bận đi công tác đột xuất",
-      seller: "Nguyễn Minh Châu (@chau_pickle)",
+      seller: "Nguyễn Minh Châu (@chau_fc)",
       verified: true
     },
     {
       id: 3,
       tag: "PASS GẤP -35%",
       isAuction: false,
-      pitchName: "Sân Cầu Lông Sky Court (Sân 04 Thảm Yonex)",
+      pitchName: "Sân Futsal Trong Nhà Tân Bình (Sân A1 Gỗ)",
       location: "Bình Thạnh, TP.HCM (Cách 2.5km)",
-      sport: "Cầu Lông",
+      sport: "Futsal Trong Nhà",
       time: "20:00 - 21:30 (Tối Nay)",
       timeLeft: "00:35:10",
-      originalPrice: 200000,
-      resalePrice: 130000,
+      originalPrice: 300000,
+      resalePrice: 195000,
       discountPct: 35,
       reason: "Công ty đột xuất tăng ca đêm",
-      seller: "Phạm Quốc Bảo (@bao_badminton)",
+      seller: "Phạm Quốc Bảo (@bao_futsal)",
       verified: true
     },
     {
@@ -187,36 +187,36 @@ export default function UrgentSlotMarketplace({
               </button>
               <button
                 type="button"
-                onClick={() => setSelectedSport("bóng đá")}
+                onClick={() => setSelectedSport("bóng đá sân 7")}
                 className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
-                  selectedSport === "bóng đá"
+                  selectedSport === "bóng đá sân 7"
                     ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                ⚽ Bóng Đá 7/5
+                ⚽ Sân 7 Người
               </button>
               <button
                 type="button"
-                onClick={() => setSelectedSport("pickleball")}
+                onClick={() => setSelectedSport("bóng đá sân 5")}
                 className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
-                  selectedSport === "pickleball"
+                  selectedSport === "bóng đá sân 5"
                     ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                🏓 Pickleball Pro
+                ⚽ Sân 5 Người
               </button>
               <button
                 type="button"
-                onClick={() => setSelectedSport("cầu lông")}
+                onClick={() => setSelectedSport("futsal trong nhà")}
                 className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
-                  selectedSport === "cầu lông"
+                  selectedSport === "futsal trong nhà"
                     ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                🏸 Cầu Lông Yonex
+                👟 Futsal Trong Nhà
               </button>
             </div>
 

@@ -111,7 +111,7 @@ export default function SmartPaymentPass({
           <div className="flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400">
             <button onClick={onBack} className="hover:text-[#006c49] flex items-center space-x-1">
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Đặt Sân Pickleball</span>
+              <span>Đặt Sân Bóng Đá Phủi</span>
             </button>
             <ChevronRight className="w-3.5 h-3.5" />
             <span>{pitchName}</span>
@@ -395,8 +395,8 @@ export default function SmartPaymentPass({
                     </div>
                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40">
                       <span className="text-slate-400 block text-[10px]">Trình độ tương thích</span>
-                      <span className="font-extrabold text-[#304f00] dark:text-[#acf847] block">DUPR 3.0</span>
-                      <span className="text-slate-400 text-[11px]">Elo: 1,200 Rank C</span>
+                      <span className="font-extrabold text-[#006c49] dark:text-emerald-400 block">Elo 1,450</span>
+                      <span className="text-slate-400 text-[11px]">Rank Serie B Phủi</span>
                     </div>
                   </div>
                 </div>
@@ -423,9 +423,9 @@ export default function SmartPaymentPass({
                   <span>Cơ chế kích hoạt IoT Thông Minh</span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Quét mã này tại Barrier lối vào CLB D-Sport Oasis: Cửa barrier tự mở, chỉ dẫn điện tử dẫn vào sân PB-01.{" "}
+                  Quét mã này tại Barrier lối vào Cụm Sân Bóng Đá D-Sport Oasis: Cửa barrier tự mở, chỉ dẫn điện tử dẫn vào Sân 7A.{" "}
                   <strong className="text-slate-900 dark:text-white">
-                    Dàn đèn LED chuẩn thi đấu 500 Lux và máy phát bóng sẽ tự động bật lúc 19:25
+                    Dàn đèn LED cao áp chuẩn 500 Lux sẽ tự động bật lúc 19:25
                   </strong>{" "}
                   (trước giờ thi đấu 5 phút).
                 </p>
@@ -443,27 +443,27 @@ export default function SmartPaymentPass({
                       <span>AI Camera Highlight</span>
                     </div>
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
-                      Tự động ghi lại và cắt pha bóng đẹp chuẩn HD sau trận đấu.
+                      Tự động ghi lại và cắt pha bàn thắng đẹp chuẩn HD sau trận đấu.
                     </span>
                   </div>
 
                   <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-1">
                     <div className="flex items-center space-x-1.5 text-[#006c49] font-bold">
                       <Gift className="w-4 h-4 text-[#006c49]" />
-                      <span>Bóng & Nước Miễn Phí</span>
+                      <span>Bóng Đá & Nước Miễn Phí</span>
                     </div>
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
-                      Nhận 4 bóng Franklin X-40 + 2 chai Revive lạnh tại quầy check-in.
+                      Nhận 1 bóng Động Lực FIFA + 2 chai Revive lạnh tại quầy check-in.
                     </span>
                   </div>
 
                   <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-1">
-                    <div className="flex items-center space-x-1.5 text-[#304f00] dark:text-[#acf847] font-bold">
-                      <Users className="w-4 h-4 text-[#304f00] dark:text-[#acf847]" />
-                      <span>Kèo Mở (1/4 VĐV)</span>
+                    <div className="flex items-center space-x-1.5 text-emerald-500 font-bold">
+                      <Users className="w-4 h-4 text-emerald-500" />
+                      <span>Kèo Mở Ghép Đội</span>
                     </div>
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
-                      Đang mở ghép 1 tay vợt DUPR ~3.0 để đánh đôi match giao lưu.
+                      Đang mở ghép 2 cầu thủ Elo 1,400+ đá Sân 7 giao hữu.
                     </span>
                   </div>
                 </div>

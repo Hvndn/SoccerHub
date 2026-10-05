@@ -5,10 +5,10 @@ spring:
   application:
     name: soccerhub-backend-core
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/soccerhub_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3307/soccerhub_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${SPRING_DATASOURCE_USERNAME:soccerhub_user}
     password: ${SPRING_DATASOURCE_PASSWORD:soccerhub_password}
-    driver-class-name: org.postgresql.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,7 +16,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.MySQLDialect
   data:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}

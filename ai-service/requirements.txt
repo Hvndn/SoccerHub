@@ -4,4 +4,7 @@ pydantic>=2.0.0
 scikit-learn
 numpy
 pandas
+pymysql
+cryptography
+
 

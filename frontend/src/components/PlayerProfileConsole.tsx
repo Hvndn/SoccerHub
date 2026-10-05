@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   User,
   ShieldCheck,
@@ -25,27 +25,144 @@ import {
   Sparkles,
   RefreshCw,
   Dumbbell,
-  Check
+  Check,
+  X,
+  Phone,
+  Mail,
+  Briefcase,
+  Target
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { UserProfile } from "@/lib/authService";
 
 interface PlayerProfileConsoleProps {
+  user?: UserProfile | null;
+  onOpenAuth?: (mode: "login" | "register") => void;
   onBackToHome?: () => void;
   onNavigateTab?: (tab: string) => void;
 }
 
 export default function PlayerProfileConsole({
+  user: propUser,
+  onOpenAuth,
   onBackToHome,
   onNavigateTab
 }: PlayerProfileConsoleProps) {
+  const { user: contextUser, updateProfile } = useAuth();
+  const activeUser = propUser !== undefined ? propUser : contextUser;
+
   // Active Sport Tab State
   const [activeSport, setActiveSport] = useState<"pickleball" | "football" | "badminton" | "tennis">("pickleball");
   
   // History Filter State
   const [historyFilter, setHistoryFilter] = useState<"all" | "win" | "loss" | "ai_video">("all");
 
+  // Edit Profile Modal State
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState("");
+  const [saveErrorMsg, setSaveErrorMsg] = useState("");
+
+  // Form State
+  const [editForm, setEditForm] = useState({
+    fullName: "",
+    phone: "",
+    position: "",
+    area: "",
+    favoriteSport: "",
+    level: "",
+    avatar: "",
+  });
+
+  useEffect(() => {
+    if (activeUser) {
+      setEditForm({
+        fullName: activeUser.fullName || "",
+        phone: activeUser.phone || "",
+        position: activeUser.position || "Cầu Thủ Pro",
+        area: activeUser.area || "TP. Hồ Chí Minh",
+        favoriteSport: activeUser.favoriteSport || "football",
+        level: activeUser.level || "Nghiệp dư",
+        avatar: activeUser.avatar || "",
+      });
+    }
+  }, [activeUser]);
+
+  const handleOpenEdit = () => {
+    if (!activeUser) {
+      if (onOpenAuth) {
+        onOpenAuth("login");
+      } else {
+        alert("Vui lòng đăng nhập để chỉnh sửa thông tin hồ sơ của bạn!");
+      }
+      return;
+    }
+    setSaveSuccessMsg("");
+    setSaveErrorMsg("");
+    setIsEditOpen(true);
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setSaveSuccessMsg("");
+    setSaveErrorMsg("");
+    try {
+      await updateProfile(editForm);
+      setSaveSuccessMsg("Cập nhật thông tin hồ sơ cá nhân thành công!");
+      setTimeout(() => {
+        setIsEditOpen(false);
+        setSaveSuccessMsg("");
+      }, 1200);
+    } catch (err: any) {
+      setSaveErrorMsg(err?.message || "Cập nhật thất bại. Vui lòng kiểm tra lại kết nối.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Helper values
+  const displayFullName = activeUser?.fullName || "Nguyễn Văn An";
+  const displayEmail = activeUser?.email || "an.nguyen@soccerhub.vn";
+  const displayPhone = activeUser?.phone || "0914 578 037";
+  const displayRole = activeUser?.role === "OWNER" ? "Chủ Sân" : activeUser?.role === "ORGANIZER" ? "Ban Tổ Chức" : "Vận Động Viên Pro";
+  const displayElo = activeUser?.eloRating || 1450;
+  const displayPosition = activeUser?.position || "Tiền vệ trung tâm (CM)";
+  const displayArea = activeUser?.area || "TP. Hồ Chí Minh (Q.7, Nhà Bè)";
+  const displayLevel = activeUser?.level || "Nghiệp dư";
+  const displayAvatar = activeUser?.avatar;
+
+  const isAvatarUrl = displayAvatar && (displayAvatar.startsWith("http://") || displayAvatar.startsWith("https://") || displayAvatar.startsWith("data:"));
+  const initials = activeUser?.fullName
+    ? activeUser.fullName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
+    : "VA";
+
   return (
     <div className="space-y-8 animate-fade-in pb-16">
       
+      {/* GUEST BANNER NOTIFICATION */}
+      {!activeUser && (
+        <div className="bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
+            <div>
+              <p className="text-xs font-bold">
+                Bạn đang xem Hồ Sơ Cá Nhân dưới dạng bản mẫu Demo.
+              </p>
+              <p className="text-[11px] opacity-90">
+                Đăng nhập hoặc Đăng ký tài khoản để xem chính xác thông tin, số điện thoại, chỉ số Elo và cập nhật hồ sơ cá nhân thực của bạn!
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onOpenAuth?.("login")}
+            className="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-black text-xs hover:bg-amber-400 transition-all shrink-0 shadow-md active:scale-95"
+          >
+            Đăng Nhập Ngay
+          </button>
+        </div>
+      )}
+
       {/* ATHLETE PROFILE HERO BANNER */}
       <section className="relative w-full rounded-3xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl">
         {/* Dynamic Athletic Mesh Cover Graphic */}
@@ -75,11 +192,17 @@ export default function PlayerProfileConsole({
             {/* Avatar + Info */}
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
               <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-2xl p-1 bg-white dark:bg-slate-900 shadow-2xl shrink-0">
-                <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80"
-                  alt="Nguyễn Văn An Avatar"
-                  className="w-full h-full object-cover rounded-xl"
-                />
+                {isAvatarUrl ? (
+                  <img
+                    src={displayAvatar}
+                    alt={`${displayFullName} Avatar`}
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-xl bg-gradient-to-br from-[#0b4f6c] to-emerald-600 flex items-center justify-center text-white text-3xl sm:text-4xl font-black tracking-wider shadow-inner">
+                    {displayAvatar || initials}
+                  </div>
+                )}
                 <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-slate-950 p-1.5 rounded-full shadow-lg border-2 border-white dark:border-slate-900" title="Đã xác thực danh tính VĐV">
                   <ShieldCheck className="w-5 h-5 fill-emerald-400 stroke-slate-950" />
                 </div>
@@ -88,45 +211,52 @@ export default function PlayerProfileConsole({
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-                    Nguyễn Văn An
+                    {displayFullName}
                   </h1>
                   <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-extrabold uppercase tracking-wider flex items-center gap-1 border border-amber-500/30">
-                    <Award className="w-3.5 h-3.5 text-amber-500" /> Gold Member
+                    <Award className="w-3.5 h-3.5 text-amber-500" /> {displayRole}
                   </span>
                   <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono text-xs font-bold">
-                    #VS-8899
+                    #VS-{activeUser?.id ? activeUser.id.toString().padStart(4, '0') : "8899"}
                   </span>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  <span className="font-bold text-slate-800 dark:text-slate-200">@An_Flash98</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{displayEmail}</span>
                   <span>•</span>
-                  <span>26 tuổi</span>
+                  <span>{displayPhone}</span>
                   <span>•</span>
-                  <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
-                    <MapPin className="w-3.5 h-3.5 text-rose-500" /> TP. Hồ Chí Minh (Q.7, Nhà Bè)
-                  </span>
+                  <span>Elo Rating: <strong className="text-emerald-600 dark:text-emerald-400 font-mono font-bold">{displayElo}</strong></span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed font-medium pt-1">
-                  Đam mê Pickleball & Bóng đá 7 người. Đánh cọ xát giao lưu cuối tuần và giải phong trào. Tinh thần FairPlay 100%.
-                </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400 font-medium pt-0.5">
+                  <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-semibold">
+                    <MapPin className="w-3.5 h-3.5 text-rose-500" /> {displayArea}
+                  </span>
+                  <span>•</span>
+                  <span className="text-slate-600 dark:text-slate-300">Vị trí: <strong>{displayPosition}</strong></span>
+                  <span>•</span>
+                  <span className="text-slate-600 dark:text-slate-300">Trình độ: <strong>{displayLevel}</strong></span>
+                </div>
               </div>
             </div>
 
             {/* Quick Action Buttons */}
             <div className="flex flex-wrap items-center gap-3">
               <button
-                onClick={() => alert("Đã mở modal Chỉnh sửa thông tin Vận động viên!")}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center space-x-2 active:scale-95"
+                onClick={handleOpenEdit}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center space-x-2 active:scale-95 border border-slate-200 dark:border-slate-700"
               >
                 <Edit className="w-4 h-4 text-sky-500" />
                 <span>Chỉnh Sửa Hồ Sơ</span>
               </button>
 
               <button
-                onClick={() => alert("Đã sao chép liên kết trang cá nhân VaoSan!")}
-                className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-all active:scale-95"
+                onClick={() => {
+                  navigator.clipboard?.writeText(window.location.href);
+                  alert("Đã sao chép liên kết trang cá nhân SoccerHub!");
+                }}
+                className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-all active:scale-95 border border-slate-200 dark:border-slate-700"
                 title="Chia sẻ trang cá nhân"
               >
                 <Share2 className="w-4 h-4" />
@@ -209,7 +339,7 @@ export default function PlayerProfileConsole({
                   <Award className="w-4 h-4" /> 4 Huy Chương
                 </span>
               </div>
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1">Cập nhật hệ thống VaoSan Pro</span>
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1">Cập nhật hệ thống SoccerHub Pro</span>
             </div>
           </div>
         </div>
@@ -229,7 +359,7 @@ export default function PlayerProfileConsole({
                   Đánh Giá Năng Lực & Chỉ Số Kỹ Năng
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Hệ thống phân hạng tự động qua thuật toán DUPR & Elo VaoSan 4.0
+                  Hệ thống phân hạng tự động qua thuật toán DUPR & Elo SoccerHub 4.0
                 </p>
               </div>
 
@@ -256,36 +386,36 @@ export default function PlayerProfileConsole({
               </div>
             </div>
 
-            {/* Active Sport Scorecards (Pickleball & Football) */}
+            {/* Active Sport Scorecards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
-              {/* Pickleball DUPR Card */}
+              {/* Football Elo Card */}
               <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black flex items-center justify-center text-sm border border-emerald-500/30">
-                      PB
+                      FB
                     </div>
                     <div>
-                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Official DUPR</span>
-                      <p className="text-2xl font-black font-mono text-slate-900 dark:text-white">3.05</p>
+                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">OFFICIAL FOOTBALL ELO</span>
+                      <p className="text-2xl font-black font-mono text-slate-900 dark:text-white">1,450</p>
                     </div>
                   </div>
 
                   <div className="text-right">
                     <span className="px-2.5 py-1 rounded bg-emerald-500 text-slate-950 text-[10px] font-black uppercase">
-                      Top 15% Active
+                      Top 10% Phủi Serie B
                     </span>
-                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">#142 Quận 7</p>
+                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">#42 {displayArea.split(',')[0]}</p>
                   </div>
                 </div>
 
-                {/* DUPR Sparkline Chart */}
+                {/* Elo Sparkline Chart */}
                 <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
                   <div className="flex items-center justify-between text-xs font-bold">
                     <span className="text-slate-500 dark:text-slate-400">Tăng trưởng 6 tháng:</span>
                     <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <TrendingUp className="w-3.5 h-3.5" /> 2.65 → 3.05 (+0.40)
+                      <TrendingUp className="w-3.5 h-3.5" /> 1,200 → 1,450 (+250 Elo)
                     </span>
                   </div>
                   
@@ -317,7 +447,7 @@ export default function PlayerProfileConsole({
                     </div>
                     <div>
                       <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Elo Phủi Sài Gòn</span>
-                      <p className="text-2xl font-black font-mono text-slate-900 dark:text-white">1,215</p>
+                      <p className="text-2xl font-black font-mono text-slate-900 dark:text-white">{displayElo}</p>
                     </div>
                   </div>
 
@@ -332,7 +462,7 @@ export default function PlayerProfileConsole({
                 <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2 text-xs font-medium">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500 dark:text-slate-400">Vị trí sở trường:</span>
-                    <span className="font-bold text-slate-900 dark:text-white">Tiền vệ trung tâm (CM)</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{displayPosition}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500 dark:text-slate-400">Số trận giải phủi:</span>
@@ -461,7 +591,7 @@ export default function PlayerProfileConsole({
                         VS
                       </div>
                       <div className="truncate">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">Nguyễn Văn An / Tuấn Lê</p>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{displayFullName} / Tuấn Lê</p>
                         <span className="text-[10px] text-slate-400 font-semibold">Seed #1 (DUPR 3.05 + 3.10)</span>
                       </div>
                     </div>
@@ -523,7 +653,7 @@ export default function PlayerProfileConsole({
                       </div>
                       <div className="truncate">
                         <p className="text-xs font-bold text-slate-900 dark:text-white truncate">FC Sài Gòn Warriors (Home)</p>
-                        <span className="text-[10px] text-slate-400 font-semibold">Nguyễn Văn An đá trọn 60' (#10 CM)</span>
+                        <span className="text-[10px] text-slate-400 font-semibold">{displayFullName} đá trọn 60' (#{activeUser?.id || 10} {displayPosition})</span>
                       </div>
                     </div>
                     <span className="font-mono text-2xl font-black text-sky-500 px-2">4</span>
@@ -565,7 +695,7 @@ export default function PlayerProfileConsole({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {[
-                { title: "Quán Quân VaoSan Summer Cup 2024", desc: "Vô địch bảng Đôi Nam DUPR < 3.25", icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10" },
+                { title: "Quán Quân SoccerHub Summer Cup 2024", desc: "Vô địch bảng Đôi Nam DUPR < 3.25", icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10" },
                 { title: "Vô Địch Sài Gòn Phủi Open Serie B", desc: "Cùng FC Sài Gòn Warriors nâng cúp sân 7", icon: Award, color: "text-emerald-500", bg: "bg-emerald-500/10" },
                 { title: "Chiến Binh Bất Bại", desc: "Đạt chuỗi 5 trận toàn thắng liên tiếp", icon: Flame, color: "text-rose-500", bg: "bg-rose-500/10" },
                 { title: "Đại Sứ FairPlay 100%", desc: "Không bao giờ bùng kèo, đúng giờ 35+ trận", icon: ShieldCheck, color: "text-sky-500", bg: "bg-sky-500/10" },
@@ -678,6 +808,195 @@ export default function PlayerProfileConsole({
         </div>
 
       </div>
+
+      {/* EDIT PROFILE MODAL */}
+      {isEditOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 overflow-y-auto max-h-[90vh]">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-500">
+                  <Edit className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
+                    Chỉnh Sửa Hồ Sơ Cá Nhân
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    Cập nhật thông tin thực của tài khoản SoccerHub
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEditOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Success & Error Alerts */}
+            {saveSuccessMsg && (
+              <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-2">
+                <Check className="w-4 h-4 shrink-0" />
+                <span>{saveSuccessMsg}</span>
+              </div>
+            )}
+
+            {saveErrorMsg && (
+              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center gap-2">
+                <X className="w-4 h-4 shrink-0" />
+                <span>{saveErrorMsg}</span>
+              </div>
+            )}
+
+            {/* Form Fields */}
+            <form onSubmit={handleSaveProfile} className="space-y-4 text-xs font-medium">
+              
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-sky-500" />
+                  Họ và Tên
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.fullName}
+                  onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                  placeholder="Ví dụ: Nguyễn Văn An"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-sky-500 transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                    Số Điện Thoại
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                    placeholder="Ví dụ: 0914 578 037"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-emerald-500 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
+                    <Briefcase className="w-3.5 h-3.5 text-amber-500" />
+                    Vị Trí Thi Đấu / Vai Trò
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.position}
+                    onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
+                    placeholder="Ví dụ: Tiền vệ trung tâm (CM)"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-amber-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                  Khu Vực Hoạt Động / TP
+                </label>
+                <input
+                  type="text"
+                  value={editForm.area}
+                  onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
+                  placeholder="Ví dụ: TP. Hồ Chí Minh (Q.7, Nhà Bè)"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-rose-500 transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
+                    <Target className="w-3.5 h-3.5 text-purple-500" />
+                    Môn Thể Thao Yêu Thích
+                  </label>
+                  <select
+                    value={editForm.favoriteSport}
+                    onChange={(e) => setEditForm({ ...editForm, favoriteSport: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-purple-500 transition-all"
+                  >
+                    <option value="football">Bóng Đá</option>
+                    <option value="pickleball">Pickleball</option>
+                    <option value="badminton">Cầu Lông</option>
+                    <option value="tennis">Tennis</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
+                    <Award className="w-3.5 h-3.5 text-sky-500" />
+                    Trình Độ
+                  </label>
+                  <select
+                    value={editForm.level}
+                    onChange={(e) => setEditForm({ ...editForm, level: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-sky-500 transition-all"
+                  >
+                    <option value="Mới chơi">Mới chơi</option>
+                    <option value="Nghiệp dư">Nghiệp dư</option>
+                    <option value="Bán chuyên">Bán chuyên</option>
+                    <option value="Chuyên nghiệp">Chuyên nghiệp</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  Đường dẫn Ảnh Đại Diện (Avatar URL)
+                </label>
+                <input
+                  type="text"
+                  value={editForm.avatar}
+                  onChange={(e) => setEditForm({ ...editForm, avatar: e.target.value })}
+                  placeholder="Dán URL ảnh hoặc để trống để tạo avatar tự động"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-amber-500 transition-all"
+                />
+              </div>
+
+              {/* Submit / Cancel Buttons */}
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsEditOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold transition-all"
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 flex items-center space-x-2"
+                >
+                  {isSaving ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Đang Lưu...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Lưu Thay Đổi</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

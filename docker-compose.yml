@@ -1,19 +1,20 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgis/postgis:16-3.4
-    container_name: soccerhub-postgres
+  mysql:
+    image: mysql:8.0
+    container_name: soccerhub-mysql
     environment:
-      POSTGRES_DB: soccerhub_db
-      POSTGRES_USER: soccerhub_user
-      POSTGRES_PASSWORD: soccerhub_password
+      MYSQL_DATABASE: soccerhub_db
+      MYSQL_USER: soccerhub_user
+      MYSQL_PASSWORD: soccerhub_password
+      MYSQL_ROOT_PASSWORD: soccerhub_root_password
     ports:
-      - "5432:5432"
+      - "3307:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U soccerhub_user -d soccerhub_db"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -38,9 +39,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://soccerhub_user:soccerhub_password@postgres:5432/soccerhub_db
+      - DATABASE_URL=mysql+pymysql://soccerhub_user:soccerhub_password@mysql:3306/soccerhub_db
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
 
   backend-core:
@@ -50,14 +51,14 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/soccerhub_db
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/soccerhub_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=soccerhub_user
       - SPRING_DATASOURCE_PASSWORD=soccerhub_password
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - AI_SERVICE_URL=http://ai-service:8000
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -75,5 +76,6 @@ services:
       - backend-core
 
 volumes:
-  postgres_data:
+  mysql_data:
   redis_data:
+

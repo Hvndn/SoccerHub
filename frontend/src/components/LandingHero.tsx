@@ -175,8 +175,8 @@ export default function LandingHero({ onOpenAuth }: LandingHeroProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
               <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
                 <div>
-                  <h3 className="font-extrabold text-white text-sm sm:text-base">Sân 7A • Cụm Chuyên Việt Q7</h3>
-                  <p className="text-[10px] sm:text-[11px] text-slate-300 font-medium">452 Nguyễn Thị Thập, Tân Quy, Quận 7</p>
+                  <h3 className="font-extrabold text-white text-sm sm:text-base">Sân 7A • Cụm D-Sport Oasis Q7</h3>
+                  <p className="text-[10px] sm:text-[11px] text-slate-300 font-medium">154 Nguyễn Lương Bằng, Tân Phú, Quận 7</p>
                 </div>
                 <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] sm:text-[10px] font-extrabold rounded shrink-0">
                   Chuẩn FIFA 2026

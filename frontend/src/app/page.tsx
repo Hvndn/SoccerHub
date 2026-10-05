@@ -26,10 +26,14 @@ import { MapPin, Trophy, Users, ShieldCheck } from "lucide-react";
 import VietQRModal from "@/components/VietQRModal";
 import AuthModal from "@/components/AuthModal";
 import RealtimeClockBar from "@/components/RealtimeClockBar";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("booking");
-  const [user, setUser] = useState<any | null>(null);
+  const { user: authUser, logout: authLogout } = useAuth();
+  const [localUser, setLocalUser] = useState<any | null>(null);
+
+  const currentUser = authUser || localUser;
 
   // Transition & Loading States
   const [isTabChanging, setIsTabChanging] = useState(false);
@@ -38,6 +42,7 @@ export default function Home() {
   const [bookingModalData, setBookingModalData] = useState<{ pitch: any; slot: any } | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authRole, setAuthRole] = useState<"PLAYER" | "OWNER" | "ORGANIZER">("PLAYER");
 
   const handleTabChange = (newTab: string) => {
     if (newTab === activeTab) return;
@@ -49,30 +54,40 @@ export default function Home() {
   };
 
   const handleSelectSlot = (pitch: any, slot: any) => {
-    if (!user) {
+    if (!currentUser) {
       setAuthMode("login");
+      setAuthRole("PLAYER");
       setIsAuthOpen(true);
       return;
     }
     setBookingModalData({ pitch, slot });
   };
 
-  const handleOpenAuth = (mode: "login" | "register") => {
+  const handleOpenAuth = (
+    mode: "login" | "register",
+    role: "PLAYER" | "OWNER" | "ORGANIZER" = "PLAYER"
+  ) => {
     setAuthMode(mode);
+    setAuthRole(role);
     setIsAuthOpen(true);
   };
 
   const handleLoginSuccess = (userData: any) => {
-    setUser(userData);
+    setLocalUser(userData);
     if (userData?.role === "OWNER") {
-      handleTabChange("owner-onboarding");
+      if (userData?.isNewOwner) {
+        handleTabChange("owner-onboarding");
+      } else {
+        handleTabChange("admin");
+      }
     } else {
       handleTabChange("booking");
     }
   };
 
   const handleLogout = () => {
-    setUser(null);
+    authLogout();
+    setLocalUser(null);
     handleTabChange("booking");
   };
 
@@ -87,7 +102,7 @@ export default function Home() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={handleTabChange}
-        user={user}
+        user={currentUser}
         onOpenAuth={handleOpenAuth}
         onLogout={handleLogout}
       />
@@ -96,12 +111,12 @@ export default function Home() {
       <RealtimeClockBar />
 
       {/* Main Content Body */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-10 lg:px-16 pt-2 sm:pt-4 pb-24 lg:pb-14 space-y-8 sm:space-y-16">
+      <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] pt-4 pb-24 lg:pb-14 space-y-8 sm:space-y-16">
         <div key={activeTab} className="animate-fade-in-up">
           {activeTab === "booking" && (
-            user ? (
+            currentUser ? (
               <PlayerDashboard
-                user={user}
+                user={currentUser}
                 onNavigateTab={handleTabChange}
                 onSelectSlot={handleSelectSlot}
               />
@@ -117,7 +132,12 @@ export default function Home() {
 
           {activeTab === "owner-onboarding" && (
             <StadiumOwnerOnboarding
-              onComplete={() => handleTabChange("admin")}
+              onComplete={() => {
+                if (currentUser) {
+                  setLocalUser((prev: any) => ({ ...prev, isNewOwner: false }));
+                }
+                handleTabChange("admin");
+              }}
               onBackToHome={() => handleTabChange("booking")}
             />
           )}
@@ -144,7 +164,7 @@ export default function Home() {
 
           {activeTab === "community" && (
             <>
-              {!user && (
+              {!currentUser && (
                 <GuestFeatureBanner
                   title="Cộng Đồng Cầu Thủ & Hệ Thống Rating Elo"
                   description="Tham gia cộng đồng thể thao VaoSan. Ghép trận ngẫu nhiên (Matchmaking) tìm đối thủ phù hợp trình độ và theo dõi chỉ số Elo thăng hạng của bản thân."
@@ -175,7 +195,14 @@ export default function Home() {
             />
           )}
 
-          {(activeTab === "admin" || activeTab === "my-activities") && (
+          {activeTab === "admin" && (
+            <AdminDashboard 
+              onBackToHome={() => handleTabChange("booking")} 
+              onNavigateTab={handleTabChange}
+            />
+          )}
+
+          {(activeTab === "my-activities" || activeTab === "schedule") && (
             <ActivitySchedule 
               onBackToHome={() => handleTabChange("booking")} 
               onNavigateTab={handleTabChange}
@@ -184,6 +211,8 @@ export default function Home() {
 
           {activeTab === "profile" && (
             <PlayerProfileConsole 
+              user={currentUser}
+              onOpenAuth={handleOpenAuth}
               onBackToHome={() => handleTabChange("booking")} 
               onNavigateTab={handleTabChange}
             />
@@ -198,7 +227,7 @@ export default function Home() {
 
           {activeTab === "membership" && (
             <MemberCardPortal 
-              user={user}
+              user={currentUser}
               onBackToHome={() => handleTabChange("booking")} 
               onNavigateTab={handleTabChange}
             />
@@ -218,13 +247,14 @@ export default function Home() {
       <AuthModal
         isOpen={isAuthOpen}
         initialMode={authMode}
+        initialRole={authRole}
         onClose={() => setIsAuthOpen(false)}
         onLoginSuccess={handleLoginSuccess}
       />
 
       {/* Footer */}
       <footer className="glass-panel border-t border-slate-200 dark:border-slate-800 py-6 mt-12 transition-colors duration-300">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-10 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1">
+        <div className="w-full max-w-full mx-auto px-3 sm:px-6 lg:px-10 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1">
           <p>© 2026 <strong>VaoSan Multi-Sports Platform</strong>. Đồ Án Tốt Nghiệp: Xây dựng hệ thống quản lý sân Bóng Đá, Cầu Lông, Pickleball, Tennis và giải đấu đa thể thao AI.</p>
           <p className="text-[#0b4f6c] dark:text-sky-400 font-semibold">Công nghệ: Spring Boot, PostGIS, Redis, Python FastAPI (Scikit-learn / Multi-Sport Elo), Next.js 14, VietQR & WebSockets.</p>
         </div>

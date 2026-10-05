@@ -48,7 +48,7 @@ export default function MatchmakingMarketplace({
   const [userDepositBalance, setUserDepositBalance] = useState(200000);
   const [joinedMatches, setJoinedMatches] = useState<string[]>([]);
 
-  const userName = user?.name || "Nguyễn Văn An";
+  const userName = user?.fullName || user?.name || "Nguyễn Văn An";
   const userElo = user?.eloRating || 1200;
   const userDupr = "3.0";
 

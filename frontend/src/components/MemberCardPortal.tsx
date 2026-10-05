@@ -17,7 +17,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
 }) => {
   const [copiedCode, setCopiedCode] = useState(false);
 
-  const userName = user?.name || "Nguyễn Văn An";
+  const userName = user?.fullName || user?.name || "Nguyễn Văn An";
   const userElo = user?.eloRating || 1200;
 
   const handleCopyCode = () => {

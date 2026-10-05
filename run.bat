@@ -1,0 +1,40 @@
+@echo off
+chcp 65001 > nul
+title Kick-ON SoccerHub - Single Terminal Runner
+
+echo ========================================================
+echo   SOCCERHUB [KICK-ON] - SINGLE TERMINAL RUNNER (NO DOCKER)
+echo ========================================================
+echo.
+
+:: Stop conflicting Docker app containers if running, while keeping/starting Postgres and Redis
+docker info >nul 2>&1
+if %errorlevel% equ 0 (
+    echo [INFO] Giai phong cong 3000, 8080, 8000 tu Docker va khoi chay MySQL & Redis...
+    docker stop soccerhub-frontend soccerhub-backend-core soccerhub-ai-service soccerhub-postgres >nul 2>&1
+    docker compose up -d mysql redis >nul 2>&1
+)
+
+:: Auto detect Maven in PATH or set user fallback path
+where mvn >nul 2>&1
+if %errorlevel% neq 0 (
+    if exist "C:\Users\LAPTOP AK\Downloads\Downloads\apache-maven-3.9.9\bin" (
+        set "PATH=%PATH%;C:\Users\LAPTOP AK\Downloads\Downloads\apache-maven-3.9.9\bin"
+    ) else if exist "%USERPROFILE%\.m2\wrapper\dists\apache-maven-3.9.15\0226a00282e400185496f3b60ec5a3f029cbdc6893912937d4876d57695224e1\bin" (
+        set "PATH=%PATH%;%USERPROFILE%\.m2\wrapper\dists\apache-maven-3.9.15\0226a00282e400185496f3b60ec5a3f029cbdc6893912937d4876d57695224e1\bin"
+    )
+)
+
+echo [INFO] Dang khoi chay tat ca 3 dich vu trong 1 CUA SO TERMINAL duy nhat:
+echo   - Backend Core  (Port 8080) : [BACKEND]    - Cyan
+echo   - AI Service    (Port 8000) : [AI-SERVICE] - Yellow
+echo   - Frontend      (Port 3000) : [FRONTEND]   - Magenta
+echo.
+echo [!] Nhan Ctrl+C de dung tat ca cac dich vu dong thoi.
+echo ========================================================
+echo.
+
+npx -y concurrently -k --names "BACKEND,AI-SERVICE,FRONTEND" --prefix-colors "cyan,yellow,magenta" "cd backend-core && mvn spring-boot:run" "cd ai-service && python main.py" "cd frontend && npm run dev"
+
+
+

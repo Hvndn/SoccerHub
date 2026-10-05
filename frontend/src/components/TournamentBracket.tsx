@@ -24,15 +24,15 @@ import {
 } from "lucide-react";
 
 export default function TournamentBracket() {
-  const [selectedSport, setSelectedSport] = useState("PICKLEBALL");
+  const [selectedSport, setSelectedSport] = useState("FOOTBALL_7");
   const [tournamentFormat, setTournamentFormat] = useState("KNOCKOUT");
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<"bracket" | "var_referee" | "standings" | "esheet">("bracket");
 
   // Scoreboard state for Live VAR console
-  const [scoreA, setScoreA] = useState(11);
-  const [scoreB, setScoreB] = useState(9);
-  const [currentSet, setCurrentSet] = useState(3);
+  const [scoreA, setScoreA] = useState(3);
+  const [scoreB, setScoreB] = useState(2);
+  const [currentSet, setCurrentSet] = useState(2);
   const [cardsA, setCardsA] = useState(1);
   const [cardsB, setCardsB] = useState(0);
   const [timeoutsA, setTimeoutsA] = useState(1);
@@ -42,27 +42,27 @@ export default function TournamentBracket() {
   const [selectedCameraAngle, setSelectedCameraAngle] = useState<string>("Cam 1 - Direct Baseline");
 
   const [quarterFinals, setQuarterFinals] = useState([
-    { matchId: "Q1", teamA: "SG Titan Pickleball (DUPR 4.3)", teamB: "Thắng Lợi Q.7 (DUPR 4.1)", scoreA: 2, scoreB: 1, winner: "SG Titan Pickleball (DUPR 4.3)" },
-    { matchId: "Q2", teamA: "D-Sport Warriors (DUPR 4.0)", teamB: "Phoenix Club (DUPR 3.9)", scoreA: 2, scoreB: 0, winner: "D-Sport Warriors (DUPR 4.0)" },
-    { matchId: "Q3", teamA: "Oasis Lions (DUPR 4.2)", teamB: "Sharks Sport (DUPR 4.1)", scoreA: 1, scoreB: 2, winner: "Sharks Sport (DUPR 4.1)" },
-    { matchId: "Q4", teamA: "Eagles Pro (DUPR 4.4)", teamB: "Titans Saigon (DUPR 4.2)", scoreA: 2, scoreB: 0, winner: "Eagles Pro (DUPR 4.4)" },
+    { matchId: "Q1", teamA: "FC Sài Gòn Warriors (Elo 1550)", teamB: "FC Thắng Lợi Q.7 (Elo 1480)", scoreA: 2, scoreB: 1, winner: "FC Sài Gòn Warriors" },
+    { matchId: "Q2", teamA: "FC Lộc Phát Q.7 (Elo 1520)", teamB: "FC Phoenix Club (Elo 1490)", scoreA: 3, scoreB: 1, winner: "FC Lộc Phát Q.7" },
+    { matchId: "Q3", teamA: "FC Anh Em Kiến Trúc (Elo 1510)", teamB: "FC Sharks Sport (Elo 1470)", scoreA: 1, scoreB: 2, winner: "FC Sharks Sport" },
+    { matchId: "Q4", teamA: "FC Titan Sài Gòn (Elo 1580)", teamB: "FC Nam Sài Gòn (Elo 1500)", scoreA: 2, scoreB: 0, winner: "FC Titan Sài Gòn" },
   ]);
 
   const [semiFinals, setSemiFinals] = useState([
-    { matchId: "SF1", teamA: "SG Titan Pickleball", teamB: "D-Sport Warriors", scoreA: 2, scoreB: 1, winner: "SG Titan Pickleball" },
-    { matchId: "SF2", teamA: "Sharks Sport", teamB: "Eagles Pro", scoreA: 0, scoreB: 2, winner: "Eagles Pro" },
+    { matchId: "SF1", teamA: "FC Sài Gòn Warriors", teamB: "FC Lộc Phát Q.7", scoreA: 3, scoreB: 2, winner: "FC Sài Gòn Warriors" },
+    { matchId: "SF2", teamA: "FC Sharks Sport", teamB: "FC Titan Sài Gòn", scoreA: 1, scoreB: 2, winner: "FC Titan Sài Gòn" },
   ]);
 
   const [finalMatch, setFinalMatch] = useState({
-    matchId: "FINAL", teamA: "SG Titan Pickleball", teamB: "Eagles Pro", scoreA: 11, scoreB: 9, winner: "SG Titan Pickleball"
+    matchId: "FINAL", teamA: "FC Sài Gòn Warriors", teamB: "FC Titan Sài Gòn", scoreA: 3, scoreB: 2, winner: "FC Sài Gòn Warriors"
   });
 
   const standings = [
-    { rank: 1, team: "SG Titan Pickleball", p: 4, w: 4, l: 0, setDiff: "+7", points: 12, duprAvg: "4.35" },
-    { rank: 2, team: "Eagles Pro Club", p: 4, w: 3, l: 1, setDiff: "+4", points: 9, duprAvg: "4.40" },
-    { rank: 3, team: "D-Sport Warriors", p: 3, w: 2, l: 1, setDiff: "+2", points: 6, duprAvg: "4.05" },
-    { rank: 4, team: "Sharks Sport Alliance", p: 3, w: 2, l: 1, setDiff: "+1", points: 6, duprAvg: "4.10" },
-    { rank: 5, team: "Thắng Lợi Q.7", p: 2, w: 1, l: 1, setDiff: "0", points: 3, duprAvg: "4.12" },
+    { rank: 1, team: "FC Sài Gòn Warriors", p: 4, w: 4, l: 0, setDiff: "+7", points: 12, duprAvg: "1550" },
+    { rank: 2, team: "FC Titan Sài Gòn", p: 4, w: 3, l: 1, setDiff: "+4", points: 9, duprAvg: "1580" },
+    { rank: 3, team: "FC Lộc Phát Q.7", p: 3, w: 2, l: 1, setDiff: "+2", points: 6, duprAvg: "1520" },
+    { rank: 4, team: "FC Sharks Sport Alliance", p: 3, w: 2, l: 1, setDiff: "+1", points: 6, duprAvg: "1470" },
+    { rank: 5, team: "FC Anh Em Kiến Trúc", p: 2, w: 1, l: 1, setDiff: "0", points: 3, duprAvg: "1510" },
   ];
 
   const triggerToast = (msg: string) => {
@@ -74,7 +74,7 @@ export default function TournamentBracket() {
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
-      triggerToast("Bốc thăm tự động phân nhánh đấu đã hoàn tất!");
+      triggerToast("Bốc thăm tự động phân nhánh đấu bóng đá đã hoàn tất!");
     }, 600);
   };
 
@@ -99,13 +99,13 @@ export default function TournamentBracket() {
           <div>
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold mb-3">
               <Trophy className="w-4 h-4 text-emerald-400" />
-              <span>Saigon Multi-Sport Open Cup 2026 • Live VAR & Interactive Bracket Engine</span>
+              <span>Saigon Football Open Cup 2026 • Live VAR & Interactive Bracket Engine</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              Quản Lý Giải Đấu & Bàn Trọng Tài Điện Tử Live VAR
+              Quản Lý Giải Đấu Bóng Đá & Bàn Trọng Tài Live VAR
             </h1>
             <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl">
-              Tự động xếp cây nhánh đấu bốc thăm, điều hành trực tiếp bàn trọng tài điện tử, chấm điểm AI VAR và đồng bộ kết quả lên BXH DUPR/Elo toàn quốc.
+              Tự động xếp cây nhánh đấu bốc thăm bóng đá, điều hành trực tiếp bàn trọng tài điện tử, chấm điểm AI VAR và đồng bộ kết quả lên BXH Elo toàn quốc.
             </p>
           </div>
 
@@ -116,10 +116,9 @@ export default function TournamentBracket() {
               onChange={(e) => setSelectedSport(e.target.value)}
               className="bg-slate-800 border border-slate-700 text-xs font-extrabold text-white rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
-              <option value="PICKLEBALL">🏓 Pickleball Saigon Master (DUPR 4.0+)</option>
-              <option value="FOOTBALL">⚽ Giải Bóng Đá Sân 7 VaoSan Cup</option>
-              <option value="BADMINTON">🏸 Giải Cầu Lông Đôi Nam/Nữ BWF</option>
-              <option value="TENNIS">🎾 Giải Tennis Open VaoSan</option>
+              <option value="FOOTBALL_7">⚽ Giải Bóng Đá Sân 7 Serie B Open</option>
+              <option value="FUTSAL">👟 Giải Bóng Đá Futsal Sài Gòn Cup</option>
+              <option value="FOOTBALL_11">🏟️ Giải Bóng Đá Sân 11 VFF Cup</option>
             </select>
 
             <select

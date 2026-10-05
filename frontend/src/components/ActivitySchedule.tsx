@@ -180,10 +180,10 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-1 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-400 font-bold text-xs">
-                      Pickleball Đôi Nam
+                      Bóng Đá Sân 7 Phủi
                     </span>
                     <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-xs font-bold">
-                      Rating DUPR Official
+                      Elo Rating 1,450
                     </span>
                   </div>
                 </div>
@@ -192,18 +192,18 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                 <div className="flex flex-col md:flex-row gap-6 items-start">
                   <div className="relative w-full md:w-48 h-36 rounded-lg overflow-hidden shrink-0 shadow-xs border border-slate-200 dark:border-slate-800">
                     <img 
-                      src="https://images.unsplash.com/photo-1626248801379-51a0748a5f96?auto=format&fit=crop&w=800&q=80" 
-                      alt="Pickleball Match PB-01"
+                      src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80" 
+                      alt="Trận Trực Tiếp Sân 7A"
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute bottom-2 left-2 px-2 py-1 rounded bg-slate-950/80 backdrop-blur-sm text-white font-mono text-xs font-bold">
-                      Sân PB-01 Pro
+                      Sân 7A Pro
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-2.5 flex-1 min-w-0">
                     <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                      Pickleball Giao Lưu Cọ Xát & Cập Nhật DUPR 3.0 - 3.2
+                      Bóng Đá Sân 7: FC Saigon Warriors vs FC Anh Em Kiến Trúc
                     </h2>
 
                     <div className="flex flex-wrap items-center gap-y-1.5 gap-x-4 text-xs">
@@ -213,53 +213,53 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                       </span>
                       <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                         <MapPin className="w-4 h-4 text-emerald-600" />
-                        Cụm D-Sport Oasis Q.7 (Thảm Cushion 8 lớp)
+                        Cụm D-Sport Oasis Q.7 (Cỏ Nhân Tạo 50mm)
                       </span>
                     </div>
 
-                    {/* Team Rosters & DUPR Rating Nodes */}
+                    {/* Team Rosters & Elo Rating Nodes */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                       {/* Team A (Your Team) */}
                       <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950 flex flex-col gap-1.5 border border-slate-200/60 dark:border-slate-800">
                         <div className="flex items-center justify-between text-[10px] font-bold text-slate-500">
-                          <span className="uppercase tracking-wider text-emerald-700 dark:text-emerald-400">ĐỘI CỦA BẠN (Cặp Đấu 1)</span>
-                          <span className="font-mono text-emerald-700 dark:text-emerald-400">Avg 3.07</span>
+                          <span className="uppercase tracking-wider text-emerald-700 dark:text-emerald-400">ĐỘI CỦA BẠN (Sài Gòn Warriors)</span>
+                          <span className="font-mono text-emerald-700 dark:text-emerald-400">Avg 1,450</span>
                         </div>
                         <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
                           <div className="flex items-center gap-1.5">
                             <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[10px]">AN</span>
                             <span>Bạn (Nguyễn Văn An)</span>
                           </div>
-                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-emerald-600">3.05</span>
+                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-emerald-600">Elo 1,450</span>
                         </div>
                         <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
                           <div className="flex items-center gap-1.5">
                             <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px]">TL</span>
                             <span>Tuấn Lê</span>
                           </div>
-                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-slate-500">3.10</span>
+                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-slate-500">Elo 1,420</span>
                         </div>
                       </div>
 
                       {/* Team B (Opponents) */}
                       <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950 flex flex-col gap-1.5 border border-slate-200/60 dark:border-slate-800">
                         <div className="flex items-center justify-between text-[10px] font-bold text-slate-500">
-                          <span className="uppercase tracking-wider">ĐỐI THỦ (Cặp Đấu 2)</span>
-                          <span className="font-mono">Avg 2.95</span>
+                          <span className="uppercase tracking-wider">ĐỐI THỦ (Anh Em Kiến Trúc)</span>
+                          <span className="font-mono">Avg 1,430</span>
                         </div>
                         <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
                           <div className="flex items-center gap-1.5">
                             <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px]">MK</span>
                             <span>Minh Khang</span>
                           </div>
-                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-slate-500">2.90</span>
+                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-slate-500">Elo 1,440</span>
                         </div>
                         <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
                           <div className="flex items-center gap-1.5">
                             <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px]">QB</span>
                             <span>Quốc Bảo</span>
                           </div>
-                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-slate-500">3.00</span>
+                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-slate-500">Elo 1,420</span>
                         </div>
                       </div>
                     </div>
@@ -329,7 +329,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                     <div className="flex flex-col gap-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 font-bold text-[11px]">BÁN KẾT CÚP</span>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white">VaoSan Mini Pickleball Cup 2025</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">Giải Bóng Đá Phong Trào VaoSan Cup 2026</span>
                       </div>
                       <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-xs">
                         <span className="flex items-center gap-1 text-slate-900 dark:text-white font-semibold">
@@ -337,12 +337,12 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                           07:30 - 09:30 (Sáng mai)
                         </span>
                         <span>•</span>
-                        <span>Sân PB-01 Cụm Oasis Q.7</span>
+                        <span>Sân 7A Cụm Oasis Q.7</span>
                         <span>•</span>
                         <span className="text-emerald-600 font-semibold">Trọng tài VFF cấp 2</span>
                       </div>
                       <p className="text-xs text-slate-600 dark:text-slate-300">
-                        Đối thủ: <strong className="text-slate-900 dark:text-white">Đức Duy / Quang Huy</strong> (Hạt giống số #2) • Thể thức 3 ván thắng 2 (11 điểm Rally)
+                        Đối thủ: <strong className="text-slate-900 dark:text-white">FC Thép Xanh / FC Sài Gòn</strong> (Hạt giống số #2) • Thể thức 2 hiệp 30 phút (Sân 7 người)
                       </p>
                     </div>
                   </div>
@@ -585,30 +585,30 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                   </div>
 
                   <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 flex flex-col gap-1 border border-slate-200/60 dark:border-slate-800">
-                    <span className="text-[11px] text-slate-500 font-medium">Điểm DUPR / Elo</span>
+                    <span className="text-[11px] text-slate-500 font-medium">Chỉ Số Elo Bóng Đá</span>
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl font-black text-emerald-600 font-mono">3.05</span>
-                      <span className="text-xs text-slate-500 font-semibold">DUPR</span>
+                      <span className="text-2xl font-black text-emerald-600 font-mono">1,450</span>
+                      <span className="text-xs text-slate-500 font-semibold">Elo</span>
                     </div>
-                    <span className="text-[10px] text-emerald-600 font-bold">1,200 Elo Bóng đá</span>
+                    <span className="text-[10px] text-emerald-600 font-bold">Bán Chuyên Phủi Serie B</span>
                   </div>
                 </div>
 
-                {/* Sport Breakdown Distribution Bar */}
+                {/* Football Pitch Format Distribution Bar */}
                 <div className="flex flex-col gap-2 pt-1">
                   <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span>Phân bổ bộ môn</span>
-                    <span className="text-slate-900 dark:text-white font-bold">Pickleball chiếm đa số</span>
+                    <span>Phân bổ loại sân thi đấu</span>
+                    <span className="text-slate-900 dark:text-white font-bold">Sân 7 Phủi chiếm 70%</span>
                   </div>
                   <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex">
-                    <div className="h-full bg-emerald-600" style={{ width: '55%' }} title="Pickleball: 55%"></div>
-                    <div className="h-full bg-lime-400" style={{ width: '30%' }} title="Bóng đá: 30%"></div>
-                    <div className="h-full bg-sky-500" style={{ width: '15%' }} title="Cầu lông: 15%"></div>
+                    <div className="h-full bg-emerald-600" style={{ width: '70%' }} title="Bóng đá Sân 7: 70%"></div>
+                    <div className="h-full bg-sky-500" style={{ width: '20%' }} title="Futsal Sân 5: 20%"></div>
+                    <div className="h-full bg-amber-400" style={{ width: '10%' }} title="Sân 11 FIFA: 10%"></div>
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-600"></span> Pickleball (55%)</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-lime-400"></span> Bóng đá (30%)</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-500"></span> Cầu lông (15%)</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-600"></span> Sân 7 Phủi (70%)</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-500"></span> Futsal Sân 5 (20%)</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400"></span> Sân 11 FIFA (10%)</span>
                   </div>
                 </div>
               </div>

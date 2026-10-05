@@ -61,36 +61,36 @@ export default function TournamentOrganizerPortal({
   const tournaments = [
     {
       id: "t1",
-      sport: "pickleball",
-      sportBadge: "PICKLEBALL • TRỰC TIẾP",
-      title: "Pickleball Open Cup 2025 - Hạng Trình 6.5",
-      subtitle: "32 Cặp Đôi • 24/48 Trận • Tổng Thưởng 80.000.000 VNĐ",
+      sport: "football_7",
+      sportBadge: "BÓNG ĐÁ 7 NGƯỜI • TRỰC TIẾP",
+      title: "Giải Vô Địch Sân 7 Nam Sài Gòn Serie B 2026",
+      subtitle: "32 Đội Bóng • 24/48 Trận • Tổng Thưởng 120.000.000 VNĐ",
       progress: 50,
       status: "live",
-      courts: "Sân P-01, P-02, P-03",
-      sponsorLogo: "⚡ Joola & Vietcombank"
+      courts: "Sân FB-01, FB-02, FB-03",
+      sponsorLogo: "⚡ Kamito & VietQR Napas247"
     },
     {
       id: "t2",
-      sport: "football",
-      sportBadge: "BÓNG ĐÁ 7 NGƯỜI • VÒNG BẢNG",
-      title: "Giải Vô Địch 7 Người Mùa Thu 2025",
-      subtitle: "16 Đội • 4 Bảng • 58 Bàn Thắng",
+      sport: "futsal",
+      sportBadge: "FUTSAL SÀI GÒN • VÒNG BẢNG",
+      title: "Giải Futsal Trong Nhà Super Cup 2026",
+      subtitle: "16 Đội • 4 Bảng • 68 Bàn Thắng",
       progress: 65,
       status: "active",
-      courts: "Sân Bóng S1 & S2",
-      sponsorLogo: "🔥 Kamito & RedBull"
+      courts: "Sân Futsal A1 & A2",
+      sponsorLogo: "🔥 RedBull & Động Lực FIFA"
     },
     {
       id: "t3",
-      sport: "badminton",
-      sportBadge: "CẦU LÔNG • SẮP DIỄN RA",
-      title: "Hanoi Badminton Doubles Championship",
-      subtitle: "24 Cặp • Sân 7-9 • Bắt Đầu 14:00",
+      sport: "football_11",
+      sportBadge: "BÓNG ĐÁ 11 NGƯỜI • SẮP DIỄN RA",
+      title: "VFF Champions League Phong Trào Sài Gòn",
+      subtitle: "12 CLB • Sân Cỏ Tự Nhiên • Bắt Đầu 14:00",
       progress: 0,
       status: "upcoming",
-      courts: "Cụm Sân Cầu Lông C-04",
-      sponsorLogo: "🏸 Yonex Official"
+      courts: "Sân 11 Cỏ Tự Nhiên Nam Sài Gòn",
+      sponsorLogo: "⚽ FIFA Quality Pro"
     }
   ];
 
@@ -207,11 +207,10 @@ export default function TournamentOrganizerPortal({
               <Filter className="w-3.5 h-3.5 text-slate-400" /> Bộ Lọc Môn:
             </span>
             {[
-              { id: "all", label: "Tất Cả Môn (3)" },
-              { id: "pickleball", label: "Pickleball (1)" },
-              { id: "football", label: "Bóng Đá (1)" },
-              { id: "badminton", label: "Cầu Lông (1)" },
-              { id: "tennis", label: "Tennis (0)" }
+              { id: "all", label: "Tất Cả Thể Thức (3)" },
+              { id: "football_7", label: "Bóng Đá Sân 7 (1)" },
+              { id: "futsal", label: "Futsal Trong Nhà (1)" },
+              { id: "football_11", label: "Bóng Đá Sân 11 (1)" }
             ].map(item => (
               <button
                 key={item.id}

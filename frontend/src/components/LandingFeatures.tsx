@@ -167,8 +167,8 @@ export default function LandingFeatures({ onExplore }: LandingFeaturesProps) {
   const testimonials = [
     {
       name: "Nguyễn Hoàng Minh",
-      role: "Chủ nhiệm Cụm Thể Thao Chuyên Việt (8 sân 7)",
-      comment: "Từ khi áp dụng PitchHub quản lý 8 sân cỏ nhân tạo, doanh thu hàng tháng tăng 28%. Tuyệt vời nhất là hệ thống IoT tự động đóng ngắt dàn đèn, hết hẳn cảnh nhân viên trực quên tắt đèn gây lãng phí hàng triệu tiền điện, cũng không còn ai bị bùng ca giờ vàng nữa.",
+      role: "Chủ nhiệm Cụm Thể Thao D-Sport Oasis Q.7 (Sân 7 & Futsal)",
+      comment: "Từ khi áp dụng PitchHub quản lý cụm sân cỏ nhân tạo, doanh thu hàng tháng tăng 28%. Tuyệt vời nhất là hệ thống IoT tự động đóng ngắt dàn đèn, hết hẳn cảnh nhân viên trực quên tắt đèn gây lãng phí hàng triệu tiền điện, cũng không còn ai bị bùng ca giờ vàng nữa.",
       rating: 5,
       avatar: "HM"
     },
@@ -192,7 +192,7 @@ export default function LandingFeatures({ onExplore }: LandingFeaturesProps) {
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-6 text-slate-700 dark:text-slate-300 font-bold text-xs">
             <span className="flex items-center space-x-1.5">
               <ShieldCheck className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
-              <span>Cụm Thể Thao Chuyên Việt</span>
+              <span>Cụm Sân D-Sport Oasis Q.7</span>
             </span>
             <span className="flex items-center space-x-1.5">
               <Activity className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
@@ -200,7 +200,7 @@ export default function LandingFeatures({ onExplore }: LandingFeaturesProps) {
             </span>
             <span className="flex items-center space-x-1.5">
               <Trophy className="w-4 h-4 text-amber-500" />
-              <span>Cụm Sân Lam Sơn Q.5</span>
+              <span>Cụm Sân Tân Phú Pro</span>
             </span>
             <span className="flex items-center space-x-1.5 text-[#0b4f6c] dark:text-sky-300">
               <CheckCircle2 className="w-4 h-4" />

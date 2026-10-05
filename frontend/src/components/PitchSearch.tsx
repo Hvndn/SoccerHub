@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sparkles,
   MapPin,
@@ -27,11 +25,13 @@ import {
   SlidersHorizontal,
   Search,
   Lock,
-  Timer
+  Timer,
+  Loader2
 } from "lucide-react";
 
 import PitchDetail from "./PitchDetail";
 import SmartPaymentPass from "./SmartPaymentPass";
+import { getAllPitchesApi } from "@/lib/pitchService";
 
 interface PitchSearchProps {
   user?: any;
@@ -42,11 +42,55 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
   const [selectedSport, setSelectedSport] = useState("ALL");
   const [selectedFormat, setSelectedFormat] = useState("ALL");
   const [selectedTime, setSelectedTime] = useState("NIGHT");
-  const [maxBudget, setMaxBudget] = useState(400000);
+  const [maxBudget, setMaxBudget] = useState(600000);
   const [selectedPitchForSlot, setSelectedPitchForSlot] = useState<any>(null);
   const [checkoutBookingData, setCheckoutBookingData] = useState<{ pitch: any; slot: any } | null>(null);
   const [appliedVoucher, setAppliedVoucher] = useState(false);
   const [joinedMatch, setJoinedMatch] = useState<string | null>(null);
+
+  const [realPitches, setRealPitches] = useState<any[]>([]);
+  const [loadingRealPitches, setLoadingRealPitches] = useState(false);
+
+  useEffect(() => {
+    fetchPitches();
+  }, []);
+
+  const fetchPitches = async () => {
+    setLoadingRealPitches(true);
+    try {
+      const data = await getAllPitchesApi();
+      if (Array.isArray(data) && data.length > 0) {
+        const mapped = data.map((item: any, idx: number) => ({
+          id: item.id ? `pitch-db-${item.id}` : `pitch-real-${idx}`,
+          sport: item.type?.includes("5") ? "SAN5" : item.type?.includes("11") ? "SAN11" : item.type?.includes("Futsal") ? "FUTSAL" : "SAN7",
+          sportBadge: item.type || "⚽ Bóng Đá Phủi Serie B",
+          name: item.name,
+          address: item.location || "Quận 7, TP.HCM",
+          distanceKm: 1.5 + (idx % 3),
+          rating: 4.8 + (idx % 3) * 0.1,
+          reviewsCount: 45 + idx * 12,
+          priceOriginal: item.pricePerHour ? Math.round(item.pricePerHour * 1.2) : 400000,
+          priceDiscounted: item.pricePerHour || 350000,
+          pitchTypes: [item.type || "Sân 7 Cỏ Nhân Tạo", "Đèn LED 1000 Lux"],
+          amenities: ["Camera AI VAR Replay", "Tắm nóng lạnh", "Bãi xe 4 bánh", "Trọng Tài FIFA"],
+          imageUrl: item.imageUrl || (idx % 2 === 0
+            ? "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=800&q=80"
+            : "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80"),
+          aiReason: `Sân bóng đá tiêu chuẩn VFF • Đèn chiếu sáng 800 Lux • Hotline: ${item.phone || "0988776655"}`,
+          timeSlots: [
+            { time: "18:00 - 19:30", price: `${Math.round((item.pricePerHour || 350000) / 3000)}k`, status: "AVAILABLE", tag: null },
+            { time: "19:30 - 21:00", price: `${Math.round((item.pricePerHour || 350000) / 3000)}k`, status: "ACTIVE", tag: "Ca Vàng" },
+            { time: "21:00 - 22:30", price: `${Math.round((item.pricePerHour || 300000) / 3000)}k`, status: "AVAILABLE", tag: null }
+          ]
+        }));
+        setRealPitches(mapped);
+      }
+    } catch (e) {
+      console.log("Using fallback pitches offline");
+    } finally {
+      setLoadingRealPitches(false);
+    }
+  };
 
   if (checkoutBookingData) {
     return (
@@ -70,95 +114,32 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
     );
   }
 
-  const userName = user?.name || "Trần Hoàng Long";
+  const userName = user?.fullName || user?.name || "Khách";
   const userElo = user?.eloRating || 1450;
 
   const sportsList = [
-    { id: "ALL", name: "Tất Cả Môn", icon: "🏆" },
-    { id: "PICKLEBALL", name: "Pickleball (Ưu tiên)", icon: "🏓", badge: "DUPR Verified" },
-    { id: "FOOTBALL", name: "Bóng Đá (5/7/11)", icon: "⚽" },
-    { id: "BADMINTON", name: "Cầu Lông", icon: "🏸" },
-    { id: "TENNIS", name: "Tennis", icon: "🎾" }
+    { id: "ALL", name: "Tất Cả Sân Bóng Đá", icon: "⚽" },
+    { id: "SAN7", name: "Bóng Đá Sân 7", icon: "⚽", badge: "Phủi Serie B" },
+    { id: "SAN5", name: "Bóng Đá Sân 5", icon: "⚽" },
+    { id: "FUTSAL", name: "Futsal Trong Nhà", icon: "👟" },
+    { id: "SAN11", name: "Sân 11 Cỏ Tự Nhiên", icon: "🏟️" }
   ];
 
-  const mockPitches = [
-    {
-      id: "pitch-101",
-      sport: "PICKLEBALL",
-      sportBadge: "🏓 Chuẩn DUPR Tour",
-      name: "Sân Pickleball D-Sport Oasis",
-      address: "Đường số 7, Tân Phú, Quận 7 (Cạnh Crescent Mall)",
-      distanceKm: 1.8,
-      rating: 4.9,
-      reviewsCount: 128,
-      priceOriginal: 160000,
-      priceDiscounted: 110000,
-      pitchTypes: ["8 sân có mái", "Thảm PVC chuẩn USA"],
-      amenities: ["Máy bắn bóng", "Tắm nóng lạnh", "Bãi xe 4 bánh", "Ghép điểm DUPR"],
-      imageUrl: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=800&q=80",
-      aiReason: "Gần vị trí của bạn 1.8km • Sân có mái che • Ca vàng 19:30 còn trống • Đánh giá 4.9★",
-      timeSlots: [
-        { time: "18:00 - 19:30", price: "110.000đ", status: "AVAILABLE", tag: null },
-        { time: "19:30 - 21:00", price: "110.000đ", status: "ACTIVE", tag: "Ca Vàng" },
-        { time: "21:00 - 22:30", price: "100.000đ", status: "AVAILABLE", tag: null }
-      ]
-    },
-    {
-      id: "pitch-102",
-      sport: "FOOTBALL",
-      sportBadge: "⚡ IoT Auto-Light",
-      name: "Khu Phức Hợp Thể Thao Nam Sài Gòn",
-      address: "Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè (giáp Q7)",
-      distanceKm: 3.2,
-      rating: 4.8,
-      reviewsCount: 94,
-      priceOriginal: 330000,
-      priceDiscounted: 280000,
-      pitchTypes: ["4 Sân 7 + 6 Sân PB", "Cỏ FIFA"],
-      amenities: ["Cỏ nhân tạo chuẩn FIFA", "Trọng tài VFF", "Căng tin thể thao"],
-      imageUrl: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80",
-      aiReason: "Sân 7 rộng chuẩn VFF • Đèn chiếu sáng 800 Lux • Đã có 4 đội đặt hôm nay",
-      timeSlots: [
-        { time: "18:00 - 19:30", price: "280.000đ", status: "ACTIVE", tag: "Sân 7A" },
-        { time: "19:30 - 21:00", price: "280.000đ", status: "AVAILABLE", tag: "Sân 7B" },
-        { time: "20:30 - 22:00", price: "250.000đ", status: "AVAILABLE", tag: "PB Court 3" }
-      ]
-    },
-    {
-      id: "pitch-103",
-      sport: "BADMINTON",
-      sportBadge: "🏸 Thảm Yonex Thi Đấu",
-      name: "CLB Cầu Lông & Tennis Tân Hưng",
-      address: "Lê Văn Lương, Tân Hưng, Quận 7",
-      distanceKm: 2.4,
-      rating: 4.7,
-      reviewsCount: 62,
-      priceOriginal: 150000,
-      priceDiscounted: 120000,
-      pitchTypes: ["12 Sân Thảm Yonex", "Máy Lạnh 24°C"],
-      amenities: ["Điều hoà 24°C", "Thuê vợt Pro", "Nước Ion kiềm free"],
-      imageUrl: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80",
-      aiReason: "Thảm Yonex chống trơn trượt • Có máy lạnh tổng • Nước uống miễn phí",
-      timeSlots: [
-        { time: "19:00 - 20:00", price: "120.000đ", status: "AVAILABLE", tag: null },
-        { time: "20:00 - 22:00", price: "220.000đ", status: "ACTIVE", tag: "Sân 3" }
-      ]
-    }
-  ];
+  const displayPitchesList = realPitches;
 
-  const filteredPitches = mockPitches.filter((p) => {
+  const filteredPitches = displayPitchesList.filter((p) => {
     if (selectedSport !== "ALL" && p.sport !== selectedSport) return false;
     if (p.priceDiscounted > maxBudget) return false;
     return true;
   });
 
   const modalSlots = [
-    { id: "slot-1", time: "18:00 - 19:30", price: 110000, status: "AVAILABLE", pitchType: "Sân Pickleball PB-01 (Mái Che)" },
-    { id: "slot-2", time: "19:30 - 21:00", price: 110000, status: "HOLD", pitchType: "Sân Pickleball PB-02 (Ca Vàng)" },
-    { id: "slot-3", time: "21:00 - 22:30", price: 100000, status: "AVAILABLE", pitchType: "Sân Pickleball PB-01 (Tối)" },
-    { id: "slot-4", time: "18:00 - 19:30", price: 280000, status: "AVAILABLE", pitchType: "Sân Bóng Đá 7A (Cỏ FIFA)" },
-    { id: "slot-5", time: "19:30 - 21:00", price: 280000, status: "BOOKED", pitchType: "Sân Bóng Đá 7B (Đã Khóa)" },
-    { id: "slot-6", time: "20:00 - 22:00", price: 120000, status: "AVAILABLE", pitchType: "Sân Cầu Lông #3 (Máy Lạnh)" }
+    { id: "slot-1", time: "18:00 - 19:30", price: 350000, status: "AVAILABLE", pitchType: "Sân Bóng Đá 7A (Cỏ FIFA Pro)" },
+    { id: "slot-2", time: "19:30 - 21:00", price: 450000, status: "HOLD", pitchType: "Sân Bóng Đá 7B (Ca Vàng)" },
+    { id: "slot-3", time: "21:00 - 22:30", price: 300000, status: "AVAILABLE", pitchType: "Sân Bóng Đá 7A (Đêm)" },
+    { id: "slot-4", time: "18:00 - 19:30", price: 250000, status: "AVAILABLE", pitchType: "Sân Bóng Đá 5A (Futsal Pro)" },
+    { id: "slot-5", time: "19:30 - 21:00", price: 600000, status: "BOOKED", pitchType: "Sân 11 Tiêu Chuẩn VFF" },
+    { id: "slot-6", time: "20:00 - 22:00", price: 350000, status: "AVAILABLE", pitchType: "Sân Bóng Đá 7C (Cỏ Nhân Tạo)" }
   ];
 
   return (
@@ -212,13 +193,13 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
           <div className="flex flex-row xl:flex-col gap-2.5 w-full xl:w-auto shrink-0">
             <div className="flex items-center space-x-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex-1 xl:flex-none min-w-[230px]">
               <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg font-bold">
-                🏓
+                ⚽
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-extrabold">Chỉ số Pickleball</span>
+                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-extrabold">Chỉ Số Elo Cầu Thủ</span>
                 <div className="flex items-baseline space-x-1.5">
-                  <span className="text-lg font-black text-emerald-400 font-mono">3.0</span>
-                  <span className="text-[10px] text-slate-300 font-bold">DUPR Verified</span>
+                  <span className="text-lg font-black text-emerald-400 font-mono">{userElo}</span>
+                  <span className="text-[10px] text-slate-300 font-bold">Xếp Hạng Phủi</span>
                 </div>
               </div>
             </div>
@@ -359,11 +340,19 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               </div>
 
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-snug">
-                Đề xuất tối ưu cho Đội của bạn: <span className="text-[#0b4f6c] dark:text-sky-400">Chuyên Việt Sport Center</span>
+                {displayPitchesList.length > 0 ? (
+                  <>Đề xuất tối ưu cho Đội của bạn: <span className="text-[#0b4f6c] dark:text-sky-400">{displayPitchesList[0]?.name}</span></>
+                ) : (
+                  <span className="text-amber-500 font-extrabold">Không có sân bóng nào trong cơ sở dữ liệu</span>
+                )}
               </h2>
 
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-                Dựa trên lịch sử 24 trận gần nhất, chỉ số thể lực của {userName} (Elo {userElo}) và tình trạng giao thông đường Nguyễn Thị Thập Q7 lúc 18h45.
+                {displayPitchesList.length > 0 ? (
+                  <>Dựa trên lịch sử 24 trận gần nhất, chỉ số thể lực của {userName} (Elo {userElo}) và vị trí địa lý tại {displayPitchesList[0]?.address}.</>
+                ) : (
+                  <>Hệ thống CSDL chưa có dữ liệu cụm sân bóng nào. Vui lòng thêm cụm sân mới hoặc thử lại sau.</>
+                )}
               </p>
 
               {/* Highlights 3 Checklist Cards */}
@@ -395,7 +384,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               </div>
               <button
                 type="button"
-                onClick={() => setSelectedPitchForSlot(mockPitches[1])}
+                onClick={() => setSelectedPitchForSlot(displayPitchesList[0])}
                 className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-[#0b4f6c] hover:bg-[#07384d] text-white font-extrabold text-xs shadow-lg shadow-[#0b4f6c]/30 transition-all flex items-center justify-center space-x-2 active:scale-95"
               >
                 <span>Khóa Slot Này Ngay</span>
@@ -459,7 +448,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setSelectedPitchForSlot(mockPitches[1])}
+                    onClick={() => setSelectedPitchForSlot(displayPitchesList[1])}
                     className="px-3 py-1 bg-[#0b4f6c] hover:bg-[#07384d] text-white text-[10px] font-bold rounded-lg font-sans shadow-sm transition-colors"
                   >
                     Giữ 5 Phút
@@ -500,7 +489,27 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
           {/* PITCH CARDS */}
           <div className="space-y-6">
-            {filteredPitches.map((pitch) => (
+            {loadingRealPitches ? (
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-12 border border-slate-200 dark:border-slate-800 text-center space-y-3">
+                <Loader2 className="w-8 h-8 text-[#0b4f6c] dark:text-sky-400 animate-spin mx-auto" />
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400">Đang tải danh sách sân từ cơ sở dữ liệu...</p>
+              </div>
+            ) : filteredPitches.length === 0 ? (
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-10 sm:p-12 border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto border border-amber-500/20">
+                  <MapPin className="w-8 h-8" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                    Không có sân bóng nào trong cơ sở dữ liệu
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                    Hiện tại chưa có cụm sân bóng nào được lưu trong CSDL. Vui lòng tạo sân mới nếu bạn là Chủ Sân hoặc quay lại sau.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              filteredPitches.map((pitch) => (
               <article
                 key={pitch.id}
                 className="group bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row"
@@ -613,7 +622,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                   </div>
                 </div>
               </article>
-            ))}
+            )))}
           </div>
         </main>
 
@@ -629,20 +638,20 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               <span className="text-[11px] font-extrabold text-[#0b4f6c] dark:text-sky-400">Tìm chân gấp</span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-              Hệ thống AI ghép kèo tự động khớp dựa theo chỉ số <strong className="text-slate-900 dark:text-white">DUPR 3.0</strong> & <strong className="text-slate-900 dark:text-white">Elo {userElo}</strong> của bạn.
+              Hệ thống AI ghép kèo tự động khớp dựa theo vị trí thi đấu & <strong className="text-slate-900 dark:text-white">Chỉ số Elo {userElo}</strong> của bạn.
             </p>
 
-            {/* Match Tile 1: Pickleball Doubles */}
+            {/* Match Tile 1: Football 5-a-side */}
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="px-2 py-0.5 rounded bg-sky-500/20 text-sky-700 dark:text-sky-300 font-extrabold text-[10px] uppercase">
-                  🏓 Pickleball Đôi Nam
+                  ⚽ Bóng Đá Sân 5 Futsal
                 </span>
                 <span className="font-mono text-xs font-bold text-slate-500">19:30 - 21:00</span>
               </div>
-              <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Sân D-Sport Oasis • Đang thiếu 1 chân</h4>
+              <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Sân D-Sport Oasis • Đang thiếu 1 thủ môn & 1 tiền đạo</h4>
               <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                <span>Trình độ: <strong className="text-slate-900 dark:text-white">DUPR 2.8 - 3.2</strong></span>
+                <span>Trình độ: <strong className="text-slate-900 dark:text-white">Elo 1,350 - 1,500</strong></span>
                 <span className="font-mono font-extrabold text-emerald-500">~45k / người</span>
               </div>
 
@@ -665,14 +674,14 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
                 <button
                   type="button"
-                  onClick={() => setJoinedMatch("pb")}
+                  onClick={() => setJoinedMatch("s5")}
                   className={`px-3.5 py-1.5 rounded-xl font-extrabold text-xs transition-all ${
-                    joinedMatch === "pb"
+                    joinedMatch === "s5"
                       ? "bg-emerald-500 text-slate-950"
                       : "bg-[#0b4f6c] hover:bg-[#07384d] text-white active:scale-95"
                   }`}
                 >
-                  {joinedMatch === "pb" ? "✓ Đã Bắt Kèo" : "Tham Gia Kèo"}
+                  {joinedMatch === "s5" ? "✓ Đã Bắt Kèo" : "Tham Gia Kèo"}
                 </button>
               </div>
             </div>
@@ -728,7 +737,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <h4 className="font-extrabold text-xs text-white truncate">{userName}</h4>
                 <p className="font-mono text-[11px] text-sky-300">ID: #VS-20269</p>
                 <div className="flex items-center space-x-2 text-[10px] font-mono text-emerald-400 font-bold">
-                  <span>DUPR 3.0</span>
+                  <span>Phủi Serie B</span>
                   <span>•</span>
                   <span>Elo {userElo}</span>
                 </div>

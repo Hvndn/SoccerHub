@@ -16,21 +16,21 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   onBackToHome,
   onSelectTournament
 }) => {
-  const [activeSport, setActiveSport] = useState<'all' | 'pickleball' | 'football' | 'badminton' | 'tennis'>('pickleball');
+  const [activeSport, setActiveSport] = useState<'all' | 'san7' | 'futsal' | 'san11'>('all');
   const [activeTab, setActiveTab] = useState<'open' | 'live' | 'bracket' | 'rankings'>('open');
-  const [selectedLevel, setSelectedLevel] = useState('Tất cả DUPR/Elo');
+  const [selectedLevel, setSelectedLevel] = useState('Tất cả Hạng Elo');
   const [selectedScale, setSelectedScale] = useState('Open Cup & CLB Mở Rộng');
   const [selectedLocation, setSelectedLocation] = useState('TP. Hồ Chí Minh (Q.7, Q.1, Thủ Đức)');
   const [showRegModal, setShowRegModal] = useState(false);
   const [selectedTourneyForReg, setSelectedTourneyForReg] = useState<string | null>(null);
 
-  // Top Pickleball Leaderboard (Stitch exact)
-  const topDuprPlayers = [
-    { rank: 1, name: 'Lê Hoàng Yến', dpr: '4.65', note: '+45 điểm tuần này', crown: true },
-    { rank: 2, name: 'Trần Quốc Nam', dpr: '4.52', note: '+30 điểm', crown: false },
-    { rank: 3, name: 'Phạm Đăng Khoa', dpr: '4.40', note: '+18 điểm', crown: false },
-    { rank: 4, name: 'Vũ Minh Tuấn', dpr: '4.25', note: 'Giữ hạng', crown: false },
-    { rank: 5, name: 'Đặng Ngọc Long', dpr: '4.18', note: 'Giữ hạng', crown: false },
+  // Top Football Scorers & Elo Leaderboard
+  const topScorerFootball = [
+    { rank: 1, name: 'Nguyễn Văn An', goals: '18 bàn (11 kiến tạo)', note: 'FC Sài Gòn Warriors', crown: true },
+    { rank: 2, name: 'Phạm Đăng Khoa', goals: '15 bàn (8 kiến tạo)', note: 'FC Lộc Phát Q.7', crown: false },
+    { rank: 3, name: 'Trần Quốc Nam', goals: '14 bàn (5 kiến tạo)', note: 'FC Anh Em Kiến Trúc', crown: false },
+    { rank: 4, name: 'Vũ Minh Tuấn', goals: '12 bàn (9 kiến tạo)', note: 'FC Titan Sài Gòn', crown: false },
+    { rank: 5, name: 'Đặng Ngọc Long', goals: '10 bàn (12 kiến tạo)', note: 'FC Nam Sài Gòn', crown: false },
   ];
 
   return (
@@ -46,10 +46,10 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 <span>Trang chủ</span>
               </button>
               <ChevronRight className="w-3.5 h-3.5" />
-              <span className="text-slate-900 dark:text-white font-bold">Giải Đấu & Bảng Xếp Hạng</span>
+              <span className="text-slate-900 dark:text-white font-bold">Giải Đấu Bóng Đá & BXH Elo</span>
               <ChevronRight className="w-3.5 h-3.5" />
               <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold">
-                Mùa Giải Q4-2025
+                Mùa Giải Q4-2026
               </span>
             </div>
 
@@ -58,14 +58,14 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">LIVE 14:35:</span>
+              <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">LIVE 19:45:</span>
               <span className="text-xs text-slate-600 dark:text-slate-300 truncate max-w-xs sm:max-w-md font-medium">
-                BK1 Pickleball Sân PB-01: Minh Khang / Tuấn Lê chuẩn bị Match Point!
+                Bán Kết Sân 7 Nam Sài Gòn: FC Warriors vs FC Lộc Phát (Tỷ số Hiệp 2: 3-2)!
               </span>
             </div>
           </div>
 
-          {/* 2. MULTI-SPORT FILTER RIBBON & QUICK ACTIONS */}
+          {/* 2. FOOTBALL SPORT FILTER RIBBON & QUICK ACTIONS */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800">
             {/* Sport Switcher Ribbon */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0">
@@ -78,56 +78,44 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 }`}
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Tất cả môn</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold">48</span>
+                <span>Tất cả Thể Thức</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold">24 giải</span>
               </button>
 
               <button 
-                onClick={() => setActiveSport('pickleball')}
+                onClick={() => setActiveSport('san7')}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeSport === 'pickleball'
+                  activeSport === 'san7'
                     ? 'bg-emerald-700 text-white shadow-sm'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
-                <span>🏓 Pickleball</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-lime-400 text-slate-950 text-[11px] font-black">18 giải</span>
+                <span>⚽ Sân 7 Phủi</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[11px] font-black">12 giải</span>
               </button>
 
               <button 
-                onClick={() => setActiveSport('football')}
+                onClick={() => setActiveSport('futsal')}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeSport === 'football'
+                  activeSport === 'futsal'
                     ? 'bg-emerald-700 text-white shadow-sm'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
-                <span>⚽ Bóng Đá 7 Người</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold">16</span>
+                <span>👟 Futsal Sài Gòn</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-sky-500 text-slate-950 text-[11px] font-black">8 giải</span>
               </button>
 
               <button 
-                onClick={() => setActiveSport('badminton')}
+                onClick={() => setActiveSport('san11')}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeSport === 'badminton'
+                  activeSport === 'san11'
                     ? 'bg-emerald-700 text-white shadow-sm'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
-                <span>🏸 Cầu Lông</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold">10</span>
-              </button>
-
-              <button 
-                onClick={() => setActiveSport('tennis')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeSport === 'tennis'
-                    ? 'bg-emerald-700 text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                <span>🎾 Tennis</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold">4</span>
+                <span>🏟️ Sân 11 Người</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[11px] font-black">4 giải</span>
               </button>
             </div>
 
@@ -610,18 +598,18 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 {/* Metric dual box */}
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex flex-col">
-                    <span className="text-[10px] text-slate-500 uppercase font-bold">Pickleball DUPR</span>
+                    <span className="text-[10px] text-slate-500 uppercase font-bold">Vua Phá Lưới Sân 7</span>
                     <div className="flex items-baseline gap-1.5 mt-1">
-                      <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono">3.05</span>
-                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">#142 Q.7</span>
+                      <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono">18 Bàn</span>
+                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">#1 Q.7</span>
                     </div>
-                    <span className="text-[10px] text-slate-500 mt-0.5">Top 15% VĐV tích cực</span>
+                    <span className="text-[10px] text-slate-500 mt-0.5">Top 5% VĐV Xuất Sắc</span>
                   </div>
 
                   <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex flex-col">
                     <span className="text-[10px] text-slate-500 uppercase font-bold">Bóng Đá Phủi Elo</span>
                     <div className="flex items-baseline gap-1.5 mt-1">
-                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">1,215</span>
+                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">1,450</span>
                       <span className="text-[11px] font-bold text-amber-500">#86 Div 2</span>
                     </div>
                     <span className="text-[10px] text-slate-500 mt-0.5">+45 điểm trong tháng</span>
@@ -633,7 +621,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Huy Hiệu Giải Đấu Đã Đạt</span>
                   <div className="flex flex-wrap gap-1.5">
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-semibold">
-                      🥇 Top 8 VaoSan Summer Cup 2024
+                      🥇 Vô Địch Sài Gòn Serie B 2024
                     </span>
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-semibold">
                       🔥 Chuỗi 5 Trận Bất Bại
@@ -646,21 +634,21 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 </button>
               </div>
 
-              {/* WIDGET 2: TOP DUPR PICKLEBALL LEADERBOARD (STITCH EXACT MATCH) */}
+              {/* WIDGET 2: TOP SCORERS & ELO FOOTBALL LEADERBOARD */}
               <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <Trophy className="w-5 h-5 text-amber-500" />
                     <h3 className="font-bold text-slate-900 dark:text-white text-sm">
-                      Bảng Vàng DUPR Pickleball
+                      BXH Vua Phá Lưới & Kiến Tạo
                     </h3>
                   </div>
-                  <span className="text-xs text-slate-500 font-semibold">TP.HCM • T10</span>
+                  <span className="text-xs text-slate-500 font-semibold">TP.HCM • Mùa Q4</span>
                 </div>
 
                 {/* Leaderboard Rows */}
                 <div className="flex flex-col gap-1 pt-1">
-                  {topDuprPlayers.map(p => (
+                  {topScorerFootball.map(p => (
                     <div 
                       key={p.rank} 
                       className={`flex items-center justify-between p-2.5 rounded-xl transition-colors ${
@@ -682,13 +670,13 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                           <span className="text-[11px] text-slate-500 font-medium">{p.note}</span>
                         </div>
                       </div>
-                      <span className="font-mono font-black text-emerald-700 dark:text-emerald-400 text-sm">{p.dpr}</span>
+                      <span className="font-mono font-black text-emerald-700 dark:text-emerald-400 text-xs">{p.goals}</span>
                     </div>
                   ))}
                 </div>
 
                 <a href="#" className="pt-2 text-center text-xs text-emerald-700 dark:text-emerald-400 font-bold hover:underline flex items-center justify-center gap-1">
-                  <span>Xem Top 100 VĐV Toàn Quốc</span>
+                  <span>Xem Top 100 Cầu Thủ Phủi Toàn Quốc</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </a>
               </div>

@@ -40,14 +40,14 @@ interface FieldIoT {
 }
 
 export default function StadiumIoTConsole() {
-  const [activeFilter, setActiveFilter] = useState<"all" | "pickleball" | "football" | "badminton">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "san7" | "san5" | "futsal">("all");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const [fields, setFields] = useState<FieldIoT[]>([
     {
-      id: "PB-01",
-      name: "Sân PB-01 Pro Match",
-      sport: "Pickleball",
+      id: "FB-01",
+      name: "Sân FB-01 Sân 7 Nam Sài Gòn",
+      sport: "Bóng Đá 7",
       status: "live",
       lux: 520,
       powerKw: 2.4,
@@ -169,8 +169,9 @@ export default function StadiumIoTConsole() {
 
   const filteredFields = fields.filter(f => {
     if (activeFilter === "all") return true;
-    if (activeFilter === "pickleball") return f.sport.includes("Pickleball");
-    if (activeFilter === "football") return f.sport.includes("Bóng đá");
+    if (activeFilter === "san7") return f.sport.includes("7");
+    if (activeFilter === "san5") return f.sport.includes("5");
+    if (activeFilter === "futsal") return f.sport.includes("Futsal");
     return true;
   });
 
@@ -273,24 +274,34 @@ export default function StadiumIoTConsole() {
                 Tất Cả (8)
               </button>
               <button
-                onClick={() => setActiveFilter("pickleball")}
+                onClick={() => setActiveFilter("san7")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                  activeFilter === "pickleball"
+                  activeFilter === "san7"
                     ? "bg-slate-900 dark:bg-emerald-500 text-white"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                 }`}
               >
-                Pickleball (6)
+                ⚽ Sân 7 Người
               </button>
               <button
-                onClick={() => setActiveFilter("football")}
+                onClick={() => setActiveFilter("san5")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                  activeFilter === "football"
+                  activeFilter === "san5"
                     ? "bg-slate-900 dark:bg-emerald-500 text-white"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                 }`}
               >
-                Bóng Đá 7 (2)
+                ⚽ Sân 5 Người
+              </button>
+              <button
+                onClick={() => setActiveFilter("futsal")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                  activeFilter === "futsal"
+                    ? "bg-slate-900 dark:bg-emerald-500 text-white"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                }`}
+              >
+                👟 Futsal Trong Nhà
               </button>
             </div>
           </div>

@@ -29,7 +29,7 @@ interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   user: any | null;
-  onOpenAuth: (mode: "login" | "register") => void;
+  onOpenAuth: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
   onLogout: () => void;
 }
 
@@ -50,6 +50,8 @@ export default function Navbar({
 
   const pitchMenuRef = useRef<HTMLDivElement>(null);
   const tournamentMenuRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -58,6 +60,12 @@ export default function Navbar({
       }
       if (tournamentMenuRef.current && !tournamentMenuRef.current.contains(event.target as Node)) {
         setShowTournamentMenu(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserDropdown(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -68,14 +76,16 @@ export default function Navbar({
     setActiveTab(tabId);
     setShowPitchMenu(false);
     setShowTournamentMenu(false);
+    setShowNotifications(false);
+    setShowUserDropdown(false);
   };
 
   const isPitchActive = ["booking", "urgent-resale", "post-match", "admin", "owner-onboarding", "multi-sport", "iot-console"].includes(activeTab);
   const isTournamentActive = ["community", "team-management", "tournaments", "organizer"].includes(activeTab);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300 w-full overflow-x-hidden">
-      <div className="max-w-[1600px] mx-auto px-2 sm:px-8 lg:px-12 h-13 sm:h-16 flex items-center justify-between gap-1 sm:gap-4">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300 w-full">
+      <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] h-13 sm:h-16 flex items-center justify-between gap-1 sm:gap-4">
         {/* BRAND LOGO */}
         <div
           onClick={() => handleSelectSubTab("booking")}
@@ -96,18 +106,63 @@ export default function Navbar({
 
         {/* CONSOLIDATED DESKTOP NAV */}
         <nav className="hidden lg:flex items-center space-x-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => handleSelectSubTab("booking")}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
-              activeTab === "booking"
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
-                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            <Calendar className="w-4 h-4 text-emerald-500" />
-            <span>Đặt Sân Thể Thao</span>
-          </button>
+          {user?.role === "OWNER" ? (
+            /* OWNER ROLE NAVBAR ITEMS */
+            <>
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("admin")}
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                  activeTab === "admin"
+                    ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                <span>Quản Lý Cụm Sân & Doanh Thu</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("iot-console")}
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                  activeTab === "iot-console"
+                    ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <Zap className="w-4 h-4 text-amber-500" />
+                <span>Điều Hành IoT Đèn & Barrier</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("multi-sport")}
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                  activeTab === "multi-sport"
+                    ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <Clock className="w-4 h-4 text-emerald-400" />
+                <span>Sơ Đồ Ca Sân Realtime</span>
+              </button>
+            </>
+          ) : (
+            /* PLAYER / GUEST NAVBAR ITEMS */
+            <>
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("booking")}
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                  activeTab === "booking"
+                    ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <Calendar className="w-4 h-4 text-emerald-500" />
+                <span>Đặt Sân Bóng Đá</span>
+              </button>
 
           {/* GROUP 1: TIỆN ÍCH SÂN & NHƯỢNG CA */}
           <div className="relative" ref={pitchMenuRef}>
@@ -116,6 +171,8 @@ export default function Navbar({
               onClick={() => {
                 setShowPitchMenu(!showPitchMenu);
                 setShowTournamentMenu(false);
+                setShowNotifications(false);
+                setShowUserDropdown(false);
               }}
               className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
                 isPitchActive && activeTab !== "booking"
@@ -138,34 +195,15 @@ export default function Navbar({
                     activeTab === "multi-sport" ? "bg-slate-100 dark:bg-slate-800 font-black" : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-lg bg-lime-500/10 text-lime-500 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#0b4f6c]/10 text-[#0b4f6c] dark:text-sky-400 flex items-center justify-center shrink-0">
                     <Zap className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center space-x-1">
-                      <span>Multi-Sport Pickleball & Cầu Lông</span>
-                      <span className="text-[9px] px-1 bg-lime-500 text-slate-950 rounded font-black">DUPR</span>
+                      <span>Ma Trận Sân Bóng Đá (Sân 5, 7, 11)</span>
+                      <span className="text-[9px] px-1 bg-emerald-500 text-slate-950 rounded font-black">LIVE</span>
                     </div>
-                    <div className="text-[10px] text-slate-400 font-medium">Ma trận cụm sân & Ghép kèo DUPR 3.0-4.5+</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSelectSubTab("owner-onboarding")}
-                  className={`w-full text-left p-2.5 rounded-xl flex items-center space-x-3 transition-colors ${
-                    activeTab === "owner-onboarding" ? "bg-slate-100 dark:bg-slate-800 font-black" : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
-                    <Building className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center space-x-1">
-                      <span>Khởi Tạo Cụm Sân Mới</span>
-                      <span className="text-[9px] px-1 bg-emerald-500 text-white rounded">NEW</span>
-                    </div>
-                    <div className="text-[10px] text-slate-400 font-medium">Quy trình 4 bước cho Chủ Sân</div>
+                    <div className="text-[10px] text-slate-400 font-medium">Sơ đồ cụm sân cỏ nhân tạo & Ghép kèo bóng đá</div>
                   </div>
                 </button>
 
@@ -207,40 +245,6 @@ export default function Navbar({
                   </div>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleSelectSubTab("admin")}
-                  className={`w-full text-left p-2.5 rounded-xl flex items-center space-x-3 transition-colors ${
-                    activeTab === "admin" ? "bg-slate-100 dark:bg-slate-800 font-black" : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-slate-900 dark:text-white">Lịch Hoạt Động & Chủ Sân</div>
-                    <div className="text-[10px] text-slate-400 font-medium">Quản lý ca đặt & Doanh thu sân</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSelectSubTab("iot-console")}
-                  className={`w-full text-left p-2.5 rounded-xl flex items-center space-x-3 transition-colors ${
-                    activeTab === "iot-console" ? "bg-slate-100 dark:bg-slate-800 font-black" : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-500 flex items-center justify-center shrink-0">
-                    <Zap className="w-4 h-4 text-cyan-500" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center space-x-1">
-                      <span>Điều Hành IoT Đèn & Barrier</span>
-                      <span className="text-[9px] px-1 bg-cyan-500 text-slate-950 rounded font-black">IoT</span>
-                    </div>
-                    <div className="text-[10px] text-slate-400 font-medium">Tự động bật/tắt đèn & Cửa QR Ticket</div>
-                  </div>
-                </button>
               </div>
             )}
           </div>
@@ -252,6 +256,8 @@ export default function Navbar({
               onClick={() => {
                 setShowTournamentMenu(!showTournamentMenu);
                 setShowPitchMenu(false);
+                setShowNotifications(false);
+                setShowUserDropdown(false);
               }}
               className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
                 isTournamentActive
@@ -355,6 +361,8 @@ export default function Navbar({
             <Award className="w-4 h-4 text-amber-500" />
             <span>Thẻ Hội Viên</span>
           </button>
+          </>
+          )}
         </nav>
 
         {/* RIGHT SIDE WIDGETS */}
@@ -384,10 +392,15 @@ export default function Navbar({
             )}
           </button>
 
-          <div className="relative">
+          <div className="relative" ref={notificationRef}>
             <button
               type="button"
-              onClick={() => setShowNotifications(!showNotifications)}
+              onClick={() => {
+                setShowNotifications(!showNotifications);
+                setShowPitchMenu(false);
+                setShowTournamentMenu(false);
+                setShowUserDropdown(false);
+              }}
               className="relative w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700/80 transition-all"
             >
               <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -411,64 +424,87 @@ export default function Navbar({
           </div>
 
           {user ? (
-            <div className="relative">
+            <div className="relative" ref={userMenuRef}>
               <div
-                onClick={() => setShowUserDropdown(!showUserDropdown)}
-                className="flex items-center space-x-1 sm:space-x-2 cursor-pointer pl-1 py-1 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                onClick={() => {
+                  setShowUserDropdown(!showUserDropdown);
+                  setShowPitchMenu(false);
+                  setShowTournamentMenu(false);
+                  setShowNotifications(false);
+                }}
+                className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer pl-1 py-1 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                <div className="text-right hidden sm:block">
-                  <div className="text-xs font-extrabold text-slate-900 dark:text-white leading-tight">
-                    {user.name || "Trần Hoàng Long"}
+                <div className="text-right hidden sm:block max-w-[130px] md:max-w-[170px]">
+                  <div className="text-xs font-extrabold text-slate-900 dark:text-white leading-tight truncate">
+                    {user.fullName || user.name || "Người Dùng"}
                   </div>
-                  <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono">
-                    <span className="text-[#0b4f6c] dark:text-sky-400 font-extrabold">DUPR 3.0</span> • Elo {user.eloRating || 1450}
+                  <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono flex items-center justify-end space-x-1 whitespace-nowrap">
+                    <span className="text-[#0b4f6c] dark:text-sky-400 font-extrabold shrink-0">
+                      {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'BTC' : 'Cầu Thủ Pro'}
+                    </span>
+                    <span className="shrink-0">• Elo {user.eloRating || 1450}</span>
+                    <ChevronDown className={`w-3 h-3 text-slate-400 shrink-0 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`} />
                   </div>
                 </div>
 
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0b4f6c] dark:bg-sky-500 border-2 border-sky-400 text-white dark:text-slate-950 font-extrabold text-[10px] sm:text-xs flex items-center justify-center shrink-0 shadow-sm">
-                  {user.avatar || (user.name ? user.name.substring(0, 2).toUpperCase() : "TL")}
+                  {user.avatar || (user.fullName ? user.fullName.substring(0, 2).toUpperCase() : user.name ? user.name.substring(0, 2).toUpperCase() : "SH")}
                 </div>
               </div>
 
               {showUserDropdown && (
-                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 space-y-1 z-50 animate-modal-pop">
-                  <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
-                    <p className="font-extrabold text-xs text-slate-900 dark:text-white">{user.name}</p>
-                    <p className="text-[10px] font-mono text-slate-400">{user.email || "@long_pro10"}</p>
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 space-y-1.5 z-50 animate-modal-pop">
+                  <div className="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <p className="font-extrabold text-xs text-slate-900 dark:text-white truncate max-w-[140px]">
+                        {user.fullName || user.name || "Người Dùng"}
+                      </p>
+                      <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#0b4f6c]/10 dark:bg-sky-400/20 text-[#0b4f6c] dark:text-sky-400">
+                        {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'Ban Tổ Chức' : 'Cầu Thủ'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-mono text-slate-400 truncate mt-0.5">
+                      {user.email || user.phone || ""}
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleSelectSubTab("owner-onboarding");
-                      setShowUserDropdown(false);
-                    }}
-                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 flex items-center space-x-2"
-                  >
-                    <Building className="w-4 h-4 text-emerald-500" />
-                    <span>Khởi Tạo Cụm Sân Mới</span>
-                  </button>
+
                   <button
                     type="button"
                     onClick={() => {
                       handleSelectSubTab("profile");
                       setShowUserDropdown(false);
                     }}
-                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-2"
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors"
                   >
                     <User className="w-4 h-4 text-sky-500" />
-                    <span>Hồ Sơ VĐV & DUPR Rating</span>
+                    <span>Hồ Sơ VĐV & Rating</span>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
-                      onLogout();
+                      handleSelectSubTab("my-activities");
                       setShowUserDropdown(false);
                     }}
-                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center space-x-2"
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors"
                   >
-                    <LogOut className="w-3.5 h-3.5 text-rose-500" />
-                    <span>Đăng Xuất</span>
+                    <Calendar className="w-4 h-4 text-emerald-500" />
+                    <span>Lịch Trình & Vé Đã Đặt</span>
                   </button>
+
+                  <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        onLogout();
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-extrabold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center space-x-2 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4 text-rose-500" />
+                      <span>Đăng Xuất</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -494,72 +530,130 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* MOBILE BOTTOM NAVIGATION DOCK (FIXED AT BOTTOM FOR MOBILE UX) */}
+      {/* MOBILE BOTTOM NAVIGATION DOCK (ROLE-BASED FOR MOBILE UX) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 py-1 px-1 sm:px-3 flex items-center justify-around shadow-2xl">
-        <button
-          type="button"
-          onClick={() => handleSelectSubTab("booking")}
-          className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
-            activeTab === "booking"
-              ? "text-[#0b4f6c] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-          }`}
-        >
-          <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5" />
-          <span>Đặt Sân</span>
-        </button>
+        {user?.role === "OWNER" ? (
+          <>
+            <button
+              type="button"
+              onClick={() => handleSelectSubTab("admin")}
+              className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
+                activeTab === "admin"
+                  ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5 text-emerald-500" />
+              <span>Quản Lý</span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => handleSelectSubTab("owner-onboarding")}
-          className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
-            activeTab === "owner-onboarding"
-              ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-          }`}
-        >
-          <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5 text-emerald-500" />
-          <span>Khởi Tạo</span>
-        </button>
+            <button
+              type="button"
+              onClick={() => handleSelectSubTab("iot-console")}
+              className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
+                activeTab === "iot-console"
+                  ? "text-amber-500 bg-amber-50 dark:bg-amber-950/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5 text-amber-500" />
+              <span>IoT Đèn</span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => handleSelectSubTab("team-management")}
-          className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
-            activeTab === "team-management"
-              ? "text-[#0b4f6c] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-          }`}
-        >
-          <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5" />
-          <span>Đội Bóng</span>
-        </button>
+            <button
+              type="button"
+              onClick={() => handleSelectSubTab("multi-sport")}
+              className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
+                activeTab === "multi-sport"
+                  ? "text-[#0b4f6c] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5 text-sky-500" />
+              <span>Sơ Đồ Ca</span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => handleSelectSubTab("tournaments")}
-          className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
-            activeTab === "tournaments"
-              ? "text-amber-500 bg-amber-50 dark:bg-amber-950/40"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-          }`}
-        >
-          <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5 text-amber-500" />
-          <span>Giải Đấu</span>
-        </button>
+            <button
+              type="button"
+              onClick={() => handleSelectSubTab("profile")}
+              className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
+                activeTab === "profile"
+                  ? "text-[#0b4f6c] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5" />
+              <span>Hồ Sơ</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => handleSelectSubTab("booking")}
+              className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
+                activeTab === "booking"
+                  ? "text-[#0b4f6c] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5 text-emerald-500" />
+              <span>Đặt Sân</span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => handleSelectSubTab("profile")}
-          className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
-            activeTab === "profile"
-              ? "text-[#0b4f6c] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-          }`}
-        >
-          <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5" />
-          <span>Hồ Sơ</span>
-        </button>
+            <button
+              type="button"
+              onClick={() => handleSelectSubTab("urgent-resale")}
+              className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
+                activeTab === "urgent-resale"
+                  ? "text-rose-500 bg-rose-50 dark:bg-rose-950/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5 text-rose-500" />
+              <span>Nhượng Ca</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSelectSubTab("team-management")}
+              className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
+                activeTab === "team-management"
+                  ? "text-[#0b4f6c] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5" />
+              <span>Đội Bóng</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSelectSubTab("tournaments")}
+              className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
+                activeTab === "tournaments"
+                  ? "text-amber-500 bg-amber-50 dark:bg-amber-950/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5 text-amber-500" />
+              <span>Giải Đấu</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSelectSubTab("profile")}
+              className={`px-1.5 sm:px-3 py-1 rounded-xl flex flex-col items-center text-[9px] sm:text-[10px] font-extrabold transition-all shrink-0 ${
+                activeTab === "profile"
+                  ? "text-[#0b4f6c] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5" />
+              <span>Hồ Sơ</span>
+            </button>
+          </>
+        )}
       </div>
     </header>
 
