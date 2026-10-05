@@ -51,8 +51,8 @@ export default function PlayerProfileConsole({
   const { user: contextUser, updateProfile } = useAuth();
   const activeUser = propUser !== undefined ? propUser : contextUser;
 
-  // Active Sport Tab State
-  const [activeSport, setActiveSport] = useState<"pickleball" | "football" | "badminton" | "tennis">("pickleball");
+  // Active Football Pitch Format Tab State
+  const [activeSport, setActiveSport] = useState<"san7" | "san5" | "san11" | "futsal">("san7");
   
   // History Filter State
   const [historyFilter, setHistoryFilter] = useState<"all" | "win" | "loss" | "ai_video">("all");
@@ -351,7 +351,7 @@ export default function PlayerProfileConsole({
         {/* LEFT 8 COLS */}
         <div className="lg:col-span-8 space-y-8">
 
-          {/* 1. MULTI-SPORT RATING & PERFORMANCE METRICS */}
+          {/* 1. FOOTBALL ELO RATING & PERFORMANCE METRICS */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -359,17 +359,17 @@ export default function PlayerProfileConsole({
                   Đánh Giá Năng Lực & Chỉ Số Kỹ Năng
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Hệ thống phân hạng tự động qua thuật toán DUPR & Elo SoccerHub 4.0
+                  Hệ thống phân hạng tự động qua thuật toán Elo SoccerHub & VFF Phủi 4.0
                 </p>
               </div>
 
               {/* Sport Switcher Tabs */}
               <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                 {[
-                  { id: "pickleball", label: "Pickleball" },
-                  { id: "football", label: "Bóng Đá 7" },
-                  { id: "badminton", label: "Cầu Lông" },
-                  { id: "tennis", label: "Tennis" }
+                  { id: "san7", label: "Bóng Đá Sân 7" },
+                  { id: "san5", label: "Bóng Đá Sân 5" },
+                  { id: "san11", label: "Bóng Đá Sân 11" },
+                  { id: "futsal", label: "Futsal Sàn Gỗ" }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -572,7 +572,7 @@ export default function PlayerProfileConsole({
                       THẮNG 2 - 1
                     </span>
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                      Bán Kết Mini Cup • Sân PB-01 D-Sport Oasis Q.7
+                      Bán Kết Mini Cup • Sân Bóng Đá 7A Phú Mỹ Hưng Q.7
                     </span>
                   </div>
 
@@ -580,7 +580,7 @@ export default function PlayerProfileConsole({
                     <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 text-[10px] font-black uppercase flex items-center gap-1">
                       <Star className="w-3 h-3 fill-amber-500" /> MVP Trận Đấu
                     </span>
-                    <span className="font-mono text-xs font-black text-emerald-500">+0.05 DUPR</span>
+                    <span className="font-mono text-xs font-black text-emerald-500">+15 Điểm Elo</span>
                   </div>
                 </div>
 
@@ -588,14 +588,14 @@ export default function PlayerProfileConsole({
                   <div className="md:col-span-7 flex items-center justify-between bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center space-x-2.5 truncate">
                       <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-500 font-black flex items-center justify-center text-xs shrink-0">
-                        VS
+                        FC
                       </div>
                       <div className="truncate">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{displayFullName} / Tuấn Lê</p>
-                        <span className="text-[10px] text-slate-400 font-semibold">Seed #1 (DUPR 3.05 + 3.10)</span>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">FC Sài Gòn Warriors ({displayFullName})</p>
+                        <span className="text-[10px] text-slate-400 font-semibold">Hạt Giống #1 (Elo 1,580)</span>
                       </div>
                     </div>
-                    <span className="font-mono text-2xl font-black text-emerald-500 px-2">2</span>
+                    <span className="font-mono text-2xl font-black text-emerald-500 px-2">3</span>
                   </div>
 
                   <div className="md:col-span-5 flex items-center justify-between bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
@@ -695,7 +695,7 @@ export default function PlayerProfileConsole({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {[
-                { title: "Quán Quân SoccerHub Summer Cup 2024", desc: "Vô địch bảng Đôi Nam DUPR < 3.25", icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10" },
+                { title: "Quán Quân SoccerHub Summer Cup 2024", desc: "Vô địch cúp Sân 7 Hạng Serie B", icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10" },
                 { title: "Vô Địch Sài Gòn Phủi Open Serie B", desc: "Cùng FC Sài Gòn Warriors nâng cúp sân 7", icon: Award, color: "text-emerald-500", bg: "bg-emerald-500/10" },
                 { title: "Chiến Binh Bất Bại", desc: "Đạt chuỗi 5 trận toàn thắng liên tiếp", icon: Flame, color: "text-rose-500", bg: "bg-rose-500/10" },
                 { title: "Đại Sứ FairPlay 100%", desc: "Không bao giờ bùng kèo, đúng giờ 35+ trận", icon: ShieldCheck, color: "text-sky-500", bg: "bg-sky-500/10" },
@@ -766,12 +766,16 @@ export default function PlayerProfileConsole({
                 Quãng Đường Di Chuyển Trung Bình
               </span>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Pickleball / trận</span>
+                <span className="text-slate-500 dark:text-slate-400">Bóng đá sân 5 / trận</span>
                 <span className="font-mono font-bold text-slate-900 dark:text-white">4.8 km</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 dark:text-slate-400">Bóng đá sân 7 / trận</span>
                 <span className="font-mono font-bold text-slate-900 dark:text-white">7.2 km</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">Bóng đá sân 11 / trận</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">10.5 km</span>
               </div>
             </div>
           </div>
@@ -785,11 +789,11 @@ export default function PlayerProfileConsole({
             <div className="space-y-3 text-xs">
               <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5">
                 <div className="flex items-center justify-between font-bold text-slate-900 dark:text-white">
-                  <span>Pickleball Đôi Nam Nữ</span>
+                  <span>Trận Giao Hữu Sân 5 Mini</span>
                   <span className="text-emerald-500 font-mono text-[11px]">18:00 Hôm Nay</span>
                 </div>
                 <p className="text-slate-500 dark:text-slate-400 text-[11px]">
-                  Sân P-02 D-Sport Oasis Q.7 • Với Tuấn Lê
+                  Sân 5A D-Sport Oasis Q.7 • Với FC Tuấn Lê
                 </p>
               </div>
 
@@ -925,10 +929,10 @@ export default function PlayerProfileConsole({
                     onChange={(e) => setEditForm({ ...editForm, favoriteSport: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-purple-500 transition-all"
                   >
-                    <option value="football">Bóng Đá</option>
-                    <option value="pickleball">Pickleball</option>
-                    <option value="badminton">Cầu Lông</option>
-                    <option value="tennis">Tennis</option>
+                    <option value="san7">Bóng Đá Sân 7 (Phủi)</option>
+                    <option value="san5">Bóng Đá Sân 5 (Mini Cỏ Nhân Tạo)</option>
+                    <option value="san11">Bóng Đá Sân 11 (Chuẩn FIFA)</option>
+                    <option value="futsal">Futsal Trong Nhà</option>
                   </select>
                 </div>
 

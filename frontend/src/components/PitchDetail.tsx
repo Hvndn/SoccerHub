@@ -124,55 +124,55 @@ export default function PitchDetail({
   // Matrix courts matching exact Stitch canvas HTML
   const matrixCourts = [
     {
-      id: "pb-01",
-      name: "Sân PB-01",
-      badge: "Pro Mat",
+      id: "san-7a",
+      name: "Sân 7A (Cỏ Nhân Tạo)",
+      badge: "FIFA Quality",
       badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-      spec: "Thảm PVC Cushion 8mm • Mái che cao 11m",
+      spec: "Mặt cỏ nhân tạo FIFA Pro 50mm • Đèn LED Floodlight 400W",
       slots: [
-        { time: "17:00 - 18:00", price: 110000, status: "AVAILABLE" },
-        { time: "18:00 - 19:30", price: 160000, status: "BOOKED" },
-        { time: "19:30 - 21:00", price: 160000, status: "SELECTED" },
-        { time: "21:00 - 22:30", price: 120000, status: "AVAILABLE" }
+        { time: "17:00 - 18:30", price: 350000, status: "AVAILABLE", eloInfo: "" },
+        { time: "18:30 - 20:00", price: 500000, status: "BOOKED", eloInfo: "" },
+        { time: "20:00 - 21:30", price: 500000, status: "SELECTED", eloInfo: "" },
+        { time: "21:30 - 23:00", price: 350000, status: "AVAILABLE", eloInfo: "" }
       ]
     },
     {
-      id: "pb-02",
-      name: "Sân PB-02",
-      badge: "Cộng đồng",
+      id: "san-7b",
+      name: "Sân 7B (Ghép Kèo)",
+      badge: "Ghép Đội",
       badgeColor: "bg-lime-500/20 text-lime-700 dark:text-lime-400",
-      spec: "Sàn sơn nhám giảm chấn • Đèn LED Floodlight",
+      spec: "Cỏ nhân tạo giảm chấn • Bảng tỷ số LED điện tử",
       slots: [
-        { time: "17:00 - 18:00", price: 110000, status: "AVAILABLE" },
-        { time: "18:00 - 19:30", price: 160000, status: "DUPR_MATCH", duprInfo: "Ghép kèo DUPR 3.0 (3/4)" },
-        { time: "19:30 - 21:00", price: 160000, status: "BOOKED" },
-        { time: "21:00 - 22:30", price: 120000, status: "AVAILABLE" }
+        { time: "17:00 - 18:30", price: 350000, status: "AVAILABLE", eloInfo: "" },
+        { time: "18:30 - 20:00", price: 500000, status: "ELO_MATCH", eloInfo: "Ghép kèo Elo 1,450 (10/14)" },
+        { time: "20:00 - 21:30", price: 500000, status: "BOOKED", eloInfo: "" },
+        { time: "21:30 - 23:00", price: 350000, status: "AVAILABLE", eloInfo: "" }
       ]
     },
     {
-      id: "pb-03",
-      name: "Sân PB-03",
+      id: "san-5a",
+      name: "Sân 5A (Futsal Mái Che)",
       badge: "AI Cam",
       badgeColor: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
-      spec: "Camera 4K AI tự động cắt Highlights trận đấu",
+      spec: "Camera 4K AI tự động cắt Highlights bàn thắng & VAR",
       slots: [
-        { time: "17:00 - 18:00", price: 110000, status: "AVAILABLE" },
-        { time: "18:00 - 19:30", price: 160000, status: "BOOKED" },
-        { time: "19:30 - 21:00", price: 160000, status: "AVAILABLE" },
-        { time: "21:00 - 22:30", price: 120000, status: "AVAILABLE" }
+        { time: "17:00 - 18:30", price: 250000, status: "AVAILABLE", eloInfo: "" },
+        { time: "18:30 - 20:00", price: 350000, status: "BOOKED", eloInfo: "" },
+        { time: "20:00 - 21:30", price: 350000, status: "AVAILABLE", eloInfo: "" },
+        { time: "21:30 - 23:00", price: 250000, status: "AVAILABLE", eloInfo: "" }
       ]
     },
     {
-      id: "pb-05",
-      name: "Sân PB-05 (Center)",
+      id: "san-11",
+      name: "Sân 11 (Chuẩn VFF)",
       badge: "VIP Khán Đài",
       badgeColor: "bg-amber-500/20 text-amber-700 dark:text-amber-400",
-      spec: "Sân trung tâm có 120 ghế khán đài VIP & Bảng điện tử",
+      spec: "Sân 11 người tiêu chuẩn thi đấu có 200 ghế khán đài",
       slots: [
-        { time: "17:00 - 18:00", price: 140000, status: "AVAILABLE" },
-        { time: "18:00 - 19:30", price: 200000, status: "AVAILABLE" },
-        { time: "19:30 - 21:00", price: 200000, status: "BOOKED" },
-        { time: "21:00 - 22:30", price: 150000, status: "AVAILABLE" }
+        { time: "17:00 - 18:30", price: 800000, status: "AVAILABLE", eloInfo: "" },
+        { time: "18:30 - 20:00", price: 1200000, status: "AVAILABLE", eloInfo: "" },
+        { time: "20:00 - 21:30", price: 1200000, status: "BOOKED", eloInfo: "" },
+        { time: "21:30 - 23:00", price: 800000, status: "AVAILABLE", eloInfo: "" }
       ]
     }
   ];
@@ -245,7 +245,7 @@ export default function PitchDetail({
             <div className="flex flex-wrap items-center gap-2">
               <span className="bg-[#006c49] text-white text-[11px] font-extrabold px-2.5 py-1 rounded uppercase tracking-wider inline-flex items-center space-x-1">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>DUPR Verified</span>
+                <span>FIFA Quality / VFF</span>
               </span>
               <span className="bg-[#acf847] text-[#102000] text-[11px] font-extrabold px-2.5 py-1 rounded inline-flex items-center space-x-1">
                 <Zap className="w-3.5 h-3.5 text-[#304f00]" />
@@ -346,11 +346,11 @@ export default function PitchDetail({
             <div className="relative flex-1 overflow-hidden group bg-slate-100 dark:bg-slate-800 rounded-xl">
               <img
                 src={venueData.subImages[1]}
-                alt="Cộng đồng DUPR 3.0+"
+                alt="Cộng đồng Bóng Đá Phủi Sài Gòn"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute bottom-2 left-2 bg-slate-950/70 backdrop-blur px-2 py-0.5 rounded text-[11px] text-white font-semibold">
-                Cộng đồng DUPR 3.0+
+                Cộng đồng Bóng Đá Phủi Sài Gòn
               </div>
             </div>
           </div>
@@ -372,7 +372,7 @@ export default function PitchDetail({
                 </div>
                 <div className="flex items-center space-x-2">
                   <Award className="w-4 h-4 text-[#006c49]" />
-                  <span>Thuê vợt Carbon Pro</span>
+                  <span>Thuê Áo Bib & Giày Đá Bóng</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Video className="w-4 h-4 text-[#006c49]" />
@@ -427,7 +427,7 @@ export default function PitchDetail({
               </div>
               <div className="flex items-center space-x-1">
                 <span className="w-3 h-3 rounded bg-[#acf847]" />
-                <span className="text-[#102000]">Ghép kèo DUPR</span>
+                <span className="text-[#102000]">Ghép kèo Elo</span>
               </div>
             </div>
           </div>
@@ -459,7 +459,7 @@ export default function PitchDetail({
 
           {/* Filter Court Category Pills */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
-            {["Tất cả cụm sân (8)", "Pickleball Trong Nhà (PB 01 - 04)", "Pickleball VIP Khán Đài (PB 05 - 06)", "Sân Cỏ Nhân Tạo 7 (Sân A & B)"].map((cat, idx) => (
+            {["Tất cả cụm sân (8)", "Sân 7 Cỏ Nhân Tạo (Sân A & B)", "Sân 5 Mini Futsal (Sân 01 - 04)", "Sân 11 Tiêu Chuẩn FIFA"].map((cat, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedCategory(idx === 0 ? "ALL" : `CAT_${idx}`)}
@@ -527,7 +527,7 @@ export default function PitchDetail({
                 {court.slots.map((slot, idx) => {
                   const isSelected = selectedSlot.courtId === court.id && selectedSlot.time === slot.time;
                   const isBooked = slot.status === "BOOKED";
-                  const isDuprMatch = slot.status === "DUPR_MATCH";
+                  const isEloMatch = slot.status === "ELO_MATCH";
 
                   return (
                     <div key={idx} className="col-span-2">
@@ -547,13 +547,13 @@ export default function PitchDetail({
                           <Lock className="w-4 h-4 text-slate-400" />
                           <span className="text-[10px] font-bold">Đã đặt</span>
                         </div>
-                      ) : isDuprMatch ? (
+                      ) : isEloMatch ? (
                         <div className="w-full h-14 rounded-xl bg-[#acf847]/30 text-[#102000] dark:text-[#acf847] flex flex-col items-center justify-center p-1 cursor-pointer hover:bg-[#acf847]/50 transition-colors border border-[#acf847]/40">
                           <div className="flex items-center space-x-1">
                             <Users className="w-3.5 h-3.5 text-[#304f00] dark:text-[#acf847]" />
                             <span className="text-[11px] font-extrabold">Ghép kèo</span>
                           </div>
-                          <span className="text-[10px] font-bold">{slot.duprInfo}</span>
+                          <span className="text-[10px] font-bold">{slot.eloInfo}</span>
                         </div>
                       ) : (
                         <button
@@ -768,7 +768,7 @@ export default function PitchDetail({
                   className="mt-0.5 w-4 h-4 rounded text-[#006c49] accent-[#006c49]"
                 />
                 <span className="text-slate-700 dark:text-slate-300 leading-tight">
-                  <strong>Tự động kích hoạt đèn sân</strong> đúng 19:25 qua mã VaoSan QuickPass
+                  <strong>Tự động kích hoạt đèn sân</strong> đúng 18:25 qua mã SoccerHub QuickPass
                 </span>
               </label>
               <label className="flex items-start space-x-2 cursor-pointer">
@@ -779,7 +779,7 @@ export default function PitchDetail({
                   className="mt-0.5 w-4 h-4 rounded text-[#006c49] accent-[#006c49]"
                 />
                 <span className="text-slate-700 dark:text-slate-300 leading-tight">
-                  <strong>Bật Kèo Ghép Đội</strong> cho các thành viên DUPR cùng trình độ tìm tới giao lưu
+                  <strong>Bật Kèo Ghép Đội</strong> cho các cầu thủ và đội bóng cùng hạng Elo tìm tới giao lưu
                 </span>
               </label>
             </div>

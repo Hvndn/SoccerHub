@@ -282,7 +282,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <option value="PITCH_5">Sân 5 Futsal / Cỏ</option>
                 <option value="PITCH_7">Sân 7 Tiêu Chuẩn</option>
                 <option value="PITCH_11">Sân 11 FIFA</option>
-                <option value="PVC">Thảm PVC Pickleball / Yonex</option>
+                <option value="FUTSAL">Sân Futsal Sàn Gỗ</option>
               </select>
             </div>
           </div>

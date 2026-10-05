@@ -25,6 +25,11 @@ if %errorlevel% neq 0 (
     )
 )
 
+:: Tu dong giai phong cong 3000, 8080, 8000 neu con tien trinh Windows cu bi treo
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :3000 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8080 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8000 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1
+
 echo [INFO] Dang khoi chay tat ca 3 dich vu trong 1 CUA SO TERMINAL duy nhat:
 echo   - Backend Core  (Port 8080) : [BACKEND]    - Cyan
 echo   - AI Service    (Port 8000) : [AI-SERVICE] - Yellow

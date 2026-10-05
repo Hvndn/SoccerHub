@@ -75,7 +75,7 @@ export default function AuthModal({
   const [onboardingStep, setOnboardingStep] = useState<number>(0);
 
   // Onboarding Form States (Player)
-  const [selectedSport, setSelectedSport] = useState<"football" | "pickleball" | "badminton" | "tennis">("football");
+  const [selectedSport, setSelectedSport] = useState<"football7" | "football5" | "futsal" | "football11">("football7");
   const [selectedLevel, setSelectedLevel] = useState<string>("Nghiệp dư");
   const [selectedElo, setSelectedElo] = useState<string>("Elo 1,200 (Sân 7)");
   const [selectedRegion, setSelectedRegion] = useState<string>("q7");
@@ -308,7 +308,7 @@ export default function AuthModal({
                   </h1>
                   <p className="text-xs text-slate-300 font-medium leading-relaxed">
                     {mode === "login"
-                      ? "Tích hợp hệ thống đặt sân, bắt đối tác/đội tự động và thi đấu giao lưu đa môn tiện lợi."
+                      ? "Tích hợp hệ thống đặt sân bóng đá, ghép đội cáp kèo tự động và xếp hạng Elo chuyên nghiệp."
                       : "Kết nối với 68.000+ cầu thủ, phòng chống bùng kèo tức thì nhờ Napas247 & tiêu chuẩn quốc tế."}
                   </p>
                 </div>
@@ -975,11 +975,11 @@ export default function AuthModal({
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedSport("football");
+                            setSelectedSport("football7");
                             setSelectedElo("Elo 1,200 (Sân 7 Phủi)");
                           }}
                           className={`p-3 rounded-2xl border text-left transition-all ${
-                            selectedSport === "football"
+                            selectedSport === "football7"
                               ? "border-[#0b4f6c] bg-[#0b4f6c]/10 dark:bg-sky-400/20 text-[#0b4f6c] dark:text-sky-400 shadow-sm font-bold"
                               : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
                           }`}
@@ -992,11 +992,11 @@ export default function AuthModal({
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedSport("pickleball");
+                            setSelectedSport("football5");
                             setSelectedElo("Elo 1,150 (Sân 5)");
                           }}
                           className={`p-3 rounded-2xl border text-left transition-all ${
-                            selectedSport === "pickleball"
+                            selectedSport === "football5"
                               ? "border-[#0b4f6c] bg-[#0b4f6c]/10 dark:bg-sky-400/20 text-[#0b4f6c] dark:text-sky-400 shadow-sm font-bold"
                               : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
                           }`}
@@ -1009,11 +1009,11 @@ export default function AuthModal({
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedSport("badminton");
+                            setSelectedSport("futsal");
                             setSelectedElo("Elo 1,300 (Futsal)");
                           }}
                           className={`p-3 rounded-2xl border text-left transition-all ${
-                            selectedSport === "badminton"
+                            selectedSport === "futsal"
                               ? "border-[#0b4f6c] bg-[#0b4f6c]/10 dark:bg-sky-400/20 text-[#0b4f6c] dark:text-sky-400 shadow-sm font-bold"
                               : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
                           }`}
@@ -1026,11 +1026,11 @@ export default function AuthModal({
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedSport("tennis");
+                            setSelectedSport("football11");
                             setSelectedElo("Elo 1,500 (Sân 11)");
                           }}
                           className={`p-3 rounded-2xl border text-left transition-all ${
-                            selectedSport === "tennis"
+                            selectedSport === "football11"
                               ? "border-[#0b4f6c] bg-[#0b4f6c]/10 dark:bg-sky-400/20 text-[#0b4f6c] dark:text-sky-400 shadow-sm font-bold"
                               : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
                           }`}

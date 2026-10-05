@@ -39,7 +39,7 @@ export default function MatchmakingMarketplace({
   onSelectMatch,
   onCreateMatch
 }: MatchmakingMarketplaceProps) {
-  const [selectedSport, setSelectedSport] = useState("PICKLEBALL");
+  const [selectedSport, setSelectedSport] = useState("SAN_7");
   const [selectedLevel, setSelectedLevel] = useState("2.5 - 3.5");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("TONIGHT");
   const [radiusKm, setRadiusKm] = useState(5);
@@ -50,7 +50,7 @@ export default function MatchmakingMarketplace({
 
   const userName = user?.fullName || user?.name || "Nguyễn Văn An";
   const userElo = user?.eloRating || 1200;
-  const userDupr = "3.0";
+  const userTier = "Phủi Serie B";
 
   const handleJoinMatch = (matchId: string, matchFee: number) => {
     if (joinedMatches.includes(matchId)) return;
@@ -112,72 +112,72 @@ export default function MatchmakingMarketplace({
         {/* Sport Tabs */}
         <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
           <button
-            onClick={() => setSelectedSport("PICKLEBALL")}
+            onClick={() => setSelectedSport("SAN_7")}
             className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
-              selectedSport === "PICKLEBALL"
+              selectedSport === "SAN_7"
                 ? "bg-[#006c49] text-white shadow-md shadow-[#006c49]/20"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <span>🏓 Pickleball</span>
+            <span>⚽ Bóng Đá Sân 7</span>
             <span className="px-2 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[10px] font-black">
-              24 kèo mở
+              28 kèo mở
             </span>
           </button>
 
           <button
-            onClick={() => setSelectedSport("FOOTBALL")}
+            onClick={() => setSelectedSport("SAN_5")}
             className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
-              selectedSport === "FOOTBALL"
+              selectedSport === "SAN_5"
                 ? "bg-[#006c49] text-white shadow-md shadow-[#006c49]/20"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <span>⚽ Bóng Đá 7 Người</span>
+            <span>👟 Sân 5 Cỏ Nhân Tạo</span>
             <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">
-              18 kèo
+              19 kèo
             </span>
           </button>
 
           <button
-            onClick={() => setSelectedSport("BADMINTON")}
+            onClick={() => setSelectedSport("SAN_11")}
             className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
-              selectedSport === "BADMINTON"
+              selectedSport === "SAN_11"
                 ? "bg-[#006c49] text-white shadow-md shadow-[#006c49]/20"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <span>🏸 Cầu Lông</span>
-            <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">
-              12 kèo
-            </span>
-          </button>
-
-          <button
-            onClick={() => setSelectedSport("TENNIS")}
-            className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
-              selectedSport === "TENNIS"
-                ? "bg-[#006c49] text-white shadow-md shadow-[#006c49]/20"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
-            }`}
-          >
-            <span>🎾 Tennis</span>
+            <span>🏟️ Bóng Đá Sân 11 FIFA</span>
             <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">
               6 kèo
+            </span>
+          </button>
+
+          <button
+            onClick={() => setSelectedSport("FUTSAL")}
+            className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
+              selectedSport === "FUTSAL"
+                ? "bg-[#006c49] text-white shadow-md shadow-[#006c49]/20"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+            }`}
+          >
+            <span>🥅 Futsal Trong Nhà</span>
+            <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">
+              8 kèo
             </span>
           </button>
         </div>
 
         {/* Advanced Filter Metrics Bar (5 Cols Grid) */}
         <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/60 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
-          {/* Level / DUPR */}
+          {/* Level / Elo */}
           <div className="space-y-1">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-500 uppercase font-extrabold text-[10px]">Trình độ DUPR / Elo</span>
-              <span className="text-[#006c49] font-bold text-[11px]">Khớp DUPR {userDupr}</span>
+              <span className="text-slate-500 uppercase font-extrabold text-[10px]">Trình độ & Hạng Elo</span>
+              <span className="text-[#006c49] font-bold text-[11px]">Khớp Elo {userElo}</span>
             </div>
             <div className="flex items-center space-x-1 pt-0.5">
-              {["2.0 - 2.5", "2.5 - 3.5", "3.5 - 4.5+"].map((lvl) => (
+              {["Elo 1000-1200", "Elo 1200-1500", "Elo 1500+"].map((lvl) => (
                 <button
                   key={lvl}
                   onClick={() => setSelectedLevel(lvl)}
@@ -244,10 +244,10 @@ export default function MatchmakingMarketplace({
               onChange={(e) => setMatchFormat(e.target.value)}
               className="w-full py-2 px-3 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-900 dark:text-white focus:outline-none"
             >
-              <option value="DOUBLES_MALE">Đôi Nam (Tính điểm Elo/DUPR)</option>
-              <option value="MIXED">Đôi Nam Nữ Mixed</option>
-              <option value="DOUBLES_FEMALE">Đôi Nữ</option>
-              <option value="SINGLES">Đơn Kèo Giao Lưu</option>
+              <option value="SAN_7">Kèo Bóng Đá Sân 7 (Tính điểm Elo)</option>
+              <option value="SAN_5">Kèo Futsal / Sân 5 Người</option>
+              <option value="SAN_11">Kèo Sân 11 Chuẩn VFF</option>
+              <option value="SOLO_SLOT">Ghép Slot Lẻ / Tuyển Thủ Môn</option>
             </select>
           </div>
 
@@ -275,7 +275,7 @@ export default function MatchmakingMarketplace({
             <div className="flex items-center space-x-3">
               <h2 className="text-xl font-black text-slate-900 dark:text-white">Kèo Đang Mở Đăng Ký</h2>
               <span className="px-3 py-1 rounded-full bg-[#acf847] text-[#102000] font-mono text-xs font-extrabold">
-                Phù hợp 95%+ cho DUPR {userDupr}
+                Phù hợp 95%+ cho Trình độ Elo {userElo}
               </span>
             </div>
             <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500">
@@ -290,22 +290,22 @@ export default function MatchmakingMarketplace({
               <div className="flex items-center space-x-2">
                 <span className="flex items-center space-x-1 px-3 py-1 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 font-extrabold text-xs animate-pulse border border-rose-500/30">
                   <Flame className="w-4 h-4 text-rose-500" />
-                  <span>KÈO NÓNG • CẦN 1 CHÂN GẤP (45 PHÚT NỮA ĐÁNH)</span>
+                  <span>KÈO NÓNG • CẦN 1 CHÂN GẤP (45 PHÚT NỮA ĐÁ)</span>
                 </span>
                 <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs">
-                  Sân PB-02 (Outdoor Pro)
+                  Sân 7A (Cỏ nhân tạo FIFA)
                 </span>
               </div>
               <div className="flex items-center space-x-1 text-[#006c49] font-mono font-bold text-xs">
                 <ShieldCheck className="w-4 h-4 text-[#006c49]" />
-                <span>DUPR Rating Match</span>
+                <span>Xếp Hạng Elo VFF Phủi</span>
               </div>
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div className="space-y-1">
                 <h3 className="text-xl font-black text-slate-900 dark:text-white">
-                  Pickleball Đôi Nam 3.0+ Cọ Xát Tối Nay
+                  Bóng Đá Sân 7: Cáp Kèo Phủi Serie B Tối Nay
                 </h3>
                 <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
                   <span className="flex items-center space-x-1 text-slate-900 dark:text-white font-bold">
@@ -328,32 +328,32 @@ export default function MatchmakingMarketplace({
             {/* Slots & Roster Visual */}
             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/60 space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-extrabold text-slate-900 dark:text-white">Đội hình hiện tại: 3/4 VĐV</span>
-                <span className="text-[#006c49] font-bold">Vị trí trống: 1 Tay vợt DUPR 2.8 - 3.3</span>
+                <span className="font-extrabold text-slate-900 dark:text-white">Đội hình hiện tại: 13/14 Cầu thủ</span>
+                <span className="text-[#006c49] font-bold">Vị trí trống: 1 Tiền đạo / Tiền vệ (Elo 1,400 - 1,550)</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div className="flex items-center space-x-2 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
                   <div className="w-8 h-8 rounded-full bg-[#006c49] text-white font-bold text-xs flex items-center justify-center">TL</div>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white truncate">@TuanLe</span>
-                    <span className="font-mono text-[10px] text-[#006c49] font-bold">DUPR 3.1</span>
+                    <span className="font-bold text-xs text-slate-900 dark:text-white truncate">@TuanLe (Tiền vệ)</span>
+                    <span className="font-mono text-[10px] text-[#006c49] font-bold">Elo 1,450</span>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-2 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
                   <div className="w-8 h-8 rounded-full bg-slate-700 text-white font-bold text-xs flex items-center justify-center">MK</div>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white truncate">@MinhKhang</span>
-                    <span className="font-mono text-[10px] text-[#006c49] font-bold">DUPR 2.9</span>
+                    <span className="font-bold text-xs text-slate-900 dark:text-white truncate">@MinhKhang (Hậu vệ)</span>
+                    <span className="font-mono text-[10px] text-[#006c49] font-bold">Elo 1,380</span>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-2 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
                   <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center">QB</div>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white truncate">@QuocBao</span>
-                    <span className="font-mono text-[10px] text-[#006c49] font-bold">DUPR 3.0</span>
+                    <span className="font-bold text-xs text-slate-900 dark:text-white truncate">@QuocBao (Thủ môn)</span>
+                    <span className="font-mono text-[10px] text-[#006c49] font-bold">Elo 1,420</span>
                   </div>
                 </div>
 
@@ -503,7 +503,7 @@ export default function MatchmakingMarketplace({
                 <span className="font-bold text-sm text-slate-900 dark:text-white">{userName}</span>
               </div>
               <div className="text-right font-mono text-xs">
-                <div className="font-extrabold text-[#006c49]">DUPR {userDupr}</div>
+                <div className="font-extrabold text-[#006c49]">{userTier}</div>
                 <div className="text-slate-400 text-[10px]">Elo {userElo}</div>
               </div>
             </div>
@@ -512,11 +512,11 @@ export default function MatchmakingMarketplace({
               <span className="text-[10px] uppercase font-extrabold text-slate-400 block">Khuyến nghị hoàn hảo tối nay:</span>
               <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1 text-[#006c49]">
                 <div className="flex items-center justify-between font-bold">
-                  <span>Sân D-Sport Oasis (PB-02)</span>
+                  <span>Sân D-Sport Oasis (Sân 7A)</span>
                   <span className="font-mono">19:30 Tối nay</span>
                 </div>
                 <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
-                  Trình độ tương đồng hoàn toàn với @TuanLe (3.1) và @QuocBao (3.0). Chỉ cách vị trí hiện tại của bạn 1.8km.
+                  Trình độ tương đồng hoàn toàn với @TuanLe (Elo 1,450) và @QuocBao (Elo 1,420). Chỉ cách vị trí hiện tại của bạn 1.8km.
                 </p>
               </div>
             </div>

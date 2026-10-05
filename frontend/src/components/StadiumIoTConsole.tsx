@@ -57,9 +57,9 @@ export default function StadiumIoTConsole() {
       qrPass: "#VS-9981",
     },
     {
-      id: "PB-02",
-      name: "Sân PB-02 AI Streaming",
-      sport: "Pickleball",
+      id: "FB-02",
+      name: "Sân FB-02 Sân 7 AI Streaming",
+      sport: "Bóng đá 7",
       status: "live",
       lux: 500,
       powerKw: 2.4,
@@ -69,9 +69,9 @@ export default function StadiumIoTConsole() {
       qrPass: "#VS-9982",
     },
     {
-      id: "PB-03",
-      name: "Sân PB-03 Standard",
-      sport: "Pickleball",
+      id: "FB-03",
+      name: "Sân FB-03 Sân 7 Standard",
+      sport: "Bóng đá 7",
       status: "off",
       lux: 0,
       powerKw: 0.0,
@@ -80,20 +80,20 @@ export default function StadiumIoTConsole() {
       nextMatchTime: "20:00 (Hệ thống tự bật trước 5p)",
     },
     {
-      id: "PB-04",
-      name: "Sân PB-04 Training",
-      sport: "Pickleball",
+      id: "FB-04",
+      name: "Sân FB-04 Sân 5 Mini Training",
+      sport: "Bóng đá 5",
       status: "training",
       lux: 350,
       powerKw: 1.6,
       temp: 36,
       barrierStatus: "unlocked",
-      customer: "Lớp HLV IPTPA Trẻ Em",
+      customer: "Học viện Bóng Đá Trẻ Em",
     },
     {
-      id: "PB-05",
-      name: "Sân PB-05 Standard",
-      sport: "Pickleball",
+      id: "FB-05",
+      name: "Sân FB-05 Sân 5 Futsal",
+      sport: "Bóng đá 5",
       status: "standby",
       lux: 50,
       powerKw: 0.3,
@@ -102,12 +102,12 @@ export default function StadiumIoTConsole() {
       nextMatchTime: "20:00 (12 phút nữa)",
     },
     {
-      id: "PB-06",
-      name: "Sân PB-06 Match",
-      sport: "Pickleball",
+      id: "FB-06",
+      name: "Sân FB-06 Sân 11 FIFA Pro",
+      sport: "Bóng đá 11",
       status: "live",
       lux: 500,
-      powerKw: 2.4,
+      powerKw: 3.8,
       temp: 40,
       barrierStatus: "unlocked",
       customer: "Phạm Thu Trang",
@@ -476,7 +476,7 @@ export default function StadiumIoTConsole() {
                   <span className="text-cyan-600 dark:text-cyan-400">19:15 • Nguyễn Văn An</span>
                   <span className="font-mono">Barrier 2</span>
                 </div>
-                <div className="text-slate-500 dark:text-slate-400">Quét Pass #VS-9982 ➔ Mở cổng sân Cầu Lông</div>
+                <div className="text-slate-500 dark:text-slate-400">Quét Pass #VS-9982 ➔ Mở cổng Barrier Sân 7A</div>
               </div>
 
               <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">

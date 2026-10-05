@@ -255,8 +255,8 @@ export default function Home() {
       {/* Footer */}
       <footer className="glass-panel border-t border-slate-200 dark:border-slate-800 py-6 mt-12 transition-colors duration-300">
         <div className="w-full max-w-full mx-auto px-3 sm:px-6 lg:px-10 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1">
-          <p>© 2026 <strong>VaoSan Multi-Sports Platform</strong>. Đồ Án Tốt Nghiệp: Xây dựng hệ thống quản lý sân Bóng Đá, Cầu Lông, Pickleball, Tennis và giải đấu đa thể thao AI.</p>
-          <p className="text-[#0b4f6c] dark:text-sky-400 font-semibold">Công nghệ: Spring Boot, PostGIS, Redis, Python FastAPI (Scikit-learn / Multi-Sport Elo), Next.js 14, VietQR & WebSockets.</p>
+          <p>© 2026 <strong>SoccerHub - Nền Tảng Đặt Sân & Quản Lý Bóng Đá Thông Minh</strong>. Đồ Án Tốt Nghiệp: Hệ thống quản lý cụm sân bóng đá mini cỏ nhân tạo (Sân 5, Sân 7, Sân 11), giải đấu phủi và kết nối đối thủ AI.</p>
+          <p className="text-[#0b4f6c] dark:text-sky-400 font-semibold">Công nghệ: Spring Boot, MySQL 8.0, Redis, Python FastAPI (Scikit-learn / Football Elo Rating), Next.js 14, VietQR & WebSockets.</p>
         </div>
       </footer>
     </div>

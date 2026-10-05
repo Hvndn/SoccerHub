@@ -355,7 +355,7 @@ export default function UrgentSlotMarketplace({
                 </label>
                 <select className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-[#0b4f6c]">
                   <option>Ca 20:30 - Sân Bóng Đá F7 Phú Nhuận (Đã Cọc 500k)</option>
-                  <option>Ca 19:00 - Sân Pickleball D-Sport PB-04 (Đã Cọc 300k)</option>
+                  <option>Ca 19:00 - Sân 5A Cỏ Nhân Tạo Tân Hưng (Đã Cọc 300k)</option>
                 </select>
               </div>
 

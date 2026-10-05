@@ -45,7 +45,7 @@ export default function TournamentOrganizerPortal({
   // Sport Filter State
   const [selectedSport, setSelectedSport] = useState<string>("all");
   
-  // Live Score State for Court 1 (Pickleball SF1)
+  // Live Score State for Court 1 (Football 7A SF1)
   const [scoreA, setScoreA] = useState<number>(10);
   const [scoreB, setScoreB] = useState<number>(8);
   const [currentSet, setCurrentSet] = useState<number>(3);
@@ -161,18 +161,18 @@ export default function TournamentOrganizerPortal({
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-3">
-              <span>Quản Lý Giải Đấu Đa Môn Thể Thao</span>
+              <span>Quản Lý Giải Đấu Bóng Đá SoccerHub</span>
               <Award className="w-8 h-8 text-amber-400 shrink-0 hidden sm:inline-block" />
             </h1>
             <p className="text-sm text-slate-400 max-w-2xl font-medium leading-relaxed">
-              Trung tâm điều hành giải đấu tập trung: Tòa trọng tài điện tử AI, bốc thăm hạt giống tự động DUPR/Elo, Smart Escrow VietQR và sơ đồ nhánh đấu knockout thời gian thực.
+              Trung tâm điều hành giải đấu bóng đá tập trung: Tòa trọng tài điện tử AI, bốc thăm hạt giống tự động Elo VFF, Smart Escrow VietQR và sơ đồ nhánh đấu knockout thời gian thực.
             </p>
           </div>
 
           {/* Action Header Buttons */}
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => alert("Xuất báo cáo PDF thành công! Đã tải xuống PitchHub_Tournament_Report.pdf")}
+              onClick={() => alert("Xuất báo cáo PDF thành công! Đã tải xuống SoccerHub_Football_Tournament_Report.pdf")}
               className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all flex items-center space-x-2 active:scale-95"
             >
               <Download className="w-4 h-4 text-sky-400" />
@@ -232,7 +232,7 @@ export default function TournamentOrganizerPortal({
         </div>
       </div>
 
-      {/* MULTI-SPORT TOURNAMENT BENTO CAROUSEL CARDS */}
+      {/* FOOTBALL TOURNAMENT BENTO CAROUSEL CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {filteredTournaments.map(t => (
           <div
@@ -312,7 +312,7 @@ export default function TournamentOrganizerPortal({
         {/* LEFT 8 COLS: UMPIRE CONSOLE + BRACKET ENGINE + DATA TABLES */}
         <div className="lg:col-span-8 space-y-8">
 
-          {/* 1. TÒA TRỌNG TÀI ĐIỆN TỬ SÂN P-01 (LIVE PICKLEBALL SF1) */}
+          {/* 1. TÒA TRỌNG TÀI ĐIỆN TỬ SÂN 7A (LIVE BÁN KẾT SOCCERHUB CUP) */}
           <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -324,14 +324,14 @@ export default function TournamentOrganizerPortal({
                 <div>
                   <div className="flex items-center space-x-2">
                     <span className="text-xs font-black uppercase text-rose-400 tracking-wider">
-                      TÒA TRỌNG TÀI ĐIỆN TỬ • SÂN P-01
+                      TÒA TRỌNG TÀI ĐIỆN TỬ • SÂN 7A
                     </span>
                     <span className="px-2 py-0.5 rounded bg-rose-500 text-white text-[9px] font-black uppercase">
                       LIVE STREAM VAR
                     </span>
                   </div>
                   <h2 className="text-lg font-black tracking-tight text-white mt-0.5">
-                    Bán Kết SF1: Hoàng Nam / Minh Đức VS Quốc Anh / Tuấn Kiệt
+                    Bán Kết SF1: FC Saigon Warriors VS FC Anh Em Kiến Trúc
                   </h2>
                 </div>
               </div>
@@ -372,7 +372,7 @@ export default function TournamentOrganizerPortal({
                   <div className="flex items-center space-x-2">
                     <span className="w-3 h-3 rounded-full bg-emerald-400" />
                     <span className="text-xs font-black tracking-wide text-slate-300">
-                      CẶP A (HẠT GIỐNG #1)
+                      ĐỘI A (HẠT GIỐNG #1)
                     </span>
                   </div>
                   {serverTeam === "A" && (
@@ -384,7 +384,7 @@ export default function TournamentOrganizerPortal({
 
                 <div className="flex items-baseline justify-between">
                   <span className="text-sm font-bold text-white">
-                    Hoàng Nam / Minh Đức
+                    FC Saigon Warriors
                   </span>
                   <span className="text-5xl font-black font-mono text-emerald-400 tracking-tighter">
                     {scoreA}
@@ -392,8 +392,8 @@ export default function TournamentOrganizerPortal({
                 </div>
 
                 <div className="mt-3 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400 flex items-center justify-between">
-                  <span>Các Set trước: Set 1 (11-6), Set 2 (8-11)</span>
-                  <span className="text-emerald-400 font-bold">DUPR: 6.8</span>
+                  <span>Tỷ số: Hiệp 1 (2-1) • Hiệp 2 đang đá</span>
+                  <span className="text-emerald-400 font-bold">Elo: 1,650</span>
                 </div>
               </div>
 
@@ -407,7 +407,7 @@ export default function TournamentOrganizerPortal({
                   <div className="flex items-center space-x-2">
                     <span className="w-3 h-3 rounded-full bg-sky-400" />
                     <span className="text-xs font-black tracking-wide text-slate-300">
-                      CẶP B (HẠT GIỐNG #4)
+                      ĐỘI B (HẠT GIỐNG #4)
                     </span>
                   </div>
                   {serverTeam === "B" && (
@@ -419,7 +419,7 @@ export default function TournamentOrganizerPortal({
 
                 <div className="flex items-baseline justify-between">
                   <span className="text-sm font-bold text-white">
-                    Quốc Anh / Tuấn Kiệt
+                    FC Titan Sài Gòn
                   </span>
                   <span className="text-5xl font-black font-mono text-sky-400 tracking-tighter">
                     {scoreB}
@@ -427,8 +427,8 @@ export default function TournamentOrganizerPortal({
                 </div>
 
                 <div className="mt-3 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400 flex items-center justify-between">
-                  <span>Các Set trước: Set 1 (6-11), Set 2 (11-8)</span>
-                  <span className="text-sky-400 font-bold">DUPR: 6.4</span>
+                  <span>Tỷ số: Hiệp 1 (1-2) • Hiệp 2 đang đá</span>
+                  <span className="text-sky-400 font-bold">Elo: 1,580</span>
                 </div>
               </div>
 
@@ -445,7 +445,7 @@ export default function TournamentOrganizerPortal({
                   className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" />
-                  <span>+1 Điểm Cặp A</span>
+                  <span>+1 Bàn Thắng (Đội A)</span>
                 </button>
 
                 <button
@@ -453,7 +453,7 @@ export default function TournamentOrganizerPortal({
                   className="py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-black shadow-lg shadow-sky-600/20 active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" />
-                  <span>+1 Điểm Cặp B</span>
+                  <span>+1 Bàn Thắng (Đội B)</span>
                 </button>
 
                 <button
@@ -461,7 +461,7 @@ export default function TournamentOrganizerPortal({
                   className="py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  <span>Đổi Giao Bóng</span>
+                  <span>Đổi Quyền Phát Bóng</span>
                 </button>
 
                 <button
@@ -483,7 +483,7 @@ export default function TournamentOrganizerPortal({
                   VISUAL BRACKET ENGINE
                 </span>
                 <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                  Sơ Đồ Nhánh Đấu Knock-out Trực Tiếp (Pickleball Open Cup)
+                  Sơ Đồ Nhánh Đấu Knock-out Trực Tiếp (SoccerHub Premier Cup)
                 </h3>
               </div>
 
@@ -507,11 +507,11 @@ export default function TournamentOrganizerPortal({
                   {/* QF1 */}
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 shadow-xs">
                     <div className="flex items-center justify-between font-bold text-emerald-600 dark:text-emerald-400">
-                      <span>Hoàng Nam / Minh Đức</span>
+                      <span>FC Saigon Warriors</span>
                       <span className="font-mono">2</span>
                     </div>
                     <div className="flex items-center justify-between text-slate-400">
-                      <span>Hùng / Dũng</span>
+                      <span>FC Hùng Dũng Q.7</span>
                       <span className="font-mono">1</span>
                     </div>
                   </div>
@@ -519,11 +519,11 @@ export default function TournamentOrganizerPortal({
                   {/* QF2 */}
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 shadow-xs">
                     <div className="flex items-center justify-between font-bold text-sky-600 dark:text-sky-400">
-                      <span>Quốc Anh / Tuấn Kiệt</span>
+                      <span>FC Titan Sài Gòn</span>
                       <span className="font-mono">2</span>
                     </div>
                     <div className="flex items-center justify-between text-slate-400">
-                      <span>Việt / Thắng</span>
+                      <span>FC Chiến Thắng</span>
                       <span className="font-mono">0</span>
                     </div>
                   </div>
@@ -531,11 +531,11 @@ export default function TournamentOrganizerPortal({
                   {/* QF3 */}
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 shadow-xs">
                     <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
-                      <span>Gia Bảo / Bảo Long</span>
+                      <span>FC Bảo Long Gia Định</span>
                       <span className="font-mono">2</span>
                     </div>
                     <div className="flex items-center justify-between text-slate-400">
-                      <span>Huy / Lâm</span>
+                      <span>FC Anh Em Thủ Đức</span>
                       <span className="font-mono">1</span>
                     </div>
                   </div>
@@ -543,11 +543,11 @@ export default function TournamentOrganizerPortal({
                   {/* QF4 */}
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 shadow-xs">
                     <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
-                      <span>Hải Sơn / Thanh Tùng</span>
+                      <span>FC Sơn Tùng Bình Thạnh</span>
                       <span className="font-mono">2</span>
                     </div>
                     <div className="flex items-center justify-between text-slate-400">
-                      <span>Phúc / Hải</span>
+                      <span>FC Phúc Hải Tân Bình</span>
                       <span className="font-mono">0</span>
                     </div>
                   </div>
@@ -565,11 +565,11 @@ export default function TournamentOrganizerPortal({
                       SF1 LIVE
                     </span>
                     <div className="flex items-center justify-between font-bold text-emerald-400">
-                      <span>Nam / Đức</span>
+                      <span>FC Saigon Warriors</span>
                       <span className="font-mono font-black text-sm">1</span>
                     </div>
                     <div className="flex items-center justify-between font-bold text-sky-400">
-                      <span>Anh / Kiệt</span>
+                      <span>FC Titan Sài Gòn</span>
                       <span className="font-mono font-black text-sm">1</span>
                     </div>
                   </div>
@@ -580,11 +580,11 @@ export default function TournamentOrganizerPortal({
                       SF2 • Dự kiến 15:30
                     </span>
                     <div className="flex items-center justify-between font-bold text-slate-700 dark:text-slate-200">
-                      <span>Bảo / Long</span>
+                      <span>FC Bảo Long</span>
                       <span className="font-mono">-</span>
                     </div>
                     <div className="flex items-center justify-between font-bold text-slate-700 dark:text-slate-200">
-                      <span>Sơn / Tùng</span>
+                      <span>FC Sơn Tùng</span>
                       <span className="font-mono">-</span>
                     </div>
                   </div>
@@ -657,20 +657,20 @@ export default function TournamentOrganizerPortal({
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-black uppercase text-slate-400 tracking-wider">
                       <th className="py-3 px-3">Hạng</th>
-                      <th className="py-3 px-3">Cặp VĐV</th>
+                      <th className="py-3 px-3">Đội Bóng (FC)</th>
                       <th className="py-3 px-3">Số Trận</th>
                       <th className="py-3 px-3">Thắng/Thua</th>
-                      <th className="py-3 px-3">Điểm Hiệu Số</th>
-                      <th className="py-3 px-3">DUPR Avg</th>
+                      <th className="py-3 px-3">Hiệu Số</th>
+                      <th className="py-3 px-3">Elo VFF</th>
                       <th className="py-3 px-3 text-right">Trạng Thái</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-medium">
                     {[
-                      { rank: 1, name: "Hoàng Nam / Minh Đức", played: 4, record: "4 - 0", diff: "+28", dupr: "6.8", status: "Vào Bán Kết" },
-                      { rank: 2, name: "Quốc Anh / Tuấn Kiệt", played: 4, record: "3 - 1", diff: "+14", dupr: "6.4", status: "Vào Bán Kết" },
-                      { rank: 3, name: "Hùng / Dũng", played: 4, record: "2 - 2", diff: "+2", dupr: "6.1", status: "Dừng Bước Tứ Kết" },
-                      { rank: 4, name: "Việt / Thắng", played: 4, record: "1 - 3", diff: "-12", dupr: "5.9", status: "Vòng Bảng" }
+                      { rank: 1, name: "FC Saigon Warriors", played: 4, record: "4 - 0", diff: "+12", elo: "1,650", status: "Vào Bán Kết" },
+                      { rank: 2, name: "FC Titan Sài Gòn", played: 4, record: "3 - 1", diff: "+6", elo: "1,580", status: "Vào Bán Kết" },
+                      { rank: 3, name: "FC Hùng Dũng Q.7", played: 4, record: "2 - 2", diff: "+2", elo: "1,520", status: "Dừng Bước Tứ Kết" },
+                      { rank: 4, name: "FC Chiến Thắng", played: 4, record: "1 - 3", diff: "-5", elo: "1,470", status: "Vòng Bảng" }
                     ].map(row => (
                       <tr key={row.rank} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                         <td className="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">
@@ -689,7 +689,7 @@ export default function TournamentOrganizerPortal({
                           {row.diff}
                         </td>
                         <td className="py-3 px-3 font-mono font-bold text-amber-500">
-                          {row.dupr}
+                          {row.elo}
                         </td>
                         <td className="py-3 px-3 text-right">
                           <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
@@ -711,10 +711,10 @@ export default function TournamentOrganizerPortal({
             {bottomTab === "var_logs" && (
               <div className="space-y-3 font-mono text-xs">
                 {[
-                  { time: "14:22:10", court: "Sân P-01", type: "VAR Check", detail: "Kiểm tra lỗi đè vạch Kitchen (NVZ Line violation) - Cặp B khiếu nại -> Bóng hợp lệ.", result: "Valid" },
-                  { time: "14:05:45", court: "Sân P-03", type: "Thẻ Vàng", detail: "Cảnh cáo VĐV Trần Quốc Anh (Nóng giận đập vợt xuống sàn thi đấu).", result: "Yellow Card" },
-                  { time: "13:40:12", court: "Sân P-02", type: "Y Tế", detail: "Tạm dừng 5 phút chăm sóc y tế sẹo cơ đùi cho VĐV Nguyễn Bảo Long.", result: "Medical Timeout" },
-                  { time: "13:10:00", court: "Sân P-01", type: "Bốc Thăm", detail: "Bốc thăm quyền giao bóng trận Bán Kết SF1.", result: "Done" }
+                  { time: "14:22:10", court: "Sân 7A", type: "VAR Check", detail: "Kiểm tra lỗi việt vị dẫn đến bàn thắng phút 42 - FC Titan khiếu nại -> Bàn thắng hợp lệ.", result: "Valid Goal" },
+                  { time: "14:05:45", court: "Sân 7C", type: "Thẻ Vàng", detail: "Cảnh cáo cầu thủ Trần Quốc Anh (Phạm lỗi kê chân nguy hiểm phản công).", result: "Yellow Card" },
+                  { time: "13:40:12", court: "Sân 7B", type: "Y Tế", detail: "Tạm dừng 5 phút chăm sóc y tế sẹo cơ đùi cho thủ môn Nguyễn Bảo Long.", result: "Medical Timeout" },
+                  { time: "13:10:00", court: "Sân 7A", type: "Bốc Thăm", detail: "Bốc thăm chọn sân và quyền giao bóng trận Bán Kết SF1.", result: "Done" }
                 ].map((log, idx) => (
                   <div key={idx} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 flex items-start space-x-3">
                     <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
@@ -735,8 +735,8 @@ export default function TournamentOrganizerPortal({
             {/* TAB CONTENT: DETAILED SCHEDULE */}
             {bottomTab === "schedule" && (
               <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2 font-medium">
-                <p>• 14:00 - 15:15: Bán Kết 1 (Pickleball Đôi Nam Nữ)</p>
-                <p>• 15:30 - 16:45: Bán Kết 2 (Gia Bảo/Bảo Long VS Hải Sơn/Thanh Tùng)</p>
+                <p>• 14:00 - 15:15: Bán Kết 1 (Bóng Đá Sân 7: FC Saigon Warriors vs FC Anh Em Kiến Trúc)</p>
+                <p>• 15:30 - 16:45: Bán Kết 2 (FC Hạt Điều vs FC Bất Động Sản)</p>
                 <p>• 17:00 - 18:30: CHUNG KẾT TRANH CÚP VÔ ĐỊCH 80 TRỆU</p>
                 <p>• 18:45: Lễ Trao Giải & Smart Escrow Disbursement qua VietQR Auto-Payout</p>
               </div>
@@ -757,7 +757,7 @@ export default function TournamentOrganizerPortal({
               </div>
               <div>
                 <span className="text-[10px] font-black uppercase text-sky-400 tracking-wider">
-                  AI DUPR SEEDING ENGINE
+                  AI ELO VFF SEEDING ENGINE
                 </span>
                 <h4 className="text-base font-black text-white">
                   Bốc Thăm & Phân Hạt Giống AI
@@ -775,12 +775,12 @@ export default function TournamentOrganizerPortal({
                 <div className="h-full bg-emerald-400 w-[96%]" />
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed font-medium">
-                Thuật toán AI tự động phân tích điểm DUPR, tỷ lệ thắng tie-break và chỉ số thể lực IoT để xếp cặp thi đấu công bằng nhất.
+                Thuật toán AI tự động phân tích điểm Elo VFF, phong độ giải đấu và chỉ số thể lực IoT để xếp cặp thi đấu công bằng nhất.
               </p>
             </div>
 
             <button
-              onClick={() => alert("Đã kích hoạt thuật toán AI Tái Bốc Thăm dựa trên DUPR Rating mới nhất!")}
+              onClick={() => alert("Đã kích hoạt thuật toán AI Tái Bốc Thăm dựa trên Elo VFF Rating mới nhất!")}
               className="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-black shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
             >
               <Sparkles className="w-4 h-4" />
@@ -847,14 +847,14 @@ export default function TournamentOrganizerPortal({
           {/* 3. OFFICIAL EQUIPMENT & SPONSORS */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
             <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-              Bóng & Vợt Thi Đấu Chính Thức
+              Trang Thiết Bị & Bóng Thi Đấu Chính Thức
             </h4>
 
             <div className="space-y-3 text-xs">
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-slate-900 dark:text-white block">Franklin X-40</span>
-                  <span className="text-[11px] text-slate-400">Bóng thi đấu ngoài trời chuẩn USAPA</span>
+                  <span className="font-bold text-slate-900 dark:text-white block">Động Lực UHV 2.05 FIFA Pro</span>
+                  <span className="text-[11px] text-slate-400">Bóng thi đấu chính thức chuẩn FIFA Quality Pro</span>
                 </div>
                 <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black">
                   OFFICIAL
@@ -863,8 +863,8 @@ export default function TournamentOrganizerPortal({
 
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-slate-900 dark:text-white block">Joola Perseus / Selkirk</span>
-                  <span className="text-[11px] text-slate-400">Vợt thi đấu tiêu chuẩn chuyên nghiệp</span>
+                  <span className="font-bold text-slate-900 dark:text-white block">Wika Sport / Mizuno</span>
+                  <span className="text-[11px] text-slate-400">Trang bị thi đấu, áo Bib & găng tay thủ môn</span>
                 </div>
                 <span className="px-2 py-0.5 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[10px] font-black">
                   SPONSOR

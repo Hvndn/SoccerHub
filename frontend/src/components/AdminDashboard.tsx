@@ -110,17 +110,17 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       ]
     },
     {
-      pitchId: "pb1",
-      pitchName: "Sân Pickleball Pro #1 (Có Mái Che)",
-      type: "Pickleball",
-      basePrice: 200000,
-      peakPrice: 280000,
+      pitchId: "p11a",
+      pitchName: "Sân 11 Tiêu Chuẩn Quốc Tế FIFA",
+      type: "Sân 11",
+      basePrice: 900000,
+      peakPrice: 1200000,
       status: "ACTIVE",
       slots: [
-        { id: "s13", time: "16:00 - 17:30", status: "booked", customer: "Pickleball Club Q.7", phone: "0908 112 334", price: "200k", depositPaid: "100k", cashDue: "100k", via: "VietQR Online", code: "VS-PB-01" },
-        { id: "s14", time: "17:30 - 19:00", status: "playing", customer: "Duy & Bạn", phone: "0938 554 433", price: "280k", depositPaid: "140k", cashDue: "0k", via: "Check-in Đã Vào Sân", code: "VS-PB-02" },
-        { id: "s15", time: "19:00 - 20:30", status: "booked", customer: "Nhóm Pickleball Đêm", phone: "0919 778 899", price: "280k", depositPaid: "140k", cashDue: "140k", via: "MoMo Online", code: "VS-PB-03" },
-        { id: "s16", time: "20:30 - 22:00", status: "empty", customer: "Ca Trống", phone: "—", price: "220k", depositPaid: "0k", cashDue: "0k", via: "Sẵn sàng nhận khách", code: "—" }
+        { id: "s13", time: "16:00 - 17:30", status: "booked", customer: "FC Liên Quân Q.7", phone: "0908 112 334", price: "900k", depositPaid: "450k", cashDue: "450k", via: "VietQR Online", code: "VS-11A-01" },
+        { id: "s14", time: "17:30 - 19:00", status: "playing", customer: "FC Sinh Viên Tôn Đức Thắng", phone: "0938 554 433", price: "1200k", depositPaid: "600k", cashDue: "0k", via: "Check-in Đã Vào Sân", code: "VS-11A-02" },
+        { id: "s15", time: "19:00 - 20:30", status: "booked", customer: "FC Ngân Hàng ACB", phone: "0919 778 899", price: "1200k", depositPaid: "600k", cashDue: "600k", via: "MoMo Online", code: "VS-11A-03" },
+        { id: "s16", time: "20:30 - 22:00", status: "empty", customer: "Ca Trống", phone: "—", price: "950k", depositPaid: "0k", cashDue: "0k", via: "Sẵn sàng nhận khách", code: "—" }
       ]
     }
   ]);
@@ -130,7 +130,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     { id: "c1", name: "Nước Điện Giải Revive 500ml", price: 15000, soldToday: 48, stock: 120 },
     { id: "c2", name: "Nước Khoáng Lavie 500ml", price: 10000, soldToday: 65, stock: 200 },
     { id: "c3", name: "Thuê Giày Đã Bóng đinh TF (Đôi)", price: 40000, soldToday: 12, stock: 35 },
-    { id: "c4", name: "Thuê Vợt Pickleball Pro (Cây)", price: 30000, soldToday: 18, stock: 25 },
+    { id: "c4", name: "Thuê Bộ Áo Bib Tập Luyện (Bộ 10 Áo)", price: 30000, soldToday: 18, stock: 40 },
     { id: "c5", name: "Bóng Động Lực FIFA Size 5", price: 45000, soldToday: 10, stock: 15 }
   ]);
 
@@ -541,10 +541,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     Sân 5
                   </button>
                   <button
-                    onClick={() => setMatrixFilterType("Pickleball")}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Pickleball" ? "bg-amber-500 text-white shadow-xs" : "text-slate-500"}`}
+                    onClick={() => setMatrixFilterType("Sân 11")}
+                    className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Sân 11" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
                   >
-                    Pickleball
+                    Sân 11
                   </button>
                 </div>
               </div>
@@ -878,11 +878,9 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   onChange={(e) => setNewPitchType(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white"
                 >
-                  <option value="Sân 7 Người">Sân 7 Người (Bóng Đá)</option>
-                  <option value="Sân 5 Người">Sân 5 Người (Futsal/Cỏ)</option>
-                  <option value="Sân 11 Người">Sân 11 Người (Bóng Đá)</option>
-                  <option value="Pickleball">Pickleball</option>
-                  <option value="Cầu Lông">Cầu Lông Trong Nhà</option>
+                  <option value="Sân 7 Người">Sân 7 Người (Cỏ Nhân Tạo Chuẩn VFF)</option>
+                  <option value="Sân 5 Người">Sân 5 Người (Mini Cỏ / Futsal)</option>
+                  <option value="Sân 11 Người">Sân 11 Người (Tiêu Chuẩn FIFA)</option>
                 </select>
               </div>
 

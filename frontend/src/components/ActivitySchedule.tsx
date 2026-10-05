@@ -414,17 +414,17 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                 </div>
 
                 <div className="rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-800">
-                  {/* Item 1: Pickleball Win */}
+                  {/* Item 1: Football Win */}
                   <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-lime-400 text-slate-950 font-mono text-xs font-black">THẮNG 2 - 1</span>
+                      <span className="px-2.5 py-1 rounded bg-lime-400 text-slate-950 font-mono text-xs font-black">THẮNG 3 - 1</span>
                       <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Pickleball Cúp Giao Hữu Mùa Thu (Vòng Tứ Kết)</span>
-                        <span className="text-[11px] text-slate-500">16/10/2025 • Tỉ số ván: 11-8, 9-11, 11-7 • Sân Oasis Q.7</span>
+                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Bóng Đá Sân 7: Vòng Tứ Kết Cúp Mùa Thu 2026</span>
+                        <span className="text-[11px] text-slate-500">16/10/2026 • 2 Bàn thắng, 1 Kiến tạo • Sân 7A Oasis Q.7</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 font-mono text-xs font-bold">+0.05 DUPR</span>
+                      <span className="px-2.5 py-1 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 font-mono text-xs font-bold">+25 Elo</span>
                       <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold transition-colors">
                         <PlayCircle className="w-3.5 h-3.5 text-emerald-600" />
                         AI Highlights (60s)
@@ -438,7 +438,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                       <span className="px-2.5 py-1 rounded bg-lime-400 text-slate-950 font-mono text-xs font-black">THẮNG 4 - 2</span>
                       <div className="flex flex-col">
                         <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Bóng Đá 7 Người Phủi Giao Lưu Cuối Tuần</span>
-                        <span className="text-[11px] text-slate-500">13/10/2025 • Đóng góp: 1 Bàn thắng, 2 Kiến tạo (MVP Trận)</span>
+                        <span className="text-[11px] text-slate-500">13/10/2026 • Đóng góp: 1 Bàn thắng, 2 Kiến tạo (MVP Trận)</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -450,20 +450,20 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                     </div>
                   </div>
 
-                  {/* Item 3: Pickleball Loss */}
+                  {/* Item 3: Football Loss */}
                   <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors">
                     <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-xs font-bold">THUA 1 - 2</span>
+                      <span className="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-xs font-bold">THUA 2 - 3</span>
                       <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Pickleball Đơn Nam Xếp Hạng Elo</span>
-                        <span className="text-[11px] text-slate-500">10/10/2025 • Tỉ số: 11-9, 7-11, 8-11 vs @HoangLong</span>
+                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Bóng Đá Sân 5: Trận Phân Hạng Elo Đêm</span>
+                        <span className="text-[11px] text-slate-500">10/10/2026 • Tỉ số: 2 - 3 vs @FC HoangLong</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 font-mono text-xs font-bold">-0.02 DUPR</span>
+                      <span className="px-2.5 py-1 rounded bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 font-mono text-xs font-bold">-12 Elo</span>
                       <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold transition-colors">
                         <FileText className="w-3.5 h-3.5 text-slate-400" />
-                        Xem Thống Kê Lỗi
+                        Xem Thống Kê Trận
                       </button>
                     </div>
                   </div>

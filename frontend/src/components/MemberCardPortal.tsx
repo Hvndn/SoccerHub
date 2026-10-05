@@ -43,11 +43,11 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
             <div className="relative z-10 space-y-6">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[11px] uppercase tracking-widest text-emerald-400 font-extrabold bg-slate-900/80 border border-emerald-500/30 px-3 py-1 rounded-full">
-                  VAOSAN 4.0
+                  SOCCERHUB 4.0
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
                 <span className="text-[11px] tracking-wide text-slate-300 font-bold uppercase">
-                  HỆ SINH THÁI THỂ THAO ĐA MÔN
+                  HỆ SINH THÁI BÓNG ĐÁ THÔNG MINH
                 </span>
               </div>
 
@@ -102,16 +102,16 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-white">Xác thực trình độ tự động</p>
-                    <p className="text-[11px] text-slate-300">Khởi tạo DUPR 3.0 / Football Elo 1,200 chuẩn xác</p>
+                    <p className="text-[11px] text-slate-300">Khởi tạo Football Elo 1,200 chuẩn VFF & Phủi</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Left Footer: Multi-Sport Sync */}
+            {/* Left Footer: Football Pitch Formats Sync */}
             <div className="relative z-10 pt-6 mt-4 border-t border-slate-700/60">
               <div className="flex items-center justify-between text-slate-300 mb-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Hệ thống tích hợp 4 bộ môn</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Đồng bộ toàn bộ quy chuẩn sân</span>
                 <div className="flex items-center gap-1.5 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
                   <span className="w-1.5 h-1.5 rounded-full bg-lime-400 animate-pulse"></span>
                   <span className="font-mono text-[10px] text-lime-400 font-bold tracking-wide">LIVE SYNC</span>
@@ -119,13 +119,13 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs text-white font-semibold">
-                <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">⚽ Bóng Đá</span>
+                <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">⚽ Sân 7 Phủi</span>
                 <span className="text-slate-500">•</span>
-                <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">🏓 Pickleball</span>
+                <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">👟 Sân 5 Mini Cỏ</span>
                 <span className="text-slate-500">•</span>
-                <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">🏸 Cầu Lông</span>
+                <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">🏟️ Sân 11 FIFA</span>
                 <span className="text-slate-500">•</span>
-                <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">🎾 Tennis</span>
+                <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">🥅 Futsal Sàn Gỗ</span>
               </div>
             </div>
           </div>
@@ -202,13 +202,13 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                     <div className="flex flex-wrap items-center gap-4 pt-1">
                       <div>
                         <span className="text-[10px] text-slate-400 uppercase block font-medium">Môn thi đấu</span>
-                        <span className="text-xs font-bold text-emerald-400">Pickleball & Bóng Đá</span>
+                        <span className="text-xs font-bold text-emerald-400">Bóng Đá Sân 5, 7, 11</span>
                       </div>
                       <div className="w-px h-6 bg-slate-800"></div>
                       <div>
                         <span className="text-[10px] text-slate-400 uppercase block font-medium">Chỉ số xếp hạng</span>
                         <div className="flex items-center gap-1.5 font-mono text-xs font-bold">
-                          <span className="text-lime-400">DUPR 3.0</span>
+                          <span className="text-lime-400">VFF Serie B</span>
                           <span className="text-slate-600">|</span>
                           <span className="text-white">Elo {userElo}</span>
                         </div>

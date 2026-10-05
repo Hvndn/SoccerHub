@@ -58,11 +58,11 @@ export default function TournamentBracket() {
   });
 
   const standings = [
-    { rank: 1, team: "FC Sài Gòn Warriors", p: 4, w: 4, l: 0, setDiff: "+7", points: 12, duprAvg: "1550" },
-    { rank: 2, team: "FC Titan Sài Gòn", p: 4, w: 3, l: 1, setDiff: "+4", points: 9, duprAvg: "1580" },
-    { rank: 3, team: "FC Lộc Phát Q.7", p: 3, w: 2, l: 1, setDiff: "+2", points: 6, duprAvg: "1520" },
-    { rank: 4, team: "FC Sharks Sport Alliance", p: 3, w: 2, l: 1, setDiff: "+1", points: 6, duprAvg: "1470" },
-    { rank: 5, team: "FC Anh Em Kiến Trúc", p: 2, w: 1, l: 1, setDiff: "0", points: 3, duprAvg: "1510" },
+    { rank: 1, team: "FC Sài Gòn Warriors", p: 4, w: 4, l: 0, setDiff: "+7", points: 12, eloAvg: "1550" },
+    { rank: 2, team: "FC Titan Sài Gòn", p: 4, w: 3, l: 1, setDiff: "+4", points: 9, eloAvg: "1580" },
+    { rank: 3, team: "FC Lộc Phát Q.7", p: 3, w: 2, l: 1, setDiff: "+2", points: 6, eloAvg: "1520" },
+    { rank: 4, team: "FC Sharks Sport Alliance", p: 3, w: 2, l: 1, setDiff: "+1", points: 6, eloAvg: "1470" },
+    { rank: 5, team: "FC Anh Em Kiến Trúc", p: 2, w: 1, l: 1, setDiff: "0", points: 3, eloAvg: "1510" },
   ];
 
   const triggerToast = (msg: string) => {
@@ -177,7 +177,7 @@ export default function TournamentBracket() {
             }`}
           >
             <ListOrdered className="w-4 h-4" />
-            <span>Bảng Xếp Hạng & Chỉ Số DUPR</span>
+            <span>Bảng Xếp Hạng & Chỉ Số Elo VFF</span>
           </button>
 
           <button
@@ -280,10 +280,10 @@ export default function TournamentBracket() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
               <div>
                 <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase mr-2 animate-pulse">LIVE VAR</span>
-                <span className="font-extrabold text-base text-slate-900 dark:text-white">Trận Chung Kết Pickleball DUPR 4.0+</span>
+                <span className="font-extrabold text-base text-slate-900 dark:text-white">Trận Chung Kết Bóng Đá Sân 7 VFF Cup 2026</span>
               </div>
               <div className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
-                Sân PB-01 • Khung Giờ 20:00
+                Sân 7A • Khung Giờ 20:00
               </div>
             </div>
 
@@ -291,14 +291,14 @@ export default function TournamentBracket() {
             <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 rounded-2xl border border-emerald-500/30 text-white text-center shadow-2xl space-y-4">
               <div className="flex items-center justify-center space-x-3 text-xs text-slate-400 uppercase font-mono tracking-widest font-bold">
                 <Clock className="w-4 h-4 text-emerald-400" />
-                <span>SET {currentSet} • THỜI GIAN THI ĐẤU: 18:45</span>
+                <span>HIỆP 2 • THỜI GIAN THI ĐẤU: 48:15</span>
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4 py-2">
                 {/* Team A */}
                 <div className="space-y-2">
-                  <div className="text-lg font-black text-emerald-400">SG Titan Pickleball</div>
-                  <div className="text-xs text-slate-400">DUPR 4.35 • Seeds #1</div>
+                  <div className="text-lg font-black text-emerald-400">FC Saigon Warriors</div>
+                  <div className="text-xs text-slate-400">Elo 1,480 • Hạt Giống #1</div>
                   <div className="text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
                     {scoreA}
                   </div>
@@ -307,7 +307,7 @@ export default function TournamentBracket() {
                       onClick={() => setScoreA(scoreA + 1)}
                       className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
                     >
-                      +1 Điểm
+                      +1 Bàn Thắng
                     </button>
                     <button
                       onClick={() => setScoreA(Math.max(0, scoreA - 1))}
@@ -321,7 +321,7 @@ export default function TournamentBracket() {
                 {/* VS Indicator */}
                 <div className="space-y-1">
                   <div className="text-xl font-extrabold text-amber-400 font-mono">VS</div>
-                  <div className="text-[10px] text-slate-400 font-mono">Tỷ số Set: 1 - 1</div>
+                  <div className="text-[10px] text-slate-400 font-mono">Hiệp 1: 1 - 1</div>
                   {varStatus && (
                     <div className="bg-amber-400/20 text-amber-300 text-[10px] font-bold p-2 rounded-lg border border-amber-400/40">
                       VAR: {varStatus}
@@ -331,8 +331,8 @@ export default function TournamentBracket() {
 
                 {/* Team B */}
                 <div className="space-y-2">
-                  <div className="text-lg font-black text-cyan-400">Eagles Pro Club</div>
-                  <div className="text-xs text-slate-400">DUPR 4.40 • Seeds #2</div>
+                  <div className="text-lg font-black text-cyan-400">FC Anh Em Kiến Trúc</div>
+                  <div className="text-xs text-slate-400">Elo 1,465 • Hạt Giống #2</div>
                   <div className="text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
                     {scoreB}
                   </div>
@@ -341,7 +341,7 @@ export default function TournamentBracket() {
                       onClick={() => setScoreB(scoreB + 1)}
                       className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
                     >
-                      +1 Điểm
+                      +1 Bàn Thắng
                     </button>
                     <button
                       onClick={() => setScoreB(Math.max(0, scoreB - 1))}
@@ -433,27 +433,27 @@ export default function TournamentBracket() {
                 <QrCode className="w-8 h-8 text-emerald-400 flex-shrink-0" />
                 <div>
                   <h4 className="font-bold text-sm">Chữ Ký Điện Tử Biên Bản</h4>
-                  <p className="text-xs text-slate-300">Trọng tài chính: Phạm Hoàng Nam (BWF/USAPA Certified)</p>
+                  <p className="text-xs text-slate-300">Trọng tài chính: Phạm Hoàng Nam (Trọng tài Quốc gia VFF)</p>
                 </div>
               </div>
 
               <button
-                onClick={() => triggerToast("Đã ký số biên bản & tự động cập nhật kết quả lên BXH DUPR toàn quốc!")}
+                onClick={() => triggerToast("Đã ký số biên bản & tự động cập nhật kết quả lên BXH Bóng Đá Phủi toàn quốc!")}
                 className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold py-3 rounded-xl shadow-lg transition"
               >
-                Xác Nhận & Đẩy Điểm DUPR Tự Động
+                Xác Nhận & Cập Nhật Điểm Elo Tự Động
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* TAB 3: STANDINGS & DUPR ELO LEADERBOARD */}
+      {/* TAB 3: STANDINGS & FOOTBALL ELO LEADERBOARD */}
       {activeTab === "standings" && (
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-md">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
             <ListOrdered className="w-5 h-5 text-emerald-500" />
-            <span>Bảng Xếp Hạng Giải Đấu & Chỉ Số DUPR Quốc Gia</span>
+            <span>Bảng Xếp Hạng Giải Đấu & Điểm Elo Bóng Đá</span>
           </h2>
 
           <div className="overflow-x-auto">
@@ -465,8 +465,8 @@ export default function TournamentBracket() {
                   <th className="py-3 px-4 text-center">Trận</th>
                   <th className="py-3 px-4 text-center">Thắng</th>
                   <th className="py-3 px-4 text-center">Thua</th>
-                  <th className="py-3 px-4 text-center">Hiệu Số Set</th>
-                  <th className="py-3 px-4 text-center">DUPR Trung Bình</th>
+                  <th className="py-3 px-4 text-center">Hiệu Số Bàn Thắng</th>
+                  <th className="py-3 px-4 text-center">Elo Trung Bình</th>
                   <th className="py-3 px-4 text-right">Điểm Số</th>
                 </tr>
               </thead>
@@ -481,7 +481,7 @@ export default function TournamentBracket() {
                     <td className="py-3.5 px-4 text-center font-mono">{row.setDiff}</td>
                     <td className="py-3.5 px-4 text-center">
                       <span className="bg-amber-400/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded font-bold">
-                        DUPR {row.duprAvg}
+                        Elo {row.eloAvg}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right text-sm font-extrabold text-emerald-600 dark:text-emerald-400">{row.points}</td>
@@ -502,7 +502,7 @@ export default function TournamentBracket() {
                 <FileText className="w-5 h-5 text-emerald-500" />
                 <span>Biên Bản Điện Tử Trận Đấu (E-Scoresheet & PDF Signature)</span>
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Biên bản chuẩn hóa Liên đoàn Thể thao & DUPR Official</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Biên bản chuẩn hóa Liên đoàn Bóng đá Việt Nam VFF & SoccerHub Official</p>
             </div>
             <button
               onClick={() => triggerToast("Đã tải xuống tệp PDF Biên bản trận đấu thành công!")}
@@ -516,20 +516,19 @@ export default function TournamentBracket() {
             <div className="grid grid-cols-2 gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
               <div>
                 <span className="text-slate-500 dark:text-slate-400">Giải Đấu:</span>
-                <div className="font-bold text-slate-900 dark:text-white">Saigon Multi-Sport Open Cup 2026</div>
+                <div className="font-bold text-slate-900 dark:text-white">Saigon Football Premier Cup 2026</div>
               </div>
               <div>
                 <span className="text-slate-500 dark:text-slate-400">Vòng Đấu & Sân:</span>
-                <div className="font-bold text-slate-900 dark:text-white">Chung Kết - Sân PB-01 D-Sport Oasis Q.7</div>
+                <div className="font-bold text-slate-900 dark:text-white">Chung Kết - Sân 7A SVĐ Oasis Q.7</div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="font-bold text-slate-900 dark:text-white">Kết Quả Chi Tiết Set Đấu:</div>
+              <div className="font-bold text-slate-900 dark:text-white">Kết Quả Chi Tiết Trận Đấu:</div>
               <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 font-mono space-y-1">
-                <div>Set 1: SG Titan 11 - 8 Eagles Pro</div>
-                <div>Set 2: SG Titan 9 - 11 Eagles Pro</div>
-                <div>Set 3: SG Titan 11 - 9 Eagles Pro (Match Point)</div>
+                <div>Hiệp 1: FC Saigon Warriors 2 - 1 FC Anh Em Kiến Trúc</div>
+                <div>Hiệp 2: FC Saigon Warriors 3 - 2 FC Anh Em Kiến Trúc (Full Time)</div>
               </div>
             </div>
 
