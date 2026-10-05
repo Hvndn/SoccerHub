@@ -110,6 +110,9 @@ export default function PitchDetail({
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
 
+  // Thời lượng thi đấu do Cầu Thủ tự do lựa chọn (60p, 90p, 120p)
+  const [selectedDuration, setSelectedDuration] = useState<number>(90);
+
   // Slot được chọn hiện tại
   const [selectedSlot, setSelectedSlot] = useState<any>({
     courtId: "court-1-0",
@@ -163,11 +166,11 @@ export default function PitchDetail({
     loadPitchInfo();
   }, [pitchId]);
 
-  // 2. Tải Ma trận Ca Sân thật từ Backend cho ngày đã chọn
-  const fetchPitchMatrix = async (dateStr: string) => {
+  // 2. Tải Ma trận Ca Sân thật từ Backend cho ngày và thời lượng đã chọn
+  const fetchPitchMatrix = async (dateStr: string, durationMin: number = selectedDuration) => {
     setIsLoading(true);
     try {
-      const data = await apiRequest<any[]>(`/api/v1/pitches/${pitchId}/matrix?date=${dateStr}`);
+      const data = await apiRequest<any[]>(`/api/v1/pitches/${pitchId}/matrix?date=${dateStr}&duration=${durationMin}`);
       if (Array.isArray(data) && data.length > 0) {
         setMatrixCourts(data);
 
@@ -204,18 +207,18 @@ export default function PitchDetail({
 
   useEffect(() => {
     if (selectedDate) {
-      fetchPitchMatrix(selectedDate);
+      fetchPitchMatrix(selectedDate, selectedDuration);
     }
 
     // Lắng nghe sự kiện Realtime (chủ sân đặt hoặc hủy ca hoặc khách khác đặt)
     const unsubscribe = subscribeToBookingEvents((event) => {
       if (selectedDate) {
-        fetchPitchMatrix(selectedDate);
+        fetchPitchMatrix(selectedDate, selectedDuration);
       }
     });
 
     return () => unsubscribe();
-  }, [pitchId, selectedDate]);
+  }, [pitchId, selectedDate, selectedDuration]);
 
   // Dữ liệu cụm sân hiển thị (Ưu tiên dữ liệu thật từ DB)
   const venueData = useMemo(() => {
@@ -359,7 +362,7 @@ export default function PitchDetail({
   const handleCompletePayment = () => {
     setPaymentDone(true);
     // Reload lại ma trận ca sân thật để slot vừa đặt chuyển sang BOOKED
-    fetchPitchMatrix(selectedDate);
+    fetchPitchMatrix(selectedDate, selectedDuration);
     showToast("✅ Đã xác nhận chuyển cọc thành công! Thẻ Matchday Pass đã được kích hoạt.");
 
     // Gửi sự kiện cập nhật trạng thái thanh toán
@@ -481,7 +484,7 @@ export default function PitchDetail({
               </span>
               <span className="text-slate-400">•</span>
               <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-lg text-xs font-bold font-mono">
-                Mở cửa: {venueData.openTime} - {venueData.closeTime} ({venueData.slotDuration}p/ca)
+                Mở cửa: {venueData.openTime} - {venueData.closeTime} (Linh hoạt 1h - 2h)
               </span>
             </div>
           </div>
@@ -667,6 +670,52 @@ export default function PitchDetail({
                 </span>
               </button>
             ))}
+          </div>
+
+          {/* BỘ CHỌN THỜI LƯỢNG THI ĐẤU (DO CẦU THỦ QUYẾT ĐỊNH) */}
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-indigo-50/90 via-sky-50/70 to-indigo-50/90 dark:from-indigo-950/40 dark:via-sky-950/30 dark:to-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span>Chọn Thời Lượng Trận Đấu Bạn Muốn Đặt</span>
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                </span>
+                <span className="text-xs text-slate-600 dark:text-slate-300">
+                  Hệ thống tự động đồng bộ khung giờ và tính toán tiền cọc tương ứng
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 shrink-0 w-full sm:w-auto">
+              {[
+                { dur: 60, label: "1 Tiếng", sub: "60 phút", tag: "⚡ Nhanh" },
+                { dur: 90, label: "1.5 Tiếng", sub: "90 phút", tag: "⭐ Chuẩn" },
+                { dur: 120, label: "2 Tiếng", sub: "120 phút", tag: "🔥 Thư thả" }
+              ].map(item => (
+                <button
+                  key={item.dur}
+                  type="button"
+                  onClick={() => {
+                    setSelectedDuration(item.dur);
+                    fetchPitchMatrix(selectedDate, item.dur);
+                    showToast(`⏱️ Đã chuyển sang chế độ ca đá ${item.label} (${item.sub})`);
+                  }}
+                  className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-center font-bold transition-all cursor-pointer border ${
+                    selectedDuration === item.dur
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-400/40"
+                      : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700"
+                  }`}
+                >
+                  <span className="text-xs sm:text-sm font-black block leading-tight">{item.label}</span>
+                  <span className={`text-[10px] block font-medium ${selectedDuration === item.dur ? "text-indigo-100" : "text-slate-400"}`}>
+                    {item.sub}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Bộ lọc Sân Con & Khung Giờ */}

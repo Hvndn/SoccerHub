@@ -111,7 +111,28 @@ public class PitchBookingController {
     }
 
     /**
-     * API Cập Nhật Giờ Hoạt Động & Thời Lượng Ca Sân (60p, 90p, 120p)
+     * Kiểm tra hai khoảng thời gian có bị giao nhau (overlap) hay không
+     */
+    private boolean isTimeOverlapping(String slot1, String slot2) {
+        if (slot1 == null || slot2 == null) return false;
+        try {
+            String[] parts1 = slot1.split("-");
+            String[] parts2 = slot2.split("-");
+            if (parts1.length < 2 || parts2.length < 2) return slot1.trim().equalsIgnoreCase(slot2.trim());
+
+            String s1 = parts1[0].trim();
+            String e1 = parts1[1].trim();
+            String s2 = parts2[0].trim();
+            String e2 = parts2[1].trim();
+
+            return s1.compareTo(e2) < 0 && s2.compareTo(e1) < 0;
+        } catch (Exception e) {
+            return slot1.trim().equalsIgnoreCase(slot2.trim());
+        }
+    }
+
+    /**
+     * API Cập Nhật Giờ Mở Cửa & Đóng Cửa Cụm Sân
      */
     @PutMapping("/{id}/operating-hours")
     public ResponseEntity<?> updateOperatingHours(
@@ -125,24 +146,24 @@ public class PitchBookingController {
                 : 90;
 
         Pitch updated = pitchService.updateOperatingHours(id, openTime, closeTime, duration);
-        List<String> generatedSlots = generateTimeSlots(updated.getOpenTime(), updated.getCloseTime(), updated.getSlotDurationMinutes());
+        List<String> generatedSlots = generateTimeSlots(updated.getOpenTime(), updated.getCloseTime(), 90);
 
         return ResponseEntity.ok(Map.of(
-                "message", "Cập nhật thời gian hoạt động & thời lượng ca sân thành công!",
+                "message", "Cập nhật thời gian hoạt động của cụm sân thành công!",
                 "openTime", updated.getOpenTime(),
                 "closeTime", updated.getCloseTime(),
-                "slotDurationMinutes", updated.getSlotDurationMinutes(),
                 "generatedSlots", generatedSlots
         ));
     }
 
     /**
-     * API Lấy Ma Trận Ca Sân Thời Gian Thực (Owner Live Grid Matrix) Dữ Liệu Thật 100%
+     * API Lấy Ma Trận Ca Sân Thời Gian Thực (Hỗ Trợ Người Dùng Chọn Đá 60p, 90p hoặc 120p)
      */
     @GetMapping("/{id}/matrix")
     public ResponseEntity<?> getPitchMatrix(
             @PathVariable Long id,
-            @RequestParam(required = false) String date
+            @RequestParam(required = false) String date,
+            @RequestParam(required = false) Integer duration
     ) {
         Pitch pitch = pitchService.getPitchById(id);
         String targetDate = (date != null && !date.trim().isEmpty()) 
@@ -159,10 +180,12 @@ public class PitchBookingController {
         int base = pitch.getAvgPricePerHour() != null ? pitch.getAvgPricePerHour() : 350000;
         int peak = pitch.getPeakPricePerHour() != null ? pitch.getPeakPricePerHour() : 500000;
 
-        int duration = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0) 
-                ? pitch.getSlotDurationMinutes() 
-                : 90;
-        List<String> standardSlots = generateTimeSlots(pitch.getOpenTime(), pitch.getCloseTime(), duration);
+        // Thời lượng do người dùng đặt sân lựa chọn (1h = 60p, 1.5h = 90p, 2h = 120p)
+        int slotDuration = (duration != null && duration > 0) ? duration : 90;
+        List<String> standardSlots = generateTimeSlots(pitch.getOpenTime(), pitch.getCloseTime(), slotDuration);
+
+        // Lấy tất cả booking trong ngày để kiểm tra chống trùng giờ linh hoạt
+        List<Booking> dayBookings = bookingRepository.findByPitchIdAndBookingDate(id, targetDate);
 
         List<Map<String, Object>> matrix = new ArrayList<>();
 
@@ -176,20 +199,26 @@ public class PitchBookingController {
             int courtBase = is11 ? Math.round(base * 2) : is7 ? base : Math.round(base * 0.75f);
             int courtPeak = is11 ? Math.round(peak * 2) : is7 ? peak : Math.round(peak * 0.75f);
 
+            // Tính giá theo thời lượng linh hoạt
+            float hourMultiplier = slotDuration / 60.0f;
+            int courtBaseForDuration = Math.round(courtBase * hourMultiplier);
+            int courtPeakForDuration = Math.round(courtPeak * hourMultiplier);
+
             List<Map<String, Object>> slotsData = new ArrayList<>();
 
             for (int sIdx = 0; sIdx < standardSlots.size(); sIdx++) {
                 String timeSlot = standardSlots.get(sIdx);
-                // Giờ vàng: khung giờ có bắt đầu từ 17h, 18h, 19h
                 boolean isPeakHour = timeSlot.contains("17:") || timeSlot.contains("18:") || timeSlot.contains("19:");
-                int slotPrice = isPeakHour ? courtPeak : courtBase;
+                int slotPrice = isPeakHour ? courtPeakForDuration : courtBaseForDuration;
 
-                // Tìm booking thật trong Database
-                Optional<Booking> optBooking = bookingRepository
-                        .findByPitchIdAndCourtNameAndBookingDateAndTimeSlot(id, courtName, targetDate, timeSlot);
+                // Kiểm tra xem khung giờ này có bị giao với booking nào đã đặt không
+                Optional<Booking> optBooking = dayBookings.stream()
+                        .filter(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()))
+                        .findFirst();
 
                 Map<String, Object> slotObj = new HashMap<>();
                 slotObj.put("time", timeSlot);
+                slotObj.put("durationMinutes", slotDuration);
 
                 if (optBooking.isPresent()) {
                     Booking b = optBooking.get();
@@ -223,8 +252,8 @@ public class PitchBookingController {
             courtObj.put("pitchId", "court-" + id + "-" + i);
             courtObj.put("pitchName", courtName);
             courtObj.put("type", courtType);
-            courtObj.put("basePrice", courtBase);
-            courtObj.put("peakPrice", courtPeak);
+            courtObj.put("basePrice", courtBaseForDuration);
+            courtObj.put("peakPrice", courtPeakForDuration);
             courtObj.put("status", "ACTIVE");
             courtObj.put("slots", slotsData);
 
@@ -313,10 +342,12 @@ public class PitchBookingController {
             return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập đầy đủ thông tin đặt sân."));
         }
 
-        // Kiểm tra xem ca đã có người đặt chưa
-        Optional<Booking> existing = bookingRepository.findByPitchIdAndCourtNameAndBookingDateAndTimeSlot(id, courtName, bookingDate, timeSlot);
-        if (existing.isPresent()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Khung giờ này đã có người đặt trước! Vui lòng chọn ca khác."));
+        // Kiểm tra xem ca đã có người đặt chưa (Kiểm tra trùng giờ linh hoạt)
+        List<Booking> courtBookings = bookingRepository.findByPitchIdAndBookingDate(id, bookingDate);
+        boolean isConflict = courtBookings.stream()
+                .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()));
+        if (isConflict) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Khung giờ này đã có đội đặt hoặc bị trùng giờ với một ca thi đấu khác! Vui lòng chọn giờ khác."));
         }
 
         String code = "VS-" + id + "-" + (System.currentTimeMillis() % 10000);

@@ -123,6 +123,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
   // Offline Booking Form State
   const [offlinePitchId, setOfflinePitchId] = useState("");
+  const [offlineDuration, setOfflineDuration] = useState<number>(90); // 60, 90, 120 phút
   const [offlineTime, setOfflineTime] = useState("17:30 - 19:00");
   const [offlineCustomer, setOfflineCustomer] = useState("");
   const [offlinePhone, setOfflinePhone] = useState("");
@@ -290,7 +291,9 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     try {
       const targetCourt = pitchMatrix.find(p => p.pitchName === offlinePitchId || p.pitchId === offlinePitchId) || pitchMatrix[0];
       const isPeak = offlineTime.includes("17:30") || offlineTime.includes("19:00");
-      const price = isPeak ? (targetCourt?.peakPrice || 600000) : (targetCourt?.basePrice || 350000);
+      const baseHourPrice = isPeak ? (targetCourt?.peakPrice || 600000) : (targetCourt?.basePrice || 350000);
+      const hourMultiplier = (offlineDuration || 90) / 60.0;
+      const price = Math.round(baseHourPrice * hourMultiplier);
       const deposit = offlineDepositType === "PAID_CASH" ? Math.round(price / 2) : 0;
 
       await apiRequest(`/api/v1/pitches/${currentId}/book-offline`, {
@@ -442,6 +445,33 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   ).filter(Boolean);
 
   const availableTimeSlots: string[] = matrixSlots.length > 0 ? matrixSlots : computedFallbackSlots;
+
+  // Tính danh sách ca đặt tại quầy theo thời lượng offlineDuration linh hoạt (60, 90, 120 phút)
+  const offlineAvailableSlots = useMemo(() => {
+    try {
+      const parseMinutes = (t: string) => {
+        const [h, m] = (t || "").split(":").map(Number);
+        return (h || 0) * 60 + (m || 0);
+      };
+      const formatTime = (totalMin: number) => {
+        const h = Math.floor(totalMin / 60) % 24;
+        const m = totalMin % 60;
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      };
+      const startMin = parseMinutes(operatingOpenTime || "13:00");
+      const endMin = parseMinutes(operatingCloseTime || "22:30");
+      const dur = offlineDuration || 90;
+      const slots: string[] = [];
+      let current = startMin;
+      while (current + dur <= endMin) {
+        slots.push(`${formatTime(current)} - ${formatTime(current + dur)}`);
+        current += dur;
+      }
+      return slots.length > 0 ? slots : ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00"];
+    } catch {
+      return ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00"];
+    }
+  }, [operatingOpenTime, operatingCloseTime, offlineDuration]);
 
   // Filter matrix slots based on state (status, type, time slot, and booking method)
   const filteredMatrix = pitchMatrix
@@ -638,10 +668,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               type="button"
               onClick={() => setShowHoursModal(true)}
               className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
-              title="Cài đặt thời gian mở/đóng cửa và thời lượng ca sân (1h, 1.5h, 2h)"
+              title="Cài đặt khung giờ mở cửa và đóng cửa cụm sân"
             >
               <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
-              <span>{operatingOpenTime} - {operatingCloseTime} ({operatingSlotDuration}p/ca)</span>
+              <span>Giờ Mở Sân: {operatingOpenTime} - {operatingCloseTime} (Linh Hoạt 1h - 2h)</span>
             </button>
 
             <button
@@ -1368,6 +1398,37 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </select>
               </div>
 
+              {/* Chọn thời lượng trận đấu linh hoạt cho khách đặt tại quầy */}
+              <div className="space-y-1.5">
+                <label className="font-extrabold text-slate-800 dark:text-slate-200">Thời Lượng Ca Đá:</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { dur: 60, label: "1 Tiếng", sub: "60p" },
+                    { dur: 90, label: "1.5 Tiếng", sub: "90p" },
+                    { dur: 120, label: "2 Tiếng", sub: "120p" }
+                  ].map(item => (
+                    <button
+                      key={item.dur}
+                      type="button"
+                      onClick={() => {
+                        setOfflineDuration(item.dur);
+                        // Cập nhật lại slot mặc định khớp với thời lượng
+                        const newSlots = offlineAvailableSlots;
+                        if (newSlots.length > 0) setOfflineTime(newSlots[0]);
+                      }}
+                      className={`p-2 rounded-xl text-center font-bold text-xs border transition-all ${
+                        offlineDuration === item.dur
+                          ? "bg-emerald-500 text-white border-emerald-500 shadow-xs"
+                          : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                      }`}
+                    >
+                      <span className="block font-black">{item.label}</span>
+                      <span className={`text-[10px] ${offlineDuration === item.dur ? "text-emerald-100" : "text-slate-400"}`}>({item.sub})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="font-extrabold text-slate-800 dark:text-slate-200">Khung Giờ Đặt:</label>
                 <select
@@ -1375,7 +1436,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   onChange={(e) => setOfflineTime(e.target.value)}
                   className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm cursor-pointer"
                 >
-                  {availableTimeSlots.map((slot) => (
+                  {offlineAvailableSlots.map((slot) => (
                     <option key={slot} value={slot}>
                       {slot}
                     </option>
@@ -1555,7 +1616,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3.5">
               <div className="flex items-center space-x-2.5">
                 <Clock className="w-5.5 h-5.5 text-indigo-500" />
-                <h3 className="font-black text-lg text-slate-900 dark:text-white">Cấu Hình Giờ Hoạt Động & Ca Sân</h3>
+                <h3 className="font-black text-lg text-slate-900 dark:text-white">Cấu Hình Giờ Hoạt Động Cụm Sân</h3>
               </div>
               <button 
                 type="button"
@@ -1567,13 +1628,13 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
 
             <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              Mỗi cụm sân có thời gian mở cửa riêng biệt (ví dụ mở từ <strong className="text-indigo-500 font-mono font-bold">13:00</strong> hoặc <strong className="text-indigo-500 font-mono font-bold">15:00</strong>) và thời lượng ca linh hoạt (<strong className="text-slate-900 dark:text-white font-bold">1 tiếng</strong>, <strong className="text-slate-900 dark:text-white font-bold">1.5 tiếng</strong> hoặc <strong className="text-slate-900 dark:text-white font-bold">2 tiếng</strong>). Sơ đồ ca sẽ tự động phân chia nhịp nhàng theo thông số này.
+              Chủ sân thiết lập thời gian bắt đầu mở cửa và đóng cửa cụm sân. Khách hàng khi đặt sân có thể <strong className="text-emerald-600 dark:text-emerald-400 font-bold">tự do chọn thời lượng thi đấu linh hoạt</strong> (1 tiếng, 1.5 tiếng hoặc 2 tiếng) tùy nhu cầu từng trận.
             </p>
 
             <form onSubmit={handleUpdateOperatingHours} className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="font-extrabold text-slate-800 dark:text-slate-200">Giờ Mở Cửa:</label>
+                  <label className="font-extrabold text-slate-800 dark:text-slate-200">Giờ Bắt Đầu Mở Cửa:</label>
                   <select
                     value={operatingOpenTime}
                     onChange={(e) => setOperatingOpenTime(e.target.value)}
@@ -1586,7 +1647,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="font-extrabold text-slate-800 dark:text-slate-200">Giờ Đóng Cửa:</label>
+                  <label className="font-extrabold text-slate-800 dark:text-slate-200">Giờ Kết Thúc Đóng Cửa:</label>
                   <select
                     value={operatingCloseTime}
                     onChange={(e) => setOperatingCloseTime(e.target.value)}
@@ -1599,41 +1660,15 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="font-extrabold text-slate-800 dark:text-slate-200">Thời Lượng Mỗi Ca Sân:</label>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {[
-                    { value: 60, label: "1 Tiếng (60p)" },
-                    { value: 90, label: "1.5 Tiếng (90p)" },
-                    { value: 120, label: "2 Tiếng (120p)" },
-                  ].map((dur) => (
-                    <button
-                      key={dur.value}
-                      type="button"
-                      onClick={() => setOperatingSlotDuration(dur.value)}
-                      className={`py-3.5 px-2 rounded-xl font-bold border transition-all text-sm text-center ${
-                        operatingSlotDuration === dur.value
-                          ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                          : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
-                      }`}
-                    >
-                      {dur.label}
-                    </button>
-                  ))}
+              {/* Thông báo cơ chế đặt linh hoạt theo yêu cầu người dùng */}
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-1.5">
+                <div className="flex items-center space-x-2 text-emerald-700 dark:text-emerald-300 font-extrabold text-xs">
+                  <Sparkles className="w-4 h-4 text-emerald-500" />
+                  <span>Cơ Chế Đặt Sân Linh Hoạt (Do Cầu Thủ & Khách Hàng Chọn)</span>
                 </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 space-y-2">
-                <span className="font-extrabold text-indigo-700 dark:text-indigo-300 block text-xs">
-                  Xem trước các ca sân sinh tự động ({availableTimeSlots.length} ca):
-                </span>
-                <div className="flex flex-wrap gap-2 pt-0.5">
-                  {availableTimeSlots.map((slot) => (
-                    <span key={slot} className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 text-xs font-mono font-bold text-slate-800 dark:text-slate-200 shadow-2xs">
-                      {slot}
-                    </span>
-                  ))}
-                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Cụm sân không ép cứng thời lượng mỗi ca. Người dùng khi đặt sân có thể chọn đá: <strong className="text-slate-900 dark:text-white font-bold">1 Tiếng (60p)</strong>, <strong className="text-slate-900 dark:text-white font-bold">1.5 Tiếng (90p)</strong> hoặc <strong className="text-slate-900 dark:text-white font-bold">2 Tiếng (120p)</strong>. Hệ thống tự động tính tiền và phòng chống trùng giờ thông minh.
+                </p>
               </div>
 
               <div className="flex space-x-2.5 pt-2">
@@ -1647,10 +1682,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <button
                   type="submit"
                   disabled={isUpdatingHours}
-                  className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm shadow-md transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                  className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm shadow-md transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer"
                 >
                   {isUpdatingHours && <RefreshCw className="w-4 h-4 animate-spin mr-1" />}
-                  <span>Lưu & Chia Lại Ca Sân</span>
+                  <span>Lưu Giờ Hoạt Động Sân</span>
                 </button>
               </div>
             </form>
