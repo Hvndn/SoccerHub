@@ -112,6 +112,8 @@ export default function PitchDetail({
 
   // Thời lượng thi đấu do Cầu Thủ tự do lựa chọn (60p, 90p, 120p)
   const [selectedDuration, setSelectedDuration] = useState<number>(90);
+  // Ref để tránh stale closure khi subscribeToBookingEvents capture duration cũ
+  const selectedDurationRef = React.useRef<number>(90);
 
   // Slot được chọn hiện tại
   const [selectedSlot, setSelectedSlot] = useState<any>({
@@ -167,7 +169,8 @@ export default function PitchDetail({
   }, [pitchId]);
 
   // 2. Tải Ma trận Ca Sân thật từ Backend cho ngày và thời lượng đã chọn
-  const fetchPitchMatrix = async (dateStr: string, durationMin: number = selectedDuration) => {
+  // durationMin luôn được truyền tường minh — KHÔNG dùng default = selectedDuration (tránh stale closure)
+  const fetchPitchMatrix = async (dateStr: string, durationMin: number) => {
     setIsLoading(true);
     try {
       const data = await apiRequest<any[]>(`/api/v1/pitches/${pitchId}/matrix?date=${dateStr}&duration=${durationMin}`);
@@ -205,20 +208,28 @@ export default function PitchDetail({
     }
   };
 
+  // Sync ref mỗi khi selectedDuration state thay đổi
+  useEffect(() => {
+    selectedDurationRef.current = selectedDuration;
+  }, [selectedDuration]);
+
+  // Re-fetch khi ngày hoặc thời lượng thay đổi
   useEffect(() => {
     if (selectedDate) {
       fetchPitchMatrix(selectedDate, selectedDuration);
     }
+  }, [pitchId, selectedDate, selectedDuration]);
 
-    // Lắng nghe sự kiện Realtime (chủ sân đặt hoặc hủy ca hoặc khách khác đặt)
-    const unsubscribe = subscribeToBookingEvents((event) => {
+  // Lắng nghe sự kiện Realtime — dùng ref để luôn có duration mới nhất (tránh stale closure)
+  useEffect(() => {
+    const unsubscribe = subscribeToBookingEvents((_event: any) => {
       if (selectedDate) {
-        fetchPitchMatrix(selectedDate, selectedDuration);
+        // Dùng selectedDurationRef.current để luôn đúng duration hiện tại
+        fetchPitchMatrix(selectedDate, selectedDurationRef.current);
       }
     });
-
     return () => unsubscribe();
-  }, [pitchId, selectedDate, selectedDuration]);
+  }, [pitchId, selectedDate]);
 
   // Dữ liệu cụm sân hiển thị (Ưu tiên dữ liệu thật từ DB)
   const venueData = useMemo(() => {
