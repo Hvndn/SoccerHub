@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -82,6 +83,60 @@ public class PitchBookingController {
     }
 
     /**
+     * Thuật toán sinh danh sách ca sân linh hoạt theo giờ mở cửa, đóng cửa và thời lượng ca (1h, 1.5h, 2h)
+     */
+    private List<String> generateTimeSlots(String openTime, String closeTime, int durationMinutes) {
+        List<String> slots = new ArrayList<>();
+        try {
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
+            String startStr = (openTime != null && !openTime.trim().isEmpty()) ? openTime.trim() : "14:00";
+            String endStr = (closeTime != null && !closeTime.trim().isEmpty()) ? closeTime.trim() : "22:30";
+
+            if (!startStr.contains(":")) startStr += ":00";
+            if (!endStr.contains(":")) endStr += ":00";
+
+            LocalTime current = LocalTime.parse(startStr, fmt);
+            LocalTime end = LocalTime.parse(endStr, fmt);
+            int duration = durationMinutes > 0 ? durationMinutes : 90;
+
+            while (current.plusMinutes(duration).compareTo(end) <= 0) {
+                LocalTime next = current.plusMinutes(duration);
+                slots.add(current.format(fmt) + " - " + next.format(fmt));
+                current = next;
+            }
+        } catch (Exception e) {
+            return List.of("16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00");
+        }
+        return slots.isEmpty() ? List.of("16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00") : slots;
+    }
+
+    /**
+     * API Cập Nhật Giờ Hoạt Động & Thời Lượng Ca Sân (60p, 90p, 120p)
+     */
+    @PutMapping("/{id}/operating-hours")
+    public ResponseEntity<?> updateOperatingHours(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> req
+    ) {
+        String openTime = (String) req.get("openTime");
+        String closeTime = (String) req.get("closeTime");
+        Integer duration = req.get("slotDurationMinutes") != null 
+                ? Integer.valueOf(req.get("slotDurationMinutes").toString()) 
+                : 90;
+
+        Pitch updated = pitchService.updateOperatingHours(id, openTime, closeTime, duration);
+        List<String> generatedSlots = generateTimeSlots(updated.getOpenTime(), updated.getCloseTime(), updated.getSlotDurationMinutes());
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Cập nhật thời gian hoạt động & thời lượng ca sân thành công!",
+                "openTime", updated.getOpenTime(),
+                "closeTime", updated.getCloseTime(),
+                "slotDurationMinutes", updated.getSlotDurationMinutes(),
+                "generatedSlots", generatedSlots
+        ));
+    }
+
+    /**
      * API Lấy Ma Trận Ca Sân Thời Gian Thực (Owner Live Grid Matrix) Dữ Liệu Thật 100%
      */
     @GetMapping("/{id}/matrix")
@@ -104,12 +159,10 @@ public class PitchBookingController {
         int base = pitch.getAvgPricePerHour() != null ? pitch.getAvgPricePerHour() : 350000;
         int peak = pitch.getPeakPricePerHour() != null ? pitch.getPeakPricePerHour() : 500000;
 
-        List<String> standardSlots = List.of(
-                "16:00 - 17:30",
-                "17:30 - 19:00",
-                "19:00 - 20:30",
-                "20:30 - 22:00"
-        );
+        int duration = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0) 
+                ? pitch.getSlotDurationMinutes() 
+                : 90;
+        List<String> standardSlots = generateTimeSlots(pitch.getOpenTime(), pitch.getCloseTime(), duration);
 
         List<Map<String, Object>> matrix = new ArrayList<>();
 
@@ -127,7 +180,9 @@ public class PitchBookingController {
 
             for (int sIdx = 0; sIdx < standardSlots.size(); sIdx++) {
                 String timeSlot = standardSlots.get(sIdx);
-                int slotPrice = (sIdx == 1 || sIdx == 2) ? courtPeak : courtBase;
+                // Giờ vàng: khung giờ có bắt đầu từ 17h, 18h, 19h
+                boolean isPeakHour = timeSlot.contains("17:") || timeSlot.contains("18:") || timeSlot.contains("19:");
+                int slotPrice = isPeakHour ? courtPeak : courtBase;
 
                 // Tìm booking thật trong Database
                 Optional<Booking> optBooking = bookingRepository
@@ -194,7 +249,9 @@ public class PitchBookingController {
 
         List<Booking> bookings = bookingRepository.findByPitchIdAndBookingDate(id, targetDate);
 
-        int totalSlots = (pitch.getPitchTypes() != null ? pitch.getPitchTypes().size() : 2) * 4;
+        int duration = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0) ? pitch.getSlotDurationMinutes() : 90;
+        int slotsPerCourt = generateTimeSlots(pitch.getOpenTime(), pitch.getCloseTime(), duration).size();
+        int totalSlots = (pitch.getPitchTypes() != null ? pitch.getPitchTypes().size() : 2) * (slotsPerCourt > 0 ? slotsPerCourt : 4);
         int bookedSlots = bookings.size();
 
         int totalRevenue = 0;
@@ -227,6 +284,9 @@ public class PitchBookingController {
         stats.put("bookedSlots", bookedSlots);
         stats.put("onlineBookings", vietQrOnlineCount);
         stats.put("counterBookings", offlineCounterCount);
+        stats.put("openTime", pitch.getOpenTime());
+        stats.put("closeTime", pitch.getCloseTime());
+        stats.put("slotDurationMinutes", pitch.getSlotDurationMinutes());
 
         return ResponseEntity.ok(stats);
     }

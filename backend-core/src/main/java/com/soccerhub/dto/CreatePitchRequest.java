@@ -23,4 +23,9 @@ public class CreatePitchRequest {
     private List<String> amenities;
     private String imageUrl;
     private String description;
+    
+    // Operating hours & slot duration
+    private String openTime;
+    private String closeTime;
+    private Integer slotDurationMinutes;
 }

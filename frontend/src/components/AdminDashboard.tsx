@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api";
 import {
@@ -95,10 +95,17 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   // Modals state
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [showAddPitchModal, setShowAddPitchModal] = useState(false);
+  const [showHoursModal, setShowHoursModal] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [selectedSlotForAction, setSelectedSlotForAction] = useState<any | null>(null);
   const [searchCodeInput, setSearchCodeInput] = useState("");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // Operating Hours & Slot Duration State (Đăng ký giờ hoạt động linh hoạt)
+  const [operatingOpenTime, setOperatingOpenTime] = useState("13:00");
+  const [operatingCloseTime, setOperatingCloseTime] = useState("22:30");
+  const [operatingSlotDuration, setOperatingSlotDuration] = useState<number>(90); // 60, 90, 120 phút
+  const [isUpdatingHours, setIsUpdatingHours] = useState(false);
 
   // New Pitch Form state
   const [newPitchName, setNewPitchName] = useState("");
@@ -138,9 +145,35 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       }
       if (statsRes) {
         setPitchStats(statsRes);
+        if (statsRes.openTime) setOperatingOpenTime(statsRes.openTime);
+        if (statsRes.closeTime) setOperatingCloseTime(statsRes.closeTime);
+        if (statsRes.slotDurationMinutes) setOperatingSlotDuration(statsRes.slotDurationMinutes);
       }
     } catch (err: any) {
       console.warn("Lỗi tải matrix/stats từ database:", err.message);
+    }
+  };
+
+  const handleUpdateOperatingHours = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const currentId = activePitch?.id || 1;
+    setIsUpdatingHours(true);
+    try {
+      await apiRequest(`/api/v1/pitches/${currentId}/operating-hours`, {
+        method: "PUT",
+        body: JSON.stringify({
+          openTime: operatingOpenTime,
+          closeTime: operatingCloseTime,
+          slotDurationMinutes: operatingSlotDuration
+        })
+      });
+      await loadMatrixAndStats(currentId);
+      setShowHoursModal(false);
+      showToast(`⚡ Đã cập nhật giờ mở cửa (${operatingOpenTime} - ${operatingCloseTime}) và ca ${operatingSlotDuration} phút!`);
+    } catch (err: any) {
+      showToast(`❌ Lỗi cập nhật: ${err.message || 'Không thể lưu cài đặt'}`);
+    } finally {
+      setIsUpdatingHours(false);
     }
   };
 
@@ -300,6 +333,40 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     }
   };
 
+  // Tự động tính toán các ca sân xem trước/fallback từ giờ mở, đóng cửa và thời lượng ca
+  const computedFallbackSlots = useMemo(() => {
+    try {
+      const parseMinutes = (t: string) => {
+        const [h, m] = (t || "").split(":").map(Number);
+        return (h || 0) * 60 + (m || 0);
+      };
+      const formatTime = (totalMin: number) => {
+        const h = Math.floor(totalMin / 60) % 24;
+        const m = totalMin % 60;
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      };
+      const startMin = parseMinutes(operatingOpenTime || "13:00");
+      const endMin = parseMinutes(operatingCloseTime || "22:30");
+      const duration = Number(operatingSlotDuration) || 90;
+      const slots: string[] = [];
+      let current = startMin;
+      while (current + duration <= endMin) {
+        slots.push(`${formatTime(current)} - ${formatTime(current + duration)}`);
+        current += duration;
+      }
+      return slots.length > 0 ? slots : ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00"];
+    } catch {
+      return ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00"];
+    }
+  }, [operatingOpenTime, operatingCloseTime, operatingSlotDuration]);
+
+  // Danh sách các khung giờ thực tế (lấy từ dữ liệu ma trận hoặc từ cấu hình giờ hoạt động)
+  const matrixSlots = Array.from(
+    new Set(pitchMatrix.flatMap(p => (p.slots || []).map((s: any) => s.time)))
+  ).filter(Boolean);
+
+  const availableTimeSlots: string[] = matrixSlots.length > 0 ? matrixSlots : computedFallbackSlots;
+
   // Filter matrix slots based on state (status, type, time slot, and booking method)
   const filteredMatrix = pitchMatrix
     .filter(pitch => matrixFilterType === "ALL" || pitch.type.includes(matrixFilterType))
@@ -423,6 +490,16 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all active:scale-95 border border-slate-200 dark:border-slate-700"
             >
               <RefreshCw className={`w-4 h-4 ${isLoadingBackend ? 'animate-spin text-sky-500' : ''}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowHoursModal(true)}
+              className="px-3.5 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-extrabold text-xs shadow-xs transition-all active:scale-95 flex items-center space-x-1.5"
+              title="Cài đặt thời gian mở/đóng cửa và thời lượng ca sân (1h, 1.5h, 2h)"
+            >
+              <Clock className="w-4 h-4 text-indigo-500" />
+              <span>Giờ Mở Sân: {operatingOpenTime} - {operatingCloseTime} ({operatingSlotDuration}p/ca)</span>
             </button>
 
             <button
@@ -577,160 +654,90 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       {activeSubTab === "matrix" && (
         <div className="space-y-6">
           <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5">
-            <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
-                <div className="flex items-center space-x-2">
-                  <BarChart2 className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
+            <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center space-x-2 shrink-0">
+                <BarChart2 className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
+                <div>
                   <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
                     Sơ Đồ Ca Sân Thời Gian Thực (Owner Live Grid Matrix)
                   </h2>
-                </div>
-
-                {/* HÀNG BỘ LỌC 1: TRẠNG THÁI & LOẠI SÂN */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-                    <span className="text-slate-400 px-2 text-[11px]">Trạng thái:</span>
-                    <button
-                      onClick={() => setMatrixFilterStatus("ALL")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      Tất cả
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterStatus("BOOKED")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "BOOKED" ? "bg-emerald-500 text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      Đã Cọc
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterStatus("PLAYING")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "PLAYING" ? "bg-rose-500 text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      Đang Đá
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterStatus("EMPTY")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "EMPTY" ? "bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      Ca Trống
-                    </button>
-                  </div>
-
-                  <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-                    <span className="text-slate-400 px-2 text-[11px]">Loại:</span>
-                    <button
-                      onClick={() => setMatrixFilterType("ALL")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      Tất cả
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterType("Sân 7")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Sân 7" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
-                    >
-                      Sân 7
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterType("Sân 5")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Sân 5" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
-                    >
-                      Sân 5
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterType("Sân 11")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Sân 11" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
-                    >
-                      Sân 11
-                    </button>
-                  </div>
+                  <span className="text-[11px] text-slate-400 block">
+                    Cấu hình giờ: <strong className="font-mono text-indigo-500">{operatingOpenTime} - {operatingCloseTime}</strong> ({operatingSlotDuration} phút/ca • {availableTimeSlots.length} ca hoạt động)
+                  </span>
                 </div>
               </div>
 
-              {/* HÀNG BỘ LỌC 2: KHOẢNG THỜI GIAN & HÌNH THỨC ĐẶT SÂN */}
-              <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-100/70 dark:border-slate-800/70">
-                <div className="flex flex-wrap items-center gap-2">
-                  {/* BỘ LỌC KHOẢNG THỜI GIAN */}
-                  <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-                    <span className="text-slate-400 px-2 text-[11px] flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-sky-500" />
-                      <span>Khung giờ:</span>
-                    </span>
-                    <button
-                      onClick={() => setMatrixFilterTime("ALL")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterTime === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      Tất cả ca
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterTime("PEAK")}
-                      className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 ${matrixFilterTime === "PEAK" ? "bg-amber-500 text-white shadow-xs" : "text-slate-500 hover:text-amber-500"}`}
-                    >
-                      <Sparkles className="w-3 h-3 text-amber-300" />
-                      <span>Giờ Vàng (17:30 - 20:30)</span>
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterTime("16:00 - 17:30")}
-                      className={`px-2.5 py-1 rounded-lg transition-all font-mono ${matrixFilterTime === "16:00 - 17:30" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
-                    >
-                      16:00 - 17:30
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterTime("17:30 - 19:00")}
-                      className={`px-2.5 py-1 rounded-lg transition-all font-mono ${matrixFilterTime === "17:30 - 19:00" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
-                    >
-                      17:30 - 19:00
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterTime("19:00 - 20:30")}
-                      className={`px-2.5 py-1 rounded-lg transition-all font-mono ${matrixFilterTime === "19:00 - 20:30" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
-                    >
-                      19:00 - 20:30
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterTime("20:30 - 22:00")}
-                      className={`px-2.5 py-1 rounded-lg transition-all font-mono ${matrixFilterTime === "20:30 - 22:00" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
-                    >
-                      20:30 - 22:00
-                    </button>
-                  </div>
+              {/* BỘ LỌC DẠNG 4 DROPDOWN TIỆN LỢI ĐỂ KIỂM TRA */}
+              <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
+                {/* 1. DROPDOWN TRẠNG THÁI CA */}
+                <div className="flex items-center space-x-1.5 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 text-xs">
+                  <span className="text-slate-400 pl-2 text-[11px] font-bold">Trạng thái:</span>
+                  <select
+                    value={matrixFilterStatus}
+                    onChange={(e) => setMatrixFilterStatus(e.target.value)}
+                    className="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] dark:focus:ring-sky-500 cursor-pointer shadow-xs"
+                  >
+                    <option value="ALL">Tất cả trạng thái</option>
+                    <option value="BOOKED">🟢 Đã Cọc (CONFIRMED)</option>
+                    <option value="PLAYING">🔴 Đang Đá (IN_USE)</option>
+                    <option value="EMPTY">⚪ Ca Trống (AVAILABLE)</option>
+                    <option value="RESALE">🟡 Sàn Nhượng Gấp</option>
+                  </select>
+                </div>
 
-                  {/* BỘ LỌC HÌNH THỨC ĐẶT SÂN */}
-                  <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-                    <span className="text-slate-400 px-2 text-[11px] flex items-center gap-1">
-                      <Tag className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Hình thức:</span>
-                    </span>
-                    <button
-                      onClick={() => setMatrixFilterMethod("ALL")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterMethod === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      Tất cả
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterMethod("ONLINE")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterMethod === "ONLINE" ? "bg-sky-500 text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      VietQR Online
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterMethod("OFFLINE")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterMethod === "OFFLINE" ? "bg-emerald-500 text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      Tạo Tại Quầy
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterMethod("RESALE")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterMethod === "RESALE" ? "bg-amber-500 text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      Sàn Nhượng
-                    </button>
-                    <button
-                      onClick={() => setMatrixFilterMethod("EMPTY")}
-                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterMethod === "EMPTY" ? "bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
-                    >
-                      Chưa Đặt
-                    </button>
-                  </div>
+                {/* 2. DROPDOWN LOẠI SÂN */}
+                <div className="flex items-center space-x-1.5 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 text-xs">
+                  <span className="text-slate-400 pl-2 text-[11px] font-bold">Loại sân:</span>
+                  <select
+                    value={matrixFilterType}
+                    onChange={(e) => setMatrixFilterType(e.target.value)}
+                    className="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] dark:focus:ring-sky-500 cursor-pointer shadow-xs"
+                  >
+                    <option value="ALL">Tất cả loại sân</option>
+                    <option value="Sân 5">Sân 5 Người</option>
+                    <option value="Sân 7">Sân 7 Người</option>
+                    <option value="Sân 11">Sân 11 Tiêu Chuẩn</option>
+                  </select>
+                </div>
+
+                {/* 3. DROPDOWN KHUNG GIỜ / CA SÂN */}
+                <div className="flex items-center space-x-1.5 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 text-xs">
+                  <span className="text-slate-400 pl-2 text-[11px] font-bold flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-sky-500" />
+                    <span>Khung giờ:</span>
+                  </span>
+                  <select
+                    value={matrixFilterTime}
+                    onChange={(e) => setMatrixFilterTime(e.target.value)}
+                    className="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-mono cursor-pointer shadow-xs"
+                  >
+                    <option value="ALL">Tất cả ca ({availableTimeSlots.length} ca)</option>
+                    <option value="PEAK">⭐ Khung Giờ Vàng (Cao Điểm)</option>
+                    {availableTimeSlots.map((slot) => (
+                      <option key={slot} value={slot}>
+                        {slot}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 4. DROPDOWN HÌNH THỨC ĐẶT SÂN */}
+                <div className="flex items-center space-x-1.5 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 text-xs">
+                  <span className="text-slate-400 pl-2 text-[11px] font-bold flex items-center gap-1">
+                    <Tag className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Hình thức:</span>
+                  </span>
+                  <select
+                    value={matrixFilterMethod}
+                    onChange={(e) => setMatrixFilterMethod(e.target.value)}
+                    className="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-xs"
+                  >
+                    <option value="ALL">Tất cả hình thức</option>
+                    <option value="ONLINE">📱 VietQR Napas247 Online</option>
+                    <option value="OFFLINE">☎️ Tạo Tại Quầy (Vãng Lai)</option>
+                    <option value="RESALE">🔄 Sàn Nhượng Ca Gấp</option>
+                    <option value="EMPTY">⚪ Ca Trống Chưa Đặt</option>
+                  </select>
                 </div>
 
                 {/* NÚT RESET BỘ LỌC */}
@@ -742,10 +749,11 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       setMatrixFilterTime("ALL");
                       setMatrixFilterMethod("ALL");
                     }}
-                    className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs font-bold flex items-center space-x-1 transition-all active:scale-95"
+                    className="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs font-bold flex items-center space-x-1 transition-all active:scale-95"
+                    title="Đặt lại tất cả các bộ lọc về mặc định"
                   >
                     <X className="w-3.5 h-3.5" />
-                    <span>Đặt Lại Bộ Lọc</span>
+                    <span>Đặt Lại</span>
                   </button>
                 )}
               </div>
@@ -1136,7 +1144,28 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
               </div>
 
-              <div className="flex space-x-2 pt-3">
+              <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 block">
+                    Giờ hoạt động cụm: {operatingOpenTime} - {operatingCloseTime}
+                  </span>
+                  <span className="text-[10px] text-slate-500">
+                    Độ dài ca: {operatingSlotDuration} phút/ca (Áp dụng {availableTimeSlots.length} ca tự động)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddPitchModal(false);
+                    setShowHoursModal(true);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-bold text-[10px] hover:bg-indigo-700 transition-colors shrink-0"
+                >
+                  Đổi Giờ
+                </button>
+              </div>
+
+              <div className="flex space-x-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setShowAddPitchModal(false)}
@@ -1202,12 +1231,13 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <select
                   value={offlineTime}
                   onChange={(e) => setOfflineTime(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                 >
-                  <option value="16:00 - 17:30">16:00 - 17:30 (Giờ thường - 400k)</option>
-                  <option value="17:30 - 19:00">17:30 - 19:00 (Giờ vàng - 600k)</option>
-                  <option value="19:00 - 20:30">19:00 - 20:30 (Giờ vàng - 600k)</option>
-                  <option value="20:30 - 22:00">20:30 - 22:00 (Giờ đêm - 500k)</option>
+                  {availableTimeSlots.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -1363,6 +1393,125 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <span>Hủy Đơn Đặt Này (Trả Về Ca Trống)</span>
               </button>
             </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODAL 4: CÀI ĐẶT THỜI GIAN HOẠT ĐỘNG & THỜI LƯỢNG CA SÂN */}
+      {mounted && showHoursModal && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowHoursModal(false);
+          }}
+        >
+          <div 
+            className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center space-x-2">
+                <Clock className="w-5 h-5 text-indigo-500" />
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Cấu Hình Giờ Hoạt Động & Ca Sân</h3>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowHoursModal(false)} 
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Mỗi cụm sân có thời gian mở cửa riêng biệt (ví dụ mở từ <strong className="text-indigo-500 font-mono">13:00</strong> hoặc <strong className="text-indigo-500 font-mono">15:00</strong>) và thời lượng ca linh hoạt (<strong className="text-slate-800 dark:text-slate-200">1 tiếng</strong>, <strong className="text-slate-800 dark:text-slate-200">1.5 tiếng</strong> hoặc <strong className="text-slate-800 dark:text-slate-200">2 tiếng</strong>). Sơ đồ ca sẽ tự động phân chia nhịp nhàng theo thông số này.
+            </p>
+
+            <form onSubmit={handleUpdateOperatingHours} className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Giờ Mở Cửa:</label>
+                  <select
+                    value={operatingOpenTime}
+                    onChange={(e) => setOperatingOpenTime(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                  >
+                    {["06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00"].map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Giờ Đóng Cửa:</label>
+                  <select
+                    value={operatingCloseTime}
+                    onChange={(e) => setOperatingCloseTime(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                  >
+                    {["20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30", "24:00"].map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 dark:text-slate-300">Thời Lượng Mỗi Ca Sân:</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: 60, label: "1 Tiếng (60p)" },
+                    { value: 90, label: "1.5 Tiếng (90p)" },
+                    { value: 120, label: "2 Tiếng (120p)" },
+                  ].map((dur) => (
+                    <button
+                      key={dur.value}
+                      type="button"
+                      onClick={() => setOperatingSlotDuration(dur.value)}
+                      className={`p-2.5 rounded-xl font-bold border transition-all text-[11px] text-center ${
+                        operatingSlotDuration === dur.value
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                          : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                      }`}
+                    >
+                      {dur.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 space-y-1.5">
+                <span className="font-bold text-indigo-700 dark:text-indigo-300 block text-[11px]">
+                  Xem trước các ca sân sinh tự động ({availableTimeSlots.length} ca):
+                </span>
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {availableTimeSlots.map((slot) => (
+                    <span key={slot} className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300">
+                      {slot}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowHoursModal(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors"
+                >
+                  Đóng
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingHours}
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md transition-colors flex items-center justify-center space-x-1 disabled:opacity-50"
+                >
+                  {isUpdatingHours && <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1" />}
+                  <span>Lưu & Chia Lại Ca Sân</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>,
         document.body

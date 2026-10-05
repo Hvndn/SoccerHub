@@ -33,9 +33,12 @@ public class PitchService {
                 .longitude(req.getLongitude() != null ? req.getLongitude() : 106.7123)
                 .avgPricePerHour(req.getAvgPricePerHour() != null ? req.getAvgPricePerHour() : 350000)
                 .peakPricePerHour(req.getPeakPricePerHour() != null ? req.getPeakPricePerHour() : 450000)
+                .openTime(req.getOpenTime() != null ? req.getOpenTime().trim() : "14:00")
+                .closeTime(req.getCloseTime() != null ? req.getCloseTime().trim() : "22:30")
+                .slotDurationMinutes(req.getSlotDurationMinutes() != null ? req.getSlotDurationMinutes() : 90)
                 .pitchTypes(req.getPitchTypes() != null && !req.getPitchTypes().isEmpty() 
                         ? req.getPitchTypes() 
-                        : List.of("PITCH_7", "PITCH_5"))
+                        : List.of("Sân 7 Cỏ Nhân Tạo", "Sân 5 Futsal"))
                 .amenities(req.getAmenities() != null && !req.getAmenities().isEmpty()
                         ? req.getAmenities()
                         : List.of("Đèn LED 1000 Lux", "Căn tin & Nước uống", "Bãi xe ô tô", "Phòng thay đồ"))
@@ -46,6 +49,20 @@ public class PitchService {
                 .rating(5.0)
                 .build();
 
+        return pitchRepository.save(pitch);
+    }
+
+    public Pitch updateOperatingHours(Long id, String openTime, String closeTime, Integer slotDurationMinutes) {
+        Pitch pitch = getPitchById(id);
+        if (openTime != null && !openTime.trim().isEmpty()) {
+            pitch.setOpenTime(openTime.trim());
+        }
+        if (closeTime != null && !closeTime.trim().isEmpty()) {
+            pitch.setCloseTime(closeTime.trim());
+        }
+        if (slotDurationMinutes != null && slotDurationMinutes > 0) {
+            pitch.setSlotDurationMinutes(slotDurationMinutes);
+        }
         return pitchRepository.save(pitch);
     }
 

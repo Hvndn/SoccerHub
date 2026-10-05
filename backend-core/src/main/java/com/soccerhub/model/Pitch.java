@@ -46,6 +46,15 @@ public class Pitch {
     @Builder.Default
     private Double rating = 5.0;
 
+    @Builder.Default
+    private String openTime = "14:00";
+
+    @Builder.Default
+    private String closeTime = "22:30";
+
+    @Builder.Default
+    private Integer slotDurationMinutes = 90; // 60, 90, 120
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "pitch_types", joinColumns = @JoinColumn(name = "pitch_id"))
     @Column(name = "pitch_type")
