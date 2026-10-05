@@ -112,39 +112,39 @@ export default function Navbar({
               <button
                 type="button"
                 onClick={() => handleSelectSubTab("admin")}
-                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   activeTab === "admin"
                     ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                <ShieldCheck className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
                 <span>Quản Lý Cụm Sân & Doanh Thu</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleSelectSubTab("iot-console")}
-                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   activeTab === "iot-console"
                     ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                <Zap className="w-4 h-4 text-amber-500" />
+                <Zap className="w-4.5 h-4.5 text-amber-500 shrink-0" />
                 <span>Điều Hành IoT Đèn & Barrier</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleSelectSubTab("multi-sport")}
-                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   activeTab === "multi-sport"
                     ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                <Clock className="w-4 h-4 text-emerald-400" />
+                <Clock className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
                 <span>Sơ Đồ Ca Sân Realtime</span>
               </button>
             </>
@@ -154,13 +154,13 @@ export default function Navbar({
               <button
                 type="button"
                 onClick={() => handleSelectSubTab("booking")}
-                className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   activeTab === "booking"
                     ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                <Calendar className="w-4 h-4 text-emerald-500" />
+                <Calendar className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
                 <span>Đặt Sân Bóng Đá</span>
               </button>
 
@@ -174,13 +174,13 @@ export default function Navbar({
                 setShowNotifications(false);
                 setShowUserDropdown(false);
               }}
-              className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+              className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                 isPitchActive && activeTab !== "booking"
                   ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                   : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
             >
-              <Clock className="w-4 h-4 text-sky-500" />
+              <Clock className="w-4.5 h-4.5 text-sky-500 shrink-0" />
               <span>Dịch Vụ & Nhượng Ca</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showPitchMenu ? "rotate-180" : ""}`} />
             </button>
@@ -259,13 +259,13 @@ export default function Navbar({
                 setShowNotifications(false);
                 setShowUserDropdown(false);
               }}
-              className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+              className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                 isTournamentActive
                   ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                   : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
             >
-              <Trophy className="w-4 h-4 text-amber-500" />
+              <Trophy className="w-4.5 h-4.5 text-amber-500 shrink-0" />
               <span>Cộng Đồng & Giải Đấu</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showTournamentMenu ? "rotate-180" : ""}`} />
             </button>
@@ -352,13 +352,13 @@ export default function Navbar({
           <button
             type="button"
             onClick={() => handleSelectSubTab("membership")}
-            className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
+            className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
               activeTab === "membership"
                 ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                 : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             }`}
           >
-            <Award className="w-4 h-4 text-amber-500" />
+            <Award className="w-4.5 h-4.5 text-amber-500 shrink-0" />
             <span>Thẻ Hội Viên</span>
           </button>
           </>
@@ -367,14 +367,14 @@ export default function Navbar({
 
         {/* RIGHT SIDE WIDGETS */}
         <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
-          <div className="hidden xl:flex items-center space-x-3 bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 text-xs font-bold font-mono">
-            <div className="flex items-center space-x-1 text-slate-800 dark:text-slate-200">
-              <Ticket className="w-3.5 h-3.5 text-[#0b4f6c] dark:text-sky-400" />
+          <div className="hidden xl:flex items-center space-x-3 bg-slate-100 dark:bg-slate-800/80 px-3.5 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 text-sm font-bold font-mono">
+            <div className="flex items-center space-x-1.5 text-slate-800 dark:text-slate-200">
+              <Ticket className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
               <span>50k Voucher</span>
             </div>
-            <div className="w-px h-3.5 bg-slate-300 dark:bg-slate-700" />
-            <div className="flex items-center space-x-1 text-slate-800 dark:text-slate-200">
-              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <div className="w-px h-4 bg-slate-300 dark:bg-slate-700" />
+            <div className="flex items-center space-x-1.5 text-slate-800 dark:text-slate-200">
+              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
               <span>850 MP</span>
             </div>
           </div>

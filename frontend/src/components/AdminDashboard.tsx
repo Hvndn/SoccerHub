@@ -495,28 +495,28 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <button
               type="button"
               onClick={() => setShowHoursModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-extrabold text-sm shadow-xs transition-all active:scale-95 flex items-center space-x-1.5"
+              className="px-4.5 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-extrabold text-sm sm:text-base shadow-xs transition-all active:scale-95 flex items-center space-x-2"
               title="Cài đặt thời gian mở/đóng cửa và thời lượng ca sân (1h, 1.5h, 2h)"
             >
-              <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
+              <Clock className="w-4.5 h-4.5 text-indigo-500 shrink-0" />
               <span>Giờ Mở Sân: {operatingOpenTime} - {operatingCloseTime} ({operatingSlotDuration}p/ca)</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowAddPitchModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 hover:bg-[#07384d] dark:hover:bg-sky-400 text-white dark:text-slate-950 font-extrabold text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5"
+              className="px-4.5 py-2.5 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 hover:bg-[#07384d] dark:hover:bg-sky-400 text-white dark:text-slate-950 font-black text-sm sm:text-base shadow-md transition-all active:scale-95 flex items-center space-x-2"
             >
-              <Plus className="w-4 h-4 shrink-0" />
+              <Plus className="w-4.5 h-4.5 shrink-0" />
               <span>+ Thêm Sân Con Mới</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowOfflineModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5"
+              className="px-4.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm sm:text-base shadow-md transition-all active:scale-95 flex items-center space-x-2"
             >
-              <PhoneCall className="w-4 h-4 shrink-0" />
+              <PhoneCall className="w-4.5 h-4.5 shrink-0" />
               <span>+ Tạo Đặt Ca Tại Quầy</span>
             </button>
           </div>
@@ -527,52 +527,52 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           <button
             type="button"
             onClick={() => setActiveSubTab("matrix")}
-            className={`px-4.5 py-2.5 rounded-xl text-sm font-extrabold transition-all flex items-center space-x-2 ${
+            className={`px-5 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center space-x-2 ${
               activeSubTab === "matrix"
                 ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <BarChart2 className="w-4.5 h-4.5 shrink-0" />
+            <BarChart2 className="w-5 h-5 shrink-0" />
             <span>Sơ Đồ Ca Sân Live Matrix</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("pitches")}
-            className={`px-4.5 py-2.5 rounded-xl text-sm font-extrabold transition-all flex items-center space-x-2 ${
+            className={`px-5 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center space-x-2 ${
               activeSubTab === "pitches"
                 ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <Building className="w-4.5 h-4.5 shrink-0" />
+            <Building className="w-5 h-5 shrink-0" />
             <span>Danh Sách Sân Con ({pitchMatrix.length})</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("pricing")}
-            className={`px-4.5 py-2.5 rounded-xl text-sm font-extrabold transition-all flex items-center space-x-2 ${
+            className={`px-5 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center space-x-2 ${
               activeSubTab === "pricing"
                 ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <Sliders className="w-4.5 h-4.5 text-amber-400 shrink-0" />
+            <Sliders className="w-5 h-5 text-amber-400 shrink-0" />
             <span>AI Dynamic Pricing & Giờ Vàng</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("canteen")}
-            className={`px-4.5 py-2.5 rounded-xl text-sm font-extrabold transition-all flex items-center space-x-2 ${
+            className={`px-5 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center space-x-2 ${
               activeSubTab === "canteen"
                 ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <Coffee className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+            <Coffee className="w-5 h-5 text-emerald-400 shrink-0" />
             <span>Quản Lý Canteen & Vật Tư</span>
           </button>
         </div>
@@ -643,7 +643,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           </div>
           <button
             onClick={handleSearchBooking}
-            className="px-5 py-2.5 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 text-sm font-extrabold shadow-sm shrink-0 hover:opacity-90 active:scale-95 transition-all"
+            className="px-6 py-2.5 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 text-sm sm:text-base font-black shadow-sm shrink-0 hover:opacity-90 active:scale-95 transition-all"
           >
             Tra Cứu
           </button>
@@ -670,8 +670,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               {/* BỘ LỌC DẠNG 4 DROPDOWN TIỆN LỢI ĐỂ KIỂM TRA */}
               <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
                 {/* 1. DROPDOWN TRẠNG THÁI CA */}
-                <div className="flex items-center space-x-1.5 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs">
-                  <span className="text-slate-500 dark:text-slate-400 pl-2.5 text-xs font-extrabold">Trạng thái:</span>
+                <div className="flex items-center space-x-2 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm">
+                  <span className="text-slate-600 dark:text-slate-300 pl-2.5 text-sm font-bold">Trạng thái:</span>
                   <select
                     value={matrixFilterStatus}
                     onChange={(e) => setMatrixFilterStatus(e.target.value)}
@@ -686,8 +686,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
 
                 {/* 2. DROPDOWN LOẠI SÂN */}
-                <div className="flex items-center space-x-1.5 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs">
-                  <span className="text-slate-500 dark:text-slate-400 pl-2.5 text-xs font-extrabold">Loại sân:</span>
+                <div className="flex items-center space-x-2 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm">
+                  <span className="text-slate-600 dark:text-slate-300 pl-2.5 text-sm font-bold">Loại sân:</span>
                   <select
                     value={matrixFilterType}
                     onChange={(e) => setMatrixFilterType(e.target.value)}
@@ -701,8 +701,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
 
                 {/* 3. DROPDOWN KHUNG GIỜ / CA SÂN */}
-                <div className="flex items-center space-x-1.5 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs">
-                  <span className="text-slate-500 dark:text-slate-400 pl-2.5 text-xs font-extrabold flex items-center gap-1">
+                <div className="flex items-center space-x-2 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm">
+                  <span className="text-slate-600 dark:text-slate-300 pl-2.5 text-sm font-bold flex items-center gap-1.5">
                     <Clock className="w-4 h-4 text-sky-500 shrink-0" />
                     <span>Khung giờ:</span>
                   </span>
@@ -722,8 +722,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
 
                 {/* 4. DROPDOWN HÌNH THỨC ĐẶT SÂN */}
-                <div className="flex items-center space-x-1.5 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs">
-                  <span className="text-slate-500 dark:text-slate-400 pl-2.5 text-xs font-extrabold flex items-center gap-1">
+                <div className="flex items-center space-x-2 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm">
+                  <span className="text-slate-600 dark:text-slate-300 pl-2.5 text-sm font-bold flex items-center gap-1.5">
                     <Tag className="w-4 h-4 text-emerald-500 shrink-0" />
                     <span>Hình thức:</span>
                   </span>
@@ -914,7 +914,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     <span className="text-slate-400 text-xs sm:text-sm">Tiện ích: Đèn LED 500W, Cỏ FIFA, Wifi 6, Nước uống</span>
                     <button
                       onClick={() => showToast(`⚙️ Đã mở bảng chỉnh sửa giá cho [${pitch.pitchName}]`)}
-                      className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm hover:bg-slate-300 transition-colors"
+                      className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors shadow-2xs"
                     >
                       Sửa Giá Sân
                     </button>
@@ -938,8 +938,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => setAutoPricing(!autoPricing)}
-                className={`px-3 py-1 rounded-full text-xs font-mono font-bold transition-all ${
-                  autoPricing ? "bg-emerald-500 text-white" : "bg-slate-300 text-slate-700"
+                className={`px-3.5 py-1.5 rounded-full text-sm font-mono font-bold transition-all shadow-xs ${
+                  autoPricing ? "bg-emerald-500 text-white" : "bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
                 }`}
               >
                 {autoPricing ? "TỰ ĐỘNG AI: BẬT" : "TỰ ĐỘNG AI: TẮT"}
@@ -1048,7 +1048,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
             <button
               onClick={() => showToast("🎉 Đã lưu tồn kho Canteen!")}
-              className="px-4 py-2 rounded-xl bg-emerald-500 text-white font-extrabold text-xs"
+              className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm shadow-xs transition-all active:scale-95"
             >
               Lưu Kho Canteen
             </button>
@@ -1159,7 +1159,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     setShowAddPitchModal(false);
                     setShowHoursModal(true);
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 transition-colors shrink-0"
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 transition-colors shrink-0 shadow-xs"
                 >
                   Đổi Giờ
                 </button>
@@ -1271,7 +1271,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   <button
                     type="button"
                     onClick={() => setOfflineDepositType("PAID_CASH")}
-                    className={`p-3 rounded-xl font-bold border transition-all text-xs ${
+                    className={`p-3.5 rounded-xl font-bold border transition-all text-sm ${
                       offlineDepositType === "PAID_CASH"
                         ? "bg-emerald-500 text-white border-emerald-500 shadow-xs"
                         : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
@@ -1282,7 +1282,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   <button
                     type="button"
                     onClick={() => setOfflineDepositType("TRUST")}
-                    className={`p-3 rounded-xl font-bold border transition-all text-xs ${
+                    className={`p-3.5 rounded-xl font-bold border transition-all text-sm ${
                       offlineDepositType === "TRUST"
                         ? "bg-amber-500 text-white border-amber-500 shadow-xs"
                         : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
@@ -1469,7 +1469,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       key={dur.value}
                       type="button"
                       onClick={() => setOperatingSlotDuration(dur.value)}
-                      className={`p-3 rounded-xl font-bold border transition-all text-xs text-center ${
+                      className={`py-3.5 px-2 rounded-xl font-bold border transition-all text-sm text-center ${
                         operatingSlotDuration === dur.value
                           ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
                           : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
