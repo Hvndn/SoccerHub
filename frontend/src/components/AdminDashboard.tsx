@@ -69,6 +69,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   const [activeSubTab, setActiveSubTab] = useState<"matrix" | "pitches" | "pricing" | "canteen">("matrix");
   const [matrixFilterStatus, setMatrixFilterStatus] = useState<string>("ALL");
   const [matrixFilterType, setMatrixFilterType] = useState<string>("ALL");
+  const [matrixFilterTime, setMatrixFilterTime] = useState<string>("ALL");
+  const [matrixFilterMethod, setMatrixFilterMethod] = useState<string>("ALL");
 
   // Dynamic pricing controls
   const [peakHourMultiplier, setPeakHourMultiplier] = useState(1.2);
@@ -298,17 +300,43 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     }
   };
 
-  // Filter matrix slots based on state
+  // Filter matrix slots based on state (status, type, time slot, and booking method)
   const filteredMatrix = pitchMatrix
     .filter(pitch => matrixFilterType === "ALL" || pitch.type.includes(matrixFilterType))
     .map(pitch => ({
       ...pitch,
       slots: (pitch.slots || []).filter((s: any) => {
-        if (matrixFilterStatus === "ALL") return true;
-        if (matrixFilterStatus === "BOOKED") return s.status === "booked";
-        if (matrixFilterStatus === "PLAYING") return s.status === "playing";
-        if (matrixFilterStatus === "EMPTY") return s.status === "empty";
-        if (matrixFilterStatus === "RESALE") return s.status === "resale";
+        // 1. Lọc theo trạng thái
+        if (matrixFilterStatus === "BOOKED" && s.status !== "booked") return false;
+        if (matrixFilterStatus === "PLAYING" && s.status !== "playing") return false;
+        if (matrixFilterStatus === "EMPTY" && s.status !== "empty") return false;
+        if (matrixFilterStatus === "RESALE" && s.status !== "resale") return false;
+
+        // 2. Lọc theo khoảng thời gian (Khung giờ)
+        if (matrixFilterTime === "PEAK") {
+          // Giờ vàng chiều tối (17:30 - 20:30)
+          if (!s.time.includes("17:30") && !s.time.includes("19:00")) return false;
+        } else if (matrixFilterTime === "OFF_PEAK") {
+          // Giờ thường và ca đêm (16:00 - 17:30 và 20:30 - 22:00)
+          if (s.time.includes("17:30") || s.time.includes("19:00")) return false;
+        } else if (matrixFilterTime !== "ALL") {
+          if (s.time !== matrixFilterTime) return false;
+        }
+
+        // 3. Lọc theo hình thức đặt sân
+        if (matrixFilterMethod === "ONLINE") {
+          const via = (s.via || "").toLowerCase();
+          if (!via.includes("vietqr") && !via.includes("online") && !via.includes("momo")) return false;
+        } else if (matrixFilterMethod === "OFFLINE") {
+          const via = (s.via || "").toLowerCase();
+          if (!via.includes("quầy") && !via.includes("trực tiếp")) return false;
+        } else if (matrixFilterMethod === "RESALE") {
+          const via = (s.via || "").toLowerCase();
+          if (!via.includes("nhượng") && s.status !== "resale") return false;
+        } else if (matrixFilterMethod === "EMPTY") {
+          if (s.status !== "empty") return false;
+        }
+
         return true;
       })
     }));
@@ -549,71 +577,177 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       {activeSubTab === "matrix" && (
         <div className="space-y-6">
           <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div className="flex items-center space-x-2">
-                <BarChart2 className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
-                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
-                  Sơ Đồ Ca Sân Thời Gian Thực (Owner Live Grid Matrix)
-                </h2>
+            <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+                <div className="flex items-center space-x-2">
+                  <BarChart2 className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
+                  <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
+                    Sơ Đồ Ca Sân Thời Gian Thực (Owner Live Grid Matrix)
+                  </h2>
+                </div>
+
+                {/* HÀNG BỘ LỌC 1: TRẠNG THÁI & LOẠI SÂN */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                    <span className="text-slate-400 px-2 text-[11px]">Trạng thái:</span>
+                    <button
+                      onClick={() => setMatrixFilterStatus("ALL")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      Tất cả
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterStatus("BOOKED")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "BOOKED" ? "bg-emerald-500 text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      Đã Cọc
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterStatus("PLAYING")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "PLAYING" ? "bg-rose-500 text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      Đang Đá
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterStatus("EMPTY")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "EMPTY" ? "bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      Ca Trống
+                    </button>
+                  </div>
+
+                  <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                    <span className="text-slate-400 px-2 text-[11px]">Loại:</span>
+                    <button
+                      onClick={() => setMatrixFilterType("ALL")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      Tất cả
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterType("Sân 7")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Sân 7" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
+                    >
+                      Sân 7
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterType("Sân 5")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Sân 5" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
+                    >
+                      Sân 5
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterType("Sân 11")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Sân 11" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
+                    >
+                      Sân 11
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {/* MATRIX FILTER BUTTONS */}
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-                  <span className="text-slate-400 px-2 text-[11px]">Trạng thái:</span>
-                  <button
-                    onClick={() => setMatrixFilterStatus("ALL")}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
-                  >
-                    Tất cả
-                  </button>
-                  <button
-                    onClick={() => setMatrixFilterStatus("BOOKED")}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "BOOKED" ? "bg-emerald-500 text-white shadow-xs" : "text-slate-500"}`}
-                  >
-                    Đã Cọc
-                  </button>
-                  <button
-                    onClick={() => setMatrixFilterStatus("PLAYING")}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "PLAYING" ? "bg-rose-500 text-white shadow-xs" : "text-slate-500"}`}
-                  >
-                    Đang Đá
-                  </button>
-                  <button
-                    onClick={() => setMatrixFilterStatus("EMPTY")}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterStatus === "EMPTY" ? "bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
-                  >
-                    Ca Trống
-                  </button>
+              {/* HÀNG BỘ LỌC 2: KHOẢNG THỜI GIAN & HÌNH THỨC ĐẶT SÂN */}
+              <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-100/70 dark:border-slate-800/70">
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* BỘ LỌC KHOẢNG THỜI GIAN */}
+                  <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                    <span className="text-slate-400 px-2 text-[11px] flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-sky-500" />
+                      <span>Khung giờ:</span>
+                    </span>
+                    <button
+                      onClick={() => setMatrixFilterTime("ALL")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterTime === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      Tất cả ca
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterTime("PEAK")}
+                      className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 ${matrixFilterTime === "PEAK" ? "bg-amber-500 text-white shadow-xs" : "text-slate-500 hover:text-amber-500"}`}
+                    >
+                      <Sparkles className="w-3 h-3 text-amber-300" />
+                      <span>Giờ Vàng (17:30 - 20:30)</span>
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterTime("16:00 - 17:30")}
+                      className={`px-2.5 py-1 rounded-lg transition-all font-mono ${matrixFilterTime === "16:00 - 17:30" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
+                    >
+                      16:00 - 17:30
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterTime("17:30 - 19:00")}
+                      className={`px-2.5 py-1 rounded-lg transition-all font-mono ${matrixFilterTime === "17:30 - 19:00" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
+                    >
+                      17:30 - 19:00
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterTime("19:00 - 20:30")}
+                      className={`px-2.5 py-1 rounded-lg transition-all font-mono ${matrixFilterTime === "19:00 - 20:30" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
+                    >
+                      19:00 - 20:30
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterTime("20:30 - 22:00")}
+                      className={`px-2.5 py-1 rounded-lg transition-all font-mono ${matrixFilterTime === "20:30 - 22:00" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
+                    >
+                      20:30 - 22:00
+                    </button>
+                  </div>
+
+                  {/* BỘ LỌC HÌNH THỨC ĐẶT SÂN */}
+                  <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                    <span className="text-slate-400 px-2 text-[11px] flex items-center gap-1">
+                      <Tag className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Hình thức:</span>
+                    </span>
+                    <button
+                      onClick={() => setMatrixFilterMethod("ALL")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterMethod === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      Tất cả
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterMethod("ONLINE")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterMethod === "ONLINE" ? "bg-sky-500 text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      VietQR Online
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterMethod("OFFLINE")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterMethod === "OFFLINE" ? "bg-emerald-500 text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      Tạo Tại Quầy
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterMethod("RESALE")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterMethod === "RESALE" ? "bg-amber-500 text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      Sàn Nhượng
+                    </button>
+                    <button
+                      onClick={() => setMatrixFilterMethod("EMPTY")}
+                      className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterMethod === "EMPTY" ? "bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
+                    >
+                      Chưa Đặt
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-                  <span className="text-slate-400 px-2 text-[11px]">Loại:</span>
+                {/* NÚT RESET BỘ LỌC */}
+                {(matrixFilterStatus !== "ALL" || matrixFilterType !== "ALL" || matrixFilterTime !== "ALL" || matrixFilterMethod !== "ALL") && (
                   <button
-                    onClick={() => setMatrixFilterType("ALL")}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "ALL" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" : "text-slate-500"}`}
+                    onClick={() => {
+                      setMatrixFilterStatus("ALL");
+                      setMatrixFilterType("ALL");
+                      setMatrixFilterTime("ALL");
+                      setMatrixFilterMethod("ALL");
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs font-bold flex items-center space-x-1 transition-all active:scale-95"
                   >
-                    Tất cả
+                    <X className="w-3.5 h-3.5" />
+                    <span>Đặt Lại Bộ Lọc</span>
                   </button>
-                  <button
-                    onClick={() => setMatrixFilterType("Sân 7")}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Sân 7" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
-                  >
-                    Sân 7
-                  </button>
-                  <button
-                    onClick={() => setMatrixFilterType("Sân 5")}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Sân 5" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
-                  >
-                    Sân 5
-                  </button>
-                  <button
-                    onClick={() => setMatrixFilterType("Sân 11")}
-                    className={`px-2.5 py-1 rounded-lg transition-all ${matrixFilterType === "Sân 11" ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-xs" : "text-slate-500"}`}
-                  >
-                    Sân 11
-                  </button>
-                </div>
+                )}
               </div>
             </div>
 
@@ -654,50 +788,57 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
-                    {pitch.slots.map((slot) => (
-                      <div
-                        key={slot.id}
-                        onClick={() => {
-                          if (slot.status === "empty") {
-                            setOfflinePitchId(pitch.pitchName);
-                            setOfflineTime(slot.time);
-                            setShowOfflineModal(true);
-                          } else {
-                            setSelectedSlotForAction(slot);
-                          }
-                        }}
-                        className={`p-3.5 rounded-2xl border space-y-1.5 transition-all cursor-pointer hover:scale-[1.02] shadow-xs ${
-                          slot.status === "playing"
-                            ? "bg-rose-500/10 border-rose-400 text-rose-600 dark:text-rose-400 font-bold"
-                            : slot.status === "booked"
-                            ? "bg-emerald-500/10 border-emerald-400 text-emerald-600 dark:text-emerald-400 font-bold"
-                            : slot.status === "resale"
-                            ? "bg-amber-500/10 border-amber-400 text-amber-600 dark:text-amber-400 font-bold"
-                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:border-emerald-400 hover:bg-emerald-50/20"
-                        }`}
-                      >
-                        <div className="flex justify-between items-center text-[11px] font-mono">
-                          <span className="font-extrabold">{slot.time}</span>
-                          <span className="font-black">{slot.price}</span>
-                        </div>
-                        
-                        <p className={`font-black truncate text-xs ${slot.status === "empty" ? "text-slate-400 dark:text-slate-500" : "text-slate-900 dark:text-white"}`}>
-                          {slot.customer}
-                        </p>
-                        
-                        <div className="text-[10px] space-y-0.5 opacity-90 font-mono">
-                          <span className="block text-slate-500">Cọc: <strong className={slot.status === "empty" ? "text-slate-400" : "text-emerald-600 dark:text-emerald-400"}>{slot.depositPaid}</strong></span>
-                          {slot.status === "booked" && (
-                            <span className="block text-rose-500">Thu tại quầy: <strong>{slot.cashDue}</strong></span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
-                          <span className="truncate">{slot.via}</span>
-                          <ChevronRight className="w-3.5 h-3.5 shrink-0" />
-                        </div>
+                    {pitch.slots.length === 0 ? (
+                      <div className="col-span-full py-6 text-center text-xs text-slate-400 bg-white/40 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-center space-x-2">
+                        <AlertCircle className="w-4 h-4 text-slate-400" />
+                        <span>Không có ca đá nào phù hợp với bộ lọc khung giờ / hình thức đã chọn.</span>
                       </div>
-                    ))}
+                    ) : (
+                      pitch.slots.map((slot: any) => (
+                        <div
+                          key={slot.id}
+                          onClick={() => {
+                            if (slot.status === "empty") {
+                              setOfflinePitchId(pitch.pitchName);
+                              setOfflineTime(slot.time);
+                              setShowOfflineModal(true);
+                            } else {
+                              setSelectedSlotForAction(slot);
+                            }
+                          }}
+                          className={`p-3.5 rounded-2xl border space-y-1.5 transition-all cursor-pointer hover:scale-[1.02] shadow-xs ${
+                            slot.status === "playing"
+                              ? "bg-rose-500/10 border-rose-400 text-rose-600 dark:text-rose-400 font-bold"
+                              : slot.status === "booked"
+                              ? "bg-emerald-500/10 border-emerald-400 text-emerald-600 dark:text-emerald-400 font-bold"
+                              : slot.status === "resale"
+                              ? "bg-amber-500/10 border-amber-400 text-amber-600 dark:text-amber-400 font-bold"
+                              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:border-emerald-400 hover:bg-emerald-50/20"
+                          }`}
+                        >
+                          <div className="flex justify-between items-center text-[11px] font-mono">
+                            <span className="font-extrabold">{slot.time}</span>
+                            <span className="font-black">{slot.price}</span>
+                          </div>
+                          
+                          <p className={`font-black truncate text-xs ${slot.status === "empty" ? "text-slate-400 dark:text-slate-500" : "text-slate-900 dark:text-white"}`}>
+                            {slot.customer}
+                          </p>
+                          
+                          <div className="text-[10px] space-y-0.5 opacity-90 font-mono">
+                            <span className="block text-slate-500">Cọc: <strong className={slot.status === "empty" ? "text-slate-400" : "text-emerald-600 dark:text-emerald-400"}>{slot.depositPaid}</strong></span>
+                            {slot.status === "booked" && (
+                              <span className="block text-rose-500">Thu tại quầy: <strong>{slot.cashDue}</strong></span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                            <span className="truncate">{slot.via}</span>
+                            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               ))}
