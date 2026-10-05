@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { apiRequest } from "@/lib/api";
 import {
   ShieldCheck,
   TrendingUp,
@@ -51,6 +53,12 @@ interface AdminDashboardProps {
 }
 
 export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDashboardProps = {}) {
+  const [mounted, setMounted] = useState(false);
+  const [realPitches, setRealPitches] = useState<any[]>([]);
+  const [activePitch, setActivePitch] = useState<any | null>(null);
+  const [isLoadingBackend, setIsLoadingBackend] = useState<boolean>(true);
+  const [revenueData, setRevenueData] = useState<any | null>(null);
+
   const [activeSubTab, setActiveSubTab] = useState<"matrix" | "pitches" | "pricing" | "canteen">("matrix");
   const [matrixFilterStatus, setMatrixFilterStatus] = useState<string>("ALL");
   const [matrixFilterType, setMatrixFilterType] = useState<string>("ALL");
@@ -160,6 +168,80 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     setTimeout(() => setToastMsg(null), 3500);
   };
 
+  // Fetch real pitch data from backend API
+  useEffect(() => {
+    setMounted(true);
+    fetchRealData();
+  }, []);
+
+  const fetchRealData = async () => {
+    setIsLoadingBackend(true);
+    try {
+      const pitches = await apiRequest<any[]>("/api/v1/pitches");
+      if (pitches && pitches.length > 0) {
+        setRealPitches(pitches);
+        const current = pitches[0];
+        setActivePitch(current);
+        loadCourtsForPitch(current);
+      }
+      try {
+        const rev = await apiRequest<any>("/api/v1/admin/revenue-report");
+        if (rev) setRevenueData(rev);
+      } catch (e) {
+        // silent
+      }
+    } catch (err: any) {
+      console.warn("Backend API sync notice:", err.message);
+    } finally {
+      setIsLoadingBackend(false);
+    }
+  };
+
+  const loadCourtsForPitch = (pitch: any) => {
+    if (!pitch) return;
+    const base = pitch.avgPricePerHour || 450000;
+    const peak = pitch.peakPricePerHour || 600000;
+    const types = (pitch.pitchTypes && pitch.pitchTypes.length > 0)
+      ? pitch.pitchTypes
+      : ["Sân 7 Cỏ Nhân Tạo", "Sân 5 Futsal"];
+
+    const courts = types.map((typeStr: string, idx: number) => {
+      const is7 = typeStr.toLowerCase().includes("7");
+      const is5 = typeStr.toLowerCase().includes("5");
+      const is11 = typeStr.toLowerCase().includes("11");
+      const label = is7 ? "Sân 7 Người" : is5 ? "Sân 5 Người" : is11 ? "Sân 11" : typeStr;
+      const courtName = `${label} ${String.fromCharCode(65 + idx)} (${pitch.name ? (pitch.name.length > 18 ? pitch.name.slice(0, 18) + '...' : pitch.name) : 'Cỏ Nhân Tạo'})`;
+      const courtBase = is11 ? Math.round(base * 2) : is7 ? base : Math.round(base * 0.75);
+      const courtPeak = is11 ? Math.round(peak * 2) : is7 ? peak : Math.round(peak * 0.75);
+
+      return {
+        pitchId: `pitch-${pitch.id}-${idx}`,
+        pitchName: courtName,
+        type: label,
+        basePrice: courtBase,
+        peakPrice: courtPeak,
+        status: "ACTIVE",
+        slots: [
+          { id: `s-${pitch.id}-${idx}-1`, time: "16:00 - 17:30", status: idx === 0 ? "booked" : "empty", customer: idx === 0 ? "Trần Hữu Nam" : "Ca Trống", phone: idx === 0 ? "0918 223 456" : "—", price: `${Math.round(courtBase/1000)}k`, depositPaid: idx === 0 ? `${Math.round(courtBase/2000)}k` : "0k", cashDue: idx === 0 ? `${Math.round(courtBase/2000)}k` : "0k", via: idx === 0 ? "VietQR Online" : "Sẵn sàng nhận khách", code: `VS-${pitch.id}-01` },
+          { id: `s-${pitch.id}-${idx}-2`, time: "17:30 - 19:00", status: "playing", customer: "FC Sài Gòn Warriors", phone: "0909 888 777", price: `${Math.round(courtPeak/1000)}k`, depositPaid: `${Math.round(courtPeak/2000)}k`, cashDue: "0k (Thu đủ)", via: "Check-in Đã Vào Sân", code: `VS-${pitch.id}-02` },
+          { id: `s-${pitch.id}-${idx}-3`, time: "19:00 - 20:30", status: "booked", customer: "Nguyễn Văn An", phone: "0988 776 655", price: `${Math.round(courtPeak/1000)}k`, depositPaid: `${Math.round(courtPeak/2000)}k`, cashDue: `${Math.round(courtPeak/2000)}k`, via: "VietQR Online", code: `VS-${pitch.id}-03` },
+          { id: `s-${pitch.id}-${idx}-4`, time: "20:30 - 22:00", status: idx % 2 === 0 ? "resale" : "empty", customer: idx % 2 === 0 ? "FC Hùng Dũng Q.7 (Pass)" : "Ca Trống", phone: idx % 2 === 0 ? "0934 112 233" : "—", price: `${Math.round((courtBase*0.8)/1000)}k`, depositPaid: "0k", cashDue: `${Math.round((courtBase*0.8)/1000)}k`, via: idx % 2 === 0 ? "Sàn Nhượng Gấp" : "Sẵn sàng nhận khách", code: `VS-${pitch.id}-04` }
+        ]
+      };
+    });
+
+    setPitchMatrix(courts);
+    if (courts.length > 0) {
+      setOfflinePitchId(courts[0].pitchId);
+    }
+  };
+
+  const handleSelectPitch = (pitch: any) => {
+    setActivePitch(pitch);
+    loadCourtsForPitch(pitch);
+    showToast(`🏟️ Đã chuyển sang cụm sân: [${pitch.name}]`);
+  };
+
   // Add new pitch handler
   const handleCreateNewPitch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,11 +273,26 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   };
 
   // Offline Booking submit
-  const handleOfflineBookingSubmit = (e: React.FormEvent) => {
+  const handleOfflineBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!offlineCustomer.trim() || !offlinePhone.trim()) {
       showToast("❌ Vui lòng nhập đầy đủ tên và số điện thoại khách!");
       return;
+    }
+
+    try {
+      await apiRequest('/api/v1/pitches/book-slot', {
+        method: 'POST',
+        body: JSON.stringify({
+          slotId: offlineTime,
+          customerName: offlineCustomer,
+          phone: offlinePhone,
+          pitchId: activePitch?.id || 1,
+          price: 500000
+        })
+      });
+    } catch (err) {
+      console.warn("Backend sync notice:", err);
     }
 
     setPitchMatrix(prev =>
@@ -210,10 +307,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   status: "booked",
                   customer: `${offlineCustomer} (Vãng Lai)`,
                   phone: offlinePhone,
-                  depositPaid: offlineDepositType === "PAID_CASH" ? "200k (Mặt quầy)" : "0k (Giữ tin tưởng)",
-                  cashDue: offlineDepositType === "PAID_CASH" ? "200k" : "400k",
+                  depositPaid: offlineDepositType === "PAID_CASH" ? "250k (Mặt quầy)" : "0k (Giữ tin tưởng)",
+                  cashDue: offlineDepositType === "PAID_CASH" ? "250k" : "500k",
                   via: "Tạo Tại Quầy",
-                  code: `VS-OFFLINE-${Math.floor(1000 + Math.random() * 9000)}`
+                  code: `SH-OFFLINE-${Math.floor(1000 + Math.random() * 9000)}`
                 };
               }
               return s;
@@ -316,23 +413,64 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         </div>
       )}
 
-      {/* HEADER BANNER */}
+      {/* HEADER BANNER WITH REAL BACKEND DATA */}
       <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0b4f6c]/10 dark:bg-sky-500/10 border border-[#0b4f6c]/20 dark:border-sky-400/20 text-[#0b4f6c] dark:text-sky-400 text-xs font-bold mb-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span>CỤM SÂN ĐA THỂ THAO D-SPORT OASIS Q.7 — HỆ THỐNG ĐIỀU HÀNH CHỦ SÂN PRO</span>
+              <span>
+                {activePitch 
+                  ? `${activePitch.name.toUpperCase()} — HỆ THỐNG ĐIỀU HÀNH CHỦ SÂN PRO` 
+                  : "HỆ THỐNG ĐIỀU HÀNH CHỦ SÂN BÓNG ĐÁ SOCCERHUB PRO"}
+              </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-              Trung Tâm Quản Lý Cụm Sân & Doanh Thu Tự Động
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+              <span>{activePitch ? activePitch.name : "Trung Tâm Quản Lý Cụm Sân & Doanh Thu"}</span>
+              {isLoadingBackend && <RefreshCw className="w-5 h-5 text-sky-500 animate-spin" />}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
-              Kiểm soát lịch ca sân thời gian thực, khóa slot vãng lai tại quầy, check-in mã QR & tối ưu bảng giá AI.
-            </p>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                <span>{activePitch?.address || "Số 154 Nguyễn Lương Bằng, Tp. Đà Nẵng"}</span>
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <PhoneCall className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span>Hotline: {activePitch?.phone || "0988 776 652"}</span>
+              </span>
+              <span>•</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                Chủ sân: {activePitch?.ownerName || "Hồ Văn Diện"}
+              </span>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            {realPitches.length > 1 && (
+              <select
+                value={activePitch?.id || ""}
+                onChange={(e) => {
+                  const p = realPitches.find(x => x.id.toString() === e.target.value);
+                  if (p) handleSelectPitch(p);
+                }}
+                className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer shadow-xs"
+              >
+                {realPitches.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            )}
+
+            <button
+              type="button"
+              onClick={fetchRealData}
+              title="Đồng bộ dữ liệu thật từ CSDL"
+              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all active:scale-95 border border-slate-200 dark:border-slate-700"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoadingBackend ? 'animate-spin text-sky-500' : ''}`} />
+            </button>
+
             <button
               type="button"
               onClick={() => setShowAddPitchModal(true)}
@@ -846,28 +984,41 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       )}
 
       {/* MODAL 1: ADD NEW PITCH (Thêm Sân Con Mới) */}
-      {showAddPitchModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop">
+      {mounted && showAddPitchModal && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAddPitchModal(false);
+          }}
+        >
+          <div 
+            className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center space-x-2">
                 <Plus className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
                 <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Thêm Sân Con Mới Vào Cụm</h3>
               </div>
-              <button onClick={() => setShowAddPitchModal(false)} className="text-slate-400 hover:text-slate-600">
+              <button 
+                type="button"
+                onClick={() => setShowAddPitchModal(false)} 
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateNewPitch} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateNewPitch} className="space-y-3.5 text-xs">
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 dark:text-slate-300">Tên Sân Con Mới:</label>
                 <input
                   type="text"
+                  required
                   value={newPitchName}
                   onChange={(e) => setNewPitchName(e.target.value)}
                   placeholder="VD: Sân 7C Cỏ Nhân Tạo Mới"
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c]"
                 />
               </div>
 
@@ -876,7 +1027,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <select
                   value={newPitchType}
                   onChange={(e) => setNewPitchType(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c]"
                 >
                   <option value="Sân 7 Người">Sân 7 Người (Cỏ Nhân Tạo Chuẩn VFF)</option>
                   <option value="Sân 5 Người">Sân 5 Người (Mini Cỏ / Futsal)</option>
@@ -891,7 +1042,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     type="number"
                     value={newPitchBasePrice}
                     onChange={(e) => setNewPitchBasePrice(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white"
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c]"
                   />
                 </div>
                 <div className="space-y-1">
@@ -900,7 +1051,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     type="number"
                     value={newPitchPeakPrice}
                     onChange={(e) => setNewPitchPeakPrice(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white"
+                    className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c]"
                   />
                 </div>
               </div>
@@ -909,43 +1060,56 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <button
                   type="button"
                   onClick={() => setShowAddPitchModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 font-black text-xs shadow-md"
+                  className="flex-1 py-2.5 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 hover:bg-[#083a50] text-white dark:text-slate-950 font-black text-xs shadow-md transition-colors"
                 >
                   Tạo Sân Mới
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MODAL 2: CREATE OFFLINE BOOKING FOR WALK-IN CUSTOMERS */}
-      {showOfflineModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop">
+      {mounted && showOfflineModal && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowOfflineModal(false);
+          }}
+        >
+          <div 
+            className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center space-x-2">
                 <Plus className="w-5 h-5 text-emerald-500" />
                 <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Tạo Đặt Ca Vãng Lai (Hotline/Quầy)</h3>
               </div>
-              <button onClick={() => setShowOfflineModal(false)} className="text-slate-400 hover:text-slate-600">
+              <button 
+                type="button"
+                onClick={() => setShowOfflineModal(false)} 
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleOfflineBookingSubmit} className="space-y-3 text-xs">
+            <form onSubmit={handleOfflineBookingSubmit} className="space-y-3.5 text-xs">
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 dark:text-slate-300">Chọn Sân Con:</label>
                 <select
                   value={offlinePitchId}
                   onChange={(e) => setOfflinePitchId(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   {pitchMatrix.map(p => (
                     <option key={p.pitchId} value={p.pitchId}>{p.pitchName}</option>
@@ -958,7 +1122,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <select
                   value={offlineTime}
                   onChange={(e) => setOfflineTime(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="16:00 - 17:30">16:00 - 17:30 (Giờ thường - 400k)</option>
                   <option value="17:30 - 19:00">17:30 - 19:00 (Giờ vàng - 600k)</option>
@@ -971,10 +1135,11 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <label className="font-bold text-slate-700 dark:text-slate-300">Tên Khách Đặt:</label>
                 <input
                   type="text"
+                  required
                   value={offlineCustomer}
                   onChange={(e) => setOfflineCustomer(e.target.value)}
                   placeholder="VD: Anh Cường FC Phủ Diễn"
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -982,10 +1147,11 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <label className="font-bold text-slate-700 dark:text-slate-300">Số Điện Thoại Khách:</label>
                 <input
                   type="text"
+                  required
                   value={offlinePhone}
                   onChange={(e) => setOfflinePhone(e.target.value)}
                   placeholder="VD: 0914 555 789"
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -997,7 +1163,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     onClick={() => setOfflineDepositType("PAID_CASH")}
                     className={`p-2.5 rounded-xl font-bold border transition-all text-[11px] ${
                       offlineDepositType === "PAID_CASH"
-                        ? "bg-emerald-500 text-white border-emerald-500"
+                        ? "bg-emerald-500 text-white border-emerald-500 shadow-xs"
                         : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
                     }`}
                   >
@@ -1008,7 +1174,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     onClick={() => setOfflineDepositType("TRUST")}
                     className={`p-2.5 rounded-xl font-bold border transition-all text-[11px] ${
                       offlineDepositType === "TRUST"
-                        ? "bg-amber-500 text-white border-amber-500"
+                        ? "bg-amber-500 text-white border-amber-500 shadow-xs"
                         : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
                     }`}
                   >
@@ -1021,38 +1187,51 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <button
                   type="button"
                   onClick={() => setShowOfflineModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-500 text-white font-extrabold text-xs shadow-md"
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs shadow-md transition-colors"
                 >
                   Xác Nhận Khóa Slot
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MODAL 3: CHECK-IN & NO-SHOW MANAGEMENT ACTION */}
-      {selectedSlotForAction && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop">
+      {mounted && selectedSlotForAction && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedSlotForAction(null);
+          }}
+        >
+          <div 
+            className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center space-x-2">
                 <QrCode className="w-5 h-5 text-sky-500" />
                 <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Chi Tiết & Check-in Ca Đặt</h3>
               </div>
-              <button onClick={() => setSelectedSlotForAction(null)} className="text-slate-400 hover:text-slate-600">
+              <button 
+                type="button"
+                onClick={() => setSelectedSlotForAction(null)} 
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 space-y-1.5">
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 space-y-2 border border-slate-200/60 dark:border-slate-700/60">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Khách đặt:</span>
                   <strong className="text-slate-900 dark:text-white font-extrabold">{selectedSlotForAction.customer}</strong>
@@ -1071,10 +1250,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
               </div>
 
-              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1.5">
                 <div className="flex justify-between text-xs font-bold text-slate-900 dark:text-white">
                   <span>Tiền cọc đã thu:</span>
-                  <span className="font-mono text-emerald-600 dark:text-emerald-400">{selectedSlotForAction.depositPaid}</span>
+                  <span className="font-mono text-emerald-600 dark:text-emerald-400 font-extrabold">{selectedSlotForAction.depositPaid}</span>
                 </div>
                 <div className="flex justify-between text-xs font-bold text-slate-900 dark:text-white">
                   <span>Tiền còn lại thu tại quầy:</span>
@@ -1087,7 +1266,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => handleConfirmCheckin(selectedSlotForAction.id)}
-                className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-md transition-all flex items-center justify-center space-x-1.5"
+                className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-md transition-all flex items-center justify-center space-x-1.5 active:scale-95"
               >
                 <UserCheck className="w-4 h-4" />
                 <span>Xác Nhận Thu Đủ Tiền & Mở Đèn Đá</span>
@@ -1096,14 +1275,15 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => handleNoShowPenalty(selectedSlotForAction.id, selectedSlotForAction.customer)}
-                className="w-full py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-bold text-xs border border-rose-500/20 transition-all flex items-center justify-center space-x-1.5"
+                className="w-full py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-bold text-xs border border-rose-500/20 transition-all flex items-center justify-center space-x-1.5 active:scale-95"
               >
                 <UserX className="w-4 h-4" />
                 <span>Xử Lý Khách Bùng Kèo (No-Show 15p)</span>
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
