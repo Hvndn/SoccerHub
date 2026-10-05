@@ -57,7 +57,14 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   const [realPitches, setRealPitches] = useState<any[]>([]);
   const [activePitch, setActivePitch] = useState<any | null>(null);
   const [isLoadingBackend, setIsLoadingBackend] = useState<boolean>(true);
-  const [revenueData, setRevenueData] = useState<any | null>(null);
+  const [pitchStats, setPitchStats] = useState({
+    totalRevenue: 0,
+    occupancyRate: 0,
+    totalSlots: 0,
+    bookedSlots: 0,
+    onlineBookings: 0,
+    counterBookings: 0
+  });
 
   const [activeSubTab, setActiveSubTab] = useState<"matrix" | "pitches" | "pricing" | "canteen">("matrix");
   const [matrixFilterStatus, setMatrixFilterStatus] = useState<string>("ALL");
@@ -69,69 +76,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   const [depositRate, setDepositRate] = useState("50%");
   
   // Real-time notification banner
-  const [notification, setNotification] = useState<string | null>(
-    "🔔 Đơn đặt mới: Cầu thủ Nguyễn Văn An đã đặt cọc 300.000đ cho Sân 7A ca 19:00 - 20:30 qua VietQR Napas247!"
-  );
+  const [notification, setNotification] = useState<string | null>(null);
 
-  // Live Owner Matrix Data (Stateful)
-  const [pitchMatrix, setPitchMatrix] = useState([
-    {
-      pitchId: "p7a",
-      pitchName: "Sân 7A FIFA Cỏ Nhân Tạo",
-      type: "Sân 7 Người",
-      basePrice: 500000,
-      peakPrice: 600000,
-      status: "ACTIVE",
-      slots: [
-        { id: "s1", time: "16:00 - 17:30", status: "booked", customer: "Trần Hữu Nam", phone: "0918 223 456", price: "450k", depositPaid: "225k", cashDue: "225k", via: "VietQR Online", code: "VS-7829-01" },
-        { id: "s2", time: "17:30 - 19:00", status: "playing", customer: "FC FPT Telecom", phone: "0909 888 777", price: "600k", depositPaid: "300k", cashDue: "0k (Thu đủ)", via: "Check-in Đã Vào Sân", code: "VS-7829-02" },
-        { id: "s3", time: "19:00 - 20:30", status: "booked", customer: "Nguyễn Văn An", phone: "0988 776 655", price: "600k", depositPaid: "300k", cashDue: "300k", via: "VietQR Online", code: "VS-7829-03" },
-        { id: "s4", time: "20:30 - 22:00", status: "resale", customer: "FC Dragon King (Pass)", phone: "0934 112 233", price: "325k", depositPaid: "0k", cashDue: "325k", via: "Sàn Nhượng Gấp", code: "VS-7829-04" }
-      ]
-    },
-    {
-      pitchId: "p7b",
-      pitchName: "Sân 7B Cỏ Tiêu Chuẩn VFF",
-      type: "Sân 7 Người",
-      basePrice: 450000,
-      peakPrice: 550000,
-      status: "ACTIVE",
-      slots: [
-        { id: "s5", time: "16:00 - 17:30", status: "empty", customer: "Ca Trống", phone: "—", price: "400k", depositPaid: "0k", cashDue: "0k", via: "Sẵn sàng nhận khách", code: "—" },
-        { id: "s6", time: "17:30 - 19:00", status: "playing", customer: "FC Real Star", phone: "0912 345 678", price: "600k", depositPaid: "300k", cashDue: "0k", via: "Check-in Đã Vào Sân", code: "VS-7829-06" },
-        { id: "s7", time: "19:00 - 20:30", status: "booked", customer: "Lê Văn Cường (Khách Quen)", phone: "0914 555 789", price: "600k", depositPaid: "300k", cashDue: "300k", via: "Tạo Tại Quầy", code: "VS-7829-07" },
-        { id: "s8", time: "20:30 - 22:00", status: "booked", customer: "Học Viện U15", phone: "0977 123 456", price: "500k", depositPaid: "500k", cashDue: "0k", via: "Cố Định Tháng", code: "VS-7829-08" }
-      ]
-    },
-    {
-      pitchId: "p5a",
-      pitchName: "Sân 5A Futsal Trong Nhà",
-      type: "Sân 5 Người",
-      basePrice: 300000,
-      peakPrice: 420000,
-      status: "ACTIVE",
-      slots: [
-        { id: "s9", time: "16:00 - 17:30", status: "booked", customer: "FC Giao Hữu 5v5", phone: "0903 445 566", price: "300k", depositPaid: "150k", cashDue: "150k", via: "MoMo Online", code: "VS-7829-09" },
-        { id: "s10", time: "17:30 - 19:00", status: "booked", customer: "FC Tech Hub", phone: "0989 999 000", price: "420k", depositPaid: "210k", cashDue: "210k", via: "VietQR Online", code: "VS-7829-10" },
-        { id: "s11", time: "19:00 - 20:30", status: "playing", customer: "FC Futsal Pro", phone: "0916 222 333", price: "420k", depositPaid: "210k", cashDue: "0k", via: "Check-in Đã Vào Sân", code: "VS-7829-11" },
-        { id: "s12", time: "20:30 - 22:00", status: "empty", customer: "Ca Trống", phone: "—", price: "340k", depositPaid: "0k", cashDue: "0k", via: "Sẵn sàng nhận khách", code: "—" }
-      ]
-    },
-    {
-      pitchId: "p11a",
-      pitchName: "Sân 11 Tiêu Chuẩn Quốc Tế FIFA",
-      type: "Sân 11",
-      basePrice: 900000,
-      peakPrice: 1200000,
-      status: "ACTIVE",
-      slots: [
-        { id: "s13", time: "16:00 - 17:30", status: "booked", customer: "FC Liên Quân Q.7", phone: "0908 112 334", price: "900k", depositPaid: "450k", cashDue: "450k", via: "VietQR Online", code: "VS-11A-01" },
-        { id: "s14", time: "17:30 - 19:00", status: "playing", customer: "FC Sinh Viên Tôn Đức Thắng", phone: "0938 554 433", price: "1200k", depositPaid: "600k", cashDue: "0k", via: "Check-in Đã Vào Sân", code: "VS-11A-02" },
-        { id: "s15", time: "19:00 - 20:30", status: "booked", customer: "FC Ngân Hàng ACB", phone: "0919 778 899", price: "1200k", depositPaid: "600k", cashDue: "600k", via: "MoMo Online", code: "VS-11A-03" },
-        { id: "s16", time: "20:30 - 22:00", status: "empty", customer: "Ca Trống", phone: "—", price: "950k", depositPaid: "0k", cashDue: "0k", via: "Sẵn sàng nhận khách", code: "—" }
-      ]
-    }
-  ]);
+  // Live Owner Matrix Data (Stateful from Real Database)
+  const [pitchMatrix, setPitchMatrix] = useState<any[]>([]);
 
   // Canteen Sales Inventory State
   const [canteenItems, setCanteenItems] = useState([
@@ -157,8 +105,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   const [newPitchPeakPrice, setNewPitchPeakPrice] = useState("600000");
 
   // Offline Booking Form State
-  const [offlinePitchId, setOfflinePitchId] = useState("p7a");
-  const [offlineTime, setOfflineTime] = useState("20:30 - 22:00");
+  const [offlinePitchId, setOfflinePitchId] = useState("");
+  const [offlineTime, setOfflineTime] = useState("17:30 - 19:00");
   const [offlineCustomer, setOfflineCustomer] = useState("");
   const [offlinePhone, setOfflinePhone] = useState("");
   const [offlineDepositType, setOfflineDepositType] = useState<"PAID_CASH" | "TRUST">("PAID_CASH");
@@ -174,6 +122,26 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     fetchRealData();
   }, []);
 
+  const loadMatrixAndStats = async (pitchId: number | string) => {
+    try {
+      const [matrixRes, statsRes] = await Promise.all([
+        apiRequest<any[]>(`/api/v1/pitches/${pitchId}/matrix`),
+        apiRequest<any>(`/api/v1/pitches/${pitchId}/stats`)
+      ]);
+      if (matrixRes && Array.isArray(matrixRes)) {
+        setPitchMatrix(matrixRes);
+        if (matrixRes.length > 0 && !offlinePitchId) {
+          setOfflinePitchId(matrixRes[0].pitchName);
+        }
+      }
+      if (statsRes) {
+        setPitchStats(statsRes);
+      }
+    } catch (err: any) {
+      console.warn("Lỗi tải matrix/stats từ database:", err.message);
+    }
+  };
+
   const fetchRealData = async () => {
     setIsLoadingBackend(true);
     try {
@@ -182,13 +150,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         setRealPitches(pitches);
         const current = pitches[0];
         setActivePitch(current);
-        loadCourtsForPitch(current);
-      }
-      try {
-        const rev = await apiRequest<any>("/api/v1/admin/revenue-report");
-        if (rev) setRevenueData(rev);
-      } catch (e) {
-        // silent
+        await loadMatrixAndStats(current.id);
       }
     } catch (err: any) {
       console.warn("Backend API sync notice:", err.message);
@@ -197,82 +159,41 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     }
   };
 
-  const loadCourtsForPitch = (pitch: any) => {
-    if (!pitch) return;
-    const base = pitch.avgPricePerHour || 450000;
-    const peak = pitch.peakPricePerHour || 600000;
-    const types = (pitch.pitchTypes && pitch.pitchTypes.length > 0)
-      ? pitch.pitchTypes
-      : ["Sân 7 Cỏ Nhân Tạo", "Sân 5 Futsal"];
-
-    const courts = types.map((typeStr: string, idx: number) => {
-      const is7 = typeStr.toLowerCase().includes("7");
-      const is5 = typeStr.toLowerCase().includes("5");
-      const is11 = typeStr.toLowerCase().includes("11");
-      const label = is7 ? "Sân 7 Người" : is5 ? "Sân 5 Người" : is11 ? "Sân 11" : typeStr;
-      const courtName = `${label} ${String.fromCharCode(65 + idx)} (${pitch.name ? (pitch.name.length > 18 ? pitch.name.slice(0, 18) + '...' : pitch.name) : 'Cỏ Nhân Tạo'})`;
-      const courtBase = is11 ? Math.round(base * 2) : is7 ? base : Math.round(base * 0.75);
-      const courtPeak = is11 ? Math.round(peak * 2) : is7 ? peak : Math.round(peak * 0.75);
-
-      return {
-        pitchId: `pitch-${pitch.id}-${idx}`,
-        pitchName: courtName,
-        type: label,
-        basePrice: courtBase,
-        peakPrice: courtPeak,
-        status: "ACTIVE",
-        slots: [
-          { id: `s-${pitch.id}-${idx}-1`, time: "16:00 - 17:30", status: idx === 0 ? "booked" : "empty", customer: idx === 0 ? "Trần Hữu Nam" : "Ca Trống", phone: idx === 0 ? "0918 223 456" : "—", price: `${Math.round(courtBase/1000)}k`, depositPaid: idx === 0 ? `${Math.round(courtBase/2000)}k` : "0k", cashDue: idx === 0 ? `${Math.round(courtBase/2000)}k` : "0k", via: idx === 0 ? "VietQR Online" : "Sẵn sàng nhận khách", code: `VS-${pitch.id}-01` },
-          { id: `s-${pitch.id}-${idx}-2`, time: "17:30 - 19:00", status: "playing", customer: "FC Sài Gòn Warriors", phone: "0909 888 777", price: `${Math.round(courtPeak/1000)}k`, depositPaid: `${Math.round(courtPeak/2000)}k`, cashDue: "0k (Thu đủ)", via: "Check-in Đã Vào Sân", code: `VS-${pitch.id}-02` },
-          { id: `s-${pitch.id}-${idx}-3`, time: "19:00 - 20:30", status: "booked", customer: "Nguyễn Văn An", phone: "0988 776 655", price: `${Math.round(courtPeak/1000)}k`, depositPaid: `${Math.round(courtPeak/2000)}k`, cashDue: `${Math.round(courtPeak/2000)}k`, via: "VietQR Online", code: `VS-${pitch.id}-03` },
-          { id: `s-${pitch.id}-${idx}-4`, time: "20:30 - 22:00", status: idx % 2 === 0 ? "resale" : "empty", customer: idx % 2 === 0 ? "FC Hùng Dũng Q.7 (Pass)" : "Ca Trống", phone: idx % 2 === 0 ? "0934 112 233" : "—", price: `${Math.round((courtBase*0.8)/1000)}k`, depositPaid: "0k", cashDue: `${Math.round((courtBase*0.8)/1000)}k`, via: idx % 2 === 0 ? "Sàn Nhượng Gấp" : "Sẵn sàng nhận khách", code: `VS-${pitch.id}-04` }
-        ]
-      };
-    });
-
-    setPitchMatrix(courts);
-    if (courts.length > 0) {
-      setOfflinePitchId(courts[0].pitchId);
-    }
-  };
-
-  const handleSelectPitch = (pitch: any) => {
+  const handleSelectPitch = async (pitch: any) => {
     setActivePitch(pitch);
-    loadCourtsForPitch(pitch);
-    showToast(`🏟️ Đã chuyển sang cụm sân: [${pitch.name}]`);
+    await loadMatrixAndStats(pitch.id);
+    showToast(`🏟️ Đã kết nối cụm sân: [${pitch.name}]`);
   };
 
-  // Add new pitch handler
-  const handleCreateNewPitch = (e: React.FormEvent) => {
+  // Add new pitch handler (Lưu thật vào MySQL)
+  const handleCreateNewPitch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPitchName.trim()) {
       showToast("❌ Vui lòng nhập tên sân con mới!");
       return;
     }
 
-    const newId = `pitch-${Date.now()}`;
-    const newPitch = {
-      pitchId: newId,
-      pitchName: newPitchName,
-      type: newPitchType,
-      basePrice: Number(newPitchBasePrice) || 450000,
-      peakPrice: Number(newPitchPeakPrice) || 600000,
-      status: "ACTIVE",
-      slots: [
-        { id: `${newId}-s1`, time: "16:00 - 17:30", status: "empty", customer: "Ca Trống", phone: "—", price: `${(Number(newPitchBasePrice)/1000).toFixed(0)}k`, depositPaid: "0k", cashDue: "0k", via: "Mới khởi tạo", code: "—" },
-        { id: `${newId}-s2`, time: "17:30 - 19:00", status: "empty", customer: "Ca Trống", phone: "—", price: `${(Number(newPitchPeakPrice)/1000).toFixed(0)}k`, depositPaid: "0k", cashDue: "0k", via: "Mới khởi tạo", code: "—" },
-        { id: `${newId}-s3`, time: "19:00 - 20:30", status: "empty", customer: "Ca Trống", phone: "—", price: `${(Number(newPitchPeakPrice)/1000).toFixed(0)}k`, depositPaid: "0k", cashDue: "0k", via: "Mới khởi tạo", code: "—" },
-        { id: `${newId}-s4`, time: "20:30 - 22:00", status: "empty", customer: "Ca Trống", phone: "—", price: `${(Number(newPitchBasePrice)/1000).toFixed(0)}k`, depositPaid: "0k", cashDue: "0k", via: "Mới khởi tạo", code: "—" }
-      ]
-    };
-
-    setPitchMatrix(prev => [...prev, newPitch]);
-    setShowAddPitchModal(false);
-    setNewPitchName("");
-    showToast(`🎉 Đã thêm thành công [${newPitchName}] vào danh sách quản lý cụm sân!`);
+    const currentId = activePitch?.id || 1;
+    try {
+      await apiRequest(`/api/v1/pitches/${currentId}/add-court`, {
+        method: "POST",
+        body: JSON.stringify({
+          courtName: newPitchName.trim(),
+          courtType: newPitchType,
+          basePrice: Number(newPitchBasePrice) || 350000,
+          peakPrice: Number(newPitchPeakPrice) || 500000
+        })
+      });
+      await loadMatrixAndStats(currentId);
+      setShowAddPitchModal(false);
+      setNewPitchName("");
+      showToast(`🎉 Đã thêm sân [${newPitchName}] vào database cụm sân!`);
+    } catch (err: any) {
+      showToast(`❌ Lỗi thêm sân con: ${err.message || 'Không thể lưu vào hệ thống'}`);
+    }
   };
 
-  // Offline Booking submit
+  // Offline Booking submit (Lưu thật vào MySQL)
   const handleOfflineBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!offlineCustomer.trim() || !offlinePhone.trim()) {
@@ -280,96 +201,101 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       return;
     }
 
+    const currentId = activePitch?.id || 1;
     try {
-      await apiRequest('/api/v1/pitches/book-slot', {
+      const targetCourt = pitchMatrix.find(p => p.pitchName === offlinePitchId || p.pitchId === offlinePitchId) || pitchMatrix[0];
+      const isPeak = offlineTime.includes("17:30") || offlineTime.includes("19:00");
+      const price = isPeak ? (targetCourt?.peakPrice || 600000) : (targetCourt?.basePrice || 350000);
+      const deposit = offlineDepositType === "PAID_CASH" ? Math.round(price / 2) : 0;
+
+      await apiRequest(`/api/v1/pitches/${currentId}/book-offline`, {
         method: 'POST',
         body: JSON.stringify({
-          slotId: offlineTime,
-          customerName: offlineCustomer,
-          phone: offlinePhone,
-          pitchId: activePitch?.id || 1,
-          price: 500000
+          courtName: targetCourt ? targetCourt.pitchName : offlinePitchId,
+          courtType: targetCourt ? targetCourt.type : "Sân 7",
+          timeSlot: offlineTime,
+          customerName: offlineCustomer.trim(),
+          customerPhone: offlinePhone.trim(),
+          totalPrice: price,
+          depositPaid: deposit,
+          via: offlineDepositType === "PAID_CASH" ? "Tạo Tại Quầy (Đã Cọc)" : "Tạo Tại Quầy (Giữ Ca)"
         })
       });
-    } catch (err) {
-      console.warn("Backend sync notice:", err);
+
+      await loadMatrixAndStats(currentId);
+      setShowOfflineModal(false);
+      setOfflineCustomer("");
+      setOfflinePhone("");
+      showToast(`✅ Đã đặt ca thành công cho khách [${offlineCustomer}] và lưu vào database!`);
+    } catch (err: any) {
+      showToast(`❌ Lỗi đặt ca: ${err.message || 'Khung giờ này đã có người đặt trước!'}`);
     }
-
-    setPitchMatrix(prev =>
-      prev.map(p => {
-        if (p.pitchId === offlinePitchId) {
-          return {
-            ...p,
-            slots: p.slots.map(s => {
-              if (s.time === offlineTime) {
-                return {
-                  ...s,
-                  status: "booked",
-                  customer: `${offlineCustomer} (Vãng Lai)`,
-                  phone: offlinePhone,
-                  depositPaid: offlineDepositType === "PAID_CASH" ? "250k (Mặt quầy)" : "0k (Giữ tin tưởng)",
-                  cashDue: offlineDepositType === "PAID_CASH" ? "250k" : "500k",
-                  via: "Tạo Tại Quầy",
-                  code: `SH-OFFLINE-${Math.floor(1000 + Math.random() * 9000)}`
-                };
-              }
-              return s;
-            })
-          };
-        }
-        return p;
-      })
-    );
-
-    setShowOfflineModal(false);
-    setOfflineCustomer("");
-    setOfflinePhone("");
-    showToast(`✅ Đã khóa slot ${offlineTime} thành công cho khách vãng lai ${offlineCustomer}!`);
   };
 
-  // Confirm Check-in
-  const handleConfirmCheckin = (slotId: string) => {
-    setPitchMatrix(prev =>
-      prev.map(p => ({
-        ...p,
-        slots: p.slots.map(s => {
-          if (s.id === slotId) {
-            return {
-              ...s,
-              status: "playing",
-              cashDue: "0k (Đã thu đủ)",
-              via: "Check-in Đã Vào Sân"
-            };
-          }
-          return s;
-        })
-      }))
-    );
-    setSelectedSlotForAction(null);
-    showToast("⚽ Đã thu tiền mặt & kích hoạt hệ thống đèn LED sân! Khách đã vào sân thi đấu.");
+  // Confirm Check-in (Cập nhật thật vào MySQL)
+  const handleConfirmCheckin = async (slot: any) => {
+    if (!slot) return;
+    if (slot.bookingId) {
+      try {
+        await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}/check-in`, { method: "PUT" });
+        await loadMatrixAndStats(activePitch?.id || 1);
+        setSelectedSlotForAction(null);
+        showToast("⚽ Check-in thành công! Khách đã vào sân thi đấu.");
+        return;
+      } catch (err: any) {
+        showToast(`❌ Lỗi check-in: ${err.message}`);
+      }
+    } else {
+      setSelectedSlotForAction(null);
+      showToast("⚽ Đã ghi nhận khách vào sân!");
+    }
   };
 
-  // Handle No-Show Penalty
-  const handleNoShowPenalty = (slotId: string, customerName: string) => {
-    setPitchMatrix(prev =>
-      prev.map(p => ({
-        ...p,
-        slots: p.slots.map(s => {
-          if (s.id === slotId) {
-            return {
-              ...s,
-              status: "resale",
-              customer: `${customerName} (No-Show)`,
-              via: "Tịch Thu Cọc • Mở Sàn Nhượng",
-              price: "320k (-30% Giờ Vàng)"
-            };
-          }
-          return s;
-        })
-      }))
-    );
-    setSelectedSlotForAction(null);
-    showToast(`⚠️ Đã ghi nhận [Bùng Kèo] đối với ${customerName}! Tịch thu cọc 50% & đăng bài Sàn Nhượng Gấp.`);
+  // Cancel Booking (Xóa thật khỏi MySQL)
+  const handleCancelBooking = async (slot: any) => {
+    if (!slot) return;
+    if (slot.bookingId) {
+      try {
+        await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}`, { method: "DELETE" });
+        await loadMatrixAndStats(activePitch?.id || 1);
+        setSelectedSlotForAction(null);
+        showToast("🗑️ Đã hủy ca đặt thành công. Khung giờ đã sẵn sàng cho khách khác.");
+        return;
+      } catch (err: any) {
+        showToast(`❌ Lỗi hủy ca: ${err.message}`);
+      }
+    } else {
+      setSelectedSlotForAction(null);
+    }
+  };
+
+  // Tra cứu mã vé hoặc SĐT từ API backend
+  const handleSearchBooking = async () => {
+    if (!searchCodeInput.trim()) return;
+    try {
+      const res = await apiRequest<any[]>(`/api/v1/pitches/bookings/search?query=${encodeURIComponent(searchCodeInput.trim())}`);
+      if (res && res.length > 0) {
+        const found = res[0];
+        setSelectedSlotForAction({
+          id: `booking-${found.id}`,
+          bookingId: found.id,
+          customer: found.customerName,
+          phone: found.customerPhone,
+          time: found.timeSlot,
+          price: `${found.totalPrice ? Math.round(found.totalPrice / 1000) : 0}k`,
+          depositPaid: `${found.depositPaid ? Math.round(found.depositPaid / 1000) : 0}k`,
+          cashDue: `${found.cashDue ? Math.round(found.cashDue / 1000) : 0}k`,
+          status: found.status ? found.status.toLowerCase() : "booked",
+          via: found.via || "Tạo Tại Quầy",
+          code: found.code || "—"
+        });
+        showToast(`🔍 Tìm thấy đơn vé: [${found.code}] của khách ${found.customerName}`);
+      } else {
+        showToast(`❌ Không tìm thấy đơn ca nào khớp với từ khóa "${searchCodeInput}"`);
+      }
+    } catch (e: any) {
+      showToast(`❌ Lỗi tra cứu: ${e.message}`);
+    }
   };
 
   // Filter matrix slots based on state
@@ -377,7 +303,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     .filter(pitch => matrixFilterType === "ALL" || pitch.type.includes(matrixFilterType))
     .map(pitch => ({
       ...pitch,
-      slots: pitch.slots.filter(s => {
+      slots: (pitch.slots || []).filter((s: any) => {
         if (matrixFilterStatus === "ALL") return true;
         if (matrixFilterStatus === "BOOKED") return s.status === "booked";
         if (matrixFilterStatus === "PLAYING") return s.status === "playing";
@@ -547,31 +473,41 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         </div>
       </div>
 
-      {/* TOP KPI OVERVIEW CARDS */}
+      {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Doanh Thu Hôm Nay</span>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-500 font-mono">16.480.000 VNĐ</div>
+          <div className="text-2xl sm:text-3xl font-black text-emerald-500 font-mono">
+            {(pitchStats.totalRevenue || 0).toLocaleString("vi-VN")} VNĐ
+          </div>
           <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
-            <TrendingUp className="w-3.5 h-3.5 mr-1" /> VietQR 12.8M • Mặt quầy 3.68M
+            <TrendingUp className="w-3.5 h-3.5 mr-1" /> Online {pitchStats.onlineBookings} ca • Quầy {pitchStats.counterBookings} ca
           </span>
         </div>
 
         <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Tỷ Lệ Lấp Đầy Ca Sân</span>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">92%</div>
-          <span className="text-[11px] font-bold text-emerald-500">Khóa 14 / 16 ca đặt (Giờ vàng 100%)</span>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
+            {pitchStats.occupancyRate}%
+          </div>
+          <span className="text-[11px] font-bold text-emerald-500">
+            Khóa {pitchStats.bookedSlots} / {pitchStats.totalSlots} ca đặt
+          </span>
         </div>
 
         <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Đơn Cọc VietQR Online</span>
-          <div className="text-2xl sm:text-3xl font-black text-sky-500 font-mono">11 Ca Online</div>
-          <span className="text-[11px] font-bold text-slate-500">Tự động giữ slot trong 1 giây</span>
+          <div className="text-2xl sm:text-3xl font-black text-sky-500 font-mono">
+            {pitchStats.onlineBookings} Ca Online
+          </div>
+          <span className="text-[11px] font-bold text-slate-500">Tự động giữ slot qua VietQR Napas247</span>
         </div>
 
         <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Khách Vãng Lai Tại Quầy</span>
-          <div className="text-2xl sm:text-3xl font-black text-amber-500 font-mono">3 Ca Trực Tiếp</div>
+          <div className="text-2xl sm:text-3xl font-black text-amber-500 font-mono">
+            {pitchStats.counterBookings} Ca Trực Tiếp
+          </div>
           <span className="text-[11px] font-bold text-amber-500">Khóa lịch ca tức thì trên toàn sàn</span>
         </div>
       </div>
@@ -595,21 +531,14 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               type="text"
               value={searchCodeInput}
               onChange={(e) => setSearchCodeInput(e.target.value)}
-              placeholder="VD: VS-7829-01 hoặc SĐT..."
+              onKeyDown={(e) => { if (e.key === "Enter") handleSearchBooking(); }}
+              placeholder="VD: VS-1-7102 hoặc SĐT khách..."
               className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
           <button
-            onClick={() => {
-              if (!searchCodeInput.trim()) return;
-              const found = pitchMatrix.flatMap(p => p.slots).find(s => s.code.toLowerCase().includes(searchCodeInput.toLowerCase()) || s.phone.includes(searchCodeInput));
-              if (found) {
-                setSelectedSlotForAction(found);
-              } else {
-                showToast(`❌ Không tìm thấy đơn ca nào khớp với mã "${searchCodeInput}"`);
-              }
-            }}
-            className="px-4 py-2 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 text-xs font-extrabold shadow-sm shrink-0"
+            onClick={handleSearchBooking}
+            className="px-4 py-2 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 text-xs font-extrabold shadow-sm shrink-0 hover:opacity-90 active:scale-95 transition-all"
           >
             Tra Cứu
           </button>
@@ -728,7 +657,15 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     {pitch.slots.map((slot) => (
                       <div
                         key={slot.id}
-                        onClick={() => setSelectedSlotForAction(slot)}
+                        onClick={() => {
+                          if (slot.status === "empty") {
+                            setOfflinePitchId(pitch.pitchName);
+                            setOfflineTime(slot.time);
+                            setShowOfflineModal(true);
+                          } else {
+                            setSelectedSlotForAction(slot);
+                          }
+                        }}
                         className={`p-3.5 rounded-2xl border space-y-1.5 transition-all cursor-pointer hover:scale-[1.02] shadow-xs ${
                           slot.status === "playing"
                             ? "bg-rose-500/10 border-rose-400 text-rose-600 dark:text-rose-400 font-bold"
@@ -736,7 +673,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                             ? "bg-emerald-500/10 border-emerald-400 text-emerald-600 dark:text-emerald-400 font-bold"
                             : slot.status === "resale"
                             ? "bg-amber-500/10 border-amber-400 text-amber-600 dark:text-amber-400 font-bold"
-                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:border-emerald-400"
+                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:border-emerald-400 hover:bg-emerald-50/20"
                         }`}
                       >
                         <div className="flex justify-between items-center text-[11px] font-mono">
@@ -744,10 +681,12 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                           <span className="font-black">{slot.price}</span>
                         </div>
                         
-                        <p className="font-black text-slate-900 dark:text-white truncate text-xs">{slot.customer}</p>
+                        <p className={`font-black truncate text-xs ${slot.status === "empty" ? "text-slate-400 dark:text-slate-500" : "text-slate-900 dark:text-white"}`}>
+                          {slot.customer}
+                        </p>
                         
                         <div className="text-[10px] space-y-0.5 opacity-90 font-mono">
-                          <span className="block text-slate-500">Cọc: <strong className="text-emerald-600 dark:text-emerald-400">{slot.depositPaid}</strong></span>
+                          <span className="block text-slate-500">Cọc: <strong className={slot.status === "empty" ? "text-slate-400" : "text-emerald-600 dark:text-emerald-400"}>{slot.depositPaid}</strong></span>
                           {slot.status === "booked" && (
                             <span className="block text-rose-500">Thu tại quầy: <strong>{slot.cashDue}</strong></span>
                           )}
@@ -1263,22 +1202,24 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
 
             <div className="space-y-2 pt-2">
-              <button
-                type="button"
-                onClick={() => handleConfirmCheckin(selectedSlotForAction.id)}
-                className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-md transition-all flex items-center justify-center space-x-1.5 active:scale-95"
-              >
-                <UserCheck className="w-4 h-4" />
-                <span>Xác Nhận Thu Đủ Tiền & Mở Đèn Đá</span>
-              </button>
+              {selectedSlotForAction.status === "booked" && (
+                <button
+                  type="button"
+                  onClick={() => handleConfirmCheckin(selectedSlotForAction)}
+                  className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-md transition-all flex items-center justify-center space-x-1.5 active:scale-95"
+                >
+                  <UserCheck className="w-4 h-4" />
+                  <span>Xác Nhận Check-in Vào Sân & Mở Đèn</span>
+                </button>
+              )}
 
               <button
                 type="button"
-                onClick={() => handleNoShowPenalty(selectedSlotForAction.id, selectedSlotForAction.customer)}
+                onClick={() => handleCancelBooking(selectedSlotForAction)}
                 className="w-full py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-bold text-xs border border-rose-500/20 transition-all flex items-center justify-center space-x-1.5 active:scale-95"
               >
-                <UserX className="w-4 h-4" />
-                <span>Xử Lý Khách Bùng Kèo (No-Show 15p)</span>
+                <Trash2 className="w-4 h-4" />
+                <span>Hủy Đơn Đặt Này (Trả Về Ca Trống)</span>
               </button>
             </div>
           </div>

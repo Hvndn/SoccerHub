@@ -1,8 +1,11 @@
 package com.soccerhub.controller;
 
 import com.soccerhub.dto.CreatePitchRequest;
+import com.soccerhub.model.Booking;
 import com.soccerhub.model.Pitch;
 import com.soccerhub.model.User;
+import com.soccerhub.repository.BookingRepository;
+import com.soccerhub.repository.PitchRepository;
 import com.soccerhub.service.PitchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
@@ -19,6 +24,8 @@ import java.util.*;
 public class PitchBookingController {
 
     private final PitchService pitchService;
+    private final PitchRepository pitchRepository;
+    private final BookingRepository bookingRepository;
 
     @GetMapping
     public ResponseEntity<List<Pitch>> getAllPitches() {
@@ -74,41 +81,279 @@ public class PitchBookingController {
         }
     }
 
-    @GetMapping("/{id}/slots")
-    public ResponseEntity<List<Map<String, Object>>> getPitchSlots(@PathVariable Long id, @RequestParam(defaultValue = "2026-10-01") String date) {
+    /**
+     * API Lấy Ma Trận Ca Sân Thời Gian Thực (Owner Live Grid Matrix) Dữ Liệu Thật 100%
+     */
+    @GetMapping("/{id}/matrix")
+    public ResponseEntity<?> getPitchMatrix(
+            @PathVariable Long id,
+            @RequestParam(required = false) String date
+    ) {
         Pitch pitch = pitchService.getPitchById(id);
-        int basePrice = pitch.getAvgPricePerHour() != null ? pitch.getAvgPricePerHour() : 350000;
-        int peakPrice = pitch.getPeakPricePerHour() != null ? pitch.getPeakPricePerHour() : 450000;
+        String targetDate = (date != null && !date.trim().isEmpty()) 
+                ? date.trim() 
+                : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-        List<Map<String, Object>> slots = Arrays.asList(
-            Map.of("id", "slot-1", "time", "17:00 - 18:30", "price", basePrice, "status", "AVAILABLE", "pitchType", "Sân 7A"),
-            Map.of("id", "slot-2", "time", "18:30 - 20:00", "price", peakPrice, "status", "BOOKED", "pitchType", "Sân 7A"),
-            Map.of("id", "slot-3", "time", "20:00 - 21:30", "price", peakPrice, "status", "AVAILABLE", "pitchType", "Sân 7A"),
-            Map.of("id", "slot-4", "time", "17:00 - 18:30", "price", (int)(basePrice * 0.8), "status", "AVAILABLE", "pitchType", "Sân 5B"),
-            Map.of("id", "slot-5", "time", "18:30 - 20:00", "price", basePrice, "status", "HOLD", "pitchType", "Sân 5B"),
-            Map.of("id", "slot-6", "time", "20:00 - 21:30", "price", basePrice, "status", "AVAILABLE", "pitchType", "Sân 5B")
+        List<String> courtList = pitch.getPitchTypes();
+        if (courtList == null || courtList.isEmpty()) {
+            courtList = new ArrayList<>(List.of("Sân 7A Cỏ Nhân Tạo", "Sân 5B Futsal"));
+            pitch.setPitchTypes(courtList);
+            pitchRepository.save(pitch);
+        }
+
+        int base = pitch.getAvgPricePerHour() != null ? pitch.getAvgPricePerHour() : 350000;
+        int peak = pitch.getPeakPricePerHour() != null ? pitch.getPeakPricePerHour() : 500000;
+
+        List<String> standardSlots = List.of(
+                "16:00 - 17:30",
+                "17:30 - 19:00",
+                "19:00 - 20:30",
+                "20:30 - 22:00"
         );
-        return ResponseEntity.ok(slots);
+
+        List<Map<String, Object>> matrix = new ArrayList<>();
+
+        for (int i = 0; i < courtList.size(); i++) {
+            String courtName = courtList.get(i);
+            boolean is7 = courtName.toLowerCase().contains("7");
+            boolean is5 = courtName.toLowerCase().contains("5");
+            boolean is11 = courtName.toLowerCase().contains("11");
+            String courtType = is7 ? "Sân 7 Người" : is5 ? "Sân 5 Người" : is11 ? "Sân 11" : "Sân Tiêu Chuẩn";
+
+            int courtBase = is11 ? Math.round(base * 2) : is7 ? base : Math.round(base * 0.75f);
+            int courtPeak = is11 ? Math.round(peak * 2) : is7 ? peak : Math.round(peak * 0.75f);
+
+            List<Map<String, Object>> slotsData = new ArrayList<>();
+
+            for (int sIdx = 0; sIdx < standardSlots.size(); sIdx++) {
+                String timeSlot = standardSlots.get(sIdx);
+                int slotPrice = (sIdx == 1 || sIdx == 2) ? courtPeak : courtBase;
+
+                // Tìm booking thật trong Database
+                Optional<Booking> optBooking = bookingRepository
+                        .findByPitchIdAndCourtNameAndBookingDateAndTimeSlot(id, courtName, targetDate, timeSlot);
+
+                Map<String, Object> slotObj = new HashMap<>();
+                slotObj.put("time", timeSlot);
+
+                if (optBooking.isPresent()) {
+                    Booking b = optBooking.get();
+                    slotObj.put("id", "booking-" + b.getId());
+                    slotObj.put("bookingId", b.getId());
+                    slotObj.put("status", b.getStatus().toLowerCase()); // booked, playing, resale
+                    slotObj.put("customer", b.getCustomerName());
+                    slotObj.put("phone", b.getCustomerPhone());
+                    slotObj.put("price", (b.getTotalPrice() != null ? (b.getTotalPrice() / 1000) : (slotPrice / 1000)) + "k");
+                    slotObj.put("depositPaid", (b.getDepositPaid() != null ? (b.getDepositPaid() / 1000) : 0) + "k");
+                    slotObj.put("cashDue", (b.getCashDue() != null ? (b.getCashDue() / 1000) : 0) + "k");
+                    slotObj.put("via", b.getVia());
+                    slotObj.put("code", b.getCode());
+                } else {
+                    // Ca trống thật sự
+                    slotObj.put("id", "empty-" + id + "-" + i + "-" + sIdx);
+                    slotObj.put("bookingId", null);
+                    slotObj.put("status", "empty");
+                    slotObj.put("customer", "Ca Trống");
+                    slotObj.put("phone", "—");
+                    slotObj.put("price", (slotPrice / 1000) + "k");
+                    slotObj.put("depositPaid", "0k");
+                    slotObj.put("cashDue", "0k");
+                    slotObj.put("via", "Sẵn sàng nhận khách");
+                    slotObj.put("code", "—");
+                }
+                slotsData.add(slotObj);
+            }
+
+            Map<String, Object> courtObj = new HashMap<>();
+            courtObj.put("pitchId", "court-" + id + "-" + i);
+            courtObj.put("pitchName", courtName);
+            courtObj.put("type", courtType);
+            courtObj.put("basePrice", courtBase);
+            courtObj.put("peakPrice", courtPeak);
+            courtObj.put("status", "ACTIVE");
+            courtObj.put("slots", slotsData);
+
+            matrix.add(courtObj);
+        }
+
+        return ResponseEntity.ok(matrix);
     }
 
-    @PostMapping("/book-slot")
-    public ResponseEntity<Map<String, Object>> bookSlot(@RequestBody Map<String, Object> bookingReq) {
-        String slotId = (String) bookingReq.get("slotId");
-        String customerName = (String) bookingReq.getOrDefault("customerName", "Cầu thủ SoccerHub");
-        String bookingCode = "SH-BOOK-" + System.currentTimeMillis() % 100000;
-        
-        String vietQrUrl = "https://img.vietqr.io/image/970436-1029384756-compact2.png?amount=150000&addInfo=" + bookingCode + "&accountName=SOCCERHUB%20PRO";
+    /**
+     * API Thống Kê Doanh Thu & Công Suất Thực Tế (Real Live Stats)
+     */
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<?> getPitchRealStats(
+            @PathVariable Long id,
+            @RequestParam(required = false) String date
+    ) {
+        Pitch pitch = pitchService.getPitchById(id);
+        String targetDate = (date != null && !date.trim().isEmpty()) 
+                ? date.trim() 
+                : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-        Map<String, Object> response = Map.of(
-            "status", "SUCCESS",
-            "bookingCode", bookingCode,
-            "slotId", slotId,
-            "customerName", customerName,
-            "depositAmount", 150000,
-            "vietQrUrl", vietQrUrl,
-            "qrTicketCode", "QR-TICKET-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(),
-            "message", "Khóa ca sân thành công 5 phút để thanh toán cọc VietQR."
-        );
-        return ResponseEntity.ok(response);
+        List<Booking> bookings = bookingRepository.findByPitchIdAndBookingDate(id, targetDate);
+
+        int totalSlots = (pitch.getPitchTypes() != null ? pitch.getPitchTypes().size() : 2) * 4;
+        int bookedSlots = bookings.size();
+
+        int totalRevenue = 0;
+        int vietQrOnlineCount = 0;
+        int offlineCounterCount = 0;
+
+        for (Booking b : bookings) {
+            int deposit = b.getDepositPaid() != null ? b.getDepositPaid() : 0;
+            int cash = ("PLAYING".equalsIgnoreCase(b.getStatus()) || "COMPLETED".equalsIgnoreCase(b.getStatus())) 
+                    ? (b.getCashDue() != null ? b.getCashDue() : 0) 
+                    : 0;
+            totalRevenue += (deposit + cash);
+
+            if (b.getVia() != null && (b.getVia().contains("VietQR") || b.getVia().contains("Online") || b.getVia().contains("MoMo"))) {
+                vietQrOnlineCount++;
+            } else {
+                offlineCounterCount++;
+            }
+        }
+
+        int occupancyRate = totalSlots > 0 ? (int) Math.round((bookedSlots * 100.0) / totalSlots) : 0;
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("pitchId", id);
+        stats.put("pitchName", pitch.getName());
+        stats.put("date", targetDate);
+        stats.put("totalRevenue", totalRevenue);
+        stats.put("occupancyRate", occupancyRate);
+        stats.put("totalSlots", totalSlots);
+        stats.put("bookedSlots", bookedSlots);
+        stats.put("onlineBookings", vietQrOnlineCount);
+        stats.put("counterBookings", offlineCounterCount);
+
+        return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * API Tạo Đặt Ca Tại Quầy (Lưu trực tiếp vào MySQL)
+     */
+    @PostMapping("/{id}/book-offline")
+    public ResponseEntity<?> bookOfflineSlot(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> req
+    ) {
+        String courtName = (String) req.get("courtName");
+        String timeSlot = (String) req.get("timeSlot");
+        String customerName = (String) req.get("customerName");
+        String customerPhone = (String) req.get("customerPhone");
+        String bookingDate = (String) req.getOrDefault("bookingDate", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        
+        Integer totalPrice = req.get("totalPrice") != null ? Integer.valueOf(req.get("totalPrice").toString()) : 500000;
+        Integer depositPaid = req.get("depositPaid") != null ? Integer.valueOf(req.get("depositPaid").toString()) : 250000;
+        Integer cashDue = totalPrice - depositPaid;
+
+        if (courtName == null || timeSlot == null || customerName == null || customerPhone == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập đầy đủ thông tin đặt sân."));
+        }
+
+        // Kiểm tra xem ca đã có người đặt chưa
+        Optional<Booking> existing = bookingRepository.findByPitchIdAndCourtNameAndBookingDateAndTimeSlot(id, courtName, bookingDate, timeSlot);
+        if (existing.isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Khung giờ này đã có người đặt trước! Vui lòng chọn ca khác."));
+        }
+
+        String code = "VS-" + id + "-" + (System.currentTimeMillis() % 10000);
+
+        Booking booking = Booking.builder()
+                .pitchId(id)
+                .courtName(courtName)
+                .courtType((String) req.getOrDefault("courtType", "Sân 7"))
+                .bookingDate(bookingDate)
+                .timeSlot(timeSlot)
+                .customerName(customerName)
+                .customerPhone(customerPhone)
+                .totalPrice(totalPrice)
+                .depositPaid(depositPaid)
+                .cashDue(cashDue)
+                .status("BOOKED")
+                .via((String) req.getOrDefault("via", "Tạo Tại Quầy"))
+                .code(code)
+                .build();
+
+        Booking saved = bookingRepository.save(booking);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    /**
+     * API Thêm Sân Con Mới Vào Cụm Sân (Lưu trực tiếp vào MySQL)
+     */
+    @PostMapping("/{id}/add-court")
+    public ResponseEntity<?> addCourtToPitch(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> req
+    ) {
+        String courtName = (String) req.get("courtName");
+        if (courtName == null || courtName.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Tên sân con không được để trống."));
+        }
+
+        Pitch pitch = pitchService.getPitchById(id);
+        List<String> types = pitch.getPitchTypes();
+        if (types == null) {
+            types = new ArrayList<>();
+        } else {
+            types = new ArrayList<>(types);
+        }
+
+        if (types.contains(courtName.trim())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Sân con này đã tồn tại trong cụm sân."));
+        }
+
+        types.add(courtName.trim());
+        pitch.setPitchTypes(types);
+        Pitch updated = pitchRepository.save(pitch);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Thêm sân con mới thành công!",
+                "pitchTypes", updated.getPitchTypes()
+        ));
+    }
+
+    /**
+     * API Check-in Khách Vào Sân
+     */
+    @PutMapping("/bookings/{bookingId}/check-in")
+    public ResponseEntity<?> checkInBooking(@PathVariable Long bookingId) {
+        return bookingRepository.findById(bookingId).map(b -> {
+            b.setStatus("PLAYING");
+            b.setCashDue(0); // Đã thu đủ tại quầy
+            bookingRepository.save(b);
+            return ResponseEntity.ok(Map.of("message", "Check-in thành công! Khách đã vào sân.", "booking", b));
+        }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy đơn đặt này.")));
+    }
+
+    /**
+     * API Hủy Ca Đặt
+     */
+    @DeleteMapping("/bookings/{bookingId}")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long bookingId) {
+        return bookingRepository.findById(bookingId).map(b -> {
+            bookingRepository.delete(b);
+            return ResponseEntity.ok(Map.of("message", "Đã hủy ca đặt thành công. Khung giờ đã sẵn sàng cho khách khác."));
+        }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy đơn đặt này.")));
+    }
+
+    /**
+     * API Tra Cứu Mã Vé Hoặc Số Điện Thoại
+     */
+    @GetMapping("/bookings/search")
+    public ResponseEntity<?> searchBooking(@RequestParam String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập mã vé hoặc số điện thoại."));
+        }
+        String clean = query.trim();
+        Optional<Booking> byCode = bookingRepository.findByCode(clean);
+        if (byCode.isPresent()) {
+            return ResponseEntity.ok(List.of(byCode.get()));
+        }
+        List<Booking> byPhone = bookingRepository.findByCustomerPhoneContaining(clean);
+        return ResponseEntity.ok(byPhone);
     }
 }
