@@ -495,84 +495,84 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <button
               type="button"
               onClick={() => setShowHoursModal(true)}
-              className="px-4.5 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-extrabold text-sm sm:text-base shadow-xs transition-all active:scale-95 flex items-center space-x-2"
+              className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
               title="Cài đặt thời gian mở/đóng cửa và thời lượng ca sân (1h, 1.5h, 2h)"
             >
-              <Clock className="w-4.5 h-4.5 text-indigo-500 shrink-0" />
-              <span>Giờ Mở Sân: {operatingOpenTime} - {operatingCloseTime} ({operatingSlotDuration}p/ca)</span>
+              <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
+              <span>{operatingOpenTime} - {operatingCloseTime} ({operatingSlotDuration}p/ca)</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowAddPitchModal(true)}
-              className="px-4.5 py-2.5 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 hover:bg-[#07384d] dark:hover:bg-sky-400 text-white dark:text-slate-950 font-black text-sm sm:text-base shadow-md transition-all active:scale-95 flex items-center space-x-2"
+              className="px-3.5 py-2 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 hover:bg-[#07384d] dark:hover:bg-sky-400 text-white dark:text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
             >
-              <Plus className="w-4.5 h-4.5 shrink-0" />
-              <span>+ Thêm Sân Con Mới</span>
+              <Plus className="w-4 h-4 shrink-0" />
+              <span>Thêm Sân Con</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowOfflineModal(true)}
-              className="px-4.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm sm:text-base shadow-md transition-all active:scale-95 flex items-center space-x-2"
+              className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
             >
-              <PhoneCall className="w-4.5 h-4.5 shrink-0" />
-              <span>+ Tạo Đặt Ca Tại Quầy</span>
+              <PhoneCall className="w-4 h-4 shrink-0" />
+              <span>Đặt Ca Tại Quầy</span>
             </button>
           </div>
         </div>
 
         {/* SUB TAB NAVIGATION TOOLBAR */}
-        <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
           <button
             type="button"
             onClick={() => setActiveSubTab("matrix")}
-            className={`px-5 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center space-x-2 ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "matrix"
                 ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <BarChart2 className="w-5 h-5 shrink-0" />
+            <BarChart2 className="w-4 h-4 shrink-0" />
             <span>Sơ Đồ Ca Sân Live Matrix</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("pitches")}
-            className={`px-5 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center space-x-2 ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "pitches"
                 ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <Building className="w-5 h-5 shrink-0" />
+            <Building className="w-4 h-4 shrink-0" />
             <span>Danh Sách Sân Con ({pitchMatrix.length})</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("pricing")}
-            className={`px-5 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center space-x-2 ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "pricing"
                 ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <Sliders className="w-5 h-5 text-amber-400 shrink-0" />
+            <Sliders className="w-4 h-4 text-amber-400 shrink-0" />
             <span>AI Dynamic Pricing & Giờ Vàng</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("canteen")}
-            className={`px-5 py-2.5 rounded-xl text-sm sm:text-base font-extrabold transition-all flex items-center space-x-2 ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "canteen"
                 ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
-            <Coffee className="w-5 h-5 text-emerald-400 shrink-0" />
+            <Coffee className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>Quản Lý Canteen & Vật Tư</span>
           </button>
         </div>
