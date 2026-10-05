@@ -44,8 +44,16 @@ import {
   Trash2,
   PieChart,
   Tag,
-  Activity
+  Activity,
+  Volume2
 } from "lucide-react";
+import {
+  playNotificationChime,
+  subscribeToBookingEvents,
+  broadcastBookingEvent,
+  openDualRoleWindow,
+  RealtimeBookingEvent
+} from "@/lib/realtimeService";
 
 interface AdminDashboardProps {
   onBackToHome?: () => void;
@@ -120,16 +128,58 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   const [offlinePhone, setOfflinePhone] = useState("");
   const [offlineDepositType, setOfflineDepositType] = useState<"PAID_CASH" | "TRUST">("PAID_CASH");
 
+  // Realtime Live Booking Alerts State
+  const [realtimeAlert, setRealtimeAlert] = useState<RealtimeBookingEvent | null>(null);
+  const [alertsHistory, setAlertsHistory] = useState<RealtimeBookingEvent[]>([]);
+  const lastBookedSlotsRef = React.useRef<number>(0);
+
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3500);
   };
 
-  // Fetch real pitch data from backend API
+  // Fetch real pitch data from backend API & Subscribe Realtime
   useEffect(() => {
     setMounted(true);
     fetchRealData();
-  }, []);
+
+    // 1. Lắng nghe sự kiện Realtime đa tab / đa role (0 mili-giây)
+    const unsubscribe = subscribeToBookingEvents((event) => {
+      if (event.type === "BOOKING_CREATED") {
+        playNotificationChime();
+        setRealtimeAlert(event);
+        setAlertsHistory((prev) => [event, ...prev].slice(0, 10));
+        showToast(`⚡ CÓ ĐƠN ĐẶT SÂN MỚI! Khách ${event.customerName} (${event.customerPhone}) vừa cọc ca [${event.timeSlot}] của [${event.courtName}]!`);
+        
+        // Cập nhật ma trận ca sân & doanh thu tức thời
+        const currentId = activePitch?.id || 1;
+        loadMatrixAndStats(currentId);
+      }
+    });
+
+    // 2. Heartbeat Polling mỗi 4 giây (Đồng bộ đa trình duyệt / đa thiết bị khác nhau)
+    const heartbeatInterval = setInterval(async () => {
+      const currentId = activePitch?.id || 1;
+      try {
+        const statsRes = await apiRequest<any>(`/api/v1/pitches/${currentId}/stats`);
+        if (statsRes && typeof statsRes.bookedSlots === "number") {
+          if (lastBookedSlotsRef.current > 0 && statsRes.bookedSlots > lastBookedSlotsRef.current) {
+            playNotificationChime();
+            showToast(`🔔 Cụm sân vừa nhận thêm đơn đặt cọc mới! Đã tự động cập nhật sơ đồ ca.`);
+            loadMatrixAndStats(currentId);
+          }
+          lastBookedSlotsRef.current = statsRes.bookedSlots;
+        }
+      } catch (e) {
+        // silent fallback
+      }
+    }, 4000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(heartbeatInterval);
+    };
+  }, [activePitch?.id]);
 
   const loadMatrixAndStats = async (pitchId: number | string) => {
     try {
@@ -262,6 +312,19 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       setOfflineCustomer("");
       setOfflinePhone("");
       showToast(`✅ Đã đặt ca thành công cho khách [${offlineCustomer}] và lưu vào database!`);
+
+      // Phát sự kiện Realtime cho các Tab khác (bao gồm Cầu Thủ)
+      broadcastBookingEvent({
+        type: "BOOKING_CREATED",
+        pitchId: currentId,
+        customerName: offlineCustomer.trim(),
+        customerPhone: offlinePhone.trim(),
+        courtName: targetCourt ? targetCourt.pitchName : offlinePitchId,
+        timeSlot: offlineTime,
+        totalPrice: price,
+        depositPaid: deposit,
+        via: offlineDepositType === "PAID_CASH" ? "Tạo Tại Quầy (Đã Cọc)" : "Tạo Tại Quầy (Giữ Ca)"
+      });
     } catch (err: any) {
       showToast(`❌ Lỗi đặt ca: ${err.message || 'Khung giờ này đã có người đặt trước!'}`);
     }
@@ -276,6 +339,13 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         await loadMatrixAndStats(activePitch?.id || 1);
         setSelectedSlotForAction(null);
         showToast("⚽ Check-in thành công! Khách đã vào sân thi đấu.");
+
+        broadcastBookingEvent({
+          type: "BOOKING_CHECKED_IN",
+          pitchId: activePitch?.id || 1,
+          bookingId: slot.bookingId,
+          customerName: slot.customer
+        });
         return;
       } catch (err: any) {
         showToast(`❌ Lỗi check-in: ${err.message}`);
@@ -295,6 +365,12 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         await loadMatrixAndStats(activePitch?.id || 1);
         setSelectedSlotForAction(null);
         showToast("🗑️ Đã hủy ca đặt thành công. Khung giờ đã sẵn sàng cho khách khác.");
+
+        broadcastBookingEvent({
+          type: "BOOKING_CANCELLED",
+          pitchId: activePitch?.id || 1,
+          bookingId: slot.bookingId
+        });
         return;
       } catch (err: any) {
         showToast(`❌ Lỗi hủy ca: ${err.message}`);
@@ -418,6 +494,61 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         </div>
       )}
 
+      {/* POPUP THÔNG BÁO ĐƠN ĐẶT SÂN REALTIME TỪ CẦU THỦ */}
+      {realtimeAlert && (
+        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 text-white p-4.5 sm:p-5 rounded-3xl shadow-2xl border-2 border-emerald-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-scale-up relative overflow-hidden">
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          
+          <div className="flex items-start space-x-3.5 relative z-10">
+            <div className="w-12 h-12 rounded-2xl bg-white text-emerald-600 flex items-center justify-center shrink-0 shadow-lg animate-bounce">
+              <Bell className="w-6 h-6 fill-emerald-600 text-emerald-600" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider shadow-xs">
+                  ⚡ ĐƠN ĐẶT SÂN MỚI TỨC THỜI
+                </span>
+                <span className="text-[11px] font-mono text-emerald-100 font-bold">Vừa đặt cọc xong</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-white">
+                Khách hàng <span className="text-amber-300 underline underline-offset-2">{realtimeAlert.customerName}</span> ({realtimeAlert.customerPhone}) vừa cọc ca thi đấu!
+              </h3>
+              <p className="text-xs text-emerald-100 font-medium flex flex-wrap items-center gap-x-2">
+                <span>🏟️ {realtimeAlert.courtName}</span>
+                <span>•</span>
+                <span>⏰ Ca: <strong className="text-white font-mono">{realtimeAlert.timeSlot}</strong></span>
+                <span>•</span>
+                <span>💰 Đã cọc: <strong className="text-amber-300 font-mono font-bold">{(realtimeAlert.depositPaid || 0).toLocaleString('vi-VN')}đ</strong></span>
+                <span>•</span>
+                <span>💳 Qua: <strong className="text-white">{realtimeAlert.via || "VietQR Online"}</strong></span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 w-full md:w-auto shrink-0 relative z-10">
+            <button
+              type="button"
+              onClick={() => playNotificationChime()}
+              className="px-3 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center space-x-1 transition-all cursor-pointer"
+              title="Phát lại âm thanh chuông thông báo"
+            >
+              <Volume2 className="w-4 h-4" />
+              <span>Phát lại chuông</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setRealtimeAlert(null);
+                showToast("✓ Đã xác nhận đơn! Ma trận ca sân đã cập nhật trạng thái mới nhất.");
+              }}
+              className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-950 font-black text-xs shadow-lg transition-all active:scale-95 cursor-pointer"
+            >
+              Đã Nhận Đơn ✓
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Real-time Order Notification Banner */}
       {notification && (
         <div className="bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 px-5 py-3 rounded-2xl shadow-lg border border-sky-400/30 flex items-center justify-between animate-fade-in">
@@ -468,6 +599,17 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            {/* NÚT MỞ TAB CẦU THỦ SONG SONG ĐỂ TEST 2 ROLE REALTIME */}
+            <button
+              type="button"
+              onClick={() => openDualRoleWindow("PLAYER")}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white font-extrabold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+              title="Mở tab mới với tư cách Cầu Thủ để test đặt sân và nhận chuông thông báo realtime ngay lập tức"
+            >
+              <Zap className="w-4 h-4 text-amber-300" />
+              <span>Mở Tab Cầu Thủ (Test 2 Role) ↗</span>
+            </button>
+
             {realPitches.length > 1 && (
               <select
                 value={activePitch?.id || ""}

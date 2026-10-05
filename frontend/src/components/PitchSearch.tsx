@@ -37,12 +37,14 @@ import {
   PlusCircle,
   ThumbsUp,
   Camera,
-  Navigation
+  Navigation,
+  Building
 } from "lucide-react";
 
 import PitchDetail from "./PitchDetail";
 import SmartPaymentPass from "./SmartPaymentPass";
 import { getAllPitchesApi } from "@/lib/pitchService";
+import { openDualRoleWindow, subscribeToBookingEvents } from "@/lib/realtimeService";
 
 interface PitchSearchProps {
   user?: any;
@@ -83,6 +85,13 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
   useEffect(() => {
     fetchPitches();
+
+    // Lắng nghe sự kiện Realtime (chủ sân duyệt đơn hoặc cập nhật giờ hoạt động)
+    const unsubscribe = subscribeToBookingEvents((event) => {
+      fetchPitches();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const fetchPitches = async () => {
@@ -242,6 +251,17 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <Flame className="w-3.5 h-3.5 text-amber-400" />
                 <span>Chuỗi 4 Trận Bất Bại 🔥</span>
               </span>
+
+              {/* Nút mở tab Chủ Sân để test 2 Role song song */}
+              <button
+                type="button"
+                onClick={() => openDualRoleWindow("OWNER")}
+                className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-amber-600/30 hover:bg-amber-500/30 text-amber-300 font-extrabold text-xs border border-amber-500/40 transition-all cursor-pointer shadow-xs active:scale-95"
+                title="Mở tab mới với tư cách Chủ Sân để test việc nhận chuông thông báo realtime khi bạn đặt sân"
+              >
+                <Building className="w-3.5 h-3.5 text-amber-400" />
+                <span>Mở Tab Chủ Sân (Test Realtime 2 Role) ↗</span>
+              </button>
             </div>
 
             <div className="flex items-center space-x-4">

@@ -44,6 +44,40 @@ export default function Home() {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authRole, setAuthRole] = useState<"PLAYER" | "OWNER" | "ORGANIZER">("PLAYER");
 
+  // Hỗ trợ chế độ mô phỏng 2 role song song qua URL (?role=OWNER&tab=admin hoặc ?role=PLAYER)
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get("tab");
+      const urlRole = params.get("role");
+
+      if (urlRole === "OWNER") {
+        setLocalUser({
+          id: 999,
+          name: "Hồ Văn Diện",
+          fullName: "Hồ Văn Diện",
+          role: "OWNER",
+          email: "owner@dsport.danang.vn",
+          phone: "0988 776 652"
+        });
+        setActiveTab(urlTab || "admin");
+      } else if (urlRole === "PLAYER") {
+        setLocalUser({
+          id: 1,
+          name: "Cao Việt An",
+          fullName: "Cao Việt An",
+          role: "PLAYER",
+          email: "caovietan@gmail.com",
+          phone: "0914 555 789",
+          eloRating: 1450
+        });
+        setActiveTab(urlTab || "booking");
+      } else if (urlTab) {
+        setActiveTab(urlTab);
+      }
+    }
+  }, []);
+
   const handleTabChange = (newTab: string) => {
     if (newTab === activeTab) return;
     setIsTabChanging(true);

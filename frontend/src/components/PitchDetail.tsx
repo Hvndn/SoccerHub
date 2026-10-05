@@ -40,6 +40,7 @@ import {
   X
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
+import { broadcastBookingEvent, subscribeToBookingEvents } from "@/lib/realtimeService";
 
 interface PitchDetailProps {
   pitch: any | null;
@@ -205,6 +206,15 @@ export default function PitchDetail({
     if (selectedDate) {
       fetchPitchMatrix(selectedDate);
     }
+
+    // Lắng nghe sự kiện Realtime (chủ sân đặt hoặc hủy ca hoặc khách khác đặt)
+    const unsubscribe = subscribeToBookingEvents((event) => {
+      if (selectedDate) {
+        fetchPitchMatrix(selectedDate);
+      }
+    });
+
+    return () => unsubscribe();
   }, [pitchId, selectedDate]);
 
   // Dữ liệu cụm sân hiển thị (Ưu tiên dữ liệu thật từ DB)
@@ -287,6 +297,23 @@ export default function PitchDetail({
         setPaymentDone(false);
         setShowQrModal(true);
         showToast("🎉 Đã tạo mã giữ chỗ thành công! Vui lòng quét mã VietQR để hoàn tất cọc.");
+
+        // Phát sự kiện Realtime thông báo cho Chủ Sân ngay tức thì
+        broadcastBookingEvent({
+          type: "BOOKING_CREATED",
+          pitchId: pitchId,
+          bookingId: res.id,
+          code: res.code,
+          customerName: customerName,
+          customerPhone: customerPhone,
+          courtName: selectedSlot.courtName,
+          courtType: selectedSlot.courtType || "Sân 7",
+          timeSlot: selectedSlot.time,
+          bookingDate: selectedDate,
+          totalPrice: totalPrice,
+          depositPaid: depositAmount,
+          via: "VietQR Online"
+        });
       } else {
         // Fallback giả lập nếu mạng lag
         const fallbackRes = {
@@ -295,6 +322,7 @@ export default function PitchDetail({
           customerName: customerName,
           customerPhone: customerPhone,
           courtName: selectedSlot.courtName,
+          courtType: selectedSlot.courtType || "Sân 7",
           timeSlot: selectedSlot.time,
           totalPrice: totalPrice,
           depositPaid: depositAmount,
@@ -303,6 +331,22 @@ export default function PitchDetail({
         setBookingConfirmed(fallbackRes);
         setPaymentDone(false);
         setShowQrModal(true);
+
+        broadcastBookingEvent({
+          type: "BOOKING_CREATED",
+          pitchId: pitchId,
+          bookingId: fallbackRes.id,
+          code: fallbackRes.code,
+          customerName: customerName,
+          customerPhone: customerPhone,
+          courtName: selectedSlot.courtName,
+          courtType: selectedSlot.courtType,
+          timeSlot: selectedSlot.time,
+          bookingDate: selectedDate,
+          totalPrice: totalPrice,
+          depositPaid: depositAmount,
+          via: "VietQR Online"
+        });
       }
     } catch (err: any) {
       showToast(`❌ Lỗi đặt sân: ${err.message || "Không thể kết nối máy chủ"}`);
@@ -317,6 +361,24 @@ export default function PitchDetail({
     // Reload lại ma trận ca sân thật để slot vừa đặt chuyển sang BOOKED
     fetchPitchMatrix(selectedDate);
     showToast("✅ Đã xác nhận chuyển cọc thành công! Thẻ Matchday Pass đã được kích hoạt.");
+
+    // Gửi sự kiện cập nhật trạng thái thanh toán
+    if (bookingConfirmed) {
+      broadcastBookingEvent({
+        type: "BOOKING_CREATED",
+        pitchId: pitchId,
+        bookingId: bookingConfirmed.id,
+        code: bookingConfirmed.code,
+        customerName: bookingConfirmed.customerName,
+        customerPhone: bookingConfirmed.customerPhone,
+        courtName: bookingConfirmed.courtName,
+        timeSlot: bookingConfirmed.timeSlot,
+        bookingDate: selectedDate,
+        totalPrice: bookingConfirmed.totalPrice,
+        depositPaid: bookingConfirmed.depositPaid,
+        via: "VietQR Napas247 (Đã Chuyển Khoản)"
+      });
+    }
   };
 
   const handleCopyShare = () => {
