@@ -105,6 +105,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
     return (
       <PitchDetail
         pitch={selectedPitchForSlot}
+        user={user}
         onBack={() => setSelectedPitchForSlot(null)}
         onSelectSlot={(pitch, slot) => {
           setSelectedPitchForSlot(null);

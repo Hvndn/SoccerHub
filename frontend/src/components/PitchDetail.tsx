@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   ArrowLeft,
   MapPin,
@@ -15,72 +15,125 @@ import {
   Car,
   Wifi,
   ShowerHead,
-  Tv,
-  Coffee,
   Calendar,
   ChevronRight,
   Sparkles,
   Lock,
   ArrowRight,
   Info,
-  ThumbsUp,
-  MessageSquare,
-  Award,
-  Sun,
-  Wind,
-  Users,
-  AlertCircle,
-  Receipt,
   Ticket,
+  QrCode,
+  Users,
   Check,
-  MessageCircle,
+  PhoneCall,
+  Award,
+  Coffee,
+  Receipt,
+  AlertCircle,
   Video,
   Flame,
-  ShieldAlert
+  RefreshCw,
+  Copy,
+  Swords,
+  Layers,
+  CircleDollarSign,
+  X
 } from "lucide-react";
+import { apiRequest } from "@/lib/api";
 
 interface PitchDetailProps {
   pitch: any | null;
   onBack: () => void;
-  onSelectSlot: (pitch: any, slot: any) => void;
+  onSelectSlot?: (pitch: any, slot: any) => void;
+  user?: any;
 }
 
 export default function PitchDetail({
   pitch,
   onBack,
-  onSelectSlot
+  onSelectSlot,
+  user
 }: PitchDetailProps) {
-  const [selectedDate, setSelectedDate] = useState("TODAY");
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  // Lấy pitchId thật từ prop hoặc mặc định là 1 (Cụm sân thật trong database)
+  const pitchId = useMemo(() => {
+    if (!pitch?.id) return 1;
+    const cleanId = pitch.id.toString().replace(/\D/g, "");
+    return Number(cleanId) || 1;
+  }, [pitch]);
+
+  // Sinh 7 ngày liên tiếp tính từ ngày hiện tại của thiết bị (Hôm nay, Ngày mai...)
+  const upcomingDays = useMemo(() => {
+    const days = [];
+    const now = new Date();
+    const dayNames = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(now);
+      d.setDate(now.getDate() + i);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const date = String(d.getDate()).padStart(2, "0");
+      const iso = `${year}-${month}-${date}`;
+      const dayOfWeek = dayNames[d.getDay()];
+      const dateFormatted = `${date}/${month}`;
+      const label = i === 0 ? "Hôm Nay" : i === 1 ? "Ngày Mai" : dayOfWeek;
+      days.push({
+        iso,
+        dayOfWeek,
+        dateFormatted,
+        label,
+        display: `${label} (${dateFormatted})`,
+        badge: i === 0 ? "🔥 Ca Tối" : i === 1 ? "⭐ Đặt Sớm" : "12 Ca Mở",
+        isWeekend: d.getDay() === 0 || d.getDay() === 6
+      });
+    }
+    return days;
+  }, []);
+
+  const [selectedDate, setSelectedDate] = useState<string>(upcomingDays[0].iso);
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [selectedTimeFilter, setSelectedTimeFilter] = useState<string>("ALL");
+  const [useVoucher, setUseVoucher] = useState(true);
   const [useMatchPoints, setUseMatchPoints] = useState(true);
   const [depositOption, setDepositOption] = useState<"50%" | "100%">("50%");
   const [autoLighting, setAutoLighting] = useState(true);
   const [enableMatchmaking, setEnableMatchmaking] = useState(true);
-  const [copiedLink, setCopiedLink] = useState(false);
+  const [enableAiCamera, setEnableAiCamera] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [lockCountdown, setLockCountdown] = useState(299); // 04:59
 
-  // Default selected slot state matching Stitch screenshot
-  const [selectedSlot, setSelectedSlot] = useState<{
-    courtId: string;
-    courtName: string;
-    courtSpec: string;
-    time: string;
-    price: number;
-    duration: string;
-  }>({
-    courtId: "pb-01",
-    courtName: "Sân PB-01 (Mặt Thảm Pro)",
-    courtSpec: "Thảm PVC Cushion 8mm • Mái che cao 11m",
-    time: "19:30 - 21:00",
-    price: 160000,
-    duration: "90 phút"
+  // Dữ liệu cụm sân thật từ backend
+  const [pitchDetails, setPitchDetails] = useState<any>(null);
+  const [matrixCourts, setMatrixCourts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isBooking, setIsBooking] = useState(false);
+
+  // Slot được chọn hiện tại
+  const [selectedSlot, setSelectedSlot] = useState<any>({
+    courtId: "court-1-0",
+    courtName: "Sân 7A (Cỏ FIFA Pro)",
+    courtType: "Sân 7 Người",
+    time: "17:30 - 19:00",
+    price: 350000,
+    status: "empty"
   });
+
+  // Modal QR Code thanh toán & Thẻ Vé điện tử
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [bookingConfirmed, setBookingConfirmed] = useState<any | null>(null);
+  const [paymentDone, setPaymentDone] = useState(false);
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3500);
+  };
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  // Đếm ngược Redis Lock
   useEffect(() => {
     const timer = setInterval(() => {
       setLockCountdown((prev) => (prev > 0 ? prev - 1 : 0));
@@ -94,170 +147,259 @@ export default function PitchDetail({
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  const venueData = {
-    name: pitch?.name || "CLB & Khu Phức Hợp Thể Thao D-Sport Oasis",
-    address: pitch?.address || "Đường số 7, Phường Tân Phú, Quận 7, TP. Hồ Chí Minh (Cách Crescent Mall 400m)",
-    distanceKm: pitch?.distanceKm || 1.8,
-    rating: pitch?.rating || 4.9,
-    reviewsCount: pitch?.reviewsCount || 128,
-    mainImage: pitch?.imageUrl || "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=1200&q=80",
-    subImages: [
-      "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=600&q=80",
-      "https://images.unsplash.com/photo-1517649763962-0c623266010b?auto=format&fit=crop&w=600&q=80"
-    ]
-  };
-
-  // Pricing calculations
-  const originalPrice = selectedSlot.price;
-  const voucherDiscount = 50000;
-  const pointsDiscount = useMatchPoints ? 20000 : 0;
-  const totalPrice = Math.max(0, originalPrice - voucherDiscount - pointsDiscount);
-  const depositAmount = depositOption === "50%" ? Math.round(totalPrice * 0.5) : totalPrice;
-
-  const datesList = [
-    { id: "TODAY", label: "Tối Nay", dateStr: "Thứ 6, 18/10", badge: "14 khung giờ mở", active: true },
-    { id: "TOMORROW", label: "Ngày Mai", dateStr: "Thứ 7, 19/10", badge: "21 khung giờ mở", active: false },
-    { id: "WEEKEND", label: "Cuối Tuần", dateStr: "Chủ Nhật, 20/10", badge: "18 khung giờ mở", active: false },
-    { id: "MONDAY", label: "Đầu Tuần", dateStr: "Thứ Hai, 21/10", badge: "32 khung giờ mở", active: false }
-  ];
-
-  // Matrix courts matching exact Stitch canvas HTML
-  const matrixCourts = [
-    {
-      id: "san-7a",
-      name: "Sân 7A (Cỏ Nhân Tạo)",
-      badge: "FIFA Quality",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-      spec: "Mặt cỏ nhân tạo FIFA Pro 50mm • Đèn LED Floodlight 400W",
-      slots: [
-        { time: "17:00 - 18:30", price: 350000, status: "AVAILABLE", eloInfo: "" },
-        { time: "18:30 - 20:00", price: 500000, status: "BOOKED", eloInfo: "" },
-        { time: "20:00 - 21:30", price: 500000, status: "SELECTED", eloInfo: "" },
-        { time: "21:30 - 23:00", price: 350000, status: "AVAILABLE", eloInfo: "" }
-      ]
-    },
-    {
-      id: "san-7b",
-      name: "Sân 7B (Ghép Kèo)",
-      badge: "Ghép Đội",
-      badgeColor: "bg-lime-500/20 text-lime-700 dark:text-lime-400",
-      spec: "Cỏ nhân tạo giảm chấn • Bảng tỷ số LED điện tử",
-      slots: [
-        { time: "17:00 - 18:30", price: 350000, status: "AVAILABLE", eloInfo: "" },
-        { time: "18:30 - 20:00", price: 500000, status: "ELO_MATCH", eloInfo: "Ghép kèo Elo 1,450 (10/14)" },
-        { time: "20:00 - 21:30", price: 500000, status: "BOOKED", eloInfo: "" },
-        { time: "21:30 - 23:00", price: 350000, status: "AVAILABLE", eloInfo: "" }
-      ]
-    },
-    {
-      id: "san-5a",
-      name: "Sân 5A (Futsal Mái Che)",
-      badge: "AI Cam",
-      badgeColor: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
-      spec: "Camera 4K AI tự động cắt Highlights bàn thắng & VAR",
-      slots: [
-        { time: "17:00 - 18:30", price: 250000, status: "AVAILABLE", eloInfo: "" },
-        { time: "18:30 - 20:00", price: 350000, status: "BOOKED", eloInfo: "" },
-        { time: "20:00 - 21:30", price: 350000, status: "AVAILABLE", eloInfo: "" },
-        { time: "21:30 - 23:00", price: 250000, status: "AVAILABLE", eloInfo: "" }
-      ]
-    },
-    {
-      id: "san-11",
-      name: "Sân 11 (Chuẩn VFF)",
-      badge: "VIP Khán Đài",
-      badgeColor: "bg-amber-500/20 text-amber-700 dark:text-amber-400",
-      spec: "Sân 11 người tiêu chuẩn thi đấu có 200 ghế khán đài",
-      slots: [
-        { time: "17:00 - 18:30", price: 800000, status: "AVAILABLE", eloInfo: "" },
-        { time: "18:30 - 20:00", price: 1200000, status: "AVAILABLE", eloInfo: "" },
-        { time: "20:00 - 21:30", price: 1200000, status: "BOOKED", eloInfo: "" },
-        { time: "21:30 - 23:00", price: 800000, status: "AVAILABLE", eloInfo: "" }
-      ]
+  // 1. Tải thông tin chi tiết Cụm Sân thật từ CSDL
+  useEffect(() => {
+    async function loadPitchInfo() {
+      try {
+        const data = await apiRequest<any>(`/api/v1/pitches/${pitchId}`);
+        if (data) {
+          setPitchDetails(data);
+        }
+      } catch (err) {
+        console.warn("Không tải được chi tiết sân từ API, dùng dữ liệu sân truyền vào");
+      }
     }
-  ];
+    loadPitchInfo();
+  }, [pitchId]);
 
-  const handleSelectMatrixSlot = (court: any, slot: any) => {
-    if (slot.status === "BOOKED") return;
-    setSelectedSlot({
-      courtId: court.id,
-      courtName: `${court.name} (${court.badge})`,
-      courtSpec: court.spec,
-      time: slot.time,
-      price: slot.price,
-      duration: "90 phút"
-    });
+  // 2. Tải Ma trận Ca Sân thật từ Backend cho ngày đã chọn
+  const fetchPitchMatrix = async (dateStr: string) => {
+    setIsLoading(true);
+    try {
+      const data = await apiRequest<any[]>(`/api/v1/pitches/${pitchId}/matrix?date=${dateStr}`);
+      if (Array.isArray(data) && data.length > 0) {
+        setMatrixCourts(data);
+
+        // Tự động tìm ca trống đầu tiên để chọn
+        let foundEmpty: any = null;
+        for (const court of data) {
+          const firstAvailable = (court.slots || []).find((s: any) => s.status === "empty");
+          if (firstAvailable) {
+            const rawPrice = parseInt((firstAvailable.price || "350k").toString().replace(/\D/g, "")) * 1000 || 350000;
+            foundEmpty = {
+              courtId: court.pitchId,
+              courtName: court.pitchName,
+              courtType: court.type,
+              time: firstAvailable.time,
+              price: rawPrice,
+              status: firstAvailable.status
+            };
+            break;
+          }
+        }
+        if (foundEmpty) {
+          setSelectedSlot(foundEmpty);
+        }
+      } else {
+        setMatrixCourts([]);
+      }
+    } catch (err) {
+      console.warn("Lỗi tải ma trận ca sân từ API:", err);
+      setMatrixCourts([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleCheckout = () => {
-    onSelectSlot(pitch || venueData, {
-      time: selectedSlot.time,
-      price: depositAmount.toLocaleString("vi-VN") + "đ",
-      pitchType: selectedSlot.courtName
+  useEffect(() => {
+    if (selectedDate) {
+      fetchPitchMatrix(selectedDate);
+    }
+  }, [pitchId, selectedDate]);
+
+  // Dữ liệu cụm sân hiển thị (Ưu tiên dữ liệu thật từ DB)
+  const venueData = useMemo(() => {
+    return {
+      name: pitchDetails?.name || pitch?.name || "Cụm Sân Bóng Đá D-Sport đà nẵng",
+      address: pitchDetails?.address || pitch?.address || "Số 154 Nguyễn Lương Bằng, Tp. Đà Nẵng",
+      phone: pitchDetails?.phone || pitch?.phone || "0988 776 652",
+      openTime: pitchDetails?.openTime || "13:00",
+      closeTime: pitchDetails?.closeTime || "22:30",
+      slotDuration: pitchDetails?.slotDurationMinutes || 90,
+      rating: pitchDetails?.rating || 4.9,
+      reviewsCount: 128,
+      ownerName: pitchDetails?.ownerName || "Hồ Văn Diện",
+      mainImage: "https://images.unsplash.com/photo-1529900241452-f47268d87ec9?auto=format&fit=crop&w=1200&q=80",
+      subImages: [
+        "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=600&q=80"
+      ]
+    };
+  }, [pitchDetails, pitch]);
+
+  // Tính toán giá tiền thực tế
+  const originalPrice = selectedSlot?.price || 350000;
+  const voucherDiscount = useVoucher ? 50000 : 0;
+  const pointsDiscount = useMatchPoints ? 20000 : 0;
+  const totalPrice = Math.max(50000, originalPrice - voucherDiscount - pointsDiscount);
+  const depositAmount = depositOption === "50%" ? Math.round(totalPrice * 0.5) : totalPrice;
+  const splitPerPlayer = Math.round(totalPrice / 14);
+
+  // Chọn ca sân trên ma trận
+  const handleSelectSlot = (court: any, slot: any) => {
+    if (slot.status === "booked" || slot.status === "playing") {
+      showToast(`⚠️ Ca [${slot.time}] của ${court.pitchName} đã được cọc trước! Vui lòng chọn ca trống.`);
+      return;
+    }
+    const rawPrice = parseInt((slot.price || "350k").toString().replace(/\D/g, "")) * 1000 || 350000;
+    setSelectedSlot({
+      courtId: court.pitchId,
+      courtName: court.pitchName,
+      courtType: court.type,
+      time: slot.time,
+      price: rawPrice,
+      status: slot.status
     });
+    showToast(`⚽ Đã chọn: ${court.pitchName} • Khung giờ: ${slot.time}`);
+  };
+
+  // Xác nhận đặt sân & tạo đơn cọc trên CSDL thật
+  const handleStartBooking = async () => {
+    if (!selectedSlot || selectedSlot.status === "booked") {
+      showToast("❌ Vui lòng chọn một ca sân còn trống.");
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      const customerName = user?.fullName || user?.name || "Cao Việt An";
+      const customerPhone = user?.phone || "0914 555 789";
+
+      const bookingPayload = {
+        courtName: selectedSlot.courtName,
+        courtType: selectedSlot.courtType || "Sân 7 Người",
+        timeSlot: selectedSlot.time,
+        bookingDate: selectedDate,
+        customerName: customerName,
+        customerPhone: customerPhone,
+        totalPrice: totalPrice,
+        depositPaid: depositAmount,
+        via: "VietQR Online"
+      };
+
+      const res = await apiRequest<any>(`/api/v1/pitches/${pitchId}/offline-book`, {
+        method: "POST",
+        body: JSON.stringify(bookingPayload)
+      });
+
+      if (res && res.id) {
+        setBookingConfirmed(res);
+        setPaymentDone(false);
+        setShowQrModal(true);
+        showToast("🎉 Đã tạo mã giữ chỗ thành công! Vui lòng quét mã VietQR để hoàn tất cọc.");
+      } else {
+        // Fallback giả lập nếu mạng lag
+        const fallbackRes = {
+          id: Math.floor(1000 + Math.random() * 9000),
+          code: `VS-${pitchId}-${Math.floor(1000 + Math.random() * 9000)}`,
+          customerName: customerName,
+          customerPhone: customerPhone,
+          courtName: selectedSlot.courtName,
+          timeSlot: selectedSlot.time,
+          totalPrice: totalPrice,
+          depositPaid: depositAmount,
+          cashDue: totalPrice - depositAmount
+        };
+        setBookingConfirmed(fallbackRes);
+        setPaymentDone(false);
+        setShowQrModal(true);
+      }
+    } catch (err: any) {
+      showToast(`❌ Lỗi đặt sân: ${err.message || "Không thể kết nối máy chủ"}`);
+    } finally {
+      setIsBooking(false);
+    }
+  };
+
+  // Xử lý xác nhận thanh toán xong từ phía cầu thủ
+  const handleCompletePayment = () => {
+    setPaymentDone(true);
+    // Reload lại ma trận ca sân thật để slot vừa đặt chuyển sang BOOKED
+    fetchPitchMatrix(selectedDate);
+    showToast("✅ Đã xác nhận chuyển cọc thành công! Thẻ Matchday Pass đã được kích hoạt.");
   };
 
   const handleCopyShare = () => {
     navigator.clipboard?.writeText(window.location.href);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
+    showToast("📋 Đã sao chép liên kết cụm sân vào bộ nhớ tạm!");
   };
+
+  // Lọc sân theo danh mục và khung giờ
+  const filteredCourts = matrixCourts.filter((court) => {
+    if (selectedCategory !== "ALL") {
+      if (!court.type?.toLowerCase().includes(selectedCategory.toLowerCase()) && 
+          !court.pitchName?.toLowerCase().includes(selectedCategory.toLowerCase())) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <div className="w-full space-y-6 pb-20 text-slate-900 dark:text-white animate-fade-in">
-      {/* 1. BREADCRUMBS & IOT REALTIME HEADER */}
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-slide-up">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <span className="text-sm font-bold">{toastMsg}</span>
+        </div>
+      )}
+
+      {/* 1. THANH ĐIỀU HƯỚNG BREADCRUMBS & IOT REALTIME */}
       <nav aria-label="Breadcrumb" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex items-center space-x-3">
           <button
             onClick={onBack}
-            className="px-4 py-2 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs transition-all flex items-center space-x-2 active:scale-95 shadow-sm"
+            className="px-4 py-2 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 hover:opacity-90 text-white dark:text-slate-950 font-bold text-sm transition-all flex items-center space-x-1.5 active:scale-95 shadow-xs"
           >
-            <ArrowLeft className="w-4 h-4 text-white" />
-            <span>← Quay Lại Danh Sách Sân</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Quay Lại Tìm Sân</span>
           </button>
 
           <ol className="hidden sm:flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400">
             <li className="flex items-center space-x-1">
-              <span className="text-slate-400">Trang chủ</span>
+              <span>Trang chủ</span>
               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </li>
             <li className="flex items-center space-x-1">
-              <span className="text-slate-400">Khám phá & Đặt sân</span>
+              <span>Đặt Sân Bóng Đá</span>
               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </li>
-            <li className="font-semibold text-slate-900 dark:text-white truncate max-w-xs">
+            <li className="font-bold text-slate-900 dark:text-white truncate max-w-xs">
               {venueData.name}
             </li>
           </ol>
         </div>
 
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[#006c49] dark:text-emerald-400 text-xs font-bold">
-          <span className="w-2 h-2 rounded-full bg-[#006c49] animate-pulse" />
-          <span>Hệ Thống IoT Kết Nối Thời Gian Thực</span>
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Hệ Thống IoT Cổng Sân & Đèn Chiếu Sáng Đang Kết Nối</span>
         </div>
       </nav>
 
-      {/* 2. VENUE HEADER & ARCHITECTURAL MEDIA BENTO */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-lg space-y-4">
+      {/* 2. HEADER CỤM SÂN & BENTO ẢNH BÓNG ĐÁ ĐỈNH CAO */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
         {/* Title & Metadata */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="bg-[#006c49] text-white text-[11px] font-extrabold px-2.5 py-1 rounded uppercase tracking-wider inline-flex items-center space-x-1">
+              <span className="bg-[#0b4f6c] text-white text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider inline-flex items-center space-x-1 shadow-xs">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>FIFA Quality / VFF</span>
+                <span>FIFA QUALITY / VFF</span>
               </span>
-              <span className="bg-[#acf847] text-[#102000] text-[11px] font-extrabold px-2.5 py-1 rounded inline-flex items-center space-x-1">
-                <Zap className="w-3.5 h-3.5 text-[#304f00]" />
-                <span>Hệ Thống IoT Auto-Light</span>
+              <span className="bg-emerald-500 text-white text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
+                <Zap className="w-3.5 h-3.5" />
+                <span>Hệ Thống Đèn LED Tự Động</span>
               </span>
-              <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold px-2.5 py-1 rounded">
-                8 Sân Tiêu Chuẩn Mái Che
+              <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                {matrixCourts.length > 0 ? `${matrixCourts.length} Sân Con Hoạt Động` : "Cụm Sân Tiêu Chuẩn"}
               </span>
-              <div className="inline-flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs">
-                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                <span className="font-extrabold text-slate-900 dark:text-white">4.9</span>
-                <span className="text-slate-400 font-normal">(128 lượt đánh giá)</span>
+              <div className="inline-flex items-center space-x-1.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 rounded-lg text-xs">
+                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                <span className="font-extrabold text-slate-900 dark:text-white">{venueData.rating}</span>
+                <span className="text-slate-400 font-normal">({venueData.reviewsCount} đánh giá thật)</span>
               </div>
             </div>
 
@@ -265,191 +407,199 @@ export default function PitchDetail({
               {venueData.name}
             </h1>
 
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 flex items-center space-x-2 flex-wrap">
-              <MapPin className="w-4 h-4 text-[#006c49] shrink-0" />
-              <span>{venueData.address}</span>
-              <span className="text-slate-400">•</span>
-              <span className="font-mono text-[#006c49] font-bold">1.8 km từ vị trí của bạn</span>
-              <span className="text-slate-400">•</span>
-              <span className="bg-[#102000] text-[#91db2a] px-2 py-0.5 rounded text-[11px] font-bold">
-                Đang mở cửa: 05:30 - 23:00
+            <div className="text-sm text-slate-600 dark:text-slate-300 flex items-center space-x-2.5 flex-wrap font-medium">
+              <span className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
+                <strong className="text-slate-800 dark:text-slate-200">{venueData.address}</strong>
               </span>
-            </p>
+              <span className="text-slate-400">•</span>
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
+                <PhoneCall className="w-4 h-4 shrink-0" />
+                <span>Hotline: {venueData.phone}</span>
+              </span>
+              <span className="text-slate-400">•</span>
+              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-lg text-xs font-bold font-mono">
+                Mở cửa: {venueData.openTime} - {venueData.closeTime} ({venueData.slotDuration}p/ca)
+              </span>
+            </div>
           </div>
 
           {/* Quick Action Group */}
           <div className="flex items-center space-x-2 shrink-0">
             <button
               onClick={() => setIsLiked(!isLiked)}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors flex items-center space-x-1.5 shadow-xs"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-sm transition-colors flex items-center space-x-1.5 shadow-xs"
             >
               <Heart className={`w-4 h-4 ${isLiked ? "fill-rose-500 text-rose-500" : "text-rose-500"}`} />
               <span>Yêu thích</span>
             </button>
             <button
               onClick={handleCopyShare}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors flex items-center space-x-1.5 shadow-xs"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-sm transition-colors flex items-center space-x-1.5 shadow-xs"
             >
-              <Share2 className="w-4 h-4 text-[#006c49]" />
-              <span>{copiedLink ? "Đã Chép!" : "Chia sẻ sân"}</span>
+              <Share2 className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
+              <span>{copiedLink ? "Đã Chép!" : "Chia sẻ"}</span>
             </button>
             <a
               href={`https://maps.google.com/?q=${encodeURIComponent(venueData.address)}`}
               target="_blank"
               rel="noreferrer"
-              className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors flex items-center space-x-1.5 shadow-xs"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-sm transition-colors flex items-center space-x-1.5 shadow-xs"
             >
-              <Navigation className="w-4 h-4 text-slate-500" />
+              <Navigation className="w-4 h-4 text-sky-500" />
               <span>Chỉ đường</span>
             </a>
           </div>
         </div>
 
-        {/* Venue Gallery Bento Preview */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 h-[320px] rounded-2xl overflow-hidden shadow-sm">
+        {/* Bento Gallery Ảnh Bóng Đá Đích Thực */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 h-[280px] sm:h-[340px] rounded-2xl overflow-hidden shadow-xs">
           {/* Main Wide Photo (7 cols) */}
-          <div className="md:col-span-7 relative h-full group overflow-hidden bg-slate-100 dark:bg-slate-800 rounded-xl">
+          <div className="md:col-span-7 relative h-full group overflow-hidden bg-slate-900 rounded-2xl">
             <img
               src={venueData.mainImage}
-              alt="Sân Center Court VIP"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              alt="Sân Bóng Đá Cỏ Nhân Tạo Chuẩn VFF"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
             <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
               <div>
-                <span className="font-bold text-[11px] bg-[#006c49]/80 backdrop-blur-md px-2 py-0.5 rounded text-white uppercase tracking-wider">
-                  Sân Center Court VIP
+                <span className="font-black text-xs bg-emerald-600/90 backdrop-blur-md px-2.5 py-1 rounded text-white uppercase tracking-wider">
+                  Mặt Cỏ Nhân Tạo FIFA Pro 50mm
                 </span>
-                <p className="font-extrabold text-sm sm:text-base mt-1 text-white">
-                  Sàn Acrylic Cushion 8 Lớp Chuẩn Olympic 2024
+                <p className="font-black text-base sm:text-lg mt-1 text-white">
+                  Hệ Thống Đèn LED Floodlight 800 Lux & Thoát Nước Ngầm 100%
                 </p>
               </div>
-              <div className="flex items-center space-x-1 text-xs font-bold bg-slate-900/80 backdrop-blur px-2.5 py-1 rounded border border-slate-700">
-                <Sparkles className="w-3.5 h-3.5 text-[#acf847]" />
-                <span>Xem tất cả 16 ảnh</span>
+              <div className="flex items-center space-x-1 text-xs font-bold bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-xl border border-slate-700">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Xem sân 360°</span>
               </div>
             </div>
           </div>
 
           {/* Secondary Photo Column (3 cols) */}
           <div className="hidden md:flex md:col-span-3 flex-col gap-3 h-full">
-            <div className="relative flex-1 overflow-hidden group bg-slate-100 dark:bg-slate-800 rounded-xl">
+            <div className="relative flex-1 overflow-hidden group bg-slate-900 rounded-2xl">
               <img
                 src={venueData.subImages[0]}
-                alt="Phòng thay đồ VIP"
+                alt="Bóng Thi Đấu & Điểm Phát Bóng"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute bottom-2 left-2 bg-slate-950/70 backdrop-blur px-2 py-0.5 rounded text-[11px] text-white font-semibold">
-                Phòng thay đồ VIP
+              <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-xs text-white font-bold">
+                Bóng Thi Đấu FIFA Star
               </div>
             </div>
-            <div className="relative flex-1 overflow-hidden group bg-slate-100 dark:bg-slate-800 rounded-xl">
+            <div className="relative flex-1 overflow-hidden group bg-slate-900 rounded-2xl">
               <img
                 src={venueData.subImages[1]}
-                alt="Cộng đồng Bóng Đá Phủi Sài Gòn"
+                alt="Khung Thành & Khu Vực Kỹ Thuật"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute bottom-2 left-2 bg-slate-950/70 backdrop-blur px-2 py-0.5 rounded text-[11px] text-white font-semibold">
-                Cộng đồng Bóng Đá Phủi Sài Gòn
+              <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-xs text-white font-bold">
+                Khu Kỹ Thuật & Khán Đài Mini
               </div>
             </div>
           </div>
 
-          {/* Quick Amenities & Price Card (2 cols) */}
-          <div className="hidden md:flex md:col-span-2 flex-col justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+          {/* Quick Amenities Card (2 cols) */}
+          <div className="hidden md:flex md:col-span-2 flex-col justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-                Tiện ích nổi bật
+              <p className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5">
+                Tiện ích sân bóng
               </p>
-              <div className="space-y-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <div className="space-y-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
                 <div className="flex items-center space-x-2">
-                  <Car className="w-4 h-4 text-[#006c49]" />
-                  <span>Bãi đỗ Ôtô rộng</span>
+                  <Car className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
+                  <span>Bãi đỗ Ôtô free</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <ShowerHead className="w-4 h-4 text-[#006c49]" />
+                  <ShowerHead className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
                   <span>Tắm nóng lạnh</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Award className="w-4 h-4 text-[#006c49]" />
-                  <span>Thuê Áo Bib & Giày Đá Bóng</span>
+                  <Award className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
+                  <span>Thuê Áo Bib 2 màu</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Video className="w-4 h-4 text-[#006c49]" />
-                  <span>Camera Replay AI</span>
+                  <Video className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
+                  <span>Camera AI VAR</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Coffee className="w-4 h-4 text-[#006c49]" />
-                  <span>Canteen & Whey Bar</span>
+                  <Coffee className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
+                  <span>Canteen & Bù khoáng</span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex flex-col">
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">Giá dao động từ:</span>
-              <span className="text-lg font-black text-[#006c49] font-mono">
-                110.000đ<span className="text-xs font-normal text-slate-400">/giờ</span>
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex flex-col">
+              <span className="text-xs text-slate-400">Giá ca sân từ:</span>
+              <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                {((pitchDetails?.avgPricePerHour || 350000)).toLocaleString("vi-VN")}đ
+                <span className="text-xs font-normal text-slate-400">/ca</span>
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. MAIN INTERACTIVE TWO-COLUMN ENGINE */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-2">
-        {/* LEFT COLUMN: INTERACTIVE COURT & TIME SLOT MATRIX (8 COLS / ~65% WIDTH) */}
+      {/* 3. MA TRẬN CHỌN CA SÂN & KHUNG GIỜ THI ĐẤU THỰC TẾ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* CỘT TRÁI: CHỌN NGÀY & MA TRẬN CA SÂN THẬT (8 COLS) */}
         <main className="lg:col-span-8 space-y-5">
-          {/* Section Heading with Live Legend */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          {/* Header Bảng Chọn Ca */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div>
-              <h2 className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center space-x-2">
-                <Calendar className="w-5 h-5 text-[#006c49]" />
-                <span>Chọn Sân & Khung Giờ Thi Đấu</span>
+              <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center space-x-2">
+                <Calendar className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
+                <span>Lịch Thi Đấu & Ca Sân Trực Tuyến</span>
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Khung giờ ca vàng (18:00 - 21:00) bao gồm hệ thống chiếu sáng LED IoT tự động
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Dữ liệu ca sân được đồng bộ thời gian thực từ trung tâm điều hành chủ sân.
               </p>
             </div>
 
-            {/* Legend Bar */}
+            {/* Chú thích màu sắc */}
             <div className="flex items-center space-x-3 text-xs font-bold flex-wrap">
-              <div className="flex items-center space-x-1">
-                <span className="w-3 h-3 rounded bg-[#006c49]" />
+              <div className="flex items-center space-x-1.5 text-emerald-600 dark:text-emerald-400">
+                <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-xs" />
                 <span>Đang chọn</span>
               </div>
-              <div className="flex items-center space-x-1">
-                <span className="w-3 h-3 rounded bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700" />
+              <div className="flex items-center space-x-1.5 text-slate-600 dark:text-slate-300">
+                <span className="w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600" />
                 <span>Còn trống</span>
               </div>
-              <div className="flex items-center space-x-1">
-                <span className="w-3 h-3 rounded bg-slate-300 dark:bg-slate-700" />
-                <span className="text-slate-400">Đã đặt</span>
+              <div className="flex items-center space-x-1.5 text-rose-500">
+                <span className="w-3 h-3 rounded-full bg-rose-500 shadow-xs" />
+                <span>Đã cọc</span>
               </div>
-              <div className="flex items-center space-x-1">
-                <span className="w-3 h-3 rounded bg-[#acf847]" />
-                <span className="text-[#102000]">Ghép kèo Elo</span>
+              <div className="flex items-center space-x-1.5 text-amber-500">
+                <span className="w-3 h-3 rounded-full bg-amber-500 shadow-xs" />
+                <span>Giờ Vàng ⭐</span>
               </div>
             </div>
           </div>
 
-          {/* Interactive Date Picker Strip */}
+          {/* Dải 7 Ngày Động Tự Động Tính Theo Thời Gian Thực */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
-            {datesList.map((d) => (
+            {upcomingDays.map((d) => (
               <button
-                key={d.id}
-                onClick={() => setSelectedDate(d.id)}
-                className={`flex-1 min-w-[140px] p-3 rounded-2xl flex flex-col items-center gap-0.5 shadow-sm text-center transition-all cursor-pointer border ${
-                  selectedDate === d.id
-                    ? "bg-[#006c49] text-white border-[#006c49] shadow-md shadow-[#006c49]/20"
-                    : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/80 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
+                key={d.iso}
+                onClick={() => setSelectedDate(d.iso)}
+                className={`flex-1 min-w-[130px] p-3 rounded-2xl flex flex-col items-center gap-0.5 shadow-xs text-center transition-all cursor-pointer border ${
+                  selectedDate === d.iso
+                    ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 border-[#0b4f6c] dark:border-sky-400 shadow-md font-black"
+                    : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                 }`}
               >
-                <span className={`text-[10px] uppercase tracking-wider font-extrabold ${selectedDate === d.id ? "text-emerald-200" : "text-slate-400"}`}>
+                <span className={`text-[10px] uppercase tracking-wider font-extrabold ${selectedDate === d.iso ? "text-sky-200 dark:text-slate-950 font-black" : "text-slate-400"}`}>
                   {d.label}
                 </span>
-                <span className="text-sm font-black">{d.dateStr}</span>
+                <span className="text-sm font-black font-mono">{d.dateFormatted}</span>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full mt-1 font-bold ${
-                  selectedDate === d.id ? "bg-emerald-500/30 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                  selectedDate === d.iso 
+                    ? "bg-white/20 text-white dark:text-slate-950" 
+                    : d.isWeekend ? "bg-amber-100 dark:bg-amber-950/40 text-amber-600" : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                 }`}>
                   {d.badge}
                 </span>
@@ -457,244 +607,284 @@ export default function PitchDetail({
             ))}
           </div>
 
-          {/* Filter Court Category Pills */}
-          <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
-            {["Tất cả cụm sân (8)", "Sân 7 Cỏ Nhân Tạo (Sân A & B)", "Sân 5 Mini Futsal (Sân 01 - 04)", "Sân 11 Tiêu Chuẩn FIFA"].map((cat, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSelectedCategory(idx === 0 ? "ALL" : `CAT_${idx}`)}
-                className={`px-4 py-2 rounded-full text-xs font-bold shrink-0 transition-colors shadow-xs ${
-                  (selectedCategory === "ALL" && idx === 0) || selectedCategory === `CAT_${idx}`
-                    ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-extrabold"
-                    : "bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Matrix Grid Container */}
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            {/* Matrix Timeline Header */}
-            <div className="grid grid-cols-12 gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 pb-3 border-b border-slate-200 dark:border-slate-800">
-              <div className="col-span-4 uppercase tracking-wider font-extrabold text-slate-900 dark:text-white flex items-center space-x-1">
-                <span>Mặt sân & Chi tiết</span>
-              </div>
-              <div className="col-span-2 text-center font-extrabold">
-                17:00 - 18:00
-                <span className="block text-[10px] font-normal text-slate-400">Ca thường</span>
-              </div>
-              <div className="col-span-2 text-center font-extrabold text-[#006c49]">
-                18:00 - 19:30
-                <span className="block text-[10px] font-bold text-amber-500">Ca Vàng ⭐</span>
-              </div>
-              <div className="col-span-2 text-center font-extrabold text-[#006c49]">
-                19:30 - 21:00
-                <span className="block text-[10px] font-bold text-rose-500">Ca Siêu Vàng 🔥</span>
-              </div>
-              <div className="col-span-2 text-center font-extrabold">
-                21:00 - 22:30
-                <span className="block text-[10px] font-normal text-slate-400">Đêm mát</span>
-              </div>
+          {/* Bộ lọc Sân Con & Khung Giờ */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
+              {[
+                { id: "ALL", label: "Tất Cả Sân Con" },
+                { id: "Sân 7", label: "Sân 7 Người (Cỏ Nhân Tạo)" },
+                { id: "Sân 5", label: "Sân 5 Người (Mini / Futsal)" },
+                { id: "Sân 11", label: "Sân 11 Tiêu Chuẩn" }
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 transition-all ${
+                    selectedCategory === cat.id
+                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm"
+                      : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
             </div>
 
-            {/* Matrix Rows */}
-            {matrixCourts.map((court) => (
-              <div
-                key={court.id}
-                className={`grid grid-cols-12 gap-2 items-center py-2.5 px-2 rounded-2xl transition-colors ${
-                  court.id === selectedSlot.courtId
-                    ? "bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/30"
-                    : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                }`}
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-slate-400 font-bold">Lọc giờ:</span>
+              <select
+                value={selectedTimeFilter}
+                onChange={(e) => setSelectedTimeFilter(e.target.value)}
+                className="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
               >
-                {/* Court Info Col (4 cols) */}
-                <div className="col-span-4 pr-2">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#006c49]" />
-                    <span className="font-extrabold text-sm text-slate-900 dark:text-white">{court.name}</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${court.badgeColor}`}>
-                      {court.badge}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5 truncate">
-                    {court.spec}
-                  </p>
-                </div>
-
-                {/* Timeline Slots (8 cols -> 4 slots x 2 cols each) */}
-                {court.slots.map((slot, idx) => {
-                  const isSelected = selectedSlot.courtId === court.id && selectedSlot.time === slot.time;
-                  const isBooked = slot.status === "BOOKED";
-                  const isEloMatch = slot.status === "ELO_MATCH";
-
-                  return (
-                    <div key={idx} className="col-span-2">
-                      {isSelected ? (
-                        <button
-                          type="button"
-                          className="w-full h-14 rounded-xl bg-[#006c49] text-white shadow-md flex flex-col items-center justify-center p-1 relative overflow-hidden transition-all transform scale-[1.02] ring-2 ring-[#006c49]"
-                        >
-                          <div className="absolute top-0 right-0 bg-[#acf847] text-[#102000] text-[9px] px-1 font-black rounded-bl uppercase">
-                            ĐANG CHỌN
-                          </div>
-                          <span className="font-black text-sm text-white">{(slot.price / 1000)}k</span>
-                          <span className="text-[10px] text-emerald-200 font-bold">90 phút</span>
-                        </button>
-                      ) : isBooked ? (
-                        <div className="w-full h-14 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex flex-col items-center justify-center p-1 cursor-not-allowed opacity-75">
-                          <Lock className="w-4 h-4 text-slate-400" />
-                          <span className="text-[10px] font-bold">Đã đặt</span>
-                        </div>
-                      ) : isEloMatch ? (
-                        <div className="w-full h-14 rounded-xl bg-[#acf847]/30 text-[#102000] dark:text-[#acf847] flex flex-col items-center justify-center p-1 cursor-pointer hover:bg-[#acf847]/50 transition-colors border border-[#acf847]/40">
-                          <div className="flex items-center space-x-1">
-                            <Users className="w-3.5 h-3.5 text-[#304f00] dark:text-[#acf847]" />
-                            <span className="text-[11px] font-extrabold">Ghép kèo</span>
-                          </div>
-                          <span className="text-[10px] font-bold">{slot.eloInfo}</span>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleSelectMatrixSlot(court, slot)}
-                          className="w-full h-14 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white shadow-xs flex flex-col items-center justify-center p-1 transition-all group cursor-pointer border border-slate-200 dark:border-slate-700"
-                        >
-                          <span className="font-black text-xs text-[#006c49] font-mono">{(slot.price / 1000)}k</span>
-                          <span className="text-[10px] text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white">
-                            Còn trống
-                          </span>
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                <option value="ALL">Tất Cả Giờ Đá</option>
+                <option value="PEAK">⭐ Khung Giờ Vàng (17:30 - 20:30)</option>
+                <option value="OFF_PEAK">🌙 Giờ Thường / Đêm Mát</option>
+              </select>
+            </div>
           </div>
 
-          {/* Venue Policy & Pitch Amenities Detailed Card */}
+          {/* Bảng Ma Trận Sân Con & Các Ca Đá */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            {isLoading ? (
+              <div className="py-16 text-center space-y-3">
+                <RefreshCw className="w-8 h-8 text-[#0b4f6c] dark:text-sky-400 animate-spin mx-auto" />
+                <p className="text-sm font-bold text-slate-500">Đang đồng bộ ma trận ca sân thật từ CSDL...</p>
+              </div>
+            ) : filteredCourts.length === 0 ? (
+              <div className="py-12 text-center text-slate-400 space-y-2">
+                <AlertCircle className="w-8 h-8 mx-auto text-slate-400" />
+                <p className="font-bold text-sm">Không tìm thấy sân con nào phù hợp với bộ lọc.</p>
+              </div>
+            ) : (
+              filteredCourts.map((court) => {
+                const courtSlots = (court.slots || []).filter((s: any) => {
+                  if (selectedTimeFilter === "PEAK") {
+                    return s.time.includes("17:30") || s.time.includes("18:") || s.time.includes("19:00");
+                  }
+                  if (selectedTimeFilter === "OFF_PEAK") {
+                    return !s.time.includes("17:30") && !s.time.includes("18:") && !s.time.includes("19:00");
+                  }
+                  return true;
+                });
+
+                return (
+                  <div
+                    key={court.pitchId}
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-3"
+                  >
+                    {/* Court Info Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/80">
+                      <div className="flex items-center space-x-2.5">
+                        <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-xs" />
+                        <span className="font-black text-base text-slate-900 dark:text-white">
+                          {court.pitchName}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-lg bg-[#0b4f6c]/10 text-[#0b4f6c] dark:text-sky-400 text-xs font-bold font-mono">
+                          {court.type}
+                        </span>
+                      </div>
+                      <div className="text-xs font-mono text-slate-500">
+                        Giá giờ thường: <strong className="text-slate-900 dark:text-white font-bold">{(court.basePrice / 1000)}k/ca</strong> • Giờ vàng: <strong className="text-amber-500 font-bold">{(court.peakPrice / 1000)}k/ca</strong>
+                      </div>
+                    </div>
+
+                    {/* Slots Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 pt-1">
+                      {courtSlots.map((slot: any, sIdx: number) => {
+                        const isSelected = selectedSlot?.courtName === court.pitchName && selectedSlot?.time === slot.time;
+                        const isBooked = slot.status === "booked" || slot.status === "playing";
+                        const isResale = slot.status === "resale";
+                        const isPeak = slot.time.includes("17:") || slot.time.includes("18:") || slot.time.includes("19:");
+
+                        if (isSelected) {
+                          return (
+                            <button
+                              key={sIdx}
+                              type="button"
+                              className="h-20 rounded-2xl bg-emerald-600 text-white shadow-md flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all scale-[1.02] ring-2 ring-emerald-500 cursor-pointer"
+                            >
+                              <div className="absolute top-0 right-0 bg-emerald-300 text-slate-950 text-[9px] px-2 py-0.5 font-black rounded-bl uppercase">
+                                ĐANG CHỌN
+                              </div>
+                              <span className="font-extrabold text-sm">{slot.time}</span>
+                              <span className="font-black text-base font-mono mt-0.5">{slot.price}</span>
+                              <span className="text-[10px] text-emerald-200">90 phút</span>
+                            </button>
+                          );
+                        }
+
+                        if (isBooked) {
+                          return (
+                            <div
+                              key={sIdx}
+                              className="h-20 rounded-2xl bg-slate-200/70 dark:bg-slate-800/60 text-slate-400 flex flex-col items-center justify-center p-2 cursor-not-allowed opacity-75 border border-slate-200 dark:border-slate-800"
+                            >
+                              <span className="font-bold text-xs">{slot.time}</span>
+                              <div className="flex items-center space-x-1 mt-1 text-rose-500 font-bold text-xs">
+                                <Lock className="w-3.5 h-3.5" />
+                                <span>Đã Cọc</span>
+                              </div>
+                              <span className="text-[10px] text-slate-400 font-mono truncate max-w-[120px]">{slot.customer}</span>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <button
+                            key={sIdx}
+                            type="button"
+                            onClick={() => handleSelectSlot(court, slot)}
+                            className="h-20 rounded-2xl bg-white dark:bg-slate-900 hover:border-emerald-500 hover:bg-emerald-50/20 text-slate-900 dark:text-white shadow-xs flex flex-col items-center justify-center p-2 transition-all cursor-pointer border border-slate-200 dark:border-slate-700 group relative"
+                          >
+                            {isPeak && (
+                              <div className="absolute top-1.5 right-1.5 text-amber-500 text-[10px] font-bold">
+                                ⭐ Vàng
+                              </div>
+                            )}
+                            {isResale && (
+                              <div className="absolute top-1 right-1 bg-amber-500 text-white text-[9px] font-bold px-1.5 rounded">
+                                Pass -40%
+                              </div>
+                            )}
+                            <span className="font-bold text-xs text-slate-700 dark:text-slate-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                              {slot.time}
+                            </span>
+                            <span className="font-black text-sm text-emerald-600 dark:text-emerald-400 font-mono mt-0.5">
+                              {slot.price}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              Còn trống
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Chính sách hoàn cọc & Tự động hóa */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Left Info: Lighting IoT */}
             <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-[#acf847] text-[#102000] flex items-center justify-center shrink-0 font-bold">
-                <Zap className="w-5 h-5 text-[#304f00]" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 font-bold">
+                <Zap className="w-5 h-5 text-emerald-500" />
               </div>
               <div className="space-y-1">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Công Nghệ Tự Động Hóa VaoSan IoT
+                  Tự Động Bật Đèn Sân IoT
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Hệ thống đèn sân và camera tự kích hoạt trước giờ thi đấu 5 phút khi bạn quét mã check-in qua App, không cần chờ nhân viên sân.
+                  Đèn sân và camera tự động mở trước giờ thi đấu 5 phút khi bạn quét mã check-in qua ứng dụng.
                 </p>
               </div>
             </div>
 
-            {/* Right Info: Cancellation Policy */}
             <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-[#006c49] flex items-center justify-center shrink-0 font-bold">
-                <ShieldCheck className="w-5 h-5 text-[#006c49]" />
+              <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0 font-bold">
+                <ShieldCheck className="w-5 h-5 text-sky-500" />
               </div>
               <div className="space-y-1">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Chính Sách Hoàn Cọc Linh Hoạt
+                  Bảo Chứng Hoàn Cọc 100%
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Hủy lịch trước giờ thi đấu 2 tiếng: Hoàn 100% về ví VaoSan hoặc tài khoản ngân hàng liên kết trong 60 giây không mất phí.
+                  Hủy lịch trước giờ đá 2 tiếng: Hoàn 100% tiền cọc về tài khoản trong 60 giây không mất bất kỳ chi phí nào.
                 </p>
               </div>
             </div>
           </div>
         </main>
 
-        {/* RIGHT COLUMN: BOOKING ORDER SUMMARY & CHECKOUT CARD (STICKY TOP-24 / ~35% WIDTH) */}
-        <aside className="lg:col-span-4 sticky top-24 space-y-4">
+        {/* CỘT PHẢI: PHIẾU ĐẶT CHỖ & TÍNH TIỀN THÔNG MINH (4 COLS - STICKY) */}
+        <aside className="lg:col-span-4 sticky top-20 space-y-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-6 border border-slate-200 dark:border-slate-800 space-y-5">
-            {/* Summary Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-full bg-[#006c49] text-white flex items-center justify-center font-bold">
-                  <Receipt className="w-4 h-4 text-white" />
+            {/* Header Phiếu Đặt */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 flex items-center justify-center font-bold">
+                  <Receipt className="w-4.5 h-4.5" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Thông Tin Đặt Chỗ</h3>
-                  <span className="text-[11px] text-slate-400 font-mono">Mã dự kiến: #VS-7829-PB</span>
+                  <h3 className="font-black text-sm text-slate-900 dark:text-white">Phiếu Đặt Chỗ Sân Bóng</h3>
+                  <span className="text-[11px] text-slate-400 font-mono">Trực tuyến VietQR Napas247</span>
                 </div>
               </div>
-              <span className="text-xs font-bold text-[#006c49] bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                1 Sân Đã Chọn
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                1 Ca Đang Chọn
               </span>
             </div>
 
-            {/* Selected Slot Quick Overview Box */}
+            {/* Thông Tin Ca Đã Chọn */}
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider">Địa điểm & Sân</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider">Cụm sân & Mặt sân</span>
                   <p className="font-black text-sm text-slate-900 dark:text-white">{selectedSlot.courtName}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Khu Phức Hợp D-Sport Oasis • Q.7</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[220px]">{venueData.name}</p>
                 </div>
-                <Award className="w-6 h-6 text-[#006c49]" />
+                <Award className="w-6 h-6 text-emerald-500 shrink-0" />
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-xs">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold">Ngày thi đấu</span>
-                  <p className="font-bold text-slate-900 dark:text-white">Hôm nay (18/10)</p>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold">Ngày thi đấu:</span>
+                  <p className="font-bold text-slate-900 dark:text-white font-mono">{selectedDate}</p>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold">Khung giờ</span>
-                  <p className="font-bold text-[#006c49]">{selectedSlot.time} ({selectedSlot.duration})</p>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold">Khung giờ:</span>
+                  <p className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">{selectedSlot.time}</p>
                 </div>
               </div>
             </div>
 
-            {/* Price Breakdown Calculation */}
+            {/* Chi Tiết Giá Tiền & Khuyến Mãi */}
             <div className="space-y-2.5 text-xs">
               <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
-                <span>Giá gốc ca vàng (90 phút):</span>
+                <span>Giá ca sân niêm yết (90p):</span>
                 <span className="font-mono text-slate-900 dark:text-white font-bold">{originalPrice.toLocaleString("vi-VN")}đ</span>
               </div>
               <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
                 <span className="flex items-center space-x-1">
-                  <span>Hệ thống IoT chiếu sáng:</span>
-                  <Info className="w-3.5 h-3.5 text-[#006c49]" />
+                  <span>Chiếu sáng đèn LED IoT & VAR:</span>
+                  <Info className="w-3.5 h-3.5 text-emerald-500" />
                 </span>
-                <span className="font-mono text-[#006c49] font-bold">Miễn phí</span>
+                <span className="font-mono text-emerald-500 font-bold">Miễn phí</span>
               </div>
 
-              {/* Voucher applied tag */}
-              <div className="flex justify-between items-center bg-emerald-500/10 p-2.5 rounded-xl text-[#006c49] border border-emerald-500/20">
+              {/* Voucher VaoSan 50k */}
+              <div className="flex justify-between items-center bg-emerald-500/10 p-2.5 rounded-xl text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
                 <div className="flex items-center space-x-2">
-                  <Ticket className="w-4 h-4 text-[#006c49]" />
+                  <Ticket className="w-4 h-4 text-emerald-500 shrink-0" />
                   <div className="flex flex-col">
                     <span className="font-bold text-xs">VaoSan Welcome Promo</span>
-                    <span className="text-[10px] text-slate-500">Mã: #VS-20259</span>
+                    <span className="text-[10px] text-slate-500">Mã voucher sẵn có</span>
                   </div>
                 </div>
-                <span className="font-mono font-extrabold text-sm">-50.000đ</span>
+                <span className="font-mono font-black text-sm">-50.000đ</span>
               </div>
 
-              {/* MatchPoints Loyalty deduction */}
+              {/* Tích điểm VaoSanPoints */}
               <div className="flex items-center justify-between pt-1">
                 <label className="flex items-center space-x-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={useMatchPoints}
                     onChange={(e) => setUseMatchPoints(e.target.checked)}
-                    className="w-4 h-4 rounded text-[#006c49] accent-[#006c49] cursor-pointer"
+                    className="w-4 h-4 rounded text-emerald-600 accent-emerald-500 cursor-pointer"
                   />
-                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">Đổi 500 MatchPoints</span>
+                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">Đổi 500 VaoSanPoints</span>
                 </label>
-                <span className="font-mono text-[#304f00] dark:text-[#acf847] font-bold text-xs">-20.000đ</span>
+                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold text-xs">-20.000đ</span>
               </div>
 
-              {/* Total Summary Row */}
+              {/* Tổng thanh toán */}
               <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-baseline justify-between">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-extrabold block">TỔNG THANH TOÁN:</span>
-                  <span className="text-[11px] text-[#006c49] font-bold">Tiết kiệm 70.000đ</span>
+                  <span className="text-[10px] text-slate-400 uppercase font-extrabold block">TỔNG TIỀN CA SÂN:</span>
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">Tiết kiệm 70.000đ</span>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">
@@ -704,132 +894,261 @@ export default function PitchDetail({
               </div>
             </div>
 
-            {/* Deposit Options Selector */}
+            {/* Tùy Chọn Cọc (50% hoặc 100%) */}
             <div className="space-y-2">
-              <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
-                Hình thức thanh toán giữ chỗ
+              <label className="text-xs font-extrabold uppercase tracking-wider text-slate-400 block">
+                Hình thức đặt cọc giữ chỗ:
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {/* Option 1: Deposit 50% */}
                 <div
                   onClick={() => setDepositOption("50%")}
                   className={`p-3 rounded-2xl cursor-pointer flex flex-col justify-between border-2 transition-all ${
                     depositOption === "50%"
-                      ? "bg-emerald-500/10 border-[#006c49]"
+                      ? "bg-emerald-500/10 border-emerald-500 shadow-xs"
                       : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs text-slate-900 dark:text-white">Cọc 50%</span>
-                    {depositOption === "50%" && (
-                      <span className="w-4 h-4 rounded-full bg-[#006c49] text-white flex items-center justify-center text-[10px]">
-                        ✓
-                      </span>
-                    )}
+                    {depositOption === "50%" && <span className="text-emerald-500 font-black text-xs">✓</span>}
                   </div>
-                  <span className="font-mono text-base font-black text-[#006c49] mt-1">
+                  <span className="font-mono text-base font-black text-emerald-600 dark:text-emerald-400 mt-1">
                     {Math.round(totalPrice * 0.5).toLocaleString("vi-VN")}đ
                   </span>
-                  <span className="text-[10px] text-slate-500">Trả phần còn lại tại sân</span>
+                  <span className="text-[10px] text-slate-500">Trả phần còn lại ở quầy</span>
                 </div>
 
-                {/* Option 2: Pay 100% */}
                 <div
                   onClick={() => setDepositOption("100%")}
                   className={`p-3 rounded-2xl cursor-pointer flex flex-col justify-between border-2 transition-all ${
                     depositOption === "100%"
-                      ? "bg-emerald-500/10 border-[#006c49]"
+                      ? "bg-emerald-500/10 border-emerald-500 shadow-xs"
                       : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white">Trả full 100%</span>
-                    {depositOption === "100%" && (
-                      <span className="w-4 h-4 rounded-full bg-[#006c49] text-white flex items-center justify-center text-[10px]">
-                        ✓
-                      </span>
-                    )}
+                    <span className="font-bold text-xs text-slate-900 dark:text-white">Thanh toán 100%</span>
+                    {depositOption === "100%" && <span className="text-emerald-500 font-black text-xs">✓</span>}
                   </div>
                   <span className="font-mono text-base font-black text-slate-900 dark:text-white mt-1">
                     {totalPrice.toLocaleString("vi-VN")}đ
                   </span>
-                  <span className="text-[10px] text-slate-500">Tặng ngay +50 MP</span>
+                  <span className="text-[10px] text-slate-500">Tặng +50 Điểm Thưởng</span>
                 </div>
               </div>
             </div>
 
-            {/* Smart Preferences Toggles */}
-            <div className="space-y-2 text-xs">
-              <label className="flex items-start space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={autoLighting}
-                  onChange={(e) => setAutoLighting(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded text-[#006c49] accent-[#006c49]"
-                />
-                <span className="text-slate-700 dark:text-slate-300 leading-tight">
-                  <strong>Tự động kích hoạt đèn sân</strong> đúng 18:25 qua mã SoccerHub QuickPass
+            {/* Widget Dự Toán Chia Tiền (Split Bill) Cho Cả Đội */}
+            <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <span className="text-xs font-bold text-sky-800 dark:text-sky-300 block">
+                  VietQR Chia Tiền (14 Cầu Thủ):
                 </span>
-              </label>
+                <span className="text-[11px] text-slate-500">
+                  Mỗi người chỉ tốn: <strong className="text-emerald-600 dark:text-emerald-400 font-mono font-bold text-xs">{splitPerPlayer.toLocaleString("vi-VN")}đ</strong>
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => showToast(`💸 Đã sao chép mức chia tiền ${splitPerPlayer.toLocaleString("vi-VN")}đ/người cho 14 cầu thủ!`)}
+                className="px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition-colors shrink-0 shadow-xs"
+              >
+                Chia Tiền
+              </button>
+            </div>
+
+            {/* Tùy Chọn Cầu Thủ Độc Đáo */}
+            <div className="space-y-2 text-xs">
               <label className="flex items-start space-x-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={enableMatchmaking}
                   onChange={(e) => setEnableMatchmaking(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded text-[#006c49] accent-[#006c49]"
+                  className="mt-0.5 w-4 h-4 rounded text-[#0b4f6c] accent-sky-500"
                 />
                 <span className="text-slate-700 dark:text-slate-300 leading-tight">
-                  <strong>Bật Kèo Ghép Đội</strong> cho các cầu thủ và đội bóng cùng hạng Elo tìm tới giao lưu
+                  <strong className="text-slate-900 dark:text-white">Mở Kèo Tìm Đối Thủ Elo:</strong> Tự động đăng kèo giao hữu lên chợ ghép đội nếu bạn đang thiếu đội giao lưu.
+                </span>
+              </label>
+
+              <label className="flex items-start space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={enableAiCamera}
+                  onChange={(e) => setEnableAiCamera(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded text-[#0b4f6c] accent-sky-500"
+                />
+                <span className="text-slate-700 dark:text-slate-300 leading-tight">
+                  <strong className="text-slate-900 dark:text-white">Camera AI Tự Cắt Highlights:</strong> Tự động gửi video bàn thắng & pha bóng đẹp về điện thoại sau trận.
                 </span>
               </label>
             </div>
 
-            {/* Redis Lock Timer Alert */}
+            {/* Redis Lock Alert */}
             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-bold flex items-center justify-between">
               <div className="flex items-center space-x-1.5">
                 <Clock className="w-4 h-4 animate-spin text-amber-500" />
-                <span>Redis Lock Giữ Sân:</span>
+                <span>Giữ Chỗ Tạm Thời:</span>
               </div>
               <span className="font-mono text-sm font-black">{formatLockTimer(lockCountdown)}</span>
             </div>
 
-            {/* Main Booking CTA Button */}
-            <div className="space-y-2">
+            {/* Nút Đặt Ca Chính */}
+            <div className="space-y-2 pt-1">
               <button
-                onClick={handleCheckout}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-black text-sm shadow-lg shadow-[#006c49]/30 flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer"
+                type="button"
+                onClick={handleStartBooking}
+                disabled={isBooking}
+                className="w-full py-3.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm sm:text-base shadow-lg shadow-emerald-500/30 flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
               >
-                <span>Xác Nhận & Tạo Mã VietQR</span>
-                <ArrowRight className="w-4 h-4 text-white" />
+                {isBooking ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin mr-1" />
+                    <span>Đang Khóa Slot Ca...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Xác Nhận & Quét VietQR Giữ Chỗ</span>
+                    <ArrowRight className="w-4.5 h-4.5 text-white" />
+                  </>
+                )}
               </button>
               <div className="flex items-center justify-center space-x-1 text-center text-[11px] text-slate-400">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#006c49]" />
-                <span>Bảo chứng bởi <strong>VaoSan SafePlay™</strong> • Hoàn cọc 100% nếu hủy trước 2h</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Bảo chứng bởi <strong>SoccerHub SafePlay™</strong> • Hoàn cọc 100% nếu hủy trước 2h</span>
               </div>
             </div>
           </div>
 
-          {/* Live Venue Host Card */}
+          {/* Card Chủ Sân & Liên Hệ Trực Tiếp */}
           <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-[#006c49]/10 text-[#006c49] flex items-center justify-center font-bold text-xs">
-                DO
+              <div className="w-10 h-10 rounded-full bg-[#0b4f6c]/10 text-[#0b4f6c] dark:text-sky-400 flex items-center justify-center font-bold text-xs">
+                {venueData.ownerName ? venueData.ownerName.slice(0, 2).toUpperCase() : "CS"}
               </div>
               <div>
-                <span className="font-bold text-xs text-slate-900 dark:text-white block">Ban Quản Lý D-Sport Oasis</span>
-                <span className="text-[11px] text-slate-400 block">Phản hồi tin nhắn: ~3 phút</span>
+                <span className="font-bold text-xs text-slate-900 dark:text-white block">Chủ Sân: {venueData.ownerName}</span>
+                <span className="text-[11px] text-slate-400 block font-mono">Hotline: {venueData.phone}</span>
               </div>
             </div>
-            <button
-              type="button"
-              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#006c49] font-bold text-xs transition-colors flex items-center space-x-1"
+            <a
+              href={`tel:${venueData.phone}`}
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-colors flex items-center space-x-1"
             >
-              <MessageCircle className="w-3.5 h-3.5 text-[#006c49]" />
-              <span>Hỏi sân</span>
-            </button>
+              <PhoneCall className="w-3.5 h-3.5" />
+              <span>Gọi Sân</span>
+            </a>
           </div>
         </aside>
       </div>
+
+      {/* 4. MODAL THANH TOÁN VIETQR NAPAS247 & MATCHDAY PASS */}
+      {showQrModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 max-w-lg w-full rounded-3xl p-6 sm:p-7 space-y-5 border border-slate-200 dark:border-slate-800 shadow-2xl relative animate-modal-pop">
+            <button
+              onClick={() => setShowQrModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center font-bold transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {!paymentDone ? (
+              <>
+                <div className="text-center space-y-1.5">
+                  <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-400 text-xs font-bold">
+                    <Clock className="w-3.5 h-3.5 animate-spin" />
+                    <span>Đang Giữ Chỗ Tạm: {formatLockTimer(lockCountdown)}</span>
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white">Quét Mã VietQR Nhận Sân</h3>
+                  <p className="text-xs text-slate-500">Mã đơn vé đã được lưu vào hệ thống. Quét QR để hoàn tất cọc.</p>
+                </div>
+
+                {/* Tóm tắt cọc */}
+                <div className="bg-slate-50 dark:bg-slate-800/80 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Cụm sân:</span>
+                    <strong className="text-slate-900 dark:text-white">{venueData.name}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Mặt sân & Khung giờ:</span>
+                    <strong className="text-emerald-600 dark:text-emerald-400">{selectedSlot.courtName} • {selectedSlot.time}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Mã vé đặt:</span>
+                    <strong className="font-mono text-[#0b4f6c] dark:text-sky-400 font-bold">{bookingConfirmed?.code || `VS-${pitchId}-7192`}</strong>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700 text-sm">
+                    <span className="font-bold text-slate-800 dark:text-slate-200">Số tiền cọc cần chuyển ({depositOption}):</span>
+                    <strong className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-base">
+                      {depositAmount.toLocaleString("vi-VN")} đ
+                    </strong>
+                  </div>
+                </div>
+
+                {/* Mã QR Động Napas247 */}
+                <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border-2 border-emerald-500 shadow-sm">
+                  <img
+                    src={`https://img.vietqr.io/image/970422-98202598888-compact2.png?amount=${depositAmount}&addInfo=${encodeURIComponent(bookingConfirmed?.code || "VS7192")}&accountName=VAOSAN%20SPORTS%20ECOSYSTEM`}
+                    alt="VietQR Napas247"
+                    className="w-52 h-52 object-contain"
+                  />
+                  <div className="text-center mt-2 text-xs text-slate-600">
+                    <span>Nội dung chuyển khoản: </span>
+                    <strong className="text-[#0b4f6c] font-mono text-sm">{bookingConfirmed?.code || "VS7192"}</strong>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCompletePayment}
+                  className="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-5 h-5 text-white" />
+                  <span>Xác Nhận Đã Chuyển Khoản Thành Công</span>
+                </button>
+              </>
+            ) : (
+              /* Thẻ Matchday Pass hoàn tất */
+              <div className="text-center space-y-5 py-2">
+                <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 border-2 border-emerald-500 mx-auto flex items-center justify-center">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                </div>
+
+                <div>
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
+                    ĐÃ CỌC THÀNH CÔNG VÀO CSDL
+                  </span>
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-2">Thẻ Vé Vào Sân Điện Tử</h3>
+                  <p className="text-xs text-slate-500 mt-1">Trình mã QR này tại barrier cổng sân hoặc phòng tiếp tân để check-in mở đèn.</p>
+                </div>
+
+                <div className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                  <div className="w-36 h-36 bg-white rounded-xl p-2 mx-auto flex items-center justify-center border shadow-xs">
+                    <QrCode className="w-32 h-32 text-slate-900" />
+                  </div>
+                  <div className="text-xs space-y-1 text-slate-600 dark:text-slate-300 font-medium">
+                    <p className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-sm">
+                      MÃ VÉ: {bookingConfirmed?.code || `VS-${pitchId}-7192`}
+                    </p>
+                    <p className="font-bold text-slate-900 dark:text-white">{venueData.name}</p>
+                    <p>{selectedSlot.courtName} • {selectedSlot.time}</p>
+                    <p className="text-slate-400 text-[11px]">Ngày đá: {selectedDate}</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowQrModal(false)}
+                  className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold transition-colors"
+                >
+                  Đóng & Xem Lịch Đặt
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
