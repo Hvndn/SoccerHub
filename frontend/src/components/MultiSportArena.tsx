@@ -236,7 +236,7 @@ export default function MultiSportArena() {
       )}
 
       {/* Top Header Banner */}
-      <div className="max-w-7xl mx-auto mb-8">
+      <div className="w-full mb-8">
         <div className="bg-gradient-to-r from-slate-900 via-[#0b4f6c] to-slate-900 border border-sky-500/30 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -305,7 +305,7 @@ export default function MultiSportArena() {
       </div>
 
       {/* Main Grid Section */}
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="w-full space-y-8">
 
         {/* Section 1: Court Matrix Filter & Legend */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-md">

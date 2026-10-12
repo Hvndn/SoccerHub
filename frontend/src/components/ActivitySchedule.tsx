@@ -38,7 +38,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
   return (
     <div className="w-full bg-[#f8f9ff] dark:bg-[#0b1c30] text-[#0b1c30] dark:text-[#f8f9ff] font-sans transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="w-full py-2">
         <div className="flex flex-col w-full gap-6">
 
           {/* 1. SUB-HEADER / BREADCRUMB & HIGH-LEVEL ACTIONS */}

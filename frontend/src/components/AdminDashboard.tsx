@@ -79,6 +79,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   const [matrixFilterType, setMatrixFilterType] = useState<string>("ALL");
   const [matrixFilterTime, setMatrixFilterTime] = useState<string>("ALL");
   const [matrixFilterMethod, setMatrixFilterMethod] = useState<string>("ALL");
+  const [matrixDuration, setMatrixDuration] = useState<number>(120);
 
   // Dynamic pricing controls
   const [peakHourMultiplier, setPeakHourMultiplier] = useState(1.2);
@@ -109,10 +110,15 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   const [searchCodeInput, setSearchCodeInput] = useState("");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
+  // Cancel Reason Modal State
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReasonInput, setCancelReasonInput] = useState("");
+  const [slotToCancel, setSlotToCancel] = useState<any | null>(null);
+
   // Operating Hours & Slot Duration State (Đăng ký giờ hoạt động linh hoạt)
   const [operatingOpenTime, setOperatingOpenTime] = useState("13:00");
   const [operatingCloseTime, setOperatingCloseTime] = useState("22:30");
-  const [operatingSlotDuration, setOperatingSlotDuration] = useState<number>(90); // 60, 90, 120 phút
+  const [operatingSlotDuration, setOperatingSlotDuration] = useState<number>(120); // Ca 2 tiếng (120 phút - thi đấu & giao trả ca)
   const [isUpdatingHours, setIsUpdatingHours] = useState(false);
 
   // New Pitch Form state
@@ -121,7 +127,55 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   const [newPitchBasePrice, setNewPitchBasePrice] = useState("450000");
   const [newPitchPeakPrice, setNewPitchPeakPrice] = useState("600000");
 
-  // Offline Booking Form State
+  // Danh sách 14 ngày tới để chủ sân linh hoạt chuyển ngày xem lịch đặt
+  const upcomingDays = useMemo(() => {
+    const days: Array<{
+      iso: string;
+      dayOfWeek: string;
+      dateFormatted: string;
+      label: string;
+      display: string;
+    }> = [];
+    const dayNames = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+    const now = new Date();
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(now);
+      d.setDate(now.getDate() + i);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const date = String(d.getDate()).padStart(2, "0");
+      const iso = `${year}-${month}-${date}`;
+      const dayOfWeek = dayNames[d.getDay()];
+      const dateFormatted = `${date}/${month}`;
+      const label = i === 0 ? "Hôm Nay" : i === 1 ? "Ngày Mai" : dayOfWeek;
+      days.push({
+        iso,
+        dayOfWeek,
+        dateFormatted,
+        label,
+        display: `${label} (${dateFormatted})`
+      });
+    }
+    return days;
+  }, []);
+
+  // Ngày đang xem sơ đồ ca sân (mặc định là Hôm nay)
+  const [matrixDate, setMatrixDate] = useState<string>(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const date = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${date}`;
+  });
+
+  // Offline Booking Form State (Kèm ngày đặt tại quầy)
+  const [offlineDate, setOfflineDate] = useState<string>(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const date = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${date}`;
+  });
   const [offlinePitchId, setOfflinePitchId] = useState("");
   const [offlineDuration, setOfflineDuration] = useState<number>(90); // 60, 90, 120 phút
   const [offlineTime, setOfflineTime] = useState("17:30 - 19:00");
@@ -134,59 +188,26 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   const [alertsHistory, setAlertsHistory] = useState<RealtimeBookingEvent[]>([]);
   const lastBookedSlotsRef = React.useRef<number>(0);
 
+  // Refs để luôn đọc đúng matrixDate và matrixDuration mới nhất trong async callbacks
+  const matrixDateRef = React.useRef<string>(matrixDate);
+  matrixDateRef.current = matrixDate;
+  const matrixDurationRef = React.useRef<number>(matrixDuration);
+  matrixDurationRef.current = matrixDuration;
+
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3500);
   };
 
-  // Fetch real pitch data from backend API & Subscribe Realtime
-  useEffect(() => {
-    setMounted(true);
-    fetchRealData();
-
-    // 1. Lắng nghe sự kiện Realtime đa tab / đa role (0 mili-giây)
-    const unsubscribe = subscribeToBookingEvents((event) => {
-      if (event.type === "BOOKING_CREATED") {
-        playNotificationChime();
-        setRealtimeAlert(event);
-        setAlertsHistory((prev) => [event, ...prev].slice(0, 10));
-        showToast(`⚡ CÓ ĐƠN ĐẶT SÂN MỚI! Khách ${event.customerName} (${event.customerPhone}) vừa cọc ca [${event.timeSlot}] của [${event.courtName}]!`);
-        
-        // Cập nhật ma trận ca sân & doanh thu tức thời
-        const currentId = activePitch?.id || 1;
-        loadMatrixAndStats(currentId);
-      }
-    });
-
-    // 2. Heartbeat Polling mỗi 4 giây (Đồng bộ đa trình duyệt / đa thiết bị khác nhau)
-    const heartbeatInterval = setInterval(async () => {
-      const currentId = activePitch?.id || 1;
-      try {
-        const statsRes = await apiRequest<any>(`/api/v1/pitches/${currentId}/stats`);
-        if (statsRes && typeof statsRes.bookedSlots === "number") {
-          if (lastBookedSlotsRef.current > 0 && statsRes.bookedSlots > lastBookedSlotsRef.current) {
-            playNotificationChime();
-            showToast(`🔔 Cụm sân vừa nhận thêm đơn đặt cọc mới! Đã tự động cập nhật sơ đồ ca.`);
-            loadMatrixAndStats(currentId);
-          }
-          lastBookedSlotsRef.current = statsRes.bookedSlots;
-        }
-      } catch (e) {
-        // silent fallback
-      }
-    }, 4000);
-
-    return () => {
-      unsubscribe();
-      clearInterval(heartbeatInterval);
-    };
-  }, [activePitch?.id]);
-
-  const loadMatrixAndStats = async (pitchId: number | string) => {
+  const loadMatrixAndStats = async (
+    pitchId: number | string,
+    duration = matrixDurationRef.current,
+    date = matrixDateRef.current
+  ) => {
     try {
       const [matrixRes, statsRes] = await Promise.all([
-        apiRequest<any[]>(`/api/v1/pitches/${pitchId}/matrix`),
-        apiRequest<any>(`/api/v1/pitches/${pitchId}/stats`)
+        apiRequest<any[]>(`/api/v1/pitches/${pitchId}/matrix?date=${date}&duration=${duration}`),
+        apiRequest<any>(`/api/v1/pitches/${pitchId}/stats?date=${date}`)
       ]);
       if (matrixRes && Array.isArray(matrixRes)) {
         setPitchMatrix(matrixRes);
@@ -204,6 +225,64 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       console.warn("Lỗi tải matrix/stats từ database:", err.message);
     }
   };
+
+  // Hàm chuyển ngày xem lịch ca sân
+  const handleSelectDate = (dateStr: string) => {
+    setMatrixDate(dateStr);
+    matrixDateRef.current = dateStr;
+    const currentId = activePitch?.id || 1;
+    loadMatrixAndStats(currentId, matrixDuration, dateStr);
+  };
+
+  // Fetch real pitch data from backend API & Subscribe Realtime
+  useEffect(() => {
+    setMounted(true);
+    fetchRealData();
+
+    // 1. Lắng nghe sự kiện Realtime đa tab / đa role (0 mili-giây)
+    const unsubscribe = subscribeToBookingEvents((event) => {
+      if (event.type === "BOOKING_CREATED") {
+        playNotificationChime();
+        setRealtimeAlert(event);
+        setAlertsHistory((prev) => [event, ...prev].slice(0, 10));
+
+        const dateLabel = event.bookingDate 
+          ? (event.bookingDate === matrixDateRef.current ? "Hôm nay" : event.bookingDate)
+          : "Hôm nay";
+        showToast(`⚡ CÓ ĐƠN ĐẶT SÂN MỚI! Khách ${event.customerName} (${event.customerPhone}) vừa cọc ca [${event.timeSlot}] ngày [${dateLabel}] của [${event.courtName}]!`);
+        
+        // Cập nhật ma trận ca sân & doanh thu tức thời theo ngày đang xem
+        const currentId = activePitch?.id || 1;
+        loadMatrixAndStats(currentId, matrixDurationRef.current, matrixDateRef.current);
+      } else if (event.type === "BOOKING_CANCELLED") {
+        const currentId = activePitch?.id || 1;
+        loadMatrixAndStats(currentId, matrixDurationRef.current, matrixDateRef.current);
+      }
+    });
+
+    // 2. Heartbeat Polling mỗi 4 giây (Đồng bộ đa trình duyệt / đa thiết bị khác nhau theo ngày đang chọn)
+    const heartbeatInterval = setInterval(async () => {
+      const currentId = activePitch?.id || 1;
+      try {
+        const statsRes = await apiRequest<any>(`/api/v1/pitches/${currentId}/stats?date=${matrixDateRef.current}`);
+        if (statsRes && typeof statsRes.bookedSlots === "number") {
+          if (lastBookedSlotsRef.current > 0 && statsRes.bookedSlots > lastBookedSlotsRef.current) {
+            playNotificationChime();
+            showToast(`🔔 Cụm sân vừa nhận thêm đơn đặt cọc mới! Đã tự động cập nhật sơ đồ ca.`);
+            loadMatrixAndStats(currentId, matrixDurationRef.current, matrixDateRef.current);
+          }
+          lastBookedSlotsRef.current = statsRes.bookedSlots;
+        }
+      } catch (e) {
+        // silent fallback
+      }
+    }, 4000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(heartbeatInterval);
+    };
+  }, [activePitch?.id]);
 
   const handleUpdateOperatingHours = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -301,6 +380,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         body: JSON.stringify({
           courtName: targetCourt ? targetCourt.pitchName : offlinePitchId,
           courtType: targetCourt ? targetCourt.type : "Sân 7",
+          bookingDate: offlineDate,
           timeSlot: offlineTime,
           customerName: offlineCustomer.trim(),
           customerPhone: offlinePhone.trim(),
@@ -310,13 +390,16 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         })
       });
 
-      await loadMatrixAndStats(currentId);
+      // Nếu ngày đặt trùng hoặc chủ sân muốn xem ngày vừa đặt, cập nhật matrix
+      setMatrixDate(offlineDate);
+      matrixDateRef.current = offlineDate;
+      await loadMatrixAndStats(currentId, matrixDuration, offlineDate);
       setShowOfflineModal(false);
       setOfflineCustomer("");
       setOfflinePhone("");
-      showToast(`✅ Đã đặt ca thành công cho khách [${offlineCustomer}] và lưu vào database!`);
+      showToast(`✅ Đã đặt ca thành công ngày [${offlineDate}] cho khách [${offlineCustomer}] và lưu vào database!`);
 
-      // Phát sự kiện Realtime cho các Tab khác (bao gồm Cầu Thủ)
+      // Phát sự kiện Realtime cho các Tab khác (bao gồm Cầu Thủ và Navbar)
       broadcastBookingEvent({
         type: "BOOKING_CREATED",
         pitchId: currentId,
@@ -324,6 +407,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         customerPhone: offlinePhone.trim(),
         courtName: targetCourt ? targetCourt.pitchName : offlinePitchId,
         timeSlot: offlineTime,
+        bookingDate: offlineDate,
         totalPrice: price,
         depositPaid: deposit,
         via: offlineDepositType === "PAID_CASH" ? "Tạo Tại Quầy (Đã Cọc)" : "Tạo Tại Quầy (Giữ Ca)"
@@ -359,27 +443,61 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     }
   };
 
-  // Cancel Booking (Xóa thật khỏi MySQL)
+  // Cancel Booking - Step 1: Show modal to collect reason
   const handleCancelBooking = async (slot: any) => {
     if (!slot) return;
     if (slot.bookingId) {
-      try {
-        await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}`, { method: "DELETE" });
-        await loadMatrixAndStats(activePitch?.id || 1);
-        setSelectedSlotForAction(null);
-        showToast("🗑️ Đã hủy ca đặt thành công. Khung giờ đã sẵn sàng cho khách khác.");
-
-        broadcastBookingEvent({
-          type: "BOOKING_CANCELLED",
-          pitchId: activePitch?.id || 1,
-          bookingId: slot.bookingId
-        });
-        return;
-      } catch (err: any) {
-        showToast(`❌ Lỗi hủy ca: ${err.message}`);
-      }
+      // Đóng modal check-in hiện tại để tránh đè giao diện
+      setSlotToCancel(slot);
+      setCancelReasonInput("");
+      setSelectedSlotForAction(null);
+      setShowCancelModal(true);
     } else {
       setSelectedSlotForAction(null);
+    }
+  };
+
+  // Cancel Booking - Step 2: Confirm with reason and call API
+  const handleConfirmCancel = async () => {
+    const slot = slotToCancel;
+    if (!slot || !cancelReasonInput.trim()) {
+      showToast("⚠️ Vui lòng nhập lý do hủy ca.");
+      return;
+    }
+    try {
+      // Try new cancel-with-reason endpoint first
+      try {
+        await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}/cancel`, {
+          method: "POST",
+          body: JSON.stringify({
+            reason: cancelReasonInput.trim(),
+            cancelledBy: "OWNER"
+          })
+        });
+      } catch {
+        // Fallback to DELETE if new endpoint not ready
+        await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}`, { method: "DELETE" });
+      }
+
+      await loadMatrixAndStats(activePitch?.id || 1);
+      setSelectedSlotForAction(null);
+      setShowCancelModal(false);
+      setSlotToCancel(null);
+      setCancelReasonInput("");
+      showToast("🗑️ Đã hủy ca đặt và thông báo lý do tới khách hàng.");
+
+      // Broadcast event with reason so customer's Navbar gets notified
+      broadcastBookingEvent({
+        type: "BOOKING_CANCELLED",
+        pitchId: activePitch?.id || 1,
+        bookingId: slot.bookingId,
+        courtName: activePitch?.name || "sân",
+        timeSlot: slot.time || slot.timeSlot || "",
+        cancelReason: cancelReasonInput.trim(),
+        cancelledBy: "OWNER"
+      } as any);
+    } catch (err: any) {
+      showToast(`❌ Lỗi hủy ca: ${err.message}`);
     }
   };
 
@@ -424,18 +542,18 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         const m = totalMin % 60;
         return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
       };
-      const startMin = parseMinutes(operatingOpenTime || "13:00");
+      const startMin = parseMinutes(operatingOpenTime || "14:00");
       const endMin = parseMinutes(operatingCloseTime || "22:30");
-      const duration = Number(operatingSlotDuration) || 90;
+      const duration = Number(operatingSlotDuration) || 120;
       const slots: string[] = [];
       let current = startMin;
       while (current + duration <= endMin) {
         slots.push(`${formatTime(current)} - ${formatTime(current + duration)}`);
         current += duration;
       }
-      return slots.length > 0 ? slots : ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00"];
+      return slots.length > 0 ? slots : ["14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00", "20:00 - 22:00"];
     } catch {
-      return ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00"];
+      return ["14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00", "20:00 - 22:00"];
     }
   }, [operatingOpenTime, operatingCloseTime, operatingSlotDuration]);
 
@@ -458,18 +576,18 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         const m = totalMin % 60;
         return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
       };
-      const startMin = parseMinutes(operatingOpenTime || "13:00");
+      const startMin = parseMinutes(operatingOpenTime || "14:00");
       const endMin = parseMinutes(operatingCloseTime || "22:30");
-      const dur = offlineDuration || 90;
+      const dur = offlineDuration || 120;
       const slots: string[] = [];
       let current = startMin;
       while (current + dur <= endMin) {
         slots.push(`${formatTime(current)} - ${formatTime(current + dur)}`);
         current += dur;
       }
-      return slots.length > 0 ? slots : ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00"];
+      return slots.length > 0 ? slots : ["14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00", "20:00 - 22:00"];
     } catch {
-      return ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00"];
+      return ["14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00", "20:00 - 22:00"];
     }
   }, [operatingOpenTime, operatingCloseTime, offlineDuration]);
 
@@ -603,12 +721,12 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <ShieldCheck className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
               <span>
                 {activePitch 
-                  ? `${activePitch.name.toUpperCase()} — HỆ THỐNG ĐIỀU HÀNH CHỦ SÂN PRO` 
+                  ? `${activePitch.name.replace(/đà nẵng/i, "Đà Nẵng").toUpperCase()} — HỆ THỐNG ĐIỀU HÀNH CHỦ SÂN PRO` 
                   : "HỆ THỐNG ĐIỀU HÀNH CHỦ SÂN BÓNG ĐÁ SOCCERHUB PRO"}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-              <span>{activePitch ? activePitch.name : "Trung Tâm Quản Lý Cụm Sân & Doanh Thu"}</span>
+              <span>{activePitch ? activePitch.name.replace(/đà nẵng/i, "Đà Nẵng") : "Cụm Sân Bóng Đá D-Sport Đà Nẵng"}</span>
               {isLoadingBackend && <RefreshCw className="w-5 h-5 text-sky-500 animate-spin" />}
             </h1>
             <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
@@ -673,6 +791,18 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
               <span>Giờ Mở Sân: {operatingOpenTime} - {operatingCloseTime} (Linh Hoạt 1h - 2h)</span>
             </button>
+
+            {onNavigateTab && (
+              <button
+                type="button"
+                onClick={() => onNavigateTab("owner-onboarding")}
+                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+                title="Khởi tạo hoặc thiết lập cụm sân mới qua Wizard 4 bước"
+              >
+                <Building className="w-4 h-4 shrink-0" />
+                <span>+ Khởi Tạo Cụm Sân Mới</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -753,7 +883,9 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
-          <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block">Doanh Thu Hôm Nay</span>
+          <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block">
+            Doanh Thu {matrixDate === upcomingDays[0]?.iso ? "Hôm Nay" : `Ngày ${matrixDate.split("-").reverse().join("/")}`}
+          </span>
           <div className="text-2xl sm:text-3xl font-black text-emerald-500 font-mono">
             {(pitchStats.totalRevenue || 0).toLocaleString("vi-VN")} VNĐ
           </div>
@@ -834,13 +966,63 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     Sơ Đồ Ca Sân Thời Gian Thực (Owner Live Grid Matrix)
                   </h2>
                   <span className="text-xs text-slate-400 block mt-0.5">
-                    Cấu hình giờ: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> ({operatingSlotDuration} phút/ca • {availableTimeSlots.length} ca hoạt động)
+                    Giờ mở cửa: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca thi đấu linh hoạt (1h - 2h) • Tự động chống trùng lịch
                   </span>
                 </div>
               </div>
 
-              {/* BỘ LỌC DẠNG 4 DROPDOWN TIỆN LỢI ĐỂ KIỂM TRA */}
+              {/* BỘ LỌC DẠNG DROPDOWN VÀ CHỌN THỜI LƯỢNG TIỆN LỢI */}
               <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
+                {/* 0. NÚT CHỌN THỜI LƯỢNG LƯỚI MA TRẬN (1H / 1.5H / 2H) */}
+                <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm">
+                  <span className="text-slate-600 dark:text-slate-300 pl-2 text-xs font-bold">Xem theo:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMatrixDuration(60);
+                      const currentId = activePitch?.id || 1;
+                      loadMatrixAndStats(currentId, 60);
+                    }}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
+                      matrixDuration === 60
+                        ? "bg-[#0b4f6c] dark:bg-sky-600 text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    1 Tiếng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMatrixDuration(90);
+                      const currentId = activePitch?.id || 1;
+                      loadMatrixAndStats(currentId, 90);
+                    }}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
+                      matrixDuration === 90
+                        ? "bg-[#0b4f6c] dark:bg-sky-600 text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    1.5 Tiếng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMatrixDuration(120);
+                      const currentId = activePitch?.id || 1;
+                      loadMatrixAndStats(currentId, 120);
+                    }}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
+                      matrixDuration === 120
+                        ? "bg-[#0b4f6c] dark:bg-sky-600 text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    2 Tiếng
+                  </button>
+                </div>
+
                 {/* 1. DROPDOWN TRẠNG THÁI CA */}
                 <div className="flex items-center space-x-2 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm">
                   <span className="text-slate-600 dark:text-slate-300 pl-2.5 text-sm font-bold">Trạng thái:</span>
@@ -931,6 +1113,90 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               </div>
             </div>
 
+            {/* THANH CHỌN NGÀY THI ĐẤU (QUAN TRỌNG: CHỦ SÂN XEM ĐƯỢC CA ĐẶT CỦA MỌI NGÀY) */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50/50 to-emerald-50/50 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 border border-sky-200/80 dark:border-slate-700/80 space-y-3 shadow-xs">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-sky-500/15 dark:bg-sky-400/20 text-[#0b4f6c] dark:text-sky-300 flex items-center justify-center shrink-0">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider">
+                        Lịch Đặt Ca Ngày:
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-lg bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 font-black text-xs font-mono shadow-xs">
+                        {upcomingDays.find(d => d.iso === matrixDate)?.display || `Ngày ${matrixDate.split("-").reverse().join("/")}`}
+                      </span>
+                      {matrixDate === upcomingDays[0]?.iso ? (
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-extrabold">
+                          🟢 Hôm Nay
+                        </span>
+                      ) : (
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-extrabold">
+                          📅 Ngày Tương Lai
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Bấm vào các ngày bên dưới để xem sơ đồ ca, khách đã cọc và doanh thu của ngày đó
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2 shrink-0">
+                  <div className="flex items-center space-x-1.5 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Chọn ngày khác:</span>
+                    <input
+                      type="date"
+                      value={matrixDate}
+                      onChange={(e) => {
+                        if (e.target.value) handleSelectDate(e.target.value);
+                      }}
+                      className="text-xs font-bold font-mono text-slate-900 dark:text-white bg-transparent cursor-pointer focus:outline-none"
+                    />
+                  </div>
+                  {matrixDate !== upcomingDays[0]?.iso && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectDate(upcomingDays[0]?.iso || "")}
+                      className="px-3 py-1.5 rounded-xl bg-sky-100 hover:bg-sky-200 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 text-[#0b4f6c] dark:text-sky-300 font-extrabold text-xs transition-colors border border-sky-200 dark:border-sky-800 shrink-0 cursor-pointer"
+                    >
+                      ↩ Về Hôm Nay
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick Pick Date Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                {upcomingDays.slice(0, 10).map((day) => {
+                  const isSelected = matrixDate === day.iso;
+                  return (
+                    <button
+                      key={day.iso}
+                      type="button"
+                      onClick={() => handleSelectDate(day.iso)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer ${
+                        isSelected
+                          ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md scale-102 ring-2 ring-sky-400/50"
+                          : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-sky-300 hover:bg-sky-50/50 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <span>{day.label}</span>
+                      <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
+                        isSelected 
+                          ? "bg-white/20 dark:bg-black/20 text-white dark:text-slate-950 font-bold" 
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                      }`}>
+                        {day.dateFormatted}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* COLOR CODES LEGEND */}
             <div className="flex flex-wrap items-center gap-5 text-sm font-bold pt-1">
               <span className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
@@ -953,7 +1219,14 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
             {/* PITCH MATRIX GRID */}
             <div className="space-y-4 pt-2">
-              {filteredMatrix.map((pitch) => (
+              {filteredMatrix.length === 0 ? (
+                <div className="py-12 text-center text-sm text-slate-400 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center space-y-2">
+                  <AlertCircle className="w-8 h-8 text-amber-500" />
+                  <span className="font-bold text-slate-700 dark:text-slate-300">Không tìm thấy sân con hoặc ca đá nào phù hợp</span>
+                  <span className="text-xs">Vui lòng chọn Đặt Lại bộ lọc để hiển thị toàn bộ ma trận ca sân</span>
+                </div>
+              ) : (
+                filteredMatrix.map((pitch) => (
                 <div key={pitch.pitchId} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-3.5">
                   <div className="flex justify-between items-center text-sm">
                     <div className="flex items-center space-x-2.5">
@@ -987,7 +1260,11 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                             }
                           }}
                           className={`p-4 rounded-2xl border space-y-2 transition-all cursor-pointer hover:scale-[1.02] shadow-xs ${
-                            slot.status === "playing"
+                            slot.isContinuation
+                              ? "bg-indigo-500/10 border-indigo-400 text-indigo-700 dark:text-indigo-300 font-bold"
+                              : slot.isGapSlot
+                              ? "bg-amber-500/10 border-dashed border-amber-400 text-amber-800 dark:text-amber-200 font-bold hover:bg-amber-500/20"
+                              : slot.status === "playing"
                               ? "bg-rose-500/10 border-rose-400 text-rose-600 dark:text-rose-400 font-bold"
                               : slot.status === "booked"
                               ? "bg-emerald-500/10 border-emerald-400 text-emerald-600 dark:text-emerald-400 font-bold"
@@ -1001,19 +1278,45 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                             <span className="font-black text-sm">{slot.price}</span>
                           </div>
                           
-                          <p className={`font-black truncate text-sm ${slot.status === "empty" ? "text-slate-400 dark:text-slate-500" : "text-slate-900 dark:text-white"}`}>
-                            {slot.customer}
-                          </p>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className={`font-black truncate text-sm ${slot.status === "empty" ? "text-slate-400 dark:text-slate-500" : "text-slate-900 dark:text-white"}`}>
+                              {slot.customer}
+                            </p>
+                            {slot.isContinuation && (
+                              <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-[10px] font-black uppercase tracking-wider">
+                                🔗 Ca Nối Dài
+                              </span>
+                            )}
+                            {slot.isGapSlot && (
+                              <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] font-black uppercase tracking-wider">
+                                ⚡ Khe Trống {slot.durationMinutes}p
+                              </span>
+                            )}
+                          </div>
+
+                          {/* HIỂN THỊ KHUNG GIỜ THỰC TẾ NẾU ĐẶT 2 TIẾNG HOẶC LỆCH GIỜ Ô */}
+                          {slot.bookingTimeSlot && slot.bookingTimeSlot !== slot.time && (
+                            <div className="text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 px-2 py-0.5 rounded-lg border border-sky-200/60 dark:border-sky-800/40">
+                              ⏰ Giờ đá thực: <span className="font-mono">{slot.bookingTimeSlot}</span>
+                            </div>
+                          )}
                           
                           <div className="text-xs space-y-1 opacity-90 font-mono">
-                            <span className="block text-slate-500">Cọc: <strong className={slot.status === "empty" ? "text-slate-400" : "text-emerald-600 dark:text-emerald-400 font-bold"}>{slot.depositPaid}</strong></span>
-                            {slot.status === "booked" && (
+                            <span className="block text-slate-500">
+                              Cọc: <strong className={slot.isContinuation ? "text-indigo-600 dark:text-indigo-400 font-bold" : slot.status === "empty" ? "text-slate-400" : "text-emerald-600 dark:text-emerald-400 font-bold"}>
+                                {slot.isContinuation ? "Đã tính ở ca trước" : slot.depositPaid}
+                              </strong>
+                            </span>
+                            {slot.status === "booked" && !slot.isContinuation && (
                               <span className="block text-rose-500 font-bold">Thu tại quầy: <strong>{slot.cashDue}</strong></span>
+                            )}
+                            {slot.isContinuation && (
+                              <span className="block text-slate-400 text-[11px]">Cùng đơn: #{slot.code}</span>
                             )}
                           </div>
 
                           <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
-                            <span className="truncate font-semibold">{slot.via}</span>
+                            <span className="truncate font-semibold">{slot.isContinuation ? "Ca lấn giờ tiếp nối" : slot.via}</span>
                             <ChevronRight className="w-4 h-4 shrink-0" />
                           </div>
                         </div>
@@ -1021,7 +1324,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     )}
                   </div>
                 </div>
-              ))}
+              )))}
             </div>
           </div>
         </div>
@@ -1386,6 +1689,36 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
             <form onSubmit={handleOfflineBookingSubmit} className="space-y-4 text-sm">
               <div className="space-y-1.5">
+                <label className="font-extrabold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                  <span>Ngày Thi Đấu:</span>
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                    {upcomingDays.find(d => d.iso === offlineDate)?.label || offlineDate}
+                  </span>
+                </label>
+                <div className="flex items-center space-x-2">
+                  <select
+                    value={offlineDate}
+                    onChange={(e) => setOfflineDate(e.target.value)}
+                    className="flex-1 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm cursor-pointer"
+                  >
+                    {upcomingDays.map(d => (
+                      <option key={d.iso} value={d.iso}>
+                        {d.label} ({d.dateFormatted}) - {d.dayOfWeek}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="date"
+                    value={offlineDate}
+                    onChange={(e) => {
+                      if (e.target.value) setOfflineDate(e.target.value);
+                    }}
+                    className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
                 <label className="font-extrabold text-slate-800 dark:text-slate-200">Chọn Sân Con:</label>
                 <select
                   value={offlinePitchId}
@@ -1689,6 +2022,125 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </button>
               </div>
             </form>
+          </div>
+        </div>,
+        document.body
+      )}
+      {/* MODAL HỦY CA ĐẶT SÂN KÈM LÝ DO THÔNG BÁO TỚI KHÁCH HÀNG */}
+      {mounted && showCancelModal && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowCancelModal(false);
+              setSlotToCancel(null);
+              setCancelReasonInput("");
+            }
+          }}
+        >
+          <div 
+            className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-modal-pop my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 bg-rose-50 dark:bg-rose-950/40 border-b border-rose-200 dark:border-rose-800/60 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-900/60 flex items-center justify-center shrink-0">
+                  <Trash2 className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-rose-700 dark:text-rose-300">Xác Nhận Hủy Ca Đặt Sân</h3>
+                  <p className="text-[11px] text-rose-500 dark:text-rose-400 font-medium mt-0.5">
+                    Ca: <strong>{slotToCancel?.time || slotToCancel?.timeSlot || "Không rõ"}</strong> &bull; Khách: <strong>{slotToCancel?.customer || "Không rõ"}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setSlotToCancel(null);
+                  setCancelReasonInput("");
+                }}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-rose-100/50 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4">
+              <div>
+                <label className="block text-xs font-extrabold text-slate-800 dark:text-slate-200 mb-2">
+                  Lý Do Hủy Ca <span className="text-rose-500">*</span>
+                </label>
+
+                {/* Preset reasons */}
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {[
+                    "Sân bị hư hỏng cần sửa chữa",
+                    "Sự kiện đặc biệt tại cụm sân",
+                    "Lỗi hệ thống đặt trùng giờ",
+                    "Điều kiện thời tiết xấu"
+                  ].map(reason => (
+                    <button
+                      key={reason}
+                      type="button"
+                      onClick={() => setCancelReasonInput(reason)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                        cancelReasonInput === reason
+                          ? "bg-rose-500 text-white border-rose-500 shadow-sm"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-rose-300 hover:text-rose-600"
+                      }`}
+                    >
+                      {reason}
+                    </button>
+                  ))}
+                </div>
+
+                <textarea
+                  value={cancelReasonInput}
+                  onChange={(e) => setCancelReasonInput(e.target.value)}
+                  placeholder="Hoặc nhập lý do cụ thể... (bắt buộc)"
+                  rows={3}
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex items-start space-x-2">
+                <span className="text-sm shrink-0">⚠️</span>
+                <p className="text-[10px] text-amber-700 dark:text-amber-300 font-medium leading-relaxed">
+                  Lý do hủy sẽ được gửi ngay tới thông báo của khách hàng. Khung giờ này sẽ mở lại cho người đặt mới.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex space-x-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCancelModal(false);
+                  if (slotToCancel) {
+                    setSelectedSlotForAction(slotToCancel);
+                  }
+                  setSlotToCancel(null);
+                  setCancelReasonInput("");
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm transition-colors"
+              >
+                Quay Lại
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmCancel}
+                disabled={!cancelReasonInput.trim()}
+                className="flex-1 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center space-x-1.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Xác Nhận Hủy Ca</span>
+              </button>
+            </div>
           </div>
         </div>,
         document.body

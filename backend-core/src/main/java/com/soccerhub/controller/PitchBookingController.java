@@ -97,17 +97,18 @@ public class PitchBookingController {
 
             LocalTime current = LocalTime.parse(startStr, fmt);
             LocalTime end = LocalTime.parse(endStr, fmt);
-            int duration = durationMinutes > 0 ? durationMinutes : 90;
-
-            while (current.plusMinutes(duration).compareTo(end) <= 0) {
+            int duration = durationMinutes > 0 ? durationMinutes : 120;
+            int maxIterations = 50;
+            while (current.plusMinutes(duration).compareTo(end) <= 0 && maxIterations-- > 0) {
                 LocalTime next = current.plusMinutes(duration);
+                if (next.compareTo(current) <= 0) break; // qua nửa đêm thì dừng
                 slots.add(current.format(fmt) + " - " + next.format(fmt));
                 current = next;
             }
         } catch (Exception e) {
-            return List.of("16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00");
+            return List.of("14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00", "20:00 - 22:00");
         }
-        return slots.isEmpty() ? List.of("16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00") : slots;
+        return slots.isEmpty() ? List.of("14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00", "20:00 - 22:00") : slots;
     }
 
     /**
@@ -129,6 +130,22 @@ public class PitchBookingController {
         } catch (Exception e) {
             return slot1.trim().equalsIgnoreCase(slot2.trim());
         }
+    }
+
+    private int parseTimeToMinutes(String timeStr) {
+        if (timeStr == null || !timeStr.contains(":")) return 0;
+        try {
+            String[] parts = timeStr.trim().split(":");
+            return Integer.parseInt(parts[0].trim()) * 60 + Integer.parseInt(parts[1].trim());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private String formatMinutesToTime(int totalMinutes) {
+        int h = (totalMinutes / 60) % 24;
+        int m = totalMinutes % 60;
+        return String.format("%02d:%02d", h, m);
     }
 
     /**
@@ -180,8 +197,11 @@ public class PitchBookingController {
         int base = pitch.getAvgPricePerHour() != null ? pitch.getAvgPricePerHour() : 350000;
         int peak = pitch.getPeakPricePerHour() != null ? pitch.getPeakPricePerHour() : 500000;
 
-        // Thời lượng do người dùng đặt sân lựa chọn (1h = 60p, 1.5h = 90p, 2h = 120p)
-        int slotDuration = (duration != null && duration > 0) ? duration : 90;
+        // Thời lượng ca sân (Mặc định 2 tiếng = 120 phút, bao gồm thi đấu và giao/trả ca)
+        int defaultDuration = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0)
+                ? pitch.getSlotDurationMinutes()
+                : 120;
+        int slotDuration = (duration != null && duration > 0) ? duration : defaultDuration;
         List<String> standardSlots = generateTimeSlots(pitch.getOpenTime(), pitch.getCloseTime(), slotDuration);
 
         // Lấy tất cả booking trong ngày để kiểm tra chống trùng giờ linh hoạt
@@ -222,20 +242,37 @@ public class PitchBookingController {
 
                 if (optBooking.isPresent()) {
                     Booking b = optBooking.get();
-                    slotObj.put("id", "booking-" + b.getId());
+                    boolean isContinuation = slotsData.stream()
+                            .anyMatch(s -> s.get("bookingId") != null && s.get("bookingId").equals(b.getId()));
+
                     slotObj.put("bookingId", b.getId());
+                    slotObj.put("bookingTimeSlot", b.getTimeSlot());
+                    slotObj.put("isContinuation", isContinuation);
                     slotObj.put("status", b.getStatus().toLowerCase()); // booked, playing, resale
                     slotObj.put("customer", b.getCustomerName());
                     slotObj.put("phone", b.getCustomerPhone());
-                    slotObj.put("price", (b.getTotalPrice() != null ? (b.getTotalPrice() / 1000) : (slotPrice / 1000)) + "k");
-                    slotObj.put("depositPaid", (b.getDepositPaid() != null ? (b.getDepositPaid() / 1000) : 0) + "k");
-                    slotObj.put("cashDue", (b.getCashDue() != null ? (b.getCashDue() / 1000) : 0) + "k");
                     slotObj.put("via", b.getVia());
                     slotObj.put("code", b.getCode());
+
+                    if (isContinuation) {
+                        slotObj.put("id", "booking-" + b.getId() + "-cont-" + sIdx);
+                        slotObj.put("price", "Đã gộp đơn");
+                        slotObj.put("depositPaid", "Đã thu ca trước");
+                        slotObj.put("cashDue", "0k");
+                        slotObj.put("note", "Ca nối dài của " + b.getCustomerName() + " (" + b.getTimeSlot() + ")");
+                    } else {
+                        slotObj.put("id", "booking-" + b.getId());
+                        slotObj.put("price", (b.getTotalPrice() != null ? (b.getTotalPrice() / 1000) : (slotPrice / 1000)) + "k");
+                        slotObj.put("depositPaid", (b.getDepositPaid() != null ? (b.getDepositPaid() / 1000) : 0) + "k");
+                        slotObj.put("cashDue", (b.getCashDue() != null ? (b.getCashDue() / 1000) : 0) + "k");
+                        slotObj.put("note", "Đơn chính (" + b.getTimeSlot() + ")");
+                    }
                 } else {
                     // Ca trống thật sự
                     slotObj.put("id", "empty-" + id + "-" + i + "-" + sIdx);
                     slotObj.put("bookingId", null);
+                    slotObj.put("bookingTimeSlot", null);
+                    slotObj.put("isContinuation", false);
                     slotObj.put("status", "empty");
                     slotObj.put("customer", "Ca Trống");
                     slotObj.put("phone", "—");
@@ -244,9 +281,110 @@ public class PitchBookingController {
                     slotObj.put("cashDue", "0k");
                     slotObj.put("via", "Sẵn sàng nhận khách");
                     slotObj.put("code", "—");
+                    slotObj.put("note", "Ca trống");
                 }
                 slotsData.add(slotObj);
             }
+
+            // --- THUẬT TOÁN QUÉT KHE TRỐNG TỰ ĐỘNG (DYNAMIC GAP SLOTS) ---
+            List<int[]> busyIntervals = new ArrayList<>();
+            for (Booking b : dayBookings) {
+                if (b.getCourtName().equalsIgnoreCase(courtName) && b.getTimeSlot() != null && b.getTimeSlot().contains("-")) {
+                    String[] parts = b.getTimeSlot().split("-");
+                    int bStart = parseTimeToMinutes(parts[0]);
+                    int bEnd = parseTimeToMinutes(parts[1]);
+                    if (bEnd > bStart) {
+                        busyIntervals.add(new int[]{bStart, bEnd});
+                    }
+                }
+            }
+
+            // Sắp xếp các khoảng bận theo thời gian bắt đầu
+            busyIntervals.sort(Comparator.comparingInt(a -> a[0]));
+
+            // Hợp nhất các khoảng bận giao nhau (merge intervals)
+            List<int[]> mergedBusy = new ArrayList<>();
+            for (int[] interval : busyIntervals) {
+                if (mergedBusy.isEmpty()) {
+                    mergedBusy.add(interval);
+                } else {
+                    int[] last = mergedBusy.get(mergedBusy.size() - 1);
+                    if (interval[0] <= last[1]) {
+                        last[1] = Math.max(last[1], interval[1]);
+                    } else {
+                        mergedBusy.add(interval);
+                    }
+                }
+            }
+
+            int openMin = parseTimeToMinutes(pitch.getOpenTime() != null ? pitch.getOpenTime() : "13:00");
+            int closeMin = parseTimeToMinutes(pitch.getCloseTime() != null ? pitch.getCloseTime() : "22:30");
+
+            // Tìm các khoảng trống (gaps) giữa giờ mở cửa và giờ đóng cửa
+            List<int[]> freeGaps = new ArrayList<>();
+            int currentCursor = openMin;
+            for (int[] busy : mergedBusy) {
+                if (busy[0] > currentCursor) {
+                    freeGaps.add(new int[]{currentCursor, busy[0]});
+                }
+                currentCursor = Math.max(currentCursor, busy[1]);
+            }
+            if (currentCursor < closeMin) {
+                freeGaps.add(new int[]{currentCursor, closeMin});
+            }
+
+            // Với mỗi khoảng trống, nếu có thể vừa 1 ca đá (tối thiểu 60 phút) và chưa có trong slotsData -> chèn ca lọt khe
+            for (int[] gap : freeGaps) {
+                int gapStart = gap[0];
+                int gapEnd = gap[1];
+                int gapLen = gapEnd - gapStart;
+
+                if (gapLen >= 60) {
+                    int targetDur = (gapLen >= slotDuration) ? slotDuration : (gapLen >= 90 ? 90 : 60);
+                    if (targetDur <= 0) targetDur = 60;
+                    int testStart = gapStart;
+                    int maxGapIterations = 50;
+
+                    while (testStart + targetDur <= gapEnd && maxGapIterations-- > 0) {
+                        String gapSlotTime = formatMinutesToTime(testStart) + " - " + formatMinutesToTime(testStart + targetDur);
+
+                        // Kiểm tra xem slot này đã tồn tại trong slotsData chưa
+                        boolean alreadyExists = slotsData.stream()
+                                .anyMatch(s -> gapSlotTime.equalsIgnoreCase((String) s.get("time")));
+
+                        if (!alreadyExists) {
+                            boolean isPeakHour = gapSlotTime.contains("17:") || gapSlotTime.contains("18:") || gapSlotTime.contains("19:");
+                            float durMultiplier = targetDur / 60.0f;
+                            int gapPrice = Math.round((isPeakHour ? courtPeak : courtBase) * durMultiplier);
+
+                            Map<String, Object> gapSlotObj = new HashMap<>();
+                            gapSlotObj.put("id", "gap-" + id + "-" + i + "-" + testStart);
+                            gapSlotObj.put("time", gapSlotTime);
+                            gapSlotObj.put("durationMinutes", targetDur);
+                            gapSlotObj.put("bookingId", null);
+                            gapSlotObj.put("bookingTimeSlot", null);
+                            gapSlotObj.put("isContinuation", false);
+                            gapSlotObj.put("isGapSlot", true);
+                            gapSlotObj.put("status", "empty");
+                            gapSlotObj.put("customer", "Ca Trống Lọt Khe");
+                            gapSlotObj.put("phone", "—");
+                            gapSlotObj.put("price", (gapPrice / 1000) + "k");
+                            gapSlotObj.put("depositPaid", "0k");
+                            gapSlotObj.put("cashDue", "0k");
+                            gapSlotObj.put("via", "⚡ Ca Lọt Khe (Tận dụng giờ trống)");
+                            gapSlotObj.put("code", "—");
+                            gapSlotObj.put("note", "Khe trống " + targetDur + " phút giữa các ca");
+
+                            slotsData.add(gapSlotObj);
+                        }
+
+                        testStart += targetDur;
+                    }
+                }
+            }
+
+            // Sắp xếp toàn bộ slotsData theo thứ tự thời gian bắt đầu tăng dần
+            slotsData.sort(Comparator.comparingInt(s -> parseTimeToMinutes(((String) s.get("time")).split("-")[0].trim())));
 
             Map<String, Object> courtObj = new HashMap<>();
             courtObj.put("pitchId", "court-" + id + "-" + i);
@@ -278,7 +416,7 @@ public class PitchBookingController {
 
         List<Booking> bookings = bookingRepository.findByPitchIdAndBookingDate(id, targetDate);
 
-        int duration = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0) ? pitch.getSlotDurationMinutes() : 90;
+        int duration = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0) ? pitch.getSlotDurationMinutes() : 120;
         int slotsPerCourt = generateTimeSlots(pitch.getOpenTime(), pitch.getCloseTime(), duration).size();
         int totalSlots = (pitch.getPitchTypes() != null ? pitch.getPitchTypes().size() : 2) * (slotsPerCourt > 0 ? slotsPerCourt : 4);
         int bookedSlots = bookings.size();
@@ -321,9 +459,24 @@ public class PitchBookingController {
     }
 
     /**
-     * API Tạo Đặt Ca Tại Quầy (Lưu trực tiếp vào MySQL)
+     * API Lấy Danh Sách Booking Của Cụm Sân Trong Ngày
      */
-    @PostMapping("/{id}/book-offline")
+    @GetMapping("/{id}/bookings")
+    public ResponseEntity<?> getPitchBookings(
+            @PathVariable Long id,
+            @RequestParam(required = false) String date
+    ) {
+        String targetDate = (date != null && !date.trim().isEmpty()) 
+                ? date.trim() 
+                : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        List<Booking> bookings = bookingRepository.findByPitchIdAndBookingDate(id, targetDate);
+        return ResponseEntity.ok(bookings);
+    }
+
+    /**
+     * API Tạo Đặt Ca Tại Quầy hoặc Đặt Trực Tuyến (Lưu trực tiếp vào MySQL)
+     */
+    @PostMapping(value = {"/{id}/book-offline", "/{id}/offline-book"})
     public ResponseEntity<?> bookOfflineSlot(
             @PathVariable Long id,
             @RequestBody Map<String, Object> req
@@ -334,8 +487,12 @@ public class PitchBookingController {
         String customerPhone = (String) req.get("customerPhone");
         String bookingDate = (String) req.getOrDefault("bookingDate", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
         
-        Integer totalPrice = req.get("totalPrice") != null ? Integer.valueOf(req.get("totalPrice").toString()) : 500000;
-        Integer depositPaid = req.get("depositPaid") != null ? Integer.valueOf(req.get("depositPaid").toString()) : 250000;
+        Integer totalPrice = req.get("totalPrice") != null 
+                ? (int) Math.round(Double.parseDouble(req.get("totalPrice").toString())) 
+                : 500000;
+        Integer depositPaid = req.get("depositPaid") != null 
+                ? (int) Math.round(Double.parseDouble(req.get("depositPaid").toString())) 
+                : 250000;
         Integer cashDue = totalPrice - depositPaid;
 
         if (courtName == null || timeSlot == null || customerName == null || customerPhone == null) {
@@ -421,13 +578,62 @@ public class PitchBookingController {
     }
 
     /**
-     * API Hủy Ca Đặt
+     * API Hủy Ca Đặt (Có Lý Do Hủy và Gửi Thông Báo Tới Người Đặt Sân)
      */
+    @PostMapping("/bookings/{bookingId}/cancel")
+    public ResponseEntity<?> cancelBookingWithReason(
+            @PathVariable Long bookingId,
+            @RequestBody(required = false) Map<String, Object> req
+    ) {
+        String reason = (req != null && req.get("reason") != null && !req.get("reason").toString().trim().isEmpty())
+                ? req.get("reason").toString().trim()
+                : "Chủ sân thông báo bảo trì hoặc thời tiết không đảm bảo";
+        String cancelledBy = (req != null && req.get("cancelledBy") != null)
+                ? req.get("cancelledBy").toString().trim()
+                : "OWNER";
+
+        return bookingRepository.findById(bookingId).map(b -> {
+            b.setStatus("CANCELLED");
+            b.setCancelReason(reason);
+            b.setCancelledBy(cancelledBy);
+            
+            // Xóa để giải phóng slot trống cho khách khác
+            bookingRepository.delete(b);
+
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("message", "Đã hủy ca đặt thành công và gửi thông báo tới người đặt sân.");
+            resp.put("bookingId", bookingId);
+            resp.put("code", b.getCode() != null ? b.getCode() : "—");
+            resp.put("customerName", b.getCustomerName());
+            resp.put("customerPhone", b.getCustomerPhone());
+            resp.put("courtName", b.getCourtName());
+            resp.put("timeSlot", b.getTimeSlot());
+            resp.put("bookingDate", b.getBookingDate());
+            resp.put("cancelReason", reason);
+            resp.put("cancelledBy", cancelledBy);
+            resp.put("refundDeposit", b.getDepositPaid() != null ? b.getDepositPaid() : 0);
+
+            return ResponseEntity.ok((Object) resp);
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy đơn đặt này.")));
+    }
+
     @DeleteMapping("/bookings/{bookingId}")
-    public ResponseEntity<?> cancelBooking(@PathVariable Long bookingId) {
+    public ResponseEntity<?> cancelBooking(
+            @PathVariable Long bookingId,
+            @RequestParam(required = false) String reason
+    ) {
+        String cancelReason = (reason != null && !reason.trim().isEmpty()) 
+                ? reason.trim() 
+                : "Chủ sân hủy ca đặt";
+
         return bookingRepository.findById(bookingId).map(b -> {
             bookingRepository.delete(b);
-            return ResponseEntity.ok(Map.of("message", "Đã hủy ca đặt thành công. Khung giờ đã sẵn sàng cho khách khác."));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Đã hủy ca đặt thành công. Khung giờ đã sẵn sàng cho khách khác.",
+                    "bookingId", bookingId,
+                    "customerName", b.getCustomerName(),
+                    "cancelReason", cancelReason
+            ));
         }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy đơn đặt này.")));
     }
 

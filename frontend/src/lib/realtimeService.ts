@@ -18,11 +18,14 @@ export interface RealtimeBookingEvent {
   totalPrice?: number;
   depositPaid?: number;
   via?: string;
+  cancelReason?: string;
+  cancelledBy?: "OWNER" | "PLAYER" | "SYSTEM";
   timestamp: number;
 }
 
 const CHANNEL_NAME = "soccerhub_realtime_channel";
 const STORAGE_KEY = "soccerhub_realtime_last_event";
+const CUSTOM_EVENT_NAME = "soccerhub:booking_event";
 
 let broadcastChannel: BroadcastChannel | null = null;
 
@@ -81,7 +84,7 @@ export function playNotificationChime() {
 }
 
 /**
- * Phát sự kiện Realtime tới tất cả các Tab / Cửa sổ đang mở
+ * Phát sự kiện Realtime tới tất cả các Tab / Cửa sổ đang mở VÀ cả tab hiện tại
  */
 export function broadcastBookingEvent(event: Omit<RealtimeBookingEvent, "timestamp">) {
   if (typeof window === "undefined") return;
@@ -91,7 +94,14 @@ export function broadcastBookingEvent(event: Omit<RealtimeBookingEvent, "timesta
     timestamp: Date.now()
   };
 
-  // 1. Gửi qua BroadcastChannel
+  // 1. Phát trên CÙNG TAB (Same-Tab Delivery qua CustomEvent)
+  try {
+    window.dispatchEvent(new CustomEvent(CUSTOM_EVENT_NAME, { detail: fullEvent }));
+  } catch (e) {
+    console.warn("Lỗi phát CustomEvent nội bộ:", e);
+  }
+
+  // 2. Gửi qua BroadcastChannel (Đa Tab)
   const ch = getChannel();
   if (ch) {
     try {
@@ -101,7 +111,7 @@ export function broadcastBookingEvent(event: Omit<RealtimeBookingEvent, "timesta
     }
   }
 
-  // 2. Gửi qua localStorage làm fallback cross-tab
+  // 3. Gửi qua localStorage làm fallback cross-tab
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(fullEvent));
   } catch (e) {
@@ -110,15 +120,23 @@ export function broadcastBookingEvent(event: Omit<RealtimeBookingEvent, "timesta
 }
 
 /**
- * Đăng ký lắng nghe sự kiện Realtime từ các Tab khác
+ * Đăng ký lắng nghe sự kiện Realtime (cả cùng Tab và các Tab khác)
  * Trả về hàm hủy đăng ký (cleanup)
  */
 export function subscribeToBookingEvents(callback: (event: RealtimeBookingEvent) => void): () => void {
   if (typeof window === "undefined") return () => {};
 
-  const ch = getChannel();
+  // 1. Handler cho CÙNG TAB (CustomEvent)
+  const customEventHandler = (ev: Event) => {
+    const detail = (ev as CustomEvent<RealtimeBookingEvent>).detail;
+    if (detail && detail.type) {
+      callback(detail);
+    }
+  };
+  window.addEventListener(CUSTOM_EVENT_NAME, customEventHandler);
 
-  // Handler cho BroadcastChannel
+  // 2. Handler cho BroadcastChannel (Đa tab)
+  const ch = getChannel();
   const channelHandler = (ev: MessageEvent) => {
     if (ev.data && ev.data.type) {
       callback(ev.data);
@@ -129,7 +147,7 @@ export function subscribeToBookingEvents(callback: (event: RealtimeBookingEvent)
     ch.addEventListener("message", channelHandler);
   }
 
-  // Handler cho Storage Event (fallback khi mở cửa sổ mới hoặc tab khác)
+  // 3. Handler cho Storage Event (fallback khi mở cửa sổ mới hoặc tab khác)
   const storageHandler = (ev: StorageEvent) => {
     if (ev.key === STORAGE_KEY && ev.newValue) {
       try {
@@ -146,6 +164,7 @@ export function subscribeToBookingEvents(callback: (event: RealtimeBookingEvent)
   window.addEventListener("storage", storageHandler);
 
   return () => {
+    window.removeEventListener(CUSTOM_EVENT_NAME, customEventHandler);
     if (ch) {
       ch.removeEventListener("message", channelHandler);
     }

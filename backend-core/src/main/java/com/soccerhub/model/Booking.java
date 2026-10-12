@@ -51,6 +51,10 @@ public class Booking {
     @Column(unique = true)
     private String code; // VD: "VS-7829-01"
 
+    private String cancelReason;
+
+    private String cancelledBy; // "OWNER" hoặc "CUSTOMER"
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 

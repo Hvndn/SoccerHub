@@ -13,49 +13,33 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Read saved theme from localStorage or system preference
-    const savedTheme = localStorage.getItem("vaosan_theme") as Theme | null;
-    if (savedTheme === "dark" || savedTheme === "light") {
-      setThemeState(savedTheme);
-      applyTheme(savedTheme);
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initialTheme = prefersDark ? "dark" : "light";
-      setThemeState(initialTheme);
-      applyTheme(initialTheme);
+    // Force light theme and clean up dark classes
+    const root = document.documentElement;
+    const body = document.body;
+    root.classList.remove("dark");
+    body.classList.remove("dark-theme");
+    try {
+      localStorage.removeItem("vaosan_theme");
+    } catch {
+      // Ignore localStorage errors
     }
   }, []);
 
-  const applyTheme = (newTheme: Theme) => {
-    const root = document.documentElement;
-    const body = document.body;
-    if (newTheme === "dark") {
-      root.classList.add("dark");
-      body.classList.add("dark-theme");
-    } else {
-      root.classList.remove("dark");
-      body.classList.remove("dark-theme");
-    }
-  };
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem("vaosan_theme", newTheme);
-    applyTheme(newTheme);
+  const setTheme = () => {
+    // Light mode locked
   };
 
   const toggleTheme = () => {
-    const nextTheme = theme === "light" ? "dark" : "light";
-    setTheme(nextTheme);
+    // Light mode locked
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: "light", toggleTheme, setTheme }}>
       <div className={mounted ? "" : "visibility-hidden"}>
         {children}
       </div>

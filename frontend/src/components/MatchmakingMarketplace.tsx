@@ -25,7 +25,9 @@ import {
   ArrowRight,
   TrendingUp,
   ShieldAlert,
-  Info
+  Info,
+  RefreshCw,
+  X
 } from "lucide-react";
 
 interface MatchmakingMarketplaceProps {
@@ -48,9 +50,126 @@ export default function MatchmakingMarketplace({
   const [userDepositBalance, setUserDepositBalance] = useState(200000);
   const [joinedMatches, setJoinedMatches] = useState<string[]>([]);
 
+  // Dữ liệu kèo thật từ MySQL Backend
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+
+  // Modal tạo kèo mới
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createTeamName, setCreateTeamName] = useState("");
+  const [createPitchName, setCreatePitchName] = useState("Cụm Sân Bóng Đá Đại Nắng (Sân 7A)");
+  const [createAddress, setCreateAddress] = useState("Số 154 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7");
+  const [createMatchTime, setCreateMatchTime] = useState("20:00 Tối nay");
+  const [createPitchType, setCreatePitchType] = useState("SAN_7");
+  const [createPaymentModel, setCreatePaymentModel] = useState("SPLIT_EQUAL");
+  const [createFee, setCreateFee] = useState(50000);
+  const [createNote, setCreateNote] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  // Modal nhận kèo đối thủ
+  const [acceptingPost, setAcceptingPost] = useState<any | null>(null);
+  const [acceptOpponentTeam, setAcceptOpponentTeam] = useState("");
+  const [acceptOpponentPhone, setAcceptOpponentPhone] = useState(user?.phone || "");
+  const [accepting, setAccepting] = useState(false);
+
   const userName = user?.fullName || user?.name || "Nguyễn Văn An";
   const userElo = user?.eloRating || 1200;
   const userTier = "Phủi Serie B";
+
+  // Fetch real matchmaking posts
+  const fetchPosts = async () => {
+    try {
+      setLoadingPosts(true);
+      const res = await fetch("http://localhost:8080/api/v1/community/matchmaking-posts");
+      if (res.ok) {
+        const data = await res.json();
+        setPosts(data);
+      }
+    } catch (err) {
+      console.error("Error fetching matchmaking posts:", err);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  // Submit tạo kèo mới lên CSDL MySQL
+  const handleCreatePost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setCreating(true);
+      const res = await fetch("http://localhost:8080/api/v1/community/matchmaking-posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teamName: createTeamName.trim() || `FC ${userName}`,
+          captainName: userName,
+          captainPhone: user?.phone || "0908 123 456",
+          eloRating: userElo,
+          pitchName: createPitchName,
+          address: createAddress,
+          matchTime: createMatchTime,
+          pitchType: createPitchType,
+          paymentModel: createPaymentModel,
+          estimatedFee: createFee,
+          note: createNote.trim() || "Kèo giao lưu cọ xát nâng trình Elo, tinh thần thể thao vui vẻ."
+        })
+      });
+
+      if (res.ok) {
+        setShowCreateModal(false);
+        setCreateTeamName("");
+        setCreateNote("");
+        fetchPosts();
+      } else {
+        alert("Lỗi khi tạo kèo giao lưu, vui lòng thử lại.");
+      }
+    } catch (err) {
+      console.error("Lỗi khi tạo kèo:", err);
+      alert("Lỗi kết nối máy chủ khi tạo kèo.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // Submit nhận kèo đối thủ vào MySQL
+  const handleAcceptPost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!acceptingPost) return;
+    try {
+      setAccepting(true);
+      const res = await fetch(`http://localhost:8080/api/v1/community/matchmaking-posts/${acceptingPost.id}/accept`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          opponentTeamName: acceptOpponentTeam.trim() || `FC ${userName}`,
+          opponentCaptainName: userName,
+          opponentCaptainPhone: acceptOpponentPhone.trim() || user?.phone || "0912 345 678",
+          opponentElo: userElo
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        alert(data.message || "Ghép kèo thành công!");
+        setJoinedMatches([...joinedMatches, String(acceptingPost.id)]);
+        setAcceptingPost(null);
+        setAcceptOpponentTeam("");
+        fetchPosts();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || "Không thể nhận kèo này.");
+      }
+    } catch (err) {
+      console.error("Lỗi khi nhận kèo:", err);
+      alert("Lỗi kết nối máy chủ khi nhận kèo.");
+    } finally {
+      setAccepting(false);
+    }
+  };
 
   const handleJoinMatch = (matchId: string, matchFee: number) => {
     if (joinedMatches.includes(matchId)) return;
@@ -90,22 +209,22 @@ export default function MatchmakingMarketplace({
           </div>
 
           {/* Action Bar Right */}
-          <div className="flex items-center space-x-2.5">
-            <button className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors shadow-xs">
-              <Filter className="w-4 h-4 text-[#006c49]" />
-              <span>Bộ Lọc Kèo Quanh Tôi</span>
-            </button>
+            <div className="flex items-center space-x-2.5">
+              <button className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors shadow-xs">
+                <Filter className="w-4 h-4 text-[#006c49]" />
+                <span>Bộ Lọc Kèo Quanh Tôi</span>
+              </button>
 
-            <button
-              onClick={onCreateMatch}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all active:scale-95"
-            >
-              <PlusCircle className="w-4 h-4 text-white" />
-              <span>+ Tạo Kèo Giao Lưu Mới</span>
-            </button>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all active:scale-95"
+              >
+                <PlusCircle className="w-4 h-4 text-white" />
+                <span>+ Tạo Kèo Giao Lưu Mới</span>
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* 2. FILTER CONSOLE & SPORTS SWITCHER */}
       <section className="w-full bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
@@ -284,201 +403,135 @@ export default function MatchmakingMarketplace({
             </div>
           </div>
 
-          {/* MATCH CARD 1: KÈO NÓNG - CẦN 1 CHÂN GẤP */}
-          <article className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center space-x-2">
-                <span className="flex items-center space-x-1 px-3 py-1 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 font-extrabold text-xs animate-pulse border border-rose-500/30">
-                  <Flame className="w-4 h-4 text-rose-500" />
-                  <span>KÈO NÓNG • CẦN 1 CHÂN GẤP (45 PHÚT NỮA ĐÁ)</span>
-                </span>
-                <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs">
-                  Sân 7A (Cỏ nhân tạo FIFA)
-                </span>
+          {/* MATCH LISTINGS FROM REAL MYSQL BACKEND */}
+          <div className="space-y-4">
+            {loadingPosts ? (
+              <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+                <RefreshCw className="w-6 h-6 animate-spin text-[#006c49] mx-auto mb-2" />
+                <p className="text-xs text-slate-500 font-bold">Đang tải danh sách các kèo giao lưu thật từ hệ thống...</p>
               </div>
-              <div className="flex items-center space-x-1 text-[#006c49] font-mono font-bold text-xs">
-                <ShieldCheck className="w-4 h-4 text-[#006c49]" />
-                <span>Xếp Hạng Elo VFF Phủi</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <h3 className="text-xl font-black text-slate-900 dark:text-white">
-                  Bóng Đá Sân 7: Cáp Kèo Phủi Serie B Tối Nay
-                </h3>
-                <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
-                  <span className="flex items-center space-x-1 text-slate-900 dark:text-white font-bold">
-                    <MapPin className="w-4 h-4 text-[#006c49]" />
-                    <span>Cụm Sân D-Sport Oasis</span>
-                  </span>
-                  <span>•</span>
-                  <span>148 Huỳnh Tấn Phát, Q.7 (Cách bạn 1.8km)</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col md:items-end bg-slate-50 dark:bg-slate-800/60 md:bg-transparent p-3 md:p-0 rounded-xl">
-                <div className="text-xl font-black text-slate-900 dark:text-white font-mono">
-                  45.000đ <span className="text-xs font-normal text-slate-400">/người</span>
-                </div>
-                <span className="text-[11px] font-bold text-[#006c49]">Đã áp voucher sân -10k</span>
-              </div>
-            </div>
-
-            {/* Slots & Roster Visual */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/60 space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-extrabold text-slate-900 dark:text-white">Đội hình hiện tại: 13/14 Cầu thủ</span>
-                <span className="text-[#006c49] font-bold">Vị trí trống: 1 Tiền đạo / Tiền vệ (Elo 1,400 - 1,550)</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div className="flex items-center space-x-2 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <div className="w-8 h-8 rounded-full bg-[#006c49] text-white font-bold text-xs flex items-center justify-center">TL</div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white truncate">@TuanLe (Tiền vệ)</span>
-                    <span className="font-mono text-[10px] text-[#006c49] font-bold">Elo 1,450</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <div className="w-8 h-8 rounded-full bg-slate-700 text-white font-bold text-xs flex items-center justify-center">MK</div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white truncate">@MinhKhang (Hậu vệ)</span>
-                    <span className="font-mono text-[10px] text-[#006c49] font-bold">Elo 1,380</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center">QB</div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white truncate">@QuocBao (Thủ môn)</span>
-                    <span className="font-mono text-[10px] text-[#006c49] font-bold">Elo 1,420</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center space-x-1.5 bg-[#acf847]/20 p-2.5 rounded-xl border border-[#acf847]/50 text-[#102000] dark:text-[#acf847] font-extrabold text-xs">
-                  <UserPlus className="w-4 h-4" />
-                  <span>BẠN GHÉP VÀO ĐÂY</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Perks & Features */}
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
-              <span className="flex items-center space-x-1 font-semibold">
-                <Award className="w-4 h-4 text-[#006c49]" />
-                <span>Bóng Dura Fast 40 có sẵn</span>
-              </span>
-              <span>•</span>
-              <span className="flex items-center space-x-1 font-semibold">
-                <Tv className="w-4 h-4 text-[#006c49]" />
-                <span>Camera AI ghi Highlights</span>
-              </span>
-              <span>•</span>
-              <span className="flex items-center space-x-1 font-semibold">
-                <ShieldCheck className="w-4 h-4 text-[#304f00] dark:text-[#acf847]" />
-                <span>Kèo cọc FairPlay 100%</span>
-              </span>
-            </div>
-
-            {/* Action Bottom */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-              <div className="flex items-center space-x-2 text-slate-900 dark:text-white font-mono text-sm font-bold">
-                <Clock className="w-4 h-4 text-[#006c49]" />
-                <span>19:30 - 21:00 (Tối nay)</span>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <button className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-xs transition-colors">
-                  Xem Đội Hình
-                </button>
+            ) : posts.length === 0 ? (
+              <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <p className="text-sm text-slate-500 font-semibold">Chưa có kèo nào đang mở. Hãy là người đầu tiên tạo kèo!</p>
                 <button
-                  onClick={() => handleJoinMatch("match-101", 45000)}
-                  className={`px-5 py-2.5 rounded-xl font-extrabold text-xs shadow-md transition-all flex items-center space-x-1.5 active:scale-95 ${
-                    joinedMatches.includes("match-101")
-                      ? "bg-emerald-600 text-white cursor-default"
-                      : "bg-[#006c49] hover:bg-[#005236] text-white"
-                  }`}
+                  onClick={() => setShowCreateModal(true)}
+                  className="px-5 py-2.5 rounded-2xl bg-[#006c49] text-white text-xs font-bold"
                 >
-                  <Zap className="w-4 h-4 text-white" />
-                  <span>{joinedMatches.includes("match-101") ? "✓ Đã Ghép Kèo" : "Bắt Cặp & Đặt Cọc Ngay (45k)"}</span>
+                  + Đăng Tin Tạo Kèo Ngay
                 </button>
               </div>
-            </div>
-          </article>
+            ) : (
+              posts.map((post) => {
+                const isMatched = post.status === "MATCHED";
+                const isMyJoined = joinedMatches.includes(String(post.id));
 
-          {/* MATCH CARD 2: BÓNG ĐÁ 7 - TÌM 2 TIỀN VỆ & THỦ MÔN */}
-          <article className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center space-x-2">
-                <span className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-extrabold text-xs flex items-center space-x-1">
-                  <span>⚽ BÓNG ĐÁ 7 NGƯỜI • ĐÁ PHỦI VĂN MINH</span>
-                </span>
-                <span className="px-2.5 py-1 rounded-lg bg-[#acf847] text-[#102000] font-bold text-xs">
-                  Cần 2 Vị Trí
-                </span>
-              </div>
-              <span className="font-mono text-xs font-bold text-slate-400">Mã kèo: #FB-7A-892</span>
-            </div>
+                return (
+                  <article 
+                    key={post.id} 
+                    className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all space-y-4"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center space-x-2">
+                        <span className={`flex items-center space-x-1 px-3 py-1 rounded-lg font-extrabold text-xs border ${
+                          isMatched 
+                            ? "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700" 
+                            : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 animate-pulse"
+                        }`}>
+                          <Flame className="w-4 h-4 text-rose-500" />
+                          <span>{isMatched ? "ĐÃ CÓ ĐỐI THỦ NHẬN KÈO" : "KÈO ĐANG MỞ CHỜ ĐỐI"}</span>
+                        </span>
+                        <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs">
+                          {post.pitchType === "SAN_7" ? "Sân 7 Cỏ Nhân Tạo" : post.pitchType === "SAN_5" ? "Sân 5 Mini" : "Sân 11 FIFA"}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1 text-[#006c49] font-mono font-bold text-xs">
+                        <ShieldCheck className="w-4 h-4 text-[#006c49]" />
+                        <span>Elo Đội Tạo: {post.eloRating || 1200}</span>
+                      </div>
+                    </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <h3 className="text-xl font-black text-slate-900 dark:text-white">
-                  FC Sài Gòn Warriors tìm 2 chân đá phủi ca 20:00
-                </h3>
-                <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
-                  <MapPin className="w-4 h-4 text-[#006c49]" />
-                  <span>Cụm Sân Nam Sài Gòn (Sân 7A) • Nguyễn Văn Linh, Q.7 (Cách 3.2km)</span>
-                </div>
-              </div>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>{post.teamName}</span>
+                          <span className="text-xs px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold">
+                            Cap: {post.captainName}
+                          </span>
+                        </h3>
+                        <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
+                          <span className="flex items-center space-x-1 text-slate-900 dark:text-white font-bold">
+                            <MapPin className="w-4 h-4 text-[#006c49]" />
+                            <span>{post.pitchName}</span>
+                          </span>
+                          {post.address && (
+                            <>
+                              <span>•</span>
+                              <span>{post.address}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
 
-              <div className="flex flex-col md:items-end bg-slate-50 dark:bg-slate-800/60 md:bg-transparent p-3 md:p-0 rounded-xl">
-                <div className="text-xl font-black text-slate-900 dark:text-white font-mono">
-                  60.000đ <span className="text-xs font-normal text-slate-400">/cầu thủ</span>
-                </div>
-                <span className="text-[11px] text-slate-400">Bao gồm nước khoáng + trọng tài VFF</span>
-              </div>
-            </div>
+                      <div className="flex flex-col md:items-end bg-slate-50 dark:bg-slate-800/60 md:bg-transparent p-3 md:p-0 rounded-xl">
+                        <div className="text-xl font-black text-slate-900 dark:text-white font-mono">
+                          {(post.estimatedFee || 50000).toLocaleString('vi-VN')}đ <span className="text-xs font-normal text-slate-400">/người</span>
+                        </div>
+                        <span className="text-[11px] font-bold text-[#006c49]">
+                          {post.paymentModel === "SPLIT_EQUAL" ? "Chia đôi tiền sân (50/50)" : post.paymentModel === "LOSER_PAYS" ? "Đội thua trả tiền sân" : "Chủ kèo bao trọn"}
+                        </span>
+                      </div>
+                    </div>
 
-            {/* Match Specifications Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 text-center text-xs">
-              <div className="p-2 rounded-xl bg-white dark:bg-slate-900">
-                <span className="text-slate-400 block text-[10px]">Yêu cầu Elo</span>
-                <span className="font-bold text-[#006c49]">1,150 - 1,250 Elo</span>
-              </div>
-              <div className="p-2 rounded-xl bg-white dark:bg-slate-900">
-                <span className="text-slate-400 block text-[10px]">Tình trạng slot</span>
-                <span className="font-bold text-slate-900 dark:text-white">12 / 14 Cầu thủ</span>
-              </div>
-              <div className="p-2 rounded-xl bg-white dark:bg-slate-900">
-                <span className="text-slate-400 block text-[10px]">Vị trí khuyết</span>
-                <span className="font-bold text-[#304f00] dark:text-[#acf847]">01 Tiền vệ & 01 Thủ môn</span>
-              </div>
-              <div className="p-2 rounded-xl bg-white dark:bg-slate-900">
-                <span className="text-slate-400 block text-[10px]">Màu áo thi đấu</span>
-                <span className="font-bold text-slate-900 dark:text-white">Áo Đen (Có Bib)</span>
-              </div>
-            </div>
+                    {/* Note / Lời nhắn của đội */}
+                    {post.note && (
+                      <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800">
+                        <span className="font-bold text-slate-500 mr-1">Ghi chú:</span>
+                        <span>{post.note}</span>
+                      </div>
+                    )}
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-              <div className="flex items-center space-x-2 text-slate-900 dark:text-white font-mono text-sm font-bold">
-                <Clock className="w-4 h-4 text-[#006c49]" />
-                <span>20:00 - 21:30 (Tối nay)</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-xs">
-                  Xem Danh Sách Đội
-                </button>
-                <button
-                  onClick={() => handleJoinMatch("match-102", 60000)}
-                  className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-xs shadow-md"
-                >
-                  Đăng Ký Tham Gia
-                </button>
-              </div>
-            </div>
-          </article>
+                    {/* Opponent matched info if any */}
+                    {isMatched && (
+                      <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 rounded-xl text-xs flex items-center justify-between">
+                        <div>
+                          <span className="font-bold text-emerald-800 dark:text-emerald-400">Đối thủ đã nhận: </span>
+                          <strong className="text-slate-900 dark:text-white">{post.opponentTeamName}</strong> (Cap: {post.opponentCaptainName})
+                        </div>
+                        <span className="text-emerald-600 font-mono font-bold text-[11px]">Đã chốt kèo</span>
+                      </div>
+                    )}
+
+                    {/* Action Bottom */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center space-x-2 text-slate-900 dark:text-white font-mono text-sm font-bold">
+                        <Clock className="w-4 h-4 text-[#006c49]" />
+                        <span>{post.matchTime}</span>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        {isMatched ? (
+                          <span className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold">
+                            Đã Đầy Đội
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setAcceptingPost(post);
+                              setAcceptOpponentTeam(`FC ${userName}`);
+                            }}
+                            className="px-5 py-2.5 rounded-xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all flex items-center space-x-1.5 active:scale-95"
+                          >
+                            <Zap className="w-4 h-4 text-white" />
+                            <span>Bắt Kèo Giao Lưu Ngay</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })
+            )}
+          </div>
         </main>
 
         {/* RIGHT COLUMN: AI MATCH RADAR & ESCROW FAIRPLAY (32% WIDTH / 4 COLS) */}
@@ -629,6 +682,217 @@ export default function MatchmakingMarketplace({
           </section>
         </aside>
       </div>
+
+      {/* MODAL 1: TẠO KÈO GIAO LƯU BÓNG ĐÁ MỚI */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 dark:text-white">
+                <PlusCircle className="w-5 h-5 text-[#006c49]" />
+                Đăng Tin Tạo Kèo Giao Lưu Bóng Đá
+              </h3>
+              <button 
+                onClick={() => setShowCreateModal(false)}
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreatePost} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Tên Đội Bóng Của Bạn (FC)</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={createTeamName}
+                  onChange={(e) => setCreateTeamName(e.target.value)}
+                  placeholder="Ví dụ: FC Phù Đổng Q7"
+                  className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#006c49]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Thể Thức Sân</label>
+                  <select 
+                    value={createPitchType}
+                    onChange={(e) => setCreatePitchType(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none"
+                  >
+                    <option value="SAN_7">⚽ Sân 7 Cỏ Nhân Tạo</option>
+                    <option value="SAN_5">👟 Sân 5 Mini</option>
+                    <option value="SAN_11">🏟️ Sân 11 FIFA</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Thời Gian Đá</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={createMatchTime}
+                    onChange={(e) => setCreateMatchTime(e.target.value)}
+                    placeholder="Ví dụ: 20:00 Tối nay"
+                    className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#006c49]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Cụm Sân Thi Đấu</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={createPitchName}
+                  onChange={(e) => setCreatePitchName(e.target.value)}
+                  placeholder="Ví dụ: Sân Bóng Đá Đại Nắng (Sân 7A)"
+                  className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#006c49]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Hình Thức Tiền Sân</label>
+                  <select 
+                    value={createPaymentModel}
+                    onChange={(e) => setCreatePaymentModel(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none"
+                  >
+                    <option value="SPLIT_EQUAL">Chia Đôi 50/50</option>
+                    <option value="LOSER_PAYS">Đội Thua Trả 100%</option>
+                    <option value="HOST_COVER">Chủ Kèo Bao Sân</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Dự Kiến / Người (VNĐ)</label>
+                  <input 
+                    type="number" 
+                    step={5000}
+                    value={createFee}
+                    onChange={(e) => setCreateFee(Number(e.target.value))}
+                    className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#006c49]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Lời Nhắn Tìm Đối / Yêu Cầu</label>
+                <textarea 
+                  rows={2}
+                  value={createNote}
+                  onChange={(e) => setCreateNote(e.target.value)}
+                  placeholder="Ví dụ: Tìm đội Elo tương đương, đá giao lưu vui vẻ, fairplay không quạu."
+                  className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#006c49]"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2.5">
+                <button 
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 font-bold"
+                >
+                  Hủy
+                </button>
+                <button 
+                  type="submit"
+                  disabled={creating}
+                  className="px-5 py-2 rounded-xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold flex items-center gap-1.5 shadow-md"
+                >
+                  {creating && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{creating ? "Đang lưu..." : "Đăng Kèo Lên Sàn"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: XÁC NHẬN BẮT KÈO ĐỐI THỦ */}
+      {acceptingPost && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 dark:text-white">
+                <Zap className="w-5 h-5 text-[#006c49]" />
+                Xác Nhận Bắt Kèo Giao Lưu
+              </h3>
+              <button 
+                onClick={() => setAcceptingPost(null)}
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 rounded-2xl text-xs space-y-1">
+              <span className="font-extrabold text-emerald-800 dark:text-emerald-300 block">
+                Đối đầu: {acceptingPost.teamName} (Cap: {acceptingPost.captainName})
+              </span>
+              <div className="text-slate-600 dark:text-slate-400 flex justify-between">
+                <span>Khung giờ & Sân:</span>
+                <strong className="text-slate-900 dark:text-white">{acceptingPost.matchTime} • {acceptingPost.pitchName}</strong>
+              </div>
+            </div>
+
+            <form onSubmit={handleAcceptPost} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Tên Đội Của Bạn (FC Thách Đấu)</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={acceptOpponentTeam}
+                  onChange={(e) => setAcceptOpponentTeam(e.target.value)}
+                  placeholder="Ví dụ: FC Saigon Warriors"
+                  className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#006c49]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Số Điện Thoại Đội Trưởng Nhận Kèo</label>
+                <input 
+                  type="tel" 
+                  required 
+                  value={acceptOpponentPhone}
+                  onChange={(e) => setAcceptOpponentPhone(e.target.value)}
+                  placeholder="09xx..."
+                  className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#006c49]"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
+                <div className="flex justify-between">
+                  <span>Trình độ Elo của bạn:</span>
+                  <strong className="text-[#006c49] font-mono font-bold">{userElo} Elo</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Cam kết tinh thần:</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">Fairplay & Đúng Giờ</span>
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2.5">
+                <button 
+                  type="button"
+                  onClick={() => setAcceptingPost(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 font-bold"
+                >
+                  Hủy
+                </button>
+                <button 
+                  type="submit"
+                  disabled={accepting}
+                  className="px-5 py-2 rounded-xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold flex items-center gap-1.5 shadow-md"
+                >
+                  {accepting && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{accepting ? "Đang chốt..." : "Chốt Kèo Giao Lưu"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

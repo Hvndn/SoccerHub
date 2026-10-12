@@ -35,7 +35,7 @@ public class PitchService {
                 .peakPricePerHour(req.getPeakPricePerHour() != null ? req.getPeakPricePerHour() : 450000)
                 .openTime(req.getOpenTime() != null ? req.getOpenTime().trim() : "14:00")
                 .closeTime(req.getCloseTime() != null ? req.getCloseTime().trim() : "22:30")
-                .slotDurationMinutes(req.getSlotDurationMinutes() != null ? req.getSlotDurationMinutes() : 90)
+                .slotDurationMinutes(req.getSlotDurationMinutes() != null ? req.getSlotDurationMinutes() : 120)
                 .pitchTypes(req.getPitchTypes() != null && !req.getPitchTypes().isEmpty() 
                         ? req.getPitchTypes() 
                         : List.of("Sân 7 Cỏ Nhân Tạo", "Sân 5 Futsal"))

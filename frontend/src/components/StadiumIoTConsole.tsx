@@ -247,7 +247,7 @@ export default function StadiumIoTConsole() {
       </div>
 
       {/* Main Control Matrix & Access Logs */}
-      <div className="space-y-8 max-w-7xl mx-auto">
+      <div className="space-y-8 w-full">
         {/* Field IoT Control Grid */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

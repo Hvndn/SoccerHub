@@ -57,6 +57,84 @@ export default function TournamentOrganizerPortal({
   // Active Tab for Tables/Logs
   const [bottomTab, setBottomTab] = useState<"standings" | "var_logs" | "schedule">("standings");
 
+  // Real Database Tournaments & Create Modal State
+  const [dbTournaments, setDbTournaments] = useState<any[]>([]);
+  const [loadingDb, setLoadingDb] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newSportType, setNewSportType] = useState("SAN_7");
+  const [newPitchName, setNewPitchName] = useState("Cụm Sân Bóng Đá Đại Nắng (Sân 7A)");
+  const [newLocation, setNewLocation] = useState("Số 154 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7");
+  const [newTotalTeams, setNewTotalTeams] = useState(16);
+  const [newPrizePool, setNewPrizePool] = useState(30000000);
+  const [newEntryFee, setNewEntryFee] = useState(1500000);
+  const [newStartDate, setNewStartDate] = useState("2026-10-25");
+  const [newEndDate, setNewEndDate] = useState("2026-10-28");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastSuccess, setToastSuccess] = useState<string | null>(null);
+
+  // Fetch real tournaments from backend
+  const fetchDbTournaments = async () => {
+    try {
+      setLoadingDb(true);
+      const res = await fetch("http://localhost:8080/api/v1/tournaments");
+      if (res.ok) {
+        const data = await res.json();
+        setDbTournaments(data);
+      }
+    } catch (e) {
+      console.error("Lỗi tải giải đấu:", e);
+    } finally {
+      setLoadingDb(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchDbTournaments();
+  }, []);
+
+  // Submit tạo giải đấu mới lên MySQL
+  const handleCreateTournament = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+    try {
+      setIsSubmitting(true);
+      const res = await fetch("http://localhost:8080/api/v1/tournaments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          description: `Giải đấu bóng đá phong trào ${newSportType} tổ chức tại ${newPitchName}.`,
+          sportType: newSportType,
+          format: "KNOCKOUT",
+          pitchName: newPitchName,
+          location: newLocation,
+          totalTeams: newTotalTeams,
+          prizePool: newPrizePool,
+          entryFee: newEntryFee,
+          startDate: newStartDate,
+          endDate: newEndDate,
+          status: "OPEN"
+        })
+      });
+
+      if (res.ok) {
+        setToastSuccess("Đã khởi tạo và công bố Giải Đấu Mới thành công lên hệ thống SoccerHub!");
+        setShowCreateModal(false);
+        setNewTitle("");
+        fetchDbTournaments();
+        setTimeout(() => setToastSuccess(null), 3000);
+      } else {
+        alert("Lỗi khi tạo giải đấu. Vui lòng thử lại!");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi kết nối máy chủ khi tạo giải đấu.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Filter tournaments by sport
   const tournaments = [
     {
@@ -100,43 +178,25 @@ export default function TournamentOrganizerPortal({
 
   // Score Handlers
   const handlePointA = () => {
-    if (scoreA >= 11 && scoreA - scoreB >= 1) {
-      alert("Cặp A chiến thắng Set " + currentSet + "!");
-    } else {
-      setScoreA(prev => prev + 1);
-    }
+    setScoreA(prev => prev + 1);
   };
 
   const handlePointB = () => {
-    if (scoreB >= 11 && scoreB - scoreA >= 1) {
-      alert("Cặp B chiến thắng Set " + currentSet + "!");
-    } else {
-      setScoreB(prev => prev + 1);
-    }
+    setScoreB(prev => prev + 1);
   };
 
   const handleSwitchServer = () => {
     if (serverTeam === "A") {
-      if (serverNum === 1) {
-        setServerNum(2);
-      } else {
-        setServerTeam("B");
-        setServerNum(1);
-      }
+      setServerTeam("B");
     } else {
-      if (serverNum === 1) {
-        setServerNum(2);
-      } else {
-        setServerTeam("A");
-        setServerNum(1);
-      }
+      setServerTeam("A");
     }
   };
 
   const triggerVarClaim = () => {
-    setVarNotice("Đang xem lại VAR: Kiểm tra lỗi đè vạch Kitchen (NVZ Line)...");
+    setVarNotice("Đang xem lại VAR: Kiểm tra bóng chạm tay và lỗi việt vị trong vòng cấm...");
     setTimeout(() => {
-      setVarNotice("Kết quả VAR: Bóng HỢP LỆ (In Bounds). Điểm số giữ nguyên.");
+      setVarNotice("Kết quả VAR: BÀN THẮNG HỢP LỆ (Goal Confirmed). Không có lỗi việt vị!");
       setTimeout(() => setVarNotice(null), 4000);
     }, 2500);
   };
@@ -144,27 +204,27 @@ export default function TournamentOrganizerPortal({
   return (
     <div className="space-y-8 animate-fade-in pb-16">
       {/* HEADER BAR (PITCHHUB PORTAL PRO OPERATING SYSTEM) */}
-      <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-[#0b4f6c]/40 via-sky-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-white text-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-sky-50 via-emerald-50 to-transparent rounded-full blur-3xl pointer-events-none" />
         
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center space-x-3">
-              <div className="px-3 py-1 rounded-full bg-[#0b4f6c] text-sky-300 text-xs font-black uppercase tracking-wider flex items-center space-x-1.5 border border-sky-400/30">
-                <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
+              <div className="px-3 py-1 rounded-full bg-sky-50 text-sky-800 text-xs font-black uppercase tracking-wider flex items-center space-x-1.5 border border-sky-200">
+                <ShieldCheck className="w-3.5 h-3.5 text-sky-600" />
                 <span>PITCHHUB PORTAL PRO v4.2</span>
               </div>
-              <div className="flex items-center space-x-2 text-xs font-mono text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <div className="flex items-center space-x-2 text-xs font-mono text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                 <span>Mesh IoT: 48/48 Nodes Active</span>
               </div>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
               <span>Quản Lý Giải Đấu Bóng Đá SoccerHub</span>
-              <Award className="w-8 h-8 text-amber-400 shrink-0 hidden sm:inline-block" />
+              <Award className="w-8 h-8 text-amber-500 shrink-0 hidden sm:inline-block" />
             </h1>
-            <p className="text-sm text-slate-400 max-w-2xl font-medium leading-relaxed">
+            <p className="text-sm text-slate-600 max-w-2xl font-medium leading-relaxed">
               Trung tâm điều hành giải đấu bóng đá tập trung: Tòa trọng tài điện tử AI, bốc thăm hạt giống tự động Elo VFF, Smart Escrow VietQR và sơ đồ nhánh đấu knockout thời gian thực.
             </p>
           </div>
@@ -173,26 +233,27 @@ export default function TournamentOrganizerPortal({
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => alert("Xuất báo cáo PDF thành công! Đã tải xuống SoccerHub_Football_Tournament_Report.pdf")}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all flex items-center space-x-2 active:scale-95"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all flex items-center space-x-2 active:scale-95 shadow-xs"
             >
-              <Download className="w-4 h-4 text-sky-400" />
+              <Download className="w-4 h-4 text-sky-600" />
               <span>Xuất Báo Cáo PDF</span>
             </button>
 
             <button
               onClick={() => alert("Đã mở danh sách 12 VĐV đang chờ duyệt hồ sơ thi đấu.")}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all flex items-center space-x-2 relative active:scale-95"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all flex items-center space-x-2 relative active:scale-95 shadow-xs"
             >
-              <Users className="w-4 h-4 text-amber-400" />
+              <Users className="w-4 h-4 text-amber-600" />
               <span>Duyệt VĐV</span>
-              <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center">
+              <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-black flex items-center justify-center">
                 12
               </span>
             </button>
 
             <button
-              onClick={() => alert("Khởi tạo form Giải Đấu Mới! Điền thông tin môn đấu, thể thức và cơ cấu giải thưởng.")}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/20 transition-all flex items-center space-x-2 active:scale-95"
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>+ Khởi Tạo Giải Đấu Mới</span>
@@ -200,11 +261,19 @@ export default function TournamentOrganizerPortal({
           </div>
         </div>
 
+        {/* Success Toast */}
+        {toastSuccess && (
+          <div className="mt-4 p-3.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold flex items-center space-x-2 animate-fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{toastSuccess}</span>
+          </div>
+        )}
+
         {/* SPORT CATEGORY FILTERS */}
-        <div className="mt-8 pt-6 border-t border-slate-800/80 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+        <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-bold text-slate-400 mr-2 flex items-center gap-1.5">
-              <Filter className="w-3.5 h-3.5 text-slate-400" /> Bộ Lọc Môn:
+            <span className="text-xs font-bold text-slate-500 mr-2 flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-slate-500" /> Bộ Lọc Môn:
             </span>
             {[
               { id: "all", label: "Tất Cả Thể Thức (3)" },
@@ -217,8 +286,8 @@ export default function TournamentOrganizerPortal({
                 onClick={() => setSelectedSport(item.id)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
                   selectedSport === item.id
-                    ? "bg-[#0b4f6c] text-white shadow-md border border-sky-400/40"
-                    : "bg-slate-800/60 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-700/50"
+                    ? "bg-[#0b4f6c] text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
                 }`}
               >
                 {item.label}
@@ -226,8 +295,8 @@ export default function TournamentOrganizerPortal({
             ))}
           </div>
 
-          <div className="text-xs font-mono text-slate-400 shrink-0 hidden md:block">
-            Cập nhật Live Stream: <span className="text-emerald-400 font-bold">100 FPS IoT Stream</span>
+          <div className="text-xs font-mono text-slate-500 shrink-0 hidden md:block">
+            Cập nhật Live Stream: <span className="text-emerald-700 font-bold">100 FPS IoT Stream</span>
           </div>
         </div>
       </div>
@@ -237,14 +306,14 @@ export default function TournamentOrganizerPortal({
         {filteredTournaments.map(t => (
           <div
             key={t.id}
-            className={`rounded-3xl p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
+            className={`rounded-3xl p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-xs ${
               t.status === "live"
-                ? "bg-slate-900 border-emerald-500/50 shadow-xl shadow-emerald-500/10 text-white"
-                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
+                ? "bg-emerald-50/40 border-emerald-300 text-slate-900"
+                : "bg-white border-slate-200/90 text-slate-900"
             }`}
           >
             {t.status === "live" && (
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-200/30 rounded-full blur-2xl pointer-events-none" />
             )}
 
             <div className="space-y-4 relative z-10">
@@ -313,24 +382,24 @@ export default function TournamentOrganizerPortal({
         <div className="lg:col-span-8 space-y-8">
 
           {/* 1. TÒA TRỌNG TÀI ĐIỆN TỬ SÂN 7A (LIVE BÁN KẾT SOCCERHUB CUP) */}
-          <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="bg-white border border-slate-200/90 text-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-rose-50/50 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-6">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 font-bold shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 font-bold shrink-0">
                   <Activity className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs font-black uppercase text-rose-400 tracking-wider">
+                    <span className="text-xs font-black uppercase text-rose-600 tracking-wider">
                       TÒA TRỌNG TÀI ĐIỆN TỬ • SÂN 7A
                     </span>
                     <span className="px-2 py-0.5 rounded bg-rose-500 text-white text-[9px] font-black uppercase">
                       LIVE STREAM VAR
                     </span>
                   </div>
-                  <h2 className="text-lg font-black tracking-tight text-white mt-0.5">
+                  <h2 className="text-lg font-black tracking-tight text-slate-900 mt-0.5">
                     Bán Kết SF1: FC Saigon Warriors VS FC Anh Em Kiến Trúc
                   </h2>
                 </div>
@@ -341,8 +410,8 @@ export default function TournamentOrganizerPortal({
                   onClick={() => setIsPaused(!isPaused)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 transition-all ${
                     isPaused
-                      ? "bg-amber-500 text-slate-950"
-                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                      ? "bg-amber-500 text-white"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
                   }`}
                 >
                   {isPaused ? <Play className="w-3.5 h-3.5 fill-current" /> : <Pause className="w-3.5 h-3.5" />}
@@ -353,82 +422,82 @@ export default function TournamentOrganizerPortal({
 
             {/* VAR Alert Notice Banner */}
             {varNotice && (
-              <div className="mb-6 p-4 rounded-2xl bg-purple-950/80 border border-purple-500/40 text-purple-200 text-xs font-bold flex items-center space-x-3 animate-bounce">
-                <Video className="w-5 h-5 text-purple-400 shrink-0" />
+              <div className="mb-6 p-4 rounded-2xl bg-purple-50 border border-purple-200 text-purple-800 text-xs font-bold flex items-center space-x-3 animate-bounce">
+                <Video className="w-5 h-5 text-purple-600 shrink-0" />
                 <span>{varNotice}</span>
               </div>
             )}
 
             {/* LIVE SCOREBOARD DISPLAY (HIGH-VISIBILITY STITCH SPEC) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center bg-slate-950/80 p-6 rounded-2xl border border-slate-800">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center bg-slate-50 p-6 rounded-2xl border border-slate-200">
               
               {/* TEAM A SCORE */}
               <div className={`p-6 rounded-2xl border transition-all ${
                 serverTeam === "A"
-                  ? "bg-emerald-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10"
-                  : "bg-slate-900/60 border-slate-800"
+                  ? "bg-white border-emerald-400 shadow-sm"
+                  : "bg-white/60 border-slate-200"
               }`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
-                    <span className="w-3 h-3 rounded-full bg-emerald-400" />
-                    <span className="text-xs font-black tracking-wide text-slate-300">
+                    <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                    <span className="text-xs font-black tracking-wide text-slate-700">
                       ĐỘI A (HẠT GIỐNG #1)
                     </span>
                   </div>
                   {serverTeam === "A" && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-black uppercase flex items-center gap-1">
-                      <Flame className="w-3 h-3" /> Giao Bóng ({serverNum})
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase flex items-center gap-1 border border-emerald-200">
+                      <Flame className="w-3 h-3 text-emerald-600" /> Giao Bóng ({serverNum})
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-bold text-white">
+                  <span className="text-sm font-bold text-slate-900">
                     FC Saigon Warriors
                   </span>
-                  <span className="text-5xl font-black font-mono text-emerald-400 tracking-tighter">
+                  <span className="text-5xl font-black font-mono text-emerald-600 tracking-tighter">
                     {scoreA}
                   </span>
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400 flex items-center justify-between">
+                <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between">
                   <span>Tỷ số: Hiệp 1 (2-1) • Hiệp 2 đang đá</span>
-                  <span className="text-emerald-400 font-bold">Elo: 1,650</span>
+                  <span className="text-emerald-700 font-bold">Elo: 1,650</span>
                 </div>
               </div>
 
               {/* TEAM B SCORE */}
               <div className={`p-6 rounded-2xl border transition-all ${
                 serverTeam === "B"
-                  ? "bg-sky-950/40 border-sky-500/60 shadow-lg shadow-sky-500/10"
-                  : "bg-slate-900/60 border-slate-800"
+                  ? "bg-white border-sky-400 shadow-sm"
+                  : "bg-white/60 border-slate-200"
               }`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
-                    <span className="w-3 h-3 rounded-full bg-sky-400" />
-                    <span className="text-xs font-black tracking-wide text-slate-300">
+                    <span className="w-3 h-3 rounded-full bg-sky-500" />
+                    <span className="text-xs font-black tracking-wide text-slate-700">
                       ĐỘI B (HẠT GIỐNG #4)
                     </span>
                   </div>
                   {serverTeam === "B" && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-sky-500 text-slate-950 text-[10px] font-black uppercase flex items-center gap-1">
-                      <Flame className="w-3 h-3" /> Giao Bóng ({serverNum})
+                    <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[10px] font-black uppercase flex items-center gap-1 border border-sky-200">
+                      <Flame className="w-3 h-3 text-sky-600" /> Giao Bóng ({serverNum})
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-bold text-white">
+                  <span className="text-sm font-bold text-slate-900">
                     FC Titan Sài Gòn
                   </span>
-                  <span className="text-5xl font-black font-mono text-sky-400 tracking-tighter">
+                  <span className="text-5xl font-black font-mono text-sky-600 tracking-tighter">
                     {scoreB}
                   </span>
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400 flex items-center justify-between">
+                <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between">
                   <span>Tỷ số: Hiệp 1 (1-2) • Hiệp 2 đang đá</span>
-                  <span className="text-sky-400 font-bold">Elo: 1,580</span>
+                  <span className="text-sky-700 font-bold">Elo: 1,580</span>
                 </div>
               </div>
 
@@ -436,13 +505,13 @@ export default function TournamentOrganizerPortal({
 
             {/* INTERACTIVE UMPIRE CONTROLS */}
             <div className="mt-6 space-y-3">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Bảng Điều Khiển Điểm Trọng Tài:
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <button
                   onClick={handlePointA}
-                  className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                  className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" />
                   <span>+1 Bàn Thắng (Đội A)</span>
@@ -450,7 +519,7 @@ export default function TournamentOrganizerPortal({
 
                 <button
                   onClick={handlePointB}
-                  className="py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-black shadow-lg shadow-sky-600/20 active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                  className="py-3 px-4 rounded-xl bg-[#0b4f6c] hover:bg-[#083b52] text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" />
                   <span>+1 Bàn Thắng (Đội B)</span>
@@ -458,7 +527,7 @@ export default function TournamentOrganizerPortal({
 
                 <button
                   onClick={handleSwitchServer}
-                  className="py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                  className="py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                 >
                   <RefreshCw className="w-4 h-4" />
                   <span>Đổi Quyền Phát Bóng</span>
@@ -466,7 +535,7 @@ export default function TournamentOrganizerPortal({
 
                 <button
                   onClick={triggerVarClaim}
-                  className="py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                  className="py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                 >
                   <Video className="w-4 h-4 text-purple-200" />
                   <span>Khiếu Nại VAR</span>
@@ -596,17 +665,17 @@ export default function TournamentOrganizerPortal({
                     Chung Kết Tranh Cúp
                   </div>
 
-                  <div className="bg-gradient-to-b from-amber-500/10 via-slate-900 to-slate-950 p-5 rounded-2xl border border-amber-500/40 text-center space-y-3 shadow-xl">
-                    <Trophy className="w-8 h-8 text-amber-400 mx-auto animate-bounce" />
+                  <div className="bg-gradient-to-b from-amber-50 to-amber-100/40 p-5 rounded-2xl border border-amber-300 text-center space-y-3 shadow-xs">
+                    <Trophy className="w-8 h-8 text-amber-500 mx-auto animate-bounce" />
                     <div>
-                      <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider block">
+                      <span className="text-[10px] font-black uppercase text-amber-700 tracking-wider block">
                         Cúp Vô Địch 80Tr
                       </span>
-                      <span className="text-xs font-bold text-slate-300">
+                      <span className="text-xs font-bold text-slate-800">
                         Thắng SF1 vs Thắng SF2
                       </span>
                     </div>
-                    <span className="inline-block px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold">
+                    <span className="inline-block px-3 py-1 rounded-full bg-amber-200/60 text-amber-900 text-[10px] font-mono font-bold border border-amber-300">
                       Trận Đấu: 17:00 Hôm Nay
                     </span>
                   </div>
@@ -876,6 +945,192 @@ export default function TournamentOrganizerPortal({
         </div>
 
       </div>
+      {/* ========================================================= */}
+      {/* MODAL TẠO GIẢI ĐẤU MỚI (LƯU TRỰC TIẾP CSDL MYSQL)        */}
+      {/* ========================================================= */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 sm:p-8 space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Trophy className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                    Khởi Tạo Giải Đấu Bóng Đá Mới
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Phát hành giải đấu lên hệ thống mạng lưới SoccerHub & CSDL thật.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateTournament} className="space-y-4 text-xs font-semibold">
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
+                  Tên Giải Đấu *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="Ví dụ: Cúp Tứ Hùng Phủi Hòa Xuân Mùa Hè 2026"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
+                    Thể Thức Thi Đấu
+                  </label>
+                  <select
+                    value={newSportType}
+                    onChange={(e) => setNewSportType(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="SAN_7">Bóng Đá Sân 7 Phủi</option>
+                    <option value="SAN_5">Bóng Đá Sân 5 Mini</option>
+                    <option value="FUTSAL">Futsal Sàn Gỗ Trong Nhà</option>
+                    <option value="SAN_11">Bóng Đá Sân 11 Chuẩn 11 Người</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
+                    Quy Mô Số Đội
+                  </label>
+                  <select
+                    value={newTotalTeams}
+                    onChange={(e) => setNewTotalTeams(Number(e.target.value))}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value={8}>8 Đội (Tứ Kết Knockout)</option>
+                    <option value={16}>16 Đội (Vòng Bảng + Knockout)</option>
+                    <option value={32}>32 Đội (Open Cup Đại Quy Mô)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
+                    Sân Đăng Cai Tổ Chức
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newPitchName}
+                    onChange={(e) => setNewPitchName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
+                    Địa Điểm Khu Vực
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newLocation}
+                    onChange={(e) => setNewLocation(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
+                    Tổng Quỹ Thưởng (VNĐ)
+                  </label>
+                  <input
+                    type="number"
+                    step={1000000}
+                    value={newPrizePool}
+                    onChange={(e) => setNewPrizePool(Number(e.target.value))}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500 font-mono font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
+                    Lệ Phí Mỗi Đội (VNĐ)
+                  </label>
+                  <input
+                    type="number"
+                    step={100000}
+                    value={newEntryFee}
+                    onChange={(e) => setNewEntryFee(Number(e.target.value))}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500 font-mono font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
+                    Ngày Khởi Tranh
+                  </label>
+                  <input
+                    type="date"
+                    value={newStartDate}
+                    onChange={(e) => setNewStartDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
+                    Ngày Bế Mạc Chung Kết
+                  </label>
+                  <input
+                    type="date"
+                    value={newEndDate}
+                    onChange={(e) => setNewEndDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors"
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
+                  <span>{isSubmitting ? "Đang Khởi Tạo..." : "Xác Nhận & Công Bố Giải"}</span>
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }

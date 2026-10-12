@@ -2,11 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- GLOBAL TRANSITION & ANIMATION TIMINGS --- */
-* {
-  transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+/* --- GLOBAL HARDWARE-ACCELERATED SMOOTH TRANSITIONS --- */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Chỉ áp dụng transition cho các interactive element, tránh vỡ layout và khựng fps */
+a, button, input, select, textarea, [role="button"] {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  transition-duration: 250ms;
+  transition-duration: 200ms;
 }
 
 /* --- BASE STYLES --- */
@@ -51,6 +56,28 @@ body.dark-theme .glass-panel {
   background-color: #0f172a !important;
   border: 1px solid #1e293b !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* --- SOCCERHUB UNIFIED RESPONSIVE CONTAINER --- */
+.hub-container {
+  width: 100%;
+  max-width: 1720px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  .hub-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  .hub-container {
+    padding-left: 50px;
+    padding-right: 50px;
+  }
 }
 
 .glass-panel-emerald {
@@ -152,22 +179,31 @@ button.bg-emerald-700,
 /* Keyframe Animations */
 @keyframes topLoadingProgress {
   0% { width: 0%; opacity: 1; }
-  60% { width: 75%; opacity: 1; }
+  50% { width: 65%; opacity: 1; }
+  85% { width: 92%; opacity: 1; }
   100% { width: 100%; opacity: 0; }
 }
 
 .animate-top-loader {
-  animation: topLoadingProgress 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: topLoadingProgress 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(18px) scale(0.99); filter: blur(3px); }
-  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in-up {
   animation: fadeInUp 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Stagger Animation Delays */
+.delay-stagger-1 { animation-delay: 60ms; }
+.delay-stagger-2 { animation-delay: 120ms; }
+.delay-stagger-3 { animation-delay: 180ms; }
+.delay-stagger-4 { animation-delay: 240ms; }
+.delay-stagger-5 { animation-delay: 300ms; }
+.delay-stagger-6 { animation-delay: 360ms; }
 
 @keyframes modalPop {
   0% { opacity: 0; transform: scale(0.95) translateY(12px); filter: blur(2px); }
@@ -180,7 +216,7 @@ button.bg-emerald-700,
 
 /* --- PREMIUM HOVER & CARD ELEVATION UTILITIES --- */
 .hover-card-elevate {
-  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1), border-color 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .hover-card-elevate:hover {
   transform: translateY(-4px);
@@ -188,6 +224,21 @@ button.bg-emerald-700,
 }
 html.dark .hover-card-elevate:hover {
   box-shadow: 0 20px 25px -5px rgba(56, 189, 248, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+}
+
+/* Athletic Sport Hover Card (Dành cho Sân bóng, Giải đấu) */
+.sport-card-hover {
+  transition: all 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, box-shadow;
+}
+.sport-card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 30px -10px rgba(16, 185, 129, 0.18), 0 10px 15px -8px rgba(11, 79, 108, 0.12);
+  border-color: rgba(16, 185, 129, 0.45) !important;
+}
+html.dark .sport-card-hover:hover {
+  box-shadow: 0 20px 30px -10px rgba(16, 185, 129, 0.25), 0 10px 15px -8px rgba(0, 0, 0, 0.7);
+  border-color: rgba(52, 211, 153, 0.5) !important;
 }
 
 /* Button Shimmer Beam Effect */
@@ -212,12 +263,42 @@ html.dark .hover-card-elevate:hover {
   animation: shimmerBeam 3s infinite;
 }
 
+/* Radar Pulse / Live Slot Ping */
+@keyframes radarPing {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+
+.radar-ping {
+  position: relative;
+}
+.radar-ping::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background-color: currentColor;
+  animation: radarPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
 /* Glowing Border Pulse on Focus / Active */
 .glow-border-emerald {
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
 }
 .glow-border-sky {
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+}
+
+/* Slot Selection Active Animation */
+.slot-selected-bounce {
+  animation: slotBounce 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes slotBounce {
+  0% { transform: scale(0.94); }
+  60% { transform: scale(1.04); }
+  100% { transform: scale(1.02); }
 }
 
 /* Skeleton Loading Shimmer Animation */

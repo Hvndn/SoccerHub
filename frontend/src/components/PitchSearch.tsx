@@ -94,6 +94,8 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
     return () => unsubscribe();
   }, []);
 
+  const [featuredLiveSlots, setFeaturedLiveSlots] = useState<any[]>([]);
+
   const fetchPitches = async () => {
     setLoadingRealPitches(true);
     try {
@@ -103,17 +105,35 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
           const rawId = item.id ? item.id.toString().replace(/\D/g, "") : (idx + 1).toString();
           const basePrice = item.avgPricePerHour || item.pricePerHour || 350000;
           const peakPrice = item.peakPricePerHour || Math.round(basePrice * 1.3);
-          const openTime = item.openTime || "13:00";
+          const openTime = item.openTime || "14:00";
           const closeTime = item.closeTime || "22:30";
-          const slotDur = item.slotDurationMinutes || 90;
+          const slotDur = item.slotDurationMinutes || 120;
 
-          // Chuẩn hóa địa chỉ Đà Nẵng thật
-          let address = item.address || item.location || "Số 154 Nguyễn Lương Bằng, P. Hòa Khánh Bắc, Q. Liên Chiểu, Tp. Đà Nẵng";
-          if (address.includes("Quận 7") || address.includes("TP.HCM") || address.includes("Hồ Chí Minh")) {
-            address = "Số 154 Nguyễn Lương Bằng, P. Hòa Khánh Bắc, Q. Liên Chiểu, Tp. Đà Nẵng";
-          }
-
+          // Địa chỉ thật từ CSDL
+          const address = item.address || item.location || "Số 154 Nguyễn Lương Bằng, P. Hòa Khánh Bắc, Q. Liên Chiểu, Tp. Đà Nẵng";
           const pitchName = item.name || "Cụm Sân Bóng Đá D-Sport đà nẵng";
+
+          // Sinh khung giờ 2 tiếng chuẩn theo openTime và closeTime thật của sân
+          const startH = parseInt(openTime.split(":")[0]) || 14;
+          const endH = parseInt(closeTime.split(":")[0]) || 22;
+          const dynamicSlots: any[] = [];
+          for (let h = startH; h + 2 <= endH; h += 2) {
+            const isPeak = h >= 16 && h < 20;
+            dynamicSlots.push({
+              time: `${String(h).padStart(2, '0')}:00 - ${String(h + 2).padStart(2, '0')}:00`,
+              price: `${Math.round((isPeak ? peakPrice : basePrice) / 1000)}k`,
+              status: "AVAILABLE",
+              tag: isPeak ? "⭐ Ca Vàng" : "Ca Thường"
+            });
+          }
+          if (dynamicSlots.length === 0) {
+            dynamicSlots.push(
+              { time: "14:00 - 16:00", price: `${Math.round(basePrice / 1000)}k`, status: "AVAILABLE", tag: "Chiều Sớm" },
+              { time: "16:00 - 18:00", price: `${Math.round(peakPrice / 1000)}k`, status: "AVAILABLE", tag: "⭐ Ca Vàng" },
+              { time: "18:00 - 20:00", price: `${Math.round(peakPrice / 1000)}k`, status: "AVAILABLE", tag: "🔥 Kèo Đỉnh" },
+              { time: "20:00 - 22:00", price: `${Math.round(basePrice / 1000)}k`, status: "AVAILABLE", tag: "Đêm Mát" }
+            );
+          }
 
           return {
             id: item.id || `pitch-db-${rawId}`,
@@ -130,34 +150,51 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
             sport: item.type?.includes("5") ? "SAN5" : item.type?.includes("11") ? "SAN11" : item.type?.includes("Futsal") ? "FUTSAL" : "SAN7",
             sportBadge: item.type || "⚽ Bóng Đá Sân 7 Chuẩn VFF",
             distanceKm: (1.2 + (idx * 0.6)).toFixed(1),
-            rating: item.rating || 4.9,
+            rating: item.rating || 5.0,
             reviewsCount: 142 + idx * 18,
             priceOriginal: Math.round(basePrice * 1.2),
             priceDiscounted: basePrice,
             peakPrice: peakPrice,
             pitchTypes: (item.pitchTypes && item.pitchTypes.length > 0) 
               ? item.pitchTypes 
-              : ["Sân 7A - Cỏ Nhân Tạo FIFA", "Sân 7B - Cỏ Nhân Tạo FIFA", "Sân 5C - Mini Tốc Độ"],
-            amenities: [
-              "Hệ thống Camera AI VAR & Highlights",
-              "Mặt cỏ FIFA Pro 50mm chống lật cổ chân",
-              "Dàn đèn LED Philips Stadium 800 Lux",
-              "Phòng tắm nóng lạnh & Tủ locker thông minh",
-              "Bãi đỗ ô tô & xe máy an ninh 24/7",
-              "Căng tin nước bù khoáng Pocari / Revive"
-            ],
+              : ["Sân 7A - Cỏ Nhân Tạo FIFA", "Sân 5B - Futsal"],
+            amenities: (item.amenities && item.amenities.length > 0)
+              ? item.amenities
+              : [
+                "Hệ thống Camera AI VAR & Highlights",
+                "Mặt cỏ FIFA Pro 50mm chống lật cổ chân",
+                "Dàn đèn LED Philips Stadium 800 Lux",
+                "Phòng tắm nóng lạnh & Tủ locker thông minh"
+              ],
             imageUrl: item.imageUrl || (idx % 2 === 0
               ? "https://images.unsplash.com/photo-1529900241452-f47268d87ec9?auto=format&fit=crop&w=1000&q=80"
               : "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1000&q=80"),
-            timeSlots: [
-              { time: "16:00 - 17:30", price: `${Math.round(basePrice / 1000)}k`, status: "AVAILABLE", tag: "Chiều Sớm" },
-              { time: "17:30 - 19:00", price: `${Math.round(peakPrice / 1000)}k`, status: "AVAILABLE", tag: "⭐ Ca Vàng" },
-              { time: "19:00 - 20:30", price: `${Math.round(peakPrice / 1000)}k`, status: "ACTIVE", tag: "🔥 Kèo Đỉnh" },
-              { time: "20:30 - 22:00", price: `${Math.round(basePrice / 1000)}k`, status: "AVAILABLE", tag: "Đêm Mát" }
-            ]
+            timeSlots: dynamicSlots
           };
         });
         setRealPitches(mapped);
+
+        // Nạp dữ liệu ca thật của cụm sân đầu tiên từ API ma trận để phục vụ widget Redis Lock
+        if (mapped.length > 0) {
+          try {
+            const todayStr = new Date().toISOString().split("T")[0];
+            const matrixRes = await fetch(`http://localhost:8080/api/v1/pitches/${mapped[0].numericId}/matrix?date=${todayStr}&duration=120`);
+            if (matrixRes.ok) {
+              const matrixData = await matrixRes.json();
+              if (Array.isArray(matrixData) && matrixData.length > 0 && matrixData[0].slots) {
+                const liveItems = matrixData[0].slots.slice(0, 3).map((s: any) => ({
+                  time: s.time,
+                  courtName: matrixData[0].pitchName,
+                  status: s.status === 'booked' ? 'BOOKED' : s.status === 'playing' ? 'PLAYING' : 'AVAILABLE',
+                  customer: s.customer || 'Trống'
+                }));
+                setFeaturedLiveSlots(liveItems);
+              }
+            }
+          } catch (mErr) {
+            console.log("Ma trận load ngầm");
+          }
+        }
       }
     } catch (e) {
       console.warn("Lỗi tải danh sách sân từ database:", e);
@@ -232,23 +269,23 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
       )}
 
       {/* 1. HERO COCKPIT CẦU THỦ PRO: THẺ DANH DỰ & TRẠNG THÁI PHONG ĐỘ */}
-      <section className="relative w-full rounded-3xl bg-gradient-to-r from-[#0b1c30] via-[#072433] to-[#0a192f] text-white overflow-hidden shadow-2xl p-6 sm:p-8 border border-slate-800">
-        <div className="absolute -right-16 -top-20 w-96 h-96 bg-[#0b4f6c]/30 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 -bottom-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+      <section className="relative w-full rounded-3xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white overflow-hidden shadow-sm hover:shadow-md transition-all p-6 sm:p-8 border border-slate-200 dark:border-slate-800">
+        <div className="absolute -right-16 -top-20 w-96 h-96 bg-[#0b4f6c]/5 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 -bottom-24 w-80 h-80 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6">
           {/* Cột trái: Thông tin cầu thủ & Lời chào */}
-          <div className="flex-1 space-y-4">
-            <div className="flex items-center space-x-2.5 flex-wrap gap-y-2">
-              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-extrabold text-xs uppercase tracking-wider border border-emerald-500/30">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="flex-1 space-y-4 w-full">
+            <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-extrabold text-[11px] sm:text-xs uppercase tracking-wider border border-emerald-200 dark:border-emerald-500/30">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>SoccerHub Pro Pass • Đã Xác Thực</span>
               </span>
-              <span className="font-mono text-xs font-bold text-sky-300 bg-sky-500/10 px-2.5 py-0.5 rounded-full border border-sky-400/20">
+              <span className="font-mono text-[11px] sm:text-xs font-bold text-[#0b4f6c] dark:text-sky-300 bg-sky-50 dark:bg-sky-500/10 px-2.5 py-0.5 rounded-full border border-sky-200 dark:border-sky-400/20">
                 VĐV ID: #SH-20269
               </span>
-              <span className="inline-flex items-center space-x-1 text-xs font-bold text-amber-300 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
-                <Flame className="w-3.5 h-3.5 text-amber-400" />
+              <span className="inline-flex items-center space-x-1 text-[11px] sm:text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-400/20">
+                <Flame className="w-3.5 h-3.5 text-amber-500" />
                 <span>Chuỗi 4 Trận Bất Bại 🔥</span>
               </span>
 
@@ -256,41 +293,41 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               <button
                 type="button"
                 onClick={() => openDualRoleWindow("OWNER")}
-                className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-amber-600/30 hover:bg-amber-500/30 text-amber-300 font-extrabold text-xs border border-amber-500/40 transition-all cursor-pointer shadow-xs active:scale-95"
+                className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-[11px] sm:text-xs border border-slate-300 dark:border-slate-700 transition-all cursor-pointer shadow-xs active:scale-95"
                 title="Mở tab mới với tư cách Chủ Sân để test việc nhận chuông thông báo realtime khi bạn đặt sân"
               >
-                <Building className="w-3.5 h-3.5 text-amber-400" />
+                <Building className="w-3.5 h-3.5 text-[#0b4f6c] dark:text-sky-400" />
                 <span>Mở Tab Chủ Sân (Test Realtime 2 Role) ↗</span>
               </button>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-emerald-400 p-0.5 shadow-lg shrink-0">
-                <div className="w-full h-full rounded-2xl bg-slate-900 flex items-center justify-center font-black text-xl text-sky-300">
-                  {userName.charAt(0)}
-                </div>
+            <div className="flex items-center space-x-3.5 sm:space-x-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 flex items-center justify-center font-black text-xl sm:text-2xl shadow-md shrink-0">
+                {userName.charAt(0)}
               </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
-                  Chào mừng trở lại, <span className="text-sky-400">{userName}!</span> 👋
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                  Chào mừng trở lại, <span className="text-[#0b4f6c] dark:text-sky-400">{userName}!</span> 👋
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-300 font-medium mt-0.5">
-                  Vị trí: <span className="text-amber-300 font-bold">Tiền đạo cánh trái (LW) / Hộ công (CAM)</span> • Chân thuận: <span className="text-slate-200 font-bold">Phải</span> • Thể lực: <span className="text-emerald-400 font-bold">95% Sẵn sàng</span>
+                <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 dark:text-slate-400 font-medium mt-0.5 leading-relaxed">
+                  Vị trí: <span className="text-[#0b4f6c] dark:text-sky-300 font-bold">Tiền đạo cánh trái (LW) / Hộ công (CAM)</span> • Chân thuận: <span className="font-bold">Phải</span> • Thể lực: <span className="text-emerald-600 dark:text-emerald-400 font-bold">95% Sẵn sàng</span>
                 </p>
               </div>
             </div>
 
             {/* Voucher Bar */}
-            <div className="inline-flex flex-wrap items-center gap-3 p-2.5 rounded-2xl bg-white/10 backdrop-blur-md max-w-xl border border-white/10">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 flex items-center justify-center shrink-0 font-bold shadow-md">
-                <Gift className="w-5 h-5 text-slate-950" />
-              </div>
-              <div className="text-left pr-2 flex-1 min-w-[200px]">
-                <p className="text-xs font-extrabold text-white flex items-center gap-1.5">
-                  <span>Voucher 50.000đ thành viên mới sẵn sàng</span>
-                  <span className="px-1.5 py-0.5 bg-emerald-500 text-slate-950 rounded text-[9px] font-black uppercase">Tối Nay</span>
-                </p>
-                <p className="text-[11px] text-slate-300 font-medium">Tự động trừ trực tiếp vào hóa đơn đặt cọc ca sân hôm nay</p>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 w-full max-w-xl border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center space-x-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 dark:bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 font-bold">
+                  <Gift className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div className="text-left pr-2 flex-1 min-w-0">
+                  <p className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
+                    <span>Voucher 50.000đ thành viên mới sẵn sàng</span>
+                    <span className="px-1.5 py-0.5 bg-emerald-500 text-white dark:text-slate-950 rounded text-[9px] font-black uppercase">Tối Nay</span>
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Tự động trừ trực tiếp vào hóa đơn đặt cọc ca sân hôm nay</p>
+                </div>
               </div>
               <button
                 type="button"
@@ -298,10 +335,10 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                   setAppliedVoucher(true);
                   showToast("🎉 Đã kích hoạt Voucher 50.000đ vào ví thanh toán của bạn!");
                 }}
-                className={`shrink-0 px-4 py-2 rounded-xl text-xs font-extrabold transition-all shadow-md cursor-pointer ${
+                className={`w-full sm:w-auto shrink-0 px-4 py-2 rounded-xl text-xs font-extrabold transition-all shadow-sm cursor-pointer text-center ${
                   appliedVoucher
-                    ? "bg-emerald-500 text-slate-950 cursor-default"
-                    : "bg-[#0b4f6c] hover:bg-sky-500 hover:text-slate-950 text-white active:scale-95"
+                    ? "bg-emerald-500 text-white dark:text-slate-950 cursor-default"
+                    : "bg-[#0b4f6c] hover:bg-[#083a50] dark:bg-sky-500 dark:hover:bg-sky-400 text-white dark:text-slate-950 active:scale-95"
                 }`}
               >
                 {appliedVoucher ? "✓ Đã Áp Dụng (-50k)" : "Áp Dụng Ngay"}
@@ -310,32 +347,32 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
           </div>
 
           {/* Cột phải: Thống kê chỉ số Elo & Phong độ thực tế */}
-          <div className="flex flex-row xl:flex-col gap-3 w-full xl:w-auto shrink-0">
-            <div className="flex items-center space-x-3.5 p-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex-1 xl:flex-none min-w-[250px]">
-              <div className="w-11 h-11 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold border border-emerald-500/30">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:flex xl:flex-col gap-3 w-full xl:w-auto shrink-0">
+            <div className="flex items-center space-x-3.5 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full xl:min-w-[260px]">
+              <div className="w-11 h-11 rounded-xl bg-amber-500/10 dark:bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl font-bold border border-amber-500/20 shrink-0">
                 🏆
               </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-extrabold">Chỉ Số Elo Cầu Thủ</span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-extrabold">Chỉ Số Elo Cầu Thủ</span>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-2xl font-black text-emerald-400 font-mono">{userElo}</span>
-                  <span className="text-xs text-slate-300 font-bold">Hạng Vàng Phủi Đà Nẵng</span>
+                  <span className="text-2xl font-black text-[#0b4f6c] dark:text-sky-400 font-mono">{userElo}</span>
+                  <span className="text-xs text-slate-700 dark:text-slate-300 font-bold truncate">Hạng Vàng Phủi ĐN</span>
                 </div>
-                <span className="text-[10px] text-slate-400">Top 5% khu vực Liên Chiểu • 24 Trận</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Top 5% khu vực Liên Chiểu • 24 Trận</span>
               </div>
             </div>
 
-            <div className="flex items-center space-x-3.5 p-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 flex-1 xl:flex-none min-w-[250px]">
-              <div className="w-11 h-11 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-xl font-bold border border-sky-500/30">
+            <div className="flex items-center space-x-3.5 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full xl:min-w-[260px]">
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl font-bold border border-emerald-500/20 shrink-0">
                 ⚽
               </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-extrabold">Chỉ Số Sân 7 Chuẩn</span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-extrabold">Chỉ Số Sân 7 Chuẩn</span>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-2xl font-black text-sky-400 font-mono">{userElo}</span>
-                  <span className="text-xs text-slate-300 font-bold">Division 1 Phủi VFF</span>
+                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{userElo}</span>
+                  <span className="text-xs text-slate-700 dark:text-slate-300 font-bold truncate">Division 1 Phủi VFF</span>
                 </div>
-                <span className="text-[10px] text-emerald-400 font-bold">Fairplay 99% (Không bùng kèo)</span>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold truncate">Fairplay 99% (Không bùng kèo)</span>
               </div>
             </div>
           </div>
@@ -345,14 +382,14 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
       {/* 2. BỘ LỌC TÌM SÂN THÔNG MINH (SMART FILTERS BAR) */}
       <section className="w-full bg-white dark:bg-slate-900 p-4.5 sm:p-5 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3.5">
         {/* Hàng 1: Tabs loại sân thể thao */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center space-x-2 overflow-x-auto pb-1 max-w-full scrollbar-none">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-2 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth">
             {sportsTabs.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setSelectedSport(tab.id)}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
                   selectedSport === tab.id
                     ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-sm"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -377,7 +414,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
           <button
             type="button"
             onClick={() => setOnlyAvailableTonight(!onlyAvailableTonight)}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 border transition-all cursor-pointer ${
+            className={`w-full sm:w-auto shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 border transition-all cursor-pointer ${
               onlyAvailableTonight
                 ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
                 : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
@@ -419,10 +456,10 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 onChange={(e) => setSelectedTimeSlotFilter(e.target.value)}
                 className="w-full bg-transparent text-xs font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer mt-0.5"
               >
-                <option value="ALL" className="dark:bg-slate-900">Tất Cả Ca (13:00 - 22:30)</option>
-                <option value="PEAK" className="dark:bg-slate-900">⭐ Giờ Vàng (17:30 - 20:30)</option>
-                <option value="AFTERNOON" className="dark:bg-slate-900">Chiều Sớm (13:00 - 17:30)</option>
-                <option value="NIGHT" className="dark:bg-slate-900">Đêm Mát (20:30 - 22:30)</option>
+                <option value="ALL" className="dark:bg-slate-900">Tất Cả Ca (14:00 - 22:00)</option>
+                <option value="PEAK" className="dark:bg-slate-900">⭐ Ca Vàng (18:00 - 20:00)</option>
+                <option value="AFTERNOON" className="dark:bg-slate-900">Ca Chiều (14:00 - 18:00)</option>
+                <option value="NIGHT" className="dark:bg-slate-900">Ca Đêm (20:00 - 22:00)</option>
               </select>
             </div>
           </div>
@@ -505,8 +542,8 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   <div className="bg-slate-50 dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1">
                     <span className="text-[10px] font-bold uppercase text-slate-400">Khung Giờ Tối Ưu</span>
-                    <div className="text-sm font-black text-slate-900 dark:text-white font-mono">17:30 - 19:00</div>
-                    <span className="text-[11px] font-bold text-[#0b4f6c] dark:text-sky-400 block">Độ 90 phút chuẩn thể lực</span>
+                    <div className="text-sm font-black text-slate-900 dark:text-white font-mono">18:00 - 20:00</div>
+                    <span className="text-[11px] font-bold text-[#0b4f6c] dark:text-sky-400 block">Ca 2 tiếng chuẩn thể lực</span>
                   </div>
 
                   <div className="bg-slate-50 dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1">
@@ -542,77 +579,117 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
             </div>
 
             {/* CỘT PHẢI (5 COLS): REDIS DISTRIBUTED MUTEX LOCK MONITOR */}
-            <div className="lg:col-span-5 bg-slate-900 text-white p-6 sm:p-7 rounded-3xl border border-slate-800 shadow-xl flex flex-col justify-between space-y-4">
+            <div className="lg:col-span-5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
               <div className="space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center space-x-2">
-                    <Lock className="w-4.5 h-4.5 text-amber-400" />
-                    <span className="font-extrabold text-sm text-white">Redis Distributed Lock</span>
+                    <Lock className="w-4.5 h-4.5 text-amber-500" />
+                    <span className="font-extrabold text-sm text-slate-900 dark:text-white">Redis Distributed Lock</span>
                   </div>
-                  <span className="font-mono text-[10px] font-extrabold px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1.5" />
+                  <span className="font-mono text-[10px] font-extrabold px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-full flex items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5" />
                     Live Sync
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-300 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   Hệ thống phòng chống trùng slot (Double Booking Prevention) trên cụm 4 máy chủ Redis Cluster.
                 </p>
 
                 {/* State Legend */}
                 <div className="flex items-center space-x-3 text-xs font-bold pt-1">
-                  <span className="flex items-center text-emerald-400">
+                  <span className="flex items-center text-emerald-600 dark:text-emerald-400">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5" /> Sẵn Sàng
                   </span>
-                  <span className="flex items-center text-amber-400">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 mr-1.5 animate-pulse" /> Giữ Chỗ (300s)
+                  <span className="flex items-center text-amber-600 dark:text-amber-400">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 mr-1.5 animate-pulse" /> Giữ Chỗ (300s)
                   </span>
-                  <span className="flex items-center text-slate-400">
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-600 mr-1.5" /> Đã Cọc 100%
+                  <span className="flex items-center text-slate-500 dark:text-slate-400">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-600 mr-1.5" /> Đã Cọc 100%
                   </span>
                 </div>
 
-                {/* Danh sách ca sân thời gian thực */}
+                {/* Danh sách ca sân thời gian thực từ cơ sở dữ liệu thật */}
                 <div className="space-y-2 font-mono text-xs pt-2">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80">
-                    <div className="flex items-center space-x-2.5">
-                      <span className="font-bold text-slate-400">17:30 - 19:00</span>
-                      <span className="text-[11px] text-slate-300 font-sans">Sân 7B • Chuyên Việt</span>
-                    </div>
-                    <span className="px-2 py-0.5 bg-slate-700 text-slate-300 text-[10px] font-bold rounded font-sans">
-                      Đã Khóa (FC Xây Dựng)
-                    </span>
-                  </div>
+                  {featuredLiveSlots.length > 0 ? (
+                    featuredLiveSlots.map((ls: any, lIdx: number) => (
+                      <div
+                        key={lIdx}
+                        className={`flex items-center justify-between p-2.5 rounded-xl border ${
+                          ls.status === 'BOOKED' || ls.status === 'PLAYING'
+                            ? "bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/80"
+                            : "bg-sky-50 dark:bg-[#0b4f6c]/30 border-sky-200 dark:border-[#0b4f6c]/60"
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <span className={`font-bold shrink-0 ${ls.status === 'BOOKED' ? "text-slate-600 dark:text-slate-400" : "text-[#0b4f6c] dark:text-sky-300"}`}>
+                            {ls.time}
+                          </span>
+                          <span className="text-[11px] text-slate-500 dark:text-slate-300 font-sans truncate max-w-[100px] sm:max-w-[130px]">
+                            {ls.courtName}
+                          </span>
+                        </div>
+                        {ls.status === 'BOOKED' || ls.status === 'PLAYING' ? (
+                          <span className="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded font-sans shrink-0">
+                            Đã Khóa ({ls.customer})
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPitchForSlot(featuredPitch)}
+                            className="px-2.5 sm:px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
+                          >
+                            Giữ Slot
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80">
+                        <div className="flex items-center space-x-2.5">
+                          <span className="font-bold text-slate-600 dark:text-slate-400">16:00 - 18:00</span>
+                          <span className="text-[11px] text-slate-500 dark:text-slate-300 font-sans">{featuredPitch?.name}</span>
+                        </div>
+                        <span className="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded font-sans">
+                          Sẵn Sàng
+                        </span>
+                      </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
-                    <div className="flex items-center space-x-2.5">
-                      <span className="font-bold text-amber-400">19:00 - 20:30</span>
-                      <span className="text-[11px] text-slate-200 font-sans">Sân 7A • Chuyên Việt</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-amber-400 text-[10px] font-bold font-sans">
-                      <Timer className="w-3.5 h-3.5 animate-spin" />
-                      <span>Đang Giữ Chỗ (01:47)</span>
-                    </div>
-                  </div>
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-sky-50 dark:bg-[#0b4f6c]/30 border border-sky-200 dark:border-[#0b4f6c]/60">
+                        <div className="flex items-center space-x-2.5">
+                          <span className="font-bold text-[#0b4f6c] dark:text-sky-300">18:00 - 20:00</span>
+                          <span className="text-[11px] text-slate-600 dark:text-slate-200 font-sans">{featuredPitch?.name}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPitchForSlot(featuredPitch)}
+                          className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer"
+                        >
+                          Giữ Slot
+                        </button>
+                      </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0b4f6c]/40 border border-[#0b4f6c]/60">
-                    <div className="flex items-center space-x-2.5">
-                      <span className="font-bold text-sky-300">20:30 - 22:00</span>
-                      <span className="text-[11px] text-slate-200 font-sans">Sân 7C • Chuyên Việt</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedPitchForSlot(featuredPitch)}
-                      className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-bold rounded-lg font-sans shadow-sm transition-colors cursor-pointer"
-                    >
-                      Giữ Slot
-                    </button>
-                  </div>
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-sky-50 dark:bg-[#0b4f6c]/30 border border-sky-200 dark:border-[#0b4f6c]/60">
+                        <div className="flex items-center space-x-2.5">
+                          <span className="font-bold text-[#0b4f6c] dark:text-sky-300">20:00 - 22:00</span>
+                          <span className="text-[11px] text-slate-600 dark:text-slate-200 font-sans">{featuredPitch?.name}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPitchForSlot(featuredPitch)}
+                          className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer"
+                        >
+                          Giữ Slot
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
-              <div className="text-right pt-2 border-t border-slate-800">
-                <span className="font-mono text-[10px] text-slate-500">
+              <div className="text-right pt-2 border-t border-slate-100 dark:border-slate-800">
+                <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
                   TTL Lock Keyspace: mutex:pitch_{featuredPitch.numericId}:slot_live
                 </span>
               </div>
@@ -673,14 +750,14 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               filteredPitches.map((pitch) => (
                 <article
                   key={pitch.id}
-                  className="group bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col md:flex-row"
+                  className="group bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm sport-card-hover flex flex-col md:flex-row cursor-pointer"
                 >
                   {/* Thumbnail Visual */}
                   <div className="md:w-5/12 relative min-h-[230px] overflow-hidden bg-slate-900">
                     <img
                       src={pitch.imageUrl}
                       alt={pitch.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95"
+                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out brightness-95"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-transparent" />
                     
@@ -744,7 +821,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
                         <span>Ca trống hôm nay ({pitch.openTime} - {pitch.closeTime}):</span>
-                        <span className="text-emerald-600 dark:text-emerald-400">90p/ca</span>
+                        <span className="text-emerald-600 dark:text-emerald-400">120p (2 tiếng)/ca</span>
                       </div>
                       <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none">
                         {pitch.timeSlots.map((ts: any, i: number) => (
@@ -765,9 +842,9 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                     </div>
 
                     {/* Bảng giá & Nút Xem Ca & Đặt */}
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                       <div>
-                        <div className="flex items-baseline space-x-2">
+                        <div className="flex items-baseline space-x-2 flex-wrap">
                           <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
                             {pitch.priceDiscounted.toLocaleString("vi-VN")}đ
                           </span>
@@ -779,14 +856,14 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                           </span>
                         </div>
                         <p className="text-[10px] text-slate-400 font-medium">
-                          Giá 90 phút thi đấu • Đèn LED miễn phí
+                          Giá 120 phút (2 tiếng trọn gói) • Đèn LED miễn phí
                         </p>
                       </div>
 
                       <button
                         type="button"
                         onClick={() => setSelectedPitchForSlot(pitch)}
-                        className="px-4.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1 cursor-pointer"
+                        className="w-full sm:w-auto px-4.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
                       >
                         <span>Xem Ca & Đặt</span>
                         <ChevronRight className="w-4 h-4" />

@@ -22,18 +22,16 @@ import StadiumOwnerOnboarding from "@/components/StadiumOwnerOnboarding";
 import MultiSportArena from "@/components/MultiSportArena";
 import StadiumIoTConsole from "@/components/StadiumIoTConsole";
 import GuestFeatureBanner from "@/components/GuestFeatureBanner";
-import { MapPin, Trophy, Users, ShieldCheck } from "lucide-react";
+import { MapPin, Trophy, Users, ShieldCheck, ShieldAlert, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import VietQRModal from "@/components/VietQRModal";
 import AuthModal from "@/components/AuthModal";
-import RealtimeClockBar from "@/components/RealtimeClockBar";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("booking");
   const { user: authUser, logout: authLogout } = useAuth();
   const [localUser, setLocalUser] = useState<any | null>(null);
-
-  const currentUser = authUser || localUser;
 
   // Transition & Loading States
   const [isTabChanging, setIsTabChanging] = useState(false);
@@ -44,51 +42,93 @@ export default function Home() {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authRole, setAuthRole] = useState<"PLAYER" | "OWNER" | "ORGANIZER">("PLAYER");
 
-  // Hỗ trợ chế độ 2 Role song song theo Cổng (Cổng 3000: Chủ Sân • Cổng 3001: Cầu Thủ) hoặc qua URL
+  // Hỗ trợ nhận tab qua URL query param nếu có
   React.useEffect(() => {
     if (typeof window !== "undefined") {
-      const port = window.location.port;
       const params = new URLSearchParams(window.location.search);
       const urlTab = params.get("tab");
-      const urlRole = params.get("role");
-
-      // CỔNG 3000: MẶC ĐỊNH LÀ CHỦ SÂN (HỒ VĂN DIỆN - QUẢN LÝ CỤM SÂN & DOANH THU)
-      if (port === "3000" || urlRole === "OWNER") {
-        setLocalUser({
-          id: 999,
-          name: "Hồ Văn Diện",
-          fullName: "Hồ Văn Diện",
-          role: "OWNER",
-          email: "owner@dsport.danang.vn",
-          phone: "0988 776 652"
-        });
-        setActiveTab(urlTab || "admin");
-      } 
-      // CỔNG 3001: MẶC ĐỊNH LÀ CẦU THỦ (CAO VIỆT AN - TÌM SÂN & ĐẶT CỌC VIETQR)
-      else if (port === "3001" || urlRole === "PLAYER") {
-        setLocalUser({
-          id: 1,
-          name: "Cao Việt An",
-          fullName: "Cao Việt An",
-          role: "PLAYER",
-          email: "caovietan@gmail.com",
-          phone: "0914 555 789",
-          eloRating: 1450
-        });
-        setActiveTab(urlTab || "booking");
-      } else if (urlTab) {
+      if (urlTab) {
         setActiveTab(urlTab);
       }
     }
   }, []);
 
+  // Người dùng hiện tại: Ưu tiên user đăng nhập thật từ AuthContext, hoặc session đăng nhập tạm localUser
+  // Khi đăng xuất: cả hai đều là null => Trở về trạng thái Guest tự nhiên, không bị khóa cứng
+  const currentUser = authUser || localUser;
+
+  // Thông báo phân quyền khi người dùng cố truy cập trang ngoài quyền hạn
+  const [roleWarning, setRoleWarning] = useState<string | null>(null);
+
+  const showRoleWarning = (msg: string) => {
+    setRoleWarning(msg);
+    setTimeout(() => setRoleWarning(null), 4500);
+  };
+
+  // Danh mục tab theo vai trò
+  const OWNER_TABS = ["admin", "owner-onboarding", "iot-console", "multi-sport"];
+
+  // Role Guard: Tự động điều hướng và bảo vệ phân quyền nhất quán khi role thay đổi
+  React.useEffect(() => {
+    if (!currentUser) {
+      if (OWNER_TABS.includes(activeTab)) {
+        setActiveTab("booking");
+      }
+      return;
+    }
+
+    if (currentUser.role === "OWNER") {
+      // CHỦ SÂN: Nếu là chủ sân mới (chưa tạo sân) thì giữ ở onboarding
+      if (currentUser.isNewOwner && activeTab !== "owner-onboarding") {
+        setActiveTab("owner-onboarding");
+      } else if (!OWNER_TABS.includes(activeTab)) {
+        setActiveTab("admin");
+      }
+    } else if (currentUser.role === "PLAYER") {
+      // CẦU THỦ / NGƯỜI CHƠI: Cấm tuyệt đối vào trang quản lý sân
+      if (OWNER_TABS.includes(activeTab)) {
+        setActiveTab("booking");
+      }
+    }
+  }, [currentUser?.role, currentUser?.isNewOwner]);
+
   const handleTabChange = (newTab: string) => {
+    // 1. Kiểm tra quyền của CHỦ SÂN: Không được vào trang tìm/đặt sân của Cầu Thủ
+    if (currentUser?.role === "OWNER") {
+      if (!OWNER_TABS.includes(newTab)) {
+        showRoleWarning("⚠️ Bạn đang ở tài khoản Chủ Sân! Vui lòng sử dụng Bảng Điều Hành để quản lý cụm sân, không thể truy cập trang tìm đặt sân của Cầu Thủ.");
+        setActiveTab(currentUser.isNewOwner ? "owner-onboarding" : "admin");
+        return;
+      }
+    }
+
+    // 2. Kiểm tra quyền của CẦU THỦ: Không được vào trang Quản Lý Sân
+    if (currentUser?.role === "PLAYER") {
+      if (OWNER_TABS.includes(newTab)) {
+        showRoleWarning("🚫 Quyền truy cập bị từ chối: Tài khoản Cầu Thủ không thể vào trang Quản Lý Cụm Sân & Doanh Thu!");
+        setActiveTab("booking");
+        return;
+      }
+    }
+
+    // 3. KHÁCH CHƯA ĐĂNG NHẬP: Bấm vào tab Quản lý thì yêu cầu đăng nhập Chủ Sân
+    if (!currentUser) {
+      if (OWNER_TABS.includes(newTab)) {
+        showRoleWarning("🔒 Vui lòng đăng nhập với vai trò Chủ Sân để truy cập Bảng Quản Lý!");
+        handleOpenAuth("login", "OWNER");
+        return;
+      }
+    }
+
     if (newTab === activeTab) return;
     setIsTabChanging(true);
-    setActiveTab(newTab);
     setTimeout(() => {
-      setIsTabChanging(false);
-    }, 400);
+      setActiveTab(newTab);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(() => {
+        setIsTabChanging(false);
+      }, 450);
+    }, 120);
   };
 
   const handleSelectSlot = (pitch: any, slot: any) => {
@@ -114,19 +154,19 @@ export default function Home() {
     setLocalUser(userData);
     if (userData?.role === "OWNER") {
       if (userData?.isNewOwner) {
-        handleTabChange("owner-onboarding");
+        setActiveTab("owner-onboarding");
       } else {
-        handleTabChange("admin");
+        setActiveTab("admin");
       }
     } else {
-      handleTabChange("booking");
+      setActiveTab("booking");
     }
   };
 
   const handleLogout = () => {
     authLogout();
     setLocalUser(null);
-    handleTabChange("booking");
+    setActiveTab("booking");
   };
 
   return (
@@ -145,24 +185,68 @@ export default function Home() {
         onLogout={handleLogout}
       />
 
-      {/* Real-time Clock Bar */}
-      <RealtimeClockBar />
+      {/* Toast Cảnh Báo Phân Quyền Vai Trò - Kích thước lớn dễ nhìn */}
+      {roleWarning && (
+        <div className="fixed top-20 right-6 z-50 flex items-center space-x-4 bg-slate-900/98 text-white px-6 py-4 rounded-2xl shadow-2xl border-2 border-rose-500 animate-slide-up max-w-lg backdrop-blur-md">
+          <ShieldAlert className="w-6 h-6 text-rose-400 shrink-0 animate-pulse" />
+          <span className="text-sm font-bold leading-relaxed">{roleWarning}</span>
+          <button 
+            type="button" 
+            onClick={() => setRoleWarning(null)} 
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
       {/* Main Content Body */}
-      <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] pt-4 pb-24 lg:pb-14 space-y-8 sm:space-y-16">
-        <div key={activeTab} className="animate-fade-in-up">
+      <main className={`flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] pb-12 lg:pb-14 space-y-8 sm:space-y-16 ${!currentUser && activeTab === "booking" ? "pt-0" : "pt-4"}`}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.38, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
+            className="will-change-transform"
+          >
           {activeTab === "booking" && (
-            currentUser ? (
-              <PlayerDashboard
+            currentUser?.role === "OWNER" ? (
+              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl bg-[#0b4f6c]/10 dark:bg-sky-500/20 text-[#0b4f6c] dark:text-sky-400 mx-auto flex items-center justify-center">
+                  <ShieldCheck className="w-8 h-8 text-emerald-500" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                    Không Gian Dành Cho Cầu Thủ Đặt Sân
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Bạn đang đăng nhập bằng tài khoản <strong>Chủ Sân ({currentUser.fullName || currentUser.name})</strong>. Chức năng tìm kiếm và cọc sân này dành riêng cho Cầu Thủ. Vui lòng chuyển sang Bảng Điều Hành để quản lý cụm sân và theo dõi doanh thu.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleTabChange("admin")}
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] dark:bg-sky-500 hover:opacity-90 text-white dark:text-slate-950 font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                >
+                  Chuyển Sang Bảng Điều Hành Cụm Sân →
+                </button>
+              </div>
+            ) : currentUser ? (
+              <PitchSearch
                 user={currentUser}
-                onNavigateTab={handleTabChange}
                 onSelectSlot={handleSelectSlot}
               />
             ) : (
               <div className="space-y-16 sm:space-y-24">
-                <LandingHero onOpenAuth={handleOpenAuth} />
+                <LandingHero 
+                  onOpenAuth={handleOpenAuth} 
+                  onNavigateTab={handleTabChange}
+                />
                 <LandingFeatures
-                  onExplore={() => handleOpenAuth("login")}
+                  onExplore={(role) => handleOpenAuth("login")}
+                  onNavigateTab={handleTabChange}
                 />
               </div>
             )
@@ -197,7 +281,10 @@ export default function Home() {
           )}
 
           {activeTab === "tournaments" && (
-            <TournamentLeaderboard onBackToHome={() => handleTabChange("booking")} />
+            <CommunityElo 
+              user={currentUser} 
+              defaultSubTab="tournaments"
+            />
           )}
 
           {activeTab === "community" && (
@@ -215,7 +302,7 @@ export default function Home() {
                   onOpenAuth={handleOpenAuth}
                 />
               )}
-              <CommunityElo />
+              <CommunityElo user={currentUser} />
             </>
           )}
 
@@ -234,10 +321,44 @@ export default function Home() {
           )}
 
           {activeTab === "admin" && (
-            <AdminDashboard 
-              onBackToHome={() => handleTabChange("booking")} 
-              onNavigateTab={handleTabChange}
-            />
+            currentUser?.role === "OWNER" ? (
+              <AdminDashboard 
+                onBackToHome={() => handleTabChange("admin")} 
+                onNavigateTab={handleTabChange}
+              />
+            ) : (
+              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl bg-rose-500/10 text-rose-500 mx-auto flex items-center justify-center">
+                  <ShieldAlert className="w-8 h-8 text-rose-500" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                    Truy Cập Bị Từ Chối (403 Forbidden)
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Trang Bảng Điều Hành và Quản Lý Doanh Thu chỉ dành riêng cho tài khoản <strong>Chủ Sân (OWNER)</strong>. Tài khoản Cầu Thủ hoặc khách chưa đăng nhập không có quyền truy cập khu vực này.
+                  </p>
+                </div>
+                <div className="flex items-center justify-center space-x-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange("booking")}
+                    className="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  >
+                    Quay Lại Trang Tìm Sân Bóng
+                  </button>
+                  {!currentUser && (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenAuth("login", "OWNER")}
+                      className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white font-bold text-xs transition-all cursor-pointer"
+                    >
+                      Đăng Nhập Chủ Sân
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
           )}
 
           {(activeTab === "my-activities" || activeTab === "schedule") && (
@@ -257,9 +378,9 @@ export default function Home() {
           )}
 
           {activeTab === "organizer" && (
-            <TournamentOrganizerPortal 
-              onBackToHome={() => handleTabChange("booking")} 
-              onNavigateTab={handleTabChange}
+            <CommunityElo 
+              user={currentUser} 
+              defaultSubTab="organizer"
             />
           )}
 
@@ -270,7 +391,8 @@ export default function Home() {
               onNavigateTab={handleTabChange}
             />
           )}
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* VietQR Payment & Ticket Modal */}

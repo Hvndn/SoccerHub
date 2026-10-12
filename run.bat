@@ -7,13 +7,7 @@ echo   SOCCERHUB [KICK-ON] - SINGLE TERMINAL RUNNER (NO DOCKER)
 echo ========================================================
 echo.
 
-:: Stop conflicting Docker app containers if running, while keeping/starting Postgres and Redis
-docker info >nul 2>&1
-if %errorlevel% equ 0 (
-    echo [INFO] Giai phong cong 3000, 8080, 8000 tu Docker va khoi chay MySQL & Redis...
-    docker stop soccerhub-frontend soccerhub-backend-core soccerhub-ai-service soccerhub-postgres >nul 2>&1
-    docker compose up -d mysql redis >nul 2>&1
-)
+:: Chay truc tiep tren moi truong Native Windows (Khong dung Docker)
 
 :: Auto detect Maven in PATH or set user fallback path
 where mvn >nul 2>&1
@@ -41,7 +35,7 @@ echo [!] Nhan Ctrl+C de dung tat ca cac dich vu dong thoi.
 echo ========================================================
 echo.
 
-npx -y concurrently -k --names "BACKEND,AI,OWNER-3000,PLAYER-3001" --prefix-colors "cyan,yellow,magenta,green" "cd backend-core && mvn spring-boot:run" "cd ai-service && python main.py" "cd frontend && npx next dev -p 3000" "cd frontend && npx next dev -p 3001"
+npx -y concurrently --names "BACKEND,AI,OWNER-3000,PLAYER-3001" --prefix-colors "cyan,yellow,magenta,green" --restart-tries 2 "cd backend-core && mvn spring-boot:run" "cd ai-service && python main.py" "cd frontend && npx next dev -p 3000" "cd frontend && npx next dev -p 3001"
 
 
 

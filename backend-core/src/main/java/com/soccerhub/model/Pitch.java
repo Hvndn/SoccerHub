@@ -53,7 +53,7 @@ public class Pitch {
     private String closeTime = "22:30";
 
     @Builder.Default
-    private Integer slotDurationMinutes = 90; // 60, 90, 120
+    private Integer slotDurationMinutes = 120; // Ca 2 tiếng (120 phút - gồm thời gian đá và giao/trả ca)
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "pitch_types", joinColumns = @JoinColumn(name = "pitch_id"))
