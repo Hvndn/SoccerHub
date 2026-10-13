@@ -120,6 +120,10 @@ public class AuthService {
 
         User user = userOpt.get();
 
+        if (Boolean.FALSE.equals(user.getEnabled())) {
+            throw new IllegalArgumentException("Tài khoản đã bị quản trị viên khóa. Vui lòng liên hệ BTC để được hỗ trợ.");
+        }
+
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Mật khẩu không chính xác. Vui lòng kiểm tra và thử lại.");
         }

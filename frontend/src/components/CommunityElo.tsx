@@ -1,19 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MatchmakingMarketplace from "./MatchmakingMarketplace";
 import TournamentLeaderboard from "./TournamentLeaderboard";
 import TournamentOrganizerPortal from "./TournamentOrganizerPortal";
+import { fetchTournaments } from "@/lib/tournamentService";
 import { Users, Trophy, Cpu, PlusCircle, Sparkles, ShieldCheck, Flame, Radio } from "lucide-react";
 
 interface CommunityEloProps {
   user?: any;
   onSelectSlot?: any;
   defaultSubTab?: "matchmaking" | "tournaments" | "organizer";
+  onOpenAuth?: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
 }
 
-export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matchmaking" }: CommunityEloProps) {
+export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matchmaking", onOpenAuth }: CommunityEloProps) {
   const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer">(defaultSubTab);
+  const [tournamentCount, setTournamentCount] = useState<number | null>(null);
+
+  // Badge "N giải" lấy từ CSDL (cache dùng chung — không gọi API trùng lặp)
+  useEffect(() => {
+    let alive = true;
+    fetchTournaments()
+      .then((list) => { if (alive) setTournamentCount(list.length); })
+      .catch(() => { /* backend chưa lên — giữ nguyên dấu "—" */ });
+    return () => { alive = false; };
+  }, []);
 
   return (
     <div className="w-full space-y-6 animate-fade-in pb-16">
@@ -71,7 +83,7 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
         {/* ========================================================= */}
         {/* TAB CHUYỂN ĐỔI CHÍNH 3 TRỤ CỘT CỦA CỘNG ĐỒNG             */}
         {/* ========================================================= */}
-        <div className="mt-6 pt-5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <div className="mt-6 pt-5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1.5 max-w-full scroll-smooth">
           <button
             type="button"
             onClick={() => setSubTab("matchmaking")}
@@ -97,7 +109,9 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
           >
             <Trophy className={`w-4 h-4 ${subTab === "tournaments" ? "text-amber-300" : "text-amber-500"}`} />
             <span>2. Danh Sách Giải Đấu & Nhánh Bracket</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-black border border-emerald-200">24 GIẢI</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-black border border-emerald-200">
+              {tournamentCount === null ? "…" : `${tournamentCount} GIẢI`}
+            </span>
           </button>
 
           <button
@@ -125,7 +139,11 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
         )}
 
         {subTab === "tournaments" && (
-          <TournamentLeaderboard user={user} />
+          <TournamentLeaderboard
+            user={user}
+            onBackToHome={() => setSubTab("matchmaking")}
+            onRequestLogin={onOpenAuth ? () => onOpenAuth("login", "PLAYER") : undefined}
+          />
         )}
 
         {subTab === "organizer" && (

@@ -1,32 +1,60 @@
 "use client";
 
-import React, { useState } from "react";
-import { 
-  Trophy, 
-  RefreshCw, 
-  Award, 
-  Shield, 
-  Check, 
-  ListOrdered, 
-  Video, 
-  Flame, 
-  Clock, 
-  Users, 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  FileText, 
-  QrCode, 
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Trophy,
+  RefreshCw,
+  Award,
+  Shield,
+  Check,
+  ListOrdered,
+  Video,
+  Flame,
+  Clock,
+  Users,
+  Play,
+  Pause,
+  RotateCcw,
+  FileText,
+  QrCode,
   Zap,
   CheckCircle2,
   AlertTriangle,
-  ChevronRight
+  ChevronRight,
+  Shuffle,
+  UserPlus,
+  Calendar
 } from "lucide-react";
+import DrawLotteryOverlay from "./DrawLotteryOverlay";
+import { ConfirmModal } from "./admin/AdminUI";
+import {
+  Tournament,
+  fetchTournaments,
+  subscribeTournaments,
+  fillSimulatedTeams,
+  clearSimulatedTeams,
+  drawTournamentBracket,
+  saveMatchResult,
+  registeredCount,
+  isFull as isTournamentFull,
+  fillPercent,
+  formatDate,
+  sportLabel,
+  formatLabel,
+  type TournamentBracketData,
+  type BracketMatch,
+} from "@/lib/tournamentService";
 
 export default function TournamentBracket() {
-  const [selectedSport, setSelectedSport] = useState("FOOTBALL_7");
-  const [tournamentFormat, setTournamentFormat] = useState("KNOCKOUT");
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [selectedId, setSelectedId] = useState("");
+  const [fillBusy, setFillBusy] = useState(false);
+  const [clearBusy, setClearBusy] = useState(false);
+  const [drawBusy, setDrawBusy] = useState(false);
+  const [savingMatch, setSavingMatch] = useState<string | null>(null);
+  const [scores, setScores] = useState<Record<string, { a: string; b: string }>>({});
+  const [confirmDraw, setConfirmDraw] = useState(false);
+  const [lottery, setLottery] = useState<{ pairs: { matchId: string; teamA: string; teamB: string }[]; byes: string[] } | null>(null);
   const [activeTab, setActiveTab] = useState<"bracket" | "var_referee" | "standings" | "esheet">("bracket");
 
   // Scoreboard state for Live VAR console
@@ -41,41 +69,155 @@ export default function TournamentBracket() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedCameraAngle, setSelectedCameraAngle] = useState<string>("Cam 1 - Direct Baseline");
 
-  const [quarterFinals, setQuarterFinals] = useState([
-    { matchId: "Q1", teamA: "FC Sài Gòn Warriors (Elo 1550)", teamB: "FC Thắng Lợi Q.7 (Elo 1480)", scoreA: 2, scoreB: 1, winner: "FC Sài Gòn Warriors" },
-    { matchId: "Q2", teamA: "FC Lộc Phát Q.7 (Elo 1520)", teamB: "FC Phoenix Club (Elo 1490)", scoreA: 3, scoreB: 1, winner: "FC Lộc Phát Q.7" },
-    { matchId: "Q3", teamA: "FC Anh Em Kiến Trúc (Elo 1510)", teamB: "FC Sharks Sport (Elo 1470)", scoreA: 1, scoreB: 2, winner: "FC Sharks Sport" },
-    { matchId: "Q4", teamA: "FC Titan Sài Gòn (Elo 1580)", teamB: "FC Nam Sài Gòn (Elo 1500)", scoreA: 2, scoreB: 0, winner: "FC Titan Sài Gòn" },
-  ]);
-
-  const [semiFinals, setSemiFinals] = useState([
-    { matchId: "SF1", teamA: "FC Sài Gòn Warriors", teamB: "FC Lộc Phát Q.7", scoreA: 3, scoreB: 2, winner: "FC Sài Gòn Warriors" },
-    { matchId: "SF2", teamA: "FC Sharks Sport", teamB: "FC Titan Sài Gòn", scoreA: 1, scoreB: 2, winner: "FC Titan Sài Gòn" },
-  ]);
-
-  const [finalMatch, setFinalMatch] = useState({
-    matchId: "FINAL", teamA: "FC Sài Gòn Warriors", teamB: "FC Titan Sài Gòn", scoreA: 3, scoreB: 2, winner: "FC Sài Gòn Warriors"
-  });
-
-  const standings = [
-    { rank: 1, team: "FC Sài Gòn Warriors", p: 4, w: 4, l: 0, setDiff: "+7", points: 12, eloAvg: "1550" },
-    { rank: 2, team: "FC Titan Sài Gòn", p: 4, w: 3, l: 1, setDiff: "+4", points: 9, eloAvg: "1580" },
-    { rank: 3, team: "FC Lộc Phát Q.7", p: 3, w: 2, l: 1, setDiff: "+2", points: 6, eloAvg: "1520" },
-    { rank: 4, team: "FC Sharks Sport Alliance", p: 3, w: 2, l: 1, setDiff: "+1", points: 6, eloAvg: "1470" },
-    { rank: 5, team: "FC Anh Em Kiến Trúc", p: 2, w: 1, l: 1, setDiff: "0", points: 3, eloAvg: "1510" },
-  ];
-
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const handleShuffleDraw = () => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerating(false);
-      triggerToast("Bốc thăm tự động phân nhánh đấu bóng đá đã hoàn tất!");
-    }, 600);
+  // Danh sách giải thật (cache dùng chung)
+  useEffect(() => {
+    let alive = true;
+    fetchTournaments()
+      .then((list) => {
+        if (!alive) return;
+        setTournaments(list);
+        setSelectedId((prev) => {
+          if (prev && list.some((t) => String(t.id) === prev)) return prev;
+          const open = list.find((t) => (t.status ?? "OPEN") === "OPEN");
+          return open ? String(open.id) : list.length ? String(list[0].id) : "";
+        });
+      })
+      .catch(() => {});
+    return subscribeTournaments((list) => {
+      if (!alive) return;
+      setTournaments(list);
+    });
+  }, []);
+
+  const selected = useMemo(
+    () => tournaments.find((t) => String(t.id) === selectedId) ?? null,
+    [tournaments, selectedId]
+  );
+
+  // Nhánh đấu đọc thẳng từ bracketJson trong cache (không request thừa, không 404 console).
+  // Sau fill/draw, cache được refresh nên canvas tự đồng bộ.
+  const bracket = useMemo<TournamentBracketData | null>(() => {
+    if (!selected?.bracketJson) return null;
+    try {
+      const parsed = JSON.parse(selected.bracketJson) as TournamentBracketData;
+      return parsed && Array.isArray(parsed.rounds) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }, [selected]);
+
+  const teamCount = selected ? registeredCount(selected) : 0;
+  const teamCap = selected?.totalTeams ?? 0;
+  const full = selected ? isTournamentFull(selected) : false;
+  const simulatedCount = selected?.teams?.filter((t) => t.simulated).length ?? 0;
+
+  const handleFill = async () => {
+    if (!selected) return;
+    try {
+      setFillBusy(true);
+      const res = await fillSimulatedTeams(selected.id);
+      triggerToast(res.message);
+    } catch (err: any) {
+      triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để giả lập.");
+    } finally {
+      setFillBusy(false);
+    }
+  };
+
+  const handleClearSimulated = async () => {
+    if (!selected) return;
+    try {
+      setClearBusy(true);
+      const res = await clearSimulatedTeams(selected.id);
+      triggerToast(res.message);
+    } catch (err: any) {
+      triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để dọn đội Test.");
+    } finally {
+      setClearBusy(false);
+    }
+  };
+
+  const startDraw = async () => {
+    if (!selected) return;
+    try {
+      setDrawBusy(true);
+      const res = await drawTournamentBracket(selected.id);
+      const r1 = res.bracket.rounds[0]?.matches ?? [];
+      const pairs = r1
+        .filter((m) => m.status === "SCHEDULED" && m.teamA && m.teamB)
+        .map((m) => ({ matchId: m.matchId, teamA: m.teamA!.name, teamB: m.teamB!.name }));
+      const byes = r1.filter((m) => m.status === "BYE" && m.bye).map((m) => m.bye!.name);
+      setLottery({ pairs, byes });
+      setConfirmDraw(false);
+    } catch (err: any) {
+      triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để bốc thăm.");
+    } finally {
+      setDrawBusy(false);
+    }
+  };
+
+  // BXH thật: thắng/thua/điểm tính từ các trận DONE trong nhánh đấu.
+  const tableRows = useMemo(() => {
+    const base = new Map<string, { team: string; captain: string; elo: number; simulated: boolean; played: number; won: number; lost: number }>();
+    (selected?.teams ?? []).forEach((t) =>
+      base.set(t.teamName, {
+        team: t.teamName,
+        captain: t.captainName ?? "—",
+        elo: t.eloRating ?? 1200,
+        simulated: !!t.simulated,
+        played: 0,
+        won: 0,
+        lost: 0,
+      })
+    );
+    bracket?.rounds.forEach((r) =>
+      r.matches.forEach((m) => {
+        if (m.status !== "DONE" || !m.winner || !m.teamA || !m.teamB) return;
+        const a = base.get(m.teamA.name);
+        const b = base.get(m.teamB.name);
+        if (a) a.played += 1;
+        if (b) b.played += 1;
+        const w = base.get(m.winner);
+        if (w) w.won += 1;
+        const loser = m.winner === m.teamA.name ? b : a;
+        if (loser) loser.lost += 1;
+      })
+    );
+    return Array.from(base.values())
+      .map((r) => ({ ...r, points: r.won * 3 }))
+      .sort((x, y) => y.points - x.points || y.elo - x.elo);
+  }, [selected, bracket]);
+
+  const handleSaveScore = async (m: BracketMatch) => {
+    if (!selected || !m.teamA || !m.teamB) return;
+    const s = scores[m.matchId] ?? { a: String(m.scoreA ?? 0), b: String(m.scoreB ?? 0) };
+    const scoreA = Number(s.a);
+    const scoreB = Number(s.b);
+    if (!Number.isInteger(scoreA) || !Number.isInteger(scoreB) || scoreA < 0 || scoreB < 0) {
+      triggerToast("Tỷ số phải là số nguyên lớn hơn hoặc bằng 0.");
+      return;
+    }
+    if (scoreA === scoreB) {
+      triggerToast("Vòng Knockout cần phân thắng bại, không nhận tỷ số hòa.");
+      return;
+    }
+    try {
+      setSavingMatch(m.matchId);
+      const res = await saveMatchResult(selected.id, { matchId: m.matchId, scoreA, scoreB });
+      const deltas = res.eloChanges
+        .map((c) => `${c.team} ${c.delta >= 0 ? "+" : ""}${Math.round(c.delta)}`)
+        .join(" • ");
+      triggerToast(`${res.message} Elo: ${deltas}${res.aiOnline ? "" : " (AI offline, tính local)"}`);
+    } catch (err: any) {
+      triggerToast(err?.message || "Lưu kết quả thất bại.");
+    } finally {
+      setSavingMatch(null);
+    }
   };
 
   const handleVarCheck = (decision: string) => {
@@ -83,12 +225,95 @@ export default function TournamentBracket() {
     triggerToast(`Đã ghi nhận VAR Replay: "${decision}"!`);
   };
 
+  const renderMatch = (match: BracketMatch, idx: number) => {
+    if (match.status === "BYE" && match.bye) {
+      return (
+        <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className="animate-fade-in-up bg-amber-50 dark:bg-amber-950/30 rounded-2xl border border-amber-300 dark:border-amber-800 overflow-hidden text-xs">
+          <div className="p-3 flex justify-between items-center gap-2">
+            <span className="font-bold text-amber-900 dark:text-amber-200 truncate">{match.bye.name}</span>
+            <span className="px-2 py-0.5 rounded bg-amber-500 text-white text-[10px] font-black shrink-0">MIỄN VÒNG</span>
+          </div>
+          {match.bye.elo != null && (
+            <div className="px-3 pb-2 text-[10px] font-mono text-amber-700 dark:text-amber-400">Elo {match.bye.elo} • Hạt giống #{match.bye.seed ?? "—"}</div>
+          )}
+        </div>
+      );
+    }
+    const tbd = match.status === "TBD";
+    const done = match.status === "DONE";
+    const editable = match.status === "SCHEDULED" && match.teamA && !match.teamA.tbd && match.teamB && !match.teamB.tbd;
+    const cur = scores[match.matchId] ?? { a: String(match.scoreA ?? 0), b: String(match.scoreB ?? 0) };
+    const setScore = (side: "a" | "b", v: string) =>
+      setScores((s) => ({ ...s, [match.matchId]: { a: side === "a" ? v : (s[match.matchId]?.a ?? String(match.scoreA ?? 0)), b: side === "b" ? v : (s[match.matchId]?.b ?? String(match.scoreB ?? 0)) } }));
+    return (
+      <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className={`animate-fade-in-up rounded-2xl border overflow-hidden text-xs shadow-xs ${done ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800" : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-800"}`}>
+        <div className="px-2.5 pt-2 font-mono text-[10px] font-black text-slate-400 flex items-center justify-between">
+          <span>{match.matchId}</span>
+          {done && <span className="text-emerald-600 dark:text-emerald-400">✓ ĐÃ ĐÁ</span>}
+        </div>
+        {[match.teamA, match.teamB].map((t, i) => {
+          const isWinner = done && match.winner === t?.name;
+          return (
+            <div key={i}>
+              {i === 1 && <div className="border-t border-slate-200 dark:border-slate-800" />}
+              <div className={`p-3 flex justify-between items-center gap-2 ${t?.tbd ? "text-slate-400 dark:text-slate-500 italic" : isWinner ? "text-emerald-800 dark:text-emerald-200 font-black" : "text-slate-700 dark:text-slate-200 font-bold"}`}>
+                <span className="truncate">{t?.name ?? "?"}{isWinner ? " 👑" : ""}</span>
+                {t && !t.tbd && t.elo != null && (
+                  <span className="font-mono text-[10px] text-slate-400 shrink-0">{t.elo}</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+        {editable && (
+          <div className="px-2.5 pb-2.5 flex items-center gap-1.5">
+            <input
+              type="number"
+              min={0}
+              aria-label={`Bàn thắng ${match.teamA?.name}`}
+              value={cur.a}
+              onChange={(e) => setScore("a", e.target.value)}
+              className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-center font-mono font-black text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <span className="font-mono font-black text-slate-400">–</span>
+            <input
+              type="number"
+              min={0}
+              aria-label={`Bàn thắng ${match.teamB?.name}`}
+              value={cur.b}
+              onChange={(e) => setScore("b", e.target.value)}
+              className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-center font-mono font-black text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <button
+              type="button"
+              onClick={() => handleSaveScore(match)}
+              disabled={savingMatch === match.matchId}
+              className="flex-1 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1"
+            >
+              {savingMatch === match.matchId ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Check className="w-3.5 h-3.5" />
+              )}
+              <span>{savingMatch === match.matchId ? "Đang lưu…" : "Lưu KQ"}</span>
+            </button>
+          </div>
+        )}
+        {done && (
+          <div className="px-2.5 pb-2.5 font-mono text-center text-sm font-black text-emerald-700 dark:text-emerald-300">
+            {match.scoreA} – {match.scoreB}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-50 bg-slate-900 dark:bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-bounce">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 dark:text-white" />
+        <div className="fixed top-6 right-6 z-50 bg-slate-900 dark:bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-fade-in-up max-w-sm">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 dark:text-white shrink-0" />
           <span className="font-semibold text-xs sm:text-sm">{toastMessage}</span>
         </div>
       )}
@@ -96,48 +321,88 @@ export default function TournamentBracket() {
       {/* Main Header Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-          <div>
+          <div className="min-w-0">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold mb-3">
               <Trophy className="w-4 h-4 text-emerald-400" />
-              <span>Saigon Football Open Cup 2026 • Live VAR & Interactive Bracket Engine</span>
+              <span>{selected ? `${selected.title} • Nhánh đấu & VAR` : "Nhánh đấu & Bàn trọng tài Live VAR"}</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              Quản Lý Giải Đấu Bóng Đá & Bàn Trọng Tài Live VAR
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Quản Lý Giải Đấu & Bốc Thăm Chia Cặp Thật
             </h1>
             <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl">
-              Tự động xếp cây nhánh đấu bốc thăm bóng đá, điều hành trực tiếp bàn trọng tài điện tử, chấm điểm AI VAR và đồng bộ kết quả lên BXH Elo toàn quốc.
+              {selected
+                ? `${sportLabel(selected.sportType)} • ${formatLabel(selected.format)} • ${teamCount}/${teamCap || "—"} đội • Khởi tranh ${formatDate(selected.startDate)}`
+                : "Chọn một giải đấu để quản lý nhánh đấu."}
             </p>
           </div>
 
-          {/* Sport & Format Selectors */}
-          <div className="flex flex-wrap items-center gap-3">
+          {/* Tournament selector + management actions */}
+          <div className="flex flex-col gap-3 min-w-0 lg:min-w-[320px]">
+            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider" htmlFor="bracket-tournament">
+              Giải đấu đang quản lý
+            </label>
             <select
-              value={selectedSport}
-              onChange={(e) => setSelectedSport(e.target.value)}
-              className="bg-slate-800 border border-slate-700 text-xs font-extrabold text-white rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              id="bracket-tournament"
+              value={selectedId}
+              onChange={(e) => setSelectedId(e.target.value)}
+              className="bg-slate-800 border border-slate-700 text-xs font-extrabold text-white rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-full"
             >
-              <option value="FOOTBALL_7">⚽ Giải Bóng Đá Sân 7 Serie B Open</option>
-              <option value="FUTSAL">👟 Giải Bóng Đá Futsal Sài Gòn Cup</option>
-              <option value="FOOTBALL_11">🏟️ Giải Bóng Đá Sân 11 VFF Cup</option>
+              {tournaments.length === 0 && <option value="">Chưa có giải đấu</option>}
+              {tournaments.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title} ({registeredCount(t)}/{t.totalTeams ?? "—"} đội • {t.status})
+                </option>
+              ))}
             </select>
 
-            <select
-              value={tournamentFormat}
-              onChange={(e) => setTournamentFormat(e.target.value)}
-              className="bg-slate-800 border border-slate-700 text-xs font-bold text-white rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="KNOCKOUT">Thể thức Loại Trực Tiếp (Knockout)</option>
-              <option value="ROUND_ROBIN">Thể thức Vòng Tròn (Round Robin)</option>
-            </select>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={handleFill}
+                disabled={!selected || full || fillBusy}
+                title="Sinh đội Test cho đủ sức chứa (chỉ dùng demo)"
+                className="px-3.5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {fillBusy ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <UserPlus className="w-4 h-4" />
+                )}
+                <span>{full ? "Đã đủ đội" : `Giả lập đủ đội (Test)${selected && !full && teamCap ? ` +${teamCap - teamCount}` : ""}`}</span>
+              </button>
 
-            <button
-              onClick={handleShuffleDraw}
-              disabled={isGenerating}
-              className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95"
-            >
-              <RefreshCw className={`w-4 h-4 ${isGenerating ? "animate-spin" : ""}`} />
-              <span>Bốc Thăm Tự Động</span>
-            </button>
+              {simulatedCount > 0 && (
+                <button
+                  onClick={handleClearSimulated}
+                  disabled={!selected || clearBusy}
+                  title="Xóa đội Test đã giả lập, giữ nguyên đội đăng ký thật"
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40"
+                >
+                  {clearBusy ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RotateCcw className="w-4 h-4" />
+                  )}
+                  <span>Dọn {simulatedCount} đội Test</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => (bracket ? setConfirmDraw(true) : startDraw())}
+                disabled={!selected || teamCount < 2 || drawBusy}
+                title="Bốc thăm hạt giống theo Elo, lưu nhánh đấu vào CSDL"
+                className="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {drawBusy ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Shuffle className="w-4 h-4" />
+                )}
+                <span>{bracket ? "Bốc thăm lại" : "Bốc thăm chia cặp"}</span>
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400">
+              Giả lập & bốc thăm yêu cầu đăng nhập ORGANIZER hoặc ADMIN.
+            </p>
           </div>
         </div>
 
@@ -159,7 +424,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("var_referee")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "var_referee"
-                ? "bg-red-500 text-white shadow-md animate-pulse"
+                ? "bg-emerald-500 text-slate-950 shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -194,81 +459,52 @@ export default function TournamentBracket() {
         </div>
       </div>
 
-      {/* TAB 1: BRACKET CANVAS */}
+      {/* TAB 1: BRACKET CANVAS (render từ CSDL) */}
       {activeTab === "bracket" && (
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-md overflow-x-auto">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
               <Trophy className="w-5 h-5 text-emerald-500" />
-              <span>Sơ Đồ Cây Nhánh Đấu Vòng Loại Trực Tiếp (Interactive Bracket Tree)</span>
+              <span>Cây Nhánh Đấu {bracket ? `— ${bracket.rounds.length} vòng` : ""}</span>
             </h2>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tự động đẩy kết quả Set đấu realtime</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              {bracket ? `Bốc thăm lúc ${bracket.drawnAt?.slice(0, 16).replace("T", " ")} • Xếp hạt giống theo Elo` : "Chưa có nhánh đấu"}
+            </span>
           </div>
 
-          <div className="min-w-[900px] grid grid-cols-3 gap-8 py-4 items-center">
-            {/* Round 1: Quarter Finals */}
-            <div className="space-y-6">
-              <div className="text-center text-xs font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider bg-slate-100 dark:bg-slate-800 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
-                Vòng Tứ Kết (4 Trận)
-              </div>
-              {quarterFinals.map((match) => (
-                <div key={match.matchId} className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden text-xs shadow-xs">
-                  <div className={`p-3 flex justify-between items-center ${match.winner === match.teamA ? "bg-emerald-500/20 text-emerald-900 dark:text-emerald-300 font-extrabold border-l-4 border-emerald-500" : "text-slate-600 dark:text-slate-400"}`}>
-                    <span className="line-clamp-1">{match.teamA}</span>
-                    <span className="font-mono bg-white dark:bg-slate-950 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold">{match.scoreA}</span>
+          {!selected ? (
+            <div className="p-8 text-center">
+              <Trophy className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Chưa có giải đấu nào trong CSDL.</p>
+            </div>
+          ) : !bracket ? (
+            <div className="p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+              <Shuffle className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+              <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-300">
+                Giải “{selected.title}” chưa bốc thăm chia cặp
+              </p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {teamCount < 2
+                  ? `Mới có ${teamCount} đội — cần ít nhất 2 đội. Dùng nút “Giả lập đủ đội (Test)” nếu thiếu.`
+                  : `Đã có ${teamCount} đội. Bấm “Bốc thăm chia cặp” để xếp hạt giống theo Elo.`}
+              </p>
+            </div>
+          ) : (
+            <div key={bracket.drawnAt} className="flex gap-6 pb-2 items-start overflow-x-auto">
+              {bracket.rounds.map((round, ri) => (
+                <div key={ri} className="min-w-[250px] flex-1 space-y-4">
+                  <div className={`text-center text-xs font-extrabold uppercase tracking-wider py-2 rounded-xl border ${
+                    ri === bracket.rounds.length - 1
+                      ? "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/30"
+                      : "text-emerald-600 dark:text-emerald-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                  }`}>
+                    {round.name} ({round.matches.length} trận)
                   </div>
-                  <div className="border-t border-slate-200 dark:border-slate-800" />
-                  <div className={`p-3 flex justify-between items-center ${match.winner === match.teamB ? "bg-emerald-500/20 text-emerald-900 dark:text-emerald-300 font-extrabold border-l-4 border-emerald-500" : "text-slate-600 dark:text-slate-400"}`}>
-                    <span className="line-clamp-1">{match.teamB}</span>
-                    <span className="font-mono bg-white dark:bg-slate-950 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold">{match.scoreB}</span>
-                  </div>
+                  {round.matches.map((m, mi) => renderMatch(m, mi))}
                 </div>
               ))}
             </div>
-
-            {/* Round 2: Semi Finals */}
-            <div className="space-y-12">
-              <div className="text-center text-xs font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider bg-slate-100 dark:bg-slate-800 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
-                Vòng Bán Kết (2 Trận)
-              </div>
-              {semiFinals.map((match) => (
-                <div key={match.matchId} className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-emerald-500/40 overflow-hidden text-xs shadow-lg">
-                  <div className={`p-3.5 flex justify-between items-center ${match.winner === match.teamA ? "bg-emerald-500/20 text-emerald-900 dark:text-emerald-300 font-extrabold border-l-4 border-emerald-500" : "text-slate-600 dark:text-slate-400"}`}>
-                    <span>{match.teamA}</span>
-                    <span className="font-mono bg-white dark:bg-slate-950 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold">{match.scoreA}</span>
-                  </div>
-                  <div className="border-t border-slate-200 dark:border-slate-800" />
-                  <div className={`p-3.5 flex justify-between items-center ${match.winner === match.teamB ? "bg-emerald-500/20 text-emerald-900 dark:text-emerald-300 font-extrabold border-l-4 border-emerald-500" : "text-slate-600 dark:text-slate-400"}`}>
-                    <span>{match.teamB}</span>
-                    <span className="font-mono bg-white dark:bg-slate-950 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold">{match.scoreB}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Round 3: Final */}
-            <div className="space-y-6">
-              <div className="text-center text-xs font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-wider bg-amber-500/10 py-2 rounded-xl border border-amber-500/30 flex items-center justify-center space-x-1">
-                <Award className="w-4 h-4 text-amber-500" />
-                <span>Trận Chung Kết Vô Địch</span>
-              </div>
-
-              <div className="bg-slate-50 dark:bg-slate-800/80 rounded-2xl border-2 border-amber-500 overflow-hidden text-xs shadow-xl">
-                <div className="bg-amber-500/20 text-center py-2 font-bold text-amber-800 dark:text-amber-300 border-b border-amber-500/30 text-xs uppercase tracking-widest flex items-center justify-center space-x-1">
-                  <span>Vô Địch: {finalMatch.winner} 🏆</span>
-                </div>
-                <div className={`p-4 flex justify-between items-center ${finalMatch.winner === finalMatch.teamA ? "bg-emerald-500/20 text-slate-900 dark:text-white font-extrabold" : "text-slate-600 dark:text-slate-400"}`}>
-                  <span className="text-sm">{finalMatch.teamA}</span>
-                  <span className="font-mono text-sm bg-white dark:bg-slate-950 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded font-bold border border-slate-200 dark:border-slate-800">{finalMatch.scoreA}</span>
-                </div>
-                <div className="border-t border-slate-200 dark:border-slate-800" />
-                <div className={`p-4 flex justify-between items-center ${finalMatch.winner === finalMatch.teamB ? "bg-emerald-500/20 text-slate-900 dark:text-white font-extrabold" : "text-slate-600 dark:text-slate-400"}`}>
-                  <span className="text-sm">{finalMatch.teamB}</span>
-                  <span className="font-mono text-sm bg-white dark:bg-slate-950 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded font-bold border border-slate-200 dark:border-slate-800">{finalMatch.scoreB}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -448,48 +684,70 @@ export default function TournamentBracket() {
         </div>
       )}
 
-      {/* TAB 3: STANDINGS & FOOTBALL ELO LEADERBOARD */}
+      {/* TAB 3: BXH TỪ ĐỘI ĐĂNG KÝ THẬT (xếp theo Elo) */}
       {activeTab === "standings" && (
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-md">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-            <ListOrdered className="w-5 h-5 text-emerald-500" />
-            <span>Bảng Xếp Hạng Giải Đấu & Điểm Elo Bóng Đá</span>
-          </h2>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase font-bold text-[10px] tracking-wider">
-                  <th className="py-3 px-4">Hạng</th>
-                  <th className="py-3 px-4">Tên Đội / CLB</th>
-                  <th className="py-3 px-4 text-center">Trận</th>
-                  <th className="py-3 px-4 text-center">Thắng</th>
-                  <th className="py-3 px-4 text-center">Thua</th>
-                  <th className="py-3 px-4 text-center">Hiệu Số Bàn Thắng</th>
-                  <th className="py-3 px-4 text-center">Elo Trung Bình</th>
-                  <th className="py-3 px-4 text-right">Điểm Số</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 font-medium">
-                {standings.map((row) => (
-                  <tr key={row.rank} className={`hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors ${row.rank === 1 ? "bg-emerald-50 dark:bg-emerald-950/20 text-slate-900 dark:text-white font-bold" : "text-slate-700 dark:text-slate-300"}`}>
-                    <td className="py-3.5 px-4 font-bold text-emerald-600 dark:text-emerald-400">#{row.rank}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{row.team}</td>
-                    <td className="py-3.5 px-4 text-center">{row.p}</td>
-                    <td className="py-3.5 px-4 text-center text-emerald-600 dark:text-emerald-400 font-bold">{row.w}</td>
-                    <td className="py-3.5 px-4 text-center text-rose-500">{row.l}</td>
-                    <td className="py-3.5 px-4 text-center font-mono">{row.setDiff}</td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="bg-amber-400/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded font-bold">
-                        Elo {row.eloAvg}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right text-sm font-extrabold text-emerald-600 dark:text-emerald-400">{row.points}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+              <ListOrdered className="w-5 h-5 text-emerald-500" />
+              <span>Bảng Xếp Hạng {selected ? `— ${selected.title}` : ""}</span>
+            </h2>
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              Thắng = 3 điểm • Elo cập nhật tự động sau mỗi trận
+            </span>
           </div>
+
+          {tableRows.length === 0 ? (
+            <div className="p-8 text-center">
+              <Users className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                {selected ? "Giải chưa có đội nào ghi danh." : "Chưa chọn giải đấu."}
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase font-bold text-[10px] tracking-wider">
+                    <th className="py-3 px-4">Hạng</th>
+                    <th className="py-3 px-4">Tên Đội / CLB</th>
+                    <th className="py-3 px-4 text-center">Trận</th>
+                    <th className="py-3 px-4 text-center">Thắng</th>
+                    <th className="py-3 px-4 text-center">Thua</th>
+                    <th className="py-3 px-4 text-center">Điểm</th>
+                    <th className="py-3 px-4 text-center">Elo Hiện Tại</th>
+                    <th className="py-3 px-4 text-right">Nguồn</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 font-medium">
+                  {tableRows.map((row, idx) => (
+                    <tr key={row.team} className={`hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors ${idx === 0 ? "bg-emerald-50 dark:bg-emerald-950/20 text-slate-900 dark:text-white font-bold" : "text-slate-700 dark:text-slate-300"}`}>
+                      <td className="py-3.5 px-4 font-bold text-emerald-600 dark:text-emerald-400">#{idx + 1}</td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                        {idx === 0 && "👑 "}{row.team}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-mono">{row.played}</td>
+                      <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{row.won}</td>
+                      <td className="py-3.5 px-4 text-center font-mono text-rose-500">{row.lost}</td>
+                      <td className="py-3.5 px-4 text-center font-mono font-black">{row.points}</td>
+                      <td className="py-3.5 px-4 text-center">
+                        <span className="bg-amber-400/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded font-bold font-mono">
+                          {row.elo.toLocaleString("vi-VN")}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        {row.simulated ? (
+                          <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 text-[10px] font-black">TEST</span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-black">CHÍNH THỨC</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -516,7 +774,7 @@ export default function TournamentBracket() {
             <div className="grid grid-cols-2 gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
               <div>
                 <span className="text-slate-500 dark:text-slate-400">Giải Đấu:</span>
-                <div className="font-bold text-slate-900 dark:text-white">Saigon Football Premier Cup 2026</div>
+                <div className="font-bold text-slate-900 dark:text-white">{selected?.title ?? "Saigon Football Premier Cup 2026"}</div>
               </div>
               <div>
                 <span className="text-slate-500 dark:text-slate-400">Vòng Đấu & Sân:</span>
@@ -542,6 +800,37 @@ export default function TournamentBracket() {
           </div>
         </div>
       )}
+
+      {/* Overlay hiệu ứng bốc thăm */}
+      {selected && (
+        <DrawLotteryOverlay
+          open={lottery !== null}
+          tournamentTitle={selected.title}
+          pairs={lottery?.pairs ?? []}
+          byes={lottery?.byes ?? []}
+          onDone={() => {
+            setLottery(null);
+            triggerToast("Nhánh đấu chính thức đã được lưu vào CSDL!");
+          }}
+        />
+      )}
+
+      {/* Xác nhận bốc thăm lại (ghi đè nhánh cũ) */}
+      <ConfirmModal
+        open={confirmDraw}
+        title="Bốc thăm lại?"
+        message={
+          <>
+            Giải <strong>“{selected?.title}”</strong> đã có nhánh đấu. Bốc thăm lại sẽ{" "}
+            <strong>ghi đè toàn bộ nhánh cũ</strong>.
+          </>
+        }
+        confirmLabel="Bốc thăm lại"
+        danger={false}
+        busy={drawBusy}
+        onCancel={() => setConfirmDraw(false)}
+        onConfirm={startDraw}
+      />
     </div>
   );
 }

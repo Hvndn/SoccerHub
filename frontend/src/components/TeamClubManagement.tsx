@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   Shield,
   Users,
@@ -38,7 +39,6 @@ export default function TeamClubManagement({
 }: TeamClubManagementProps) {
   const [activeSubTab, setActiveSubTab] = useState<"roster" | "fund" | "matches" | "recruitment">("roster");
   const [searchMember, setSearchMember] = useState("");
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [showFundModal, setShowFundModal] = useState(false);
 
   // Mock Team Data (Stitch Spec: FC Thunder VaoSan)
@@ -185,14 +185,13 @@ export default function TeamClubManagement({
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setShowInviteModal(true)}
-          className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs shadow-sm flex items-center space-x-1.5 transition-all shrink-0"
+        <Link
+          href="/teams/members/new"
+          className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs shadow-sm flex items-center space-x-1.5 transition-all shrink-0 active:scale-95"
         >
           <UserPlus className="w-4 h-4" />
           <span>Chiêu Mộ Cầu Thủ</span>
-        </button>
+        </Link>
       </div>
 
       {/* TAB CONTENT: ROSTER */}

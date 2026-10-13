@@ -59,19 +59,31 @@ export default function Home() {
 
   // Thông báo phân quyền khi người dùng cố truy cập trang ngoài quyền hạn
   const [roleWarning, setRoleWarning] = useState<string | null>(null);
+  // Lưu tab đang cố truy cập để sau khi đăng nhập xong thì tự chuyển về
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
 
   const showRoleWarning = (msg: string) => {
     setRoleWarning(msg);
-    setTimeout(() => setRoleWarning(null), 4500);
+    setTimeout(() => setRoleWarning(null), 5500);
   };
 
-  // Danh mục tab theo vai trò
+  // ============================================================
+  // MA TRẬN PHÂN QUYỀN TAB (RBAC)
+  // ============================================================
+  // Tab chỉ dành cho OWNER (Chủ sân)
   const OWNER_TABS = ["admin", "owner-onboarding", "iot-console", "multi-sport"];
+  // Tab chỉ dành cho ORGANIZER hoặc người có quyền điều hành giải
+  const ORGANIZER_TABS = ["organizer"];
+  // Tab yêu cầu đăng nhập (bất kỳ vai trò nào cũng phải có tài khoản)
+  const AUTH_REQUIRED_TABS = ["my-activities", "profile", "post-match", "team-management", "membership"];
+  // Tab bị cấm với OWNER (Chủ sân không được dùng chức năng dành cho Cầu thủ)
+  const PLAYER_ONLY_TABS = ["booking", "urgent-resale", "community", "tournaments", "team-management", "post-match", "membership"];
 
   // Role Guard: Tự động điều hướng và bảo vệ phân quyền nhất quán khi role thay đổi
   React.useEffect(() => {
     if (!currentUser) {
-      if (OWNER_TABS.includes(activeTab)) {
+      // Khách chưa đăng nhập: đẩy ra ngoài các tab yêu cầu auth
+      if ([...OWNER_TABS, ...ORGANIZER_TABS, ...AUTH_REQUIRED_TABS].includes(activeTab)) {
         setActiveTab("booking");
       }
       return;
@@ -85,37 +97,93 @@ export default function Home() {
         setActiveTab("admin");
       }
     } else if (currentUser.role === "PLAYER") {
-      // CẦU THỦ / NGƯỜI CHƠI: Cấm tuyệt đối vào trang quản lý sân
+      // CẦU THỦ: Cấm vào trang quản lý sân & điều hành giải (của OWNER/ORGANIZER)
       if (OWNER_TABS.includes(activeTab)) {
         setActiveTab("booking");
       }
+    } else if (currentUser.role === "ORGANIZER") {
+      // BAN TỔ CHỨC: Cấm vào bảng quản lý sân của Chủ sân
+      if (OWNER_TABS.includes(activeTab)) {
+        setActiveTab("tournaments");
+      }
+    } else if (currentUser.role === "ADMIN") {
+      // SUPER ADMIN: không thao tác ở trang home — về route quản trị riêng
+      window.location.assign("/admin");
     }
   }, [currentUser?.role, currentUser?.isNewOwner]);
 
   const handleTabChange = (newTab: string) => {
-    // 1. Kiểm tra quyền của CHỦ SÂN: Không được vào trang tìm/đặt sân của Cầu Thủ
+    // ================================================================
+    // GUARD 0: SUPER ADMIN - Không thao tác ở trang người dùng/chủ sân
+    // ================================================================
+    if (currentUser?.role === "ADMIN") {
+      showRoleWarning("⚠️ Tài khoản Quản Trị không thao tác ở khu vực này. Đang chuyển về Trang Quản Trị Hệ Thống.");
+      window.location.assign("/admin");
+      return;
+    }
+
+    // ================================================================
+    // GUARD 1: OWNER (Chủ Sân) - Không được vào khu vực Cầu Thủ
+    // ================================================================
     if (currentUser?.role === "OWNER") {
       if (!OWNER_TABS.includes(newTab)) {
-        showRoleWarning("⚠️ Bạn đang ở tài khoản Chủ Sân! Vui lòng sử dụng Bảng Điều Hành để quản lý cụm sân, không thể truy cập trang tìm đặt sân của Cầu Thủ.");
+        showRoleWarning("⚠️ Tài khoản Chủ Sân không thể truy cập khu vực Cầu Thủ. Vui lòng dùng Bảng Điều Hành để quản lý cụm sân.");
         setActiveTab(currentUser.isNewOwner ? "owner-onboarding" : "admin");
         return;
       }
     }
 
-    // 2. Kiểm tra quyền của CẦU THỦ: Không được vào trang Quản Lý Sân
+    // ================================================================
+    // GUARD 2: PLAYER (Cầu Thủ) - Không được vào khu quản lý sân OWNER
+    // ================================================================
     if (currentUser?.role === "PLAYER") {
       if (OWNER_TABS.includes(newTab)) {
-        showRoleWarning("🚫 Quyền truy cập bị từ chối: Tài khoản Cầu Thủ không thể vào trang Quản Lý Cụm Sân & Doanh Thu!");
+        showRoleWarning("🚫 Truy cập bị từ chối: Tài khoản Cầu Thủ không có quyền vào Bảng Quản Lý Cụm Sân & Doanh Thu.");
         setActiveTab("booking");
+        return;
+      }
+      // Cầu Thủ cũng không được vào tab điều hành giải (chỉ dành ORGANIZER)
+      if (ORGANIZER_TABS.includes(newTab)) {
+        showRoleWarning("🚫 Tab Điều Hành Giải Đấu chỉ dành cho Ban Tổ Chức có xác thực. Liên hệ quản trị để nâng cấp quyền Tổ Chức.");
+        setActiveTab("tournaments");
         return;
       }
     }
 
-    // 3. KHÁCH CHƯA ĐĂNG NHẬP: Bấm vào tab Quản lý thì yêu cầu đăng nhập Chủ Sân
-    if (!currentUser) {
+    // ================================================================
+    // GUARD 3: ORGANIZER (Ban Tổ Chức) - Không được vào khu Chủ Sân
+    // ================================================================
+    if (currentUser?.role === "ORGANIZER") {
       if (OWNER_TABS.includes(newTab)) {
+        showRoleWarning("🚫 Tài khoản Ban Tổ Chức không có quyền vào Bảng Quản Lý Cụm Sân. Chức năng này chỉ dành cho Chủ Sân (OWNER).");
+        setActiveTab("tournaments");
+        return;
+      }
+    }
+
+    // ================================================================
+    // GUARD 4: KHÁCH CHƯA ĐĂNG NHẬP
+    // ================================================================
+    if (!currentUser) {
+      // 4a. Tab chỉ dành Chủ Sân => Yêu cầu đăng nhập OWNER
+      if (OWNER_TABS.includes(newTab)) {
+        setPendingTab(newTab);
         showRoleWarning("🔒 Vui lòng đăng nhập với vai trò Chủ Sân để truy cập Bảng Quản Lý!");
         handleOpenAuth("login", "OWNER");
+        return;
+      }
+      // 4b. Tab điều hành giải => Yêu cầu đăng nhập ORGANIZER
+      if (ORGANIZER_TABS.includes(newTab)) {
+        setPendingTab(newTab);
+        showRoleWarning("🔒 Chức năng Điều Hành Giải Đấu yêu cầu tài khoản Ban Tổ Chức (ORGANIZER). Vui lòng đăng nhập!");
+        handleOpenAuth("login", "ORGANIZER");
+        return;
+      }
+      // 4c. Tab yêu cầu đăng nhập chung => Yêu cầu đăng nhập PLAYER
+      if (AUTH_REQUIRED_TABS.includes(newTab)) {
+        setPendingTab(newTab);
+        showRoleWarning("🔒 Vui lòng đăng nhập để sử dụng chức năng này!");
+        handleOpenAuth("login", "PLAYER");
         return;
       }
     }
@@ -152,12 +220,37 @@ export default function Home() {
 
   const handleLoginSuccess = (userData: any) => {
     setLocalUser(userData);
-    if (userData?.role === "OWNER") {
-      if (userData?.isNewOwner) {
-        setActiveTab("owner-onboarding");
-      } else {
-        setActiveTab("admin");
+
+    // Nếu có pendingTab (tab người dùng đang cố vào trước khi bị redirect đăng nhập)
+    // => Kiểm tra xem vai trò mới có đủ quyền truy cập pendingTab không
+    if (pendingTab) {
+      const savedPending = pendingTab;
+      setPendingTab(null);
+
+      const ownerTabs = ["admin", "owner-onboarding", "iot-console", "multi-sport"];
+      const organizerTabs = ["organizer"];
+      const authRequiredTabs = ["my-activities", "profile", "post-match", "team-management", "membership"];
+
+      const canAccess =
+        (ownerTabs.includes(savedPending) && userData?.role === "OWNER") ||
+        (organizerTabs.includes(savedPending) && userData?.role === "ORGANIZER") ||
+        (authRequiredTabs.includes(savedPending) && userData?.role === "PLAYER") ||
+        // PLAYER cũng có thể vào các tab thông thường
+        (!ownerTabs.includes(savedPending) && !organizerTabs.includes(savedPending) && userData?.role === "PLAYER");
+
+      if (canAccess) {
+        setActiveTab(savedPending);
+        return;
       }
+    }
+
+    // Routing mặc định theo vai trò
+    if (userData?.role === "ADMIN") {
+      window.location.assign("/admin");
+    } else if (userData?.role === "OWNER") {
+      setActiveTab(userData?.isNewOwner ? "owner-onboarding" : "admin");
+    } else if (userData?.role === "ORGANIZER") {
+      setActiveTab("tournaments");
     } else {
       setActiveTab("booking");
     }
@@ -201,7 +294,7 @@ export default function Home() {
       )}
 
       {/* Main Content Body */}
-      <main className={`flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] pb-12 lg:pb-14 space-y-8 sm:space-y-16 ${!currentUser && activeTab === "booking" ? "pt-0" : "pt-4"}`}>
+      <main className={`flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] pb-12 lg:pb-14 space-y-8 sm:space-y-16 ${!currentUser && activeTab === "booking" ? "pt-0" : "pt-4"}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -284,6 +377,7 @@ export default function Home() {
             <CommunityElo 
               user={currentUser} 
               defaultSubTab="tournaments"
+              onOpenAuth={handleOpenAuth}
             />
           )}
 
@@ -302,22 +396,64 @@ export default function Home() {
                   onOpenAuth={handleOpenAuth}
                 />
               )}
-              <CommunityElo user={currentUser} />
+              <CommunityElo user={currentUser} onOpenAuth={handleOpenAuth} />
             </>
           )}
 
           {activeTab === "team-management" && (
-            <TeamClubManagement
-              onBackToHome={() => handleTabChange("booking")}
-              onNavigateTab={handleTabChange}
-            />
+            currentUser ? (
+              <TeamClubManagement
+                onBackToHome={() => handleTabChange("booking")}
+                onNavigateTab={handleTabChange}
+              />
+            ) : (
+              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
+                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                    Đăng nhập để quản lý đội bóng, thành viên và lịch thi đấu của CLB.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleOpenAuth("login", "PLAYER")}
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                >
+                  Đăng Nhập Ngay
+                </button>
+              </div>
+            )
           )}
 
           {activeTab === "post-match" && (
-            <PostMatchUtilities
-              onBackToHome={() => handleTabChange("booking")}
-              onNavigateTab={handleTabChange}
-            />
+            currentUser ? (
+              <PostMatchUtilities
+                onBackToHome={() => handleTabChange("booking")}
+                onNavigateTab={handleTabChange}
+              />
+            ) : (
+              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
+                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                    Đăng nhập để xem thống kê, phân tích sau trận và ghi chép kết quả.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleOpenAuth("login", "PLAYER")}
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                >
+                  Đăng Nhập Ngay
+                </button>
+              </div>
+            )
           )}
 
           {activeTab === "admin" && (
@@ -362,34 +498,138 @@ export default function Home() {
           )}
 
           {(activeTab === "my-activities" || activeTab === "schedule") && (
-            <ActivitySchedule 
-              onBackToHome={() => handleTabChange("booking")} 
-              onNavigateTab={handleTabChange}
-            />
+            currentUser ? (
+              <ActivitySchedule 
+                onBackToHome={() => handleTabChange("booking")} 
+                onNavigateTab={handleTabChange}
+              />
+            ) : (
+              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
+                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                    Vui lòng đăng nhập để xem lịch thi đấu và hoạt động của bạn.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleOpenAuth("login", "PLAYER")}
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                >
+                  Đăng Nhập Ngay
+                </button>
+              </div>
+            )
           )}
 
           {activeTab === "profile" && (
-            <PlayerProfileConsole 
-              user={currentUser}
-              onOpenAuth={handleOpenAuth}
-              onBackToHome={() => handleTabChange("booking")} 
-              onNavigateTab={handleTabChange}
-            />
+            currentUser ? (
+              <PlayerProfileConsole 
+                user={currentUser}
+                onOpenAuth={handleOpenAuth}
+                onBackToHome={() => handleTabChange("booking")} 
+                onNavigateTab={handleTabChange}
+              />
+            ) : (
+              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
+                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                    Đăng nhập để xem và quản lý hồ sơ cầu thủ, chỉ số Elo và thành tích thi đấu.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleOpenAuth("login", "PLAYER")}
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                >
+                  Đăng Nhập Ngay
+                </button>
+              </div>
+            )
           )}
 
           {activeTab === "organizer" && (
-            <CommunityElo 
-              user={currentUser} 
-              defaultSubTab="organizer"
-            />
+            (currentUser?.role === "ORGANIZER" || currentUser?.role === "OWNER") ? (
+              <CommunityElo 
+                user={currentUser} 
+                defaultSubTab="organizer"
+                onOpenAuth={handleOpenAuth}
+              />
+            ) : currentUser ? (
+              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
+                  <ShieldAlert className="w-8 h-8 text-rose-500" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🚫 Truy Cập Bị Từ Chối</h2>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                    Khu vực Điều Hành Giải Đấu chỉ dành cho tài khoản <strong>Ban Tổ Chức (ORGANIZER)</strong>. Liên hệ quản trị để được nâng cấp quyền điều hành.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleTabChange("tournaments")}
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                >
+                  Xem Trang Giải Đấu Cộng Đồng
+                </button>
+              </div>
+            ) : (
+              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
+                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập với Tài Khoản Ban Tổ Chức</h2>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                    Chức năng Điều Hành Giải Đấu yêu cầu tài khoản <strong>ORGANIZER</strong> có xác thực.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleOpenAuth("login", "ORGANIZER")}
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                >
+                  Đăng Nhập Ban Tổ Chức
+                </button>
+              </div>
+            )
           )}
 
           {activeTab === "membership" && (
-            <MemberCardPortal 
-              user={currentUser}
-              onBackToHome={() => handleTabChange("booking")} 
-              onNavigateTab={handleTabChange}
-            />
+            currentUser ? (
+              <MemberCardPortal 
+                user={currentUser}
+                onBackToHome={() => handleTabChange("booking")} 
+                onNavigateTab={handleTabChange}
+              />
+            ) : (
+              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
+                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                    Đăng nhập để xem và quản lý Thẻ Hội Viên, ưu đãi và điểm tích lũy của bạn.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleOpenAuth("login", "PLAYER")}
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                >
+                  Đăng Nhập Ngay
+                </button>
+              </div>
+            )
           )}
           </motion.div>
         </AnimatePresence>

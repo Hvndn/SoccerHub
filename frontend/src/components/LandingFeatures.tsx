@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Reveal from "./Reveal";
 import {
   ShieldCheck,
   Users,
@@ -192,12 +193,12 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
 
         {/* 4 Pillars Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-          {pillars.map((pillar) => {
+          {pillars.map((pillar, pi) => {
             const Icon = pillar.icon;
             return (
+              <Reveal key={pillar.id} delay={pi * 80}>
               <div
-                key={pillar.id}
-                className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-6 group relative overflow-hidden"
+                className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-6 group relative overflow-hidden h-full"
               >
                 {/* Decorative Top Ambient Light */}
                 <div className={`absolute top-0 right-0 w-48 h-48 bg-gradient-to-br ${pillar.gradient} opacity-5 group-hover:opacity-10 blur-2xl transition-opacity pointer-events-none`} />
@@ -243,6 +244,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                   </span>
                 </div>
               </div>
+              </Reveal>
             );
           })}
         </div>

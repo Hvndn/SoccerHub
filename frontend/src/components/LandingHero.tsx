@@ -28,57 +28,48 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
   return (
     <div className="relative w-full space-y-10 sm:space-y-14">
       {/* ========================================================
-          FULL-WIDTH EDGE-TO-EDGE BANNER (TRÀN MÀN HÌNH 100VW)
-          MÀU NGUYÊN BẢN CỦA TEMPLATE NICEPAGE:
-          background-image: linear-gradient(to right, #194f81, #c11d3e);
+          FULL-WIDTH EDGE-TO-EDGE BANNER (GIAO DIỆN SÁNG TINH TẾ)
          ======================================================== */}
-      <div 
-        className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden shadow-2xl text-white"
-        style={{
-          background: "linear-gradient(to right, #194f81, #c11d3e)",
-          backgroundPosition: "50% 50%",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover"
-        }}
-      >
-        {/* Subtle overlay texture */}
-        <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden shadow-xs border-y border-slate-200/80 bg-white">
+        {/* Soft Ambient Accents */}
+        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-emerald-50/70 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 left-10 w-[450px] h-[450px] bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
 
         {/* Inner Content Container Aligned with Site Container (max-w-[1720px]) */}
-        <div className="relative z-10 max-w-[1720px] mx-auto px-4 sm:px-8 lg:px-[50px] py-12 sm:py-20 lg:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+        <div className="relative z-10 max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-6 xl:px-[50px] py-10 sm:py-16 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-14 items-center">
             
             {/* LEFT COLUMN: HERO CONTENT (7 COLS) */}
-            <div className="lg:col-span-7 space-y-6 sm:space-y-7">
+            <div className="lg:col-span-7 space-y-5 sm:space-y-6">
               {/* Main Headline: Đề tài quản lý sân bóng và giải đấu thể thao thông minh */}
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15] uppercase font-sans drop-shadow-md">
+              <h1 className="text-2xl sm:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-black text-slate-900 tracking-tight leading-[1.18] uppercase font-sans">
                 Quản Lý Sân Bóng &amp; <br />
-                <span className="text-white">Giải Đấu Thể Thao Thông Minh</span>
+                <span className="text-[#0b4f6c]">Giải Đấu Thể Thao Thông Minh</span>
               </h1>
 
               {/* 2 Feature Items Chuẩn Đề Tài */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-2">
-                <div className="flex items-center space-x-3 text-white">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                    <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 pt-1">
+                <div className="flex items-center space-x-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs">
+                  <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 border border-amber-200">
+                    <Zap className="w-4 h-4 text-amber-700 fill-amber-700" />
                   </div>
-                  <span className="font-extrabold text-sm sm:text-base leading-snug">
+                  <span className="font-extrabold text-xs sm:text-sm text-slate-800 leading-snug">
                     Khóa Ca Redis Mutex &lt;20ms • Chống Trùng Ca 100%
                   </span>
                 </div>
 
-                <div className="flex items-center space-x-3 text-white">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                    <Shield className="w-4 h-4 text-sky-200 fill-sky-200" />
+                <div className="flex items-center space-x-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs">
+                  <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center shrink-0 border border-sky-200">
+                    <Shield className="w-4 h-4 text-sky-700 fill-sky-700" />
                   </div>
-                  <span className="font-extrabold text-sm sm:text-base leading-snug">
+                  <span className="font-extrabold text-xs sm:text-sm text-slate-800 leading-snug">
                     Tự Động Hóa Dàn Đèn IoT MQTT &amp; Giải Đấu Chuẩn VFF
                   </span>
                 </div>
               </div>
 
               {/* Concise Thesis-Aligned Description */}
-              <p className="text-sm sm:text-base text-slate-100/90 font-medium leading-relaxed max-w-2xl pt-1">
+              <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed max-w-2xl pt-1">
                 Nền tảng số hóa toàn diện kết nối <strong>Cầu Thủ</strong>, <strong>Chủ Cụm Sân</strong> và <strong>Ban Tổ Chức Giải Đấu</strong>. 
                 Tích hợp thanh toán cọc tức thời <strong>VietQR Napas247</strong>, tự động bật/tắt dàn đèn theo ca thi đấu, thuật toán AI cân bằng trình độ <strong>Elo Rating</strong> và sơ đồ thi đấu knock-out trực quan.
               </p>
@@ -88,18 +79,18 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                 <button
                   type="button"
                   onClick={() => onOpenAuth("login", "PLAYER")}
-                  className="px-9 py-4 rounded-xl bg-[#f1b500] hover:bg-[#dba400] text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-2xl transition-all active:scale-95 flex items-center space-x-2.5 cursor-pointer"
+                  className="px-9 py-4 rounded-xl bg-[#0b4f6c] hover:bg-[#083b52] text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center space-x-2.5 cursor-pointer"
                 >
-                  <Users className="w-4 h-4 text-slate-950" />
+                  <Users className="w-4 h-4 text-white" />
                   <span>Đặt Sân Ngay →</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onOpenAuth("login", "OWNER")}
-                  className="px-7 py-4 rounded-xl bg-white/15 hover:bg-white/25 text-white font-extrabold text-xs sm:text-sm border border-white/30 backdrop-blur-md transition-all active:scale-95 flex items-center space-x-2 cursor-pointer shadow-lg"
+                  className="px-7 py-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm border border-slate-200 transition-all active:scale-95 flex items-center space-x-2 cursor-pointer shadow-xs"
                 >
-                  <Shield className="w-4 h-4 text-sky-200" />
+                  <Shield className="w-4 h-4 text-sky-700" />
                   <span>Cổng Chủ Sân</span>
                 </button>
               </div>

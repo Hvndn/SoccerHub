@@ -636,7 +636,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     <div className="space-y-8 animate-fade-in-up pb-16">
       {/* Toast Feedback Notification */}
       {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-slide-up">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           <span className="text-xs font-bold">{toastMsg}</span>
         </div>
@@ -644,11 +644,11 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* POPUP THÔNG BÁO ĐƠN ĐẶT SÂN REALTIME TỪ CẦU THỦ */}
       {realtimeAlert && (
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 text-white p-4.5 sm:p-5 rounded-3xl shadow-2xl border-2 border-emerald-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-scale-up relative overflow-hidden">
+        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 text-white p-4 sm:p-5 rounded-3xl shadow-2xl border-2 border-emerald-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-modal-pop relative overflow-hidden">
           <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           
           <div className="flex items-start space-x-3.5 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-white text-emerald-600 flex items-center justify-center shrink-0 shadow-lg animate-bounce">
+            <div className="w-12 h-12 rounded-2xl bg-white text-emerald-600 flex items-center justify-center shrink-0 shadow-lg animate-bell-wiggle">
               <Bell className="w-6 h-6 fill-emerald-600 text-emerald-600" />
             </div>
             <div className="space-y-1">
@@ -701,7 +701,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       {notification && (
         <div className="bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 px-5 py-3 rounded-2xl shadow-lg border border-sky-400/30 flex items-center justify-between animate-fade-in">
           <div className="flex items-center space-x-3 text-xs font-bold">
-            <Bell className="w-4 h-4 animate-bounce text-amber-300 shrink-0" />
+            <Bell className="w-4 h-4 animate-bell-wiggle text-amber-300 shrink-0" />
             <span>{notification}</span>
           </div>
           <button
@@ -718,7 +718,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0b4f6c]/10 dark:bg-sky-500/10 border border-[#0b4f6c]/20 dark:border-sky-400/20 text-[#0b4f6c] dark:text-sky-400 text-sm font-bold mb-2">
-              <ShieldCheck className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+              <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>
                 {activePitch 
                   ? `${activePitch.name.replace(/đà nẵng/i, "Đà Nẵng").toUpperCase()} — HỆ THỐNG ĐIỀU HÀNH CHỦ SÂN PRO` 
@@ -935,7 +935,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
         <div className="flex items-center space-x-2.5 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-80">
-            <Search className="w-4.5 h-4.5 absolute left-3.5 top-3 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
             <input
               type="text"
               value={searchCodeInput}
@@ -1348,9 +1348,9 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => setShowAddPitchModal(true)}
-                className="px-4.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm shadow-md transition-all flex items-center space-x-2 active:scale-95"
+                className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm shadow-md transition-all flex items-center space-x-2 active:scale-95"
               >
-                <Plus className="w-4.5 h-4.5" />
+                <Plus className="w-4 h-4" />
                 <span>+ Thêm Sân Con Mới</span>
               </button>
             </div>
@@ -1925,7 +1925,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 onClick={() => handleCancelBooking(selectedSlotForAction)}
                 className="w-full py-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-bold text-sm border border-rose-500/20 transition-all flex items-center justify-center space-x-2 active:scale-95"
               >
-                <Trash2 className="w-4.5 h-4.5" />
+                <Trash2 className="w-4 h-4" />
                 <span>Hủy Đơn Đặt Này (Trả Về Ca Trống)</span>
               </button>
             </div>

@@ -1,110 +1,94 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import Link from 'next/link';
+import CountUp from './CountUp';
 import TournamentBracket from './TournamentBracket';
 import { 
   Trophy, Award, Flame, Search, Filter, Calendar, MapPin, Users, ChevronRight, 
   PlayCircle, Zap, ArrowUpRight, ShieldCheck, CheckCircle2, UserCheck, PlusCircle,
   Radio, RefreshCw, Star, Info, Share2, Sparkles, Check, Home, Video, ChevronDown,
-  Activity
+  Activity, AlertTriangle, LogIn
 } from 'lucide-react';
+import {
+  Tournament,
+  SportType,
+  fetchTournaments,
+  subscribeTournaments,
+  countBySport,
+  countOpen,
+  countLive,
+  pickFeatured,
+  filterBySport,
+  sportLabel,
+  formatLabel,
+  formatShort,
+  formatDate,
+  formatMoney,
+  daysUntil,
+  registeredCount,
+  isFull as isTournamentFull,
+  fillPercent,
+} from '@/lib/tournamentService';
 
 interface TournamentLeaderboardProps {
   user?: any;
   onBackToHome?: () => void;
   onSelectTournament?: (id: string) => void;
+  /** Mở modal đăng nhập (dùng cho trạng thái khách) */
+  onRequestLogin?: () => void;
 }
+
+/** Sport ribbon tabs — keys are the real `sportType` values stored in MySQL. */
+const SPORT_TABS: { key: SportType | 'all'; label: string; emoji: string; badgeClass: string }[] = [
+  { key: 'all', label: 'Tất cả Thể Thức', emoji: '✨', badgeClass: 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300' },
+  { key: 'SAN_7', label: 'Sân 7 Phủi', emoji: '⚽', badgeClass: 'bg-emerald-500 text-slate-950' },
+  { key: 'SAN_5', label: 'Sân 5 Mini', emoji: '🥅', badgeClass: 'bg-lime-500 text-slate-950' },
+  { key: 'SAN_11', label: 'Sân 11 Người', emoji: '🏟️', badgeClass: 'bg-amber-500 text-slate-950' },
+  { key: 'FUTSAL', label: 'Futsal Sài Gòn', emoji: '👟', badgeClass: 'bg-sky-500 text-slate-950' },
+];
+
+type TabKey = 'open' | 'live' | 'bracket' | 'rankings';
+type StatusFilter = 'ALL' | 'OPEN' | 'ONGOING' | 'COMPLETED';
 
 export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   user,
   onBackToHome,
-  onSelectTournament
+  onSelectTournament,
+  onRequestLogin
 }) => {
-  const [activeSport, setActiveSport] = useState<'all' | 'san7' | 'futsal' | 'san11'>('all');
-  const [activeTab, setActiveTab] = useState<'open' | 'live' | 'bracket' | 'rankings'>('open');
-  const [selectedLevel, setSelectedLevel] = useState('Tất cả Hạng Elo');
-  const [selectedScale, setSelectedScale] = useState('Open Cup & CLB Mở Rộng');
-  const [selectedLocation, setSelectedLocation] = useState('TP. Hồ Chí Minh (Q.7, Q.1, Thủ Đức)');
-  const [showRegModal, setShowRegModal] = useState(false);
-  const [selectedTourneyForReg, setSelectedTourneyForReg] = useState<any | null>(null);
+  const [activeSport, setActiveSport] = useState<SportType | 'all'>('all');
+  const [activeTab, setActiveTab] = useState<TabKey>('open');
+  const [selectedFormat, setSelectedFormat] = useState<'ALL' | 'KNOCKOUT' | 'ROUND_ROBIN'>('ALL');
+  // Mặc định OPEN — khớp với tab "Giải Đấu Đang Mở Đăng Ký" đang chọn sẵn.
+  const [selectedStatus, setSelectedStatus] = useState<StatusFilter>('OPEN');
+  const [selectedLocation, setSelectedLocation] = useState('ALL');
 
-  // Dữ liệu giải đấu thật từ MySQL Backend
-  const [tournaments, setTournaments] = useState<any[]>([]);
+  // Dữ liệu giải đấu thật từ MySQL Backend (dùng cache dùng chung)
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loadingTournaments, setLoadingTournaments] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Form state nộp danh sách thi đấu
-  const [regTeamName, setRegTeamName] = useState("");
-  const [regCaptainName, setRegCaptainName] = useState(user?.fullName || user?.name || "");
-  const [regCaptainPhone, setRegCaptainPhone] = useState(user?.phone || "");
-  const [regSubCaptainPhone, setRegSubCaptainPhone] = useState("");
-  const [regMemberCount, setRegMemberCount] = useState(12);
-  const [regSubmitting, setRegSubmitting] = useState(false);
-  const [regSuccessMessage, setRegSuccessMessage] = useState<string | null>(null);
+  // Đăng ký đội đã chuyển sang trang wizard riêng: /tournaments/register (4 bước)
 
-  // Fetch real tournaments from API
-  const fetchTournaments = async () => {
+  // Fetch real tournaments from API (shared cache + explicit error state)
+  const reloadTournaments = useCallback(async (force = false) => {
     try {
       setLoadingTournaments(true);
-      const res = await fetch("http://localhost:8080/api/v1/tournaments");
-      if (res.ok) {
-        const data = await res.json();
-        setTournaments(data);
-      }
+      setLoadError(null);
+      const data = await fetchTournaments(force);
+      setTournaments(data);
     } catch (err) {
       console.error("Error loading tournaments:", err);
+      setLoadError("Không tải được danh sách giải đấu. Vui lòng kiểm tra Backend (cổng 8080) và thử lại.");
     } finally {
       setLoadingTournaments(false);
     }
-  };
-
-  React.useEffect(() => {
-    fetchTournaments();
   }, []);
 
   React.useEffect(() => {
-    if (user) {
-      if (!regCaptainName) setRegCaptainName(user.fullName || user.name || "");
-      if (!regCaptainPhone) setRegCaptainPhone(user.phone || "");
-    }
-  }, [user]);
-
-  // Xử lý nộp đơn đăng ký giải đấu thật qua API
-  const handleRegisterTournament = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTourneyForReg) return;
-    try {
-      setRegSubmitting(true);
-      const res = await fetch(`http://localhost:8080/api/v1/tournaments/${selectedTourneyForReg.id}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          teamName: regTeamName.trim() || `FC ${regCaptainName}`,
-          captainName: regCaptainName.trim(),
-          captainPhone: regCaptainPhone.trim(),
-          subCaptainPhone: regSubCaptainPhone.trim(),
-          memberCount: regMemberCount,
-          eloRating: user?.eloRating || 1200
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setRegSuccessMessage(`Đăng ký thành công cho đội ${regTeamName}! Mã xác nhận đã lưu vào hệ thống.`);
-        setTimeout(() => {
-          setRegSuccessMessage(null);
-          setShowRegModal(false);
-          setRegTeamName("");
-        }, 2500);
-        fetchTournaments();
-      } else {
-        const errData = await res.json();
-        alert(errData.error || "Đăng ký không thành công, vui lòng thử lại.");
-      }
-    } catch (err) {
-      console.error("Lỗi khi nộp đăng ký giải:", err);
-      alert("Lỗi kết nối máy chủ khi nộp đơn đăng ký.");
-    } finally {
-      setRegSubmitting(false);
-    }
-  };
+    reloadTournaments();
+    // Re-sync if another screen (CommunityElo / registration) refreshes the cache.
+    return subscribeTournaments(setTournaments);
+  }, [reloadTournaments]);
 
   // Top Football Scorers & Elo Leaderboard
   const topScorerFootball = [
@@ -114,6 +98,89 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
     { rank: 4, name: 'Vũ Minh Tuấn', goals: '12 bàn (9 kiến tạo)', note: 'FC Titan Sài Gòn', crown: false },
     { rank: 5, name: 'Đặng Ngọc Long', goals: '10 bàn (12 kiến tạo)', note: 'FC Nam Sài Gòn', crown: false },
   ];
+
+  // ---------------------------------------------------------------------------
+  // DỮ LIỆU DẪN XUẤT TỪ CSDL — thay cho toàn bộ số liệu hardcode cũ
+  // ---------------------------------------------------------------------------
+  // Tab chỉ định TRẠNG THÁI mặc định ("Mở đăng ký" = OPEN, "Live" = ONGOING).
+  // Người dùng vẫn có thể nới rộng bằng dropdown "Trạng thái" ở thanh lọc.
+  const defaultStatusForTab = (tab: typeof activeTab): StatusFilter =>
+    tab === 'live' ? 'ONGOING' : 'OPEN';
+
+  // Tập giải nền — mọi con số ở dưới (ribbon, tiêu đề, danh sách) đều đếm trên tập này,
+  // nên không bao giờ có chuyện badge ghi 3 mà list ra 2.
+  const statusBase = useMemo(
+    () =>
+      selectedStatus === 'ALL'
+        ? tournaments
+        : tournaments.filter((t) => (t.status ?? 'OPEN') === selectedStatus),
+    [tournaments, selectedStatus]
+  );
+
+  // Danh sách sau khi áp DỒN bộ lọc: trạng thái + thể thức (ribbon) + thể thức + địa điểm
+  const visibleTournaments = useMemo(
+    () =>
+      filterBySport(statusBase, activeSport).filter((t) => {
+        if (selectedFormat !== 'ALL' && t.format !== selectedFormat) return false;
+        if (selectedLocation !== 'ALL' && t.location !== selectedLocation) return false;
+        return true;
+      }),
+    [statusBase, activeSport, selectedFormat, selectedLocation]
+  );
+
+  // Các địa điểm thực tế tồn tại trong CSDL → dùng cho dropdown lọc
+  const locationOptions = useMemo(
+    () => Array.from(new Set(tournaments.map((t) => t.location).filter(Boolean))) as string[],
+    [tournaments]
+  );
+
+  const hasActiveFilters =
+    activeSport !== 'all' ||
+    selectedFormat !== 'ALL' ||
+    selectedLocation !== 'ALL' ||
+    selectedStatus !== defaultStatusForTab(activeTab);
+
+  const resetFilters = () => {
+    setActiveSport('all');
+    setSelectedFormat('ALL');
+    setSelectedStatus(defaultStatusForTab(activeTab));
+    setSelectedLocation('ALL');
+  };
+
+  // Chuyển tab cũng đồng bộ bộ lọc trạng thái cho khớp nội dung tab đó.
+  const changeTab = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    setSelectedStatus(defaultStatusForTab(tab));
+  };
+
+  // Tiêu đề danh sách phải nói đúng tập dữ liệu đang hiển thị.
+  const listTitle =
+    selectedStatus === 'OPEN'
+      ? 'Danh Sách Các Giải Đấu Đang Mở Đăng Ký'
+      : selectedStatus === 'ONGOING'
+      ? 'Giải Đấu Đang Diễn Ra'
+      : selectedStatus === 'COMPLETED'
+      ? 'Giải Đấu Đã Kết Thúc'
+      : 'Danh Sách Các Giải Đấu Chính Thức';
+
+  const featured = useMemo(() => pickFeatured(tournaments), [tournaments]);
+  const featuredPct = featured ? fillPercent(featured) : 0;
+  const featuredRegistered = featured ? registeredCount(featured) : 0;
+  const featuredCapacity = featured?.totalTeams ?? 0;
+  const featuredSlotsLeft = Math.max(0, featuredCapacity - featuredRegistered);
+  const deadlineDays = featured ? daysUntil(featured.registrationDeadline) : null;
+
+  const openCount = countOpen(tournaments);
+  const liveCount = countLive(tournaments);
+
+  // Hồ sơ thật của cầu thủ đang đăng nhập (fallback: trạng thái khách)
+  const athleteName: string = user?.fullName || user?.name || '';
+  const athleteInitials = athleteName
+    ? athleteName.split(' ').filter(Boolean).slice(-2).map((w: string) => w[0]).join('').toUpperCase()
+    : '';
+  const athleteElo = user?.eloRating ?? null;
+
+  // Đăng ký đội thi đấu: chuyển sang trang wizard riêng /tournaments/register (4 bước)
 
   return (
     <div className="w-full text-slate-900 dark:text-slate-100 transition-colors space-y-6">
@@ -147,58 +214,34 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             </div>
           </div>
 
-          {/* 2. FOOTBALL SPORT FILTER RIBBON & QUICK ACTIONS */}
+          {/* 2. FOOTBALL SPORT FILTER RIBBON & QUICK ACTIONS — số liệu lấy từ CSDL */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800">
             {/* Sport Switcher Ribbon */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0">
-              <button 
-                onClick={() => setActiveSport('all')}
-                className={`group flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeSport === 'all'
-                    ? 'bg-emerald-700 text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Tất cả Thể Thức</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold">24 giải</span>
-              </button>
-
-              <button 
-                onClick={() => setActiveSport('san7')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeSport === 'san7'
-                    ? 'bg-emerald-700 text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                <span>⚽ Sân 7 Phủi</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[11px] font-black">12 giải</span>
-              </button>
-
-              <button 
-                onClick={() => setActiveSport('futsal')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeSport === 'futsal'
-                    ? 'bg-emerald-700 text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                <span>👟 Futsal Sài Gòn</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-sky-500 text-slate-950 text-[11px] font-black">8 giải</span>
-              </button>
-
-              <button 
-                onClick={() => setActiveSport('san11')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                  activeSport === 'san11'
-                    ? 'bg-emerald-700 text-white shadow-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                <span>🏟️ Sân 11 Người</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[11px] font-black">4 giải</span>
-              </button>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0" role="tablist" aria-label="Lọc theo thể thức giải đấu">
+              {SPORT_TABS.map((tab) => {
+                const count = countBySport(statusBase, tab.key);
+                const isActive = activeSport === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveSport(tab.key)}
+                    className={`group flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 ${
+                      isActive
+                        ? 'bg-emerald-700 text-white shadow-sm'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <span aria-hidden>{tab.emoji}</span>
+                    <span>{tab.label}</span>
+                    <span className={`px-1.5 py-0.5 rounded-full text-[11px] ${tab.badgeClass} ${isActive ? 'opacity-90' : ''}`}>
+                      {count} giải
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Quick CTAs */}
@@ -214,49 +257,78 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 <span>Tra cứu BXH Cá Nhân</span>
               </button>
 
-              <button 
-                onClick={() => setShowRegModal(true)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all active:scale-95"
+              <Link
+                href="/tournaments/register"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold shadow-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>+ Đăng Ký Đội Thi Đấu</span>
-              </button>
+              </Link>
             </div>
           </div>
 
-          {/* 3. SECONDARY FILTER DROPDOWNS BAR */}
+          {/* Form đăng ký đội đã chuyển sang trang wizard riêng: /tournaments/register (4 bước) */}
+
+          {/* 3. SECONDARY FILTER BAR — <select> thật, gắn với trường dữ liệu thật */}
           <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
             <span className="flex items-center gap-1 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
               <Filter className="w-3.5 h-3.5" />
               Lọc nhanh:
             </span>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <span className="text-slate-500">Trình độ:</span>
-              <span className="font-bold text-emerald-700 dark:text-emerald-400">{selectedLevel}</span>
-              <ChevronDown className="w-4 h-4 text-slate-400" />
-            </div>
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs transition-colors focus-within:ring-2 focus-within:ring-emerald-500">
+              <span className="text-slate-500 dark:text-slate-400">Thể thức:</span>
+              <select
+                aria-label="Lọc theo thể thức thi đấu"
+                value={selectedFormat}
+                onChange={(e) => setSelectedFormat(e.target.value as typeof selectedFormat)}
+                className="bg-transparent font-bold text-emerald-700 dark:text-emerald-400 focus:outline-none cursor-pointer"
+              >
+                <option value="ALL">Tất cả thể thức</option>
+                <option value="KNOCKOUT">Loại trực tiếp</option>
+                <option value="ROUND_ROBIN">Vòng tròn</option>
+              </select>
+            </label>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <span className="text-slate-500">Quy mô:</span>
-              <span className="font-bold text-slate-900 dark:text-white">{selectedScale}</span>
-              <ChevronDown className="w-4 h-4 text-slate-400" />
-            </div>
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs transition-colors focus-within:ring-2 focus-within:ring-emerald-500">
+              <span className="text-slate-500 dark:text-slate-400">Trạng thái:</span>
+              <select
+                aria-label="Lọc theo trạng thái giải đấu"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value as typeof selectedStatus)}
+                className="bg-transparent font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer"
+              >
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="OPEN">Đang mở đăng ký</option>
+                <option value="ONGOING">Đang diễn ra</option>
+                <option value="COMPLETED">Đã kết thúc</option>
+              </select>
+            </label>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="font-bold text-slate-900 dark:text-white">{selectedLocation}</span>
-              <ChevronDown className="w-4 h-4 text-slate-400" />
-            </div>
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs transition-colors focus-within:ring-2 focus-within:ring-emerald-500">
+              <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="text-slate-500 dark:text-slate-400">Địa điểm:</span>
+              <select
+                aria-label="Lọc theo địa điểm"
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="bg-transparent font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer max-w-[16rem] truncate"
+              >
+                <option value="ALL">Tất cả địa điểm</option>
+                {locationOptions.map((loc) => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
+            </label>
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-3">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                <strong className="text-emerald-700 dark:text-emerald-400 font-mono">{visibleTournaments.length}</strong> giải khớp
+              </span>
               <button 
-                onClick={() => {
-                  setSelectedLevel('Tất cả Hạng Elo VFF');
-                  setSelectedScale('Open Cup & CLB Mở Rộng');
-                  setSelectedLocation('TP. Hồ Chí Minh (Q.7, Q.1, Thủ Đức)');
-                }}
-                className="text-emerald-700 dark:text-emerald-400 text-xs font-bold hover:underline flex items-center gap-0.5"
+                onClick={resetFilters}
+                disabled={!hasActiveFilters}
+                className="text-emerald-700 dark:text-emerald-400 text-xs font-bold hover:underline flex items-center gap-0.5 disabled:opacity-40 disabled:no-underline"
               >
                 <span>Thiết lập lại bộ lọc</span>
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -264,148 +336,227 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             </div>
           </div>
 
-          {/* 4. FEATURED TOURNAMENT HERO BANNER CARD (STITCH EXACT SPOTLIGHT) */}
-          <div className="relative overflow-hidden rounded-2xl bg-[#1e293b] dark:bg-[#0f172a] text-white shadow-xl p-6 sm:p-8 border border-slate-700">
-            {/* Ambient Stadium Glow */}
-            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none"></div>
-            <div className="absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-lime-500/10 blur-3xl pointer-events-none"></div>
+          {/* 4. FEATURED TOURNAMENT HERO — 100% LẤY TỪ CSDL (không còn hardcode) */}
+          {loadingTournaments ? (
+            <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 animate-pulse space-y-4">
+              <div className="h-5 w-56 rounded-lg bg-slate-200 dark:bg-slate-800"></div>
+              <div className="h-9 w-2/3 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-16 rounded-xl bg-slate-100 dark:bg-slate-800"></div>
+                ))}
+              </div>
+              <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800"></div>
+            </div>
+          ) : loadError ? (
+            <div className="p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-start gap-3 flex-1">
+                <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-rose-800 dark:text-rose-300">Không tải được dữ liệu giải đấu</p>
+                  <p className="text-xs text-rose-700 dark:text-rose-400 mt-0.5">{loadError}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => reloadTournaments(true)}
+                className="shrink-0 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Thử lại</span>
+              </button>
+            </div>
+          ) : featured ? (
+          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm p-6 sm:p-8 border border-slate-200/90 dark:border-slate-800 hover-card-elevate transition-colors">
+            {/* Ambient Soft Glow */}
+            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-emerald-50/60 dark:bg-emerald-950/40 blur-3xl pointer-events-none"></div>
+            <div className="absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-sky-50/50 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               {/* Left Content */}
               <div className="lg:col-span-8 flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-2.5 py-1 rounded-md bg-lime-400 text-slate-950 text-[11px] uppercase tracking-wider font-black flex items-center gap-1">
-                    <Award className="w-3.5 h-3.5" />
-                    GIẢI ĐẤU TIÊU ĐIỂM TRONG THÁNG
+                  <span className="px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 text-[11px] uppercase tracking-wider font-black flex items-center gap-1 border border-emerald-200 dark:border-emerald-800">
+                    <Award className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                    Giải đấu tiêu điểm trong tháng
                   </span>
-                  <span className="px-2.5 py-1 rounded-md bg-slate-800 text-emerald-400 text-[11px] font-bold flex items-center gap-1 border border-slate-700">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    Chuẩn Liên Đoàn VFF / HFF
+                  <span className="px-2.5 py-1 rounded-md bg-sky-50 dark:bg-sky-950 text-sky-800 dark:text-sky-300 text-[11px] font-bold flex items-center gap-1 border border-sky-200 dark:border-sky-800">
+                    <ShieldCheck className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                    {formatLabel(featured.format)}
                   </span>
-                  <span className="px-2.5 py-1 rounded-md bg-rose-500/20 text-rose-300 text-[11px] font-bold flex items-center gap-1 border border-rose-500/30">
-                    <Activity className="w-3.5 h-3.5" />
-                    Hạn chót: Còn 3 ngày
-                  </span>
+                  {deadlineDays !== null && deadlineDays >= 0 && deadlineDays <= 7 && (
+                    <span className="px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-[11px] font-bold flex items-center gap-1 border border-rose-200 dark:border-rose-900">
+                      <Activity className="w-3.5 h-3.5 text-rose-500" />
+                      Hạn chót: Còn {deadlineDays} ngày
+                    </span>
+                  )}
+                  {deadlineDays !== null && deadlineDays < 0 && (
+                    <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold flex items-center gap-1 border border-slate-200 dark:border-slate-700">
+                      Đã hết hạn đăng ký
+                    </span>
+                  )}
                 </div>
 
                 <div>
-                  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
-                    SoccerHub Championship Cup 2026
+                  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    {featured.title}
                   </h1>
-                  <p className="text-lg sm:text-xl text-emerald-400 font-bold mt-1">
-                    Cúp Bóng Đá Phủi Mở Rộng • Tranh Cúp Vô Địch & Điểm Tích Lũy Elo VFF
-                  </p>
+                  {featured.description && (
+                    <p className="text-base sm:text-lg text-emerald-700 dark:text-emerald-400 font-bold mt-1">
+                      {featured.description}
+                    </p>
+                  )}
                 </div>
 
                 {/* Metric Badges Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-                  <div className="flex flex-col p-2.5 rounded-lg bg-slate-900/60 backdrop-blur-sm border border-slate-800">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Tổng Giải Thưởng</span>
-                    <span className="text-lg sm:text-xl font-black text-lime-400 font-mono mt-0.5">35.000.000đ</span>
+                  <div className="flex flex-col p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Tổng Giải Thưởng</span>
+                    <span className="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-0.5"><CountUp value={featured.prizePool ?? 0} format={(n) => `${Math.round(n).toLocaleString('vi-VN')}đ`} /></span>
                   </div>
-                  <div className="flex flex-col p-2.5 rounded-lg bg-slate-900/60 backdrop-blur-sm border border-slate-800">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Thời Gian Diễn Ra</span>
-                    <span className="text-sm font-bold text-white mt-0.5">26/10 - 27/10/2026</span>
+                  <div className="flex flex-col p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Thời Gian Diễn Ra</span>
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                      {formatDate(featured.startDate)}{featured.endDate ? ` - ${formatDate(featured.endDate)}` : ''}
+                    </span>
                   </div>
-                  <div className="flex flex-col p-2.5 rounded-lg bg-slate-900/60 backdrop-blur-sm border border-slate-800">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Thể Thức Hạng Đấu</span>
-                    <span className="text-sm font-bold text-white mt-0.5">Bóng Đá Sân 7 Phủi</span>
+                  <div className="flex flex-col p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Thể Thức Hạng Đấu</span>
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">{sportLabel(featured.sportType)}</span>
                   </div>
-                  <div className="flex flex-col p-2.5 rounded-lg bg-slate-900/60 backdrop-blur-sm border border-slate-800">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Địa Điểm Chuẩn Olympic</span>
-                    <span className="text-sm font-bold text-white mt-0.5">D-Sport Oasis, Q.7</span>
+                  <div className="flex flex-col p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Địa Điểm Thi Đấu</span>
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">{featured.pitchName || featured.location || 'Sắp công bố'}</span>
                   </div>
                 </div>
 
                 {/* Progress Bar */}
                 <div className="flex flex-col gap-1.5 pt-1">
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-300">Tiến độ ghi danh:</span>
-                      <span className="font-mono font-bold text-lime-400">28 / 32 Cặp VĐV (88%)</span>
+                      <span className="font-semibold text-slate-600 dark:text-slate-400">Tiến độ ghi danh:</span>
+                      <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                        <CountUp value={featuredRegistered} /> / {featuredCapacity} đội (<CountUp value={featuredPct} format={(n) => `${Math.round(n)}%`} />)
+                      </span>
                     </div>
-                    <span className="px-2 py-0.5 rounded bg-rose-500/30 text-rose-300 font-bold text-[11px] animate-pulse">Chỉ còn 4 suất cuối!</span>
+                    {featuredSlotsLeft > 0 && featuredSlotsLeft <= 4 && (
+                      <span className="px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 font-bold text-[11px] border border-rose-200 dark:border-rose-900 animate-pulse">
+                        Chỉ còn {featuredSlotsLeft} suất cuối!
+                      </span>
+                    )}
+                    {featuredSlotsLeft === 0 && (
+                      <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px] border border-slate-300 dark:border-slate-700">
+                        Đã đủ đội
+                      </span>
+                    )}
                   </div>
-                  <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-                    <div className="h-full bg-gradient-to-r from-emerald-500 to-lime-400 rounded-full transition-all duration-500" style={{ width: '88%' }}></div>
+                  <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <div className="h-full bg-emerald-600 rounded-full transition-all duration-500" style={{ width: `${featuredPct}%` }}></div>
                   </div>
                 </div>
 
                 {/* Action CTAs */}
                 <div className="flex flex-wrap items-center gap-3 pt-2">
+                  {featuredSlotsLeft === 0 ? (
+                    <span className="px-5 py-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black text-xs sm:text-sm">
+                      Giải đã đủ đội
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/tournaments/register?tournamentId=${featured.id}`}
+                      className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                    >
+                      <span>⚽ Đăng Ký Tham Gia Ngay (4 bước)</span>
+                    </Link>
+                  )}
                   <button 
-                    onClick={() => {
-                      setSelectedTourneyForReg('tourney-1');
-                      setShowRegModal(true);
-                    }}
-                    className="px-5 py-3 rounded-lg bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-lime-400/20 transition-all transform hover:-translate-y-0.5"
+                    type="button"
+                    onClick={() => onSelectTournament ? onSelectTournament(String(featured.id)) : changeTab('bracket')}
+                    className="px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                   >
-                    <span>🏓 Đăng Ký Tham Gia Ngay (600k/cặp)</span>
-                  </button>
-                  <button className="px-4 py-3 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 backdrop-blur-sm border border-slate-700 transition-all">
-                    <span>📜 Điều Lệ & Thể Thức Bốc Thăm</span>
+                    <span>📜 Xem Nhánh Bracket & Điều Lệ</span>
                   </button>
                 </div>
               </div>
 
               {/* Right Media Spotlight */}
               <div className="lg:col-span-4 flex flex-col gap-3">
-                <div className="relative overflow-hidden rounded-xl bg-slate-900/80 backdrop-blur-md p-4 border border-slate-800 flex flex-col gap-3">
-                  <div className="relative w-full h-44 rounded-lg overflow-hidden shadow-inner">
+                <div className="relative overflow-hidden rounded-2xl bg-slate-50 dark:bg-slate-950 p-3.5 border border-slate-200 dark:border-slate-800 flex flex-col gap-3 shadow-xs">
+                  <div className="relative w-full h-44 rounded-xl overflow-hidden shadow-inner bg-slate-200 dark:bg-slate-800">
                     <img 
-                      src="https://images.unsplash.com/photo-1626248801379-51a0748a5f96?auto=format&fit=crop&w=800&q=80" 
-                      alt="SoccerHub Championship"
+                      src={featured.bannerUrl || 'https://images.unsplash.com/photo-1626248801379-51a0748a5f96?auto=format&fit=crop&w=800&q=80'}
+                      alt={featured.title}
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
-                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-                      <span className="px-2 py-0.5 rounded bg-slate-900/80 backdrop-blur-sm text-emerald-400 font-bold text-[11px] flex items-center gap-1">
-                        🏆 Sân Cỏ Nhân Tạo Chuẩn VFF
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2">
+                      <span className="px-2 py-0.5 rounded bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-emerald-800 dark:text-emerald-300 font-bold text-[11px] flex items-center gap-1 shadow-xs truncate">
+                        🏆 {featured.pitchName || featured.location || 'Sân chuẩn VFF'}
                       </span>
-                      <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-mono text-[11px] font-bold">
-                        HD Livestream AI
+                      <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-mono text-[11px] font-bold shrink-0">
+                        {formatShort(featured.format)}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-slate-300 pt-1">
+                  <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 pt-1 font-medium gap-2">
                     <span className="flex items-center gap-1">
-                      ⭐ Huy chương mạ vàng + Áo thi đấu chính hãng
+                      Lệ phí: <strong className="font-mono text-emerald-700 dark:text-emerald-400">{formatMoney(featured.entryFee)}/đội</strong>
                     </span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          ) : (
+            /* Empty state — không có giải nào trong CSDL */
+            <div className="p-8 rounded-2xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 text-center">
+              <Trophy className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto" />
+              <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-300">Chưa có giải đấu tiêu điểm</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Dữ liệu sẽ tự động hiển thị khi Ban Tổ Chức khởi tạo giải đấu mới trong CSDL.
+              </p>
+            </div>
+          )}
 
-          {/* 5. MAIN NAVIGATION TABS */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {/* 5. MAIN NAVIGATION TABS — số liệu đếm từ CSDL */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Khu vực nội dung giải đấu">
             <button 
-              onClick={() => setActiveTab('open')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 ${
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'open'}
+              onClick={() => changeTab('open')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                 activeTab === 'open' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
               }`}
             >
               <Calendar className="w-4 h-4" />
-              <span>Giải Đấu Đang Mở Đăng Ký (18)</span>
+              <span>Giải Đấu Đang Mở Đăng Ký ({openCount})</span>
             </button>
 
             <button 
-              onClick={() => setActiveTab('live')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 ${
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'live'}
+              onClick={() => changeTab('live')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                 activeTab === 'live' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
               }`}
             >
               <Radio className="w-4 h-4 text-red-500 animate-pulse" />
-              <span>Lịch Thi Đấu & Kết Quả Live (8)</span>
+              <span>Lịch Thi Đấu & Kết Quả Live ({liveCount})</span>
             </button>
 
             <button 
-              onClick={() => setActiveTab('bracket')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 ${
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'bracket'}
+              onClick={() => changeTab('bracket')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                 activeTab === 'bracket' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -416,8 +567,11 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             </button>
 
             <button 
-              onClick={() => setActiveTab('rankings')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 ${
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'rankings'}
+              onClick={() => changeTab('rankings')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                 activeTab === 'rankings' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -428,16 +582,101 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             </button>
           </div>
 
-          {/* 6. MAIN WORKSPACE */}
+          {/* 6. MAIN WORKSPACE — mỗi tab một nội dung riêng (sửa lỗi tab "chạy một chỗ") */}
           {activeTab === 'bracket' ? (
             <TournamentBracket />
+          ) : activeTab === 'rankings' ? (
+            /* ---------- TAB: BẢNG XEP HẠNG (tính từ đội đã đăng ký trong CSDL) ---------- */
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-amber-500" />
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    Bảng Xếp Hạng Elo Các Đội Đã Ghi Danh
+                  </h2>
+                </div>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                  Cập nhật từ CSDL • {tournaments.length} giải
+                </span>
+              </div>
+
+              {(() => {
+                const ranked = tournaments
+                  .flatMap((t) => (t.teams ?? []).map((tm) => ({ ...tm, tournament: t })))
+                  .sort((a, b) => (b.eloRating ?? 0) - (a.eloRating ?? 0))
+                  .slice(0, 20);
+
+                if (!ranked.length) {
+                  return (
+                    <div className="p-8 text-center">
+                      <Users className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+                      <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                        Chưa có đội nào ghi danh nên chưa có dữ liệu xếp hạng.
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="overflow-x-auto -mx-2 px-2">
+                    <table className="w-full text-xs border-collapse min-w-[640px]">
+                      <thead>
+                        <tr className="text-left text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                          <th scope="col" className="py-2 pr-3 font-bold">#</th>
+                          <th scope="col" className="py-2 pr-3 font-bold">Đội Bóng</th>
+                          <th scope="col" className="py-2 pr-3 font-bold">Đội Trưởng</th>
+                          <th scope="col" className="py-2 pr-3 font-bold">Giải Thi Đấu</th>
+                          <th scope="col" className="py-2 pr-3 font-bold text-right">Số ĐTV</th>
+                          <th scope="col" className="py-2 font-bold text-right">Điểm Elo</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ranked.map((row, idx) => (
+                          <tr
+                            key={`${row.tournament.id}-${row.teamName}`}
+                            className={`border-b border-slate-100 dark:border-slate-800/60 ${
+                              idx === 0 ? 'bg-amber-50/60 dark:bg-amber-950/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                            } transition-colors`}
+                          >
+                            <td className="py-2.5 pr-3">
+                              <span className={`inline-flex w-6 h-6 items-center justify-center rounded-full font-mono font-black ${
+                                idx === 0 ? 'bg-amber-500 text-slate-950'
+                                : idx === 1 ? 'bg-slate-400 text-white'
+                                : idx === 2 ? 'bg-amber-700 text-white'
+                                : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                              }`}>
+                                {idx + 1}
+                              </span>
+                            </td>
+                            <td className="py-2.5 pr-3 font-bold text-slate-900 dark:text-white">
+                              {idx === 0 && '👑 '}{row.teamName}
+                            </td>
+                            <td className="py-2.5 pr-3 text-slate-600 dark:text-slate-400">{row.captainName || '—'}</td>
+                            <td className="py-2.5 pr-3 text-slate-500 dark:text-slate-400 max-w-[16rem] truncate">
+                              {row.tournament.title}
+                            </td>
+                            <td className="py-2.5 pr-3 text-right font-mono text-slate-600 dark:text-slate-400">
+                              {row.memberCount ?? '—'}
+                            </td>
+                            <td className="py-2.5 text-right font-mono font-black text-emerald-700 dark:text-emerald-400">
+                              {(row.eloRating ?? 0).toLocaleString('vi-VN')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             {/* LEFT COLUMN (70% - Col span 8): TOURNAMENT CARDS & LIVE BRACKET */}
             <div className="lg:col-span-8 flex flex-col gap-6">
               
-              {/* LIVE QUICK BRACKET / MATCH PROGRESSION PREVIEW WIDGET */}
+              {/* LIVE QUICK BRACKET / MATCH PROGRESSION PREVIEW WIDGET — chỉ ở tab Live */}
+              {activeTab === 'live' && (
               <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -516,21 +755,22 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                         <span className="font-mono text-[11px] text-amber-500 font-bold">Team 2</span>
                       </div>
                     </div>
-                    <button className="w-full py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors">
-                      <Video className="w-3.5 h-3.5 text-lime-400" />
+                    <button className="w-full py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs">
+                      <Video className="w-3.5 h-3.5 text-white" />
                       <span>Xem Livestream AI Cam & Điểm Live</span>
                     </button>
                   </div>
                 </div>
               </div>
+              )}
 
               {/* REAL TOURNAMENTS LIST DYNAMICALLY LOADED FROM API */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span className="radar-ping w-2.5 h-2.5 rounded-full bg-emerald-500 text-emerald-500"></span>
                     <h3 className="font-extrabold text-sm uppercase tracking-wide text-slate-900 dark:text-white">
-                      Danh Sách Các Giải Đấu Chính Thức ({tournaments.length} Giải)
+                      {listTitle} ({visibleTournaments.length} Giải)
                     </h3>
                   </div>
                   {loadingTournaments && (
@@ -540,19 +780,58 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   )}
                 </div>
 
-                {tournaments.length === 0 && !loadingTournaments ? (
-                  <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <p className="text-sm text-slate-500">Chưa có giải đấu nào được khởi tạo trong CSDL.</p>
+                {loadingTournaments && visibleTournaments.length === 0 ? (
+                  <div className="space-y-4" aria-label="Đang tải danh sách giải đấu">
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                        <div className="skeleton-shimmer h-5 w-2/3 rounded-lg" />
+                        <div className="skeleton-shimmer h-3 w-1/2 rounded-lg" />
+                        <div className="skeleton-shimmer h-16 w-full rounded-xl" />
+                      </div>
+                    ))}
+                  </div>
+                ) : visibleTournaments.length === 0 ? (
+                  <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+                    <Search className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+                    <p className="mt-3 text-sm font-bold text-slate-600 dark:text-slate-300">
+                      {tournaments.length === 0
+                        ? 'Chưa có giải đấu nào được khởi tạo trong CSDL.'
+                        : hasActiveFilters
+                        ? 'Không có giải đấu nào khớp bộ lọc.'
+                        : selectedStatus === 'ONGOING'
+                        ? 'Hiện chưa có giải đấu nào đang diễn ra.'
+                        : selectedStatus === 'COMPLETED'
+                        ? 'Chưa có giải đấu nào đã kết thúc.'
+                        : 'Hiện không có giải đấu nào đang mở đăng ký.'}
+                    </p>
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        onClick={resetFilters}
+                        className="mt-3 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+                      >
+                        Xóa bộ lọc để xem tất cả
+                      </button>
+                    )}
                   </div>
                 ) : (
-                  tournaments.map((t) => {
-                    const percentage = t.totalTeams ? Math.round(((t.registeredTeams || 0) / t.totalTeams) * 100) : 0;
-                    const isFull = t.totalTeams && (t.registeredTeams || 0) >= t.totalTeams;
+                  /* key đổi theo filter/tab để replay cascade mỗi lần danh sách thay đổi */
+                  <div key={`${activeTab}-${activeSport}-${selectedFormat}-${selectedStatus}-${selectedLocation}`} className="space-y-4">
+                  {visibleTournaments.map((t, cardIdx) => {
+                    const percentage = fillPercent(t);
+                    const full = isTournamentFull(t);
+                    const reg = registeredCount(t);
+                    const cap = t.totalTeams ?? 0;
+                    const statusLabel =
+                      t.status === 'ONGOING' ? 'ĐANG DIỄN RA'
+                      : t.status === 'COMPLETED' ? 'ĐÃ KẾT THÚC'
+                      : full ? 'ĐÃ ĐỦ ĐỘI' : 'ĐANG MỞ ĐĂNG KÝ';
 
                     return (
                       <div 
                         key={t.id} 
-                        className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs hover:shadow-md transition-shadow flex flex-col gap-4 border border-slate-200/80 dark:border-slate-800"
+                        style={{ animationDelay: `${Math.min(cardIdx, 5) * 70}ms` }}
+                        className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs hover-card-elevate animate-fade-in-up flex flex-col gap-4 border border-slate-200/80 dark:border-slate-800 transition-colors"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                           <div className="flex items-start gap-3.5">
@@ -562,17 +841,21 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                             <div className="flex flex-col gap-1">
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]">
-                                  {t.sportType === 'SAN_7' ? 'Bóng Đá Sân 7' : t.sportType === 'SAN_5' ? 'Bóng Đá Sân 5' : 'Sân 11 Chuẩn FIFA'}
+                                  {sportLabel(t.sportType)}
                                 </span>
                                 <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold text-[11px]">
-                                  {t.format === 'KNOCKOUT' ? 'Loại Trực Tiếp (Knockout)' : 'Vòng Tròn Tính Điểm'}
+                                  {formatLabel(t.format)}
                                 </span>
                                 <span className={`px-2 py-0.5 rounded font-bold text-[11px] ${
-                                  isFull 
+                                  t.status === 'ONGOING'
+                                    ? 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300'
+                                    : t.status === 'COMPLETED'
+                                    ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                                    : full 
                                     ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-400' 
                                     : 'bg-lime-100 dark:bg-lime-950 text-lime-900 dark:text-lime-400'
                                 }`}>
-                                  {isFull ? 'ĐÃ ĐỦ ĐỘI' : 'ĐANG MỞ ĐĂNG KÝ'}
+                                  {statusLabel}
                                 </span>
                               </div>
                               <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
@@ -585,16 +868,17 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                                  Khởi tranh: {t.startDate} (Hạn: {t.registrationDeadline || "Sắp hết hạn"})
+                                  Khởi tranh: {formatDate(t.startDate)}
+                                  {t.registrationDeadline && <> (Hạn: {formatDate(t.registrationDeadline)})</>}
                                 </span>
                               </div>
                             </div>
                           </div>
 
                           <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-start shrink-0">
-                            <span className="text-[10px] text-slate-400 uppercase font-semibold">Tổng Giải Thưởng</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Tổng Giải Thưởng</span>
                             <span className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400">
-                              {(t.prizePool || 35000000).toLocaleString('vi-VN')}đ
+                              {formatMoney(t.prizePool)}
                             </span>
                           </div>
                         </div>
@@ -603,13 +887,13 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                           <div className="flex items-center gap-2">
                             <Users className="w-4 h-4 text-emerald-600" />
                             <span>
-                              Số đội: <strong className="text-slate-900 dark:text-white">{t.registeredTeams || 0} / {t.totalTeams || 16} Đội</strong>
-                              {!isFull && <span className="text-emerald-600 font-bold ml-1">(Còn {(t.totalTeams || 16) - (t.registeredTeams || 0)} slot)</span>}
+                              Số đội: <strong className="text-slate-900 dark:text-white">{reg} / {cap || '—'} Đội</strong>
+                              {!full && cap > 0 && <span className="text-emerald-600 dark:text-emerald-400 font-bold ml-1">(Còn {cap - reg} slot)</span>}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                            <span>Lệ phí: <strong className="text-slate-900 dark:text-white">{(t.entryFee || 1500000).toLocaleString('vi-VN')}đ / Đội</strong></span>
+                            <span>Lệ phí: <strong className="text-slate-900 dark:text-white">{formatMoney(t.entryFee)} / Đội</strong></span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Video className="w-4 h-4 text-emerald-600" />
@@ -640,25 +924,28 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                             <span className="text-[11px] text-slate-500 font-medium">{percentage}% Slot đã nộp</span>
                           </div>
                           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                            <button 
-                              onClick={() => {
-                                setSelectedTourneyForReg(t);
-                                setShowRegModal(true);
-                              }}
-                              disabled={isFull}
-                              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-xs ${
-                                isFull 
-                                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-                                  : 'bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95'
-                              }`}
-                            >
-                              {isFull ? 'Đã Hết Suất' : '+ Nộp Danh Sách Đội Tham Gia'}
-                            </button>
+                            {t.status === 'COMPLETED' ? (
+                              <span className="px-4 py-2 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
+                                Giải Đã Kết Thúc
+                              </span>
+                            ) : full ? (
+                              <span className="px-4 py-2 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
+                                Đã Hết Suất
+                              </span>
+                            ) : (
+                              <Link
+                                href={`/tournaments/register?tournamentId=${t.id}`}
+                                className="px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95"
+                              >
+                                + Nộp Danh Sách Đội Tham Gia
+                              </Link>
+                            )}
                           </div>
                         </div>
                       </div>
                     );
-                  })
+                  })}
+                  </div>
                 )}
               </div>
             </div>
@@ -666,64 +953,132 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             {/* RIGHT COLUMN (30% - Col span 4): LEADERBOARDS & ATHLETE PROFILE WIDGETS */}
             <div className="lg:col-span-4 flex flex-col gap-6">
               
-              {/* WIDGET 1: ATHLETE PERSONAL ELO STATUS CARD */}
+              {/* WIDGET 1: ATHLETE PERSONAL ELO STATUS CARD — hiển thị hồ sơ THẬT của user đang đăng nhập */}
               <div id="search-elo-section" className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col gap-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-extrabold flex items-center gap-1">
-                    <UserCheck className="w-4 h-4 text-emerald-600" />
+                    <UserCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     Vị Trí Của Bạn Trên Hệ Thống
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 text-[11px] font-bold">Xác Thực Thẻ Cầu Thủ</span>
-                </div>
-
-                {/* Athlete Profile Snippet */}
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold text-lg shrink-0">
-                    VA
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-extrabold text-slate-900 dark:text-white text-sm truncate">Nguyễn Văn An</span>
-                    <span className="text-xs text-slate-500">VĐV CLB VaoSan Phú Mỹ Hưng</span>
-                  </div>
-                </div>
-
-                {/* Metric dual box */}
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex flex-col">
-                    <span className="text-[10px] text-slate-500 uppercase font-bold">Vua Phá Lưới Sân 7</span>
-                    <div className="flex items-baseline gap-1.5 mt-1">
-                      <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono">18 Bàn</span>
-                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">#1 Q.7</span>
-                    </div>
-                    <span className="text-[10px] text-slate-500 mt-0.5">Top 5% VĐV Xuất Sắc</span>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex flex-col">
-                    <span className="text-[10px] text-slate-500 uppercase font-bold">Bóng Đá Phủi Elo</span>
-                    <div className="flex items-baseline gap-1.5 mt-1">
-                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">1,450</span>
-                      <span className="text-[11px] font-bold text-amber-500">#86 Div 2</span>
-                    </div>
-                    <span className="text-[10px] text-slate-500 mt-0.5">+45 điểm trong tháng</span>
-                  </div>
-                </div>
-
-                {/* Achievements List */}
-                <div className="flex flex-col gap-2">
-                  <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Huy Hiệu Giải Đấu Đã Đạt</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-semibold">
-                      🥇 Vô Địch Sài Gòn Serie B 2024
+                  {user ? (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 text-[11px] font-bold">
+                      {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'Ban Tổ Chức' : 'Xác Thực Thẻ Cầu Thủ'}
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-semibold">
-                      🔥 Chuỗi 5 Trận Bất Bại
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[11px] font-bold">
+                      Trạng thái khách
                     </span>
-                  </div>
+                  )}
                 </div>
 
-                <button className="w-full py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors">
-                  <span>Nộp Biên Bản Trận Đấu Mới</span>
-                </button>
+                {user ? (
+                  <>
+                    {/* Athlete Profile Snippet — lấy từ hồ sơ thật */}
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800">
+                      {user.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt={athleteName}
+                          className="w-12 h-12 rounded-xl object-cover shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-[#0b4f6c] text-white flex items-center justify-center font-bold text-lg shrink-0">
+                          {athleteInitials || 'CV'}
+                        </div>
+                      )}
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{athleteName}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          {user.position ? `${user.position}` : 'Cầu thủ'}
+                          {user.area ? ` • ${user.area}` : ''}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Metric dual box */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex flex-col">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold">Điểm Elo Phủi</span>
+                        <div className="flex items-baseline gap-1.5 mt-1">
+                          <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
+                            {(athleteElo ?? 1200).toLocaleString('vi-VN')}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          Chuẩn Elo VFF Phủi 4.0
+                        </span>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex flex-col">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold">Hạng Thi Đấu</span>
+                        <div className="flex items-baseline gap-1.5 mt-1">
+                          <span className="text-lg font-black text-slate-900 dark:text-white truncate">
+                            {user.level || 'Chưa phân hạng'}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          {user.favoriteSport || 'Bóng đá phủi'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Profile tags (thay cho badge thành tích hardcode) */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">Thông Tin Thi Đấu</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(user.position || user.area || user.favoriteSport || user.level) ? (
+                          <>
+                            {user.position && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-semibold">
+                                ⚽ {user.position}
+                              </span>
+                            )}
+                            {user.area && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-sky-100 dark:bg-sky-950/60 text-sky-900 dark:text-sky-300 text-xs font-semibold">
+                                📍 {user.area}
+                              </span>
+                            )}
+                            {user.level && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-semibold">
+                                🏆 {user.level}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            Chưa cập nhật — hãy bổ sung vị trí & hạng đấu trong Hồ sơ.
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => changeTab('bracket')}
+                      className="w-full py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                    >
+                      <span>Nộp Biên Bản Trận Đấu Mới</span>
+                    </button>
+                  </>
+                ) : (
+                  /* Guest state — không hiển thị dữ liệu người dùng giả */
+                  <div className="flex flex-col items-center text-center gap-3 py-4 px-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-dashed border-slate-300 dark:border-slate-700">
+                    <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+                      <LogIn className="w-6 h-6" />
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Đăng nhập để xem <strong>điểm Elo</strong>, hạng thi đấu và theo dõi vị trí của bạn trên BXH.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => onRequestLogin?.()}
+                      className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span>Đăng Nhập Để Xem Elo</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* WIDGET 2: TOP SCORERS & ELO FOOTBALL LEADERBOARD */}
@@ -767,10 +1122,14 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   ))}
                 </div>
 
-                <a href="#" className="pt-2 text-center text-xs text-emerald-700 dark:text-emerald-400 font-bold hover:underline flex items-center justify-center gap-1">
-                  <span>Xem Top 100 Cầu Thủ Phủi Toàn Quốc</span>
+                <button
+                  type="button"
+                  onClick={() => changeTab('rankings')}
+                  className="pt-2 text-center text-xs text-emerald-700 dark:text-emerald-400 font-bold hover:underline flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded"
+                >
+                  <span>Xem Bảng Xếp Hạng Elo Các Đội</span>
                   <ChevronRight className="w-3.5 h-3.5" />
-                </a>
+                </button>
               </div>
 
               {/* WIDGET 3: GUARANTEE & FAIRPLAY TRUST BADGES */}
@@ -807,134 +1166,6 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
         </div>
       </div>
 
-      {/* Modal Quick Registration */}
-      {showRegModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-900 dark:text-white">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                Đăng Ký Tham Gia Giải Đấu
-              </h3>
-              <button 
-                onClick={() => setShowRegModal(false)}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-white text-xl font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleRegisterTournament} className="space-y-4">
-              {regSuccessMessage && (
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500 text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>{regSuccessMessage}</span>
-                </div>
-              )}
-
-              {selectedTourneyForReg && (
-                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 text-xs space-y-1">
-                  <span className="font-extrabold text-emerald-800 dark:text-emerald-300 block">{selectedTourneyForReg.title}</span>
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                    <span>Lệ phí tham gia:</span>
-                    <strong className="text-emerald-700 dark:text-emerald-400 font-mono font-bold">{(selectedTourneyForReg.entryFee || 1500000).toLocaleString('vi-VN')}đ</strong>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs text-slate-700 dark:text-slate-300 font-bold mb-1">Tên Đội Bóng (FC)</label>
-                <input 
-                  type="text" 
-                  required 
-                  value={regTeamName}
-                  onChange={(e) => setRegTeamName(e.target.value)}
-                  placeholder="Ví dụ: FC Saigon Warriors"
-                  className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:border-emerald-500" 
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-slate-700 dark:text-slate-300 font-bold mb-1">Họ & Tên Đội Trưởng</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={regCaptainName}
-                    onChange={(e) => setRegCaptainName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:border-emerald-500" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-700 dark:text-slate-300 font-bold mb-1">Số Lượng Thành Viên</label>
-                  <input 
-                    type="number" 
-                    min={5}
-                    max={25}
-                    required 
-                    value={regMemberCount}
-                    onChange={(e) => setRegMemberCount(Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:border-emerald-500" 
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-slate-700 dark:text-slate-300 font-bold mb-1">Số ĐT Đội Trưởng / Zalo</label>
-                  <input 
-                    type="tel" 
-                    required 
-                    value={regCaptainPhone}
-                    onChange={(e) => setRegCaptainPhone(e.target.value)}
-                    placeholder="09xx..."
-                    className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:border-emerald-500" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-700 dark:text-slate-300 font-bold mb-1">Số ĐT Đội Phó</label>
-                  <input 
-                    type="tel" 
-                    value={regSubCaptainPhone}
-                    onChange={(e) => setRegSubCaptainPhone(e.target.value)}
-                    placeholder="09xx..."
-                    className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:border-emerald-500" 
-                  />
-                </div>
-              </div>
-
-              <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 space-y-1">
-                <div className="flex justify-between">
-                  <span>Hình thức xác nhận:</span>
-                  <span className="text-emerald-700 dark:text-emerald-400 font-bold">Xác nhận tự động lưu MySQL</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Phương thức thanh toán:</span>
-                  <span className="text-slate-500 dark:text-slate-400">Quét mã VietQR / Chuyển khoản BTC</span>
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end gap-3">
-                <button 
-                  type="button"
-                  onClick={() => setShowRegModal(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold"
-                >
-                  Hủy
-                </button>
-                <button 
-                  type="submit"
-                  disabled={regSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 text-xs font-extrabold transition shadow-md flex items-center gap-1.5"
-                >
-                  {regSubmitting && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{regSubmitting ? "Đang gửi..." : "Xác Nhận & Gửi Hồ Sơ"}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

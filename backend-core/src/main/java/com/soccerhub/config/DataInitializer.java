@@ -3,6 +3,8 @@ package com.soccerhub.config;
 import com.soccerhub.model.MatchmakingPost;
 import com.soccerhub.model.Tournament;
 import com.soccerhub.model.TournamentTeamEntry;
+import com.soccerhub.model.User;
+import com.soccerhub.model.UserRole;
 import com.soccerhub.repository.MatchmakingPostRepository;
 import com.soccerhub.repository.PitchRepository;
 import com.soccerhub.repository.TournamentRepository;
@@ -31,6 +33,23 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         log.info("Checking & seeding real Football Tournaments and Matchmaking data...");
+
+        // 0. Tài khoản Super Admin mặc định (dùng để vào trang /admin)
+        if (!userRepository.existsByEmail("admin@soccerhub.vn")) {
+            User admin = User.builder()
+                    .fullName("Quản Trị Hệ Thống")
+                    .email("admin@soccerhub.vn")
+                    .phone("0900000001")
+                    .password(passwordEncoder.encode("admin123"))
+                    .role(UserRole.ADMIN)
+                    .area("TP.HCM")
+                    .level("Quản trị viên")
+                    .eloRating(1500)
+                    .enabled(true)
+                    .build();
+            userRepository.save(admin);
+            log.info("Seeded default ADMIN account: admin@soccerhub.vn / admin123");
+        }
 
         // 1. Khởi tạo giải đấu thật nếu chưa có
         if (tournamentRepository.count() == 0) {

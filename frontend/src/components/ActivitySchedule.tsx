@@ -650,7 +650,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
       {/* QR Pass Modal */}
       {showQRModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 text-center shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-900 dark:text-white">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 text-center shadow-2xl animate-modal-pop text-slate-900 dark:text-white">
             <h3 className="text-lg font-bold">Vé Vào Sân & Mở Tủ Đồ</h3>
             <p className="text-xs text-slate-500">Đưa mã QR này trước ống kính camera barrier cổng sân PB-01</p>
             <div className="w-56 h-56 mx-auto bg-white p-4 rounded-xl border border-slate-200 shadow-inner flex items-center justify-center">
@@ -672,7 +672,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
       {/* Cancel Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200 text-slate-900 dark:text-white">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 dark:text-white">
             <h3 className="text-lg font-bold text-rose-600">Báo Hủy / Đổi Giờ Đặt Sân</h3>
             <p className="text-xs text-slate-500">
               Trận đấu còn hơn 1 giờ 45 phút nữa mới bắt đầu. Bạn được **hoàn 100% tiền cọc** (45.000đ) về Ví VaoSan ngay lập tức.

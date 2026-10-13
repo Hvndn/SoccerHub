@@ -17,7 +17,9 @@ public class TournamentTeamEntry {
     private Integer memberCount;
     private Integer eloRating;
     @Builder.Default
-    private String registrationStatus = "CONFIRMED"; // PENDING_PAYMENT, CONFIRMED
+    private String registrationStatus = "CONFIRMED"; // PENDING_PAYMENT, CONFIRMED, SIMULATED
+    @Builder.Default
+    private Boolean simulated = false; // true = đội do nút "Giả lập đủ đội (Test)" sinh ra
     @Builder.Default
     private LocalDateTime registeredAt = LocalDateTime.now();
 }

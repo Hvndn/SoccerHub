@@ -45,6 +45,9 @@ public class User {
     private String avatar;
 
     @Builder.Default
+    private Boolean enabled = true; // false = tài khoản bị admin khóa, không cho đăng nhập
+
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Builder.Default

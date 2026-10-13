@@ -50,6 +50,10 @@ public class Tournament {
 
     private String bannerUrl;
 
+    /** Kết quả bốc thăm chia cặp (JSON) — do BTC bấm "Bốc thăm" tạo ra, FE render cây nhánh từ đây. */
+    @Column(columnDefinition = "TEXT")
+    private String bracketJson;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 

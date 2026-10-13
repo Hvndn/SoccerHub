@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   Trophy,
   ShieldCheck,
@@ -57,21 +58,9 @@ export default function TournamentOrganizerPortal({
   // Active Tab for Tables/Logs
   const [bottomTab, setBottomTab] = useState<"standings" | "var_logs" | "schedule">("standings");
 
-  // Real Database Tournaments & Create Modal State
+  // Real Database Tournaments (danh sách thật từ backend)
   const [dbTournaments, setDbTournaments] = useState<any[]>([]);
   const [loadingDb, setLoadingDb] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newSportType, setNewSportType] = useState("SAN_7");
-  const [newPitchName, setNewPitchName] = useState("Cụm Sân Bóng Đá Đại Nắng (Sân 7A)");
-  const [newLocation, setNewLocation] = useState("Số 154 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7");
-  const [newTotalTeams, setNewTotalTeams] = useState(16);
-  const [newPrizePool, setNewPrizePool] = useState(30000000);
-  const [newEntryFee, setNewEntryFee] = useState(1500000);
-  const [newStartDate, setNewStartDate] = useState("2026-10-25");
-  const [newEndDate, setNewEndDate] = useState("2026-10-28");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toastSuccess, setToastSuccess] = useState<string | null>(null);
 
   // Fetch real tournaments from backend
   const fetchDbTournaments = async () => {
@@ -92,48 +81,6 @@ export default function TournamentOrganizerPortal({
   React.useEffect(() => {
     fetchDbTournaments();
   }, []);
-
-  // Submit tạo giải đấu mới lên MySQL
-  const handleCreateTournament = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim()) return;
-    try {
-      setIsSubmitting(true);
-      const res = await fetch("http://localhost:8080/api/v1/tournaments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newTitle.trim(),
-          description: `Giải đấu bóng đá phong trào ${newSportType} tổ chức tại ${newPitchName}.`,
-          sportType: newSportType,
-          format: "KNOCKOUT",
-          pitchName: newPitchName,
-          location: newLocation,
-          totalTeams: newTotalTeams,
-          prizePool: newPrizePool,
-          entryFee: newEntryFee,
-          startDate: newStartDate,
-          endDate: newEndDate,
-          status: "OPEN"
-        })
-      });
-
-      if (res.ok) {
-        setToastSuccess("Đã khởi tạo và công bố Giải Đấu Mới thành công lên hệ thống SoccerHub!");
-        setShowCreateModal(false);
-        setNewTitle("");
-        fetchDbTournaments();
-        setTimeout(() => setToastSuccess(null), 3000);
-      } else {
-        alert("Lỗi khi tạo giải đấu. Vui lòng thử lại!");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Lỗi kết nối máy chủ khi tạo giải đấu.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   // Filter tournaments by sport
   const tournaments = [
@@ -250,24 +197,17 @@ export default function TournamentOrganizerPortal({
               </span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setShowCreateModal(true)}
-              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95"
+            <Link
+              href="/tournaments/new"
+              className="px-5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>+ Khởi Tạo Giải Đấu Mới</span>
-            </button>
+            </Link>
           </div>
         </div>
 
-        {/* Success Toast */}
-        {toastSuccess && (
-          <div className="mt-4 p-3.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold flex items-center space-x-2 animate-fade-in">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{toastSuccess}</span>
-          </div>
-        )}
+        {/* Form tạo giải đã chuyển sang trang wizard riêng: /tournaments/new (4 bước) */}
 
         {/* SPORT CATEGORY FILTERS */}
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
@@ -945,192 +885,6 @@ export default function TournamentOrganizerPortal({
         </div>
 
       </div>
-      {/* ========================================================= */}
-      {/* MODAL TẠO GIẢI ĐẤU MỚI (LƯU TRỰC TIẾP CSDL MYSQL)        */}
-      {/* ========================================================= */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 sm:p-8 space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
-            
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                  <Trophy className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-black text-slate-900 dark:text-white">
-                    Khởi Tạo Giải Đấu Bóng Đá Mới
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Phát hành giải đấu lên hệ thống mạng lưới SoccerHub & CSDL thật.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowCreateModal(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateTournament} className="space-y-4 text-xs font-semibold">
-              <div>
-                <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
-                  Tên Giải Đấu *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="Ví dụ: Cúp Tứ Hùng Phủi Hòa Xuân Mùa Hè 2026"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
-                    Thể Thức Thi Đấu
-                  </label>
-                  <select
-                    value={newSportType}
-                    onChange={(e) => setNewSportType(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="SAN_7">Bóng Đá Sân 7 Phủi</option>
-                    <option value="SAN_5">Bóng Đá Sân 5 Mini</option>
-                    <option value="FUTSAL">Futsal Sàn Gỗ Trong Nhà</option>
-                    <option value="SAN_11">Bóng Đá Sân 11 Chuẩn 11 Người</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
-                    Quy Mô Số Đội
-                  </label>
-                  <select
-                    value={newTotalTeams}
-                    onChange={(e) => setNewTotalTeams(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value={8}>8 Đội (Tứ Kết Knockout)</option>
-                    <option value={16}>16 Đội (Vòng Bảng + Knockout)</option>
-                    <option value={32}>32 Đội (Open Cup Đại Quy Mô)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
-                    Sân Đăng Cai Tổ Chức
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newPitchName}
-                    onChange={(e) => setNewPitchName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
-                    Địa Điểm Khu Vực
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newLocation}
-                    onChange={(e) => setNewLocation(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
-                    Tổng Quỹ Thưởng (VNĐ)
-                  </label>
-                  <input
-                    type="number"
-                    step={1000000}
-                    value={newPrizePool}
-                    onChange={(e) => setNewPrizePool(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500 font-mono font-bold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
-                    Lệ Phí Mỗi Đội (VNĐ)
-                  </label>
-                  <input
-                    type="number"
-                    step={100000}
-                    value={newEntryFee}
-                    onChange={(e) => setNewEntryFee(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500 font-mono font-bold"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
-                    Ngày Khởi Tranh
-                  </label>
-                  <input
-                    type="date"
-                    value={newStartDate}
-                    onChange={(e) => setNewStartDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
-                    Ngày Bế Mạc Chung Kết
-                  </label>
-                  <input
-                    type="date"
-                    value={newEndDate}
-                    onChange={(e) => setNewEndDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors"
-                >
-                  Hủy Bỏ
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
-                >
-                  {isSubmitting ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Check className="w-4 h-4" />
-                  )}
-                  <span>{isSubmitting ? "Đang Khởi Tạo..." : "Xác Nhận & Công Bố Giải"}</span>
-                </button>
-              </div>
-            </form>
-
-          </div>
-        </div>
-      )}
     </div>
   );
 }
