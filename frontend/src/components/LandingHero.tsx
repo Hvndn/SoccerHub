@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   MapPin,
   Trophy,
@@ -10,9 +10,9 @@ import {
   Zap,
   Users,
   Flame,
-  Shield,
-  ArrowRight
+  Shield
 } from "lucide-react";
+import { API_BASE_URL } from "@/lib/api";
 
 interface LandingHeroProps {
   onOpenAuth: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
@@ -24,6 +24,44 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
   const [pitchType, setPitchType] = useState("7");
   const [timeSlot, setTimeSlot] = useState("gold");
   const [dateChoice, setDateChoice] = useState("today");
+
+  /**
+   * 4 chỉ số dưới hero đếm trực tiếp từ CSDL (pitches / tournaments /
+   * matchmaking_posts / tổng trận đã có kết quả) thay vì số quảng cáo bịa sẵn.
+   */
+  const [stats, setStats] = useState({ pitches: 0, tournaments: 0, posts: 0, matchesPlayed: 0, loading: true });
+  useEffect(() => {
+    let alive = true;
+    const get = (p: string) =>
+      fetch(`${API_BASE_URL}${p}`)
+        .then((r) => (r.ok ? r.json() : []))
+        .catch(() => []);
+    Promise.all([
+      get("/api/v1/pitches"),
+      get("/api/v1/tournaments"),
+      get("/api/v1/community/matchmaking-posts"),
+    ])
+      .then(([pitches, tournaments, posts]) => {
+        if (!alive) return;
+        let played = 0;
+        for (const t of Array.isArray(tournaments) ? tournaments : []) {
+          if (!t.bracketJson) continue;
+          try {
+            const b = JSON.parse(t.bracketJson);
+            for (const r of b?.rounds ?? []) for (const m of r.matches ?? []) if (m.status === "DONE") played += 1;
+          } catch { /* bỏ qua giải có bracket hỏng */ }
+        }
+        setStats({
+          pitches: Array.isArray(pitches) ? pitches.length : 0,
+          tournaments: Array.isArray(tournaments) ? tournaments.length : 0,
+          posts: Array.isArray(posts) ? posts.filter((p: any) => (p.status ?? "OPEN") === "OPEN").length : 0,
+          matchesPlayed: played,
+          loading: false,
+        });
+      })
+      .catch(() => { if (alive) setStats((s) => ({ ...s, loading: false })); });
+    return () => { alive = false; };
+  }, []);
 
   return (
     <div className="relative w-full space-y-10 sm:space-y-14 overflow-x-clip">
@@ -228,27 +266,31 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
       </div>
 
       {/* ========================================================
-          SECTION 3: 4 CHỈ SỐ THỰC TẾ ĐỀ TÀI TỐT NGHIỆP
+          SECTION 3: 4 CHỈ SỐ LẤY TRỰC TIẾP TỪ CSDL
          ======================================================== */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-          <div className="text-2xl sm:text-3xl font-mono font-black text-[#0b4f6c] dark:text-sky-400">450+</div>
-          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cụm sân đối tác</div>
+          <div className="text-2xl sm:text-3xl font-mono font-black text-[#0b4f6c] dark:text-sky-400">
+            {stats.loading ? "—" : stats.pitches}
+          </div>
+          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cụm sân trong CSDL</div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-          <div className="text-2xl sm:text-3xl font-mono font-black text-emerald-600 dark:text-emerald-400">&lt;20ms</div>
-          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Redis Mutex Lock</div>
+          <div className="text-2xl sm:text-3xl font-mono font-black text-emerald-600 dark:text-emerald-400">
+            {stats.loading ? "—" : stats.tournaments}
+          </div>
+          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Giải đấu đã đăng</div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-          <div className="text-2xl sm:text-3xl font-mono font-black text-amber-500">-25.4%</div>
-          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Chi phí điện IoT</div>
+          <div className="text-2xl sm:text-3xl font-mono font-black text-amber-500">{stats.loading ? "—" : stats.matchesPlayed}</div>
+          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Trận đã có kết quả</div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-          <div className="text-2xl sm:text-3xl font-mono font-black text-sky-500">120k+</div>
-          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cầu thủ Elo xếp hạng</div>
+          <div className="text-2xl sm:text-3xl font-mono font-black text-sky-500">{stats.loading ? "—" : stats.posts}</div>
+          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kèo đang mở</div>
         </div>
       </div>
     </div>
