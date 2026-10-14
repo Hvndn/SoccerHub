@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api";
+import { sportLabel, formatLabel, formatMoney } from "@/lib/tournamentService";
 import {
   Trophy,
   ShieldCheck,
@@ -83,42 +84,43 @@ export default function TournamentOrganizerPortal({
     fetchDbTournaments();
   }, []);
 
-  // Filter tournaments by sport
-  const tournaments = [
-    {
-      id: "t1",
-      sport: "football_7",
-      sportBadge: "BÓNG ĐÁ 7 NGƯỜI • TRỰC TIẾP",
-      title: "Giải Vô Địch Sân 7 Nam Sài Gòn Serie B 2026",
-      subtitle: "32 Đội Bóng • 24/48 Trận • Tổng Thưởng 120.000.000 VNĐ",
-      progress: 50,
-      status: "live",
-      courts: "Sân FB-01, FB-02, FB-03",
-      sponsorLogo: "⚡ Kamito & VietQR Napas247"
-    },
-    {
-      id: "t2",
-      sport: "futsal",
-      sportBadge: "FUTSAL SÀI GÒN • VÒNG BẢNG",
-      title: "Giải Futsal Trong Nhà Super Cup 2026",
-      subtitle: "16 Đội • 4 Bảng • 68 Bàn Thắng",
-      progress: 65,
-      status: "active",
-      courts: "Sân Futsal A1 & A2",
-      sponsorLogo: "🔥 RedBull & Động Lực FIFA"
-    },
-    {
-      id: "t3",
-      sport: "football_11",
-      sportBadge: "BÓNG ĐÁ 11 NGƯỜI • SẮP DIỄN RA",
-      title: "VFF Champions League Phong Trào Sài Gòn",
-      subtitle: "12 CLB • Sân Cỏ Tự Nhiên • Bắt Đầu 14:00",
-      progress: 0,
-      status: "upcoming",
-      courts: "Sân 11 Cỏ Tự Nhiên Nam Sài Gòn",
-      sponsorLogo: "⚽ FIFA Quality Pro"
-    }
+  // Danh sách giải lấy từ CSDL — không dùng dữ liệu giả.
+  const tournaments = useMemo(
+    () =>
+      dbTournaments.map((t: any) => {
+        const teams = t.teams ?? [];
+        const cap = t.totalTeams ?? 0;
+        const progress = cap ? Math.min(100, Math.round((teams.length / cap) * 100)) : 0;
+        const st = t.status ?? "OPEN";
+        return {
+          id: String(t.id),
+          sport: t.sportType ?? "SAN_7",
+          sportBadge: `${sportLabel(t.sportType).toUpperCase()} • ${
+            st === "ONGOING" ? "ĐANG DIỄN RA" : st === "COMPLETED" ? "ĐÃ KẾT THÚC" : "ĐANG MỞ"
+          }`,
+          title: t.title,
+          subtitle: `${teams.length}${cap ? `/${cap}` : ""} đội • ${formatLabel(t.format)} • Thưởng ${formatMoney(
+            t.prizePool ?? 0
+          )}`,
+          progress,
+          status: st === "ONGOING" ? "live" : st === "COMPLETED" ? "done" : "active",
+          courts: t.pitchName || t.location || "Chưa chọn sân",
+          hasBracket: !!t.bracketJson,
+        };
+      }),
+    [dbTournaments]
+  );
+
+  const SPORT_FILTERS = [
+    { id: "all", label: "Tất Cả Thể Thức" },
+    { id: "SAN_7", label: "Bóng Đá Sân 7" },
+    { id: "SAN_5", label: "Bóng Đá Sân 5" },
+    { id: "SAN_11", label: "Bóng Đá Sân 11" },
+    { id: "FUTSAL", label: "Futsal Trong Nhà" },
   ];
+
+  const countBySportFilter = (id: string) =>
+    id === "all" ? tournaments.length : tournaments.filter((t: any) => t.sport === id).length;
 
   const filteredTournaments = selectedSport === "all"
     ? tournaments
@@ -164,7 +166,9 @@ export default function TournamentOrganizerPortal({
               </div>
               <div className="flex items-center space-x-2 text-xs font-mono text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span>Mesh IoT: 48/48 Nodes Active</span>
+                <span>
+                  {loadingDb ? "Đang đồng bộ CSDL…" : `CSDL: ${dbTournaments.length} giải đấu`}
+                </span>
               </div>
             </div>
 
@@ -180,21 +184,25 @@ export default function TournamentOrganizerPortal({
           {/* Action Header Buttons */}
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => alert("Xuất báo cáo PDF thành công! Đã tải xuống SoccerHub_Football_Tournament_Report.pdf")}
+              onClick={() => window.print()}
               className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all flex items-center space-x-2 active:scale-95 shadow-xs"
             >
               <Download className="w-4 h-4 text-sky-600" />
-              <span>Xuất Báo Cáo PDF</span>
+              <span>Xuất Báo Cáo</span>
             </button>
 
             <button
-              onClick={() => alert("Đã mở danh sách 12 VĐV đang chờ duyệt hồ sơ thi đấu.")}
+              onClick={() =>
+                setVarNotice(
+                  `CSDL hiện có ${dbTournaments.length} giải đấu. Duyệt hồ sơ VĐV nằm ở mục Chợ Kèo của hệ thống.`
+                )
+              }
               className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all flex items-center space-x-2 relative active:scale-95 shadow-xs"
             >
               <Users className="w-4 h-4 text-amber-600" />
-              <span>Duyệt VĐV</span>
+              <span>Giải đang quản lý</span>
               <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-black flex items-center justify-center">
-                12
+                {dbTournaments.length}
               </span>
             </button>
 
@@ -216,12 +224,7 @@ export default function TournamentOrganizerPortal({
             <span className="text-xs font-bold text-slate-500 mr-2 flex items-center gap-1.5">
               <Filter className="w-3.5 h-3.5 text-slate-500" /> Bộ Lọc Môn:
             </span>
-            {[
-              { id: "all", label: "Tất Cả Thể Thức (3)" },
-              { id: "football_7", label: "Bóng Đá Sân 7 (1)" },
-              { id: "futsal", label: "Futsal Trong Nhà (1)" },
-              { id: "football_11", label: "Bóng Đá Sân 11 (1)" }
-            ].map(item => (
+            {SPORT_FILTERS.map(item => (
               <button
                 key={item.id}
                 onClick={() => setSelectedSport(item.id)}
@@ -231,20 +234,37 @@ export default function TournamentOrganizerPortal({
                     : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
                 }`}
               >
-                {item.label}
+                {item.label} ({countBySportFilter(item.id)})
               </button>
             ))}
           </div>
 
           <div className="text-xs font-mono text-slate-500 shrink-0 hidden md:block">
-            Cập nhật Live Stream: <span className="text-emerald-700 font-bold">100 FPS IoT Stream</span>
+            Giải đang mở: <span className="text-emerald-700 font-bold">{countBySportFilter("all")} giải trong CSDL</span>
           </div>
         </div>
       </div>
 
       {/* FOOTBALL TOURNAMENT BENTO CAROUSEL CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {filteredTournaments.map(t => (
+        {loadingDb && filteredTournaments.length === 0 ? (
+          [0, 1, 2].map((i) => (
+            <div key={i} className="rounded-3xl p-6 border border-slate-200/90 bg-white space-y-3">
+              <div className="skeleton-shimmer h-5 w-2/3 rounded-lg" />
+              <div className="skeleton-shimmer h-3 w-1/2 rounded-lg" />
+              <div className="skeleton-shimmer h-2 w-full rounded-full" />
+            </div>
+          ))
+        ) : filteredTournaments.length === 0 ? (
+          <div className="md:col-span-3 rounded-3xl p-10 text-center border border-dashed border-slate-300 bg-white">
+            <Trophy className="w-8 h-8 text-slate-300 mx-auto" />
+            <p className="mt-3 text-sm font-bold text-slate-600">
+              {selectedSport === "all"
+                ? "Chưa có giải đấu nào trong CSDL."
+                : `Không có giải nào đúng bộ lọc “${SPORT_FILTERS.find((f) => f.id === selectedSport)?.label}”.`}
+            </p>
+          </div>
+        ) : filteredTournaments.map((t: any) => (
           <div
             key={t.id}
             className={`rounded-3xl p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-xs ${
@@ -301,14 +321,14 @@ export default function TournamentOrganizerPortal({
 
             <div className="pt-5 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2 relative z-10">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                {t.sponsorLogo}
+                {t.hasBracket ? "✅ Đã bốc thăm — có nhánh đấu trong CSDL" : "⏳ Chưa bốc thăm"}
               </span>
 
               <button
-                onClick={() => alert(`Đã chọn điều hành giải đấu: ${t.title}`)}
+                onClick={() => onNavigateTab?.("tournaments")}
                 className="text-xs font-black text-sky-600 dark:text-sky-400 hover:text-sky-500 flex items-center space-x-1 group"
               >
-                <span>Vào Điều Hành</span>
+                <span>Mở Nhánh Đấu</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
