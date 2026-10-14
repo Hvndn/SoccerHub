@@ -59,6 +59,9 @@ function NewTournamentWizard() {
     registrationDeadline: "",
     prizePool: 30000000,
     entryFee: 1500000,
+    bankCode: "",
+    bankAccount: "",
+    accountName: "",
   });
 
   const set = (k: keyof typeof form, v: string | number) => {
@@ -95,6 +98,7 @@ function NewTournamentWizard() {
     if (s === 3) {
       if (Number(form.prizePool) < 0) e.prizePool = "Quỹ thưởng không được âm.";
       if (Number(form.entryFee) < 0) e.entryFee = "Lệ phí không được âm.";
+      if (form.bankCode && !form.bankAccount.trim()) e.bankAccount = "Nhập số tài khoản.";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -133,6 +137,9 @@ function NewTournamentWizard() {
         totalTeams: Number(form.totalTeams),
         prizePool: Number(form.prizePool),
         entryFee: Number(form.entryFee),
+        bankCode: form.bankCode.trim() || undefined,
+        bankAccount: form.bankAccount.trim() || undefined,
+        accountName: form.accountName.trim() || undefined,
         startDate: form.startDate,
         endDate: form.endDate || form.startDate,
         registrationDeadline: form.registrationDeadline || form.startDate,
@@ -385,6 +392,63 @@ function NewTournamentWizard() {
                   />
                   {errors.entryFee && <p className={errCls}>{errors.entryFee}</p>}
                 </div>
+              </div>
+
+              {/* Tài khoản nhận lệ phí (tùy chọn — để hiện QR thu phí khi đội đăng ký) */}
+              <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-3.5 space-y-3">
+                <p className="text-xs font-black text-slate-700 dark:text-slate-200">
+                  Tài khoản nhận lệ phí <span className="font-medium text-slate-400">(tùy chọn)</span>
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label htmlFor="t-bank" className={labelCls}>Ngân hàng</label>
+                    <select
+                      id="t-bank"
+                      value={form.bankCode}
+                      onChange={(e) => set("bankCode", e.target.value)}
+                      className={inputCls}
+                    >
+                      <option value="">— Không thu online —</option>
+                      <option value="970422">MBBank</option>
+                      <option value="970415">VietinBank</option>
+                      <option value="970418">BIDV</option>
+                      <option value="970436">Vietcombank</option>
+                      <option value="970432">VPBank</option>
+                      <option value="970423">TPBank</option>
+                      <option value="970407">Techcombank</option>
+                      <option value="970405">Agribank</option>
+                      <option value="970441">VIB</option>
+                      <option value="970448">OCB</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="t-acc" className={labelCls}>Số tài khoản</label>
+                    <input
+                      id="t-acc"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.bankAccount}
+                      onChange={(e) => set("bankAccount", e.target.value.replace(/\D/g, ""))}
+                      placeholder="VD: 0909123456"
+                      className={`${inputCls} font-mono`}
+                    />
+                    {errors.bankAccount && <p className={errCls}>{errors.bankAccount}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="t-accname" className={labelCls}>Tên chủ TK</label>
+                    <input
+                      id="t-accname"
+                      type="text"
+                      value={form.accountName}
+                      onChange={(e) => set("accountName", e.target.value)}
+                      placeholder="VD: NGUYEN VAN A"
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+                {form.bankCode && !form.bankAccount && (
+                  <p className={errCls}>Đã chọn ngân hàng thì nhập thêm số tài khoản.</p>
+                )}
               </div>
 
               {/* Review */}

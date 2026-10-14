@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { matchmakingAi } from "@/lib/aiService";
 import {
   Sparkles,
   MapPin,
@@ -75,6 +76,51 @@ export default function MatchmakingMarketplace({
   const userName = user?.fullName || user?.name || "Nguyễn Văn An";
   const userElo = user?.eloRating || 1200;
   const userTier = "Phủi Serie B";
+
+  // Sắp xếp kèo bằng AI (fallback: chênh lệch Elo local khi AI offline)
+  const [aiOrder, setAiOrder] = useState<string[] | null>(null);
+  const [aiSorting, setAiSorting] = useState(false);
+  const [aiOffline, setAiOffline] = useState(false);
+
+  const sortByAi = async () => {
+    if (posts.length === 0 || aiSorting) return;
+    try {
+      setAiSorting(true);
+      setAiOffline(false);
+      const res = await matchmakingAi(
+        { id: "me", name: userName, elo_rating: userElo },
+        posts.map((p: any) => ({
+          id: String(p.id),
+          name: p.teamName || "Kèo",
+          elo_rating: p.eloRating ?? 1200,
+          contact_phone: p.captainPhone ?? null,
+        }))
+      );
+      if (res && Array.isArray(res.matched_opponents) && res.matched_opponents.length > 0) {
+        setAiOrder(res.matched_opponents.map((o: any) => String(o.id)));
+      } else {
+        setAiOffline(true);
+        setAiOrder(
+          [...posts]
+            .sort(
+              (a: any, b: any) =>
+                Math.abs((a.eloRating ?? 1200) - userElo) - Math.abs((b.eloRating ?? 1200) - userElo)
+            )
+            .map((p: any) => String(p.id))
+        );
+      }
+    } finally {
+      setAiSorting(false);
+    }
+  };
+
+  const visiblePosts = aiOrder
+    ? [...posts].sort((a: any, b: any) => {
+        const ra = aiOrder.indexOf(String(a.id));
+        const rb = aiOrder.indexOf(String(b.id));
+        return (ra === -1 ? Number.MAX_SAFE_INTEGER : ra) - (rb === -1 ? Number.MAX_SAFE_INTEGER : rb);
+      })
+    : posts;
 
   // Fetch real matchmaking posts
   const fetchPosts = async () => {
@@ -399,9 +445,23 @@ export default function MatchmakingMarketplace({
             </div>
             <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500">
               <span>Sắp xếp:</span>
-              <span className="text-[#006c49] font-bold cursor-pointer">Gần nhất & Sớm nhất ▼</span>
+              <button
+                type="button"
+                onClick={sortByAi}
+                disabled={aiSorting || posts.length === 0}
+                title="Nhờ AI xếp kèo hợp trình độ Elo nhất lên đầu"
+                className="text-[#006c49] font-bold hover:underline disabled:opacity-50 flex items-center gap-1"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{aiSorting ? "AI đang xếp…" : aiOrder ? (aiOffline ? "Theo chênh Elo (AI offline) ↻" : "AI đã xếp kèo ✓ xếp lại") : "AI xếp kèo hợp Elo ▼"}</span>
+              </button>
             </div>
           </div>
+          {aiOffline && aiOrder && (
+            <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
+              AI service chưa phản hồi — đang xếp tạm theo chênh lệch Elo so với bạn ({userElo}).
+            </p>
+          )}
 
           {/* MATCH LISTINGS FROM REAL MYSQL BACKEND */}
           <div className="space-y-4">
@@ -421,9 +481,10 @@ export default function MatchmakingMarketplace({
                 </button>
               </div>
             ) : (
-              posts.map((post) => {
+              visiblePosts.map((post, vIdx) => {
                 const isMatched = post.status === "MATCHED";
                 const isMyJoined = joinedMatches.includes(String(post.id));
+                const isAiTop = aiOrder !== null && vIdx === 0 && !isMatched;
 
                 return (
                   <article 
@@ -443,6 +504,12 @@ export default function MatchmakingMarketplace({
                         <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs">
                           {post.pitchType === "SAN_7" ? "Sân 7 Cỏ Nhân Tạo" : post.pitchType === "SAN_5" ? "Sân 5 Mini" : "Sân 11 FIFA"}
                         </span>
+                        {isAiTop && (
+                          <span className="px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-black text-xs flex items-center gap-1">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>{aiOffline ? "Hợp Elo nhất" : "AI đề xuất"}</span>
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center space-x-1 text-[#006c49] font-mono font-bold text-xs">
                         <ShieldCheck className="w-4 h-4 text-[#006c49]" />

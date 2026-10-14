@@ -3,6 +3,8 @@ package com.soccerhub.controller;
 import com.soccerhub.model.User;
 import com.soccerhub.model.UserRole;
 import com.soccerhub.repository.BookingRepository;
+import com.soccerhub.repository.GoalEventRepository;
+import com.soccerhub.repository.MatchResultRepository;
 import com.soccerhub.repository.MatchmakingPostRepository;
 import com.soccerhub.repository.PitchRepository;
 import com.soccerhub.repository.TournamentRepository;
@@ -31,6 +33,8 @@ public class AdminController {
     private final TournamentRepository tournamentRepository;
     private final BookingRepository bookingRepository;
     private final MatchmakingPostRepository matchmakingPostRepository;
+    private final MatchResultRepository matchResultRepository;
+    private final GoalEventRepository goalEventRepository;
 
     /** Tổng quan: các con số KPI cho dashboard admin. */
     @GetMapping("/overview")
@@ -147,5 +151,25 @@ public class AdminController {
                     return ResponseEntity.ok(Map.of("message", "Đã gỡ bài đăng khỏi chợ kèo.", "id", id));
                 })
                 .orElse(ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy bài đăng.")));
+    }
+
+    /**
+     * Dọn kết quả trận + bàn thắng mồ côi (giải đã bị xóa).
+     * Chạy sau khi xóa giải ở bản cũ hoặc dọn dữ liệu test.
+     */
+    @DeleteMapping("/maintenance/orphans")
+    public ResponseEntity<?> cleanOrphans() {
+        java.util.Set<Long> alive = new java.util.HashSet<>();
+        tournamentRepository.findAll().forEach(t -> alive.add(t.getId()));
+        List<com.soccerhub.model.MatchResult> orphanMatches = matchResultRepository.findAll()
+                .stream().filter(m -> !alive.contains(m.getTournamentId())).toList();
+        List<com.soccerhub.model.GoalEvent> orphanGoals = goalEventRepository.findAll()
+                .stream().filter(g -> !alive.contains(g.getTournamentId())).toList();
+        matchResultRepository.deleteAll(orphanMatches);
+        goalEventRepository.deleteAll(orphanGoals);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã dọn " + orphanMatches.size() + " kết quả và " + orphanGoals.size() + " bàn thắng mồ côi.",
+                "matchResults", orphanMatches.size(),
+                "goalEvents", orphanGoals.size()));
     }
 }

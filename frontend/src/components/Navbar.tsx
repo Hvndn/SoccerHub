@@ -28,16 +28,19 @@ import {
   AlertCircle
 } from "lucide-react";
 import { subscribeToBookingEvents, playNotificationChime, type RealtimeBookingEvent } from "@/lib/realtimeService";
+import { listMyNotifications, markNotificationRead } from "@/lib/adminService";
 
 // Notification item type
 interface AppNotification {
   id: string;
-  type: "BOOKING_CREATED" | "BOOKING_CANCELLED" | "BOOKING_CHECKED_IN" | "OPERATING_HOURS_UPDATED" | "PROMO";
+  type: string;
   title: string;
   message: string;
   time: Date;
   read: boolean;
   cancelReason?: string;
+  serverId?: number;
+  link?: string | null;
 }
 
 interface NavbarProps {
@@ -74,6 +77,11 @@ export default function Navbar({
       read: false
     }
   ]);
+  const notificationsRef = useRef<AppNotification[]>([]);
+  // Mirror để đọc state mới nhất ngoài render (đồng bộ server)
+  useEffect(() => {
+    notificationsRef.current = notifications;
+  }, [notifications]);
 
   // Load saved notifications from localStorage on mount
   useEffect(() => {
@@ -93,6 +101,44 @@ export default function Navbar({
       // ignore parse error
     }
   }, []);
+
+  // Thông báo thật từ server khi đã đăng nhập (poll mỗi 60s). Khách: giữ local.
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    const pull = async (initial = false) => {
+      try {
+        const rows = await listMyNotifications();
+        if (!alive) return;
+        setNotifications((prev) => {
+          const localOnly = prev.filter(
+            (n) => n.serverId == null && !(initial && n.id === "promo-1")
+          );
+          const mapped: AppNotification[] = rows.map((r) => ({
+            id: `srv-${r.id}`,
+            serverId: r.id,
+            type: r.type || "SYSTEM",
+            title: r.title,
+            message: r.message || "",
+            time: r.createdAt ? new Date(r.createdAt) : new Date(),
+            read: !!r.read,
+            link: r.link ?? null,
+          }));
+          const merged = [...mapped, ...localOnly].slice(0, 25);
+          saveNotifications(merged);
+          return merged;
+        });
+      } catch {
+        // backend chưa chạy / chưa đăng nhập xong — giữ thông báo local
+      }
+    };
+    pull(true);
+    const timer = setInterval(() => pull(false), 60000);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+    };
+  }, [user]);
 
   // Save to localStorage helper
   const saveNotifications = (items: AppNotification[]) => {
@@ -163,6 +209,10 @@ export default function Navbar({
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAllRead = useCallback(() => {
+    // Đồng bộ lên server trước (fire-and-forget), rồi mới đánh dấu local
+    notificationsRef.current
+      .filter(n => n.serverId != null && !n.read)
+      .forEach(n => markNotificationRead(n.serverId as number).catch(() => {}));
     setNotifications(prev => {
       const updated = prev.map(n => ({ ...n, read: true }));
       saveNotifications(updated);

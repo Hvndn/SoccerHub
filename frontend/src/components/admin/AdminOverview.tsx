@@ -5,7 +5,7 @@ import { Users, MapPin, Trophy, Ticket, MessagesSquare, Wallet } from "lucide-re
 import CountUp from "../CountUp";
 import Reveal from "../Reveal";
 import { SectionCard } from "./AdminUI";
-import { getAdminOverview, getRevenueReport, type AdminOverview } from "@/lib/adminService";
+import { getAdminOverview, getRevenueReport, cleanOrphanData, type AdminOverview } from "@/lib/adminService";
 import { formatMoney } from "@/lib/tournamentService";
 
 export default function AdminOverview({ notify }: { notify: (type: "ok" | "err", text: string) => void }) {
@@ -58,6 +58,31 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
 
   return (
     <div className="space-y-5">
+      <SectionCard>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="font-black text-slate-900 dark:text-white text-sm">Bảo trì dữ liệu</h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              Xóa kết quả trận và bàn thắng mồ côi (giải đã bị xóa).
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const res = await cleanOrphanData();
+                notify("ok", res.message);
+              } catch (err: any) {
+                notify("err", err?.message || "Dọn dữ liệu thất bại.");
+              }
+            }}
+            className="shrink-0 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all active:scale-95"
+          >
+            Dọn dữ liệu mồ côi
+          </button>
+        </div>
+      </SectionCard>
+
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         {loading
           ? [0, 1, 2, 3, 4, 5].map((i) => (

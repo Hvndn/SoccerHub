@@ -10,6 +10,7 @@ import {
   formatMoney,
   formatDate,
   sportLabel,
+  buildVietQrUrl,
   type Tournament,
 } from "@/lib/tournamentService";
 import {
@@ -17,6 +18,7 @@ import {
   ArrowRight,
   CheckCircle2,
   ChevronRight,
+  QrCode,
   RefreshCw,
   ShieldCheck,
   Trophy,
@@ -56,6 +58,7 @@ function RegisterTeamWizard() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [paidAck, setPaidAck] = useState(false);
 
   const [tournamentId, setTournamentId] = useState<string>(presetId ?? "");
   const [teamName, setTeamName] = useState("");
@@ -166,23 +169,12 @@ function RegisterTeamWizard() {
       />
 
       {done && selected ? (
-        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900 text-center space-y-3">
-          <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
-          <h2 className="text-lg font-black text-slate-900 dark:text-white">Nộp đơn thành công!</h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Đội <strong className="text-slate-900 dark:text-white">“{teamName}”</strong> đã được ghi
-            danh vào giải <strong className="text-slate-900 dark:text-white">“{selected.title}”</strong>.
-            Mã xác nhận đã lưu vào hệ thống.
-          </p>
-          <div className="flex flex-wrap justify-center gap-2.5 pt-2">
-            <a
-              href="/?tab=tournaments"
-              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-all active:scale-95"
-            >
-              Về danh sách giải đấu
-            </a>
-          </div>
-        </div>
+        <PaymentSuccess
+          selected={selected}
+          teamName={teamName}
+          paidAck={paidAck}
+          onPaidAck={() => setPaidAck(true)}
+        />
       ) : (
         <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 sm:p-7">
           {/* key={step} để replay animation fade mỗi lần sang bước mới */}
@@ -392,5 +384,89 @@ function RegisterTeamWizard() {
         </div>
       )}
     </WizardPageShell>
+  );
+}
+
+function PaymentSuccess({
+  selected,
+  teamName,
+  paidAck,
+  onPaidAck,
+}: {
+  selected: Tournament;
+  teamName: string;
+  paidAck: boolean;
+  onPaidAck: () => void;
+}) {
+  const qrUrl = buildVietQrUrl({
+    bankCode: selected.bankCode,
+    bankAccount: selected.bankAccount,
+    accountName: selected.accountName,
+    entryFee: selected.entryFee,
+    addInfo: teamName,
+  });
+
+  return (
+    <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900 text-center space-y-4">
+      <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
+      <h2 className="text-lg font-black text-slate-900 dark:text-white">Nộp đơn thành công!</h2>
+      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+        Đội <strong className="text-slate-900 dark:text-white">“{teamName}”</strong> đã được ghi
+        danh vào giải <strong className="text-slate-900 dark:text-white">“{selected.title}”</strong> ở
+        trạng thái <strong className="text-amber-600">chờ xác nhận lệ phí</strong>.
+      </p>
+
+      <div className="rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 space-y-3 text-left">
+        <p className="flex items-center gap-2 text-sm font-black text-slate-900 dark:text-white">
+          <QrCode className="w-4 h-4 text-emerald-600" />
+          Thanh toán lệ phí: <span className="font-mono text-emerald-700 dark:text-emerald-400">{formatMoney(selected.entryFee)}</span>
+        </p>
+        {qrUrl ? (
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <img
+              src={qrUrl}
+              alt={`QR nộp lệ phí giải ${selected.title}`}
+              loading="lazy"
+              className="w-44 h-44 rounded-xl border border-slate-200 dark:border-slate-700 bg-white object-contain shrink-0"
+            />
+            <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5">
+              <p>Quét mã bằng app ngân hàng để chuyển khoản đúng số tiền.</p>
+              <p>Nội dung CK: <strong className="font-mono">{teamName}</strong></p>
+              {selected.accountName && (
+                <p>Chủ TK: <strong>{selected.accountName}</strong> • {selected.bankAccount}</p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Giải chưa công bố tài khoản nhận online — BTC sẽ liên hệ thu trực tiếp. Bạn vẫn giữ chỗ ở trạng thái chờ xác nhận.
+          </p>
+        )}
+        {paidAck ? (
+          <p className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+            ✓ Đã ghi nhận chuyển khoản. BTC sẽ xác nhận trong 24h — đội được bốc thăm sau khi xác nhận.
+          </p>
+        ) : (
+          qrUrl && (
+            <button
+              type="button"
+              onClick={onPaidAck}
+              className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-all active:scale-95"
+            >
+              Tôi đã chuyển khoản
+            </button>
+          )
+        )}
+      </div>
+
+      <div className="flex flex-wrap justify-center gap-2.5 pt-1">
+        <a
+          href="/?tab=tournaments"
+          className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all active:scale-95"
+        >
+          Về danh sách giải đấu
+        </a>
+      </div>
+    </div>
   );
 }

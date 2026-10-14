@@ -6,6 +6,7 @@ import com.soccerhub.model.Pitch;
 import com.soccerhub.model.User;
 import com.soccerhub.repository.BookingRepository;
 import com.soccerhub.repository.PitchRepository;
+import com.soccerhub.service.NotificationService;
 import com.soccerhub.service.PitchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ public class PitchBookingController {
     private final PitchService pitchService;
     private final PitchRepository pitchRepository;
     private final BookingRepository bookingRepository;
+    private final NotificationService notificationService;
 
     @GetMapping
     public ResponseEntity<List<Pitch>> getAllPitches() {
@@ -526,6 +528,10 @@ public class PitchBookingController {
                 .build();
 
         Booking saved = bookingRepository.save(booking);
+        notificationService.notify("OWNER",
+                "Đơn đặt sân mới: " + customerName,
+                customerName + " (" + customerPhone + ") vừa đặt " + courtName + " ca " + timeSlot + " ngày " + bookingDate + ". Mã: " + code + ".",
+                "BOOKING", null);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 

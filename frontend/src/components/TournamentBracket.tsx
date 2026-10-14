@@ -34,6 +34,7 @@ import {
   fillSimulatedTeams,
   clearSimulatedTeams,
   drawTournamentBracket,
+  confirmTeamPayment,
   saveMatchResult,
   registeredCount,
   isFull as isTournamentFull,
@@ -51,8 +52,11 @@ export default function TournamentBracket() {
   const [fillBusy, setFillBusy] = useState(false);
   const [clearBusy, setClearBusy] = useState(false);
   const [drawBusy, setDrawBusy] = useState(false);
+  const [confirmingTeam, setConfirmingTeam] = useState<string | null>(null);
   const [savingMatch, setSavingMatch] = useState<string | null>(null);
   const [scores, setScores] = useState<Record<string, { a: string; b: string }>>({});
+  const [scorerOpen, setScorerOpen] = useState<Record<string, boolean>>({});
+  const [scorerRows, setScorerRows] = useState<Record<string, { player: string; team: string; goals: string; assists: string }[]>>({});
   const [confirmDraw, setConfirmDraw] = useState(false);
   const [lottery, setLottery] = useState<{ pairs: { matchId: string; teamA: string; teamB: string }[]; byes: string[] } | null>(null);
   const [activeTab, setActiveTab] = useState<"bracket" | "var_referee" | "standings" | "esheet">("bracket");
@@ -115,6 +119,23 @@ export default function TournamentBracket() {
   const teamCap = selected?.totalTeams ?? 0;
   const full = selected ? isTournamentFull(selected) : false;
   const simulatedCount = selected?.teams?.filter((t) => t.simulated).length ?? 0;
+  const pendingTeams = useMemo(
+    () => (selected?.teams ?? []).filter((t) => t.registrationStatus === "PENDING_PAYMENT"),
+    [selected]
+  );
+
+  const handleConfirmPayment = async (teamName: string) => {
+    if (!selected) return;
+    try {
+      setConfirmingTeam(teamName);
+      const res = await confirmTeamPayment(selected.id, teamName);
+      triggerToast(res.message);
+    } catch (err: any) {
+      triggerToast(err?.message || "Xác nhận thất bại.");
+    } finally {
+      setConfirmingTeam(null);
+    }
+  };
 
   const handleFill = async () => {
     if (!selected) return;
@@ -206,18 +227,58 @@ export default function TournamentBracket() {
       triggerToast("Vòng Knockout cần phân thắng bại, không nhận tỷ số hòa.");
       return;
     }
+    const rows = (scorerRows[m.matchId] ?? [])
+      .map((r) => ({
+        playerName: r.player.trim(),
+        teamName: r.team,
+        goals: Math.max(0, Math.floor(Number(r.goals) || 0)),
+        assists: Math.max(0, Math.floor(Number(r.assists) || 0)),
+      }))
+      .filter((r) => r.playerName && (r.goals > 0 || r.assists > 0));
     try {
       setSavingMatch(m.matchId);
-      const res = await saveMatchResult(selected.id, { matchId: m.matchId, scoreA, scoreB });
+      const res = await saveMatchResult(selected.id, {
+        matchId: m.matchId,
+        scoreA,
+        scoreB,
+        scorers: rows,
+      });
       const deltas = res.eloChanges
         .map((c) => `${c.team} ${c.delta >= 0 ? "+" : ""}${Math.round(c.delta)}`)
         .join(" • ");
       triggerToast(`${res.message} Elo: ${deltas}${res.aiOnline ? "" : " (AI offline, tính local)"}`);
+      setScorerRows((prev) => {
+        const next = { ...prev };
+        delete next[m.matchId];
+        return next;
+      });
     } catch (err: any) {
       triggerToast(err?.message || "Lưu kết quả thất bại.");
     } finally {
       setSavingMatch(null);
     }
+  };
+
+  const addScorerRow = (m: BracketMatch) => {
+    if (!m.teamA || !m.teamB) return;
+    setScorerRows((prev) => ({
+      ...prev,
+      [m.matchId]: [...(prev[m.matchId] ?? []), { player: "", team: m.teamA!.name, goals: "1", assists: "0" }],
+    }));
+  };
+
+  const setScorerRow = (matchId: string, idx: number, patch: Partial<{ player: string; team: string; goals: string; assists: string }>) => {
+    setScorerRows((prev) => ({
+      ...prev,
+      [matchId]: (prev[matchId] ?? []).map((r, i) => (i === idx ? { ...r, ...patch } : r)),
+    }));
+  };
+
+  const removeScorerRow = (matchId: string, idx: number) => {
+    setScorerRows((prev) => ({
+      ...prev,
+      [matchId]: (prev[matchId] ?? []).filter((_, i) => i !== idx),
+    }));
   };
 
   const handleVarCheck = (decision: string) => {
@@ -266,7 +327,8 @@ export default function TournamentBracket() {
           );
         })}
         {editable && (
-          <div className="px-2.5 pb-2.5 flex items-center gap-1.5">
+          <div className="px-2.5 pb-2.5 space-y-2">
+          <div className="flex items-center gap-1.5">
             <input
               type="number"
               min={0}
@@ -297,6 +359,72 @@ export default function TournamentBracket() {
               )}
               <span>{savingMatch === match.matchId ? "Đang lưu…" : "Lưu KQ"}</span>
             </button>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => setScorerOpen((o) => ({ ...o, [match.matchId]: !o[match.matchId] }))}
+              aria-expanded={!!scorerOpen[match.matchId]}
+              className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+            >
+              {scorerOpen[match.matchId] ? "▾ Ẩn ghi bàn/kiến tạo" : "＋ Ghi bàn/kiến tạo (tùy chọn)"}
+            </button>
+            {scorerOpen[match.matchId] && (
+              <div className="mt-1.5 space-y-1.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2">
+                {(scorerRows[match.matchId] ?? []).map((row, ri) => (
+                  <div key={ri} className="grid grid-cols-[1fr_86px_44px_44px_24px] gap-1 items-center">
+                    <input
+                      type="text"
+                      aria-label="Tên cầu thủ"
+                      placeholder="Tên cầu thủ"
+                      value={row.player}
+                      onChange={(e) => setScorerRow(match.matchId, ri, { player: e.target.value })}
+                      className="px-1.5 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] min-w-0 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <select
+                      aria-label="Đội của cầu thủ"
+                      value={row.team}
+                      onChange={(e) => setScorerRow(match.matchId, ri, { team: e.target.value })}
+                      className="px-1 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[10px] font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500 truncate"
+                    >
+                      <option value={match.teamA?.name}>{match.teamA?.name}</option>
+                      <option value={match.teamB?.name}>{match.teamB?.name}</option>
+                    </select>
+                    <input
+                      type="number" min={0} aria-label="Số bàn" title="Bàn"
+                      value={row.goals}
+                      onChange={(e) => setScorerRow(match.matchId, ri, { goals: e.target.value })}
+                      className="px-1 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] font-mono text-center focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="number" min={0} aria-label="Kiến tạo" title="Kiến tạo"
+                      value={row.assists}
+                      onChange={(e) => setScorerRow(match.matchId, ri, { assists: e.target.value })}
+                      className="px-1 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] font-mono text-center focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      aria-label="Xóa dòng"
+                      onClick={() => removeScorerRow(match.matchId, ri)}
+                      className="text-rose-500 hover:text-rose-700 font-black"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400">Cột: tên • đội • bàn • kiến tạo</span>
+                  <button
+                    type="button"
+                    onClick={() => addScorerRow(match)}
+                    className="text-[11px] font-black text-sky-700 dark:text-sky-400 hover:underline"
+                  >
+                    + Thêm cầu thủ
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           </div>
         )}
         {done && (
@@ -403,6 +531,33 @@ export default function TournamentBracket() {
             <p className="text-[10px] text-slate-400">
               Giả lập & bốc thăm yêu cầu đăng nhập ORGANIZER hoặc ADMIN.
             </p>
+
+            {/* Duyệt lệ phí: đội PENDING chờ BTC xác nhận đã thu tiền */}
+            {pendingTeams.length > 0 && (
+              <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 space-y-2">
+                <p className="text-[11px] font-black text-amber-300 uppercase tracking-wider">
+                  Chờ xác nhận lệ phí ({pendingTeams.length})
+                </p>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                  {pendingTeams.map((t) => (
+                    <div key={t.teamName} className="flex items-center justify-between gap-2 text-xs">
+                      <span className="text-slate-200 font-bold truncate">
+                        {t.teamName}
+                        <span className="text-slate-400 font-medium"> • {t.captainPhone || "—"}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleConfirmPayment(t.teamName)}
+                        disabled={confirmingTeam === t.teamName}
+                        className="shrink-0 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black transition-all active:scale-95 disabled:opacity-50"
+                      >
+                        {confirmingTeam === t.teamName ? "…" : "Đã thu ✓"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

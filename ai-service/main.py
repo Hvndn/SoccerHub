@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from recommendation import recommend_pitches
@@ -8,6 +9,14 @@ app = FastAPI(
     title="SoccerHub AI Recommendation & Elo Matchmaking API",
     description="Microservice AI gợi ý sân bóng và ghép đội theo Elo cho hệ thống SoccerHub",
     version="1.0.0"
+)
+
+# Cho phép frontend gọi trực tiếp từ trình duyệt
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # --- Data Schemas ---

@@ -44,6 +44,7 @@ import {
 import PitchDetail from "./PitchDetail";
 import SmartPaymentPass from "./SmartPaymentPass";
 import { getAllPitchesApi } from "@/lib/pitchService";
+import { recommendPitches, type AiPitchCluster } from "@/lib/aiService";
 import { openDualRoleWindow, subscribeToBookingEvents } from "@/lib/realtimeService";
 
 interface PitchSearchProps {
@@ -140,6 +141,8 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
             numericId: Number(rawId) || 1,
             name: pitchName,
             address: address,
+            latitude: item.latitude ?? 16.0544,
+            longitude: item.longitude ?? 108.2022,
             district: address.includes("Liên Chiểu") ? "LIEN_CHIEU" : address.includes("Hải Châu") ? "HAI_CHAU" : address.includes("Cẩm Lệ") ? "CAM_LE" : "LIEN_CHIEU",
             districtName: address.includes("Liên Chiểu") ? "Q. Liên Chiểu" : address.includes("Hải Châu") ? "Q. Hải Châu" : "Đà Nẵng",
             phone: item.phone || "0988 776 652",
@@ -258,6 +261,38 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
   const featuredPitch = realPitches.length > 0 ? realPitches[0] : null;
 
+  // AI gợi ý sân (FastAPI :8000) — ẩn lặng nếu AI offline
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResults, setAiResults] = useState<AiPitchCluster[] | null>(null);
+
+  const askAiRecommend = async () => {
+    if (realPitches.length === 0) return;
+    try {
+      setAiLoading(true);
+      setAiResults(null);
+      const clusters: AiPitchCluster[] = realPitches.map((p: any, idx: number) => ({
+        id: String(p.numericId ?? idx + 1),
+        name: p.name,
+        latitude: Number(p.latitude ?? 16.0544),
+        longitude: Number(p.longitude ?? 108.2022),
+        avg_price_per_hour: Number(p.priceDiscounted ?? 350000),
+        pitch_types: [p.sport === "SAN5" ? "PITCH_5" : p.sport === "SAN11" ? "PITCH_11" : "PITCH_7"],
+        rating: Number(p.rating ?? 4.5),
+        image_url: p.imageUrl ?? null,
+        address: p.address ?? null,
+      }));
+      const sportMap: Record<string, string> = { SAN7: "PITCH_7", SAN5: "PITCH_5", SAN11: "PITCH_11", FUTSAL: "PITCH_7", ALL: "PITCH_7" };
+      const res = await recommendPitches(clusters, {
+        max_budget: maxBudget,
+        pitch_type: sportMap[selectedSport] ?? "PITCH_7",
+        top_n: 3,
+      });
+      setAiResults(res ? res.recommendations : []);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Toast Notification */}
@@ -267,6 +302,61 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
           <span className="text-sm font-bold">{toastMsg}</span>
         </div>
       )}
+
+      {/* 0. AI GỢI Ý SÂN (FastAPI) — theo ngân sách + thể thức đang lọc */}
+      <section className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-6 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              AI Gợi Ý Sân Cho Bạn
+            </h2>
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Chấm điểm tương thích theo ngân sách {maxBudget.toLocaleString("vi-VN")}đ, thể thức và đánh giá sân.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={askAiRecommend}
+            disabled={aiLoading || realPitches.length === 0}
+            className="shrink-0 px-4 py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083b52] text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
+          >
+            {aiLoading ? (
+              <>Đang hỏi AI…</>
+            ) : (
+              <><Sparkles className="w-4 h-4" /><span>Hỏi AI chọn sân</span></>
+            )}
+          </button>
+        </div>
+
+        {aiResults !== null && (
+          aiResults.length === 0 ? (
+            <p className="text-xs text-slate-500 dark:text-slate-400 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3.5">
+              AI service chưa phản hồi (kiểm tra ai-service cổng 8000). Bạn vẫn đặt sân thủ công bên dưới như bình thường.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {aiResults.map((r, i) => (
+                <div key={r.id} className="rounded-2xl border-2 border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/20 p-3.5 space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                      Lựa chọn #{i + 1}
+                    </span>
+                    <span className="font-mono text-[11px] font-black text-emerald-700 dark:text-emerald-400">
+                      {Math.round(r.compatibility_score ?? 0)} điểm
+                    </span>
+                  </div>
+                  <p className="text-xs font-black text-slate-900 dark:text-white truncate">{r.name}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{r.address || ""}</p>
+                  <p className="text-[11px] font-mono font-bold text-slate-700 dark:text-slate-200">
+                    {Number(r.avg_price_per_hour || 0).toLocaleString("vi-VN")}đ/giờ
+                  </p>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+      </section>
 
       {/* 1. HERO COCKPIT CẦU THỦ PRO: THẺ DANH DỰ & TRẠNG THÁI PHONG ĐỘ */}
       <section className="relative w-full rounded-3xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white overflow-hidden shadow-sm hover:shadow-md transition-all p-6 sm:p-8 border border-slate-200 dark:border-slate-800">

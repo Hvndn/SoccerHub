@@ -1,18 +1,24 @@
 package com.soccerhub.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.soccerhub.model.GoalEvent;
 import com.soccerhub.model.MatchResult;
 import com.soccerhub.model.Tournament;
 import com.soccerhub.model.TournamentTeamEntry;
-import com.soccerhub.repository.MatchResultRepository;
-import com.soccerhub.repository.TournamentRepository;
+import com.soccerhub.repository.GoalEventRepository;
+import com.soccerhub.repository.GoalEventRepository;
+import com.soccerhub.repository.MatchResultRepository;import com.soccerhub.repository.TournamentRepository;
 import com.soccerhub.service.AiEloClient;
+import com.soccerhub.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -24,7 +30,9 @@ public class TournamentController {
 
     private final TournamentRepository tournamentRepository;
     private final MatchResultRepository matchResultRepository;
+    private final GoalEventRepository goalEventRepository;
     private final AiEloClient aiEloClient;
+    private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
     @GetMapping
@@ -76,14 +84,16 @@ public class TournamentController {
         ));
     }
 
-    /** Admin: xóa giải đấu (kèm toàn bộ đội đã đăng ký). */
+    /** Admin: xóa giải đấu (kèm đội đăng ký, kết quả trận và bàn thắng liên quan). */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteTournament(@PathVariable Long id) {
         return tournamentRepository.findById(id)
                 .map(tournament -> {
+                    matchResultRepository.deleteAll(matchResultRepository.findByTournamentIdOrderByPlayedAtAsc(id));
+                    goalEventRepository.deleteAll(goalEventRepository.findByTournamentId(id));
                     tournamentRepository.delete(tournament);
-                    return ResponseEntity.ok(Map.of("message", "Đã xóa giải đấu khỏi hệ thống.", "id", id));
+                    return ResponseEntity.ok(Map.of("message", "Đã xóa giải đấu cùng kết quả và bàn thắng liên quan.", "id", id));
                 })
                 .orElse(ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại")));
     }
@@ -209,8 +219,10 @@ public class TournamentController {
         List<TournamentTeamEntry> teams = tournament.getTeams() != null
                 ? new ArrayList<>(tournament.getTeams())
                 : new ArrayList<>();
+        // Chỉ đội đã đóng phí (CONFIRMED) và đội Test (SIMULATED) được bốc thăm
+        teams.removeIf(t -> "PENDING_PAYMENT".equals(t.getRegistrationStatus()));
         if (teams.size() < 2) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Cần ít nhất 2 đội mới bốc thăm được."));
+            return ResponseEntity.badRequest().body(Map.of("message", "Cần ít nhất 2 đội đã đóng lệ phí mới bốc thăm được."));
         }
         teams.sort((a, b) -> Integer.compare(
                 b.getEloRating() != null ? b.getEloRating() : 1200,
@@ -318,6 +330,10 @@ public class TournamentController {
             return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi lưu kết quả bốc thăm."));
         }
         tournamentRepository.save(tournament);
+        notificationService.notify("ALL",
+                "Đã bốc thăm giải " + tournament.getTitle(),
+                "Nhánh đấu " + n + " đội đã được BTC bốc thăm. Mở tab Nhánh đấu để xem các cặp đấu!",
+                "TOURNAMENT", "/?tab=tournaments");
         return ResponseEntity.ok(Map.of(
                 "message", "Bốc thăm thành công cho " + n + " đội!",
                 "bracket", bracket));
@@ -350,8 +366,7 @@ public class TournamentController {
                 "registeredTeams", tournament.getRegisteredTeams()));
     }
 
-    private static Integer parseScore(Object raw) {
-        if (raw == null) return null;
+    private static Integer parseScore(Object raw) {        if (raw == null) return null;
         try {
             int v = Integer.parseInt(String.valueOf(raw).trim());
             return v >= 0 ? v : null;
@@ -429,6 +444,41 @@ public class TournamentController {
         int eloB = teamB.get("elo") instanceof Number numB ? numB.intValue() : 1200;
         String winner = scoreA > scoreB ? nameA : nameB;
 
+        // 0. Ghi nhận cầu thủ ghi bàn/kiến tạo (optional) + đối chiếu tổng bàn
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> scorers = body.get("scorers") instanceof List
+                ? (List<Map<String, Object>>) body.get("scorers")
+                : List.of();
+        int sumA = 0;
+        int sumB = 0;
+        List<GoalEvent> goalEvents = new ArrayList<>();
+        for (Map<String, Object> s : scorers) {
+            String player = String.valueOf(s.getOrDefault("playerName", "")).trim();
+            String team = String.valueOf(s.getOrDefault("teamName", "")).trim();
+            if (player.isEmpty() || team.isEmpty()) continue;
+            int g = parseScore(s.get("goals")) != null ? parseScore(s.get("goals")) : 0;
+            int ast = parseScore(s.get("assists")) != null ? parseScore(s.get("assists")) : 0;
+            if (g < 0 || ast < 0 || (g == 0 && ast == 0)) continue;
+            if (!team.equals(nameA) && !team.equals(nameB)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Cầu thủ " + player + " thuộc đội lạ (" + team + "), không có trong trận này."));
+            }
+            if (team.equals(nameA)) sumA += g;
+            else sumB += g;
+            goalEvents.add(GoalEvent.builder()
+                    .tournamentId(tournament.getId())
+                    .matchId(matchId)
+                    .playerName(player)
+                    .teamName(team)
+                    .goals(g)
+                    .assists(ast)
+                    .build());
+        }
+        if (!goalEvents.isEmpty() && (sumA != scoreA || sumB != scoreB)) {
+            return ResponseEntity.badRequest().body(Map.of("message",
+                    "Tổng bàn cầu thủ (" + nameA + " " + sumA + ", " + nameB + " " + sumB
+                            + ") lệch tỷ số đội (" + scoreA + "-" + scoreB + "). Kiểm tra lại."));
+        }
+
         // 1. Cập nhật trận trong nhánh
         target.put("scoreA", scoreA);
         target.put("scoreB", scoreB);
@@ -463,7 +513,7 @@ public class TournamentController {
             if (nameB.equals(t.getTeamName())) t.setEloRating(newEloB);
         }
 
-        // 4. Lưu lịch sử + nhánh đấu
+        // 4. Lưu lịch sử + nhánh đấu + cầu thủ ghi bàn
         matchResultRepository.save(MatchResult.builder()
                 .tournamentId(tournament.getId())
                 .matchId(matchId)
@@ -476,6 +526,9 @@ public class TournamentController {
                 .eloDeltaA(elo.get("deltaA"))
                 .eloDeltaB(elo.get("deltaB"))
                 .build());
+        if (!goalEvents.isEmpty()) {
+            goalEventRepository.saveAll(goalEvents);
+        }
         try {
             tournament.setBracketJson(objectMapper.writeValueAsString(bracket));
         } catch (Exception e) {
@@ -486,6 +539,10 @@ public class TournamentController {
         List<Map<String, Object>> eloChanges = List.of(
                 Map.of("team", (Object) nameA, "oldElo", (Object) eloA, "newElo", (Object) newEloA, "delta", elo.get("deltaA")),
                 Map.of("team", (Object) nameB, "oldElo", (Object) eloB, "newElo", (Object) newEloB, "delta", elo.get("deltaB")));
+        notificationService.notify("ALL",
+                "Kết quả " + matchId + ": " + winner + " thắng " + scoreA + "-" + scoreB,
+                nameA + " " + scoreA + "-" + scoreB + " " + nameB + " (" + tournament.getTitle() + "). Elo đã cập nhật!",
+                "MATCH", "/?tab=tournaments");
         return ResponseEntity.ok(Map.of(
                 "message", "Đã lưu kết quả " + nameA + " " + scoreA + "-" + scoreB + " " + nameB + "!",
                 "winner", winner,
@@ -494,7 +551,154 @@ public class TournamentController {
                 "bracket", bracket));
     }
 
-    /** Lấy nhánh đấu đã bốc thăm (public — FE render cây nhánh từ đây). */    @GetMapping("/{id}/bracket")
+    /**
+     * BXH Vua phá lưới của một giải (gộp bàn + kiến tạo theo cầu thủ).
+     */
+    @GetMapping("/{id}/scorers")
+    public ResponseEntity<?> getScorers(@PathVariable Long id) {
+        if (!tournamentRepository.existsById(id)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        return ResponseEntity.ok(aggregateScorers(goalEventRepository.findByTournamentId(id)));
+    }
+
+    /**
+     * Top Vua phá lưới toàn hệ thống (dùng cho widget trang chủ).
+     */
+    @GetMapping("/scorers/top")
+    public ResponseEntity<?> topScorers(@RequestParam(defaultValue = "5") int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 20));
+        List<Map<String, Object>> all = aggregateScorers(goalEventRepository.findAll());
+        return ResponseEntity.ok(all.subList(0, Math.min(safeLimit, all.size())));
+    }
+
+    private List<Map<String, Object>> aggregateScorers(List<GoalEvent> events) {
+        Map<String, Map<String, Object>> byPlayer = new LinkedHashMap<>();
+        for (GoalEvent e : events) {
+            String key = e.getPlayerName() + "||" + e.getTeamName();
+            Map<String, Object> row = byPlayer.computeIfAbsent(key, k -> {
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("playerName", e.getPlayerName());
+                m.put("teamName", e.getTeamName());
+                m.put("goals", 0);
+                m.put("assists", 0);
+                return m;
+            });
+            row.put("goals", (Integer) row.get("goals") + (e.getGoals() != null ? e.getGoals() : 0));
+            row.put("assists", (Integer) row.get("assists") + (e.getAssists() != null ? e.getAssists() : 0));
+        }
+        List<Map<String, Object>> list = new ArrayList<>(byPlayer.values());
+        list.sort((a, b) -> {
+            int c = Integer.compare((Integer) b.get("goals"), (Integer) a.get("goals"));
+            if (c != 0) return c;
+            return Integer.compare((Integer) b.get("assists"), (Integer) a.get("assists"));
+        });
+        int rank = 1;
+        for (Map<String, Object> row : list) {
+            row.put("rank", rank++);
+        }
+        return list;
+    }
+
+    /**
+     * Xếp lịch thi đấu tự động cho nhánh đã bốc thăm: mỗi trận có ngày,
+     * giờ và sân; các vòng cách nhau số ngày cấu hình. Body optional:
+     * { startDate, matchesPerDay (mặc định 2), daysBetweenRounds (mặc định 2),
+     *   startHour (mặc định 17), matchMinutes (mặc định 120) }.
+     */
+    @PostMapping("/{id}/schedule")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    public ResponseEntity<?> generateSchedule(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải chưa bốc thăm nên chưa thể xếp lịch."));
+        }
+        Map<String, Object> req = body != null ? body : Map.of();
+        String startStr = String.valueOf(req.getOrDefault("startDate",
+                tournament.getStartDate() != null ? tournament.getStartDate() : "")).trim();
+        LocalDate day;
+        try {
+            day = LocalDate.parse(startStr);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Ngày bắt đầu không hợp lệ (cần yyyy-MM-dd)."));
+        }
+        int perDay = toPositiveInt(req.get("matchesPerDay"), 2);
+        int gapDays = toNonNegativeInt(req.get("daysBetweenRounds"), 2);
+        int startHour = toPositiveInt(req.get("startHour"), 17);
+        int minutes = toPositiveInt(req.get("matchMinutes"), 120);
+        String pitch = tournament.getPitchName() != null && !tournament.getPitchName().isBlank()
+                ? tournament.getPitchName() : (tournament.getLocation() != null ? tournament.getLocation() : "Sân BTC");
+
+        Map<String, Object> bracket;
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> parsed = objectMapper.readValue(tournament.getBracketJson(), Map.class);
+            bracket = parsed;
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Dữ liệu nhánh đấu bị lỗi."));
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> rounds = (List<Map<String, Object>>) bracket.get("rounds");
+        int scheduled = 0;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
+        for (Map<String, Object> round : rounds) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> matches = (List<Map<String, Object>>) round.get("matches");
+            int slot = 0;
+            for (Map<String, Object> m : matches) {
+                if ("BYE".equals(m.get("status"))) continue;
+                LocalDate d = day.plusDays(slot / perDay);
+                LocalTime from = LocalTime.of(startHour % 24, 0).plusMinutes((long) (slot % perDay) * minutes);
+                LocalTime to = from.plusMinutes(minutes);
+                m.put("matchDate", d.toString());
+                m.put("timeSlot", fmt.format(from) + " - " + fmt.format(to));
+                m.put("pitchName", pitch);
+                slot++;
+                scheduled++;
+            }
+            day = day.plusDays((int) Math.ceil((double) Math.max(slot, 1) / perDay) + gapDays);
+        }
+
+        try {
+            tournament.setBracketJson(objectMapper.writeValueAsString(bracket));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi lưu lịch thi đấu."));
+        }
+        tournamentRepository.save(tournament);
+        notificationService.notify("ALL",
+                "Đã có lịch thi đấu giải " + tournament.getTitle(),
+                "BTC vừa xếp lịch cho " + scheduled + " trận. Mở tab Nhánh đấu để xem giờ và sân!",
+                "MATCH", "/?tab=tournaments");
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã xếp lịch cho " + scheduled + " trận đấu!",
+                "scheduled", scheduled,
+                "bracket", bracket));
+    }
+
+    private static int toPositiveInt(Object raw, int fallback) {
+        try {
+            int v = Integer.parseInt(String.valueOf(raw));
+            return v > 0 ? v : fallback;
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private static int toNonNegativeInt(Object raw, int fallback) {
+        try {
+            int v = Integer.parseInt(String.valueOf(raw));
+            return v >= 0 ? v : fallback;
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    /** Lấy nhánh đấu đã bốc thăm (public — FE render cây nhánh từ đây). */
+    @GetMapping("/{id}/bracket")
     public ResponseEntity<?> getBracket(@PathVariable Long id) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
@@ -537,7 +741,7 @@ public class TournamentController {
                 .subCaptainPhone(subCaptainPhone)
                 .memberCount(memberCount)
                 .eloRating(eloRating)
-                .registrationStatus("CONFIRMED")
+                .registrationStatus("PENDING_PAYMENT")
                 .registeredAt(LocalDateTime.now())
                 .build();
 
@@ -545,12 +749,53 @@ public class TournamentController {
         tournament.setRegisteredTeams(tournament.getTeams().size());
         tournamentRepository.save(tournament);
 
+        notificationService.notify("ORGANIZER",
+                "Đội mới đăng ký: " + teamName,
+                teamName + " vừa nộp đơn vào giải “" + tournament.getTitle() + "”. Trạng thái: chờ xác nhận lệ phí.",
+                "TOURNAMENT", "/?tab=tournaments");
+        notificationService.notify("ADMIN",
+                "Đội mới đăng ký: " + teamName,
+                teamName + " vừa nộp đơn vào giải “" + tournament.getTitle() + "”. Trạng thái: chờ xác nhận lệ phí.",
+                "TOURNAMENT", "/admin");
+
         return ResponseEntity.ok(Map.of(
-                "message", "Đăng ký giải đấu thành công!",
+                "message", "Nộp đơn thành công! Vui lòng thanh toán lệ phí và chờ BTC xác nhận.",
                 "tournamentId", tournament.getId(),
                 "registeredTeams", tournament.getRegisteredTeams(),
+                "paymentStatus", "PENDING_PAYMENT",
                 "team", entry
         ));
+    }
+
+    /**
+     * BTC xác nhận đã thu lệ phí của một đội → CONFIRMED (mới được bốc thăm).
+     */
+    @PostMapping("/{id}/teams/confirm-payment")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    public ResponseEntity<?> confirmTeamPayment(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        String teamName = String.valueOf(body.getOrDefault("teamName", "")).trim();
+        if (teamName.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu tên đội."));
+        }
+        TournamentTeamEntry found = null;
+        for (TournamentTeamEntry t : tournament.getTeams()) {
+            if (teamName.equalsIgnoreCase(t.getTeamName())) {
+                found = t;
+                break;
+            }
+        }
+        if (found == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội " + teamName + " trong giải."));
+        }
+        found.setRegistrationStatus("CONFIRMED");
+        tournamentRepository.save(tournament);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã xác nhận lệ phí của " + found.getTeamName() + ".",
+                "team", found.getTeamName()));
     }
 
     @PostMapping("/generate-bracket")

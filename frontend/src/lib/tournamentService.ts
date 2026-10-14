@@ -32,6 +32,9 @@ export interface Tournament {
   createdAt?: string;
   teams?: TournamentTeamEntry[];
   bracketJson?: string | null;
+  bankCode?: string | null;
+  bankAccount?: string | null;
+  accountName?: string | null;
 }
 
 export const SPORT_TYPES = ['SAN_7', 'SAN_5', 'SAN_11', 'FUTSAL'] as const;
@@ -253,6 +256,60 @@ export async function clearSimulatedTeams(tournamentId: number): Promise<{ messa
   }
 }
 
+export interface ScorerRow {
+  playerName: string;
+  teamName: string;
+  goals: number;
+  assists: number;
+  rank?: number;
+}
+
+/** BXH Vua phá lưới một giải. */
+export async function fetchTournamentScorers(tournamentId: number): Promise<ScorerRow[]> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}/scorers`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+/** Top Vua phá lưới toàn hệ thống (widget trang chủ). */
+export async function fetchTopScorers(limit = 5): Promise<ScorerRow[]> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/tournaments/scorers/top?limit=${limit}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+/** BTC xác nhận đã thu lệ phí của một đội. */
+export async function confirmTeamPayment(tournamentId: number, teamName: string): Promise<{ message: string }> {
+  try {
+    return await apiRequest(
+      `/api/v1/tournaments/${tournamentId}/teams/confirm-payment`,
+      { method: 'POST', body: JSON.stringify({ teamName }) }
+    );
+  } catch (err) {
+    throw new Error(friendlyAdminError(err, 'Xác nhận lệ phí thất bại.'));
+  }
+}
+
+/** Dựng URL ảnh QR VietQR từ thông tin nhận tiền của giải. Null khi giải chưa có STK. */
+export function buildVietQrUrl(t: {
+  bankCode?: string | null;
+  bankAccount?: string | null;
+  accountName?: string | null;
+  entryFee?: number | null;
+  addInfo?: string;
+}): string | null {
+  if (!t.bankCode || !t.bankAccount) return null;
+  const amount = Math.max(0, Math.round(t.entryFee ?? 0));
+  const params = new URLSearchParams({
+    amount: String(amount),
+    addInfo: (t.addInfo ?? "").slice(0, 25),
+    accountName: (t.accountName ?? "").slice(0, 50),
+  });
+  return `https://api.vietqr.io/image/${t.bankCode}-${t.bankAccount}-compact2.png?${params.toString()}`;
+}
+
 export interface EloChange {
   team: string;
   oldElo: number;
@@ -271,7 +328,12 @@ export interface MatchSaveResult {
 /** Nhập kết quả trận — cần ORGANIZER/ADMIN. */
 export async function saveMatchResult(
   tournamentId: number,
-  payload: { matchId: string; scoreA: number; scoreB: number }
+  payload: {
+    matchId: string;
+    scoreA: number;
+    scoreB: number;
+    scorers?: { playerName: string; teamName: string; goals: number; assists: number }[];
+  }
 ): Promise<MatchSaveResult> {
   try {
     const body = await apiRequest<MatchSaveResult>(

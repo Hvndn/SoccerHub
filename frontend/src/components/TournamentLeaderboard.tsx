@@ -12,6 +12,8 @@ import {
   Tournament,
   SportType,
   fetchTournaments,
+  fetchTopScorers,
+  type ScorerRow,
   subscribeTournaments,
   countBySport,
   countOpen,
@@ -90,14 +92,29 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
     return subscribeTournaments(setTournaments);
   }, [reloadTournaments]);
 
-  // Top Football Scorers & Elo Leaderboard
-  const topScorerFootball = [
-    { rank: 1, name: 'Nguyễn Văn An', goals: '18 bàn (11 kiến tạo)', note: 'FC Sài Gòn Warriors', crown: true },
-    { rank: 2, name: 'Phạm Đăng Khoa', goals: '15 bàn (8 kiến tạo)', note: 'FC Lộc Phát Q.7', crown: false },
-    { rank: 3, name: 'Trần Quốc Nam', goals: '14 bàn (5 kiến tạo)', note: 'FC Anh Em Kiến Trúc', crown: false },
-    { rank: 4, name: 'Vũ Minh Tuấn', goals: '12 bàn (9 kiến tạo)', note: 'FC Titan Sài Gòn', crown: false },
-    { rank: 5, name: 'Đặng Ngọc Long', goals: '10 bàn (12 kiến tạo)', note: 'FC Nam Sài Gòn', crown: false },
-  ];
+  // Top Vua phá lưới toàn hệ thống — dữ liệu thật từ CSDL (thay hardcode)
+  const [topScorers, setTopScorers] = useState<ScorerRow[]>([]);
+
+  React.useEffect(() => {
+    let alive = true;
+    fetchTopScorers(5)
+      .then((rows) => {
+        if (alive) setTopScorers(rows);
+      })
+      .catch(() => {});
+    const refresh = () => {
+      fetchTopScorers(5)
+        .then((rows) => {
+          if (alive) setTopScorers(rows);
+        })
+        .catch(() => {});
+    };
+    const unsub = subscribeTournaments(refresh);
+    return () => {
+      alive = false;
+      unsub();
+    };
+  }, []);
 
   // ---------------------------------------------------------------------------
   // DỮ LIỆU DẪN XUẤT TỪ CSDL — thay cho toàn bộ số liệu hardcode cũ
@@ -1093,33 +1110,41 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   <span className="text-xs text-slate-500 font-semibold">TP.HCM • Mùa Q4</span>
                 </div>
 
-                {/* Leaderboard Rows */}
+                {/* Leaderboard Rows — dữ liệu thật từ CSDL */}
                 <div className="flex flex-col gap-1 pt-1">
-                  {topScorerFootball.map(p => (
-                    <div 
-                      key={p.rank} 
-                      className={`flex items-center justify-between p-2.5 rounded-xl transition-colors ${
-                        p.rank === 1 
-                          ? 'bg-amber-100/60 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-500/30' 
-                          : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className={`w-6 h-6 rounded-full font-mono text-xs font-black flex items-center justify-center shrink-0 ${
-                          p.rank === 1 ? 'bg-amber-500 text-slate-950' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                        }`}>
-                          {p.rank}
-                        </span>
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                            {p.name} {p.crown && '👑'}
+                  {topScorers.length === 0 ? (
+                    <p className="p-4 text-center text-xs text-slate-500 dark:text-slate-400">
+                      Chưa có bàn thắng nào được ghi nhận. Nhập kết quả trận đấu để lên BXH.
+                    </p>
+                  ) : (
+                    topScorers.map((p) => (
+                      <div
+                        key={`${p.playerName}-${p.teamName}`}
+                        className={`flex items-center justify-between p-2.5 rounded-xl transition-colors ${
+                          p.rank === 1
+                            ? 'bg-amber-100/60 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-500/30'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className={`w-6 h-6 rounded-full font-mono text-xs font-black flex items-center justify-center shrink-0 ${
+                            p.rank === 1 ? 'bg-amber-500 text-slate-950' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                          }`}>
+                            {p.rank}
                           </span>
-                          <span className="text-[11px] text-slate-500 font-medium">{p.note}</span>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1 truncate">
+                              {p.playerName} {p.rank === 1 && '👑'}
+                            </span>
+                            <span className="text-[11px] text-slate-500 font-medium truncate">{p.teamName}</span>
+                          </div>
                         </div>
+                        <span className="font-mono font-black text-emerald-700 dark:text-emerald-400 text-xs whitespace-nowrap">
+                          {p.goals} bàn ({p.assists} kiến tạo)
+                        </span>
                       </div>
-                      <span className="font-mono font-black text-emerald-700 dark:text-emerald-400 text-xs">{p.goals}</span>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
 
                 <button

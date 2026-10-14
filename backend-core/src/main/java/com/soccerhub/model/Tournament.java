@@ -50,6 +50,11 @@ public class Tournament {
 
     private String bannerUrl;
 
+    /** Thông tin nhận lệ phí giải (nullable — BTC điền khi tạo giải, dùng sinh QR VietQR). */
+    private String bankCode;
+    private String bankAccount;
+    private String accountName;
+
     /** Kết quả bốc thăm chia cặp (JSON) — do BTC bấm "Bốc thăm" tạo ra, FE render cây nhánh từ đây. */
     @Column(columnDefinition = "TEXT")
     private String bracketJson;

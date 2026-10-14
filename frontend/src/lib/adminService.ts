@@ -121,6 +121,42 @@ export async function deleteMatchmakingPost(id: number): Promise<{ message: stri
   return apiRequest('/api/v1/admin/matchmaking-posts/' + id, { method: 'DELETE' });
 }
 
+export async function cleanOrphanData(): Promise<{ message: string; matchResults: number; goalEvents: number }> {
+  return apiRequest('/api/v1/admin/maintenance/orphans', { method: 'DELETE' });
+}
+
+export interface AdminNotification {
+  id: number;
+  targetRole?: string;
+  title: string;
+  message?: string;
+  type?: string;
+  link?: string | null;
+  read?: boolean;
+  createdAt?: string;
+}
+
+export async function listMyNotifications(): Promise<AdminNotification[]> {
+  const data = await apiRequest<AdminNotification[]>('/api/v1/notifications/mine');
+  return Array.isArray(data) ? data : [];
+}
+
+export async function markNotificationRead(id: number | string): Promise<void> {
+  await apiRequest(`/api/v1/notifications/${id}/read`, { method: 'PATCH' });
+}
+
+export async function broadcastNotification(payload: {
+  title: string;
+  message: string;
+  targetRole?: string;
+  link?: string | null;
+}): Promise<{ message: string }> {
+  return apiRequest('/api/v1/notifications/broadcast', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function getRevenueReport(): Promise<any> {
   try {
     return await apiRequest('/api/v1/admin/revenue-report');
