@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { matchmakingAi } from "@/lib/aiService";
 import {
   Sparkles,
@@ -48,7 +48,6 @@ export default function MatchmakingMarketplace({
   const [radiusKm, setRadiusKm] = useState(5);
   const [matchFormat, setMatchFormat] = useState("DOUBLES_MALE");
   const [paymentModel, setPaymentModel] = useState("SPLIT_EQUAL");
-  const [userDepositBalance, setUserDepositBalance] = useState(200000);
   const [joinedMatches, setJoinedMatches] = useState<string[]>([]);
 
   // Dữ liệu kèo thật từ MySQL Backend
@@ -121,6 +120,39 @@ export default function MatchmakingMarketplace({
         return (ra === -1 ? Number.MAX_SAFE_INTEGER : ra) - (rb === -1 ? Number.MAX_SAFE_INTEGER : rb);
       })
     : posts;
+
+  // Số liệu chợ kèo lấy thẳng từ CSDL — không hardcode.
+  const openKèoCount = posts.length;
+  // Số VĐV duy nhất đang mở kèo (mỗi đội 1 trưởng), đếm từ dữ liệu thật.
+  const onlineCaptains = useMemo(
+    () => new Set(posts.map((p: any) => p.captainPhone).filter(Boolean)).size,
+    [posts]
+  );
+  const openKèoBySport = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of posts) {
+      const k = String(p.pitchType ?? "SAN_7");
+      map.set(k, (map.get(k) ?? 0) + 1);
+    }
+    return map;
+  }, [posts]);
+  // Số kèo nằm trong tầm Elo người chơi (±150) — thay cho con số % bịa.
+  const matchableCount = useMemo(
+    () => posts.filter((p: any) => Math.abs((p.eloRating ?? 1200) - userElo) <= 150).length,
+    [posts, userElo]
+  );
+  // Bảng xếp đội mở kèo — gom từ bảng matchmaking_posts trong CSDL.
+  const topTeams = useMemo(() => {
+    const map = new Map<string, { teamName: string; count: number; elo: number; pitchType?: string }>();
+    for (const p of posts) {
+      const key = String(p.teamName ?? "—");
+      const cur = map.get(key) ?? { teamName: key, count: 0, elo: p.eloRating ?? 1200, pitchType: p.pitchType };
+      cur.count += 1;
+      cur.elo = Math.max(cur.elo, p.eloRating ?? 1200);
+      map.set(key, cur);
+    }
+    return Array.from(map.values()).sort((a, b) => b.count - a.count || b.elo - a.elo).slice(0, 3);
+  }, [posts]);
 
   // Fetch real matchmaking posts
   const fetchPosts = async () => {
@@ -249,7 +281,9 @@ export default function MatchmakingMarketplace({
               </span>
               <span className="text-slate-400">•</span>
               <span className="px-3 py-0.5 rounded-full bg-emerald-500/10 text-[#006c49] font-bold text-xs">
-                Đang kết nối 142 VĐV sẵn sàng ra sân
+                {onlineCaptains > 0
+                  ? `${onlineCaptains} đội đang mở kèo trên sàn`
+                  : "Chưa có kèo nào đang mở"}
               </span>
             </div>
           </div>
@@ -286,7 +320,7 @@ export default function MatchmakingMarketplace({
           >
             <span>⚽ Bóng Đá Sân 7</span>
             <span className="px-2 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[10px] font-black">
-              28 kèo mở
+              {openKèoBySport.get("SAN_7") ?? 0} kèo mở
             </span>
           </button>
 
@@ -300,7 +334,7 @@ export default function MatchmakingMarketplace({
           >
             <span>👟 Sân 5 Cỏ Nhân Tạo</span>
             <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">
-              19 kèo
+              {openKèoBySport.get("SAN_5") ?? 0} kèo
             </span>
           </button>
 
@@ -314,7 +348,7 @@ export default function MatchmakingMarketplace({
           >
             <span>🏟️ Bóng Đá Sân 11 FIFA</span>
             <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">
-              6 kèo
+              {openKèoBySport.get("SAN_11") ?? 0} kèo
             </span>
           </button>
 
@@ -328,7 +362,7 @@ export default function MatchmakingMarketplace({
           >
             <span>🥅 Futsal Trong Nhà</span>
             <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">
-              8 kèo
+              {openKèoBySport.get("FUTSAL") ?? 0} kèo
             </span>
           </button>
         </div>
@@ -438,9 +472,11 @@ export default function MatchmakingMarketplace({
         <main className="lg:col-span-8 space-y-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <h2 className="text-xl font-black text-slate-900 dark:text-white">Kèo Đang Mở Đăng Ký</h2>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white">
+                Kèo Đang Mở Đăng Ký ({openKèoCount})
+              </h2>
               <span className="px-3 py-1 rounded-full bg-[#acf847] text-[#102000] font-mono text-xs font-extrabold">
-                Phù hợp 95%+ cho Trình độ Elo {userElo}
+                {matchableCount}/{openKèoCount} kèo trong tầm Elo {userElo} ±150
               </span>
             </div>
             <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500">
@@ -650,102 +686,102 @@ export default function MatchmakingMarketplace({
             </button>
           </section>
 
-          {/* WIDGET 2: ESCROW FAIRPLAY BALANCE */}
+          {/* WIDGET 2: HỒ SƠ CẦU THỦ + SỐ LIỆU SÀN (lấy từ CSDL) */}
           <section className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="w-5 h-5 text-[#006c49]" />
-                <h3 className="font-black text-sm text-slate-900 dark:text-white">Ký Quỹ FairPlay™</h3>
+                <h3 className="font-black text-sm text-slate-900 dark:text-white">Hồ Sơ Cầu Thủ</h3>
               </div>
               <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold">
-                Active
+                {user?.email ? "Đã đăng nhập" : "Khách"}
               </span>
             </div>
 
             <div className="bg-slate-900 text-white rounded-2xl p-4 space-y-1 shadow-md">
-              <span className="text-[10px] text-slate-400 uppercase font-extrabold block">Số dư ký quỹ bảo chứng</span>
+              <span className="text-[10px] text-slate-400 uppercase font-extrabold block">Trình độ Elo hiện tại</span>
               <div className="flex items-baseline justify-between font-mono">
                 <span className="text-2xl font-black text-[#acf847]">
-                  {userDepositBalance.toLocaleString("vi-VN")}đ
+                  {(user?.eloRating ?? userElo).toLocaleString("vi-VN")}
                 </span>
-                <span className="text-xs text-emerald-300 font-bold hover:underline cursor-pointer">
-                  Nạp thêm →
-                </span>
+                <span className="text-xs text-slate-300 font-bold">{user?.level ?? "Chưa xếp bậc"}</span>
               </div>
               <p className="text-[11px] text-slate-300 pt-1">
-                Bảo chứng không hủy kèo phút chót. Tự động hoàn lại sau khi quét mã QR vào sân.
+                {userName ? `${userName} • ${user?.position ?? "Cầu thủ"} • ${user?.area ?? "Chưa cập nhật khu vực"}` : "Đăng nhập để BTC và đội khác thấy hồ sơ của bạn."}
               </p>
             </div>
 
             <div className="space-y-2 text-xs">
               <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
-                <span>Tỷ lệ uy tín thi đấu:</span>
-                <span className="font-bold text-[#006c49] flex items-center space-x-1">
-                  <Star className="w-3.5 h-3.5 fill-[#006c49] text-[#006c49]" />
-                  <span>100% (5.0 / 5)</span>
-                </span>
+                <span>Kèo đang mở trên sàn:</span>
+                <span className="font-bold text-[#006c49] font-mono">{openKèoCount} kèo</span>
               </div>
-              <div className="flex justify-between items-center text-slate-600 dark:text-slate-300 font-mono">
-                <span>Số trận hoàn tất không vắng:</span>
-                <span className="font-bold text-slate-900 dark:text-white">14/14 trận</span>
+              <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
+                <span>Số đội đang chờ ghép:</span>
+                <span className="font-bold text-slate-900 dark:text-white font-mono">{onlineCaptains} đội</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
+                <span>Kèo hợp trình độ của bạn:</span>
+                <span className="font-bold text-slate-900 dark:text-white font-mono">
+                  {matchableCount}/{openKèoCount}
+                </span>
               </div>
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-[11px] flex items-start space-x-2">
                 <Info className="w-4 h-4 text-[#006c49] shrink-0 mt-0.5" />
-                <span>VĐV vắng mặt vô cớ sẽ chuyển toàn bộ tiền cọc làm bồi hoàn cho các thành viên còn lại.</span>
+                <span>
+                  Tên đội, trình độ và số liệu trên đều đọc trực tiếp từ CSDL — có kèo mới là danh sách tự cập nhật.
+                </span>
               </div>
             </div>
           </section>
 
-          {/* WIDGET 3: LEADERBOARD BOARD OF HONOR */}
+          {/* WIDGET 3: TOP ĐỘI ĐANG MỞ KÈO (xếp theo Elo thật trong bảng) */}
           <section className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Trophy className="w-5 h-5 text-amber-500" />
-                <h3 className="font-black text-sm text-slate-900 dark:text-white">Vinh Danh Ghép Kèo</h3>
+                <h3 className="font-black text-sm text-slate-900 dark:text-white">Đội Mở Kèo Nhiều Nhất</h3>
               </div>
-              <span className="text-xs text-slate-400 font-semibold">Tuần 42</span>
+              <span className="text-xs text-slate-400 font-semibold">{openKèoCount} kèo trong CSDL</span>
             </div>
 
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80">
-                <div className="flex items-center space-x-2.5">
-                  <span className="w-6 h-6 rounded-full bg-[#acf847] text-[#102000] font-black text-xs flex items-center justify-center font-mono">
-                    1
-                  </span>
-                  <div>
-                    <p className="font-bold text-slate-900 dark:text-white">Trần Quốc Nam</p>
-                    <span className="text-[10px] text-slate-400">Ghép 18 trận • Thắng 15</span>
+            {topTeams.length === 0 ? (
+              <p className="text-xs text-slate-500 dark:text-slate-400 py-4 text-center">
+                Chưa có kèo nào. Bấm “+ Tạo Kèo Giao Lưu Mới” để mở kèo đầu tiên.
+              </p>
+            ) : (
+              <div className="space-y-2 text-xs">
+                {topTeams.map((t, i) => (
+                  <div
+                    key={t.teamName}
+                    className={`flex items-center justify-between p-2.5 rounded-xl ${
+                      i === 0
+                        ? "bg-slate-50 dark:bg-slate-800/80"
+                        : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2.5 min-w-0">
+                      <span
+                        className={`w-6 h-6 rounded-full flex items-center justify-center font-mono font-black text-xs shrink-0 ${
+                          i === 0
+                            ? "bg-[#acf847] text-[#102000]"
+                            : "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-bold"
+                        }`}
+                      >
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-900 dark:text-white truncate">{t.teamName}</p>
+                        <span className="text-[10px] text-slate-400">
+                          {t.count} kèo đang mở • {t.pitchType ?? "Sân 7"}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="font-mono font-bold text-[#006c49] shrink-0">Elo {t.elo}</span>
                   </div>
-                </div>
-                <span className="font-mono font-bold text-[#006c49]">+45 Elo</span>
+                ))}
               </div>
-
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                <div className="flex items-center space-x-2.5">
-                  <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-bold text-xs flex items-center justify-center font-mono">
-                    2
-                  </span>
-                  <div>
-                    <p className="font-bold text-slate-900 dark:text-white">Lê Hoàng Yến</p>
-                    <span className="text-[10px] text-slate-400">Ghép 14 trận • Chuỗi 8W</span>
-                  </div>
-                </div>
-                <span className="font-mono font-bold text-[#006c49]">+38 Elo</span>
-              </div>
-
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                <div className="flex items-center space-x-2.5">
-                  <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-bold text-xs flex items-center justify-center font-mono">
-                    3
-                  </span>
-                  <div>
-                    <p className="font-bold text-slate-900 dark:text-white">Phạm Đăng Khoa</p>
-                    <span className="text-[10px] text-slate-400">Ghép 12 trận • MVP Q.7</span>
-                  </div>
-                </div>
-                <span className="font-mono font-bold text-[#006c49]">+29 Elo</span>
-              </div>
-            </div>
+            )}
           </section>
         </aside>
       </div>
