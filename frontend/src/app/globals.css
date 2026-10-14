@@ -194,6 +194,24 @@ button.bg-emerald-700,
   --stagger-step: 70ms;
 }
 
+/* In biên bản trận đấu (E-Scoresheet): chỉ in phần biên bản, bỏ toàn bộ giao diện */
+@media print {
+  @page { margin: 14mm; }
+  body * { visibility: hidden !important; }
+  .esheet-print, .esheet-print * {
+    visibility: visible !important;
+  }
+  .esheet-print {
+    position: absolute !important;
+    inset-inline: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: 0 !important;
+  }
+}
+
 /* Tôn trọng cài đặt giảm chuyển động của hệ điều hành */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

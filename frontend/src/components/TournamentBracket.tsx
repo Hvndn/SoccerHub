@@ -73,14 +73,13 @@ export default function TournamentBracket() {
   const [lottery, setLottery] = useState<{ pairs: { matchId: string; teamA: string; teamB: string }[]; byes: string[] } | null>(null);
   const [activeTab, setActiveTab] = useState<"bracket" | "var_referee" | "standings" | "esheet">("bracket");
 
-  // Scoreboard state for Live VAR console
-  const [scoreA, setScoreA] = useState(3);
-  const [scoreB, setScoreB] = useState(2);
-  const [currentSet, setCurrentSet] = useState(2);
-  const [cardsA, setCardsA] = useState(1);
-  const [cardsB, setCardsB] = useState(0);
-  const [timeoutsA, setTimeoutsA] = useState(1);
-  const [timeoutsB, setTimeoutsB] = useState(2);
+  // --- Tòa VAR: chọn trận thật trong nhánh đấu để điều khiển tỷ số ---
+  const [varMatchId, setVarMatchId] = useState<string>("");
+  const [varScoreA, setVarScoreA] = useState(0);
+  const [varScoreB, setVarScoreB] = useState(0);
+  // Nhật ký VAR ghi lại trong phiên làm việc của BTC (không bịa sẵn)
+  const [varLog, setVarLog] = useState<{ time: string; text: string; tone: "ok" | "warn" | "bad" }[]>([]);
+
   const [varStatus, setVarStatus] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedCameraAngle, setSelectedCameraAngle] = useState<string>("Cam 1 - Direct Baseline");
@@ -152,6 +151,64 @@ export default function TournamentBracket() {
       ),
     [bracket]
   );
+
+  /**
+   * Danh sách trận cho Tòa VAR + Biên bản: mọi trận có 2 đội thật.
+   * Ưu tiên trận chưa đánh (để nhập tỷ số) rồi tới trận đã đánh gần nhất.
+   */
+  const playableMatches = useMemo(() => {
+    const rows: { match: BracketMatch; roundName: string }[] = [];
+    for (const r of bracket?.rounds ?? []) {
+      for (const m of r.matches) {
+        if (!m.teamA || !m.teamB) continue;
+        if (m.teamA.tbd || m.teamB.tbd) continue;
+        rows.push({ match: m, roundName: r.name });
+      }
+    }
+    return rows.sort((a, b) => {
+      const rank = (m: BracketMatch) => (m.status === "DONE" ? 1 : 0);
+      return rank(a.match) - rank(b.match) || (a.match.matchDate ?? "").localeCompare(b.match.matchDate ?? "");
+    });
+  }, [bracket]);
+
+  const varMatch = useMemo(
+    () => playableMatches.find((p) => p.match.matchId === varMatchId)?.match ?? null,
+    [playableMatches, varMatchId]
+  );
+  const varRound = useMemo(
+    () => playableMatches.find((p) => p.match.matchId === varMatchId)?.roundName ?? "",
+    [playableMatches, varMatchId]
+  );
+
+  // Mặc định chọn trận đầu tiên trong danh sách và nạp tỷ số hiện có.
+  useEffect(() => {
+    if (!playableMatches.length) {
+      setVarMatchId("");
+      return;
+    }
+    if (!playableMatches.some((p) => p.match.matchId === varMatchId)) {
+      setVarMatchId(playableMatches[0].match.matchId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playableMatches]);
+
+  useEffect(() => {
+    setVarScoreA(varMatch?.scoreA ?? 0);
+    setVarScoreB(varMatch?.scoreB ?? 0);
+    setVarStatus(null);
+    setVarLog([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [varMatchId]);
+
+  const pushVarLog = (text: string, tone: "ok" | "warn" | "bad") =>
+    setVarLog((prev) => [
+      {
+        time: new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+        text,
+        tone,
+      },
+      ...prev,
+    ]);
 
   const handleConfirmPayment = async (teamName: string) => {
     if (!selected) return;
@@ -387,9 +444,44 @@ export default function TournamentBracket() {
     }));
   };
 
-  const handleVarCheck = (decision: string) => {
+  const handleVarCheck = (decision: string, tone: "ok" | "warn" | "bad") => {
     setVarStatus(decision);
+    pushVarLog(`VAR Replay (${selectedCameraAngle}): ${decision}`, tone);
     triggerToast(`Đã ghi nhận VAR Replay: "${decision}"!`);
+  };
+
+  /** Lưu tỷ số từ Tòa VAR xuống CSDL — cùng endpoint nhập kết quả, cập nhật Elo thật. */
+  const saveVarScore = async () => {
+    if (!selected || !varMatch) return;
+    const isLeague = selected.format === "ROUND_ROBIN";
+    if (varScoreA === varScoreB && !isLeague) {
+      triggerToast("Vòng Knockout cần phân thắng bại, không nhận tỷ số hòa.");
+      return;
+    }
+    if (varMatch.status === "DONE") {
+      triggerToast("Trận này đã có kết quả. Dùng nút “Huỷ KQ” trên thẻ trận để nhập lại.");
+      return;
+    }
+    try {
+      setSavingMatch(varMatch.matchId);
+      const res = await saveMatchResult(selected.id, {
+        matchId: varMatch.matchId,
+        scoreA: varScoreA,
+        scoreB: varScoreB,
+      });
+      const deltas = res.eloChanges
+        .map((c) => `${c.team} ${c.delta >= 0 ? "+" : ""}${Math.round(c.delta)}`)
+        .join(" • ");
+      pushVarLog(
+        `Kết quả ${varMatch.teamA?.name} ${varScoreA}-${varScoreB} ${varMatch.teamB?.name} — Elo: ${deltas}`,
+        "ok"
+      );
+      triggerToast(`${res.message} Elo: ${deltas}`);
+    } catch (err: any) {
+      triggerToast(err?.message || "Lưu kết quả thất bại.");
+    } finally {
+      setSavingMatch(null);
+    }
   };
 
   const renderMatch = (match: BracketMatch, idx: number) => {
@@ -920,176 +1012,261 @@ export default function TournamentBracket() {
         </div>
       )}
 
-      {/* TAB 2: LIVE REFEREE VAR CONSOLE */}
+      {/* TAB 2: TÒA TRỌNG TÀI VAR — chạy trên trận thật trong nhánh đấu */}
       {activeTab === "var_referee" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Referee Scoreboard & Controls */}
           <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-              <div>
-                <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase mr-2 animate-pulse">LIVE VAR</span>
-                <span className="font-extrabold text-base text-slate-900 dark:text-white">Trận Chung Kết Bóng Đá Sân 7 VFF Cup 2026</span>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div className="min-w-0">
+                <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase mr-2">VAR</span>
+                <span className="font-extrabold text-base text-slate-900 dark:text-white">
+                  {varMatch
+                    ? `${varRound} · ${varMatch.teamA?.name} vs ${varMatch.teamB?.name}`
+                    : "Chọn một trận để điều khiển tỷ số"}
+                </span>
               </div>
               <div className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
-                Sân 7A • Khung Giờ 20:00
+                {varMatch?.matchDate
+                  ? `${varMatch.matchDate.split("-").reverse().join("/")} • ${varMatch.timeSlot ?? ""} • ${varMatch.pitchName ?? "Chưa xếp sân"}`
+                  : "Chưa xếp lịch"}
               </div>
             </div>
 
-            {/* Giant Monospace Scoreboard */}
-            <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 rounded-2xl border border-emerald-500/30 text-white text-center shadow-2xl space-y-4">
-              <div className="flex items-center justify-center space-x-3 text-xs text-slate-400 uppercase font-mono tracking-widest font-bold">
-                <Clock className="w-4 h-4 text-emerald-400" />
-                <span>HIỆP 2 • THỜI GIAN THI ĐẤU: 48:15</span>
+            {!varMatch ? (
+              <div className="p-10 text-center">
+                <Video className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+                <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                  {playableMatches.length
+                    ? "Chưa chọn trận nào."
+                    : "Giải chưa bốc thăm hoặc chưa có cặp đấu nào đủ 2 đội thật."}
+                </p>
               </div>
+            ) : (
+              <>
+                {varMatch.status === "DONE" && (
+                  <p className="rounded-xl bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                    Trận này đã có kết quả {varMatch.scoreA}-{varMatch.scoreB}. Muốn sửa thì bấm “Huỷ KQ”
+                    trên thẻ trận ở tab Cây Nhánh Đấu — hệ thống sẽ hoàn lại Elo.
+                  </p>
+                )}
 
-              <div className="grid grid-cols-3 items-center gap-4 py-2">
-                {/* Team A */}
-                <div className="space-y-2">
-                  <div className="text-lg font-black text-emerald-400">FC Saigon Warriors</div>
-                  <div className="text-xs text-slate-400">Elo 1,480 • Hạt Giống #1</div>
-                  <div className="text-4xl sm:text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
-                    {scoreA}
+                <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 rounded-2xl border border-emerald-500/30 text-white text-center shadow-2xl space-y-4">
+                  <div className="flex items-center justify-center space-x-3 text-xs text-slate-400 uppercase font-mono tracking-widest font-bold">
+                    <Clock className="w-4 h-4 text-emerald-400" />
+                    <span>
+                      {varMatch.status === "DONE" ? "ĐÃ KẾT THÚC" : "ĐANG ĐIỀU KHIỂN"} • TỶ SỐ THỜI GIAN THỰC
+                    </span>
                   </div>
-                  <div className="flex justify-center space-x-2 pt-2">
-                    <button
-                      onClick={() => setScoreA(scoreA + 1)}
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
-                    >
-                      +1 Bàn Thắng
-                    </button>
-                    <button
-                      onClick={() => setScoreA(Math.max(0, scoreA - 1))}
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-2 py-1.5 rounded-lg"
-                    >
-                      -1
-                    </button>
-                  </div>
-                </div>
 
-                {/* VS Indicator */}
-                <div className="space-y-1">
-                  <div className="text-xl font-extrabold text-amber-400 font-mono">VS</div>
-                  <div className="text-[10px] text-slate-400 font-mono">Hiệp 1: 1 - 1</div>
-                  {varStatus && (
-                    <div className="bg-amber-400/20 text-amber-300 text-[10px] font-bold p-2 rounded-lg border border-amber-400/40">
-                      VAR: {varStatus}
+                  <div className="grid grid-cols-3 items-center gap-4 py-2">
+                    <div className="space-y-2 min-w-0">
+                      <div className="text-base sm:text-lg font-black text-emerald-400 truncate">
+                        {varMatch.teamA?.name}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono">Elo {varMatch.teamA?.elo ?? "—"}</div>
+                      <div className="text-4xl sm:text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
+                        {varScoreA}
+                      </div>
+                      {varMatch.status !== "DONE" && (
+                        <div className="flex justify-center space-x-2 pt-2">
+                          <button
+                            onClick={() => setVarScoreA(varScoreA + 1)}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
+                          >
+                            +1 Bàn
+                          </button>
+                          <button
+                            onClick={() => setVarScoreA(Math.max(0, varScoreA - 1))}
+                            className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-2 py-1.5 rounded-lg"
+                          >
+                            -1
+                          </button>
+                        </div>
+                      )}
                     </div>
+
+                    <div className="space-y-1">
+                      <div className="text-xl font-extrabold text-amber-400 font-mono">VS</div>
+                      <div className="text-[10px] text-slate-400 font-mono">{varMatch.matchId}</div>
+                      {varStatus && (
+                        <div className="bg-amber-400/20 text-amber-300 text-[10px] font-bold p-2 rounded-lg border border-amber-400/40">
+                          VAR: {varStatus}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 min-w-0">
+                      <div className="text-base sm:text-lg font-black text-cyan-400 truncate">
+                        {varMatch.teamB?.name}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono">Elo {varMatch.teamB?.elo ?? "—"}</div>
+                      <div className="text-4xl sm:text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
+                        {varScoreB}
+                      </div>
+                      {varMatch.status !== "DONE" && (
+                        <div className="flex justify-center space-x-2 pt-2">
+                          <button
+                            onClick={() => setVarScoreB(varScoreB + 1)}
+                            className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
+                          >
+                            +1 Bàn
+                          </button>
+                          <button
+                            onClick={() => setVarScoreB(Math.max(0, varScoreB - 1))}
+                            className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-2 py-1.5 rounded-lg"
+                          >
+                            -1
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {varMatch.status !== "DONE" && (
+                    <button
+                      onClick={saveVarScore}
+                      disabled={savingMatch === varMatch.matchId}
+                      className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-50"
+                    >
+                      {savingMatch === varMatch.matchId
+                        ? "Đang lưu…"
+                        : `Lưu kết quả ${varScoreA}-${varScoreB} & cập nhật Elo`}
+                    </button>
                   )}
                 </div>
 
-                {/* Team B */}
+                {/* Chọn trận */}
                 <div className="space-y-2">
-                  <div className="text-lg font-black text-cyan-400">FC Anh Em Kiến Trúc</div>
-                  <div className="text-xs text-slate-400">Elo 1,465 • Hạt Giống #2</div>
-                  <div className="text-4xl sm:text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
-                    {scoreB}
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Chọn trận để điều khiển ({playableMatches.length} trận có đủ 2 đội)
+                  </label>
+                  <select
+                    value={varMatchId}
+                    onChange={(e) => setVarMatchId(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    {playableMatches.map((p) => (
+                      <option key={p.match.matchId} value={p.match.matchId}>
+                        {p.roundName} · {p.match.matchId} · {p.match.teamA?.name} vs {p.match.teamB?.name}
+                        {p.match.status === "DONE" ? ` (đã đá ${p.match.scoreA}-${p.match.scoreB})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* VAR replay + quyết định */}
+                <div className="space-y-3">
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center space-x-2">
+                    <Video className="w-4 h-4 text-red-500" />
+                    <span>Xem Lại VAR — Camera Multi-Angle</span>
+                  </h3>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {["Cam 1 - Direct Baseline", "Cam 2 - Kitchen Line", "Cam 3 - Overhead Angle", "Cam 4 - AI Line Check"].map((cam) => (
+                      <button
+                        key={cam}
+                        onClick={() => setSelectedCameraAngle(cam)}
+                        className={`p-2.5 rounded-xl text-xs font-bold transition border ${
+                          selectedCameraAngle === cam
+                            ? "bg-red-500 text-white border-red-500 shadow-md"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                        }`}
+                      >
+                        📹 {cam}
+                      </button>
+                    ))}
                   </div>
-                  <div className="flex justify-center space-x-2 pt-2">
-                    <button
-                      onClick={() => setScoreB(scoreB + 1)}
-                      className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
-                    >
-                      +1 Bàn Thắng
-                    </button>
-                    <button
-                      onClick={() => setScoreB(Math.max(0, scoreB - 1))}
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-2 py-1.5 rounded-lg"
-                    >
-                      -1
-                    </button>
+
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Quyết định Trọng Tài ({selectedCameraAngle}):
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleVarCheck("Bóng trong sân (In-Bounds)", "ok")}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
+                      >
+                        ✅ Bóng Trong Sân
+                      </button>
+                      <button
+                        onClick={() => handleVarCheck("Bóng ngoài sân (Out-of-Bounds)", "bad")}
+                        className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
+                      >
+                        ❌ Bóng Out
+                      </button>
+                      <button
+                        onClick={() => handleVarCheck("Lỗi chân vạch Kitchen", "warn")}
+                        className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg transition"
+                      >
+                        ⚠️ Lỗi Kitchen
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 leading-relaxed">
+                      Camera là bộ công cụ mô phỏng dùng để minh hoạ luồng VAR. Quyết định bấm ở đây được ghi vào
+                      nhật ký phiên làm việc của BTC, không ghi vào CSDL.
+                    </p>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* VAR Video Angles & Slow-Mo Controls */}
-            <div className="space-y-3">
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center space-x-2">
-                <Video className="w-4 h-4 text-red-500" />
-                <span>Xem Lai VAR Camera Multi-Angle Slow-Mo</span>
-              </h3>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {['Cam 1 - Direct Baseline', 'Cam 2 - Kitchen Line', 'Cam 3 - Overhead Angle', 'Cam 4 - AI Line Check'].map((cam) => (
-                  <button
-                    key={cam}
-                    onClick={() => setSelectedCameraAngle(cam)}
-                    className={`p-2.5 rounded-xl text-xs font-bold transition border ${
-                      selectedCameraAngle === cam
-                        ? 'bg-red-500 text-white border-red-500 shadow-md'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                    }`}
-                  >
-                    📹 {cam}
-                  </button>
-                ))}
-              </div>
-
-              {/* VAR Action Decisions */}
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-                <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Quyết định Trọng Tài VAR Trực Tiếp ({selectedCameraAngle}):
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => handleVarCheck('Bóng Trong Sân (In-Bounds)')}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
-                  >
-                    ✅ Bóng Trong Sân (In-Bounds)
-                  </button>
-                  <button
-                    onClick={() => handleVarCheck('Bóng Ngoài Sân (Out-of-Bounds)')}
-                    className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
-                  >
-                    ❌ Bóng Out (Out-of-Bounds)
-                  </button>
-                  <button
-                    onClick={() => handleVarCheck('Phạm Lỗi Lưới (Kitchen Fault)')}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg transition"
-                  >
-                    ⚠️ Lỗi Chân Vạch Kitchen
-                  </button>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
 
-          {/* Side Match Timeline & E-Sign Off */}
+          {/* Nhật ký + biên bản */}
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
               <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center space-x-2">
                 <Zap className="w-5 h-5 text-amber-500" />
-                <span>Nhật Ký Diễn Biến Trận Đấu</span>
+                <span>Nhật Ký Phiên VAR</span>
               </h3>
 
-              <div className="space-y-3 text-xs">
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span className="font-bold text-emerald-500 font-mono">18:42</span> • Bàn thắng quyết định Set 3 của SG Titan (Dinking Master)
+              {varLog.length === 0 ? (
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Chưa có mốc nào trong phiên làm việc này. Các quyết định VAR và lần lưu kết quả sẽ hiện ở đây.
+                </p>
+              ) : (
+                <div className="space-y-2 text-xs max-h-72 overflow-y-auto pr-1">
+                  {varLog.map((e, i) => (
+                    <div
+                      key={i}
+                      className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800"
+                    >
+                      <span
+                        className={`font-bold font-mono mr-1 ${
+                          e.tone === "ok"
+                            ? "text-emerald-500"
+                            : e.tone === "warn"
+                            ? "text-amber-500"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {e.time}
+                      </span>
+                      <span className="text-slate-600 dark:text-slate-300">{e.text}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span className="font-bold text-amber-500 font-mono">15:10</span> • Quyền Hội Ý Timeout của Eagles Pro Club (1/2)
-                </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span className="font-bold text-red-500 font-mono">09:05</span> • VAR Review: Xác định bóng nằm trên vạch biên (In-Bounds)
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Referee E-Signature Widget */}
             <div className="bg-gradient-to-br from-slate-900 to-emerald-950 text-white rounded-3xl p-6 border border-emerald-500/30 shadow-lg space-y-4">
               <div className="flex items-center space-x-3">
                 <QrCode className="w-8 h-8 text-emerald-400 flex-shrink-0" />
                 <div>
-                  <h4 className="font-bold text-sm">Chữ Ký Điện Tử Biên Bản</h4>
-                  <p className="text-xs text-slate-300">Trọng tài chính: Phạm Hoàng Nam (Trọng tài Quốc gia VFF)</p>
+                  <h4 className="font-bold text-sm">Biên Bản Trận Đấu</h4>
+                  <p className="text-xs text-slate-300">
+                    {varMatch
+                      ? `Mã biên bản: ${selected?.title ? selected.title.slice(0, 18) : "SH"}-${varMatch.matchId}-${(varMatch.matchDate ?? "").replace(/-/g, "") || "CHUALICH"}`
+                      : "Chọn trận để tạo biên bản"}
+                  </p>
                 </div>
               </div>
 
               <button
-                onClick={() => triggerToast("Đã ký số biên bản & tự động cập nhật kết quả lên BXH Bóng Đá Phủi toàn quốc!")}
-                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold py-3 rounded-xl shadow-lg transition"
+                onClick={() => setActiveTab("esheet")}
+                disabled={!varMatch}
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-40"
               >
-                Xác Nhận & Cập Nhật Điểm Elo Tự Động
+                Mở Biên Bản Điện Tử
               </button>
             </div>
           </div>
@@ -1167,53 +1344,158 @@ export default function TournamentBracket() {
         </div>
       )}
 
-      {/* TAB 4: ELECTRONIC SCORESHEET & PDF */}
+      {/* TAB 4: BIÊN BẢN ĐIỆN TỬ — in thật từ dữ liệu trận trong CSDL */}
       {activeTab === "esheet" && (
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-md">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4 print:border-0 print:pb-0">
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                 <FileText className="w-5 h-5 text-emerald-500" />
-                <span>Biên Bản Điện Tử Trận Đấu (E-Scoresheet & PDF Signature)</span>
+                <span>Biên Bản Trận Đấu — E-Scoresheet</span>
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Biên bản chuẩn hóa Liên đoàn Bóng đá Việt Nam VFF & SoccerHub Official</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Dữ liệu lấy trực tiếp từ bảng <span className="font-mono">tournaments</span> &amp;{" "}
+                <span className="font-mono">match_results</span> trong CSDL
+              </p>
             </div>
-            <button
-              onClick={() => triggerToast("Đã tải xuống tệp PDF Biên bản trận đấu thành công!")}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition"
-            >
-              Tải PDF Biên Bản
-            </button>
-          </div>
-
-          <div className="bg-slate-50 dark:bg-slate-800/40 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 text-xs">
-            <div className="grid grid-cols-2 gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
-              <div>
-                <span className="text-slate-500 dark:text-slate-400">Giải Đấu:</span>
-                <div className="font-bold text-slate-900 dark:text-white">{selected?.title ?? "Saigon Football Premier Cup 2026"}</div>
-              </div>
-              <div>
-                <span className="text-slate-500 dark:text-slate-400">Vòng Đấu & Sân:</span>
-                <div className="font-bold text-slate-900 dark:text-white">Chung Kết - Sân 7A SVĐ Oasis Q.7</div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="font-bold text-slate-900 dark:text-white">Kết Quả Chi Tiết Trận Đấu:</div>
-              <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 font-mono space-y-1">
-                <div>Hiệp 1: FC Saigon Warriors 2 - 1 FC Anh Em Kiến Trúc</div>
-                <div>Hiệp 2: FC Saigon Warriors 3 - 2 FC Anh Em Kiến Trúc (Full Time)</div>
-              </div>
-            </div>
-
-            <div className="pt-4 flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                <span className="font-bold text-slate-900 dark:text-white">Đã xác nhận chữ ký Trọng tài chính & Đội trưởng 2 đội</span>
-              </div>
-              <span className="text-emerald-500 font-mono font-bold">Mã Xác Thực: #VSS-2026-9981</span>
+            <div className="flex items-center gap-2">
+              <select
+                value={varMatchId}
+                onChange={(e) => setVarMatchId(e.target.value)}
+                aria-label="Chọn trận cho biên bản"
+                className="px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[240px]"
+              >
+                {playableMatches.map((p) => (
+                  <option key={p.match.matchId} value={p.match.matchId}>
+                    {p.match.matchId} · {p.match.teamA?.name} vs {p.match.teamB?.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => window.print()}
+                disabled={!varMatch}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition active:scale-95 disabled:opacity-40 print:hidden"
+              >
+                In / Lưu PDF
+              </button>
             </div>
           </div>
+
+          {!varMatch ? (
+            <div className="p-10 text-center">
+              <FileText className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                Chưa có trận nào đủ 2 đội thật để lập biên bản. Bốc thăm giải trước đã.
+              </p>
+            </div>
+          ) : (
+            <div className="esheet-print bg-slate-50 dark:bg-slate-800/40 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-5 text-xs print:bg-white print:border-0 print:p-0">
+              {/* Header */}
+              <div className="text-center space-y-1 pb-4 border-b border-slate-200 dark:border-slate-700 print:border-slate-400">
+                <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Cộng Hòa Xã Hội Chủ Nghĩa Việt Nam</p>
+                <p className="text-[10px] font-bold text-slate-500">Độc lập – Tự do – Hạnh phúc</p>
+                <h3 className="text-base font-black text-slate-900 dark:text-white uppercase">
+                  Biên Bản Trận Đấu — {selected ? sportLabel(selected.sportType) : "Bóng Đá Sân 7 Phủi"}
+                </h3>
+                <p className="text-[10px] font-mono text-slate-500">
+                  Mã biên bản: {(selected?.title ?? "SH").slice(0, 20)}-{varMatch.matchId}-
+                  {(varMatch.matchDate ?? "").replace(/-/g, "") || "CHUALICH"}
+                </p>
+              </div>
+
+              {/* Thông tin trận */}
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                <div>
+                  <span className="text-slate-500 dark:text-slate-400">Giải đấu:</span>{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">{selected?.title ?? "—"}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 dark:text-slate-400">Thể thức:</span>{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">{formatLabel(selected?.format)}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 dark:text-slate-400">Vòng đấu:</span>{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {varRound || "—"} ({varMatch.matchId})
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 dark:text-slate-400">Thời gian:</span>{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {varMatch.matchDate ? prettyDate(varMatch.matchDate) : "Chưa xếp lịch"}
+                    {varMatch.timeSlot ? ` · ${varMatch.timeSlot}` : ""}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 dark:text-slate-400">Địa điểm:</span>{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {varMatch.pitchName ?? selected?.pitchName ?? selected?.location ?? "Chưa xếp sân"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 dark:text-slate-400">Trạng thái:</span>{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {varMatch.status === "DONE" ? "Đã thi đấu xong" : "Chưa nhập kết quả"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bảng tỷ số */}
+              <div className="overflow-x-auto">
+                <table className="w-full border border-slate-300 dark:border-slate-600 text-left">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800 text-[11px] uppercase text-slate-600 dark:text-slate-300">
+                      <th className="py-2 px-3 font-black">Đội</th>
+                      <th className="py-2 px-3 font-black">Trọng tài</th>
+                      <th className="py-2 px-3 font-black text-center">Elo hạt giống</th>
+                      <th className="py-2 px-3 font-black text-center">Bàn thắng</th>
+                      <th className="py-2 px-3 font-black text-center">Kết quả</th>
+                    </tr>
+                  </thead>
+                  <tbody className="font-mono">
+                    {[varMatch.teamA, varMatch.teamB].map((team, i) => (
+                      <tr key={i} className="border-t border-slate-200 dark:border-slate-700">
+                        <td className="py-2.5 px-3 font-bold font-sans text-slate-900 dark:text-white">
+                          {team?.name}
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-500">—</td>
+                        <td className="py-2.5 px-3 text-center">{team?.elo ?? "—"}</td>
+                        <td className="py-2.5 px-3 text-center font-black text-base">
+                          {i === 0 ? (varMatch.scoreA ?? 0) : (varMatch.scoreB ?? 0)}
+                        </td>
+                        <td className="py-2.5 px-3 text-center font-bold text-xs">
+                          {varMatch.status !== "DONE"
+                            ? "Chưa có"
+                            : varMatch.winner === team?.name
+                            ? "Thắng"
+                            : !varMatch.winner
+                            ? "Hòa"
+                            : "Thua"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Ghi chú trung thực */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-200 dark:border-slate-700 print:border-slate-400">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2
+                    className={`w-5 h-5 ${varMatch.status === "DONE" ? "text-emerald-500" : "text-slate-400"}`}
+                  />
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {varMatch.status === "DONE"
+                      ? "Kết quả đã được BTC nhập và cập nhật Elo trong CSDL."
+                      : "Chưa có kết quả — biên bản chỉ mang tính dự thảo."}
+                  </span>
+                </div>
+                <span className="font-mono text-slate-500">
+                  In lúc {new Date().toLocaleString("vi-VN")} • Người lập: BTC
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
