@@ -44,6 +44,7 @@ import {
 import PitchDetail from "./PitchDetail";
 import SmartPaymentPass from "./SmartPaymentPass";
 import { getAllPitchesApi } from "@/lib/pitchService";
+import { API_BASE_URL } from "@/lib/api";
 import { recommendPitches, type AiPitchCluster } from "@/lib/aiService";
 import { openDualRoleWindow, subscribeToBookingEvents } from "@/lib/realtimeService";
 
@@ -181,7 +182,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
         if (mapped.length > 0) {
           try {
             const todayStr = new Date().toISOString().split("T")[0];
-            const matrixRes = await fetch(`http://localhost:8080/api/v1/pitches/${mapped[0].numericId}/matrix?date=${todayStr}&duration=120`);
+            const matrixRes = await fetch(`${API_BASE_URL}/api/v1/pitches/${mapped[0].numericId}/matrix?date=${todayStr}&duration=120`);
             if (matrixRes.ok) {
               const matrixData = await matrixRes.json();
               if (Array.isArray(matrixData) && matrixData.length > 0 && matrixData[0].slots) {

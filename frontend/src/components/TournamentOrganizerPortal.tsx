@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 import {
   Trophy,
   ShieldCheck,
@@ -66,7 +67,7 @@ export default function TournamentOrganizerPortal({
   const fetchDbTournaments = async () => {
     try {
       setLoadingDb(true);
-      const res = await fetch("http://localhost:8080/api/v1/tournaments");
+      const res = await fetch(`${API_BASE_URL}/api/v1/tournaments`);
       if (res.ok) {
         const data = await res.json();
         setDbTournaments(data);

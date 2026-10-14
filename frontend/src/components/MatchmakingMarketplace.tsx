@@ -30,6 +30,7 @@ import {
   RefreshCw,
   X
 } from "lucide-react";
+import { API_BASE_URL } from "@/lib/api";
 
 interface MatchmakingMarketplaceProps {
   user?: any;
@@ -158,7 +159,7 @@ export default function MatchmakingMarketplace({
   const fetchPosts = async () => {
     try {
       setLoadingPosts(true);
-      const res = await fetch("http://localhost:8080/api/v1/community/matchmaking-posts");
+      const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`);
       if (res.ok) {
         const data = await res.json();
         setPosts(data);
@@ -179,7 +180,7 @@ export default function MatchmakingMarketplace({
     e.preventDefault();
     try {
       setCreating(true);
-      const res = await fetch("http://localhost:8080/api/v1/community/matchmaking-posts", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -219,7 +220,7 @@ export default function MatchmakingMarketplace({
     if (!acceptingPost) return;
     try {
       setAccepting(true);
-      const res = await fetch(`http://localhost:8080/api/v1/community/matchmaking-posts/${acceptingPost.id}/accept`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts/${acceptingPost.id}/accept`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

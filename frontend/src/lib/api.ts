@@ -1,5 +1,14 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
+/**
+ * Gọi API backend qua URL đã cấu hình (không hardcode localhost).
+ * Dùng cho các chỗ gọi fetch trực tiếp ngoài apiRequest().
+ */
+export function apiUrl(path: string): string {
+  if (path.startsWith('http')) return path;
+  return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('soccerhub_token');
