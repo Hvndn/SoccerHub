@@ -8,32 +8,20 @@ import {
   Trophy,
   ShieldCheck,
   Cpu,
-  Zap,
   Activity,
   Users,
   Video,
-  AlertTriangle,
   CheckCircle2,
   ChevronRight,
   Download,
   Plus,
   RefreshCw,
   Lock,
-  Play,
-  Pause,
   Award,
   Radio,
-  FileText,
-  Scale,
   Sparkles,
-  ArrowRight,
   Filter,
-  Flame,
-  Search,
-  Check,
-  X,
-  ExternalLink,
-  ChevronDown
+  X
 } from "lucide-react";
 
 interface TournamentOrganizerPortalProps {
@@ -47,14 +35,8 @@ export default function TournamentOrganizerPortal({
 }: TournamentOrganizerPortalProps) {
   // Sport Filter State
   const [selectedSport, setSelectedSport] = useState<string>("all");
-  
-  // Live Score State for Court 1 (Football 7A SF1)
-  const [scoreA, setScoreA] = useState<number>(10);
-  const [scoreB, setScoreB] = useState<number>(8);
-  const [currentSet, setCurrentSet] = useState<number>(3);
-  const [serverTeam, setServerTeam] = useState<"A" | "B">("A");
-  const [serverNum, setServerNum] = useState<1 | 2>(2);
-  const [isPaused, setIsPaused] = useState<boolean>(false);
+
+  // Thông báo tương tác trong trang (không dùng alert để giữ đúng nghiệp vụ)
   const [varNotice, setVarNotice] = useState<string | null>(null);
 
   // Active Tab for Tables/Logs
@@ -224,34 +206,79 @@ export default function TournamentOrganizerPortal({
     return () => { alive = false; };
   }, [activeTournamentId]);
 
-  const filteredTournaments = selectedSport === "all"
-    ? tournaments
-    : tournaments.filter(t => t.sport === selectedSport);
+  // --- Bảng điều khiển trọng tài: chọn 1 trận thật để nhập tỷ số ---
+  const umpireMatches = useMemo(() => {
+    if (!activeBracket) return [] as any[];
+    return activeBracket.rounds
+      .flatMap((r: any) => r.matches)
+      .filter((m: any) => m.teamA && m.teamB && !m.teamA.tbd && !m.teamB.tbd && m.status !== "BYE")
+      .map((m: any) => ({ ...m, roundName: "" }));
+  }, [activeBracket]);
 
-  // Score Handlers
-  const handlePointA = () => {
-    setScoreA(prev => prev + 1);
-  };
+  const [umpireMatchId, setUmpireMatchId] = useState<string>("");
+  const [umpireScoreA, setUmpireScoreA] = useState(0);
+  const [umpireScoreB, setUmpireScoreB] = useState(0);
+  const [umpireBusy, setUmpireBusy] = useState(false);
+  const [umpireMsg, setUmpireMsg] = useState<string | null>(null);
 
-  const handlePointB = () => {
-    setScoreB(prev => prev + 1);
-  };
+  useEffect(() => {
+    if (!umpireMatches.length) { setUmpireMatchId(""); return; }
+    if (!umpireMatches.some((m: any) => m.matchId === umpireMatchId)) {
+      const first = umpireMatches.find((m: any) => m.status === "SCHEDULED") ?? umpireMatches[0];
+      setUmpireMatchId(first.matchId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [umpireMatches]);
 
-  const handleSwitchServer = () => {
-    if (serverTeam === "A") {
-      setServerTeam("B");
-    } else {
-      setServerTeam("A");
+  const umpireMatch = useMemo(
+    () => umpireMatches.find((m: any) => m.matchId === umpireMatchId) ?? null,
+    [umpireMatches, umpireMatchId]
+  );
+
+  useEffect(() => {
+    setUmpireScoreA(umpireMatch?.scoreA ?? 0);
+    setUmpireScoreB(umpireMatch?.scoreB ?? 0);
+    setUmpireMsg(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [umpireMatchId]);
+
+  const saveUmpireScore = async () => {
+    if (!activeTournamentId || !umpireMatch) return;
+    const isLeague = activeTournament?.format === "ROUND_ROBIN";
+    if (umpireScoreA === umpireScoreB && !isLeague) {
+      setUmpireMsg("Vòng Knockout cần phân thắng bại, không nhận hòa.");
+      return;
+    }
+    if (umpireMatch.status === "DONE") {
+      setUmpireMsg("Trận này đã có kết quả. Mở tab Bracket để bấm “Huỷ KQ” rồi nhập lại.");
+      return;
+    }
+    try {
+      setUmpireBusy(true);
+      const res = await fetch(`${API_BASE_URL}/api/v1/tournaments/${activeTournamentId}/matches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("soccerhub_token") ?? ""}` },
+        body: JSON.stringify({ matchId: umpireMatch.matchId, scoreA: umpireScoreA, scoreB: umpireScoreB }),
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) {
+        setUmpireMsg(body?.message || "Lưu kết quả thất bại.");
+        return;
+      }
+      const deltas = (body.eloChanges ?? []).map((c: any) => `${c.team} ${c.delta >= 0 ? "+" : ""}${Math.round(c.delta)}`).join(" • ");
+      setUmpireMsg(`${body.message}${deltas ? ` Elo: ${deltas}` : ""}`);
+      await fetchDbTournaments();
+    } catch {
+      setUmpireMsg("Không gọi được máy chủ. Kiểm tra kết nối rồi thử lại.");
+    } finally {
+      setUmpireBusy(false);
     }
   };
 
-  const triggerVarClaim = () => {
-    setVarNotice("Đang xem lại VAR: Kiểm tra bóng chạm tay và lỗi việt vị trong vòng cấm...");
-    setTimeout(() => {
-      setVarNotice("Kết quả VAR: BÀN THẮNG HỢP LỆ (Goal Confirmed). Không có lỗi việt vị!");
-      setTimeout(() => setVarNotice(null), 4000);
-    }, 2500);
-  };
+  const filteredTournaments = selectedSport === "all"
+    ? tournaments
+    : tournaments.filter((t: any) => t.sport === selectedSport);
+
 
   return (
     <div className="space-y-8 animate-fade-in pb-16">
@@ -444,308 +471,256 @@ export default function TournamentOrganizerPortal({
         {/* LEFT 8 COLS: UMPIRE CONSOLE + BRACKET ENGINE + DATA TABLES */}
         <div className="lg:col-span-8 space-y-8">
 
-          {/* 1. TÒA TRỌNG TÀI ĐIỆN TỬ SÂN 7A (LIVE BÁN KẾT SOCCERHUB CUP) */}
+          {/* 1. BẢNG ĐIỀU KHIỂN TRỌNG TÀI — chạy trên trận thật trong nhánh đấu */}
           <div className="bg-white border border-slate-200/90 text-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-80 h-80 bg-rose-50/50 rounded-full blur-3xl pointer-events-none" />
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-6">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 min-w-0">
                 <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 font-bold shrink-0">
-                  <Activity className="w-5 h-5 animate-pulse" />
+                  <Activity className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center space-x-2">
                     <span className="text-xs font-black uppercase text-rose-600 tracking-wider">
-                      TÒA TRỌNG TÀI ĐIỆN TỬ • SÂN 7A
+                      Bảng Điều Khiển Trọng Tài
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-rose-500 text-white text-[9px] font-black uppercase">
-                      LIVE STREAM VAR
+                    <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[9px] font-black uppercase">
+                      Nguồn: CSDL
                     </span>
                   </div>
-                  <h2 className="text-lg font-black tracking-tight text-slate-900 mt-0.5">
-                    Bán Kết SF1: FC Saigon Warriors VS FC Anh Em Kiến Trúc
+                  <h2 className="text-lg font-black tracking-tight text-slate-900 mt-0.5 truncate">
+                    {umpireMatch
+                      ? `${umpireMatch.teamA.name} vs ${umpireMatch.teamB.name}`
+                      : activeTournament
+                      ? `${activeTournament.title} — chưa bốc thăm`
+                      : "Chưa có giải nào trong CSDL"}
                   </h2>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2 self-start sm:self-auto">
-                <button
-                  onClick={() => setIsPaused(!isPaused)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 transition-all ${
-                    isPaused
-                      ? "bg-amber-500 text-white"
-                      : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
-                  }`}
+              {umpireMatches.length > 0 && (
+                <select
+                  value={umpireMatchId}
+                  onChange={(e) => setUmpireMatchId(e.target.value)}
+                  aria-label="Chọn trận để nhập tỷ số"
+                  className="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-400 max-w-[260px]"
                 >
-                  {isPaused ? <Play className="w-3.5 h-3.5 fill-current" /> : <Pause className="w-3.5 h-3.5" />}
-                  <span>{isPaused ? "Tiếp Tục Trận" : "Tạm Dừng Trận"}</span>
-                </button>
-              </div>
+                  {umpireMatches.map((m: any) => (
+                    <option key={m.matchId} value={m.matchId}>
+                      {m.matchId} · {m.teamA.name} vs {m.teamB.name}
+                      {m.status === "DONE" ? ` (đã đá ${m.scoreA}-${m.scoreB})` : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
-            {/* VAR Alert Notice Banner */}
-            {varNotice && (
-              <div className="mb-6 p-4 rounded-2xl bg-purple-50 border border-purple-200 text-purple-800 text-xs font-bold flex items-center space-x-3 animate-bounce">
-                <Video className="w-5 h-5 text-purple-600 shrink-0" />
-                <span>{varNotice}</span>
-              </div>
+            {umpireMatch && umpireMatch.status === "DONE" && (
+              <p className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
+                Trận này đã có kết quả {umpireMatch.scoreA}-{umpireMatch.scoreB}. Muốn sửa thì vào tab
+                Bracket bấm “Huỷ KQ” — hệ thống sẽ hoàn lại Elo.
+              </p>
             )}
 
-            {/* LIVE SCOREBOARD DISPLAY (HIGH-VISIBILITY STITCH SPEC) */}
+            {/* Bảng điểm */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center bg-slate-50 p-6 rounded-2xl border border-slate-200">
-              
-              {/* TEAM A SCORE */}
-              <div className={`p-6 rounded-2xl border transition-all ${
-                serverTeam === "A"
-                  ? "bg-white border-emerald-400 shadow-sm"
-                  : "bg-white/60 border-slate-200"
-              }`}>
+              <div className="p-6 rounded-2xl border border-emerald-300 bg-white">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <span className="w-3 h-3 rounded-full bg-emerald-500" />
-                    <span className="text-xs font-black tracking-wide text-slate-700">
-                      ĐỘI A (HẠT GIỐNG #1)
-                    </span>
+                    <span className="text-xs font-black tracking-wide text-slate-700">ĐỘI A</span>
                   </div>
-                  {serverTeam === "A" && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase flex items-center gap-1 border border-emerald-200">
-                      <Flame className="w-3 h-3 text-emerald-600" /> Giao Bóng ({serverNum})
-                    </span>
-                  )}
                 </div>
-
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-bold text-slate-900">
-                    FC Saigon Warriors
-                  </span>
-                  <span className="text-5xl font-black font-mono text-emerald-600 tracking-tighter">
-                    {scoreA}
-                  </span>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-sm font-bold text-slate-900 truncate">{umpireMatch?.teamA?.name}</span>
+                  <span className="text-5xl font-black font-mono text-emerald-600 tracking-tighter">{umpireScoreA}</span>
                 </div>
-
                 <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between">
-                  <span>Tỷ số: Hiệp 1 (2-1) • Hiệp 2 đang đá</span>
-                  <span className="text-emerald-700 font-bold">Elo: 1,650</span>
+                  <span>{umpireMatch?.matchDate ?? "Chưa xếp lịch"}</span>
+                  <span className="text-emerald-700 font-bold">Elo: {umpireMatch?.teamA?.elo ?? "—"}</span>
                 </div>
               </div>
 
-              {/* TEAM B SCORE */}
-              <div className={`p-6 rounded-2xl border transition-all ${
-                serverTeam === "B"
-                  ? "bg-white border-sky-400 shadow-sm"
-                  : "bg-white/60 border-slate-200"
-              }`}>
+              <div className="p-6 rounded-2xl border border-sky-300 bg-white">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <span className="w-3 h-3 rounded-full bg-sky-500" />
-                    <span className="text-xs font-black tracking-wide text-slate-700">
-                      ĐỘI B (HẠT GIỐNG #4)
-                    </span>
+                    <span className="text-xs font-black tracking-wide text-slate-700">ĐỘI B</span>
                   </div>
-                  {serverTeam === "B" && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[10px] font-black uppercase flex items-center gap-1 border border-sky-200">
-                      <Flame className="w-3 h-3 text-sky-600" /> Giao Bóng ({serverNum})
-                    </span>
-                  )}
                 </div>
-
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-bold text-slate-900">
-                    FC Titan Sài Gòn
-                  </span>
-                  <span className="text-5xl font-black font-mono text-sky-600 tracking-tighter">
-                    {scoreB}
-                  </span>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-sm font-bold text-slate-900 truncate">{umpireMatch?.teamB?.name}</span>
+                  <span className="text-5xl font-black font-mono text-sky-600 tracking-tighter">{umpireScoreB}</span>
                 </div>
-
                 <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between">
-                  <span>Tỷ số: Hiệp 1 (1-2) • Hiệp 2 đang đá</span>
-                  <span className="text-sky-700 font-bold">Elo: 1,580</span>
+                  <span>{umpireMatch?.timeSlot ?? "Chưa xếp giờ"}</span>
+                  <span className="text-sky-700 font-bold">Elo: {umpireMatch?.teamB?.elo ?? "—"}</span>
                 </div>
               </div>
-
             </div>
 
-            {/* INTERACTIVE UMPIRE CONTROLS */}
-            <div className="mt-6 space-y-3">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                Bảng Điều Khiển Điểm Trọng Tài:
-              </span>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <button
-                  onClick={handlePointA}
-                  className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
-                >
-                  <Plus className="w-4 h-4 stroke-[3]" />
-                  <span>+1 Bàn Thắng (Đội A)</span>
-                </button>
-
-                <button
-                  onClick={handlePointB}
-                  className="py-3 px-4 rounded-xl bg-[#0b4f6c] hover:bg-[#083b52] text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
-                >
-                  <Plus className="w-4 h-4 stroke-[3]" />
-                  <span>+1 Bàn Thắng (Đội B)</span>
-                </button>
-
-                <button
-                  onClick={handleSwitchServer}
-                  className="py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  <span>Đổi Quyền Phát Bóng</span>
-                </button>
-
-                <button
-                  onClick={triggerVarClaim}
-                  className="py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
-                >
-                  <Video className="w-4 h-4 text-purple-200" />
-                  <span>Khiếu Nại VAR</span>
-                </button>
+            {/* Điều khiển */}
+            {umpireMatch && umpireMatch.status !== "DONE" && (
+              <div className="mt-6 space-y-3">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  Điều Khiển Tỷ Số:
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <button
+                    onClick={() => setUmpireScoreA(umpireScoreA + 1)}
+                    className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                  >
+                    <Plus className="w-4 h-4 stroke-[3]" />
+                    <span>+1 Bàn (Đội A)</span>
+                  </button>
+                  <button
+                    onClick={() => setUmpireScoreB(umpireScoreB + 1)}
+                    className="py-3 px-4 rounded-xl bg-[#0b4f6c] hover:bg-[#083b52] text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                  >
+                    <Plus className="w-4 h-4 stroke-[3]" />
+                    <span>+1 Bàn (Đội B)</span>
+                  </button>
+                  <button
+                    onClick={() => { setUmpireScoreA(0); setUmpireScoreB(0); }}
+                    className="py-3 px-4 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    <span>Đặt lại 0-0</span>
+                  </button>
+                  <button
+                    onClick={saveUmpireScore}
+                    disabled={umpireBusy}
+                    className="py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-purple-200" />
+                    <span>{umpireBusy ? "Đang lưu…" : "Lưu KQ & Elo"}</span>
+                  </button>
+                </div>
               </div>
+            )}
+
+            {umpireMsg && (
+              <p className="mt-4 p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200">
+                {umpireMsg}
+              </p>
+            )}
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <button
+                onClick={() => onNavigateTab?.("tournaments")}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5"
+              >
+                <Video className="w-4 h-4 text-red-500" />
+                <span>Mở Tòa VAR &amp; Biên Bản Đầy Đủ</span>
+              </button>
+              <span className="px-3 py-2 rounded-xl bg-slate-50 text-[11px] text-slate-500 flex items-center">
+                Sân: {umpireMatch?.pitchName ?? activeTournament?.pitchName ?? activeTournament?.location ?? "Chưa xếp sân"}
+              </span>
             </div>
           </div>
 
-          {/* 2. VISUAL KNOCKOUT BRACKET ENGINE (SƠ ĐỒ NHÁNH ĐẤU KNOCKOUT) */}
+          {/* 2. NHÁNH ĐẤU THẬT — parse từ bracketJson của giải đang chọn */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
+              <div className="min-w-0">
                 <span className="text-xs font-black uppercase text-[#0b4f6c] dark:text-sky-400 tracking-wider">
-                  VISUAL BRACKET ENGINE
+                  BRACKET ENGINE — NGUỒN CSDL
                 </span>
-                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                  Sơ Đồ Nhánh Đấu Knock-out Trực Tiếp (SoccerHub Premier Cup)
+                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight truncate">
+                  {activeTournament ? activeTournament.title : "Chưa chọn giải nào"}
                 </h3>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                  Thể Thức: Single Elimination
+              {activeTournament && (
+                <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                  Thể thức: {formatLabel(activeTournament.format)}
                 </span>
-              </div>
+              )}
             </div>
 
-            {/* BRACKET TREE DIAGRAM */}
-            <div className="bg-slate-50 dark:bg-slate-950/80 p-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 overflow-x-auto no-scrollbar">
-              <div className="min-w-[700px] grid grid-cols-3 gap-6 relative">
-                
-                {/* COLUMN 1: QUARTER FINALS (TỨ KẾT) */}
-                <div className="space-y-6">
-                  <div className="text-xs font-black text-slate-400 uppercase tracking-wider text-center border-b border-slate-200 dark:border-slate-800 pb-2">
-                    Tứ Kết (Quarter Finals)
-                  </div>
+            {!activeBracket ? (
+              <p className="p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+                <Trophy className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+                <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                  {dbTournaments.length === 0
+                    ? "Chưa đọc được giải đấu từ máy chủ."
+                    : "Chưa giải nào bốc thăm. Vào tab “Giải Đấu & BXH › Bảng Đấu & Nhánh Bracket” để bấm Bốc thăm."}
+                </p>
+              </p>
+            ) : (
+              <div className="bg-slate-50 dark:bg-slate-950/80 p-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 overflow-x-auto no-scrollbar">
+                <div className="flex gap-6 items-start">
+                  {activeBracket.rounds.map((r: any, ri: number) => (
+                    <div key={ri} className="min-w-[240px] flex-1 space-y-4">
+                      <div
+                        className={`text-xs font-black uppercase tracking-wider text-center border-b pb-2 ${
+                          ri === activeBracket.rounds.length - 1
+                            ? "text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800"
+                            : "text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800"
+                        }`}
+                      >
+                        {r.name} ({r.matches.length})
+                      </div>
 
-                  {/* QF1 */}
-                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 shadow-xs">
-                    <div className="flex items-center justify-between font-bold text-emerald-600 dark:text-emerald-400">
-                      <span>FC Saigon Warriors</span>
-                      <span className="font-mono">2</span>
+                      {r.matches.map((m: any) => {
+                        if (m.status === "BYE" && m.bye) {
+                          return (
+                            <div
+                              key={m.matchId}
+                              className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-300 dark:border-amber-800 text-xs flex items-center justify-between"
+                            >
+                              <span className="font-bold text-amber-900 dark:text-amber-200 truncate">{m.bye.name}</span>
+                              <span className="text-[9px] font-black text-amber-600 shrink-0">MIỄN VÒNG</span>
+                            </div>
+                          );
+                        }
+                        const winner = m.winner;
+                        return (
+                          <div
+                            key={m.matchId}
+                            className={`bg-white dark:bg-slate-900 p-3 rounded-xl border text-xs space-y-1.5 shadow-xs ${
+                              m.status === "DONE"
+                                ? "border-emerald-300 dark:border-emerald-800"
+                                : "border-slate-200 dark:border-slate-800"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-mono text-[10px] text-slate-400">{m.matchId}</span>
+                              {m.matchDate && (
+                                <span className="font-mono text-[9px] text-sky-600 dark:text-sky-400">
+                                  {m.matchDate.split("-").reverse().join("/")} {m.timeSlot ?? ""}
+                                </span>
+                              )}
+                            </div>
+                            {[m.teamA, m.teamB].map((t: any, i: number) => (
+                              <div
+                                key={i}
+                                className={`flex items-center justify-between gap-2 ${
+                                  winner === t?.name
+                                    ? "font-black text-emerald-700 dark:text-emerald-400"
+                                    : winner && winner !== t?.name
+                                    ? "text-slate-400"
+                                    : t?.tbd
+                                    ? "italic text-slate-400"
+                                    : "text-slate-700 dark:text-slate-200 font-bold"
+                                }`}
+                              >
+                                <span className="truncate">{t?.tbd ? t?.name : t?.name ?? "?"}</span>
+                                <span className="font-mono shrink-0">{m.status === "DONE" ? (i === 0 ? m.scoreA : m.scoreB) : t?.elo ?? "-"}</span>
+                              </div>
+                            ))}
+                            {m.status !== "DONE" && m.pitchName && (
+                              <div className="text-[9px] text-slate-400 truncate">{m.pitchName}</div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span>FC Hùng Dũng Q.7</span>
-                      <span className="font-mono">1</span>
-                    </div>
-                  </div>
-
-                  {/* QF2 */}
-                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 shadow-xs">
-                    <div className="flex items-center justify-between font-bold text-sky-600 dark:text-sky-400">
-                      <span>FC Titan Sài Gòn</span>
-                      <span className="font-mono">2</span>
-                    </div>
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span>FC Chiến Thắng</span>
-                      <span className="font-mono">0</span>
-                    </div>
-                  </div>
-
-                  {/* QF3 */}
-                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 shadow-xs">
-                    <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
-                      <span>FC Bảo Long Gia Định</span>
-                      <span className="font-mono">2</span>
-                    </div>
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span>FC Anh Em Thủ Đức</span>
-                      <span className="font-mono">1</span>
-                    </div>
-                  </div>
-
-                  {/* QF4 */}
-                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 shadow-xs">
-                    <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
-                      <span>FC Sơn Tùng Bình Thạnh</span>
-                      <span className="font-mono">2</span>
-                    </div>
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span>FC Phúc Hải Tân Bình</span>
-                      <span className="font-mono">0</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-
-                {/* COLUMN 2: SEMI FINALS (BÁN KẾT) */}
-                <div className="space-y-12 self-center">
-                  <div className="text-xs font-black text-rose-500 uppercase tracking-wider text-center border-b border-slate-200 dark:border-slate-800 pb-2">
-                    Bán Kết (Semi Finals)
-                  </div>
-
-                  {/* SF1 LIVE */}
-                  <div className="bg-slate-900 text-white p-4 rounded-2xl border border-rose-500/60 shadow-md space-y-2 relative">
-                    <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded bg-rose-500 text-[9px] font-black uppercase tracking-wider text-white animate-pulse">
-                      SF1 LIVE
-                    </span>
-                    <div className="flex items-center justify-between font-bold text-emerald-400">
-                      <span>FC Saigon Warriors</span>
-                      <span className="font-mono font-black text-sm">1</span>
-                    </div>
-                    <div className="flex items-center justify-between font-bold text-sky-400">
-                      <span>FC Titan Sài Gòn</span>
-                      <span className="font-mono font-black text-sm">1</span>
-                    </div>
-                  </div>
-
-                  {/* SF2 */}
-                  <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs space-y-2 opacity-80">
-                    <span className="text-[10px] font-mono font-bold text-slate-400 block">
-                      SF2 • Dự kiến 15:30
-                    </span>
-                    <div className="flex items-center justify-between font-bold text-slate-700 dark:text-slate-200">
-                      <span>FC Bảo Long</span>
-                      <span className="font-mono">-</span>
-                    </div>
-                    <div className="flex items-center justify-between font-bold text-slate-700 dark:text-slate-200">
-                      <span>FC Sơn Tùng</span>
-                      <span className="font-mono">-</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* COLUMN 3: GRAND FINALS (CHUNG KẾT) */}
-                <div className="space-y-6 self-center">
-                  <div className="text-xs font-black text-amber-500 uppercase tracking-wider text-center border-b border-slate-200 dark:border-slate-800 pb-2">
-                    Chung Kết Tranh Cúp
-                  </div>
-
-                  <div className="bg-gradient-to-b from-amber-50 to-amber-100/40 p-5 rounded-2xl border border-amber-300 text-center space-y-3 shadow-xs">
-                    <Trophy className="w-8 h-8 text-amber-500 mx-auto animate-bounce" />
-                    <div>
-                      <span className="text-[10px] font-black uppercase text-amber-700 tracking-wider block">
-                        Cúp Vô Địch 80Tr
-                      </span>
-                      <span className="text-xs font-bold text-slate-800">
-                        Thắng SF1 vs Thắng SF2
-                      </span>
-                    </div>
-                    <span className="inline-block px-3 py-1 rounded-full bg-amber-200/60 text-amber-900 text-[10px] font-mono font-bold border border-amber-300">
-                      Trận Đấu: 17:00 Hôm Nay
-                    </span>
-                  </div>
-                </div>
-
               </div>
-            </div>
+            )}
           </div>
 
           {/* 3. DATA TABLES & INCIDENT LOGS */}
@@ -957,10 +932,10 @@ export default function TournamentOrganizerPortal({
 
         </div>
 
-        {/* RIGHT 4 COLS: AI SEEDING ENGINE + SMART ESCROW + SPONSORS */}
+        {/* RIGHT 4 COLS: THỐNG KÊ GIẢI + QUỸ THƯỞNG THẬT */}
         <div className="lg:col-span-4 space-y-8">
-          
-          {/* 1. AI SEEDING & MATCHMAKING ENGINE */}
+
+          {/* 1. THỐNG KÊ GIẢI ĐẤU (đếm từ CSDL) */}
           <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 text-white rounded-3xl p-6 shadow-xl space-y-6">
             <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
               <div className="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 shrink-0">
@@ -968,38 +943,64 @@ export default function TournamentOrganizerPortal({
               </div>
               <div>
                 <span className="text-[10px] font-black uppercase text-sky-400 tracking-wider">
-                  AI ELO VFF SEEDING ENGINE
+                  THỐNG KÊ GIẢI ĐẤU
                 </span>
-                <h4 className="text-base font-black text-white">
-                  Bốc Thăm & Phân Hạt Giống AI
-                </h4>
+                <h4 className="text-base font-black text-white">Đăng Ký &amp; Nhánh Đấu</h4>
               </div>
             </div>
 
-            {/* AI Balance Metric */}
             <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-bold">Chỉ Số Đều Kèo AI:</span>
-                <span className="text-emerald-400 font-mono font-black">96% Level Match</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                <div className="h-full bg-emerald-400 w-[96%]" />
-              </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed font-medium">
-                Thuật toán AI tự động phân tích điểm Elo VFF, phong độ giải đấu và chỉ số thể lực IoT để xếp cặp thi đấu công bằng nhất.
-              </p>
+              {activeTournament ? (
+                <>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400 font-bold">Đội đã đăng ký:</span>
+                    <span className="text-emerald-400 font-mono font-black">
+                      {(activeTournament.teams?.length ?? 0)}/{activeTournament.totalTeams ?? 0}
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-400 transition-all"
+                      style={{
+                        width: `${
+                          activeTournament.totalTeams
+                            ? Math.min(
+                                100,
+                                Math.round(
+                                  ((activeTournament.teams?.length ?? 0) / activeTournament.totalTeams) * 100
+                                )
+                              )
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400 font-bold">Lệ phí mỗi đội:</span>
+                    <span className="font-mono font-black">{formatMoney(activeTournament.entryFee ?? 0)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400 font-bold">Đội chờ xác nhận lệ phí:</span>
+                    <span className="font-mono font-black text-amber-400">
+                      {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT").length}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs text-slate-400">Chưa chọn được giải nào từ CSDL.</p>
+              )}
             </div>
 
             <button
-              onClick={() => alert("Đã kích hoạt thuật toán AI Tái Bốc Thăm dựa trên Elo VFF Rating mới nhất!")}
+              onClick={() => onNavigateTab?.("tournaments")}
               className="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-black shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Tái Bốc Thăm Bằng AI</span>
+              <span>Mở Bảng Điều Hành Bốc Thăm</span>
             </button>
           </div>
 
-          {/* 2. VIETQR SMART ESCROW (VÍ QUẢN LÝ GIẢI ĐẤU & CƠ CẤU THƯỞNG) */}
+          {/* 2. QUỸ THƯỞNG THẬT (prizePool từ CSDL) */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center space-x-2.5">
@@ -1008,80 +1009,89 @@ export default function TournamentOrganizerPortal({
                 </div>
                 <div>
                   <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
-                    VIETQR SMART ESCROW
+                    QUỸ GIẢI THƯỞNG
                   </span>
                   <h4 className="text-sm font-black text-slate-900 dark:text-white">
-                    Quỹ Giải Thưởng Đã Khóa
+                    {activeTournament ? activeTournament.title : "Chưa chọn giải"}
                   </h4>
                 </div>
               </div>
             </div>
 
-            <div className="text-center bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                TỔNG QUỸ THƯỞNG SMART CONTRACT
-              </span>
-              <span className="text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
-                80.000.000 VNĐ
-              </span>
-              <span className="text-[10px] text-slate-400 font-bold block pt-1">
-                🔒 Tự động giải ngân qua VietQR ngay khi trận chung kết kết thúc
-              </span>
-            </div>
+            {!activeTournament || !activeTournament.prizePool ? (
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Giải này chưa khai báo giải thưởng trong CSDL.
+              </p>
+            ) : (
+              <>
+                <div className="text-center bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                    TỔNG GIẢI THƯỞNG
+                  </span>
+                  <span className="text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
+                    {formatMoney(activeTournament.prizePool)}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-bold block pt-1">
+                    Giải thưởng khai trong hồ sơ giải — thu tiền qua VietQR lệ phí đăng ký
+                  </span>
+                </div>
 
-            {/* Prize Breakdown */}
-            <div className="space-y-2.5 text-xs font-medium">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                <span className="font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
-                  🥇 Giải Nhất (Cúp Vô Địch)
-                </span>
-                <span className="font-mono font-black text-slate-900 dark:text-white">45.000.000 VNĐ</span>
-              </div>
+                <div className="space-y-2.5 text-xs font-medium">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                    <span className="font-bold text-amber-700 dark:text-amber-400">🥇 Giải Nhất (ước tính 60%)</span>
+                    <span className="font-mono font-black text-slate-900 dark:text-white">
+                      {formatMoney(Math.round((activeTournament.prizePool ?? 0) * 0.6))}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80">
+                    <span className="font-bold text-slate-600 dark:text-slate-300">🥈 Giải Nhì (ước tính 30%)</span>
+                    <span className="font-mono font-black text-slate-900 dark:text-white">
+                      {formatMoney(Math.round((activeTournament.prizePool ?? 0) * 0.3))}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-800/10 border border-amber-800/20">
+                    <span className="font-bold text-amber-800 dark:text-amber-500">🥉 Đồng Giải Ba (ước tính 10%)</span>
+                    <span className="font-mono font-black text-slate-900 dark:text-white">
+                      {formatMoney(Math.round((activeTournament.prizePool ?? 0) * 0.1))}
+                    </span>
+                  </div>
+                </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80">
-                <span className="font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                  🥈 Giải Nhì
-                </span>
-                <span className="font-mono font-black text-slate-900 dark:text-white">25.000.000 VNĐ</span>
-              </div>
-
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-800/10 border border-amber-800/20">
-                <span className="font-bold text-amber-800 dark:text-amber-500 flex items-center gap-1.5">
-                  🥉 Đồng Giải Ba (2 Cặp)
-                </span>
-                <span className="font-mono font-black text-slate-900 dark:text-white">10.000.000 VNĐ</span>
-              </div>
-            </div>
-
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  Tỉ lệ là tự tính theo quy ước chia đều — hệ thống chưa có bảng phân bổ giải thưởng riêng trong CSDL.
+                </p>
+              </>
+            )}
           </div>
 
-          {/* 3. OFFICIAL EQUIPMENT & SPONSORS */}
+          {/* 3. THÔNG TIN SÂN & THỜI GIAN THI ĐẤU (thật) */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
             <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider">
-              Trang Thiết Bị & Bóng Thi Đấu Chính Thức
+              Thông Tin Giải Từ CSDL
             </h4>
 
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-slate-900 dark:text-white block">Động Lực UHV 2.05 FIFA Pro</span>
-                  <span className="text-[11px] text-slate-400">Bóng thi đấu chính thức chuẩn FIFA Quality Pro</span>
-                </div>
-                <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black">
-                  OFFICIAL
-                </span>
+            {!activeTournament ? (
+              <p className="text-xs text-slate-500 dark:text-slate-400">Chưa chọn được giải.</p>
+            ) : (
+              <div className="space-y-2 text-xs">
+                {[
+                  { label: "Thể thức môn", value: sportLabel(activeTournament.sportType) },
+                  { label: "Danh sách thi", value: formatLabel(activeTournament.format) },
+                  { label: "Ngày mở", value: activeTournament.startDate ?? "—" },
+                  { label: "Ngày kết thúc", value: activeTournament.endDate ?? "—" },
+                  { label: "Sân thi đấu", value: activeTournament.pitchName ?? activeTournament.location ?? "—" },
+                  { label: "Hạn đăng ký", value: activeTournament.registrationDeadline ?? "—" },
+                ].map((r) => (
+                  <div
+                    key={r.label}
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2"
+                  >
+                    <span className="text-slate-500 dark:text-slate-400 shrink-0">{r.label}</span>
+                    <span className="font-bold text-slate-900 dark:text-white text-right truncate">{r.value}</span>
+                  </div>
+                ))}
               </div>
-
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-slate-900 dark:text-white block">Wika Sport / Mizuno</span>
-                  <span className="text-[11px] text-slate-400">Trang bị thi đấu, áo Bib & găng tay thủ môn</span>
-                </div>
-                <span className="px-2 py-0.5 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[10px] font-black">
-                  SPONSOR
-                </span>
-              </div>
-            </div>
+            )}
           </div>
 
         </div>
