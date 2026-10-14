@@ -12,10 +12,11 @@ services:
 
   - type: web
     name: soccerhub-backend-core
-    env: docker
+    env: java
     rootDir: backend-core
-    dockerfilePath: Dockerfile
     plan: free
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/backend-core-1.0.0.jar
     envVars:
       - key: SPRING_DATASOURCE_URL
         sync: false

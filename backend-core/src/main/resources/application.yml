@@ -1,13 +1,16 @@
 server:
-  port: 8080
+  # Railway cấp cổng động qua biến PORT; local mặc định 8080
+  port: ${PORT:8080}
 
 spring:
   application:
     name: soccerhub-backend-core
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/soccerhub_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
-    username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:1234}
+    # Ưu tiên SPRING_DATASOURCE_URL gán tay; nếu không, tự ráp từ biến
+    # MYSQL* mà Railway MySQL plugin cấp (local fallback về localhost)
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:soccerhub_db}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:${MYSQLUSER:root}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${MYSQLPASSWORD:1234}}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
