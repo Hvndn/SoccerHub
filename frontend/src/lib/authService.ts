@@ -12,6 +12,12 @@ export interface UserProfile {
   favoriteSport?: string;
   level?: string;
   avatar?: string;
+  dominantFoot?: string;
+  jerseyNumber?: string;
+  height?: string;
+  weight?: string;
+  preferredTime?: string;
+  currentClub?: string;
 }
 
 export interface AuthResponseData {

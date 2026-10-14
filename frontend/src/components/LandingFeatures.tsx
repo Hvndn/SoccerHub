@@ -43,45 +43,45 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       accentColor: "text-sky-400",
       points: [
         {
-          title: "Bản đồ GPS PostGIS 500m",
-          desc: "Tự động tính toán bán kính gần nhất quanh tọa độ của bạn, quét ngay các cụm sân cỏ mịn còn trống."
+          title: "Tìm sân theo khu vực & khung giờ",
+          desc: "Lọc theo khu vực, loại sân và ngày — danh sách ca trống lấy trực tiếp từ ma trận ca sân trong CSDL."
         },
         {
-          title: "Khóa Ca Mutex Redis (<20ms)",
-          desc: "Loại bỏ hoàn toàn lỗi tranh chấp slot khi hai người cùng bấm đặt. Slot được khóa tức thì trên cụm Redis phân tán."
+          title: "Chống trùng ca khi đặt",
+          desc: "Ca đã có đơn giữ chỗ thì chuyển trạng thái Đã Đặt trên hệ thống, người khác không thể đặt tiếp cùng khung giờ."
         },
         {
-          title: "Hợp Đồng Bảo Vệ Cọc Escrow 2 Chiều",
-          desc: "Tự động hoàn cọc 100% khi thời tiết mưa ngập hoặc sự cố bất khả kháng mà không cần tranh cãi."
+          title: "Cọc 50% hoặc 100% qua VietQR",
+          desc: "Chọn mức cọc khi đặt; chính sách hoàn cọc do từng chủ sân quy định, hiển thị rõ trước khi bạn xác nhận."
         }
       ],
-      metricLabel: "Thời gian hoàn tất giữ ca:",
-      metricValue: "03 Giây (VietQR)"
+      metricLabel: "Luồng đặt sân:",
+      metricValue: "3 Bước Trên Web"
     },
     {
       id: "iot",
-      title: "Chủ Sân & Điều Hành IoT",
-      subtitle: "Tự Động Hóa Dàn Đèn & Tối Ưu Doanh Thu",
-      badge: "Sân Bóng Thông Minh & IoT",
+      title: "Chủ Sân & Quản Lý Doanh Thu",
+      subtitle: "Quản Lý Ca Sân, Giá Thuê & Tiền Cọc",
+      badge: "Bảng Điều Hành Chủ Sân",
       icon: ShieldCheck,
       gradient: "from-emerald-700 to-teal-600",
       accentColor: "text-emerald-400",
       points: [
         {
-          title: "IoT Dàn Đèn MQTT & ESP32",
-          desc: "Dàn đèn tự động bật trước giờ đá 5 phút và tự ngắt khi hết giờ. Tiết kiệm 25.4% chi phí tiền điện hàng tháng."
+          title: "Nhập giá ca sân & tiền cọc",
+          desc: "Chủ sân tự đặt giá trung bình và giá giờ cao điểm ngay trên dashboard — thay đổi lưu thẳng vào CSDL."
         },
         {
-          title: "AI Dynamic Pricing (Định Giá Động)",
-          desc: "Tự động kích cầu giảm 15-20% vào các khung giờ vắng và tối ưu doanh thu vào khung giờ vàng cuối tuần."
+          title: "Nhãn giờ vàng theo khung giờ cao điểm",
+          desc: "Hệ thống gắn nhãn giờ vàng cho các ca chiều/tối đông khách, chủ sân dựa vào đó để điều chỉnh giá thủ công."
         },
         {
-          title: "Bảng Doanh Thu & Sổ Quỹ Realtime",
-          desc: "Thống kê dòng tiền, đối soát Napas247 tức thời, xuất báo cáo tài chính chỉ với 1 cú click."
+          title: "Bảng doanh thu & sổ cọc",
+          desc: "Thống kê doanh thu từ các đơn đặt thật, đối soát tiền cọc với khách khi check-in tại quầy."
         }
       ],
-      metricLabel: "Tiết kiệm chi phí vận hành:",
-      metricValue: "-25.4% Tiền Điện"
+      metricLabel: "Giá & tiền cọc:",
+      metricValue: "Do Chủ Sân Tự Khai"
     },
     {
       id: "tournament",
@@ -93,45 +93,45 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       accentColor: "text-amber-400",
       points: [
         {
-          title: "Tự Động Xếp Lịch & Cây Nhánh Knock-out",
-          desc: "Không cần vẽ sơ đồ tay. Thuật toán tự động sinh bảng đấu vòng tròn và nhánh loại trực tiếp trong 5 giây."
+          title: "Tự Động Xếp Lịch & Cây Nhánh Loại Trực Tiếp",
+          desc: "BTC nhập đội và hệ thống sinh bảng đấu, nhánh knock-out lưu ngay trong hồ sơ giải — không cần vẽ tay."
         },
         {
-          title: "Live Scoreboard WebSocket STOMP",
-          desc: "Tỷ số bàn thắng, thẻ phạt, danh sách Vua Phá Lưới (Top Scorer) cập nhật theo thời gian thực tới từng khán giả."
+          title: "Cập nhật tỷ số & Vua Phá Lưới",
+          desc: "BTC nhập tỷ số từng trận, hệ thống tự cập nhật bảng xếp hạng, danh sách ghi bàn và vị trí trong nhánh."
         },
         {
-          title: "Quỹ Thưởng & Tài Chính Minh Bạch",
-          desc: "Thu lệ phí đội qua Napas247, tự động trừ tiền phạt thẻ vàng/đỏ và công khai sổ thu chi minh bạch."
+          title: "Lệ phí đội & quy định phạt minh bạch",
+          desc: "Khai báo lệ phí tham dự, quy định phạt thẻ cùng giải đấu, mọi thông tin lưu chung trong CSDL."
         }
       ],
-      metricLabel: "Thời gian khởi tạo giải:",
-      metricValue: "Từ 3 ngày → 5 phút"
+      metricLabel: "Khởi tạo một giải:",
+      metricValue: "Vài Phút Trên Web"
     },
     {
       id: "ai-elo",
-      title: "AI Ghép Đội & Chợ Kèo SOS",
-      subtitle: "Thuật Toán Cân Bằng Trình Độ Elo",
-      badge: "AI Cân Bằng Trình Độ",
+      title: "Chợ Kèo & Xếp Hạng Elo",
+      subtitle: "Ghép Đối Thủ Theo Trình Độ",
+      badge: "Cộng Đồng Bóng Đá",
       icon: BrainCircuit,
       gradient: "from-purple-700 to-indigo-600",
       accentColor: "text-purple-400",
       points: [
         {
-          title: "Chỉ Số Elo Rating Chuẩn Thể Thao (1.200 - 1.800)",
-          desc: "Đánh giá công tâm dựa trên kết quả trận đấu, chênh lệch bàn thắng và chuỗi phong độ, chống tình trạng 'out trình'."
+          title: "Chỉ Số Elo Rating Theo Từng Trận",
+          desc: "Elo cập nhật từ kết quả các giải trong hệ thống, hiển thị công khai trên hồ sơ cầu thủ và thứ hạng đội."
         },
         {
-          title: "Chợ Kèo SOS Tìm Viện Binh Cấp Tốc",
-          desc: "Đội thiếu 1-2 người trước giờ bóng lăn? Đăng kèo cứu hộ để nhận ngay đề xuất cầu thủ tương đương trong 15 phút."
+          title: "Chợ Kèo Đăng & Nhận Đối Thủ",
+          desc: "Đội thiếu người đăng kèo lên chợ; đội khác bấm nhận, hệ thống chuyển trạng thái MATCHED ngay trong CSDL."
         },
         {
-          title: "Chấm Điểm Uy Tín Fair-play & Chống Bùng Ca",
-          desc: "Trừ điểm uy tín nếu đến muộn hoặc bỏ trận; cộng điểm thưởng cho các đội bóng văn minh và đúng giờ."
+          title: "Hồ Sơ & Thống Kê Cầu Thủ",
+          desc: "Theo dõi Elo, bậc, số trận đã đá và lịch sử thi đấu của bạn ngay trên trang hồ sơ."
         }
       ],
-      metricLabel: "Tỷ lệ ghép trận cân bằng:",
-      metricValue: "92.8% Trận Kịch Tính"
+      metricLabel: "Nguồn điểm Elo:",
+      metricValue: "Kết Quả Giải Đấu"
     }
   ];
 
@@ -157,20 +157,20 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
 
   const platformAdvantages = [
     {
-      title: "Khóa ca phân tán Redis Mutex (<20ms)",
-      desc: "Ngay khi quy trình cọc VietQR khởi tạo, slot được khóa độc quyền 100% trên cơ sở dữ liệu. Tuyệt đối không trùng ca."
+      title: "Đơn giữ chỗ lưu ngay trong CSDL",
+      desc: "Khi tạo đơn, trạng thái ca sân chuyển sang Đã Đặt trên hệ thống — hai khách không thể đặt cùng một khung giờ."
     },
     {
-      title: "Hợp đồng ký quỹ Escrow tự động",
-      desc: "Chủ sân an tâm nhận cọc chắc chắn; Người chơi được bảo đảm hoàn tiền 100% nếu có thiên tai, thời tiết xấu."
+      title: "Tiền cọc theo chính sách của từng sân",
+      desc: "Chọn cọc 50% hoặc 100% giá ca qua VietQR; chính sách hoàn cọc do chủ sân quy định và hiển thị trước khi đặt."
     },
     {
-      title: "IoT dàn đèn MQTT tự động hóa",
-      desc: "Đèn tự bật đúng giờ đặt và tự tắt sau khi hết ca. Hoàn toàn không phụ thuộc vào trí nhớ của nhân viên trực quầy."
+      title: "Bảng điều hành tập trung cho chủ sân",
+      desc: "Quản lý sân con, ca sân, giá thuê, tiện ích và danh sách cọc cần đối soát ngay trên một màn hình duy nhất."
     },
     {
-      title: "AI Chợ Kèo SOS ghép viện binh cấp tốc",
-      desc: "Thuật toán cân bằng Elo tìm ngay người đá bù có trình độ tương đương chỉ trong 15 phút quanh bán kính 5km."
+      title: "Chợ kèo ghép đội theo Elo",
+      desc: "Đăng kèo khi thiếu người, đội nhận kèo được ghi thẳng vào bảng matchmaking_posts và chuyển trạng thái MATCHED."
     }
   ];
 
@@ -187,7 +187,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             Giải Pháp Toàn Diện Cho Thể Thao Số
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-            Hệ thống kết nối mượt mà từ lúc tìm sân, cáp kèo, mở dàn đèn sân bóng cho đến khi tiếng còi bế mạc giải đấu vang lên.
+            Hệ thống kết nối mượt mà từ lúc tìm sân, cáp kèo, đặt cọc cho đến khi tiếng còi bế mạc giải đấu vang lên.
           </p>
         </div>
 

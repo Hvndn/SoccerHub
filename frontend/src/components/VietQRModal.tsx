@@ -31,7 +31,7 @@ export default function VietQRModal({ bookingData, onClose }: VietQRModalProps) 
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  const bookingCode = "VAOSAN-" + Math.floor(10000 + Math.random() * 90000);
+  const [bookingCode] = useState(() => "VAOSAN-" + Math.floor(10000 + Math.random() * 90000));
   const depositAmount = 150000;
 
   return (
@@ -116,7 +116,7 @@ export default function VietQRModal({ bookingData, onClose }: VietQRModalProps) 
                 <QrCode className="w-40 h-40 text-slate-900" />
               </div>
               <div className="text-xs space-y-1">
-                <p className="font-mono text-pitch-emerald font-bold">MÃ VÉ: QR-TICKET-KICKON-8892</p>
+                <p className="font-mono text-pitch-emerald font-bold">MÃ VÉ: {bookingCode}</p>
                 <p className="text-slate-900 dark:text-slate-200 font-bold">{bookingData.pitch.name}</p>
                 <p className="text-slate-500 dark:text-slate-400">{bookingData.slot.time} • {bookingData.slot.pitchType}</p>
               </div>

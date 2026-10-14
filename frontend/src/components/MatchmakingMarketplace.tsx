@@ -58,8 +58,8 @@ export default function MatchmakingMarketplace({
   // Modal tạo kèo mới
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createTeamName, setCreateTeamName] = useState("");
-  const [createPitchName, setCreatePitchName] = useState("Cụm Sân Bóng Đá Đại Nắng (Sân 7A)");
-  const [createAddress, setCreateAddress] = useState("Số 154 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7");
+  const [createPitchName, setCreatePitchName] = useState("");
+  const [createAddress, setCreateAddress] = useState("");
   const [createMatchTime, setCreateMatchTime] = useState("20:00 Tối nay");
   const [createPitchType, setCreatePitchType] = useState("SAN_7");
   const [createPaymentModel, setCreatePaymentModel] = useState("SPLIT_EQUAL");
@@ -73,9 +73,9 @@ export default function MatchmakingMarketplace({
   const [acceptOpponentPhone, setAcceptOpponentPhone] = useState(user?.phone || "");
   const [accepting, setAccepting] = useState(false);
 
-  const userName = user?.fullName || user?.name || "Nguyễn Văn An";
-  const userElo = user?.eloRating || 1200;
-  const userTier = "Phủi Serie B";
+  const userName = user?.fullName || user?.name || "Khách";
+  const userElo = user?.eloRating ?? 0;
+  const userTier = user?.level || "Chưa xếp bậc";
 
   // Sắp xếp kèo bằng AI (fallback: chênh lệch Elo local khi AI offline)
   const [aiOrder, setAiOrder] = useState<string[] | null>(null);
@@ -155,6 +155,13 @@ export default function MatchmakingMarketplace({
     return Array.from(map.values()).sort((a, b) => b.count - a.count || b.elo - a.elo).slice(0, 3);
   }, [posts]);
 
+  // Kèo gợi ý cho widget radar: ưu tiên kèo trong tầm Elo, không thì lấy kèo đầu tiên
+  const recommendedPost = useMemo(
+    () =>
+      posts.find((p: any) => Math.abs((p.eloRating ?? 1200) - userElo) <= 150) ?? posts[0] ?? null,
+    [posts, userElo]
+  );
+
   // Fetch real matchmaking posts
   const fetchPosts = async () => {
     try {
@@ -162,7 +169,10 @@ export default function MatchmakingMarketplace({
       const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`);
       if (res.ok) {
         const data = await res.json();
-        setPosts(data);
+        // Chỉ hiển thị kèo còn MỞ — kèo đã ghép (MATCHED) không nhận được nữa.
+        setPosts(
+          Array.isArray(data) ? data.filter((p: any) => p.status === "OPEN") : []
+        );
       }
     } catch (err) {
       console.error("Error fetching matchmaking posts:", err);
@@ -186,10 +196,10 @@ export default function MatchmakingMarketplace({
         body: JSON.stringify({
           teamName: createTeamName.trim() || `FC ${userName}`,
           captainName: userName,
-          captainPhone: user?.phone || "0908 123 456",
+          captainPhone: user?.phone || "",
           eloRating: userElo,
-          pitchName: createPitchName,
-          address: createAddress,
+          pitchName: createPitchName.trim() || "Chưa chọn sân",
+          address: createAddress.trim(),
           matchTime: createMatchTime,
           pitchType: createPitchType,
           paymentModel: createPaymentModel,
@@ -226,7 +236,7 @@ export default function MatchmakingMarketplace({
         body: JSON.stringify({
           opponentTeamName: acceptOpponentTeam.trim() || `FC ${userName}`,
           opponentCaptainName: userName,
-          opponentCaptainPhone: acceptOpponentPhone.trim() || user?.phone || "0912 345 678",
+          opponentCaptainPhone: acceptOpponentPhone.trim() || user?.phone || "",
           opponentElo: userElo
         })
       });
@@ -250,14 +260,6 @@ export default function MatchmakingMarketplace({
     }
   };
 
-  const handleJoinMatch = (matchId: string, matchFee: number) => {
-    if (joinedMatches.includes(matchId)) return;
-    setJoinedMatches([...joinedMatches, matchId]);
-    if (onSelectMatch) {
-      onSelectMatch({ matchId, matchFee });
-    }
-  };
-
   return (
     <div className="w-full space-y-6 pb-20 text-slate-900 dark:text-white animate-fade-in">
       {/* 1. SUB-HEADER & LIVE BREADCRUMB RIBBON */}
@@ -278,7 +280,7 @@ export default function MatchmakingMarketplace({
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-[#006c49]" />
               </span>
               <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
-                Thuật toán AI Matchmaking v4.2
+                Ghép kèo theo chỉ số Elo
               </span>
               <span className="text-slate-400">•</span>
               <span className="px-3 py-0.5 rounded-full bg-emerald-500/10 text-[#006c49] font-bold text-xs">
@@ -640,17 +642,17 @@ export default function MatchmakingMarketplace({
 
         {/* RIGHT COLUMN: AI MATCH RADAR & ESCROW FAIRPLAY (32% WIDTH / 4 COLS) */}
         <aside className="lg:col-span-4 space-y-5">
-          {/* WIDGET 1: AI MATCH RADAR (98% MATCH) */}
+          {/* WIDGET 1: GỢI Ý GHÉP KÈO (đọc từ bảng matchmaking_posts) */}
           <section className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-xl bg-[#006c49] text-white flex items-center justify-center font-bold">
                   <Activity className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="font-black text-sm text-slate-900 dark:text-white">AI Match Radar</h3>
+                <h3 className="font-black text-sm text-slate-900 dark:text-white">Kèo Gợi Ý Cho Bạn</h3>
               </div>
               <span className="px-2.5 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-xs font-black">
-                98% Match
+                {matchableCount}/{openKèoCount} hợp Elo
               </span>
             </div>
 
@@ -666,25 +668,42 @@ export default function MatchmakingMarketplace({
             </div>
 
             <div className="space-y-2 text-xs">
-              <span className="text-[10px] uppercase font-extrabold text-slate-400 block">Khuyến nghị hoàn hảo tối nay:</span>
-              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1 text-[#006c49]">
-                <div className="flex items-center justify-between font-bold">
-                  <span>Sân D-Sport Oasis (Sân 7A)</span>
-                  <span className="font-mono">19:30 Tối nay</span>
-                </div>
-                <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
-                  Trình độ tương đồng hoàn toàn với @TuanLe (Elo 1,450) và @QuocBao (Elo 1,420). Chỉ cách vị trí hiện tại của bạn 1.8km.
+              <span className="text-[10px] uppercase font-extrabold text-slate-400 block">
+                Kèo đang mở trong CSDL:
+              </span>
+              {loadingPosts ? (
+                <p className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500">
+                  Đang tải kèo…
                 </p>
-              </div>
+              ) : !recommendedPost ? (
+                <p className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 leading-relaxed">
+                  Chưa có kèo nào đang mở. Bấm “+ Tạo Kèo” để đăng ký đội của bạn lên sàn.
+                </p>
+              ) : (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1 text-[#006c49]">
+                  <div className="flex items-center justify-between font-bold">
+                    <span className="truncate pr-2">{recommendedPost.pitchName ?? "Chưa chọn sân"}</span>
+                    <span className="font-mono shrink-0">{recommendedPost.matchTime ?? "—"}</span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+                    {recommendedPost.teamName} mở kèo • Elo {recommendedPost.eloRating ?? "—"}
+                    {typeof recommendedPost.estimatedFee === "number"
+                      ? ` • Cọc dự kiến ${recommendedPost.estimatedFee.toLocaleString("vi-VN")}đ`
+                      : ""}
+                  </p>
+                </div>
+              )}
             </div>
 
-            <button
-              onClick={() => handleJoinMatch("match-101", 45000)}
-              className="w-full py-3 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center space-x-1.5 active:scale-95"
-            >
-              <Zap className="w-4 h-4 text-white" />
-              <span>Tham Gia Kèo Này Ngay (1-Click)</span>
-            </button>
+            {recommendedPost && (
+              <button
+                onClick={() => setAcceptingPost(recommendedPost)}
+                className="w-full py-3 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center space-x-1.5 active:scale-95"
+              >
+                <Zap className="w-4 h-4 text-white" />
+                <span>Xem Chi Tiết &amp; Nhận Kèo</span>
+              </button>
+            )}
           </section>
 
           {/* WIDGET 2: HỒ SƠ CẦU THỦ + SỐ LIỆU SÀN (lấy từ CSDL) */}

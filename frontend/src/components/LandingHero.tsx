@@ -92,7 +92,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                     <Zap className="w-4 h-4 text-amber-700 fill-amber-700" />
                   </div>
                   <span className="font-extrabold text-xs sm:text-sm text-slate-800 leading-snug">
-                    Khóa Ca Redis Mutex &lt;20ms • Chống Trùng Ca 100%
+                    Đặt ca trực tiếp từ CSDL • Không trùng lịch
                   </span>
                 </div>
 
@@ -101,15 +101,15 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                     <Shield className="w-4 h-4 text-sky-700 fill-sky-700" />
                   </div>
                   <span className="font-extrabold text-xs sm:text-sm text-slate-800 leading-snug">
-                    Tự Động Hóa Dàn Đèn IoT MQTT &amp; Giải Đấu Chuẩn VFF
+                    Sân 5 · 7 · 11 &amp; Futsal • Giải đấu theo Elo
                   </span>
                 </div>
               </div>
 
               {/* Concise Thesis-Aligned Description */}
               <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed max-w-2xl pt-1">
-                Nền tảng số hóa toàn diện kết nối <strong>Cầu Thủ</strong>, <strong>Chủ Cụm Sân</strong> và <strong>Ban Tổ Chức Giải Đấu</strong>. 
-                Tích hợp thanh toán cọc tức thời <strong>VietQR Napas247</strong>, tự động bật/tắt dàn đèn theo ca thi đấu, thuật toán AI cân bằng trình độ <strong>Elo Rating</strong> và sơ đồ thi đấu knock-out trực quan.
+                Nền tảng kết nối <strong>Cầu Thủ</strong>, <strong>Chủ Cụm Sân</strong> và <strong>Ban Tổ Chức Giải Đấu</strong>. 
+                Đặt sân online với thanh toán cọc qua <strong>VietQR</strong>, quản lý ca sân và giải đấu loại trực tiếp, cộng điểm <strong>Elo Rating</strong> cho từng trận.
               </p>
 
               {/* Action Button Strip */}
@@ -164,15 +164,15 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
             </div>
             <div>
               <span className="text-xs sm:text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider block">
-                Bộ Lọc Tìm Sân Trống Tọa Độ GPS &amp; Giờ Vàng
+                Bộ Lọc Tìm Sân Trống Theo Khu Vực &amp; Giờ Vàng
               </span>
               <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
-                Quét bán kính 500m gần bạn nhất bằng PostgreSQL PostGIS
+                Lọc theo khu vực, loại sân và khung giờ trống trong ngày
               </span>
             </div>
           </div>
           <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800">
-            Live PostGIS 500m
+            Dữ liệu trực tiếp từ CSDL
           </span>
         </div>
 
@@ -239,9 +239,9 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               onChange={(e) => setTimeSlot(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] shadow-xs cursor-pointer"
             >
-              <option value="gold">Giờ Vàng: 17:30 - 21:00</option>
-              <option value="night">Đêm Muộn: 21:00 - 22:30</option>
-              <option value="morning">Sáng Sớm: 06:00 - 08:30</option>
+              <option value="gold">Giờ Vàng: 16:00 - 20:00</option>
+              <option value="afternoon">Chiều Sớm: 14:00 - 16:00</option>
+              <option value="night">Đêm: 20:00 - 22:00</option>
               <option value="all">Tất cả các ca trong ngày</option>
             </select>
           </div>
@@ -251,7 +251,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center space-x-2 text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-slate-300">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-            <span>Khóa ca tức thì &lt;20ms • VietQR Napas247 • Tự hoàn 100% nếu có mưa bão</span>
+            <span>Đặt ca theo giá niêm yết • Cọc 50% qua VietQR • Chính sách hoàn cọc theo từng sân</span>
           </div>
 
           <button

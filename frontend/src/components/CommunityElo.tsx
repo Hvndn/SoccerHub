@@ -39,10 +39,6 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                SOCCERHUB COMMUNITY & TOURNAMENT SUITE
-              </span>
               <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-sky-50 text-sky-700 border border-sky-200/80">
                 <ShieldCheck className="w-3.5 h-3.5 text-sky-600" />
                 Chuẩn Elo VFF Phủi 4.0

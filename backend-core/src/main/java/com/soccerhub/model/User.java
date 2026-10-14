@@ -44,6 +44,14 @@ public class User {
 
     private String avatar;
 
+    // Chỉ số hồ sơ cầu thủ — do người dùng tự khai báo trong Hồ Sơ VĐV, lưu trong bảng users
+    private String dominantFoot;
+    private String jerseyNumber;
+    private String height;
+    private String weight;
+    private String preferredTime;
+    private String currentClub;
+
     @Builder.Default
     private Boolean enabled = true; // false = tài khoản bị admin khóa, không cho đăng nhập
 

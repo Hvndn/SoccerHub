@@ -4,7 +4,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
-  title: "TurfZone - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh",
+  title: "SoccerHub - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh",
   description: "Nền tảng quản lý sân bóng, giải đấu và AI gợi ý sân thông minh tích hợp Elo matchmaking",
 };
 

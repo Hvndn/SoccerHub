@@ -282,17 +282,13 @@ export default function TournamentOrganizerPortal({
 
   return (
     <div className="space-y-8 animate-fade-in pb-16">
-      {/* HEADER BAR (PITCHHUB PORTAL PRO OPERATING SYSTEM) */}
+      {/* HEADER BAR */}
       <div className="bg-white text-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-sky-50 via-emerald-50 to-transparent rounded-full blur-3xl pointer-events-none" />
         
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center space-x-3">
-              <div className="px-3 py-1 rounded-full bg-sky-50 text-sky-800 text-xs font-black uppercase tracking-wider flex items-center space-x-1.5 border border-sky-200">
-                <ShieldCheck className="w-3.5 h-3.5 text-sky-600" />
-                <span>PITCHHUB PORTAL PRO v4.2</span>
-              </div>
               <div className="flex items-center space-x-2 text-xs font-mono text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                 <span>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   User,
   ShieldCheck,
@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { UserProfile } from "@/lib/authService";
+import { fetchTournaments, sportLabel } from "@/lib/tournamentService";
 
 interface PlayerProfileConsoleProps {
   user?: UserProfile | null;
@@ -59,6 +60,16 @@ export default function PlayerProfileConsole({
   // Active Football Pitch Format Tab State
   const [activeFormat, setActiveFormat] = useState<"san7" | "san5" | "san11" | "futsal">("san7");
 
+  // Giải đấu trong CSDL — nguồn tính thành tích thi đấu thật.
+  const [tournaments, setTournaments] = useState<any[]>([]);
+  useEffect(() => {
+    let alive = true;
+    fetchTournaments()
+      .then((list) => { if (alive) setTournaments(list as any[]); })
+      .catch(() => { if (alive) setTournaments([]); });
+    return () => { alive = false; };
+  }, []);
+
   // History Filter State
   const [historyFilter, setHistoryFilter] = useState<"all" | "win" | "loss" | "ai_video">("all");
 
@@ -78,26 +89,33 @@ export default function PlayerProfileConsole({
     favoriteSport: "",
     level: "",
     avatar: "",
-    dominantFoot: "Chân Phải",
-    jerseyNumber: "10",
-    height: "1m75",
-    weight: "68 kg",
-    preferredTime: "17:30 - 20:30 (Thứ 3, 5, 7, CN)",
-    currentClub: "FC Brothers Đà Nẵng",
+    // Chỉ số hồ sơ do cầu thủ tự khai báo — không có thì để trống (không bịa)
+    dominantFoot: "",
+    jerseyNumber: "",
+    height: "",
+    weight: "",
+    preferredTime: "",
+    currentClub: "",
   });
 
   useEffect(() => {
     if (activeUser) {
       setEditForm(prev => ({
         ...prev,
-        fullName: activeUser.fullName || "Hồ Văn Diện",
+        fullName: activeUser.fullName || "",
         email: activeUser.email || "",
-        phone: activeUser.phone || "0947304321",
-        position: activeUser.position || "Tiền vệ trung tâm (CM) / Hộ công",
-        area: activeUser.area || "Đà Nẵng (Hải Châu / Cẩm Lệ)",
+        phone: activeUser.phone || "",
+        position: activeUser.position || "",
+        area: activeUser.area || "",
         favoriteSport: activeUser.favoriteSport || "football",
-        level: activeUser.level || "Bán chuyên",
+        level: activeUser.level || "",
         avatar: activeUser.avatar || "",
+        dominantFoot: activeUser.dominantFoot || "",
+        jerseyNumber: activeUser.jerseyNumber || "",
+        height: activeUser.height || "",
+        weight: activeUser.weight || "",
+        preferredTime: activeUser.preferredTime || "",
+        currentClub: activeUser.currentClub || "",
       }));
     }
   }, [activeUser]);
@@ -136,14 +154,14 @@ export default function PlayerProfileConsole({
   };
 
   // Helper values
-  const displayFullName = editForm.fullName || activeUser?.fullName || "Hồ Văn Diện";
-  const displayEmail = editForm.email || activeUser?.email || "0947304321@phone.turfzone.vn";
-  const displayPhone = editForm.phone || activeUser?.phone || "0947304321";
-  const displayRole = activeUser?.role === "OWNER" ? "Chủ Sân" : activeUser?.role === "ORGANIZER" ? "Ban Tổ Chức" : "Cầu Thủ Phủi Pro";
-  const displayElo = activeUser?.eloRating || 1450;
-  const displayPosition = editForm.position || "Tiền vệ trung tâm (CM) / Hộ công";
-  const displayArea = editForm.area || "Đà Nẵng (Hải Châu / Cẩm Lệ)";
-  const displayLevel = editForm.level || "Bán chuyên";
+  const displayFullName = editForm.fullName || activeUser?.fullName || "Chưa cập nhật tên";
+  const displayEmail = editForm.email || activeUser?.email || "—";
+  const displayPhone = editForm.phone || activeUser?.phone || "Chưa khai báo SĐT";
+  const displayRole = activeUser?.role === "OWNER" ? "Chủ Sân" : activeUser?.role === "ORGANIZER" ? "Ban Tổ Chức" : activeUser?.role === "ADMIN" ? "Quản Trị" : "Cầu Thủ";
+  const displayElo = activeUser?.eloRating ?? "—";
+  const displayPosition = editForm.position || "Chưa khai báo vị trí";
+  const displayArea = editForm.area || "Chưa khai báo khu vực";
+  const displayLevel = editForm.level || "Chưa xếp bậc";
   const displayAvatar = editForm.avatar || activeUser?.avatar;
 
   const isAvatarUrl = displayAvatar && (displayAvatar.startsWith("http://") || displayAvatar.startsWith("https://") || displayAvatar.startsWith("data:"));
@@ -151,214 +169,165 @@ export default function PlayerProfileConsole({
     ? displayFullName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
     : "HD";
 
-  // Format stats config
-  const formatStats = {
-    san7: {
-      title: "Bóng Đá Sân 7",
-      elo: displayElo,
-      tier: "Division 2 Phủi",
-      badge: "Serie B Open",
-      percentile: "Top 10% Đà Nẵng",
-      ranking: "#42 Khu vực Hải Châu / Cẩm Lệ",
-      matches: 48,
-      wins: 33,
-      losses: 15,
-      winRate: "68.8%",
-      goals: 24,
-      assists: 19,
-      cleanSheets: 6,
-      streak: "5 Thắng",
-      streakBadge: "🔥 On Fire",
-      skills: [
-        { name: "Kỹ năng Dứt điểm & Sút xa cầu môn", value: 86, color: "bg-emerald-500" },
-        { name: "Tầm nhìn & Chuyền bóng kiến tạo", value: 92, color: "bg-blue-500" },
-        { name: "Khả năng Tranh chấp & Thu hồi bóng", value: 78, color: "bg-amber-500" },
-        { name: "Rê dắt & Thoát pressing cự ly hẹp", value: 84, color: "bg-purple-500" },
-        { name: "Thể lực & Bền bỉ suốt 60-90 phút", value: 88, color: "bg-rose-500" },
-      ],
-      radarPoints: [
-        { label: "Dứt điểm", val: "86/100" },
-        { label: "Kiến tạo", val: "92/100" },
-        { label: "Thể lực", val: "88/100" },
-        { label: "Thu hồi", val: "78/100" },
-        { label: "Pressing", val: "84/100" },
-      ]
-    },
-    san5: {
-      title: "Bóng Đá Sân 5",
-      elo: 1390,
-      tier: "Division 3 Mini",
-      badge: "League F5 Pro",
-      percentile: "Top 15% Toàn Thành",
-      ranking: "#58 Sân Cỏ Nhân Tạo 5 Người",
-      matches: 22,
-      wins: 14,
-      losses: 8,
-      winRate: "63.6%",
-      goals: 18,
-      assists: 11,
-      cleanSheets: 2,
-      streak: "2 Thắng",
-      streakBadge: "Ổn Định",
-      skills: [
-        { name: "Tốc độ bứt phá cự ly ngắn", value: 88, color: "bg-emerald-500" },
-        { name: "Phản xạ chạm bóng bước 1 (First Touch)", value: 85, color: "bg-blue-500" },
-        { name: "Dứt điểm nhanh mũi giày & chích bóng", value: 82, color: "bg-amber-500" },
-        { name: "Ban bật tam giác 1 chạm", value: 90, color: "bg-purple-500" },
-        { name: "Di chuyển không bóng áp sát", value: 80, color: "bg-rose-500" },
-      ],
-      radarPoints: [
-        { label: "Tốc độ", val: "88/100" },
-        { label: "1 Chạm", val: "90/100" },
-        { label: "Chích bóng", val: "82/100" },
-        { label: "Bọc lót", val: "79/100" },
-        { label: "Nhịp tim", val: "85/100" },
-      ]
-    },
-    san11: {
-      title: "Bóng Đá Sân 11",
-      elo: 1420,
-      tier: "Division 2 Sân Lớn",
-      badge: "Cup 11 Người",
-      percentile: "Top 12% CLB Phong Trào",
-      ranking: "#31 Sân 11 Cỏ Tự Nhiên / Nhân Tạo",
-      matches: 16,
-      wins: 11,
-      losses: 5,
-      winRate: "68.7%",
-      goals: 5,
-      assists: 14,
-      cleanSheets: 4,
-      streak: "3 Thắng",
-      streakBadge: "Chuỗi Thắng",
-      skills: [
-        { name: "Phát động tấn công & Chuyền dài vượt tuyến", value: 91, color: "bg-emerald-500" },
-        { name: "Ý thức chiến thuật & Giữ cự ly đội hình", value: 89, color: "bg-blue-500" },
-        { name: "Đánh chặn từ xa trước vòng cấm", value: 83, color: "bg-amber-500" },
-        { name: "Không chiến & Tranh chấp bóng bổng", value: 75, color: "bg-purple-500" },
-        { name: "Năng lượng & Thể lực phủ kín 90 phút", value: 86, color: "bg-rose-500" },
-      ],
-      radarPoints: [
-        { label: "Chuyền dài", val: "91/100" },
-        { label: "Chiến thuật", val: "89/100" },
-        { label: "Đánh chặn", val: "83/100" },
-        { label: "Không chiến", val: "75/100" },
-        { label: "Bền bỉ", val: "86/100" },
-      ]
-    },
-    futsal: {
-      title: "Futsal Sàn Gỗ / Trong Nhà",
-      elo: 1360,
-      tier: "Division 3 Sàn Gỗ",
-      badge: "Indoor Cup",
-      percentile: "Top 20% Người Chơi Futsal",
-      ranking: "#45 Sàn Futsal Nhà Thi Đấu",
-      matches: 12,
-      wins: 7,
-      losses: 5,
-      winRate: "58.3%",
-      goals: 9,
-      assists: 8,
-      cleanSheets: 1,
-      streak: "1 Thắng",
-      streakBadge: "Cân Bằng",
-      skills: [
-        { name: "Kéo gầm giày & Giữ nhịp bóng sàn cứng", value: 88, color: "bg-emerald-500" },
-        { name: "Xoay xở phạm vi hẹp 1 vs 1", value: 84, color: "bg-blue-500" },
-        { name: "Chuyền chọc khe bất ngờ mũi chân", value: 86, color: "bg-amber-500" },
-        { name: "Chuyển trạng thái công thủ chớp nhoáng", value: 81, color: "bg-purple-500" },
-        { name: "Phòng ngự khối kim cương Futsal", value: 77, color: "bg-rose-500" },
-      ],
-      radarPoints: [
-        { label: "Gầm giày", val: "88/100" },
-        { label: "Xoay hẹp", val: "84/100" },
-        { label: "Chọc khe", val: "86/100" },
-        { label: "Phòng thủ", val: "77/100" },
-        { label: "Phản xạ", val: "81/100" },
-      ]
+  // ============================================================================
+  // THÀNH TÍCH THI ĐẤU — tính từ CSDL (giải + nhánh đấu + goal_events)
+  // Không có bảng chỉ số kỹ năng/rank phần trăm trong hệ thống nên không bịa.
+  // ============================================================================
+  const perf = useMemo(() => {
+    const myPhone = (activeUser?.phone ?? "").toString().replace(/\s/g, "");
+    const result = {
+      matches: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      cleanSheets: 0,
+      myTeamName: null as string | null,
+      titles: 0,
+      history: [] as any[],
+    };
+    if (!myPhone) return result;
+
+    for (const t of tournaments) {
+      const myTeam = (t.teams ?? []).find(
+        (z: any) => String(z.captainPhone ?? "").replace(/\s/g, "") === myPhone
+      );
+      if (!myTeam?.teamName || !t.bracketJson) continue;
+      if (!result.myTeamName) result.myTeamName = myTeam.teamName;
+
+      let bracket: any = null;
+      try {
+        bracket = JSON.parse(t.bracketJson);
+      } catch {
+        continue;
+      }
+      if (!Array.isArray(bracket?.rounds)) continue;
+
+      for (const r of bracket.rounds) {
+        for (const m of r.matches ?? []) {
+          if (!m.teamA || !m.teamB) continue;
+          const isA = m.teamA.name === myTeam.teamName;
+          const isB = m.teamB.name === myTeam.teamName;
+          if (!isA && !isB) continue;
+
+          if (m.status !== "DONE") {
+            result.history.push({
+              id: `${t.id}-${m.matchId}`,
+              date: m.matchDate ?? "",
+              time: m.timeSlot ?? "",
+              pitch: m.pitchName ?? t.pitchName ?? t.location ?? "Chưa xếp sân",
+              format: sportLabel(t.sportType),
+              result: "upcoming",
+              score: `${m.scoreA ?? 0} - ${m.scoreB ?? 0}`,
+              myTeam: m.teamA.name,
+              opponent: m.teamB.name,
+              eloChange: "-",
+              mvp: false,
+              stats: "Chưa có kết quả",
+              hasAiVideo: false,
+            });
+            continue;
+          }
+
+          const sa = m.scoreA ?? 0;
+          const sb = m.scoreB ?? 0;
+          const myScore = isA ? sa : sb;
+          const oppScore = isA ? sb : sa;
+          result.matches += 1;
+          result.goalsFor += myScore;
+          result.goalsAgainst += oppScore;
+          if (myScore > oppScore) result.wins += 1;
+          else if (myScore < oppScore) result.losses += 1;
+          else result.draws += 1;
+          if (oppScore === 0) result.cleanSheets += 1;
+
+          result.history.push({
+            id: `${t.id}-${m.matchId}`,
+            date: m.matchDate ?? "",
+            time: m.timeSlot ?? "",
+            pitch: m.pitchName ?? t.pitchName ?? t.location ?? "Chưa xếp sân",
+            format: sportLabel(t.sportType),
+            result: myScore > oppScore ? "win" : myScore < oppScore ? "loss" : "draw",
+            score: `${sa} - ${sb}`,
+            myTeam: m.teamA.name,
+            opponent: m.teamB.name,
+            eloChange: `${myScore > oppScore ? "+" : ""}${myScore - oppScore} bàn`,
+            mvp: false,
+            stats: `Ghi ${myScore} • Thủng ${oppScore}`,
+            hasAiVideo: false,
+          });
+        }
+      }
+      // Vô địch = đội của tôi thắng ở vòng đấu cuối cùng của nhánh
+      const lastRound = [...bracket.rounds]
+        .reverse()
+        .find((r: any) =>
+          (r.matches ?? []).some(
+            (m: any) =>
+              m.status !== "BYE" &&
+              (m.teamA?.name === myTeam.teamName || m.teamB?.name === myTeam.teamName)
+          )
+        );
+      const finalMatch = lastRound?.matches?.find((m: any) => m.status !== "BYE");
+      if (finalMatch?.status === "DONE" && finalMatch.winner === myTeam.teamName) {
+        result.titles += 1;
+      }
     }
-  };
+    result.history.sort((a: any, b: any) => (b.date + b.time).localeCompare(a.date + a.time));
+    return result;
+  }, [tournaments, activeUser?.phone]);
+
+  const totalDecided = perf.wins + perf.losses + perf.draws;
+  const winRate = totalDecided ? Math.round((perf.wins / totalDecided) * 1000) / 10 : 0;
+  const goalDiff = perf.goalsFor - perf.goalsAgainst;
+  // 5 trận gần nhất đã có kết quả (history đã sắp mới → cũ)
+  const recentForm = perf.history
+    .filter((h: any) => h.result !== "upcoming")
+    .slice(0, 5);
+
+  /** Bảng chỉ số dùng chung cho cả 4 môn — hệ thống chưa tách chỉ số theo môn. */
+  const formatStats = {
+    san7: buildStat("Bóng Đá Sân 7"),
+    san5: buildStat("Bóng Đá Sân 5"),
+    san11: buildStat("Bóng Đá Sân 11"),
+    futsal: buildStat("Futsal Sàn Gỗ"),
+  } as Record<string, any>;
+
+  function buildStat(title: string) {
+    return {
+      title,
+      elo: displayElo,
+      // Hệ thống chưa có bảng tier / xếp hạng phần trăm -> hiển thị trạng thái
+      tier: displayLevel || "Chưa xếp bậc",
+      badge: activeUser?.area || "Chưa cập nhật khu vực",
+      percentile: `${perf.matches} trận đã có kết quả`,
+      ranking: totalDecided ? `Thắng ${perf.wins} · Hòa ${perf.draws} · Thua ${perf.losses}` : "Chưa thi đấu",
+      matches: perf.matches,
+      wins: perf.wins,
+      losses: perf.losses,
+      winRate: `${winRate}%`,
+      goals: perf.goalsFor,
+      assists: 0,
+      cleanSheets: perf.cleanSheets,
+      streak: goalDiff > 0 ? `+${goalDiff} hiệu số` : goalDiff === 0 ? "Cân bằng" : `${goalDiff} hiệu số`,
+      streakBadge: `${perf.goalsFor} bàn thắng / ${perf.goalsAgainst} bàn thua`,
+      // Chỉ số kỹ năng & radar cần dữ liệu đo đạc chưa có trong CSDL
+      skills: [] as any[],
+      radarPoints: [
+        { label: "Ghi bàn", val: perf.goalsFor },
+        { label: "Thủ bàn", val: perf.goalsAgainst },
+        { label: "Tổng trận", val: perf.matches },
+        { label: "Thắng", val: perf.wins },
+        { label: "Sạch lưới", val: perf.cleanSheets },
+      ],
+    };
+  }
 
   const currentStat = formatStats[activeFormat];
 
-  // Match history mock for football
-  const matchHistory = [
-    {
-      id: "M-902",
-      date: "05/10/2026",
-      time: "19:00 - 20:30",
-      pitch: "Sân Bóng Chuyên Nghiệp Tuyên Sơn - Sân 7A",
-      format: "Bóng Đá Sân 7",
-      result: "win",
-      score: "5 - 3",
-      myTeam: "FC Brothers Đà Nẵng",
-      opponent: "FC Cựu Cầu Thủ Cẩm Lệ",
-      eloChange: "+18",
-      mvp: true,
-      stats: "2 Bàn thắng, 1 Kiến tạo • MVP Trận Đấu",
-      hasAiVideo: true,
-    },
-    {
-      id: "M-889",
-      date: "02/10/2026",
-      time: "18:30 - 20:00",
-      pitch: "Sân Cỏ Nhân Tạo Hòa Xuân - Sân 7 số 3",
-      format: "Bóng Đá Sân 7",
-      result: "win",
-      score: "4 - 2",
-      myTeam: "FC Brothers Đà Nẵng",
-      opponent: "FC Doanh Nhân Hải Châu",
-      eloChange: "+15",
-      mvp: false,
-      stats: "1 Bàn thắng, 2 Kiến tạo • 87% chuyền chính xác",
-      hasAiVideo: true,
-    },
-    {
-      id: "M-874",
-      date: "28/09/2026",
-      time: "20:00 - 21:30",
-      pitch: "Sân Bóng Đá Quân Khu 5 - Sân 7 VIP",
-      format: "Bóng Đá Sân 7",
-      result: "loss",
-      score: "2 - 3",
-      myTeam: "FC Brothers Đà Nẵng",
-      opponent: "FC Thanh Niên Cẩm Lệ",
-      eloChange: "-12",
-      mvp: false,
-      stats: "1 Bàn thắng • Tranh chấp 12/15 thành công",
-      hasAiVideo: false,
-    },
-    {
-      id: "M-860",
-      date: "24/09/2026",
-      time: "17:30 - 19:00",
-      pitch: "Sân Bóng Làng Thể Thao Tuyên Sơn - Sân 5 số 2",
-      format: "Bóng Đá Sân 5",
-      result: "win",
-      score: "7 - 4",
-      myTeam: "FC Brothers Đà Nẵng",
-      opponent: "FC Sinh Viên Duy Tân",
-      eloChange: "+14",
-      mvp: true,
-      stats: "3 Bàn thắng (Hat-trick) • MVP Trận Đấu",
-      hasAiVideo: true,
-    },
-    {
-      id: "M-845",
-      date: "19/09/2026",
-      time: "19:00 - 20:30",
-      pitch: "Sân Cỏ Tự Nhiên Quân Khu 5 - Sân 11",
-      format: "Bóng Đá Sân 11",
-      result: "win",
-      score: "2 - 1",
-      myTeam: "CLB Phong Trào Hải Châu",
-      opponent: "FC Ngân Hàng BIDV ĐN",
-      eloChange: "+22",
-      mvp: false,
-      stats: "Thi đấu trọn 90 phút • 2 Cứu thua vạch vôi",
-      hasAiVideo: false,
-    }
-  ];
+  // Lịch sử trận đấu — lấy từ CSDL (nhánh đấu các giải mà bạn làm trọng tài đội)
+  const matchHistory = perf.history;
 
   const filteredMatches = matchHistory.filter(m => {
     if (historyFilter === "win") return m.result === "win";
@@ -379,13 +348,13 @@ export default function PlayerProfileConsole({
           <div className="relative z-10 max-w-full">
             <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
               <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 shrink-0" />
-              <span className="truncate">HỆ THỐNG ĐỊNH DANH CẦU THỦ CHUYÊN NGHIỆP • SOCCERHUB PRO</span>
+              <span className="truncate">HỒ SƠ CẦU THỦ THUỘC HỆ THỐNG</span>
             </span>
           </div>
           <div className="hidden md:flex items-center gap-3 text-xs text-emerald-200/70 font-mono shrink-0">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Đồng bộ Elo VFF Phủi 4.0
+              Nguồn điểm: Elo SoccerHub
             </span>
           </div>
         </div>
@@ -511,7 +480,7 @@ export default function PlayerProfileConsole({
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">Chân Thuận</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">{editForm.dominantFoot}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">{editForm.dominantFoot || "Chưa khai báo"}</p>
               </div>
             </div>
 
@@ -521,7 +490,7 @@ export default function PlayerProfileConsole({
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">Số Áo Thích</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">#{editForm.jerseyNumber}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">{editForm.jerseyNumber ? `#${editForm.jerseyNumber}` : "—"}</p>
               </div>
             </div>
 
@@ -531,7 +500,7 @@ export default function PlayerProfileConsole({
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">Chiều Cao</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">{editForm.height}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">{editForm.height || "Chưa khai báo"}</p>
               </div>
             </div>
 
@@ -541,7 +510,7 @@ export default function PlayerProfileConsole({
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">Cân Nặng</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">{editForm.weight}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">{editForm.weight || "Chưa khai báo"}</p>
               </div>
             </div>
 
@@ -551,7 +520,7 @@ export default function PlayerProfileConsole({
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">Khung Giờ</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate" title={editForm.preferredTime}>{editForm.preferredTime || "17:30 - 20:30"}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate" title={editForm.preferredTime}>{editForm.preferredTime || "Chưa khai báo"}</p>
               </div>
             </div>
 
@@ -561,7 +530,7 @@ export default function PlayerProfileConsole({
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate">Đội Bóng / CLB</p>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate" title={editForm.currentClub}>{editForm.currentClub}</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate" title={editForm.currentClub}>{editForm.currentClub || "Chưa khai báo"}</p>
               </div>
             </div>
 
@@ -857,47 +826,55 @@ export default function PlayerProfileConsole({
                 </span>
               </div>
               <div className="flex items-center gap-1.5 mt-3">
-                <span className="w-6 h-6 rounded-md bg-emerald-500 text-white text-[11px] font-bold flex items-center justify-center">W</span>
-                <span className="w-6 h-6 rounded-md bg-emerald-500 text-white text-[11px] font-bold flex items-center justify-center">W</span>
-                <span className="w-6 h-6 rounded-md bg-emerald-500 text-white text-[11px] font-bold flex items-center justify-center">W</span>
-                <span className="w-6 h-6 rounded-md bg-emerald-500 text-white text-[11px] font-bold flex items-center justify-center">W</span>
-                <span className="w-6 h-6 rounded-md bg-emerald-500 text-white text-[11px] font-bold flex items-center justify-center">W</span>
+                {recentForm.length === 0 ? (
+                  <span className="text-[11px] text-slate-400">Chưa có trận nào kết thúc</span>
+                ) : (
+                  recentForm.map((h) => (
+                    <span
+                      key={h.id}
+                      title={`${h.myTeam} ${h.score} ${h.opponent}`}
+                      className={`w-6 h-6 rounded-md text-white text-[11px] font-bold flex items-center justify-center ${
+                        h.result === "win"
+                          ? "bg-emerald-500"
+                          : h.result === "draw"
+                          ? "bg-amber-500"
+                          : "bg-rose-500"
+                      }`}
+                    >
+                      {h.result === "win" ? "W" : h.result === "draw" ? "D" : "L"}
+                    </span>
+                  ))
+                )}
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
-                Chưa bị ngắt quãng • Đang giữ phong độ đỉnh
+                {recentForm.length > 0
+                  ? "5 trận gần nhất (trái = mới nhất) — tính từ nhánh đấu trong CSDL"
+                  : "Kết quả sẽ tự cập nhật khi bạn nhập tỷ số các trận"}
               </p>
             </div>
           </div>
 
-          {/* 3. Chỉ số Fairplay */}
+          {/* 3. Trận giữ sạch lưới */}
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between animate-fade-in-up delay-stagger-3 hover-card-elevate">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                CHỈ SỐ FAIRPLAY
+                TRẬN KHÔNG THỦNG LƯỚI
               </span>
               <span className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-500">
-                <Star className="w-4 h-4" />
+                <ShieldCheck className="w-4 h-4" />
               </span>
             </div>
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
-                  5.0
+                <span className="text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
+                  {perf.cleanSheets}
                 </span>
-                <span className="text-xs text-slate-400">/ 5.0</span>
-                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 ml-auto">
-                  Tuyệt Đối
-                </span>
+                <span className="text-xs text-slate-400">/ {perf.matches} trận</span>
               </div>
-              <div className="flex items-center gap-1 mt-3 text-amber-400">
-                <Star className="w-4 h-4 fill-amber-400" />
-                <Star className="w-4 h-4 fill-amber-400" />
-                <Star className="w-4 h-4 fill-amber-400" />
-                <Star className="w-4 h-4 fill-amber-400" />
-                <Star className="w-4 h-4 fill-amber-400" />
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
-                100% đúng giờ, tôn trọng luật & đối thủ
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-3">
+                {perf.matches === 0
+                  ? "Chưa có trận kết thúc để đếm"
+                  : `Ghi nhận từ tỷ số các trận đã có kết quả • ${perf.goalsAgainst} bàn thua`}
               </p>
             </div>
           </div>
@@ -914,25 +891,27 @@ export default function PlayerProfileConsole({
             </div>
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-amber-500">
-                  02
+                <span className="text-3xl font-extrabold text-amber-500 font-mono">
+                  {String(perf.titles).padStart(2, "0")}
                 </span>
                 <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Cúp Vô Địch
+                  Giải Vô Địch
                 </span>
               </div>
               <div className="flex items-center gap-3 mt-3 text-xs text-slate-600 dark:text-slate-400">
                 <span className="flex items-center gap-1">
-                  <Award className="w-3.5 h-3.5 text-amber-500" />
-                  2 Mini Cup
+                  <Activity className="w-3.5 h-3.5 text-sky-500" />
+                  {perf.matches} trận đã đá
                 </span>
                 <span className="flex items-center gap-1">
-                  <Award className="w-3.5 h-3.5 text-blue-500" />
-                  4 Huy Chương
+                  <Award className="w-3.5 h-3.5 text-amber-500" />
+                  {perf.wins} trận thắng
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
-                Cập nhật hệ thống SoccerHub Tournament
+                {perf.myTeamName
+                  ? `Đội của bạn: ${perf.myTeamName} — vô địch khi thắng ở vòng cuối nhánh đấu`
+                  : "Bạn chưa là đội trưởng của đội nào trong các giải trên hệ thống"}
               </p>
             </div>
           </div>
@@ -1026,7 +1005,7 @@ export default function PlayerProfileConsole({
                       {currentStat.elo}
                     </span>
                     <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                      +250 Elo trong 6 tháng
+                      {activeUser?.eloRating != null ? "Theo kết quả các giải trong hệ thống" : "Chưa có điểm Elo"}
                     </span>
                   </div>
                   
@@ -1073,42 +1052,61 @@ export default function PlayerProfileConsole({
 
               </div>
 
-              {/* Danh sách thanh kỹ năng bóng đá chi tiết */}
+              {/* Thành tích thi đấu từ CSDL — không có bảng chỉ số kỹ thuật riêng */}
               <div className="mt-8 space-y-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  Chỉ Số Kỹ Thuật Chuyên Môn ({currentStat.title})
+                  Thành Tích Thi Đấu Trong Hệ Thống
                 </h3>
-                
-                <div className="space-y-3.5">
-                  {currentStat.skills.map((skill, idx) => (
-                    <div key={idx} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs sm:text-sm">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">
-                          {skill.name}
-                        </span>
-                        <span className="font-bold text-slate-900 dark:text-white">
-                          {skill.value} <span className="text-slate-400 text-xs font-normal">/ 100</span>
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${skill.color}`}
-                          style={{ width: `${skill.value}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Tóm tắt 5 trục Radar */}
-              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-5 gap-3">
-                {currentStat.radarPoints.map((pt, i) => (
-                  <div key={i} className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
-                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{pt.label}</p>
-                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">{pt.val}</p>
-                  </div>
-                ))}
+                {perf.matches === 0 ? (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center">
+                    Bạn chưa làm trọng tài/đội trưởng của đội nào trong các giải trên hệ thống, nên chưa có thành
+                    tích tính được. Số liệu sẽ tự cập nhật ngay khi bạn tham gia giải.
+                  </p>
+                ) : (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs min-w-[520px]">
+                        <thead>
+                          <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase text-slate-400 font-black tracking-wider">
+                            <th className="py-2.5 px-3">Chỉ số</th>
+                            <th className="py-2.5 px-3 text-center">Giá trị</th>
+                            <th className="py-2.5 px-3 text-center">Nguồn</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                          {[
+                            { k: "Tổng trận đã đánh", v: perf.matches, src: "match_results" },
+                            { k: "Thắng", v: perf.wins, src: "match_results" },
+                            { k: "Hòa", v: perf.draws, src: "match_results" },
+                            { k: "Thua", v: perf.losses, src: "match_results" },
+                            { k: "Tỉ lệ thắng", v: `${winRate}%`, src: "tính từ CSDL" },
+                            { k: "Bàn thắng", v: perf.goalsFor, src: "tournaments.bracket_json" },
+                            { k: "Bàn thua", v: perf.goalsAgainst, src: "tournaments.bracket_json" },
+                            { k: "Hiệu số", v: goalDiff > 0 ? `+${goalDiff}` : goalDiff, src: "tính từ CSDL" },
+                            { k: "Trận không thủng lưới", v: perf.cleanSheets, src: "tính từ CSDL" },
+                            { k: "Elo hiện tại", v: displayElo, src: "users.elo_rating" },
+                          ].map((row) => (
+                            <tr key={row.k}>
+                              <td className="py-2.5 px-3 font-semibold text-slate-700 dark:text-slate-300">{row.k}</td>
+                              <td className="py-2.5 px-3 text-center font-mono font-black text-slate-900 dark:text-white">{row.v}</td>
+                              <td className="py-2.5 px-3 text-center font-mono text-[10px] text-slate-400">{row.src}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      {currentStat.radarPoints.map((pt, i) => (
+                        <div key={i} className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
+                          <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{pt.label}</p>
+                          <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">{pt.val}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
             </div>
@@ -1349,47 +1347,69 @@ export default function PlayerProfileConsole({
               </div>
 
               <div className="space-y-3">
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800/60 flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md">
-                    <Trophy className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                      Vô Địch Cup Tuyên Sơn Open 2026
-                    </h4>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                      Cùng FC Brothers Đà Nẵng • Thể thức sân 7
-                    </p>
-                  </div>
-                </div>
+                {(() => {
+                  const myTournaments = tournaments.filter((t: any) =>
+                    (t.teams ?? []).some((z: any) => z.teamName && z.teamName === perf.myTeamName)
+                  );
+                  const items: { icon: any; cls: string; title: string; sub: string }[] = [];
+                  if (perf.titles > 0 && perf.myTeamName) {
+                    items.push({
+                      icon: Trophy,
+                      cls: "bg-amber-500",
+                      title: `Vô địch ${perf.titles} giải`,
+                      sub: `Cùng ${perf.myTeamName} • ${perf.wins} trận thắng đã ghi nhận`,
+                    });
+                  }
+                  if (perf.myTeamName && myTournaments.length > 0) {
+                    items.push({
+                      icon: Award,
+                      cls: "bg-blue-600",
+                      title: `Đội trưởng ${perf.myTeamName}`,
+                      sub: `Tham gia ${myTournaments.length} giải: ${myTournaments
+                        .map((t: any) => t.name)
+                        .join(" • ")}`,
+                    });
+                  }
+                  if (perf.goalsFor > 0) {
+                    items.push({
+                      icon: Star,
+                      cls: "bg-emerald-600",
+                      title: `Đã ghi ${perf.goalsFor} bàn trong các giải`,
+                      sub: `${perf.matches} trận có kết quả • giữ sạch lưới ${perf.cleanSheets} trận`,
+                    });
+                  }
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                    <Award className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                      Á Quân Giải Phủi Cẩm Lệ Mùa Hè 2025
-                    </h4>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                      Hạng mục Phong trào 16 đội
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                    <Star className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                      Vua Phá Lưới Mini Cup Hòa Xuân
-                    </h4>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                      Ghi 11 bàn thắng trong 5 trận đấu
-                    </p>
-                  </div>
-                </div>
+                  if (items.length === 0) {
+                    return (
+                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 text-xs text-center text-slate-500 dark:text-slate-400">
+                        Chưa có danh hiệu nào. Bạn chưa là đội trưởng của đội nào trong các giải
+                        trên hệ thống — tham gia giải để tích lũy thành tích.
+                      </div>
+                    );
+                  }
+                  return items.map((it, i) => (
+                    <div
+                      key={i}
+                      className={`p-3.5 rounded-2xl border flex items-center gap-3.5 ${
+                        i === 0
+                          ? "bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border-amber-200 dark:border-amber-800/60"
+                          : "bg-slate-50 dark:bg-slate-900 border-slate-200/70 dark:border-slate-800"
+                      }`}
+                    >
+                      <div
+                        className={`w-10 h-10 rounded-xl ${it.cls} text-white flex items-center justify-center shrink-0 shadow-md`}
+                      >
+                        <it.icon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                          {it.title}
+                        </h4>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400">{it.sub}</p>
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
 
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-center text-slate-500 dark:text-slate-400">

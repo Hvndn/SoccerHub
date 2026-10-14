@@ -172,6 +172,13 @@ public class AuthService {
         if (req.getAvatar() != null && !req.getAvatar().trim().isEmpty()) {
             user.setAvatar(req.getAvatar().trim());
         }
+        // Chỉ số hồ sơ cầu thủ (null = không sửa, chuỗi rỗng = xóa để trống)
+        if (req.getDominantFoot() != null) user.setDominantFoot(req.getDominantFoot().trim());
+        if (req.getJerseyNumber() != null) user.setJerseyNumber(req.getJerseyNumber().trim());
+        if (req.getHeight() != null) user.setHeight(req.getHeight().trim());
+        if (req.getWeight() != null) user.setWeight(req.getWeight().trim());
+        if (req.getPreferredTime() != null) user.setPreferredTime(req.getPreferredTime().trim());
+        if (req.getCurrentClub() != null) user.setCurrentClub(req.getCurrentClub().trim());
 
         userRepository.save(user);
         return mapToDto(user);
@@ -190,6 +197,12 @@ public class AuthService {
                 .favoriteSport(user.getFavoriteSport())
                 .level(user.getLevel())
                 .avatar(user.getAvatar() != null ? user.getAvatar() : getInitials(user.getFullName()))
+                .dominantFoot(user.getDominantFoot())
+                .jerseyNumber(user.getJerseyNumber())
+                .height(user.getHeight())
+                .weight(user.getWeight())
+                .preferredTime(user.getPreferredTime())
+                .currentClub(user.getCurrentClub())
                 .build();
     }
 

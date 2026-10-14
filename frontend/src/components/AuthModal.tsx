@@ -233,7 +233,7 @@ export default function AuthModal({
       const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanIdentifier);
       const newUser = await register({
         fullName: fullName.trim(),
-        email: isEmail ? cleanIdentifier : `${cleanIdentifier}@phone.turfzone.vn`,
+        email: isEmail ? cleanIdentifier : `${cleanIdentifier}@phone.soccerhub.vn`,
         phone: isEmail ? undefined : cleanIdentifier,
         password: password,
         role: role,

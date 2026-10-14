@@ -51,7 +51,6 @@ import {
   playNotificationChime,
   subscribeToBookingEvents,
   broadcastBookingEvent,
-  openDualRoleWindow,
   RealtimeBookingEvent
 } from "@/lib/realtimeService";
 
@@ -82,9 +81,46 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   const [matrixDuration, setMatrixDuration] = useState<number>(120);
 
   // Dynamic pricing controls
-  const [peakHourMultiplier, setPeakHourMultiplier] = useState(1.2);
-  const [autoPricing, setAutoPricing] = useState(true);
-  const [depositRate, setDepositRate] = useState("50%");
+  // Nháp giá sân đang chỉnh ở tab "Giá Thuê Sân" (đối chiếu với bảng pitches)
+  const [priceDraft, setPriceDraft] = useState<Record<string, { avg: string; peak: string }>>({});
+  const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
+
+  const getPriceDraft = (p: any) =>
+    priceDraft[String(p.id)] ?? {
+      avg: String(p.avgPricePerHour ?? ""),
+      peak: String(p.peakPricePerHour ?? ""),
+    };
+
+  const savePitchPrice = async (p: any) => {
+    const draft = getPriceDraft(p);
+    const avg = Number(draft.avg);
+    const peak = Number(draft.peak);
+    if (!avg || avg <= 0) {
+      showToast("Giá thường phải lớn hơn 0.");
+      return;
+    }
+    if (peak && peak < avg) {
+      showToast("Giá giờ vàng phải lớn hơn hoặc bằng giá thường.");
+      return;
+    }
+    setSavingPriceId(String(p.id));
+    try {
+      await apiRequest(`/api/v1/pitches/${p.id}/price`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          avgPricePerHour: avg,
+          peakPricePerHour: peak || null,
+        }),
+      });
+      showToast(`Đã lưu giá cho ${p.name}.`);
+      await fetchRealData();
+    } catch (e: any) {
+      showToast(e?.message || "Cập nhật giá thất bại, thử lại sau.");
+    } finally {
+      setSavingPriceId(null);
+    }
+  };
   
   // Real-time notification banner
   const [notification, setNotification] = useState<string | null>(null);
@@ -721,43 +757,32 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>
                 {activePitch 
-                  ? `${activePitch.name.replace(/đà nẵng/i, "Đà Nẵng").toUpperCase()} — HỆ THỐNG ĐIỀU HÀNH CHỦ SÂN PRO` 
-                  : "HỆ THỐNG ĐIỀU HÀNH CHỦ SÂN BÓNG ĐÁ SOCCERHUB PRO"}
+                  ? `${activePitch.name.replace(/đà nẵng/i, "Đà Nẵng").toUpperCase()} — BẢNG ĐIỀU HÀNH CHỦ SÂN` 
+                  : "BẢNG ĐIỀU HÀNH CHỦ SÂN BÓNG ĐÁ"}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-              <span>{activePitch ? activePitch.name.replace(/đà nẵng/i, "Đà Nẵng") : "Cụm Sân Bóng Đá D-Sport Đà Nẵng"}</span>
+              <span>{activePitch ? activePitch.name.replace(/đà nẵng/i, "Đà Nẵng") : "Chưa chọn cụm sân nào"}</span>
               {isLoadingBackend && <RefreshCw className="w-5 h-5 text-sky-500 animate-spin" />}
             </h1>
             <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
               <span className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
-                <span>{activePitch?.address || "Số 154 Nguyễn Lương Bằng, Tp. Đà Nẵng"}</span>
+                <span>{activePitch?.address || "Chưa khai báo địa chỉ"}</span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1.5">
                 <PhoneCall className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Hotline: <strong className="text-slate-800 dark:text-slate-200">{activePitch?.phone || "0988 776 652"}</strong></span>
+                <span>Hotline: <strong className="text-slate-800 dark:text-slate-200">{activePitch?.phone || "Chưa khai báo"}</strong></span>
               </span>
               <span>•</span>
               <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                Chủ sân: {activePitch?.ownerName || "Hồ Văn Diện"}
+                Chủ sân: {activePitch?.ownerName || "Chưa khai báo"}
               </span>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            {/* NÚT MỞ TAB CẦU THỦ SONG SONG ĐỂ TEST 2 ROLE REALTIME */}
-            <button
-              type="button"
-              onClick={() => openDualRoleWindow("PLAYER")}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white font-extrabold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
-              title="Mở tab mới với tư cách Cầu Thủ để test đặt sân và nhận chuông thông báo realtime ngay lập tức"
-            >
-              <Zap className="w-4 h-4 text-amber-300" />
-              <span>Mở Tab Cầu Thủ (Test 2 Role) ↗</span>
-            </button>
-
             {realPitches.length > 1 && (
               <select
                 value={activePitch?.id || ""}
@@ -862,7 +887,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             }`}
           >
             <Sliders className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>AI Dynamic Pricing & Giờ Vàng</span>
+            <span>Giá Thuê Sân &amp; Tiền Cọc</span>
           </button>
 
           <button
@@ -1380,15 +1405,20 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       <strong className="text-slate-900 dark:text-white font-extrabold text-sm sm:text-base">{pitch.basePrice.toLocaleString("vi-VN")} đ/ca</strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-xs font-semibold">GIÁ GIỜ VÀNG (+20%)</span>
+                      <span className="text-slate-400 block text-xs font-semibold">GIÁ GIỜ VÀNG</span>
                       <strong className="text-amber-500 font-black text-sm sm:text-base">{pitch.peakPrice.toLocaleString("vi-VN")} đ/ca</strong>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between text-sm pt-2">
-                    <span className="text-slate-400 text-xs sm:text-sm">Tiện ích: Đèn LED 500W, Cỏ FIFA, Wifi 6, Nước uống</span>
+                    <span className="text-slate-400 text-xs sm:text-sm">
+                      Tiện ích:{" "}
+                      {activePitch?.amenities?.length
+                        ? activePitch.amenities.join(", ")
+                        : "Chưa khai báo tiện ích trong hồ sơ sân"}
+                    </span>
                     <button
-                      onClick={() => showToast(`⚙️ Đã mở bảng chỉnh sửa giá cho [${pitch.pitchName}]`)}
+                      onClick={() => setActiveSubTab("pricing")}
                       className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors shadow-2xs"
                     >
                       Sửa Giá Sân
@@ -1401,109 +1431,130 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         </div>
       )}
 
-      {/* --- SUB-TAB CONTENT 3: AI DYNAMIC PRICING --- */}
+      {/* --- SUB-TAB CONTENT 3: GIÁ THUÊ SÂN (ghi vào bảng pitches qua API) --- */}
       {activeSubTab === "pricing" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center space-x-2">
                 <Sliders className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">AI Dynamic Pricing Manager</h3>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Giá Thuê Sân Hiện Tại</h3>
               </div>
-              <button
-                type="button"
-                onClick={() => setAutoPricing(!autoPricing)}
-                className={`px-3.5 py-1.5 rounded-full text-sm font-mono font-bold transition-all shadow-xs ${
-                  autoPricing ? "bg-emerald-500 text-white" : "bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
-                }`}
-              >
-                {autoPricing ? "TỰ ĐỘNG AI: BẬT" : "TỰ ĐỘNG AI: TẮT"}
-              </button>
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Hệ thống AI tự động điều chỉnh giá theo nhu cầu thời gian thực: Tăng giá giờ vàng khung 17:30 - 20:30 khi lấp đầy trên 90% và giảm giá kích cầu giờ vắng.
+              Giá đọc và ghi thẳng vào bảng <code>pitches</code> trong CSDL. Ca bắt đầu từ 17:00, 18:00 và
+              19:00 được tính theo giá giờ vàng khi thanh toán.
             </p>
 
             <div className="space-y-4 pt-2">
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-extrabold text-slate-900 dark:text-white">
-                  <span>Hệ Số Tăng Giá Giờ Vàng (Peak Multiplier):</span>
-                  <span className="text-[#0b4f6c] dark:text-sky-400 font-mono font-black text-sm">x{peakHourMultiplier}</span>
-                </div>
-                <input
-                  type="range"
-                  min="1.0"
-                  max="1.5"
-                  step="0.05"
-                  value={peakHourMultiplier}
-                  onChange={(e) => setPeakHourMultiplier(Number(e.target.value))}
-                  className="w-full accent-[#0b4f6c] dark:accent-sky-400 cursor-pointer"
-                />
-              </div>
-
-              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-400/20 space-y-2 text-xs">
-                <div className="flex justify-between font-extrabold text-amber-600 dark:text-amber-400">
-                  <span className="flex items-center space-x-1">
-                    <Sun className="w-4 h-4" />
-                    <span>Dự Đoán Nhu Cầu Tối Nay:</span>
-                  </span>
-                  <span>98% Lấp Đầy</span>
-                </div>
-                <p className="text-[11px] text-slate-500">
-                  AI gợi ý duy trì hệ số x1.2 cho Sân 7A & Sân 7B. Doanh thu ước tính tăng thêm +2.4M VNĐ.
+              {realPitches.length === 0 ? (
+                <p className="text-xs text-slate-500 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  Chưa có cụm sân nào trong CSDL.
                 </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => showToast("Đã cập nhật cấu hình thuật toán giá AI thành công!")}
-                className="w-full py-3 rounded-xl bg-emerald-500 text-white font-black text-xs shadow-md"
-              >
-                Áp Dụng Cấu Hình AI
-              </button>
+              ) : (
+                realPitches.map((p: any) => {
+                  const draft = getPriceDraft(p);
+                  const saving = savingPriceId === String(p.id);
+                  return (
+                    <div
+                      key={String(p.id)}
+                      className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-extrabold text-sm text-slate-900 dark:text-white truncate">
+                          {p.name}
+                        </span>
+                        <span className="text-[11px] font-mono text-slate-400 shrink-0">
+                          {p.openTime ?? "—"} - {p.closeTime ?? "—"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <label className="space-y-1">
+                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                            Giá thường (đ/ca)
+                          </span>
+                          <input
+                            type="number"
+                            step={10000}
+                            value={draft.avg}
+                            onChange={(e) =>
+                              setPriceDraft({
+                                ...priceDraft,
+                                [String(p.id)]: { ...draft, avg: e.target.value },
+                              })
+                            }
+                            className="w-full bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:border-[#0b4f6c]"
+                          />
+                        </label>
+                        <label className="space-y-1">
+                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                            Giá giờ vàng (đ/ca)
+                          </span>
+                          <input
+                            type="number"
+                            step={10000}
+                            value={draft.peak}
+                            onChange={(e) =>
+                              setPriceDraft({
+                                ...priceDraft,
+                                [String(p.id)]: { ...draft, peak: e.target.value },
+                              })
+                            }
+                            className="w-full bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:border-[#0b4f6c]"
+                          />
+                        </label>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={saving}
+                        onClick={() => savePitchPrice(p)}
+                        className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 flex items-center gap-1.5"
+                      >
+                        {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                        {saving ? "Đang lưu..." : "Lưu giá sân"}
+                      </button>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
           <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5">
             <div className="flex items-center space-x-2 border-b border-slate-100 dark:border-slate-800 pb-3">
               <ShieldCheck className="w-5 h-5 text-emerald-500" />
-              <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Quy Tắc Đặt Cọc & Giữ Chỗ</h3>
+              <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Tiền Cọc & Giữ Chỗ</h3>
             </div>
 
             <div className="space-y-4 text-xs">
-              <div className="space-y-2">
-                <label className="font-extrabold text-slate-900 dark:text-white block">Tỷ Lệ Tiền Cọc Bắt Buộc Khi Đặt Web/App:</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setDepositRate("30%")}
-                    className={`p-3 rounded-xl font-extrabold border transition-all ${
-                      depositRate === "30%"
-                        ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 border-sky-400"
-                        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
-                    }`}
-                  >
-                    30% Cọc Tối Thiểu
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDepositRate("50%")}
-                    className={`p-3 rounded-xl font-extrabold border transition-all ${
-                      depositRate === "50%"
-                        ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 border-sky-400"
-                        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
-                    }`}
-                  >
-                    50% Cọc Tối Thiểu
-                  </button>
-                </div>
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1.5">
+                <span className="font-extrabold text-slate-900 dark:text-white block">
+                  Cọc khi đặt qua web / app: 50% giá ca
+                </span>
+                <p className="text-[11px] text-slate-500">
+                  Màn thanh toán VietQR hiển thị số cọc = 50% giá ca đã chọn; phần còn lại thu tại quầy
+                  khi khách check-in.
+                </p>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1.5">
-                <span className="font-extrabold text-slate-900 dark:text-white block">Quy Tắc Tịch Thu Cọc Khi No-Show:</span>
+                <span className="font-extrabold text-slate-900 dark:text-white block">
+                  Cọc đặt tại quầy: do chủ sân nhập
+                </span>
                 <p className="text-[11px] text-slate-500">
-                  Nếu đội đặt sân không check-in quá 15 phút sau giờ bắt đầu ca mà không báo trước, hệ thống tự động tịch thu 100% tiền cọc và đẩy ca lên Sàn Nhượng Gấp với giá giảm 30%.
+                  Khi đặt offline, số tiền cọc được nhập cùng đơn và hiển thị trong ma trận
+                  (đã cọc / còn phải thu).
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-400/20 space-y-1.5">
+                <span className="font-extrabold text-amber-700 dark:text-amber-400 block">
+                  Khách không đến (no-show)
+                </span>
+                <p className="text-[11px] text-slate-500">
+                  Hệ thống không tự động phạt cọc. Chủ sân đóng ca tại tab Ma trận với lý do
+                  “khách không đến”, phần cọc và phạt do hai bên tự thoả thuận ngoài hệ thống.
                 </p>
               </div>
             </div>

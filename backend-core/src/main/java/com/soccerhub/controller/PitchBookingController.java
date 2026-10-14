@@ -176,6 +176,35 @@ public class PitchBookingController {
     }
 
     /**
+     * API cập nhật giá thuê sân (giá thường & giá giờ vàng) của một cụm sân.
+     */
+    @PutMapping("/{id}/price")
+    public ResponseEntity<?> updatePitchPrice(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> req
+    ) {
+        Integer avgPrice = req.get("avgPricePerHour") != null
+                ? Integer.valueOf(req.get("avgPricePerHour").toString())
+                : null;
+        Integer peakPrice = req.get("peakPricePerHour") != null
+                ? Integer.valueOf(req.get("peakPricePerHour").toString())
+                : null;
+
+        try {
+            Pitch updated = pitchService.updatePrice(id, avgPrice, peakPrice);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Đã cập nhật giá sân thành công.",
+                    "pitch", updated
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Lỗi cập nhật giá sân: " + e.getMessage()));
+        }
+    }
+
+    /**
      * API Lấy Ma Trận Ca Sân Thời Gian Thực (Hỗ Trợ Người Dùng Chọn Đá 60p, 90p hoặc 120p)
      */
     @GetMapping("/{id}/matrix")

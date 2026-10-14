@@ -17,4 +17,10 @@ public class UpdateProfileRequest {
     private String favoriteSport;
     private String level;
     private String avatar;
+    private String dominantFoot;
+    private String jerseyNumber;
+    private String height;
+    private String weight;
+    private String preferredTime;
+    private String currentClub;
 }

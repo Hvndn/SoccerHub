@@ -93,16 +93,11 @@ export default function PitchDetail({
   const [selectedDate, setSelectedDate] = useState<string>(upcomingDays[0].iso);
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [selectedTimeFilter, setSelectedTimeFilter] = useState<string>("ALL");
-  const [useVoucher, setUseVoucher] = useState(true);
-  const [useMatchPoints, setUseMatchPoints] = useState(true);
   const [depositOption, setDepositOption] = useState<"50%" | "100%">("50%");
   const [autoLighting, setAutoLighting] = useState(true);
-  const [enableMatchmaking, setEnableMatchmaking] = useState(true);
-  const [enableAiCamera, setEnableAiCamera] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const [lockCountdown, setLockCountdown] = useState(299); // 04:59
 
   // Dữ liệu cụm sân thật từ backend
   const [pitchDetails, setPitchDetails] = useState<any>(null);
@@ -131,20 +126,6 @@ export default function PitchDetail({
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
-
-  // Đếm ngược Redis Lock
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setLockCountdown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatLockTimer = (sec: number) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
 
   // 1. Tải thông tin chi tiết Cụm Sân thật từ CSDL
   useEffect(() => {
@@ -196,18 +177,18 @@ export default function PitchDetail({
     return () => unsubscribe();
   }, [pitchId, selectedDate, fixedSlotDuration]);
 
-  // Dữ liệu cụm sân hiển thị (Ưu tiên dữ liệu thật từ DB)
+  // Dữ liệu cụm sân hiển thị (Ưu tiên dữ liệu thật từ DB, không bịa fallback)
   const venueData = useMemo(() => {
     return {
-      name: pitchDetails?.name || pitch?.name || "Cụm Sân Bóng Đá D-Sport đà nẵng",
-      address: pitchDetails?.address || pitch?.address || "Số 154 Nguyễn Lương Bằng, Tp. Đà Nẵng",
-      phone: pitchDetails?.phone || pitch?.phone || "0988 776 652",
-      openTime: pitchDetails?.openTime || "13:00",
-      closeTime: pitchDetails?.closeTime || "22:30",
-      slotDuration: pitchDetails?.slotDurationMinutes || 120,
-      rating: pitchDetails?.rating || 4.9,
-      reviewsCount: 128,
-      ownerName: pitchDetails?.ownerName || "Hồ Văn Diện",
+      name: pitchDetails?.name || pitch?.name || "Cụm sân chưa đặt tên",
+      address: pitchDetails?.address || pitch?.address || "Chưa khai báo địa chỉ",
+      phone: pitchDetails?.phone || pitch?.phone || "Chưa khai báo số điện thoại",
+      openTime: pitchDetails?.openTime || pitch?.openTime || "—",
+      closeTime: pitchDetails?.closeTime || pitch?.closeTime || "—",
+      slotDuration: pitchDetails?.slotDurationMinutes || pitch?.slotDurationMinutes || 90,
+      rating: pitchDetails?.rating ?? pitch?.rating ?? null,
+      reviewsCount: pitchDetails?.reviewsCount ?? pitch?.reviewsCount ?? 0,
+      ownerName: pitchDetails?.ownerName || pitch?.ownerName || "Chưa khai báo",
       mainImage: "https://images.unsplash.com/photo-1529900241452-f47268d87ec9?auto=format&fit=crop&w=1200&q=80",
       subImages: [
         "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=600&q=80",
@@ -217,10 +198,9 @@ export default function PitchDetail({
   }, [pitchDetails, pitch]);
 
   // Tính toán giá tiền thực tế
-  const originalPrice = selectedSlot?.price || 350000;
-  const voucherDiscount = useVoucher ? 50000 : 0;
-  const pointsDiscount = useMatchPoints ? 20000 : 0;
-  const totalPrice = Math.max(50000, originalPrice - voucherDiscount - pointsDiscount);
+  const originalPrice = selectedSlot?.price || 0;
+  // Không áp voucher/điểm ảo: tổng = giá ca sân theo ma trận CSDL
+  const totalPrice = originalPrice;
   const depositAmount = depositOption === "50%" ? Math.round(totalPrice * 0.5) : totalPrice;
   const splitPerPlayer = Math.round(totalPrice / 14);
 
@@ -249,10 +229,19 @@ export default function PitchDetail({
       return;
     }
 
+    if (!user) {
+      showToast("Bạn cần đăng nhập để đặt sân (hệ thống lưu tên & SĐT của bạn vào đơn).");
+      return;
+    }
+
     setIsBooking(true);
     try {
-      const customerName = user?.fullName || user?.name || "Cao Việt An";
-      const customerPhone = user?.phone || "0914 555 789";
+      const customerName = user.fullName || user.name || "";
+      const customerPhone = user.phone || "";
+      if (!customerPhone) {
+        showToast("Tài khoản chưa có số điện thoại — hãy cập nhật SĐT trong hồ sơ trước khi đặt.");
+        return;
+      }
 
       const bookingPayload = {
         courtName: selectedSlot.courtName,
@@ -294,38 +283,8 @@ export default function PitchDetail({
           via: "VietQR Online"
         });
       } else {
-        // Fallback giả lập nếu mạng lag
-        const fallbackRes = {
-          id: Math.floor(1000 + Math.random() * 9000),
-          code: `VS-${pitchId}-${Math.floor(1000 + Math.random() * 9000)}`,
-          customerName: customerName,
-          customerPhone: customerPhone,
-          courtName: selectedSlot.courtName,
-          courtType: selectedSlot.courtType || "Sân 7",
-          timeSlot: selectedSlot.time,
-          totalPrice: totalPrice,
-          depositPaid: depositAmount,
-          cashDue: totalPrice - depositAmount
-        };
-        setBookingConfirmed(fallbackRes);
-        setPaymentDone(false);
-        setShowQrModal(true);
-
-        broadcastBookingEvent({
-          type: "BOOKING_CREATED",
-          pitchId: pitchId,
-          bookingId: fallbackRes.id,
-          code: fallbackRes.code,
-          customerName: customerName,
-          customerPhone: customerPhone,
-          courtName: selectedSlot.courtName,
-          courtType: selectedSlot.courtType,
-          timeSlot: selectedSlot.time,
-          bookingDate: selectedDate,
-          totalPrice: totalPrice,
-          depositPaid: depositAmount,
-          via: "VietQR Online"
-        });
+        // Không tạo được đơn thật thì báo lỗi — tuyệt đối không bịa mã đơn
+        showToast("❌ Không tạo được đơn giữ chỗ, vui lòng thử lại.");
       }
     } catch (err: any) {
       showToast(`❌ Lỗi đặt sân: ${err.message || "Không thể kết nối máy chủ"}`);
@@ -339,7 +298,7 @@ export default function PitchDetail({
     setPaymentDone(true);
     // Reload lại ma trận ca sân thật để slot vừa đặt chuyển sang BOOKED
     fetchPitchMatrix(selectedDate, fixedSlotDuration);
-    showToast("✅ Đã xác nhận chuyển cọc thành công! Thẻ Matchday Pass đã được kích hoạt.");
+    showToast("✅ Đã ghi nhận yêu cầu thanh toán cọc của bạn. Chủ sân sẽ đối soát tiền khi bạn check-in.");
 
     // Gửi sự kiện cập nhật trạng thái thanh toán
     if (bookingConfirmed) {
@@ -416,7 +375,7 @@ export default function PitchDetail({
 
         <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Hệ Thống IoT Cổng Sân & Đèn Chiếu Sáng Đang Kết Nối</span>
+          <span>Thông tin ca sân cập nhật theo thời gian thực</span>
         </div>
       </nav>
 
@@ -428,20 +387,22 @@ export default function PitchDetail({
             <div className="flex flex-wrap items-center gap-2">
               <span className="bg-[#0b4f6c] text-white text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider inline-flex items-center space-x-1 shadow-xs">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>FIFA QUALITY / VFF</span>
+                <span>{pitchDetails?.pitchTypes?.[0] || "Sân cỏ nhân tạo"}</span>
               </span>
               <span className="bg-emerald-500 text-white text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
                 <Zap className="w-3.5 h-3.5" />
-                <span>Hệ Thống Đèn LED Tự Động</span>
+                <span>Đèn LED chiếu sáng sân</span>
               </span>
               <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
                 {matrixCourts.length > 0 ? `${matrixCourts.length} Sân Con Hoạt Động` : "Cụm Sân Tiêu Chuẩn"}
               </span>
-              <div className="inline-flex items-center space-x-1.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 rounded-lg text-xs">
-                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                <span className="font-extrabold text-slate-900 dark:text-white">{venueData.rating}</span>
-                <span className="text-slate-400 font-normal">({venueData.reviewsCount} đánh giá thật)</span>
-              </div>
+              {venueData.rating ? (
+                <div className="inline-flex items-center space-x-1.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 rounded-lg text-xs">
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  <span className="font-extrabold text-slate-900 dark:text-white">{venueData.rating}</span>
+                  <span className="text-slate-400 font-normal">({venueData.reviewsCount} đánh giá)</span>
+                </div>
+              ) : null}
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
@@ -506,15 +467,11 @@ export default function PitchDetail({
             <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
               <div>
                 <span className="font-black text-xs bg-emerald-600/90 backdrop-blur-md px-2.5 py-1 rounded text-white uppercase tracking-wider">
-                  Mặt Cỏ Nhân Tạo FIFA Pro 50mm
+                  {pitchDetails?.pitchTypes?.[0] || pitch?.sportBadge || "Sân bóng đá"}
                 </span>
                 <p className="font-black text-base sm:text-lg mt-1 text-white">
-                  Hệ Thống Đèn LED Floodlight 800 Lux & Thoát Nước Ngầm 100%
+                  {pitchDetails?.description || venueData.address}
                 </p>
-              </div>
-              <div className="flex items-center space-x-1 text-xs font-bold bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-xl border border-slate-700">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Xem sân 360°</span>
               </div>
             </div>
           </div>
@@ -528,7 +485,7 @@ export default function PitchDetail({
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-xs text-white font-bold">
-                Bóng Thi Đấu FIFA Star
+                {venueData.name}
               </div>
             </div>
             <div className="relative flex-1 overflow-hidden group bg-slate-900 rounded-2xl">
@@ -538,46 +495,38 @@ export default function PitchDetail({
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-xs text-white font-bold">
-                Khu Kỹ Thuật & Khán Đài Mini
+                {venueData.name}
               </div>
             </div>
           </div>
 
-          {/* Quick Amenities Card (2 cols) */}
+          {/* Quick Amenities Card (2 cols) — đọc từ cột amenities của bảng pitches */}
           <div className="hidden md:flex md:col-span-2 flex-col justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
             <div>
               <p className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5">
                 Tiện ích sân bóng
               </p>
               <div className="space-y-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                <div className="flex items-center space-x-2">
-                  <Car className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
-                  <span>Bãi đỗ Ôtô free</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <ShowerHead className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
-                  <span>Tắm nóng lạnh</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Award className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
-                  <span>Thuê Áo Bib 2 màu</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Video className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
-                  <span>Camera AI VAR</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Coffee className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
-                  <span>Canteen & Bù khoáng</span>
-                </div>
+                {pitchDetails?.amenities?.length ? (
+                  pitchDetails.amenities.map((a: string) => (
+                    <div key={a} className="flex items-center space-x-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />
+                      <span>{a}</span>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-slate-500">Chủ sân chưa khai báo tiện ích.</span>
+                )}
               </div>
             </div>
 
             <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex flex-col">
               <span className="text-xs text-slate-400">Giá ca sân từ:</span>
               <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
-                {((pitchDetails?.avgPricePerHour || 350000)).toLocaleString("vi-VN")}đ
-                <span className="text-xs font-normal text-slate-400">/ca</span>
+                {pitchDetails?.avgPricePerHour
+                  ? pitchDetails.avgPricePerHour.toLocaleString("vi-VN")
+                  : "—"}
+                <span className="text-xs font-normal text-slate-400">đ/ca</span>
               </span>
             </div>
           </div>
@@ -850,18 +799,19 @@ export default function PitchDetail({
             )}
           </div>
 
-          {/* Chính sách hoàn cọc & Tự động hóa */}
+          {/* Quy trình nhận sân & chính sách cọc (mô tả đúng luồng đang chạy) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start space-x-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 font-bold">
-                <Zap className="w-5 h-5 text-emerald-500" />
+                <QrCode className="w-5 h-5 text-emerald-500" />
               </div>
               <div className="space-y-1">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Tự Động Bật Đèn Sân IoT
+                  Check-in bằng mã giữ chỗ
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Đèn sân và camera tự động mở trước giờ thi đấu 5 phút khi bạn quét mã check-in qua ứng dụng.
+                  Sau khi đặt, hệ thống sinh mã đơn. Chủ sân nhập mã này tại tab Ma trận để
+                  check-in cho bạn khi tới sân.
                 </p>
               </div>
             </div>
@@ -872,10 +822,11 @@ export default function PitchDetail({
               </div>
               <div className="space-y-1">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Bảo Chứng Hoàn Cọc 100%
+                  Cọc & hủy lịch
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Hủy lịch trước giờ đá 2 tiếng: Hoàn 100% tiền cọc về tài khoản trong 60 giây không mất bất kỳ chi phí nào.
+                  Bạn chọn cọc 50% hoặc 100% giá ca khi đặt. Chính sách hoàn cọc do từng chủ sân
+                  quy định — liên hệ số điện thoại của sân để thoả thuận khi cần hủy.
                 </p>
               </div>
             </div>
@@ -944,37 +895,11 @@ export default function PitchDetail({
                 <span className="font-mono text-emerald-500 font-bold">Miễn phí</span>
               </div>
 
-              {/* Voucher VaoSan 50k */}
-              <div className="flex justify-between items-center bg-emerald-500/10 p-2.5 rounded-xl text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                <div className="flex items-center space-x-2">
-                  <Ticket className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="font-bold text-xs">VaoSan Welcome Promo</span>
-                    <span className="text-[10px] text-slate-500">Mã voucher sẵn có</span>
-                  </div>
-                </div>
-                <span className="font-mono font-black text-sm">-50.000đ</span>
-              </div>
-
-              {/* Tích điểm VaoSanPoints */}
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center space-x-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={useMatchPoints}
-                    onChange={(e) => setUseMatchPoints(e.target.checked)}
-                    className="w-4 h-4 rounded text-emerald-600 accent-emerald-500 cursor-pointer"
-                  />
-                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">Đổi 500 VaoSanPoints</span>
-                </label>
-                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold text-xs">-20.000đ</span>
-              </div>
-
               {/* Tổng thanh toán */}
               <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-baseline justify-between">
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-extrabold block">TỔNG TIỀN CA SÂN:</span>
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">Tiết kiệm 70.000đ</span>
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">Theo giá niêm yết của sân</span>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">
@@ -1047,42 +972,6 @@ export default function PitchDetail({
               </button>
             </div>
 
-            {/* Tùy Chọn Cầu Thủ Độc Đáo */}
-            <div className="space-y-2 text-xs">
-              <label className="flex items-start space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={enableMatchmaking}
-                  onChange={(e) => setEnableMatchmaking(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded text-[#0b4f6c] accent-sky-500"
-                />
-                <span className="text-slate-700 dark:text-slate-300 leading-tight">
-                  <strong className="text-slate-900 dark:text-white">Mở Kèo Tìm Đối Thủ Elo:</strong> Tự động đăng kèo giao hữu lên chợ ghép đội nếu bạn đang thiếu đội giao lưu.
-                </span>
-              </label>
-
-              <label className="flex items-start space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={enableAiCamera}
-                  onChange={(e) => setEnableAiCamera(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded text-[#0b4f6c] accent-sky-500"
-                />
-                <span className="text-slate-700 dark:text-slate-300 leading-tight">
-                  <strong className="text-slate-900 dark:text-white">Camera AI Tự Cắt Highlights:</strong> Tự động gửi video bàn thắng & pha bóng đẹp về điện thoại sau trận.
-                </span>
-              </label>
-            </div>
-
-            {/* Redis Lock Alert */}
-            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-bold flex items-center justify-between">
-              <div className="flex items-center space-x-1.5">
-                <Clock className="w-4 h-4 animate-spin text-amber-500" />
-                <span>Giữ Chỗ Tạm Thời:</span>
-              </div>
-              <span className="font-mono text-sm font-black">{formatLockTimer(lockCountdown)}</span>
-            </div>
-
             {/* Nút Đặt Ca Chính */}
             <div className="space-y-2 pt-1">
               <button
@@ -1094,7 +983,7 @@ export default function PitchDetail({
                 {isBooking ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin mr-1" />
-                    <span>Đang Khóa Slot Ca...</span>
+                    <span>Đang tạo đơn giữ chỗ...</span>
                   </>
                 ) : (
                   <>
@@ -1105,7 +994,7 @@ export default function PitchDetail({
               </button>
               <div className="flex items-center justify-center space-x-1 text-center text-[11px] text-slate-400">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Bảo chứng bởi <strong>SoccerHub SafePlay™</strong> • Hoàn cọc 100% nếu hủy trước 2h</span>
+                <span>Thanh toán cọc qua VietQR • Hoàn cọc theo chính sách hủy của từng sân</span>
               </div>
             </div>
           </div>
@@ -1167,11 +1056,11 @@ export default function PitchDetail({
               <>
                 <div className="text-center space-y-1.5">
                   <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-400 text-xs font-bold">
-                    <Clock className="w-3.5 h-3.5 animate-spin" />
-                    <span>Đang Giữ Chỗ Tạm: {formatLockTimer(lockCountdown)}</span>
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Đơn giữ chỗ đã lưu trong hệ thống</span>
                   </div>
                   <h3 className="text-2xl font-black text-slate-900 dark:text-white">Quét Mã VietQR Nhận Sân</h3>
-                  <p className="text-xs text-slate-500">Mã đơn vé đã được lưu vào hệ thống. Quét QR để hoàn tất cọc.</p>
+                  <p className="text-xs text-slate-500">Mã đơn vé đã được lưu vào hệ thống. Quét QR để chuyển cọc cho chủ sân.</p>
                 </div>
 
                 {/* Tóm tắt cọc */}
@@ -1186,7 +1075,7 @@ export default function PitchDetail({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Mã vé đặt:</span>
-                    <strong className="font-mono text-[#0b4f6c] dark:text-sky-400 font-bold">{bookingConfirmed?.code || `VS-${pitchId}-7192`}</strong>
+                    <strong className="font-mono text-[#0b4f6c] dark:text-sky-400 font-bold">{bookingConfirmed?.code || "—"}</strong>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700 text-sm">
                     <span className="font-bold text-slate-800 dark:text-slate-200">Số tiền cọc cần chuyển ({depositOption}):</span>
@@ -1219,7 +1108,7 @@ export default function PitchDetail({
                 </button>
               </>
             ) : (
-              /* Thẻ Matchday Pass hoàn tất */
+              /* Vé điện tử đã lưu trong CSDL */
               <div className="text-center space-y-5 py-2">
                 <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 border-2 border-emerald-500 mx-auto flex items-center justify-center">
                   <CheckCircle2 className="w-8 h-8 text-emerald-500" />
@@ -1227,10 +1116,10 @@ export default function PitchDetail({
 
                 <div>
                   <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
-                    ĐÃ CỌC THÀNH CÔNG VÀO CSDL
+                    ĐƠN GIỮ CHỖ ĐÃ LƯU VÀO CSDL
                   </span>
                   <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-2">Thẻ Vé Vào Sân Điện Tử</h3>
-                  <p className="text-xs text-slate-500 mt-1">Trình mã QR này tại barrier cổng sân hoặc phòng tiếp tân để check-in mở đèn.</p>
+                  <p className="text-xs text-slate-500 mt-1">Cho chủ sân xem mã này khi tới sân để check-in.</p>
                 </div>
 
                 <div className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
@@ -1239,7 +1128,7 @@ export default function PitchDetail({
                   </div>
                   <div className="text-xs space-y-1 text-slate-600 dark:text-slate-300 font-medium">
                     <p className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-sm">
-                      MÃ VÉ: {bookingConfirmed?.code || `VS-${pitchId}-7192`}
+                      MÃ VÉ: {bookingConfirmed?.code || "—"}
                     </p>
                     <p className="font-bold text-slate-900 dark:text-white">{venueData.name}</p>
                     <p>{selectedSlot.courtName} • {selectedSlot.time}</p>

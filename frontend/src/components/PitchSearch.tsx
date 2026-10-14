@@ -37,8 +37,7 @@ import {
   PlusCircle,
   ThumbsUp,
   Camera,
-  Navigation,
-  Building
+  Navigation
 } from "lucide-react";
 
 import PitchDetail from "./PitchDetail";
@@ -47,7 +46,7 @@ import { getAllPitchesApi } from "@/lib/pitchService";
 import { API_BASE_URL } from "@/lib/api";
 import { fetchTournaments } from "@/lib/tournamentService";
 import { recommendPitches, type AiPitchCluster } from "@/lib/aiService";
-import { openDualRoleWindow, subscribeToBookingEvents } from "@/lib/realtimeService";
+import { subscribeToBookingEvents } from "@/lib/realtimeService";
 
 interface PitchSearchProps {
   user?: any;
@@ -66,15 +65,14 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
   // Điều hướng & Modal
   const [selectedPitchForSlot, setSelectedPitchForSlot] = useState<any>(null);
   const [checkoutBookingData, setCheckoutBookingData] = useState<{ pitch: any; slot: any } | null>(null);
-  const [appliedVoucher, setAppliedVoucher] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   // Kèo ghép & tương tác
-  const [joinedMatches, setJoinedMatches] = useState<Record<string, boolean>>({});
   const [showCreateMatchModal, setShowCreateMatchModal] = useState(false);
   const [newMatchTitle, setNewMatchTitle] = useState("");
-  const [newMatchSlot, setNewMatchSlot] = useState("19:00 - 20:30");
-  const [newMatchNeed, setNewMatchNeed] = useState("Thiếu 2 tiền vệ / hậu vệ");
+  const [newMatchSlot, setNewMatchSlot] = useState("19:00 - 21:00");
+  const [newMatchPitchId, setNewMatchPitchId] = useState("");
+  const [newMatchNeed, setNewMatchNeed] = useState("");
   const [showQrModal, setShowQrModal] = useState(false);
 
   // Danh sách sân thật từ Backend
@@ -112,9 +110,9 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
           const closeTime = item.closeTime || "22:30";
           const slotDur = item.slotDurationMinutes || 120;
 
-          // Địa chỉ thật từ CSDL
-          const address = item.address || item.location || "Số 154 Nguyễn Lương Bằng, P. Hòa Khánh Bắc, Q. Liên Chiểu, Tp. Đà Nẵng";
-          const pitchName = item.name || "Cụm Sân Bóng Đá D-Sport đà nẵng";
+          // Địa chỉ thật từ CSDL — không có thì để trống, không bịa địa chỉ
+          const address = item.address || item.area || "Chưa khai báo địa chỉ";
+          const pitchName = item.name || "Cụm sân chưa đặt tên";
 
           // Sinh khung giờ 2 tiếng chuẩn theo openTime và closeTime thật của sân
           const startH = parseInt(openTime.split(":")[0]) || 14;
@@ -147,30 +145,22 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
             longitude: item.longitude ?? 108.2022,
             district: address.includes("Liên Chiểu") ? "LIEN_CHIEU" : address.includes("Hải Châu") ? "HAI_CHAU" : address.includes("Cẩm Lệ") ? "CAM_LE" : "LIEN_CHIEU",
             districtName: address.includes("Liên Chiểu") ? "Q. Liên Chiểu" : address.includes("Hải Châu") ? "Q. Hải Châu" : "Đà Nẵng",
-            phone: item.phone || "0988 776 652",
-            ownerName: item.ownerName || "Hồ Văn Diện",
+            phone: item.phone || "",
+            ownerName: item.ownerName || "",
             openTime: openTime,
             closeTime: closeTime,
             slotDurationMinutes: slotDur,
             sport: item.type?.includes("5") ? "SAN5" : item.type?.includes("11") ? "SAN11" : item.type?.includes("Futsal") ? "FUTSAL" : "SAN7",
             sportBadge: item.type || "⚽ Bóng Đá Sân 7 Chuẩn VFF",
-            distanceKm: (1.2 + (idx * 0.6)).toFixed(1),
-            rating: item.rating || 5.0,
-            reviewsCount: 142 + idx * 18,
-            priceOriginal: Math.round(basePrice * 1.2),
+            // Khoảng cách chỉ có thật nếu dùng vị trí GPS; không thì để trống.
+            distanceKm: null,
+            rating: item.rating ?? null,
+            reviewsCount: item.reviewsCount ?? 0,
+            priceOriginal: basePrice, // không bịa giá gạch: hiển thị đúng giá niêm yết
             priceDiscounted: basePrice,
             peakPrice: peakPrice,
-            pitchTypes: (item.pitchTypes && item.pitchTypes.length > 0) 
-              ? item.pitchTypes 
-              : ["Sân 7A - Cỏ Nhân Tạo FIFA", "Sân 5B - Futsal"],
-            amenities: (item.amenities && item.amenities.length > 0)
-              ? item.amenities
-              : [
-                "Hệ thống Camera AI VAR & Highlights",
-                "Mặt cỏ FIFA Pro 50mm chống lật cổ chân",
-                "Dàn đèn LED Philips Stadium 800 Lux",
-                "Phòng tắm nóng lạnh & Tủ locker thông minh"
-              ],
+            pitchTypes: item.pitchTypes && item.pitchTypes.length > 0 ? item.pitchTypes : [],
+            amenities: item.amenities && item.amenities.length > 0 ? item.amenities : [],
             imageUrl: item.imageUrl || (idx % 2 === 0
               ? "https://images.unsplash.com/photo-1529900241452-f47268d87ec9?auto=format&fit=crop&w=1000&q=80"
               : "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1000&q=80"),
@@ -179,7 +169,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
         });
         setRealPitches(mapped);
 
-        // Nạp dữ liệu ca thật của cụm sân đầu tiên từ API ma trận để phục vụ widget Redis Lock
+        // Nạp dữ liệu ca thật của cụm sân đầu tiên từ API ma trận để phục vụ widget trạng thái ca sân
         if (mapped.length > 0) {
           try {
             const todayStr = new Date().toISOString().split("T")[0];
@@ -208,34 +198,12 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
     }
   };
 
-  // Điều hướng sang trang chi tiết sân thật
-  if (selectedPitchForSlot) {
-    return (
-      <PitchDetail
-        pitch={selectedPitchForSlot}
-        user={user}
-        onBack={() => setSelectedPitchForSlot(null)}
-        onSelectSlot={(pitch, slot) => {
-          setSelectedPitchForSlot(null);
-          setCheckoutBookingData({ pitch, slot });
-        }}
-      />
-    );
-  }
-
-  // Điều hướng sang trang thanh toán nếu có
-  if (checkoutBookingData) {
-    return (
-      <SmartPaymentPass
-        bookingData={checkoutBookingData}
-        onBack={() => setCheckoutBookingData(null)}
-      />
-    );
-  }
-
-  const userName = user?.fullName || user?.name || "Cao Việt An";
-  const userElo = user?.eloRating || 1450;
+  // KHUYẾN NGHỊ: mọi useState/useEffect/useMemo đều phải nằm TRƯỚC các nhánh
+  // return sớm bên dưới, nếu không sẽ vi phạm rules-of-hooks khi mở chi tiết sân.
+  const userName = user?.fullName || user?.name || "Khách";
+  const userElo = user?.eloRating ?? 0;
   const userPhone = (user?.phone ?? "").toString().replace(/\s/g, "");
+  const hasUser = Boolean(user);
 
   // Giải đấu trong CSDL — dùng để đếm số trận đã đá của cầu thủ.
   const [tournaments, setTournaments] = useState<any[]>([]);
@@ -246,6 +214,33 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
       .catch(() => { if (alive) setTournaments([]); });
     return () => { alive = false; };
   }, []);
+
+  // Kèo đang mở thật từ bảng matchmaking_posts trong CSDL
+  const [openPosts, setOpenPosts] = useState<any[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [creatingPost, setCreatingPost] = useState(false);
+
+  const fetchOpenPosts = React.useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`);
+      if (res.ok) {
+        const data = await res.json();
+        setOpenPosts(
+          Array.isArray(data) ? data.filter((p: any) => p.status === "OPEN") : []
+        );
+      } else {
+        setOpenPosts([]);
+      }
+    } catch {
+      setOpenPosts([]);
+    } finally {
+      setPostsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOpenPosts();
+  }, [fetchOpenPosts]);
 
   /**
    * Số trận đã đá của cầu thủ: quét các giải trong CSDL, tìm đội do chính
@@ -303,9 +298,127 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
   const featuredPitch = realPitches.length > 0 ? realPitches[0] : null;
 
+  // 3 đội có Elo cao nhất đang tham gia các giải của hệ thống
+  // (nguồn: cột elo_rating của bảng tournament_team_entries qua tournaments.bracketJson/teams)
+  const topTeamsByElo = tournaments
+    .flatMap((t: any) => t.teams ?? [])
+    .filter((tm: any) => tm.teamName && typeof tm.eloRating === "number")
+    .sort((a: any, b: any) => (b.eloRating ?? 0) - (a.eloRating ?? 0))
+    .slice(0, 3);
+
   // AI gợi ý sân (FastAPI :8000) — ẩn lặng nếu AI offline
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResults, setAiResults] = useState<AiPitchCluster[] | null>(null);
+
+  // ---- Điều hướng (đặt SAU toàn bộ hook để không vi phạm rules-of-hooks) ----
+  // Điều hướng sang trang chi tiết sân thật
+  if (selectedPitchForSlot) {
+    return (
+      <PitchDetail
+        pitch={selectedPitchForSlot}
+        user={user}
+        onBack={() => setSelectedPitchForSlot(null)}
+        onSelectSlot={(pitch, slot) => {
+          setSelectedPitchForSlot(null);
+          setCheckoutBookingData({ pitch, slot });
+        }}
+      />
+    );
+  }
+
+  // Điều hướng sang trang thanh toán nếu có
+  if (checkoutBookingData) {
+    return (
+      <SmartPaymentPass
+        bookingData={checkoutBookingData}
+        onBack={() => setCheckoutBookingData(null)}
+      />
+    );
+  }
+
+  // Nhận kèo ngay từ widget Chợ Kèo — gọi đúng API nhận kèo của hệ thống.
+  const handleAcceptFromWidget = async (post: any) => {
+    if (!hasUser) {
+      showToast("Bạn cần đăng nhập để nhận kèo.");
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/v1/community/matchmaking-posts/${post.id}/accept`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            opponentTeamName: user?.teamName || `FC ${userName}`,
+            opponentCaptainName: userName,
+            opponentCaptainPhone: user?.phone || "",
+            opponentElo: userElo,
+          }),
+        }
+      );
+      const data = await res.json().catch(() => ({} as any));
+      if (res.ok) {
+        showToast(data.message || "🎉 Ghép kèo thành công!");
+        fetchOpenPosts();
+      } else {
+        showToast(data.error || "Kèo này không còn nhận được, hãy tải lại.");
+        fetchOpenPosts();
+      }
+    } catch {
+      showToast("Lỗi kết nối máy chủ khi nhận kèo.");
+    }
+  };
+
+  // Đăng kèo mới từ widget Chợ Kèo — ghi thẳng vào bảng matchmaking_posts.
+  const handleCreateFromWidget = async () => {
+    if (!hasUser) {
+      showToast("Bạn cần đăng nhập để đăng kèo.");
+      return;
+    }
+    if (!newMatchTitle.trim()) {
+      showToast("Bạn cần nhập tên đội / tiêu đề kèo.");
+      return;
+    }
+    const picked =
+      realPitches.find((p: any) => String(p.id) === newMatchPitchId) ?? featuredPitch;
+    setCreatingPost(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teamName: newMatchTitle.trim(),
+          captainName: userName,
+          captainPhone: user?.phone || "",
+          eloRating: userElo,
+          pitchName: picked?.name || "Chưa chọn sân",
+          address: picked?.address || picked?.area || "",
+          matchTime: newMatchSlot,
+          pitchType: picked?.sport === "SAN5" ? "SAN_5" : "SAN_7",
+          paymentModel: "SPLIT_EQUAL",
+          estimatedFee:
+            picked?.priceDiscounted && picked.priceDiscounted > 0
+              ? Math.round(picked.priceDiscounted / 14)
+              : 25000,
+          note: newMatchNeed.trim() || "Tìm kèo giao lưu, tinh thần thể thao vui vẻ.",
+        }),
+      });
+      if (res.ok) {
+        setShowCreateMatchModal(false);
+        setNewMatchTitle("");
+        setNewMatchNeed("");
+        showToast("🚀 Kèo của bạn đã được đăng lên Chợ Kèo!");
+        fetchOpenPosts();
+      } else {
+        const err = await res.json().catch(() => ({} as any));
+        showToast(err.error || "Đăng kèo thất bại, thử lại sau.");
+      }
+    } catch {
+      showToast("Lỗi kết nối máy chủ khi đăng kèo.");
+    } finally {
+      setCreatingPost(false);
+    }
+  };
 
   const askAiRecommend = async () => {
     if (realPitches.length === 0) return;
@@ -411,7 +524,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
             <div className="flex items-center space-x-2 flex-wrap gap-y-2">
               <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-extrabold text-[11px] sm:text-xs uppercase tracking-wider border border-emerald-200 dark:border-emerald-500/30">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>SoccerHub Pro Pass • Đã Xác Thực</span>
+                <span>Đã Xác Thực Tài Khoản</span>
               </span>
               <span className="font-mono text-[11px] sm:text-xs font-bold text-[#0b4f6c] dark:text-sky-300 bg-sky-50 dark:bg-sky-500/10 px-2.5 py-0.5 rounded-full border border-sky-200 dark:border-sky-400/20">
                 VĐV ID: {user?.id ? `#SH-${user.id}` : "#SH-GH"}
@@ -422,17 +535,6 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                   <span>Đã đá {userMatchesPlayed} trận</span>
                 </span>
               ) : null}
-
-              {/* Nút mở tab Chủ Sân để test 2 Role song song */}
-              <button
-                type="button"
-                onClick={() => openDualRoleWindow("OWNER")}
-                className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-[11px] sm:text-xs border border-slate-300 dark:border-slate-700 transition-all cursor-pointer shadow-xs active:scale-95"
-                title="Mở tab mới với tư cách Chủ Sân để test việc nhận chuông thông báo realtime khi bạn đặt sân"
-              >
-                <Building className="w-3.5 h-3.5 text-[#0b4f6c] dark:text-sky-400" />
-                <span>Mở Tab Chủ Sân (Test Realtime 2 Role) ↗</span>
-              </button>
             </div>
 
             <div className="flex items-center space-x-3.5 sm:space-x-4">
@@ -441,7 +543,17 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               </div>
               <div className="min-w-0">
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-                  Chào mừng trở lại, <span className="text-[#0b4f6c] dark:text-sky-400">{userName}!</span> 👋
+                  {hasUser ? (
+                    <>
+                      Chào mừng trở lại,{" "}
+                      <span className="text-[#0b4f6c] dark:text-sky-400">{userName}!</span> 👋
+                    </>
+                  ) : (
+                    <>
+                      Chào bạn đến với{" "}
+                      <span className="text-[#0b4f6c] dark:text-sky-400">SoccerHub</span>! 👋
+                    </>
+                  )}
                 </h1>
                 <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 dark:text-slate-400 font-medium mt-0.5 leading-relaxed">
                   Vị trí:{" "}
@@ -452,36 +564,6 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                   • Bậc: <span className="font-bold">{user?.level ?? "Chưa xếp bậc"}</span>
                 </p>
               </div>
-            </div>
-
-            {/* Voucher Bar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 w-full max-w-xl border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center space-x-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/10 dark:bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 font-bold">
-                  <Gift className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                </div>
-                <div className="text-left pr-2 flex-1 min-w-0">
-                  <p className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
-                    <span>Voucher 50.000đ thành viên mới sẵn sàng</span>
-                    <span className="px-1.5 py-0.5 bg-emerald-500 text-white dark:text-slate-950 rounded text-[9px] font-black uppercase">Tối Nay</span>
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Tự động trừ trực tiếp vào hóa đơn đặt cọc ca sân hôm nay</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setAppliedVoucher(true);
-                  showToast("🎉 Đã kích hoạt Voucher 50.000đ vào ví thanh toán của bạn!");
-                }}
-                className={`w-full sm:w-auto shrink-0 px-4 py-2 rounded-xl text-xs font-extrabold transition-all shadow-sm cursor-pointer text-center ${
-                  appliedVoucher
-                    ? "bg-emerald-500 text-white dark:text-slate-950 cursor-default"
-                    : "bg-[#0b4f6c] hover:bg-[#083a50] dark:bg-sky-500 dark:hover:bg-sky-400 text-white dark:text-slate-950 active:scale-95"
-                }`}
-              >
-                {appliedVoucher ? "✓ Đã Áp Dụng (-50k)" : "Áp Dụng Ngay"}
-              </button>
             </div>
           </div>
 
@@ -494,7 +576,9 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               <div className="flex flex-col min-w-0">
                 <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-extrabold">Chỉ Số Elo Cầu Thủ</span>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-2xl font-black text-[#0b4f6c] dark:text-sky-400 font-mono">{userElo}</span>
+                  <span className="text-2xl font-black text-[#0b4f6c] dark:text-sky-400 font-mono">
+                    {hasUser ? userElo : "—"}
+                  </span>
                   <span className="text-xs text-slate-700 dark:text-slate-300 font-bold truncate">
                     {user?.level ?? "Chưa xếp bậc"}
                   </span>
@@ -669,12 +753,9 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                     </span>
                     <span className="font-mono text-xs font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center">
                       <Zap className="w-3.5 h-3.5 mr-0.5" />
-                      Độ Khớp 98.4%
+                      Elo của bạn: {hasUser ? userElo : "chưa đăng nhập"}
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
-                    Elo Match Algorithm v4.2
-                  </span>
                 </div>
 
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-snug">
@@ -687,28 +768,54 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                   <strong className="text-slate-900 dark:text-white">
                     {featuredPitch.address ?? featuredPitch.area ?? "khu vực của bạn"}
                   </strong>{" "}
-                  và chỉ số Elo hiện tại của bạn ({userElo}
-                  {userMatchesPlayed > 0 ? `, đã đá ${userMatchesPlayed} trận trong hệ thống` : ", chưa thi đấu trong giải nào"}).
+                  và chỉ số Elo hiện tại của bạn (
+                  {hasUser ? (
+                    <>
+                      {userElo}
+                      {userMatchesPlayed > 0
+                        ? `, đã đá ${userMatchesPlayed} trận trong hệ thống`
+                        : ", chưa thi đấu trong giải nào"}
+                    </>
+                  ) : (
+                    "đăng nhập để hệ thống tính Elo và lịch sử thi đấu của bạn"
+                  )}
+                  ).
                 </p>
 
-                {/* 3 Checklist Thẻ Thông Số Chuẩn Bóng Đá */}
+                {/* 3 Thông Số Lấy Từ Hồ Sơ Sân Trong CSDL */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   <div className="bg-slate-50 dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1">
-                    <span className="text-[10px] font-bold uppercase text-slate-400">Khung Giờ Tối Ưu</span>
-                    <div className="text-sm font-black text-slate-900 dark:text-white font-mono">18:00 - 20:00</div>
-                    <span className="text-[11px] font-bold text-[#0b4f6c] dark:text-sky-400 block">Ca 2 tiếng chuẩn thể lực</span>
+                    <span className="text-[10px] font-bold uppercase text-slate-400">Giờ Mở Cửa</span>
+                    <div className="text-sm font-black text-slate-900 dark:text-white font-mono">
+                      {featuredPitch.openTime ?? "—"} - {featuredPitch.closeTime ?? "—"}
+                    </div>
+                    <span className="text-[11px] font-bold text-[#0b4f6c] dark:text-sky-400 block">
+                      {featuredPitch.timeSlots?.length ?? 0} ca mỗi ngày
+                    </span>
                   </div>
 
                   <div className="bg-slate-50 dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1">
-                    <span className="text-[10px] font-bold uppercase text-slate-400">Quy Chuẩn Mặt Sân</span>
-                    <div className="text-sm font-black text-slate-900 dark:text-white font-mono truncate">Sân 7A - Cao Su TPE</div>
-                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block">Chống lật cổ chân</span>
+                    <span className="text-[10px] font-bold uppercase text-slate-400">Loại Sân</span>
+                    <div className="text-sm font-black text-slate-900 dark:text-white font-mono truncate">
+                      {featuredPitch.pitchTypes?.filter(Boolean).slice(0, 2).join(" · ") ||
+                        featuredPitch.type ||
+                        "Chưa khai báo"}
+                    </div>
+                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block truncate">
+                      {featuredPitch.amenities?.[0] ?? "Theo hồ sơ sân"}
+                    </span>
                   </div>
 
                   <div className="bg-slate-50 dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1">
-                    <span className="text-[10px] font-bold uppercase text-slate-400">Đối Thủ Chờ Sẵn</span>
-                    <div className="text-sm font-black text-slate-900 dark:text-white font-mono truncate">FC Bách Khoa ĐN</div>
-                    <span className="text-[11px] font-bold text-amber-500 block">Elo 1.435 (Lệch 15)</span>
+                    <span className="text-[10px] font-bold uppercase text-slate-400">Giá Mỗi Ca</span>
+                    <div className="text-sm font-black text-slate-900 dark:text-white font-mono truncate">
+                      {featuredPitch.priceDiscounted?.toLocaleString("vi-VN")}đ
+                    </div>
+                    <span className="text-[11px] font-bold text-amber-500 block">
+                      {featuredPitch.rating
+                        ? `Đánh giá ${featuredPitch.rating} (${featuredPitch.reviewsCount} đánh giá)`
+                        : "Chưa có đánh giá nào"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -717,7 +824,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <div className="flex items-center space-x-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                    Áp dụng Voucher -50k & VietQR tự động khóa slot
+                    Giá theo niêm yết của sân — đặt xong hệ thống sinh mã giữ chỗ
                   </span>
                 </div>
                 <button
@@ -725,7 +832,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                   onClick={() => setSelectedPitchForSlot(featuredPitch)}
                   className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
                 >
-                  <span>Khóa Slot Sân Này Ngay</span>
+                  <span>Chọn Khung Giờ Ngay</span>
                   <ArrowRight className="w-4 h-4 text-white" />
                 </button>
               </div>
@@ -737,16 +844,17 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center space-x-2">
                     <Lock className="w-[18px] h-[18px] text-amber-500" />
-                    <span className="font-extrabold text-sm text-slate-900 dark:text-white">Redis Distributed Lock</span>
+                    <span className="font-extrabold text-sm text-slate-900 dark:text-white">Trạng Thái Ca Sân Hôm Nay</span>
                   </div>
                   <span className="font-mono text-[10px] font-extrabold px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-full flex items-center">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5" />
-                    Live Sync
+                    Đọc từ CSDL
                   </span>
                 </div>
 
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Hệ thống phòng chống trùng slot (Double Booking Prevention) trên cụm 4 máy chủ Redis Cluster.
+                  Ma trận ca sân lấy trực tiếp từ bảng bookings — ca nào đã có khách đặt thì không
+                  thể chọn tiếp.
                 </p>
 
                 {/* State Legend */}
@@ -754,11 +862,8 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                   <span className="flex items-center text-emerald-600 dark:text-emerald-400">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5" /> Sẵn Sàng
                   </span>
-                  <span className="flex items-center text-amber-600 dark:text-amber-400">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 mr-1.5 animate-pulse" /> Giữ Chỗ (300s)
-                  </span>
                   <span className="flex items-center text-slate-500 dark:text-slate-400">
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-600 mr-1.5" /> Đã Cọc 100%
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-600 mr-1.5" /> Đã Đặt
                   </span>
                 </div>
 
@@ -784,7 +889,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                         </div>
                         {ls.status === 'BOOKED' || ls.status === 'PLAYING' ? (
                           <span className="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded font-sans shrink-0">
-                            Đã Khóa ({ls.customer})
+                            Đã Đặt ({ls.customer})
                           </span>
                         ) : (
                           <button
@@ -792,7 +897,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                             onClick={() => setSelectedPitchForSlot(featuredPitch)}
                             className="px-2.5 sm:px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
                           >
-                            Giữ Slot
+                            Chọn Ca
                           </button>
                         )}
                       </div>
@@ -800,41 +905,9 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                   ) : (
                     <>
                       <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80">
-                        <div className="flex items-center space-x-2.5">
-                          <span className="font-bold text-slate-600 dark:text-slate-400">16:00 - 18:00</span>
-                          <span className="text-[11px] text-slate-500 dark:text-slate-300 font-sans">{featuredPitch?.name}</span>
-                        </div>
-                        <span className="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded font-sans">
-                          Sẵn Sàng
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">
+                          Chưa có dữ liệu ca sân cho sân này trong ngày đã chọn.
                         </span>
-                      </div>
-
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-sky-50 dark:bg-[#0b4f6c]/30 border border-sky-200 dark:border-[#0b4f6c]/60">
-                        <div className="flex items-center space-x-2.5">
-                          <span className="font-bold text-[#0b4f6c] dark:text-sky-300">18:00 - 20:00</span>
-                          <span className="text-[11px] text-slate-600 dark:text-slate-200 font-sans">{featuredPitch?.name}</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPitchForSlot(featuredPitch)}
-                          className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer"
-                        >
-                          Giữ Slot
-                        </button>
-                      </div>
-
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-sky-50 dark:bg-[#0b4f6c]/30 border border-sky-200 dark:border-[#0b4f6c]/60">
-                        <div className="flex items-center space-x-2.5">
-                          <span className="font-bold text-[#0b4f6c] dark:text-sky-300">20:00 - 22:00</span>
-                          <span className="text-[11px] text-slate-600 dark:text-slate-200 font-sans">{featuredPitch?.name}</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPitchForSlot(featuredPitch)}
-                          className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer"
-                        >
-                          Giữ Slot
-                        </button>
                       </div>
                     </>
                   )}
@@ -843,7 +916,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
               <div className="text-right pt-2 border-t border-slate-100 dark:border-slate-800">
                 <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
-                  TTL Lock Keyspace: mutex:pitch_{featuredPitch.numericId}:slot_live
+                  Nguồn: bảng bookings · cập nhật khi tải trang
                 </span>
               </div>
             </div>
@@ -866,7 +939,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                Ưu tiên các cụm sân quanh Nguyễn Lương Bằng, Tôn Đức Thắng & Hòa Khánh
+                Danh sách lấy từ bảng pitches và ma trận ca sân của hệ thống
               </p>
             </div>
 
@@ -917,7 +990,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                       <span className="px-2.5 py-1 rounded-lg bg-slate-900/90 backdrop-blur-md text-white font-extrabold text-[11px] flex items-center space-x-1 border border-slate-700">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Bóng Đá Phủi Serie B</span>
+                        <span>{pitch.pitchTypes?.[0] ?? pitch.sportBadge}</span>
                       </span>
                     </div>
 
@@ -927,7 +1000,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                         <span className="truncate max-w-[170px]">{pitch.districtName}</span>
                       </div>
                       <span className="bg-emerald-600/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px]">
-                        Cách {pitch.distanceKm} km
+                        {pitch.openTime} - {pitch.closeTime}
                       </span>
                     </div>
                   </div>
@@ -948,25 +1021,34 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                             <span>{pitch.address}</span>
                           </p>
                         </div>
-                        <div className="flex items-center space-x-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 rounded-xl shrink-0">
-                          <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                          <span className="font-extrabold text-xs text-slate-900 dark:text-white">{pitch.rating}</span>
-                          <span className="text-[10px] text-slate-400">({pitch.reviewsCount})</span>
-                        </div>
+                        {pitch.rating ? (
+                          <div className="flex items-center space-x-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 rounded-xl shrink-0">
+                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                            <span className="font-extrabold text-xs text-slate-900 dark:text-white">
+                              {pitch.rating}
+                            </span>
+                            <span className="text-[10px] text-slate-400">({pitch.reviewsCount})</span>
+                          </div>
+                        ) : null}
                       </div>
 
-                      {/* Tiện ích sân bóng đá chuẩn */}
+                      {/* Tiện ích khai báo trong hồ sơ sân */}
                       <div className="flex flex-wrap gap-1.5 pt-0.5">
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 font-bold text-[10px] flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/50">
-                          <Camera className="w-3 h-3 text-emerald-500" />
-                          Camera AI VAR & Highlights
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px]">
-                          ✓ Cỏ FIFA Pro 50mm
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px]">
-                          ✓ Đèn LED 800 Lux
-                        </span>
+                        {(pitch.amenities ?? []).length === 0 ? (
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-[10px]">
+                            Chủ sân chưa khai báo tiện ích
+                          </span>
+                        ) : (
+                          pitch.amenities.slice(0, 3).map((a: string) => (
+                            <span
+                              key={a}
+                              className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 font-bold text-[10px] flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/50"
+                            >
+                              <Camera className="w-3 h-3 text-emerald-500" />
+                              {a}
+                            </span>
+                          ))
+                        )}
                       </div>
                     </div>
 
@@ -1001,15 +1083,12 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                           <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
                             {pitch.priceDiscounted.toLocaleString("vi-VN")}đ
                           </span>
-                          <span className="text-xs text-slate-400 line-through">
-                            {pitch.priceOriginal.toLocaleString("vi-VN")}đ
-                          </span>
-                          <span className="px-1.5 py-0.2 rounded bg-emerald-500 text-slate-950 text-[9px] font-black uppercase">
-                            -50k Pass
+                          <span className="px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[9px] font-black uppercase">
+                            {pitch.slotDurationMinutes} phút/ca
                           </span>
                         </div>
                         <p className="text-[10px] text-slate-400 font-medium">
-                          Giá 120 phút (2 tiếng trọn gói) • Đèn LED miễn phí
+                          Giá theo niêm yết của sân · ca giờ vàng tính theo giá peak
                         </p>
                       </div>
 
@@ -1031,12 +1110,14 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
         {/* CỘT PHẢI (4 COLS): CHỢ KÈO GHÉP ĐỘI ELO & THẺ CHECK-IN QUICKPASS */}
         <aside className="xl:col-span-4 space-y-6">
-          {/* WIDGET 1: CHỢ KÈO GHÉP ĐỘI HÔM NAY TẠI ĐÀ NẴNG */}
+          {/* WIDGET 1: CHỢ KÈO GHÉP ĐỘI — đọc từ bảng matchmaking_posts trong CSDL */}
           <section className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                <h3 className="font-black text-slate-900 dark:text-white text-sm">Chợ Kèo Ghép Đội - Tối Nay</h3>
+                <h3 className="font-black text-slate-900 dark:text-white text-sm">
+                  Chợ Kèo Đang Mở ({openPosts.length})
+                </h3>
               </div>
               <button
                 type="button"
@@ -1047,82 +1128,83 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <span>Tạo Kèo Mới</span>
               </button>
             </div>
-            
+
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-              Hệ thống AI ghép kèo tự động khớp của vị trí thi đấu & <strong className="text-slate-900 dark:text-white">Chỉ số Elo {userElo}</strong> của bạn.
+              Danh sách kèo do đội khác đăng lên hệ thống, sắp theo thời điểm đăng
+              {hasUser ? (
+                <>
+                  {" "}• <strong className="text-slate-900 dark:text-white">Elo của bạn: {userElo}</strong>
+                </>
+              ) : null}
+              .
             </p>
 
-            {/* Kèo 1: Sân 7 D-Sport */}
-            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-black text-[10px] uppercase">
-                  ⚽ Bóng Đá Sân 7
-                </span>
-                <span className="font-mono text-xs font-bold text-slate-500">19:30 - 21:00</span>
-              </div>
-              <h4 className="font-black text-xs text-slate-900 dark:text-white">
-                Sân D-Sport Oasis • Đang thiếu 1 Thủ môn & 1 Tiền đạo
-              </h4>
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Trình độ: <strong className="text-slate-900 dark:text-white">Elo 1,400 - 1,500</strong></span>
-                <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">~35k / người</span>
-              </div>
+            {postsLoading ? (
+              <p className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-500 flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" /> Đang tải kèo từ CSDL…
+              </p>
+            ) : openPosts.length === 0 ? (
+              <p className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-500 leading-relaxed">
+                Chưa có kèo nào đang mở. Bấm <strong>“Tạo Kèo Mới”</strong> để đăng đội
+                của bạn lên sàn, hoặc vào tab <strong>Chợ Kèo</strong> để xem chi tiết.
+              </p>
+            ) : (
+              openPosts.slice(0, 2).map((p: any) => {
+                const label =
+                  p.pitchType === "FUTSAL"
+                    ? "👟 Futsal"
+                    : p.pitchType === "SAN_5"
+                    ? "👟 Sân 5"
+                    : p.pitchType === "SAN_11"
+                    ? "🏟️ Sân 11"
+                    : "⚽ Bóng Đá Sân 7";
+                return (
+                  <div
+                    key={p.id}
+                    className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-black text-[10px] uppercase">
+                        {label}
+                      </span>
+                      <span className="font-mono text-xs font-bold text-slate-500">
+                        {p.matchTime ?? "—"}
+                      </span>
+                    </div>
+                    <h4 className="font-black text-xs text-slate-900 dark:text-white">
+                      {p.pitchName ?? "Chưa chọn sân"}
+                      {p.note ? ` • ${p.note}` : ""}
+                    </h4>
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                      <span>
+                        Trình độ:{" "}
+                        <strong className="text-slate-900 dark:text-white">
+                          Elo {p.eloRating ?? "—"}
+                        </strong>
+                      </span>
+                      {p.estimatedFee ? (
+                        <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">
+                          {Number(p.estimatedFee).toLocaleString("vi-VN")}đ/người
+                        </span>
+                      ) : null}
+                    </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
-                <span className="text-[11px] font-bold text-slate-500">👥 Đã có 12/14 cầu thủ</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = !joinedMatches["match-s7"];
-                    setJoinedMatches({ ...joinedMatches, "match-s7": next });
-                    showToast(next ? "🎉 Bạn đã bắt kèo Sân 7 thành công! Trưởng đội sẽ liên hệ." : "Đã hủy đăng ký kèo.");
-                  }}
-                  className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                    joinedMatches["match-s7"]
-                      ? "bg-emerald-500 text-white"
-                      : "bg-[#0b4f6c] dark:bg-sky-500 hover:opacity-90 text-white dark:text-slate-950 active:scale-95"
-                  }`}
-                >
-                  {joinedMatches["match-s7"] ? "✓ Đã Bắt Kèo" : "Bắt Kèo Ngay"}
-                </button>
-              </div>
-            </div>
-
-            {/* Kèo 2: Futsal Sân 5 Mini */}
-            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 rounded bg-sky-500/20 text-sky-700 dark:text-sky-300 font-black text-[10px] uppercase">
-                  👟 Futsal Sân 5
-                </span>
-                <span className="font-mono text-xs font-bold text-slate-500">20:30 - 22:00</span>
-              </div>
-              <h4 className="font-black text-xs text-slate-900 dark:text-white">
-                Sân Futsal Bách Khoa • Cáp giao lưu tính điểm Elo
-              </h4>
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Trình độ: <strong className="text-slate-900 dark:text-white">Elo 1,350 - 1,480</strong></span>
-                <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">~25k / người</span>
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
-                <span className="text-[11px] font-bold text-slate-500">👥 Đã có 8/10 cầu thủ</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = !joinedMatches["match-s5"];
-                    setJoinedMatches({ ...joinedMatches, "match-s5": next });
-                    showToast(next ? "🎉 Đã đăng ký kèo Futsal! Thông tin trận đã lưu vào hồ sơ." : "Đã hủy đăng ký kèo.");
-                  }}
-                  className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                    joinedMatches["match-s5"]
-                      ? "bg-emerald-500 text-white"
-                      : "bg-[#0b1c30] hover:bg-slate-900 text-white active:scale-95"
-                  }`}
-                >
-                  {joinedMatches["match-s5"] ? "✓ Đã Bắt Kèo" : "Bắt Kèo Ngay"}
-                </button>
-              </div>
-            </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+                      <span className="text-[11px] font-bold text-slate-500 truncate pr-2">
+                        {p.teamName} mở kèo
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleAcceptFromWidget(p)}
+                        className="px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer bg-[#0b4f6c] dark:bg-sky-500 hover:opacity-90 text-white dark:text-slate-950 active:scale-95 shrink-0"
+                      >
+                        Bắt Kèo Ngay
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </section>
 
           {/* WIDGET 2: THẺ VẬN ĐỘNG VIÊN SOCCERHUB QUICKPASS (QR SCAN BARRIER) */}
@@ -1151,7 +1233,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <div className="flex items-center space-x-2 text-[10px] font-mono text-emerald-400 font-bold">
                   <span>{user?.level ?? "Chưa xếp bậc"}</span>
                   <span>•</span>
-                  <span>Elo {userElo}</span>
+                  <span>{hasUser ? `Elo ${userElo}` : "Chưa đăng nhập"}</span>
                 </div>
               </div>
             </div>
@@ -1161,47 +1243,65 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               onClick={() => setShowQrModal(true)}
               className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-1.5"
             >
-              <span>Mở Thẻ Check-in Barrier Sân</span>
+              <span>Mở Thẻ Hội Viên QR</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </section>
 
-          {/* WIDGET 3: BẢNG XẾP HẠNG ĐỘI BÓNG PHỦI ĐÀ NẴNG (PREVIEW) */}
+          {/* WIDGET 3: ĐỘI CÓ ELO CAO NHẤT (lấy từ danh sách đội trong các giải của CSDL) */}
           <section className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Trophy className="w-4 h-4 text-amber-500" />
                 <h3 className="font-black text-slate-900 dark:text-white text-xs uppercase tracking-wider">
-                  Top Đội Phủi Đà Nẵng
+                  Đội Đang Dẫn Đầu Elo
                 </h3>
               </div>
-              <span className="text-[10px] font-bold text-slate-400">Tuần 42</span>
+              <span className="text-[10px] font-bold text-slate-400">
+                {tournaments.length} giải trong CSDL
+              </span>
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
-                <div className="flex items-center space-x-2">
-                  <span className="font-black text-amber-500 font-mono">#1</span>
-                  <span className="font-bold text-slate-900 dark:text-white">FC Bách Khoa ĐN</span>
-                </div>
-                <span className="font-mono font-bold text-amber-600 dark:text-amber-400">1,620 Elo</span>
-              </div>
-
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-xs">
-                <div className="flex items-center space-x-2">
-                  <span className="font-black text-slate-400 font-mono">#2</span>
-                  <span className="font-bold text-slate-900 dark:text-white">FC D-Sport Stars</span>
-                </div>
-                <span className="font-mono font-bold text-slate-500">1,585 Elo</span>
-              </div>
-
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-xs">
-                <div className="flex items-center space-x-2">
-                  <span className="font-black text-slate-400 font-mono">#3</span>
-                  <span className="font-bold text-slate-900 dark:text-white">FC Hòa Khánh Runners</span>
-                </div>
-                <span className="font-mono font-bold text-slate-500">1,520 Elo</span>
-              </div>
+              {topTeamsByElo.length === 0 ? (
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Chưa có đội nào trong danh sách đội của các giải. Đăng ký một giải để
+                  đội bạn xuất hiện ở đây.
+                </p>
+              ) : (
+                topTeamsByElo.map((tm: any, idx: number) => (
+                  <div
+                    key={`${tm.teamName}-${idx}`}
+                    className={`flex items-center justify-between p-2 rounded-xl text-xs ${
+                      idx === 0
+                        ? "bg-amber-500/10 border border-amber-500/20"
+                        : "bg-slate-50 dark:bg-slate-800/60"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <span
+                        className={`font-black font-mono ${
+                          idx === 0 ? "text-amber-500" : "text-slate-400"
+                        }`}
+                      >
+                        #{idx + 1}
+                      </span>
+                      <span className="font-bold text-slate-900 dark:text-white truncate">
+                        {tm.teamName}
+                      </span>
+                    </div>
+                    <span
+                      className={`font-mono font-bold shrink-0 ${
+                        idx === 0
+                          ? "text-amber-600 dark:text-amber-400"
+                          : "text-slate-500"
+                      }`}
+                    >
+                      {Number(tm.eloRating).toLocaleString("vi-VN")} Elo
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </section>
         </aside>
@@ -1243,22 +1343,48 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Khung giờ & Sân dự kiến:
+                  Sân thi đấu:
+                </label>
+                <select
+                  value={newMatchPitchId}
+                  onChange={(e) => setNewMatchPitchId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  {realPitches.length === 0 ? (
+                    <option value="">Chưa tải được danh sách sân</option>
+                  ) : (
+                    realPitches.map((p: any) => (
+                      <option key={String(p.id)} value={String(p.id)}>
+                        {p.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Khung giờ thi đấu:
                 </label>
                 <select
                   value={newMatchSlot}
                   onChange={(e) => setNewMatchSlot(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
-                  <option value="17:30 - 19:00">17:30 - 19:00 • Sân 7 D-Sport Đà Nẵng</option>
-                  <option value="19:00 - 20:30">19:00 - 20:30 • Sân 7 D-Sport Đà Nẵng</option>
-                  <option value="20:30 - 22:00">20:30 - 22:00 • Sân Futsal Mini</option>
+                  {(featuredPitch?.timeSlots?.length
+                    ? featuredPitch.timeSlots.map((s: any) => String(s.time))
+                    : ["17:30 - 19:00", "19:00 - 21:00", "21:00 - 23:00"]
+                  ).map((t: string) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Yêu cầu ghép cầu thủ:
+                  Ghi chú / vị trí cần ghép:
                 </label>
                 <input
                   type="text"
@@ -1280,13 +1406,12 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setShowCreateMatchModal(false);
-                  showToast("🚀 Kèo đấu của bạn đã được đăng lên Chợ Kèo Đà Nẵng!");
-                }}
-                className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md transition-all active:scale-95"
+                disabled={creatingPost}
+                onClick={handleCreateFromWidget}
+                className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
               >
-                Đăng Kèo Ngay
+                {creatingPost && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {creatingPost ? "Đang đăng…" : "Đăng Kèo Ngay"}
               </button>
             </div>
           </div>
@@ -1299,7 +1424,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl text-center space-y-4 animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                Mã Check-in Barrier Tự Động
+                Thẻ Hội Viên QR
               </span>
               <button
                 type="button"
@@ -1318,7 +1443,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 {user?.id ? `#SH-${user.id}` : "#SH-GH"} • {userName}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs">
-                Đưa mã này vào mắt đọc camera tại cổng barie hoặc quầy lễ tân để mở cổng vào sân tự động.
+                Đưa mã này cho chủ sân đối chiếu thông tin của bạn khi tới nhận sân.
               </p>
             </div>
 

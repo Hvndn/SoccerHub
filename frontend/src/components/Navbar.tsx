@@ -66,17 +66,8 @@ export default function Navbar({
 
   const NOTIFS_STORAGE_KEY = "soccerhub_user_notifications";
 
-  // Notification Center State
-  const [notifications, setNotifications] = useState<AppNotification[]>([
-    {
-      id: "promo-1",
-      type: "PROMO",
-      title: "⚡ Ca Vàng D-Sport Oasis",
-      message: "Khung giờ 19:30 tối nay đã mở 1 ca nhượng lại. Đặt ngay để nhận Voucher 50k.",
-      time: new Date(Date.now() - 5 * 60 * 1000),
-      read: false
-    }
-  ]);
+  // Notification Center State — chỉ lấy thông báo thật từ server, không có mẫu giả
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const notificationsRef = useRef<AppNotification[]>([]);
   // Mirror để đọc state mới nhất ngoài render (đồng bộ server)
   useEffect(() => {
@@ -111,9 +102,7 @@ export default function Navbar({
         const rows = await listMyNotifications();
         if (!alive) return;
         setNotifications((prev) => {
-          const localOnly = prev.filter(
-            (n) => n.serverId == null && !(initial && n.id === "promo-1")
-          );
+          const localOnly = prev.filter((n) => n.serverId == null);
           const mapped: AppNotification[] = rows.map((r) => ({
             id: `srv-${r.id}`,
             serverId: r.id,
@@ -275,7 +264,7 @@ export default function Navbar({
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300 w-full">
         <div className="max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] h-[52px] sm:h-16 flex items-center justify-between gap-2 lg:gap-3 xl:gap-4">
-        {/* BRAND LOGO: TURFZONE */}
+        {/* BRAND LOGO */}
         <div
           onClick={() => {
             if (user?.role === "ADMIN") {
@@ -285,23 +274,20 @@ export default function Navbar({
             handleSelectSubTab(user?.role === "OWNER" ? "admin" : "booking");
           }}
           className="flex items-center space-x-2 cursor-pointer select-none shrink-0 group"
-          title="TurfZone - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh"
+          title="SoccerHub - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh"
         >
           {/* Light Mode Logo Image */}
           <img 
             src="/turfzone-logo.png" 
-            alt="TurfZone Logo" 
+            alt="SoccerHub Logo" 
             className="h-8 sm:h-9 w-auto object-contain dark:hidden transition-transform group-hover:scale-105" 
           />
           {/* Dark Mode Logo Image */}
           <img 
             src="/turfzone-logo-dark.png" 
-            alt="TurfZone Logo" 
+            alt="SoccerHub Logo" 
             className="h-8 sm:h-9 w-auto object-contain hidden dark:block transition-transform group-hover:scale-105" 
           />
-          <span className="hidden xs:inline-block px-1.5 py-0.5 text-[8px] sm:text-[9px] font-black uppercase tracking-wider bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 rounded-md shadow-xs">
-            PRO
-          </span>
         </div>
 
         {/* CONSOLIDATED DESKTOP NAV */}
@@ -538,13 +524,13 @@ export default function Navbar({
           {user?.role === "PLAYER" && (
             <div className="hidden 2xl:flex items-center space-x-3 bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 text-xs font-bold font-mono">
               <div className="flex items-center space-x-1.5 text-slate-800 dark:text-slate-200">
-                <Ticket className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
-                <span>50k Voucher</span>
+                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                <span>Elo {user?.eloRating ?? "—"}</span>
               </div>
               <div className="w-px h-4 bg-slate-300 dark:bg-slate-700" />
               <div className="flex items-center space-x-1.5 text-slate-800 dark:text-slate-200">
-                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                <span>850 MP</span>
+                <Award className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
+                <span>{user?.level || "Chưa xếp bậc"}</span>
               </div>
             </div>
           )}
@@ -695,12 +681,12 @@ export default function Navbar({
                   </div>
                   <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono flex items-center justify-end space-x-1 whitespace-nowrap">
                     <span className="text-[#0b4f6c] dark:text-sky-400 font-extrabold shrink-0">
-                      {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'BTC' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ Pro'}
+                      {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'BTC' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
                     </span>
                     {user.role === 'OWNER' ? (
-                      <span className="shrink-0 text-emerald-500 font-bold">• D-Sport Đà Nẵng</span>
+                      <span className="shrink-0 text-emerald-500 font-bold">• {user.area || "Chưa cập nhật khu vực"}</span>
                     ) : (
-                      <span className="shrink-0">• Elo {user.eloRating || 1450}</span>
+                      <span className="shrink-0">• Elo {user.eloRating ?? "—"}</span>
                     )}
                     <ChevronDown className={`w-3 h-3 text-slate-400 shrink-0 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`} />
                   </div>
@@ -921,17 +907,14 @@ export default function Navbar({
                 <div className="flex items-center space-x-2">
                   <img
                     src="/turfzone-logo.png"
-                    alt="TurfZone Logo"
+                    alt="SoccerHub Logo"
                     className="h-7 w-auto object-contain dark:hidden"
                   />
                   <img
                     src="/turfzone-logo-dark.png"
-                    alt="TurfZone Logo"
+                    alt="SoccerHub Logo"
                     className="h-7 w-auto object-contain hidden dark:block"
                   />
-                  <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 rounded-md">
-                    PRO
-                  </span>
                 </div>
                 <button
                   type="button"
@@ -963,18 +946,22 @@ export default function Navbar({
                     </div>
                     {(user.role === "PLAYER" || user.role === "ORGANIZER") && (
                       <div className="flex items-center justify-between text-xs font-mono font-bold pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
-                        <span className="text-slate-500">Elo: <strong className="text-[#0b4f6c] dark:text-sky-400">{user.eloRating || 1450}</strong></span>
-                        <span className="text-amber-500">850 MP</span>
+                        <span className="text-slate-500">
+                          Elo:{" "}
+                          <strong className="text-[#0b4f6c] dark:text-sky-400">
+                            {user.eloRating ?? "—"}
+                          </strong>
+                        </span>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-800/50 space-y-2">
                     <p className="font-extrabold text-xs text-[#0b4f6c] dark:text-sky-300">
-                      Gia nhập cộng đồng TurfZone
+                      Gia nhập cộng đồng SoccerHub
                     </p>
                     <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                      Đăng nhập để nhận Voucher 50.000đ và theo dõi xếp hạng thi đấu Elo.
+                      Đăng nhập để theo dõi lịch trình, giải đấu và xếp hạng Elo của bạn.
                     </p>
                     <div className="flex items-center space-x-2 pt-1">
                       <button

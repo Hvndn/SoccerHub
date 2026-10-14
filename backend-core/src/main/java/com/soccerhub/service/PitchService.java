@@ -66,6 +66,25 @@ public class PitchService {
         return pitchRepository.save(pitch);
     }
 
+    /**
+     * Cập nhật giá thuê sân: giá thường (avgPricePerHour) và giá giờ vàng (peakPricePerHour).
+     * Các trường null hoặc <= 0 sẽ được giữ nguyên.
+     */
+    public Pitch updatePrice(Long id, Integer avgPricePerHour, Integer peakPricePerHour) {
+        Pitch pitch = getPitchById(id);
+        if (avgPricePerHour != null && avgPricePerHour > 0) {
+            pitch.setAvgPricePerHour(avgPricePerHour);
+        }
+        if (peakPricePerHour != null && peakPricePerHour > 0) {
+            pitch.setPeakPricePerHour(peakPricePerHour);
+        }
+        if (pitch.getPeakPricePerHour() != null && pitch.getAvgPricePerHour() != null
+                && pitch.getPeakPricePerHour() < pitch.getAvgPricePerHour()) {
+            throw new IllegalArgumentException("Giá giờ vàng phải lớn hơn hoặc bằng giá thường.");
+        }
+        return pitchRepository.save(pitch);
+    }
+
     public List<Pitch> getAllPitches() {
         return pitchRepository.findAll();
     }
