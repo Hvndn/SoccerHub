@@ -271,9 +271,6 @@ export default function Navbar({
     setShowMobileDrawer(false);
   };
 
-  const isPitchActive = ["booking", "urgent-resale", "post-match", "admin", "owner-onboarding", "multi-sport", "iot-console"].includes(activeTab);
-  const isTournamentActive = ["community", "team-management", "tournaments", "organizer"].includes(activeTab);
-
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300 w-full">
@@ -360,8 +357,56 @@ export default function Navbar({
               <ShieldCheck className="w-4 h-4 shrink-0" />
               <span>Quản Trị Hệ Thống</span>
             </a>
-          ) : (
-            /* PLAYER / GUEST NAVBAR ITEMS */
+          ) : user?.role === "ORGANIZER" ? (
+            /* ORGANIZER NAVBAR ITEMS — tập trung điều hành giải */
+            <>
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("organizer")}
+                className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+                  activeTab === "organizer"
+                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-emerald-600 shrink-0" />
+                <span>Điều Hành Giải Đấu</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-[#0b4f6c] text-white leading-none shadow-xs">
+                  BTC
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("tournaments")}
+                className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+                  activeTab === "tournaments"
+                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <Award className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
+                <span>Giải Đấu &amp; BXH</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("community")}
+                className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+                  activeTab === "community" || activeTab === "urgent-resale"
+                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-500 fill-rose-500 shrink-0" />
+                <span>Chợ Kèo &amp; Pass Sân</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+                  HOT
+                </span>
+              </button>
+            </>
+          ) : !user ? (
+            /* GUEST NAVBAR ITEMS — khám phá + CTA tham gia */
             <>
               <button
                 type="button"
@@ -396,13 +441,80 @@ export default function Navbar({
                 type="button"
                 onClick={() => handleSelectSubTab("tournaments")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
-                  activeTab === "tournaments" || activeTab === "team-management" || activeTab === "organizer"
+                  activeTab === "tournaments"
                     ? "bg-[#0b4f6c] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
                 <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
                 <span>Giải Đấu &amp; BXH</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onOpenAuth("register")}
+                className="flex items-center space-x-1.5 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-black transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-95"
+              >
+                <Plus className="w-4 h-4 shrink-0" />
+                <span>Tham Gia Ngay</span>
+              </button>
+            </>
+          ) : (
+            /* PLAYER NAVBAR ITEMS */
+            <>
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("booking")}
+                className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+                  activeTab === "booking"
+                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <Calendar className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-emerald-600 shrink-0" />
+                <span>Đặt Sân Bóng Đá</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("community")}
+                className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+                  activeTab === "community" || activeTab === "urgent-resale"
+                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-500 fill-rose-500 shrink-0" />
+                <span>Chợ Kèo &amp; Pass Sân</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+                  HOT
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("tournaments")}
+                className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+                  activeTab === "tournaments"
+                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
+                <span>Giải Đấu &amp; BXH</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectSubTab("team-management")}
+                className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+                  activeTab === "team-management"
+                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <Users className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-sky-600 shrink-0" />
+                <span>Đội Bóng</span>
               </button>
 
               <button
@@ -423,7 +535,7 @@ export default function Navbar({
 
         {/* RIGHT SIDE WIDGETS */}
         <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
-          {user?.role !== "OWNER" && (
+          {user?.role === "PLAYER" && (
             <div className="hidden 2xl:flex items-center space-x-3 bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 text-xs font-bold font-mono">
               <div className="flex items-center space-x-1.5 text-slate-800 dark:text-slate-200">
                 <Ticket className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
@@ -438,6 +550,7 @@ export default function Navbar({
           )}
 
 
+          {user && (
           <div className="relative" ref={notificationRef}>
             <button
               type="button"
@@ -563,6 +676,7 @@ export default function Navbar({
               </div>
             )}
           </div>
+          )}
 
           {user ? (
             <div className="relative" ref={userMenuRef}>
@@ -674,7 +788,45 @@ export default function Navbar({
                         <span>Sơ Đồ Ca Sân Realtime</span>
                       </button>
                     </>
-                  ) : (
+                  ) : user.role === "ORGANIZER" ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSelectSubTab("organizer");
+                          setShowUserDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors"
+                      >
+                        <Trophy className="w-4 h-4 text-emerald-500" />
+                        <span>Điều Hành Giải Đấu</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSelectSubTab("tournaments");
+                          setShowUserDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors"
+                      >
+                        <Award className="w-4 h-4 text-amber-500" />
+                        <span>Giải Đấu & BXH</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSelectSubTab("my-activities");
+                          setShowUserDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors"
+                      >
+                        <Calendar className="w-4 h-4 text-emerald-500" />
+                        <span>Lịch Trình & Vé Đã Đặt</span>
+                      </button>
+                    </>
+                  ) : user.role === "PLAYER" ? (
                     <>
                       <button
                         type="button"
@@ -700,7 +852,7 @@ export default function Navbar({
                         <span>Lịch Trình & Vé Đã Đặt</span>
                       </button>
                     </>
-                  )}
+                  ) : null}
 
                   <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
                     <button
@@ -805,11 +957,11 @@ export default function Navbar({
                           {user.fullName || user.name || "Cầu Thủ SoccerHub"}
                         </p>
                         <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-sky-50 dark:bg-sky-500/10 text-[#0b4f6c] dark:text-sky-300">
-                          {user.role === "OWNER" ? "Chủ Sân Đối Tác" : "VĐV Chuyên Nghiệp"}
+                          {user.role === "OWNER" ? "Chủ Sân Đối Tác" : user.role === "ORGANIZER" ? "Ban Tổ Chức" : user.role === "ADMIN" ? "Quản Trị Viên" : "VĐV Chuyên Nghiệp"}
                         </span>
                       </div>
                     </div>
-                    {user.role !== "OWNER" && (
+                    {(user.role === "PLAYER" || user.role === "ORGANIZER") && (
                       <div className="flex items-center justify-between text-xs font-mono font-bold pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
                         <span className="text-slate-500">Elo: <strong className="text-[#0b4f6c] dark:text-sky-400">{user.eloRating || 1450}</strong></span>
                         <span className="text-amber-500">850 MP</span>
@@ -929,6 +1081,74 @@ export default function Navbar({
                         </div>
                       </a>
                     </div>
+                  ) : user?.role === "ORGANIZER" ? (
+                    <div className="space-y-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleSelectSubTab("organizer")}
+                        className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
+                          activeTab === "organizer"
+                            ? "bg-emerald-600 text-white shadow-md font-extrabold"
+                            : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
+                        }`}
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                          <Trophy className="w-[18px] h-[18px] text-emerald-600" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-extrabold leading-tight flex items-center gap-1.5">
+                            <span>Điều Hành Giải Đấu</span>
+                            <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-[#0b4f6c] text-white">BTC</span>
+                          </div>
+                          <div className={`text-[10px] ${activeTab === "organizer" ? "text-white/80" : "text-slate-400"}`}>
+                            Tạo giải, duyệt đội & bốc thăm
+                          </div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSelectSubTab("tournaments")}
+                        className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
+                          activeTab === "tournaments"
+                            ? "bg-emerald-600 text-white shadow-md font-extrabold"
+                            : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
+                        }`}
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                          <Award className="w-[18px] h-[18px] text-amber-500" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
+                          <div className={`text-[10px] ${activeTab === "tournaments" ? "text-white/80" : "text-slate-400"}`}>
+                            Theo dõi nhánh đấu & xếp hạng Elo
+                          </div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSelectSubTab("community")}
+                        className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
+                          activeTab === "community" || activeTab === "urgent-resale"
+                            ? "bg-emerald-600 text-white shadow-md font-extrabold"
+                            : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
+                        }`}
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
+                          <Flame className="w-[18px] h-[18px] text-rose-500" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-extrabold leading-tight flex items-center gap-1.5">
+                            <span>Chợ Kèo & Pass Sân</span>
+                            <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-rose-500 text-white">HOT</span>
+                          </div>
+                          <div className={`text-[10px] ${activeTab === "community" || activeTab === "urgent-resale" ? "text-white/80" : "text-slate-400"}`}>
+                            Tìm đối cáp kèo & tuyển quân
+                          </div>
+                        </div>
+                      </button>
+                    </div>
                   ) : (
                     <div className="space-y-3">
                       {/* ITEM 1: ĐẶT SÂN BÓNG ĐÁ */}
@@ -997,7 +1217,8 @@ export default function Navbar({
                         </div>
                       </button>
 
-                      {/* ITEM 4: THẺ HỘI VIÊN */}
+                      {/* ITEM 4: THẺ HỘI VIÊN (chỉ tài khoản đăng nhập) */}
+                      {user && (
                       <button
                         type="button"
                         onClick={() => handleSelectSubTab("membership")}
@@ -1017,6 +1238,7 @@ export default function Navbar({
                           </div>
                         </div>
                       </button>
+                      )}
 
                       {/* KHỐI CÁ NHÂN VĐV NẾU ĐÃ LOGIN (LỊCH TRÌNH & HỒ SƠ) */}
                       {user && (
@@ -1045,6 +1267,17 @@ export default function Navbar({
                           >
                             <User className="w-4 h-4 text-sky-500 shrink-0" />
                             <span className="text-xs font-bold">Hồ Sơ VĐV & Thống Kê Elo</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleSelectSubTab("team-management")}
+                            className={`w-full text-left p-2.5 rounded-xl flex items-center space-x-3 transition-colors ${
+                              activeTab === "team-management" ? "bg-[#0b4f6c]/10 dark:bg-sky-500/20 font-black text-[#0b4f6c] dark:text-sky-300" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                            }`}
+                          >
+                            <Users className="w-4 h-4 text-emerald-500 shrink-0" />
+                            <span className="text-xs font-bold">Đội Bóng Của Tôi</span>
                           </button>
                         </div>
                       )}

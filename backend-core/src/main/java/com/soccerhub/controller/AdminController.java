@@ -154,6 +154,32 @@ public class AdminController {
     }
 
     /**
+     * Xóa tài khoản (không tự xóa mình, không xóa admin cuối cùng).
+     * Dùng dọn acc test / acc vi phạm.
+     */
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User me) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy người dùng."));
+        }
+        if (me != null && me.getId().equals(id)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không thể tự xóa tài khoản của chính mình."));
+        }
+        if (user.getRole() == UserRole.ADMIN) {
+            long adminCount = userRepository.findAll().stream()
+                    .filter(x -> x.getRole() == UserRole.ADMIN).count();
+            if (adminCount <= 1) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Không thể xóa quản trị viên cuối cùng."));
+            }
+        }
+        userRepository.delete(user);
+        return ResponseEntity.ok(Map.of("message", "Đã xóa tài khoản " + user.getEmail() + ".", "id", id));
+    }
+
+    /**
      * Dọn kết quả trận + bàn thắng mồ côi (giải đã bị xóa).
      * Chạy sau khi xóa giải ở bản cũ hoặc dọn dữ liệu test.
      */

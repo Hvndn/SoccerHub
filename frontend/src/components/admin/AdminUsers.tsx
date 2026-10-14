@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { Lock, Unlock, ShieldCheck } from "lucide-react";
+import { Lock, Unlock, ShieldCheck, Trash2 } from "lucide-react";
 import AdminTable, { type AdminColumn } from "./AdminTable";
 import { ConfirmModal, SectionCard, StatusBadge } from "./AdminUI";
 import {
   listAdminUsers,
   setAdminUserRole,
   setAdminUserStatus,
+  deleteAdminUser,
   type AdminUser,
 } from "@/lib/adminService";
 
@@ -34,6 +35,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   const [confirm, setConfirm] = useState<
     | { kind: "status"; user: AdminUser }
     | { kind: "role"; user: AdminUser; role: string }
+    | { kind: "delete"; user: AdminUser }
     | null
   >(null);
 
@@ -59,8 +61,11 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
       if (confirm.kind === "status") {
         const res = await setAdminUserStatus(confirm.user.id, !confirm.user.enabled);
         notify("ok", res.message);
-      } else {
+      } else if (confirm.kind === "role") {
         const res = await setAdminUserRole(confirm.user.id, confirm.role);
+        notify("ok", res.message);
+      } else {
+        const res = await deleteAdminUser(confirm.user.id);
         notify("ok", res.message);
       }
       setConfirm(null);
@@ -161,6 +166,15 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
             </select>
             <ShieldCheck className="w-3 h-3 absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
+          <button
+            type="button"
+            title={`Xóa tài khoản ${r.fullName}`}
+            disabled={busyId === r.id}
+            onClick={() => setConfirm({ kind: "delete", user: r })}
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 hover:border-rose-200 dark:hover:border-rose-900 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all disabled:opacity-50"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
       ),
     },
@@ -199,7 +213,13 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
 
       <ConfirmModal
         open={confirm !== null}
-        title={confirm?.kind === "status" ? (confirm.user.enabled ? "Khóa tài khoản?" : "Mở khóa tài khoản?") : "Đổi vai trò?"}
+        title={
+          confirm?.kind === "status"
+            ? (confirm.user.enabled ? "Khóa tài khoản?" : "Mở khóa tài khoản?")
+            : confirm?.kind === "delete"
+            ? "Xóa tài khoản?"
+            : "Đổi vai trò?"
+        }
         message={
           confirm?.kind === "status" ? (
             <>
@@ -209,12 +229,20 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
                 <>Mở khóa cho <strong>{confirm.user.fullName}</strong> ({confirm.user.email}) để đăng nhập trở lại.</>
               )}
             </>
+          ) : confirm?.kind === "delete" ? (
+            <>Xóa vĩnh viễn tài khoản <strong>{confirm.user.fullName}</strong> ({confirm.user.email})? Không thể hoàn tác.</>
           ) : confirm ? (
             <>Chuyển <strong>{confirm.user.fullName}</strong> sang vai trò <strong>{ROLE_LABEL[confirm.role]}</strong>?</>
           ) : null
         }
-        confirmLabel={confirm?.kind === "status" ? (confirm.user.enabled ? "Khóa tài khoản" : "Mở khóa") : "Đổi vai trò"}
-        danger={confirm?.kind === "status" ? confirm.user.enabled : false}
+        confirmLabel={
+          confirm?.kind === "status"
+            ? (confirm.user.enabled ? "Khóa tài khoản" : "Mở khóa")
+            : confirm?.kind === "delete"
+            ? "Xóa vĩnh viễn"
+            : "Đổi vai trò"
+        }
+        danger={confirm?.kind === "delete" ? true : confirm?.kind === "status" ? confirm.user.enabled : false}
         busy={busyId !== null}
         onCancel={() => setConfirm(null)}
         onConfirm={doConfirm}

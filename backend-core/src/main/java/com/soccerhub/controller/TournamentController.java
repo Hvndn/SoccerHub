@@ -6,8 +6,8 @@ import com.soccerhub.model.MatchResult;
 import com.soccerhub.model.Tournament;
 import com.soccerhub.model.TournamentTeamEntry;
 import com.soccerhub.repository.GoalEventRepository;
-import com.soccerhub.repository.GoalEventRepository;
-import com.soccerhub.repository.MatchResultRepository;import com.soccerhub.repository.TournamentRepository;
+import com.soccerhub.repository.MatchResultRepository;
+import com.soccerhub.repository.TournamentRepository;
 import com.soccerhub.service.AiEloClient;
 import com.soccerhub.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -205,9 +205,84 @@ public class TournamentController {
     }
 
     /**
-     * Bốc thăm chia cặp thật từ đội đã đăng ký: xếp hạt giống theo Elo
-     * (hạt giống cao gặp hạt giống thấp), đội top được miễn khi số đội
-     * không chẵn lũy thừa của 2. Kết quả lưu vào bracketJson.
+     * Vòng tròn 1 lượt (circle method): mỗi cặp gặp nhau đúng 1 lần.
+     * Số đội lẻ → mỗi vòng 1 đội nghỉ (ghi nhận BYE, không điểm).
+     */
+    private ResponseEntity<?> drawRoundRobin(Tournament tournament, List<TournamentTeamEntry> teams) {
+        int n = teams.size();
+        List<TournamentTeamEntry> circle = new ArrayList<>(teams);
+        if (n % 2 == 1) circle.add(null); // đội nghỉ mỗi vòng
+        boolean hasBye = (n % 2 == 1);
+        int roundsCount = hasBye ? n : n - 1;
+
+        List<Map<String, Object>> rounds = new ArrayList<>();
+        for (int r = 0; r < roundsCount; r++) {
+            List<Map<String, Object>> matches = new ArrayList<>();
+            int m = 0;
+            for (int i = 0; i < circle.size() / 2; i++) {
+                TournamentTeamEntry a = circle.get(i);
+                TournamentTeamEntry b = circle.get(circle.size() - 1 - i);
+                if (a == null || b == null) {
+                    TournamentTeamEntry present = a != null ? a : b;
+                    if (present == null) continue;
+                    Map<String, Object> match = new LinkedHashMap<>();
+                    match.put("matchId", "R" + (r + 1) + "-BYE" + (++m));
+                    match.put("bye", teamNode(present.getTeamName(), present.getEloRating(), null));
+                    match.put("status", "BYE");
+                    match.put("winner", present.getTeamName());
+                    matches.add(match);
+                    continue;
+                }
+                String matchId = "R" + (r + 1) + "-M" + (++m);
+                Map<String, Object> match = new LinkedHashMap<>();
+                match.put("matchId", matchId);
+                match.put("teamA", teamNode(a.getTeamName(), a.getEloRating(), null));
+                match.put("teamB", teamNode(b.getTeamName(), b.getEloRating(), null));
+                match.put("scoreA", 0);
+                match.put("scoreB", 0);
+                match.put("status", "SCHEDULED");
+                match.put("winner", null);
+                matches.add(match);
+            }
+            // Xoay vòng tròn: giữ cố định đội đầu, xoay phần còn lại
+            if (circle.size() > 2) {
+                TournamentTeamEntry last = circle.remove(circle.size() - 1);
+                circle.add(1, last);
+            }
+            Map<String, Object> round = new LinkedHashMap<>();
+            round.put("name", "Vòng " + (r + 1));
+            round.put("matches", matches);
+            rounds.add(round);
+        }
+
+        Map<String, Object> bracket = new LinkedHashMap<>();
+        bracket.put("tournamentId", tournament.getId());
+        bracket.put("title", tournament.getTitle());
+        bracket.put("drawnAt", LocalDateTime.now().toString());
+        bracket.put("method", "ROUND_ROBIN");
+        bracket.put("teamCount", n);
+        bracket.put("rounds", rounds);
+
+        try {
+            tournament.setBracketJson(objectMapper.writeValueAsString(bracket));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi lưu lịch vòng tròn."));
+        }
+        tournamentRepository.save(tournament);
+        notificationService.notify("ALL",
+                "Đã xếp lịch vòng tròn giải " + tournament.getTitle(),
+                "Lịch " + roundsCount + " vòng cho " + n + " đội đã được BTC công bố. Mở tab Nhánh đấu để xem!",
+                "TOURNAMENT", "/?tab=tournaments");
+        return ResponseEntity.ok(Map.of(
+                "message", "Xếp lịch vòng tròn thành công cho " + n + " đội (" + roundsCount + " vòng)!",
+                "bracket", bracket));
+    }
+
+    /**
+     * Bốc thăm thật từ đội đã đăng ký:
+     * - KNOCKOUT: xếp hạt giống theo Elo, đội top được miễn khi lẻ lũy thừa 2.
+     * - ROUND_ROBIN: vòng tròn 1 lượt (circle method), cho phép hòa.
+     * Kết quả lưu vào bracketJson.
      */
     @PostMapping("/{id}/draw")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
@@ -227,6 +302,10 @@ public class TournamentController {
         teams.sort((a, b) -> Integer.compare(
                 b.getEloRating() != null ? b.getEloRating() : 1200,
                 a.getEloRating() != null ? a.getEloRating() : 1200));
+
+        if ("ROUND_ROBIN".equals(tournament.getFormat())) {
+            return drawRoundRobin(tournament, teams);
+        }
 
         int n = teams.size();
         int p = 2;
@@ -395,7 +474,7 @@ public class TournamentController {
         if (matchId.isEmpty() || scoreA == null || scoreB == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Thiếu mã trận hoặc tỷ số không hợp lệ (số nguyên >= 0)."));
         }
-        if (scoreA.equals(scoreB)) {
+        if (scoreA.equals(scoreB) && !"ROUND_ROBIN".equals(tournament.getFormat())) {
             return ResponseEntity.badRequest().body(Map.of("message", "Vòng Knockout cần phân thắng bại, không nhận tỷ số hòa."));
         }
 
@@ -440,9 +519,11 @@ public class TournamentController {
         }
         String nameA = String.valueOf(teamA.get("name"));
         String nameB = String.valueOf(teamB.get("name"));
-        int eloA = teamA.get("elo") instanceof Number numA ? numA.intValue() : 1200;
-        int eloB = teamB.get("elo") instanceof Number numB ? numB.intValue() : 1200;
-        String winner = scoreA > scoreB ? nameA : nameB;
+        // Elo nguồn chuẩn = Elo HIỆN TẠI của đội trong CSDL (đã cộng dồn các trận trước).
+        // Elo trong bracket chỉ là snapshot lúc bốc thăm, dùng làm fallback khi thiếu đội.
+        int eloA = currentElo(tournament, nameA, teamA);
+        int eloB = currentElo(tournament, nameB, teamB);
+        String winner = scoreA.equals(scoreB) ? null : (scoreA > scoreB ? nameA : nameB);
 
         // 0. Ghi nhận cầu thủ ghi bàn/kiến tạo (optional) + đối chiếu tổng bàn
         @SuppressWarnings("unchecked")
@@ -485,8 +566,9 @@ public class TournamentController {
         target.put("winner", winner);
         target.put("status", "DONE");
 
-        // 2. Đẩy đội thắng vào vòng sau (ô "Thắng {matchId}")
+        // 2. Đẩy đội thắng vào vòng sau (ô "Thắng {matchId}") — không áp dụng trận hòa
         String slot = "Thắng " + matchId;
+        if (winner != null) {
         for (Map<String, Object> round : rounds) {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> matches = (List<Map<String, Object>>) round.get("matches");
@@ -503,16 +585,22 @@ public class TournamentController {
                 }
             }
         }
+        }
 
         // 3. Gọi AI tính Elo mới (fallback local nếu AI offline)
+        //    làm tròn một lần để tổng Elo toàn hệ thống không bị trôi theo phần .5
         Map<String, Double> elo = aiEloClient.calculateElo(eloA, eloB, scoreA, scoreB);
         int newEloA = (int) Math.round(elo.get("newA"));
         int newEloB = (int) Math.round(elo.get("newB"));
+        // Chuẩn hoá delta về số nguyên khớp đúng thay đổi đã ghi nhận
+        double appliedDeltaA = newEloA - eloA;
+        double appliedDeltaB = newEloB - eloB;
+        elo.put("deltaA", appliedDeltaA);
+        elo.put("deltaB", appliedDeltaB);
         for (TournamentTeamEntry t : tournament.getTeams()) {
             if (nameA.equals(t.getTeamName())) t.setEloRating(newEloA);
             if (nameB.equals(t.getTeamName())) t.setEloRating(newEloB);
         }
-
         // 4. Lưu lịch sử + nhánh đấu + cầu thủ ghi bàn
         matchResultRepository.save(MatchResult.builder()
                 .tournamentId(tournament.getId())
@@ -525,6 +613,8 @@ public class TournamentController {
                 .winner(winner)
                 .eloDeltaA(elo.get("deltaA"))
                 .eloDeltaB(elo.get("deltaB"))
+                .eloBeforeA(eloA)
+                .eloBeforeB(eloB)
                 .build());
         if (!goalEvents.isEmpty()) {
             goalEventRepository.saveAll(goalEvents);
@@ -539,16 +629,165 @@ public class TournamentController {
         List<Map<String, Object>> eloChanges = List.of(
                 Map.of("team", (Object) nameA, "oldElo", (Object) eloA, "newElo", (Object) newEloA, "delta", elo.get("deltaA")),
                 Map.of("team", (Object) nameB, "oldElo", (Object) eloB, "newElo", (Object) newEloB, "delta", elo.get("deltaB")));
+        String resultTitle = winner != null
+                ? "Kết quả " + matchId + ": " + winner + " thắng " + scoreA + "-" + scoreB
+                : "Kết quả " + matchId + ": hòa " + scoreA + "-" + scoreB;
         notificationService.notify("ALL",
-                "Kết quả " + matchId + ": " + winner + " thắng " + scoreA + "-" + scoreB,
+                resultTitle,
                 nameA + " " + scoreA + "-" + scoreB + " " + nameB + " (" + tournament.getTitle() + "). Elo đã cập nhật!",
                 "MATCH", "/?tab=tournaments");
-        return ResponseEntity.ok(Map.of(
-                "message", "Đã lưu kết quả " + nameA + " " + scoreA + "-" + scoreB + " " + nameB + "!",
-                "winner", winner,
-                "aiOnline", elo.get("aiOnline").intValue() == 1,
-                "eloChanges", eloChanges,
-                "bracket", bracket));
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("message", "Đã lưu kết quả " + nameA + " " + scoreA + "-" + scoreB + " " + nameB + "!");
+        resp.put("winner", winner);
+        resp.put("aiOnline", elo.get("aiOnline").intValue() == 1);
+        resp.put("eloChanges", eloChanges);
+        resp.put("bracket", bracket);
+        return ResponseEntity.ok(resp);
+    }
+
+    /**
+     * Huỷ kết quả một trận đã đánh: hoàn lại Elo về đúng giá trị trước trận,
+     * xoá danh sách cầu thủ ghi bàn, đưa trận về trạng thái SCHEDULED để BTC nhập lại.
+     * Chỉ cho phép khi các trận vòng sau chưa có kết quả (để không phá nhánh đấu).
+     */
+    @DeleteMapping("/{id}/matches/{matchId}")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    public ResponseEntity<?> undoMatchResult(@PathVariable Long id, @PathVariable String matchId) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải chưa bốc thăm nên chưa có kết quả nào."));
+        }
+        Map<String, Object> bracket;
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> parsed = objectMapper.readValue(tournament.getBracketJson(), Map.class);
+            bracket = parsed;
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Dữ liệu nhánh đấu bị lỗi."));
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> rounds = (List<Map<String, Object>>) bracket.get("rounds");
+        Map<String, Object> target = null;
+        int targetRoundIdx = -1;
+        outer:
+        for (int ri = 0; ri < rounds.size(); ri++) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> matches = (List<Map<String, Object>>) rounds.get(ri).get("matches");
+            for (Map<String, Object> m : matches) {
+                if (matchId.equals(m.get("matchId"))) {
+                    target = m;
+                    targetRoundIdx = ri;
+                    break outer;
+                }
+            }
+        }
+        if (target == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy trận " + matchId + " trong nhánh đấu."));
+        }
+        if (!"DONE".equals(target.get("status"))) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Trận này chưa có kết quả để huỷ."));
+        }
+        // Chặn huỷ khi vòng sau đã có kết quả — nhánh đấu đã đi tiếp thì không tháo ngược an toàn.
+        for (int ri = targetRoundIdx + 1; ri < rounds.size(); ri++) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> matches = (List<Map<String, Object>>) rounds.get(ri).get("matches");
+            for (Map<String, Object> m : matches) {
+                if ("DONE".equals(m.get("status"))) {
+                    return ResponseEntity.badRequest().body(Map.of("message",
+                            "Không thể huỷ vì trận " + m.get("matchId")
+                                    + " ở vòng sau đã có kết quả. Hãy huỷ từ vòng sau trở đi trước."));
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> teamA = (Map<String, Object>) target.get("teamA");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> teamB = (Map<String, Object>) target.get("teamB");
+        String nameA = teamA != null ? String.valueOf(teamA.get("name")) : "?";
+        String nameB = teamB != null ? String.valueOf(teamB.get("name")) : "?";
+        String oldScore = target.get("scoreA") + "-" + target.get("scoreB");
+
+        // 1. Hoàn Elo: ưu tiên snapshot eloBefore (chính xác tuyệt đối),
+        //    dữ liệu cũ chưa có thì trừ lại delta.
+        List<Map<String, Object>> eloChanges = new ArrayList<>();
+        Optional<MatchResult> latest = matchResultRepository
+                .findFirstByTournamentIdAndMatchIdOrderByPlayedAtDesc(tournament.getId(), matchId);
+        if (latest.isPresent()) {
+            MatchResult r = latest.get();
+            double dA = r.getEloDeltaA() != null ? r.getEloDeltaA() : 0.0;
+            double dB = r.getEloDeltaB() != null ? r.getEloDeltaB() : 0.0;
+            Integer backA = r.getEloBeforeA() != null ? r.getEloBeforeA() : null;
+            Integer backB = r.getEloBeforeB() != null ? r.getEloBeforeB() : null;
+            for (TournamentTeamEntry t : tournament.getTeams()) {
+                boolean isA = nameA.equals(t.getTeamName());
+                boolean isB = nameB.equals(t.getTeamName());
+                if ((!isA && !isB) || t.getEloRating() == null) continue;
+                int old = t.getEloRating();
+                int restored;
+                if (isA && backA != null) restored = backA;
+                else if (isB && backB != null) restored = backB;
+                else restored = (int) Math.max(100, Math.round(old - (isA ? dA : dB)));
+                eloChanges.add(Map.of("team", (Object) t.getTeamName(),
+                        "rolledBackFrom", (Object) old, "restoredElo", (Object) restored));
+                t.setEloRating(restored);
+            }
+            matchResultRepository.delete(r);
+        } else {
+            // Dữ liệu cũ chưa có delta -> đưa về Elo hiện tại của đội trong giải.
+            for (TournamentTeamEntry t : tournament.getTeams()) {
+                if (nameA.equals(t.getTeamName())) t.setEloRating(currentElo(tournament, nameA, teamA));
+                if (nameB.equals(t.getTeamName())) t.setEloRating(currentElo(tournament, nameB, teamB));
+            }
+        }
+
+        // 2. Xoá cầu thủ ghi bàn của trận này.
+        int goalsRemoved = goalEventRepository.findByTournamentIdAndMatchId(tournament.getId(), matchId).size();
+        goalEventRepository.deleteAll(goalEventRepository.findByTournamentIdAndMatchId(tournament.getId(), matchId));
+
+        // 3. Knockout: trả ô "Thắng {matchId}" ở vòng sau về trạng thái chờ.
+        String slot = "Thắng " + matchId;
+        for (Map<String, Object> round : rounds) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> matches = (List<Map<String, Object>>) round.get("matches");
+            for (Map<String, Object> m : matches) {
+                for (String side : List.of("teamA", "teamB")) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> node = (Map<String, Object>) m.get(side);
+                    if (node != null && slot.equals(node.get("name"))) {
+                        node.put("name", slot);
+                        node.put("tbd", true);
+                        node.remove("elo");
+                    }
+                }
+            }
+        }
+
+        // 4. Đưa trận về SCHEDULED, giữ nguyên lịch đã xếp (ngày/giờ/sân).
+        target.remove("scoreA");
+        target.remove("scoreB");
+        target.remove("winner");
+        target.put("status", "SCHEDULED");
+
+        try {
+            tournament.setBracketJson(objectMapper.writeValueAsString(bracket));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi lưu nhánh đấu."));
+        }
+        tournamentRepository.save(tournament);
+
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("message", "Đã huỷ kết quả " + nameA + " " + oldScore
+                + " " + nameB + ". Trận mở lại để nhập kết quả mới.");
+        resp.put("matchId", matchId);
+        resp.put("eloChanges", eloChanges);
+        resp.put("goalEventsRemoved", goalsRemoved);
+        resp.put("bracket", bracket);
+        return ResponseEntity.ok(resp);
     }
 
     /**
@@ -679,8 +918,7 @@ public class TournamentController {
                 "bracket", bracket));
     }
 
-    private static int toPositiveInt(Object raw, int fallback) {
-        try {
+    private static int toPositiveInt(Object raw, int fallback) {        try {
             int v = Integer.parseInt(String.valueOf(raw));
             return v > 0 ? v : fallback;
         } catch (Exception e) {
@@ -695,6 +933,20 @@ public class TournamentController {
         } catch (Exception e) {
             return fallback;
         }
+    }
+
+    /**
+     * Elo hiện tại của một đội trong giải — nguồn chuẩn khi tính Elo trận mới,
+     * để Elo cộng dồn qua nhiều vòng. Fallback về Elo ghi trong nhánh đấu khi
+     * đội không có trong danh sách đăng ký (ví dụ đội đã bị xoá khỏi giải).
+     */
+    private static int currentElo(Tournament tournament, String teamName, Map<String, Object> bracketNode) {
+        for (TournamentTeamEntry t : tournament.getTeams()) {
+            if (teamName.equals(t.getTeamName()) && t.getEloRating() != null) {
+                return t.getEloRating();
+            }
+        }
+        return bracketNode != null && bracketNode.get("elo") instanceof Number n ? n.intValue() : 1200;
     }
 
     /** Lấy nhánh đấu đã bốc thăm (public — FE render cây nhánh từ đây). */

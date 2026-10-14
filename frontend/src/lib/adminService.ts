@@ -91,6 +91,10 @@ export async function setAdminUserRole(id: number, role: string): Promise<{ mess
   });
 }
 
+export async function deleteAdminUser(id: number): Promise<{ message: string }> {
+  return apiRequest('/api/v1/admin/users/' + id, { method: 'DELETE' });
+}
+
 export async function listAdminBookings(limit = 100): Promise<AdminBooking[]> {
   const data = await apiRequest<AdminBooking[]>('/api/v1/admin/bookings?limit=' + limit);
   return Array.isArray(data) ? data : [];

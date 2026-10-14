@@ -42,6 +42,10 @@ public class MatchResult {
     private Double eloDeltaA;
     private Double eloDeltaB;
 
+    /** Elo của hai đội TRƯỚC trận — nguồn chuẩn để hoàn lại khi BTC huỷ kết quả. */
+    private Integer eloBeforeA;
+    private Integer eloBeforeB;
+
     @Builder.Default
     private LocalDateTime playedAt = LocalDateTime.now();
 }

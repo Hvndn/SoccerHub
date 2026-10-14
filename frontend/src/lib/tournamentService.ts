@@ -85,7 +85,8 @@ export const daysUntil = (iso?: string | null): number | null => {
 };
 
 export const registeredCount = (t: Tournament): number =>
-  t.registeredTeams ?? t.teams?.length ?? 0;
+  // Danh sách đội là nguồn thật — số đếm cache (registeredTeams) có thể lệch seed
+  t.teams?.length ?? t.registeredTeams ?? 0;
 
 export const capacity = (t: Tournament): number => t.totalTeams ?? 0;
 
@@ -188,8 +189,12 @@ export interface BracketMatch {
   bye?: BracketTeam;
   scoreA?: number;
   scoreB?: number;
-  status?: string; // SCHEDULED | BYE | TBD
+  status?: string; // SCHEDULED | BYE | TBD | DONE
   winner?: string | null;
+  /** Lịch do BTC sinh qua POST /schedule (chưa xếp thì undefined). */
+  matchDate?: string; // yyyy-MM-dd
+  timeSlot?: string; // "17:00 - 19:00"
+  pitchName?: string;
 }
 
 export interface BracketRound {
@@ -256,6 +261,45 @@ export async function clearSimulatedTeams(tournamentId: number): Promise<{ messa
   }
 }
 
+export interface ScheduleInput {
+  /** yyyy-MM-dd — mặc định lấy startDate của giải. */
+  startDate?: string;
+  /** Số trận mỗi ngày (mặc định 2). */
+  matchesPerDay?: number;
+  /** Số ngày cách giữa hai vòng (mặc định 2). */
+  daysBetweenRounds?: number;
+  /** Giờ bắt đầu trận đầu tiên trong ngày (mặc định 17). */
+  startHour?: number;
+  /** Độ dài mỗi trận phút (mặc định 120). */
+  matchMinutes?: number;
+}
+
+export interface ScheduleResult {
+  message: string;
+  scheduled: number;
+  bracket: TournamentBracketData;
+}
+
+/**
+ * BTC sinh lịch thi đấu thật (ngày + khung giờ + sân) cho toàn bộ trận trong nhánh đấu.
+ * Kết quả được ghi vào bracketJson nên canvas tự hiện lịch sau khi refresh cache.
+ */
+export async function generateTournamentSchedule(
+  tournamentId: number,
+  input: ScheduleInput = {}
+): Promise<ScheduleResult> {
+  try {
+    const body = await apiRequest<ScheduleResult>(
+      `/api/v1/tournaments/${tournamentId}/schedule`,
+      { method: 'POST', body: JSON.stringify(input) }
+    );
+    await fetchTournaments(true);
+    return body;
+  } catch (err) {
+    throw new Error(friendlyAdminError(err, 'Xếp lịch thi đấu thất bại.'));
+  }
+}
+
 export interface ScorerRow {
   playerName: string;
   teamName: string;
@@ -319,9 +363,23 @@ export interface EloChange {
 
 export interface MatchSaveResult {
   message: string;
-  winner: string;
+  winner: string | null;
   aiOnline: boolean;
   eloChanges: EloChange[];
+  bracket: TournamentBracketData;
+}
+
+export interface EloRollback {
+  team: string;
+  rolledBackFrom: number;
+  restoredElo: number;
+}
+
+export interface MatchUndoResult {
+  message: string;
+  matchId: string;
+  eloChanges: EloRollback[];
+  goalEventsRemoved: number;
   bracket: TournamentBracketData;
 }
 
@@ -344,6 +402,26 @@ export async function saveMatchResult(
     return body;
   } catch (err) {
     throw new Error(friendlyAdminError(err, 'Lưu kết quả thất bại.'));
+  }
+}
+
+/**
+ * Huỷ kết quả một trận đã đánh: hoàn lại Elo, xoá cầu thủ ghi bàn,
+ * mở lại trận để BTC nhập kết quả mới — cần ORGANIZER/ADMIN.
+ */
+export async function undoMatchResult(
+  tournamentId: number,
+  matchId: string
+): Promise<MatchUndoResult> {
+  try {
+    const body = await apiRequest<MatchUndoResult>(
+      `/api/v1/tournaments/${tournamentId}/matches/${encodeURIComponent(matchId)}`,
+      { method: 'DELETE' }
+    );
+    await fetchTournaments(true);
+    return body;
+  } catch (err) {
+    throw new Error(friendlyAdminError(err, 'Huỷ kết quả thất bại.'));
   }
 }
 

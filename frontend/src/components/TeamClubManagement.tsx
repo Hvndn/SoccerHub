@@ -39,7 +39,6 @@ export default function TeamClubManagement({
 }: TeamClubManagementProps) {
   const [activeSubTab, setActiveSubTab] = useState<"roster" | "fund" | "matches" | "recruitment">("roster");
   const [searchMember, setSearchMember] = useState("");
-  const [showFundModal, setShowFundModal] = useState(false);
 
   // Mock Team Data (Stitch Spec: FC Thunder VaoSan)
   const teamInfo = {
@@ -296,14 +295,6 @@ export default function TeamClubManagement({
           <div className="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Lịch Sử Thu Chi Quỹ Đội</h3>
-              <button
-                type="button"
-                onClick={() => setShowFundModal(true)}
-                className="px-3 py-1.5 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 font-bold text-xs flex items-center space-x-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Ghi Nhận Giao Dịch</span>
-              </button>
             </div>
 
             <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">

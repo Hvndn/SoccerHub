@@ -49,7 +49,7 @@ public class AiEloClient {
             log.warn("AI service unreachable ({}), fallback local Elo", e.getMessage());
             double ea = 1.0 / (1.0 + Math.pow(10, (ratingB - ratingA) / 400.0));
             double eb = 1.0 - ea;
-            double actualA = scoreA > scoreB ? 1.0 : 0.0;
+            double actualA = scoreA > scoreB ? 1.0 : scoreA < scoreB ? 0.0 : 0.5;
             double actualB = 1.0 - actualA;
             double newA = ratingA + 32 * (actualA - ea);
             double newB = ratingB + 32 * (actualB - eb);

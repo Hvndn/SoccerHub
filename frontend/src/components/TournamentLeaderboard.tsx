@@ -192,6 +192,9 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
   // Hồ sơ thật của cầu thủ đang đăng nhập (fallback: trạng thái khách)
   const athleteName: string = user?.fullName || user?.name || '';
+  // Avatar chỉ render <img> khi thật sự là URL ảnh (tránh 404 với initials "BT")
+  const athleteAvatarUrl =
+    user?.avatar && /^(https?:|data:|blob:|\/)/.test(user.avatar) ? user.avatar : null;
   const athleteInitials = athleteName
     ? athleteName.split(' ').filter(Boolean).slice(-2).map((w: string) => w[0]).join('').toUpperCase()
     : '';
@@ -992,9 +995,9 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   <>
                     {/* Athlete Profile Snippet — lấy từ hồ sơ thật */}
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800">
-                      {user.avatar ? (
+                      {athleteAvatarUrl ? (
                         <img
-                          src={user.avatar}
+                          src={athleteAvatarUrl}
                           alt={athleteName}
                           className="w-12 h-12 rounded-xl object-cover shrink-0"
                         />

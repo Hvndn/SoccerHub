@@ -34,6 +34,8 @@ import {
   fillSimulatedTeams,
   clearSimulatedTeams,
   drawTournamentBracket,
+  generateTournamentSchedule,
+  undoMatchResult,
   confirmTeamPayment,
   saveMatchResult,
   registeredCount,
@@ -52,12 +54,22 @@ export default function TournamentBracket() {
   const [fillBusy, setFillBusy] = useState(false);
   const [clearBusy, setClearBusy] = useState(false);
   const [drawBusy, setDrawBusy] = useState(false);
+  const [scheduleBusy, setScheduleBusy] = useState(false);
+  const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const [scheduleForm, setScheduleForm] = useState({
+    startDate: "",
+    matchesPerDay: "2",
+    daysBetweenRounds: "2",
+    startHour: "17",
+    matchMinutes: "120",
+  });
   const [confirmingTeam, setConfirmingTeam] = useState<string | null>(null);
   const [savingMatch, setSavingMatch] = useState<string | null>(null);
   const [scores, setScores] = useState<Record<string, { a: string; b: string }>>({});
   const [scorerOpen, setScorerOpen] = useState<Record<string, boolean>>({});
   const [scorerRows, setScorerRows] = useState<Record<string, { player: string; team: string; goals: string; assists: string }[]>>({});
   const [confirmDraw, setConfirmDraw] = useState(false);
+  const [confirmUndo, setConfirmUndo] = useState<BracketMatch | null>(null);
   const [lottery, setLottery] = useState<{ pairs: { matchId: string; teamA: string; teamB: string }[]; byes: string[] } | null>(null);
   const [activeTab, setActiveTab] = useState<"bracket" | "var_referee" | "standings" | "esheet">("bracket");
 
@@ -76,6 +88,13 @@ export default function TournamentBracket() {
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  /** "2026-11-02" -> "02/11/2026" (dd/MM/yyyy) */
+  const prettyDate = (iso?: string) => {
+    if (!iso) return "";
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
   };
 
   // Danh sách giải thật (cache dùng chung)
@@ -122,6 +141,16 @@ export default function TournamentBracket() {
   const pendingTeams = useMemo(
     () => (selected?.teams ?? []).filter((t) => t.registrationStatus === "PENDING_PAYMENT"),
     [selected]
+  );
+
+  /** Số trận đã có lịch (BTC đã bấm "Xếp lịch thi đấu"). */
+  const scheduledCount = useMemo(
+    () =>
+      (bracket?.rounds ?? []).reduce(
+        (sum, r) => sum + r.matches.filter((m) => !!m.matchDate && m.status !== "BYE").length,
+        0
+      ),
+    [bracket]
   );
 
   const handleConfirmPayment = async (teamName: string) => {
@@ -182,9 +211,36 @@ export default function TournamentBracket() {
     }
   };
 
-  // BXH thật: thắng/thua/điểm tính từ các trận DONE trong nhánh đấu.
+  /** BTC sinh lịch thật cho toàn bộ trận (ngày + khung giờ + sân) rồi lưu vào CSDL. */
+  const handleSchedule = async () => {
+    if (!selected) return;
+    try {
+      setScheduleBusy(true);
+      const num = (v: string, fb: number) => {
+        const n = parseInt(v, 10);
+        return Number.isFinite(n) && n > 0 ? n : fb;
+      };
+      const res = await generateTournamentSchedule(selected.id, {
+        startDate: scheduleForm.startDate.trim() || undefined,
+        matchesPerDay: num(scheduleForm.matchesPerDay, 2),
+        daysBetweenRounds: parseInt(scheduleForm.daysBetweenRounds, 10) || 0,
+        startHour: num(scheduleForm.startHour, 17),
+        matchMinutes: num(scheduleForm.matchMinutes, 120),
+      });
+      triggerToast(res.message);
+      setShowScheduleForm(false);
+      setActiveTab("bracket");
+    } catch (err: any) {
+      triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để xếp lịch.");
+    } finally {
+      setScheduleBusy(false);
+    }
+  };
+
+  // BXH thật: thắng/hòa/thua/điểm/hiệu số tính từ các trận DONE trong nhánh đấu.
+  // Thắng = 3đ, Hòa = 1đ. Xếp: điểm → hiệu số → Elo.
   const tableRows = useMemo(() => {
-    const base = new Map<string, { team: string; captain: string; elo: number; simulated: boolean; played: number; won: number; lost: number }>();
+    const base = new Map<string, { team: string; captain: string; elo: number; simulated: boolean; played: number; won: number; drawn: number; lost: number; gf: number; ga: number }>();
     (selected?.teams ?? []).forEach((t) =>
       base.set(t.teamName, {
         team: t.teamName,
@@ -193,26 +249,75 @@ export default function TournamentBracket() {
         simulated: !!t.simulated,
         played: 0,
         won: 0,
+        drawn: 0,
         lost: 0,
+        gf: 0,
+        ga: 0,
       })
     );
     bracket?.rounds.forEach((r) =>
       r.matches.forEach((m) => {
-        if (m.status !== "DONE" || !m.winner || !m.teamA || !m.teamB) return;
+        if (m.status !== "DONE" || !m.teamA || !m.teamB) return;
         const a = base.get(m.teamA.name);
         const b = base.get(m.teamB.name);
-        if (a) a.played += 1;
-        if (b) b.played += 1;
-        const w = base.get(m.winner);
-        if (w) w.won += 1;
-        const loser = m.winner === m.teamA.name ? b : a;
-        if (loser) loser.lost += 1;
+        const sa = m.scoreA ?? 0;
+        const sb = m.scoreB ?? 0;
+        if (a) {
+          a.played += 1;
+          a.gf += sa;
+          a.ga += sb;
+        }
+        if (b) {
+          b.played += 1;
+          b.gf += sb;
+          b.ga += sa;
+        }
+        if (!m.winner) {
+          if (a) a.drawn += 1;
+          if (b) b.drawn += 1;
+        } else if (m.winner === m.teamA.name) {
+          if (a) a.won += 1;
+          if (b) b.lost += 1;
+        } else {
+          if (b) b.won += 1;
+          if (a) a.lost += 1;
+        }
       })
     );
     return Array.from(base.values())
-      .map((r) => ({ ...r, points: r.won * 3 }))
-      .sort((x, y) => y.points - x.points || y.elo - x.elo);
+      .map((r) => ({ ...r, points: r.won * 3 + r.drawn, diff: r.gf - r.ga }))
+      .sort((x, y) => y.points - x.points || y.diff - x.diff || y.elo - x.elo);
   }, [selected, bracket]);
+
+  /** Huỷ kết quả để nhập lại — backend hoàn lại Elo và xoá cầu thủ ghi bàn. */
+  const handleUndoScore = async (m: BracketMatch) => {
+    if (!selected) return;
+    try {
+      setSavingMatch(m.matchId);
+      const res = await undoMatchResult(selected.id, m.matchId);
+      const rolled = res.eloChanges
+        .map((c) => `${c.team} ${c.rolledBackFrom}→${c.restoredElo}`)
+        .join(" • ");
+      triggerToast(
+        `${res.message}${rolled ? ` Elo hoàn lại: ${rolled}` : ""}` +
+        (res.goalEventsRemoved ? ` • Đã xoá ${res.goalEventsRemoved} dòng cầu thủ ghi bàn.` : "")
+      );
+      setScorerOpen((o) => {
+        const next = { ...o };
+        delete next[m.matchId];
+        return next;
+      });
+      setScorerRows((prev) => {
+        const next = { ...prev };
+        delete next[m.matchId];
+        return next;
+      });
+    } catch (err: any) {
+      triggerToast(err?.message || "Huỷ kết quả thất bại.");
+    } finally {
+      setSavingMatch(null);
+    }
+  };
 
   const handleSaveScore = async (m: BracketMatch) => {
     if (!selected || !m.teamA || !m.teamB) return;
@@ -223,7 +328,8 @@ export default function TournamentBracket() {
       triggerToast("Tỷ số phải là số nguyên lớn hơn hoặc bằng 0.");
       return;
     }
-    if (scoreA === scoreB) {
+    const isLeague = selected.format === "ROUND_ROBIN";
+    if (scoreA === scoreB && !isLeague) {
       triggerToast("Vòng Knockout cần phân thắng bại, không nhận tỷ số hòa.");
       return;
     }
@@ -308,10 +414,44 @@ export default function TournamentBracket() {
       setScores((s) => ({ ...s, [match.matchId]: { a: side === "a" ? v : (s[match.matchId]?.a ?? String(match.scoreA ?? 0)), b: side === "b" ? v : (s[match.matchId]?.b ?? String(match.scoreB ?? 0)) } }));
     return (
       <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className={`animate-fade-in-up rounded-2xl border overflow-hidden text-xs shadow-xs ${done ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800" : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-800"}`}>
-        <div className="px-2.5 pt-2 font-mono text-[10px] font-black text-slate-400 flex items-center justify-between">
+        <div className="px-2.5 pt-2 font-mono text-[10px] font-black text-slate-400 flex items-center justify-between gap-1">
           <span>{match.matchId}</span>
-          {done && <span className="text-emerald-600 dark:text-emerald-400">✓ ĐÃ ĐÁ</span>}
+          <div className="flex items-center gap-1">
+            {done && <span className="text-emerald-600 dark:text-emerald-400">{match.winner ? "✓ ĐÃ ĐÁ" : "= HÒA"}</span>}
+            {done && (
+              <button
+                type="button"
+                title="Huỷ kết quả: hoàn lại Elo và mở lại trận để nhập tỷ số mới"
+                aria-label={`Huỷ kết quả trận ${match.matchId}`}
+                disabled={savingMatch === match.matchId}
+                onClick={() => setConfirmUndo(match)}
+                className="px-1.5 py-0.5 rounded-md border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all text-[9px] font-black uppercase tracking-wide disabled:opacity-40 active:scale-95"
+              >
+                {savingMatch === match.matchId ? "…" : "Huỷ KQ"}
+              </button>
+            )}
+          </div>
         </div>
+        {/* Lịch thi đấu thật do BTC sinh (POST /schedule) */}
+        {match.matchDate && (
+          <div className="px-2.5 pt-1.5 flex flex-wrap items-center gap-1">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 text-[10px] font-black">
+              <Calendar className="w-2.5 h-2.5" />
+              {prettyDate(match.matchDate)}
+            </span>
+            {match.timeSlot && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-mono font-bold">
+                <Clock className="w-2.5 h-2.5" />
+                {match.timeSlot}
+              </span>
+            )}
+            {match.pitchName && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold truncate max-w-full">
+                {match.pitchName}
+              </span>
+            )}
+          </div>
+        )}
         {[match.teamA, match.teamB].map((t, i) => {
           const isWinner = done && match.winner === t?.name;
           return (
@@ -525,12 +665,113 @@ export default function TournamentBracket() {
                 ) : (
                   <Shuffle className="w-4 h-4" />
                 )}
-                <span>{bracket ? "Bốc thăm lại" : "Bốc thăm chia cặp"}</span>
+                <span>{bracket ? "Bốc thăm lại" : selected?.format === "ROUND_ROBIN" ? "Xếp lịch vòng tròn" : "Bốc thăm chia cặp"}</span>
               </button>
+
+              {/* Xếp lịch thi đấu — chỉ có ý nghĩa sau khi đã bốc thăm tạo nhánh đấu */}
+              {bracket && (
+                <button
+                  onClick={() => setShowScheduleForm((v) => !v)}
+                  disabled={!selected || scheduleBusy}
+                  title="Sinh ngày + khung giờ + sân cho từng trận, lưu vào CSDL"
+                  className={`px-3.5 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40 ${
+                    showScheduleForm
+                      ? "bg-sky-500 text-slate-950 shadow-lg"
+                      : "bg-sky-500/20 text-sky-300 hover:bg-sky-500/30 border border-sky-500/40"
+                  }`}
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>Xếp lịch thi đấu</span>
+                </button>
+              )}
             </div>
             <p className="text-[10px] text-slate-400">
-              Giả lập & bốc thăm yêu cầu đăng nhập ORGANIZER hoặc ADMIN.
+              Giả lập, bốc thăm & xếp lịch yêu cầu đăng nhập ORGANIZER hoặc ADMIN.
             </p>
+
+            {/* Form tham số xếp lịch */}
+            {showScheduleForm && bracket && (
+              <div className="rounded-xl bg-sky-500/10 border border-sky-500/30 p-3 space-y-3">
+                <p className="text-[11px] font-black text-sky-300 uppercase tracking-wider">
+                  Tham số xếp lịch
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="col-span-2 sm:col-span-1 block">
+                    <span className="text-[10px] font-bold text-slate-300 block mb-1">
+                      Ngày thi đấu đầu tiên
+                    </span>
+                    <input
+                      type="date"
+                      value={scheduleForm.startDate}
+                      onChange={(e) => setScheduleForm((f) => ({ ...f, startDate: e.target.value }))}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                    {!scheduleForm.startDate && (
+                      <span className="text-[9px] text-slate-500">
+                        Để trống = dùng ngày khai giải ({prettyDate(selected?.startDate) || "—"}).
+                      </span>
+                    )}
+                  </label>
+                  <label className="block">
+                    <span className="text-[10px] font-bold text-slate-300 block mb-1">Trận / ngày</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={12}
+                      value={scheduleForm.matchesPerDay}
+                      onChange={(e) => setScheduleForm((f) => ({ ...f, matchesPerDay: e.target.value }))}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-[10px] font-bold text-slate-300 block mb-1">Cách giữa vòng (ngày)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={14}
+                      value={scheduleForm.daysBetweenRounds}
+                      onChange={(e) => setScheduleForm((f) => ({ ...f, daysBetweenRounds: e.target.value }))}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-[10px] font-bold text-slate-300 block mb-1">Giờ bắt đầu</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={23}
+                      value={scheduleForm.startHour}
+                      onChange={(e) => setScheduleForm((f) => ({ ...f, startHour: e.target.value }))}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-[10px] font-bold text-slate-300 block mb-1">Độ dài trận (phút)</span>
+                    <input
+                      type="number"
+                      min={30}
+                      max={240}
+                      step={15}
+                      value={scheduleForm.matchMinutes}
+                      onChange={(e) => setScheduleForm((f) => ({ ...f, matchMinutes: e.target.value }))}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSchedule}
+                  disabled={scheduleBusy}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs transition-all flex items-center justify-center space-x-1.5 shadow-md active:scale-95 disabled:opacity-50"
+                >
+                  {scheduleBusy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
+                  <span>{scheduleBusy ? "Đang xếp lịch…" : "Sinh lịch & lưu vào CSDL"}</span>
+                </button>
+                <p className="text-[9px] text-slate-500 leading-relaxed">
+                  Sân lấy từ <span className="font-bold text-slate-400">{selected?.pitchName || selected?.location || "Sân BTC"}</span> trong hồ sơ giải. Xếp lại sẽ ghi đè lịch cũ.
+                </p>
+              </div>
+            )}
 
             {/* Duyệt lệ phí: đội PENDING chờ BTC xác nhận đã thu tiền */}
             {pendingTeams.length > 0 && (
@@ -626,6 +867,22 @@ export default function TournamentBracket() {
               {bracket ? `Bốc thăm lúc ${bracket.drawnAt?.slice(0, 16).replace("T", " ")} • Xếp hạt giống theo Elo` : "Chưa có nhánh đấu"}
             </span>
           </div>
+
+          {/* Nhắc BTC khi chưa xếp lịch */}
+          {bracket && scheduledCount === 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-dashed border-sky-400/50 bg-sky-500/5 px-3 py-2.5">
+              <p className="text-[11px] font-bold text-sky-700 dark:text-sky-300">
+                <Calendar className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
+                Chưa có lịch thi đấu — bấm “Xếp lịch thi đấu” ở bảng điều hành để sinh ngày, giờ và sân cho từng trận.
+              </p>
+            </div>
+          )}
+          {bracket && scheduledCount > 0 && (
+            <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+              <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
+              Đã xếp lịch {scheduledCount} trận — ngày, khung giờ và sân lấy trực tiếp từ CSDL.
+            </p>
+          )}
 
           {!selected ? (
             <div className="p-8 text-center">
@@ -868,7 +1125,9 @@ export default function TournamentBracket() {
                     <th className="py-3 px-2 sm:px-4">Tên Đội / CLB</th>
                     <th className="py-3 px-2 sm:px-4 text-center">Trận</th>
                     <th className="py-3 px-2 sm:px-4 text-center">Thắng</th>
+                    <th className="py-3 px-2 sm:px-4 text-center">Hòa</th>
                     <th className="py-3 px-2 sm:px-4 text-center">Thua</th>
+                    <th className="py-3 px-2 sm:px-4 text-center">HS</th>
                     <th className="py-3 px-2 sm:px-4 text-center">Điểm</th>
                     <th className="py-3 px-2 sm:px-4 text-center">Elo Hiện Tại</th>
                     <th className="py-3 px-2 sm:px-4 text-right">Nguồn</th>
@@ -883,7 +1142,9 @@ export default function TournamentBracket() {
                       </td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono">{row.played}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{row.won}</td>
+                      <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-amber-600 dark:text-amber-400">{row.drawn}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-rose-500">{row.lost}</td>
+                      <td className="py-3.5 px-2 sm:px-4 text-center font-mono">{row.diff > 0 ? `+${row.diff}` : row.diff}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-black">{row.points}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center">
                         <span className="bg-amber-400/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded font-bold font-mono">
@@ -985,6 +1246,34 @@ export default function TournamentBracket() {
         busy={drawBusy}
         onCancel={() => setConfirmDraw(false)}
         onConfirm={startDraw}
+      />
+
+      {/* Xác nhận huỷ kết quả (hoàn Elo + xoá cầu thủ ghi bàn) */}
+      <ConfirmModal
+        open={confirmUndo !== null}
+        title="Huỷ kết quả trận đấu?"
+        message={
+          confirmUndo ? (
+            <>
+              Trận <strong>{confirmUndo.matchId}</strong> (
+              <strong>
+                {confirmUndo.teamA?.name} {confirmUndo.scoreA ?? 0}-{confirmUndo.scoreB ?? 0}{" "}
+                {confirmUndo.teamB?.name}
+              </strong>
+              ) sẽ được mở lại. Hệ thống sẽ <strong>hoàn lại Elo</strong> về giá trị trước trận và{" "}
+              <strong>xoá danh sách cầu thủ ghi bàn</strong> của trận này.
+            </>
+          ) : null
+        }
+        confirmLabel="Huỷ kết quả"
+        danger
+        busy={savingMatch !== null}
+        onCancel={() => setConfirmUndo(null)}
+        onConfirm={async () => {
+          const m = confirmUndo;
+          setConfirmUndo(null);
+          if (m) await handleUndoScore(m);
+        }}
       />
     </div>
   );
