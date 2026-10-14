@@ -45,6 +45,7 @@ import PitchDetail from "./PitchDetail";
 import SmartPaymentPass from "./SmartPaymentPass";
 import { getAllPitchesApi } from "@/lib/pitchService";
 import { API_BASE_URL } from "@/lib/api";
+import { fetchTournaments } from "@/lib/tournamentService";
 import { recommendPitches, type AiPitchCluster } from "@/lib/aiService";
 import { openDualRoleWindow, subscribeToBookingEvents } from "@/lib/realtimeService";
 
@@ -234,6 +235,46 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
   const userName = user?.fullName || user?.name || "Cao Việt An";
   const userElo = user?.eloRating || 1450;
+  const userPhone = (user?.phone ?? "").toString().replace(/\s/g, "");
+
+  // Giải đấu trong CSDL — dùng để đếm số trận đã đá của cầu thủ.
+  const [tournaments, setTournaments] = useState<any[]>([]);
+  useEffect(() => {
+    let alive = true;
+    fetchTournaments()
+      .then((list) => { if (alive) setTournaments(list as any[]); })
+      .catch(() => { if (alive) setTournaments([]); });
+    return () => { alive = false; };
+  }, []);
+
+  /**
+   * Số trận đã đá của cầu thủ: quét các giải trong CSDL, tìm đội do chính
+   * người dùng làm trọng tài/đội trưởng rồi đếm các trận đã có kết quả.
+   */
+  const userMatchesPlayed = React.useMemo(() => {
+    if (!userPhone) return 0;
+    let played = 0;
+    for (const t of tournaments) {
+      const myTeam = (t.teams ?? []).find(
+        (z: any) => String(z.captainPhone ?? "").replace(/\s/g, "") === userPhone
+      );
+      if (!myTeam?.teamName) continue;
+      if (!t.bracketJson) continue;
+      try {
+        const b = JSON.parse(t.bracketJson);
+        if (!Array.isArray(b?.rounds)) continue;
+        for (const r of b.rounds) {
+          for (const m of r.matches ?? []) {
+            if (m.status !== "DONE") continue;
+            if (m.teamA?.name === myTeam.teamName || m.teamB?.name === myTeam.teamName) played += 1;
+          }
+        }
+      } catch {
+        /* bracket hỏng thì bỏ qua giải này */
+      }
+    }
+    return played;
+  }, [tournaments, userPhone]);
 
   const sportsTabs = [
     { id: "ALL", name: "Tất Cả Sân Bóng", icon: "⚽" },
@@ -373,12 +414,14 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <span>SoccerHub Pro Pass • Đã Xác Thực</span>
               </span>
               <span className="font-mono text-[11px] sm:text-xs font-bold text-[#0b4f6c] dark:text-sky-300 bg-sky-50 dark:bg-sky-500/10 px-2.5 py-0.5 rounded-full border border-sky-200 dark:border-sky-400/20">
-                VĐV ID: #SH-20269
+                VĐV ID: {user?.id ? `#SH-${user.id}` : "#SH-GH"}
               </span>
-              <span className="inline-flex items-center space-x-1 text-[11px] sm:text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-400/20">
-                <Flame className="w-3.5 h-3.5 text-amber-500" />
-                <span>Chuỗi 4 Trận Bất Bại 🔥</span>
-              </span>
+              {userMatchesPlayed > 0 ? (
+                <span className="inline-flex items-center space-x-1 text-[11px] sm:text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-400/20">
+                  <Flame className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Đã đá {userMatchesPlayed} trận</span>
+                </span>
+              ) : null}
 
               {/* Nút mở tab Chủ Sân để test 2 Role song song */}
               <button
@@ -401,7 +444,12 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                   Chào mừng trở lại, <span className="text-[#0b4f6c] dark:text-sky-400">{userName}!</span> 👋
                 </h1>
                 <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 dark:text-slate-400 font-medium mt-0.5 leading-relaxed">
-                  Vị trí: <span className="text-[#0b4f6c] dark:text-sky-300 font-bold">Tiền đạo cánh trái (LW) / Hộ công (CAM)</span> • Chân thuận: <span className="font-bold">Phải</span> • Thể lực: <span className="text-emerald-600 dark:text-emerald-400 font-bold">95% Sẵn sàng</span>
+                  Vị trí:{" "}
+                  <span className="text-[#0b4f6c] dark:text-sky-300 font-bold">
+                    {user?.position ?? "Chưa cập nhật"}
+                  </span>{" "}
+                  • Khu vực: <span className="font-bold">{user?.area ?? "Chưa cập nhật"}</span>{" "}
+                  • Bậc: <span className="font-bold">{user?.level ?? "Chưa xếp bậc"}</span>
                 </p>
               </div>
             </div>
@@ -447,9 +495,15 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-extrabold">Chỉ Số Elo Cầu Thủ</span>
                 <div className="flex items-baseline space-x-2">
                   <span className="text-2xl font-black text-[#0b4f6c] dark:text-sky-400 font-mono">{userElo}</span>
-                  <span className="text-xs text-slate-700 dark:text-slate-300 font-bold truncate">Hạng Vàng Phủi ĐN</span>
+                  <span className="text-xs text-slate-700 dark:text-slate-300 font-bold truncate">
+                    {user?.level ?? "Chưa xếp bậc"}
+                  </span>
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Top 5% khu vực Liên Chiểu • 24 Trận</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                  {userMatchesPlayed > 0
+                    ? `Đã đá ${userMatchesPlayed} trận trong các giải của hệ thống`
+                    : "Chưa thi đấu trong giải nào trên hệ thống"}
+                </span>
               </div>
             </div>
 
@@ -458,12 +512,15 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 ⚽
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-extrabold">Chỉ Số Sân 7 Chuẩn</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-extrabold">Môn Thể Thức Yêu Thích</span>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{userElo}</span>
-                  <span className="text-xs text-slate-700 dark:text-slate-300 font-bold truncate">Division 1 Phủi VFF</span>
+                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono truncate">
+                    {user?.favoriteSport === "football" ? "Bóng Đá" : user?.favoriteSport ?? "—"}
+                  </span>
                 </div>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold truncate">Fairplay 99% (Không bùng kèo)</span>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold truncate">
+                  {realPitches.length} cụm sân đang mở đặt trên hệ thống
+                </span>
               </div>
             </div>
           </div>
@@ -626,7 +683,12 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 </h2>
 
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-                  Dựa trên vị trí thực tế tại <strong className="text-slate-900 dark:text-white">{featuredPitch.address}</strong> (cách bạn chỉ 1.2km), thời tiết Đà Nẵng tối nay mát mẻ 26°C và lịch sử 24 trận thi đấu của cầu thủ {userName} (Elo {userElo}).
+                  Gợi ý dựa trên vị trí thật tại{" "}
+                  <strong className="text-slate-900 dark:text-white">
+                    {featuredPitch.address ?? featuredPitch.area ?? "khu vực của bạn"}
+                  </strong>{" "}
+                  và chỉ số Elo hiện tại của bạn ({userElo}
+                  {userMatchesPlayed > 0 ? `, đã đá ${userMatchesPlayed} trận trong hệ thống` : ", chưa thi đấu trong giải nào"}).
                 </p>
 
                 {/* 3 Checklist Thẻ Thông Số Chuẩn Bóng Đá */}
@@ -1085,9 +1147,9 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               </div>
               <div className="flex-1 min-w-0 space-y-1">
                 <h4 className="font-black text-xs text-white truncate">{userName}</h4>
-                <p className="font-mono text-[11px] text-sky-300">ID: #SH-20269</p>
+                <p className="font-mono text-[11px] text-sky-300">ID: {user?.id ? `#SH-${user.id}` : "#SH-GH"}</p>
                 <div className="flex items-center space-x-2 text-[10px] font-mono text-emerald-400 font-bold">
-                  <span>Hạng A Phủi</span>
+                  <span>{user?.level ?? "Chưa xếp bậc"}</span>
                   <span>•</span>
                   <span>Elo {userElo}</span>
                 </div>
@@ -1253,7 +1315,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                 <QrCode className="w-48 h-48 text-slate-950" />
               </div>
               <p className="font-mono text-sm font-black text-emerald-600 dark:text-emerald-400">
-                #SH-20269 • {userName}
+                {user?.id ? `#SH-${user.id}` : "#SH-GH"} • {userName}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs">
                 Đưa mã này vào mắt đọc camera tại cổng barie hoặc quầy lễ tân để mở cổng vào sân tự động.
