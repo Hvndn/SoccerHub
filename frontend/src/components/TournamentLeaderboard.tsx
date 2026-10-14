@@ -29,6 +29,7 @@ import {
   registeredCount,
   isFull as isTournamentFull,
   fillPercent,
+  type TournamentBracketData,
 } from '@/lib/tournamentService';
 
 interface TournamentLeaderboardProps {
@@ -190,6 +191,105 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   const openCount = countOpen(tournaments);
   const liveCount = countLive(tournaments);
 
+  // Dải "trực tiếp" lấy từ CSDL thật: trận đã đánh gần nhất có lịch (BTC đã xếp lịch).
+  // Không có dữ liệu thì hiện trạng thái rõ ràng thay vì bịa tỷ số.
+  const latestResult = useMemo(() => {
+    type Row = { tournament: Tournament; matchId: string; a: string; b: string; sa: number; sb: number; date: string; time: string; winner: string | null };
+    const rows: Row[] = [];
+    for (const t of tournaments) {
+      if (!t.bracketJson) continue;
+      let parsed: TournamentBracketData | null = null;
+      try {
+        parsed = JSON.parse(t.bracketJson) as TournamentBracketData;
+      } catch {
+        parsed = null;
+      }
+      if (!parsed?.rounds?.length) continue;
+      for (const r of parsed.rounds) {
+        for (const m of r.matches) {
+          if (m.status !== 'DONE' || !m.teamA || !m.teamB) continue;
+          rows.push({
+            tournament: t,
+            matchId: m.matchId,
+            a: m.teamA.name,
+            b: m.teamB.name,
+            sa: m.scoreA ?? 0,
+            sb: m.scoreB ?? 0,
+            date: m.matchDate ?? '',
+            time: m.timeSlot ?? '',
+            winner: m.winner ?? null,
+          });
+        }
+      }
+    }
+    if (!rows.length) return null;
+    // Ưu tiên trận có ngày + giờ mới nhất, không có lịch thì xếp theo thứ tự trong nhánh.
+    rows.sort((x, y) => (y.date + y.time).localeCompare(x.date + x.time) || y.matchId.localeCompare(x.matchId));
+    return rows[0];
+  }, [tournaments]);
+
+  // Danh sách trận cho widget "Trực tiếp": lấy giải ONGOING đầu tiên có nhánh đấu đã xếp lịch.
+  const { liveTournament, liveRows } = useMemo(() => {
+    type LiveRow = {
+      tournamentId: number;
+      tournamentShort: string;
+      matchId: string;
+      roundName: string;
+      teamA: string;
+      teamB: string;
+      elo?: string;
+      sa: number;
+      sb: number;
+      status: string;
+      winner: string | null;
+      matchDate?: string;
+      timeSlot?: string;
+      pitchName?: string;
+    };
+    const candidates = tournaments.filter((t) => (t.status ?? 'OPEN') === 'ONGOING' || t.bracketJson);
+    for (const t of candidates) {
+      if (!t.bracketJson) continue;
+      let parsed: TournamentBracketData | null = null;
+      try {
+        parsed = JSON.parse(t.bracketJson) as TournamentBracketData;
+      } catch {
+        continue;
+      }
+      if (!parsed?.rounds?.length) continue;
+      const rows: LiveRow[] = [];
+      for (const r of parsed.rounds) {
+        for (const m of r.matches) {
+          if (!m.teamA || !m.teamB || m.status === 'BYE') continue;
+          rows.push({
+            tournamentId: t.id,
+            tournamentShort: t.title.length > 22 ? `${t.title.slice(0, 22)}…` : t.title,
+            matchId: m.matchId,
+            roundName: r.name,
+            teamA: m.teamA.name,
+            teamB: m.teamB.name,
+            elo: m.teamA.elo != null ? String(m.teamA.elo) : undefined,
+            sa: m.scoreA ?? 0,
+            sb: m.scoreB ?? 0,
+            status: m.status ?? 'SCHEDULED',
+            winner: m.winner ?? null,
+            matchDate: m.matchDate,
+            timeSlot: m.timeSlot,
+            pitchName: m.pitchName,
+          });
+        }
+      }
+      if (!rows.length) continue;
+      // Ưu tiên trận đã có lịch, sắp theo ngày/giờ tăng dần
+      rows.sort((a, b) => {
+        const ka = a.matchDate ?? '9999-99-99';
+        const kb = b.matchDate ?? '9999-99-99';
+        return ka.localeCompare(kb) || (a.timeSlot ?? '').localeCompare(b.timeSlot ?? '');
+      });
+      return { liveTournament: t, liveRows: rows.slice(0, 6) };
+    }
+    return { liveTournament: null as Tournament | null, liveRows: [] as LiveRow[] };
+  }, [tournaments]);
+
   // Hồ sơ thật của cầu thủ đang đăng nhập (fallback: trạng thái khách)
   const athleteName: string = user?.fullName || user?.name || '';
   // Avatar chỉ render <img> khi thật sự là URL ảnh (tránh 404 với initials "BT")
@@ -218,19 +318,33 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               <span className="text-slate-900 dark:text-white font-bold">Giải Đấu Bóng Đá & BXH Elo</span>
               <ChevronRight className="w-3.5 h-3.5" />
               <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold">
-                Mùa Giải Q4-2026
+                {featured ? featured.title : `${tournaments.length} giải trong CSDL`}
               </span>
             </div>
 
             <div className="flex items-center gap-2 self-start md:self-auto bg-white dark:bg-slate-900 px-3 py-1.5 rounded-full shadow-xs border border-slate-200 dark:border-slate-800">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span className={`absolute inline-flex h-full w-full rounded-full ${latestResult ? 'animate-ping bg-emerald-400 opacity-75' : 'bg-slate-300 opacity-60'}`}></span>
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${latestResult ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
               </span>
-              <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">LIVE 19:45:</span>
-              <span className="text-xs text-slate-600 dark:text-slate-300 truncate max-w-xs sm:max-w-md font-medium">
-                Bán Kết Sân 7 Nam Sài Gòn: FC Warriors vs FC Lộc Phát (Tỷ số Hiệp 2: 3-2)!
-              </span>
+              {latestResult ? (
+                <>
+                  <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                    {latestResult.time ? `KQ ${latestResult.time.split(' - ')[0]}:` : 'KQ GẦN NHẤT:'}
+                  </span>
+                  <span className="text-xs text-slate-600 dark:text-slate-300 truncate max-w-xs sm:max-w-md font-medium">
+                    {latestResult.a} {latestResult.sa}-{latestResult.sb} {latestResult.b}
+                    {latestResult.winner ? '' : ' (hòa)'} — {latestResult.tournament.title}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">CHƯA CÓ KQ</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md font-medium">
+                    BTC chưa nhập kết quả trận nào. Bấm vào giải để xem nhánh đấu.
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -695,92 +809,103 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             {/* LEFT COLUMN (70% - Col span 8): TOURNAMENT CARDS & LIVE BRACKET */}
             <div className="lg:col-span-8 flex flex-col gap-6">
               
-              {/* LIVE QUICK BRACKET / MATCH PROGRESSION PREVIEW WIDGET — chỉ ở tab Live */}
+              {/* LIVE QUICK BRACKET — dựng từ bracketJson thật trong CSDL */}
               {activeTab === 'live' && (
               <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-black text-[11px] flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-                      TRỰC TIẾP
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`px-2 py-0.5 rounded-full font-black text-[11px] flex items-center gap-1 shrink-0 ${
+                      liveRows.length
+                        ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                        : 'bg-slate-100 text-slate-500 dark:text-slate-400'
+                    }`}>
+                      <span className={`w-2 h-2 rounded-full ${liveRows.length ? 'bg-rose-500 animate-ping' : 'bg-slate-400'}`}></span>
+                      {liveRows.length ? 'TRỰC TIẾP' : 'CHỜ BTC'}
                     </span>
-                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                      Vòng Bán Kết - SoccerHub Cúp Sân 7A
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white truncate">
+                      {liveTournament ? liveTournament.title : 'Chưa có giải nào đang diễn ra'}
                     </h2>
                   </div>
-                  <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md font-bold">
-                    Chung kết: 17:30 Chiều nay
+                  <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md font-bold shrink-0">
+                    {liveRows.length ? `${liveRows.length} trận đã xếp lịch` : 'Chưa có lịch thi đấu'}
                   </span>
                 </div>
 
-                {/* Bracket Dual-Match Flow Module */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-                  {/* BK1 Result Box */}
-                  <div className="md:col-span-5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 flex flex-col gap-2 border border-slate-200/60 dark:border-slate-800">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
-                      <span>BÁN KẾT 1 • ĐÃ KẾT THÚC</span>
-                      <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">2 - 1 (FT)</span>
-                    </div>
-
-                    {/* Advancing Team Row */}
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 shadow-xs border border-emerald-500/30">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="w-1.5 h-6 rounded-full bg-emerald-600 shrink-0"></span>
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">FC Saigon Warriors</span>
-                          <span className="text-[10px] text-slate-500">Seed #1 • Elo 1,580</span>
+                {liveRows.length === 0 ? (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">
+                    BTC chưa xếp lịch cho giải nào. Mở tab <strong>Giải Đấu &amp; BXH › Bảng Đấu &amp; Nhánh Bracket</strong> để bốc thăm và xếp lịch.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {liveRows.map((m) => (
+                      <div
+                        key={`${m.tournamentId}-${m.matchId}`}
+                        className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 flex flex-col gap-2 border border-slate-200/60 dark:border-slate-800"
+                      >
+                        <div className="flex items-center justify-between gap-2 text-[11px] font-bold text-slate-500">
+                          <span className="truncate">
+                            {m.tournamentShort} · {m.roundName}
+                          </span>
+                          <span
+                            className={`shrink-0 ${
+                              m.status === 'DONE'
+                                ? 'text-emerald-700 dark:text-emerald-400'
+                                : 'text-slate-400'
+                            }`}
+                          >
+                            {m.status === 'DONE'
+                              ? m.winner
+                                ? `${m.sa}-${m.sb} FT`
+                                : `${m.sa}-${m.sb} HÒA`
+                              : m.timeSlot || 'Chờ lịch'}
+                          </span>
                         </div>
+                        {[m.teamA, m.teamB].map((name, i) => {
+                          const isWinner = m.status === 'DONE' && m.winner === name;
+                          const isLoser = m.status === 'DONE' && !!m.winner && m.winner !== name;
+                          return (
+                            <div
+                              key={i}
+                              className={`flex items-center justify-between gap-2 p-2 rounded-lg shadow-xs ${
+                                isWinner
+                                  ? 'bg-white dark:bg-slate-900 border border-emerald-500/30'
+                                  : isLoser
+                                  ? 'bg-slate-100/60 dark:bg-slate-900/40'
+                                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800'
+                              }`}
+                            >
+                              <span
+                                className={`flex items-center gap-2 min-w-0 text-xs truncate ${
+                                  isWinner ? 'font-extrabold' : 'font-semibold'
+                                }`}
+                              >
+                                <span
+                                  className={`w-1.5 h-6 rounded-full shrink-0 ${
+                                    isWinner
+                                      ? 'bg-emerald-600'
+                                      : isLoser
+                                      ? 'bg-slate-300 dark:bg-slate-700'
+                                      : 'bg-slate-400'
+                                  }`}
+                                ></span>
+                                <span className="truncate text-slate-900 dark:text-slate-100">{name}</span>
+                              </span>
+                              {m.elo && m.status !== 'DONE' && (
+                                <span className="font-mono text-[10px] text-slate-400 shrink-0">{m.elo}</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {m.pitchName && (
+                          <span className="text-[10px] text-slate-500 truncate">
+                            {m.matchDate ? `${m.matchDate.split('-').reverse().join('/')} · ` : ''}
+                            {m.pitchName}
+                          </span>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1.5 font-mono text-xs font-black text-emerald-700 dark:text-emerald-400 pl-2">
-                        <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950">2 Bàn</span>
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      </div>
-                    </div>
-
-                    {/* Eliminated Team Row */}
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-100/60 dark:bg-slate-900/40">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="w-1.5 h-6 rounded-full bg-slate-300 dark:bg-slate-700 shrink-0"></span>
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">FC Hoàng Nam Q.7</span>
-                          <span className="text-[10px] text-slate-400">Seed #4 • Elo 1,490</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-slate-400 pl-2">
-                        <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800">1 Bàn</span>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-
-                  {/* Arrow Connector */}
-                  <div className="hidden md:flex md:col-span-2 flex-col items-center justify-center text-center">
-                    <ChevronRight className="w-8 h-8 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase">Tiến Vào CK</span>
-                  </div>
-
-                  {/* Grand Final Live Teaser Box */}
-                  <div className="md:col-span-5 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex flex-col gap-2 border border-emerald-500/30">
-                    <div className="flex items-center justify-between text-[11px] text-emerald-800 dark:text-emerald-400 font-bold">
-                      <span>CHUNG KẾT TRANH VÔ ĐỊCH</span>
-                      <span className="px-1.5 py-0.5 rounded bg-emerald-700 text-white text-[10px]">SÂN 1</span>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 shadow-xs flex flex-col gap-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white">Minh Khang / Tuấn Lê</span>
-                        <span className="font-mono text-[11px] text-emerald-600 font-bold">Team 1</span>
-                      </div>
-                      <div className="text-center font-mono text-slate-400 font-bold text-[10px] tracking-widest uppercase">VS</div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white">Đức Duy / Quang Huy</span>
-                        <span className="font-mono text-[11px] text-amber-500 font-bold">Team 2</span>
-                      </div>
-                    </div>
-                    <button className="w-full py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs">
-                      <Video className="w-3.5 h-3.5 text-white" />
-                      <span>Xem Livestream AI Cam & Điểm Live</span>
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
               )}
 
