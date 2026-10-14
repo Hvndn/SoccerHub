@@ -270,7 +270,7 @@ export default function NewPlayerPage() {
                   type="text"
                   value={form.teamName}
                   onChange={(e) => set("teamName", e.target.value)}
-                  placeholder="Ví dụ: FC Thunder Saigon"
+                  placeholder="Ví dụ: FC Saigon"
                   className={inputCls}
                 />
                 {errors.teamName && <p className={errCls}>{errors.teamName}</p>}

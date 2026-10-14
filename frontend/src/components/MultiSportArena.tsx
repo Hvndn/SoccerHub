@@ -233,7 +233,7 @@ export default function MultiSportArena({
                 Ma Trận Sơ Đồ Cụm Sân Bóng Đá Real-Time
               </h1>
               <p className="mt-2 text-slate-300 text-sm sm:text-base max-w-2xl">
-                Đặt ca sân 5, sân 7, sân 11 và Futsal trong nhà tự động 24/7. Tìm đối thủ ghép trận theo chỉ số Elo, giữ chỗ tức thì qua VietQR Napas247.
+                Đặt ca sân 5, sân 7, sân 11 và Futsal trong nhà tự động 24/7. Tìm đối thủ ghép trận theo chỉ số Elo, giữ chỗ tức thì qua mã đặt chỗ.
               </p>
             </div>
 

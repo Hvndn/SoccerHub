@@ -704,7 +704,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <span>•</span>
                 <span>💰 Đã cọc: <strong className="text-amber-300 font-mono font-bold">{(realtimeAlert.depositPaid || 0).toLocaleString('vi-VN')}đ</strong></span>
                 <span>•</span>
-                <span>💳 Qua: <strong className="text-white">{realtimeAlert.via || "VietQR Online"}</strong></span>
+                <span>💳 Qua: <strong className="text-white">{realtimeAlert.via || "Tại quầy"}</strong></span>
               </p>
             </div>
           </div>
@@ -934,7 +934,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           <div className="text-2xl sm:text-3xl font-black text-sky-500 font-mono">
             {pitchStats.onlineBookings} Ca Online
           </div>
-          <span className="text-xs font-bold text-slate-500">Tự động giữ slot qua VietQR Napas247</span>
+          <span className="text-xs font-bold text-slate-500">Ca đặt qua trang đặt sân của SoccerHub</span>
         </div>
 
         <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
@@ -1112,7 +1112,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     className="bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-xs"
                   >
                     <option value="ALL">Tất cả hình thức</option>
-                    <option value="ONLINE">📱 VietQR Napas247 Online</option>
+                    <option value="ONLINE">📱 Đặt qua Website SoccerHub</option>
                     <option value="OFFLINE">☎️ Tạo Tại Quầy (Vãng Lai)</option>
                     <option value="RESALE">🔄 Sàn Nhượng Ca Gấp</option>
                     <option value="EMPTY">⚪ Ca Trống Chưa Đặt</option>

@@ -180,7 +180,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                       <Sparkles className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-extrabold tracking-tight text-white">VaoSan SPORTS PASS</p>
+                      <p className="text-sm font-extrabold tracking-tight text-white">SoccerHub SPORTS PASS</p>
                       <p className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">Universal Athlete ID</p>
                     </div>
                   </div>

@@ -310,19 +310,6 @@ export default function Navbar({
 
               <button
                 type="button"
-                onClick={() => handleSelectSubTab("iot-console")}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                  activeTab === "iot-console"
-                    ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
-              >
-                <Zap className="w-[18px] h-[18px] text-amber-500 shrink-0" />
-                <span>Điều Hành IoT Đèn & Barrier</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => handleSelectSubTab("multi-sport")}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   activeTab === "multi-sport"
@@ -753,18 +740,6 @@ export default function Navbar({
                       <button
                         type="button"
                         onClick={() => {
-                          handleSelectSubTab("iot-console");
-                          setShowUserDropdown(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors"
-                      >
-                        <Zap className="w-4 h-4 text-amber-500" />
-                        <span>Điều Hành IoT Đèn & Barrier</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
                           handleSelectSubTab("multi-sport");
                           setShowUserDropdown(false);
                         }}
@@ -1011,24 +986,6 @@ export default function Navbar({
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Quản Lý Cụm Sân & Doanh Thu</div>
                           <div className={`text-[10px] ${activeTab === "admin" ? "text-white/80 dark:text-slate-900/80" : "text-slate-400"}`}>Điều hành doanh thu, ca sân & giá cọc</div>
-                        </div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleSelectSubTab("iot-console")}
-                        className={`w-full text-left p-3 rounded-2xl flex items-center space-x-3 transition-colors ${
-                          activeTab === "iot-console"
-                            ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md font-extrabold"
-                            : "bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
-                          <Zap className="w-4 h-4 text-amber-500" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-extrabold leading-tight">Điều Hành IoT Đèn & Barrier</div>
-                          <div className={`text-[10px] ${activeTab === "iot-console" ? "text-white/80 dark:text-slate-900/80" : "text-slate-400"}`}>Bật/tắt đèn chiếu sáng sân & barie tự động</div>
                         </div>
                       </button>
 

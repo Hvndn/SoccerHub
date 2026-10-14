@@ -302,7 +302,7 @@ export default function TournamentOrganizerPortal({
               <Award className="w-8 h-8 text-amber-500 shrink-0 hidden sm:inline-block" />
             </h1>
             <p className="text-sm text-slate-600 max-w-2xl font-medium leading-relaxed">
-              Trung tâm điều hành giải đấu bóng đá tập trung: Tòa trọng tài điện tử AI, bốc thăm hạt giống tự động Elo VFF, Smart Escrow VietQR và sơ đồ nhánh đấu knockout thời gian thực.
+              Trung tâm điều hành giải đấu bóng đá tập trung: nhập tỷ số trọng tài, bốc thăm nhánh đấu, giải thưởng và sơ đồ nhánh đấu knockout thời gian thực.
             </p>
           </div>
 
@@ -781,7 +781,7 @@ export default function TournamentOrganizerPortal({
                         <th className="py-3 px-3 text-center">B</th>
                         <th className="py-3 px-3 text-center">HS</th>
                         <th className="py-3 px-3 text-center">Điểm</th>
-                        <th className="py-3 px-3 text-right">Elo VFF</th>
+                        <th className="py-3 px-3 text-right">Elo</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-medium">
@@ -1028,33 +1028,12 @@ export default function TournamentOrganizerPortal({
                     {formatMoney(activeTournament.prizePool)}
                   </span>
                   <span className="text-[10px] text-slate-400 font-bold block pt-1">
-                    Giải thưởng khai trong hồ sơ giải — thu tiền qua VietQR lệ phí đăng ký
+                    Số tiền do ban tổ chức khai trong hồ sơ giải
                   </span>
                 </div>
 
-                <div className="space-y-2.5 text-xs font-medium">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                    <span className="font-bold text-amber-700 dark:text-amber-400">🥇 Giải Nhất (ước tính 60%)</span>
-                    <span className="font-mono font-black text-slate-900 dark:text-white">
-                      {formatMoney(Math.round((activeTournament.prizePool ?? 0) * 0.6))}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80">
-                    <span className="font-bold text-slate-600 dark:text-slate-300">🥈 Giải Nhì (ước tính 30%)</span>
-                    <span className="font-mono font-black text-slate-900 dark:text-white">
-                      {formatMoney(Math.round((activeTournament.prizePool ?? 0) * 0.3))}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-800/10 border border-amber-800/20">
-                    <span className="font-bold text-amber-800 dark:text-amber-500">🥉 Đồng Giải Ba (ước tính 10%)</span>
-                    <span className="font-mono font-black text-slate-900 dark:text-white">
-                      {formatMoney(Math.round((activeTournament.prizePool ?? 0) * 0.1))}
-                    </span>
-                  </div>
-                </div>
-
                 <p className="text-[10px] text-slate-400 leading-relaxed">
-                  Tỉ lệ là tự tính theo quy ước chia đều — hệ thống chưa có bảng phân bổ giải thưởng riêng trong CSDL.
+                  Hệ thống chưa có bảng phân bổ giải thưởng theo hạng trong CSDL — việc chia tiền do ban tổ chức thực hiện bên ngoài.
                 </p>
               </>
             )}

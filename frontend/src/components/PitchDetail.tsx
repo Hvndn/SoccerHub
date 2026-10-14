@@ -102,6 +102,8 @@ export default function PitchDetail({
   const [matrixCourts, setMatrixCourts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
+  // Số người chia tiền — người dùng tự nhập, không mặc định roster có sẵn
+  const [splitCount, setSplitCount] = useState(14);
 
   // Thời lượng ca thi đấu CỐ ĐỊNH do Chủ Sân quy định (Mặc định 120 phút = 2 tiếng, bao gồm thi đấu và giao/trả ca)
   const fixedSlotDuration = useMemo(() => {
@@ -200,7 +202,7 @@ export default function PitchDetail({
   // Không áp voucher/điểm ảo: tổng = giá ca sân theo ma trận CSDL
   const totalPrice = originalPrice;
   const depositAmount = depositOption === "50%" ? Math.round(totalPrice * 0.5) : totalPrice;
-  const splitPerPlayer = Math.round(totalPrice / 14);
+  const splitPerPlayer = Math.round(totalPrice / Math.max(1, splitCount));
 
   // Chọn ca sân trên ma trận
   const handleSelectSlot = (court: any, slot: any) => {
@@ -250,7 +252,7 @@ export default function PitchDetail({
         customerPhone: customerPhone,
         totalPrice: totalPrice,
         depositPaid: depositAmount,
-        via: "VietQR Online"
+        via: "Đặt qua Website"
       };
 
       const res = await apiRequest<any>(`/api/v1/pitches/${pitchId}/book-offline`, {
@@ -262,7 +264,7 @@ export default function PitchDetail({
         setBookingConfirmed(res);
         setPaymentDone(false);
         setShowQrModal(true);
-        showToast("🎉 Đã tạo mã giữ chỗ thành công! Vui lòng quét mã VietQR để hoàn tất cọc.");
+        showToast("🎉 Đã tạo mã giữ chỗ. Bắt đầu cọc với chủ sân để giữ chắc ca.");
 
         // Phát sự kiện Realtime thông báo cho Chủ Sân ngay tức thì
         broadcastBookingEvent({
@@ -278,7 +280,7 @@ export default function PitchDetail({
           bookingDate: selectedDate,
           totalPrice: totalPrice,
           depositPaid: depositAmount,
-          via: "VietQR Online"
+          via: "Đặt qua Website"
         });
       } else {
         // Không tạo được đơn thật thì báo lỗi — tuyệt đối không bịa mã đơn
@@ -312,7 +314,7 @@ export default function PitchDetail({
         bookingDate: selectedDate,
         totalPrice: bookingConfirmed.totalPrice,
         depositPaid: bookingConfirmed.depositPaid,
-        via: "VietQR Napas247 (Đã Chuyển Khoản)"
+        via: "Đặt qua Website (Chờ chủ sân đối soát tiền)"
       });
     }
   };
@@ -843,7 +845,7 @@ export default function PitchDetail({
                   </div>
                   <div>
                     <h3 className="font-black text-sm text-slate-900 dark:text-white">Phiếu Đặt Chỗ Sân Bóng</h3>
-                    <span className="text-[11px] text-slate-400 font-mono">Trực tuyến VietQR Napas247</span>
+                    <span className="text-[11px] text-slate-400 font-mono">Giữ chỗ qua mã đơn</span>
                   </div>
                 </div>
                 <button
@@ -884,13 +886,6 @@ export default function PitchDetail({
               <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
                 <span>Giá ca sân niêm yết ({fixedSlotDuration} phút/ca):</span>
                 <span className="font-mono text-slate-900 dark:text-white font-bold">{originalPrice.toLocaleString("vi-VN")}đ</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
-                <span className="flex items-center space-x-1">
-                  <span>Chiếu sáng đèn LED IoT & VAR:</span>
-                  <Info className="w-3.5 h-3.5 text-emerald-500" />
-                </span>
-                <span className="font-mono text-emerald-500 font-bold">Miễn phí</span>
               </div>
 
               {/* Tổng thanh toán */}
@@ -952,22 +947,33 @@ export default function PitchDetail({
             </div>
 
             {/* Widget Dự Toán Chia Tiền (Split Bill) Cho Cả Đội */}
-            <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-sky-800 dark:text-sky-300 block">
-                  VietQR Chia Tiền (14 Cầu Thủ):
-                </span>
-                <span className="text-[11px] text-slate-500">
-                  Mỗi người chỉ tốn: <strong className="text-emerald-600 dark:text-emerald-400 font-mono font-bold text-xs">{splitPerPlayer.toLocaleString("vi-VN")}đ</strong>
-                </span>
+            <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 space-y-2">
+              <span className="text-xs font-bold text-sky-800 dark:text-sky-300 block">
+                Ước Tính Chia Tiền:
+              </span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] text-slate-500">Số người chia:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={40}
+                  value={splitCount}
+                  onChange={(e) => setSplitCount(Math.max(1, Number(e.target.value) || 1))}
+                  className="w-16 px-2 py-1 rounded-lg border border-sky-200 dark:border-sky-800 bg-white dark:bg-slate-900 text-xs font-mono font-bold text-center"
+                />
               </div>
-              <button
-                type="button"
-                onClick={() => showToast(`💸 Đã sao chép mức chia tiền ${splitPerPlayer.toLocaleString("vi-VN")}đ/người cho 14 cầu thủ!`)}
-                className="px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition-colors shrink-0 shadow-xs"
-              >
-                Chia Tiền
-              </button>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] text-slate-500">
+                  Mỗi người ~ <strong className="text-emerald-600 dark:text-emerald-400 font-mono font-bold text-xs">{splitPerPlayer.toLocaleString("vi-VN")}đ</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => showToast(`💸 Đã sao chép mức chia ${splitPerPlayer.toLocaleString("vi-VN")}đ/người (${splitCount} người)!`)}
+                  className="px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition-colors shrink-0 shadow-xs"
+                >
+                  Chia Tiền
+                </button>
+              </div>
             </div>
 
             {/* Nút Đặt Ca Chính */}
@@ -985,14 +991,14 @@ export default function PitchDetail({
                   </>
                 ) : (
                   <>
-                    <span>Xác Nhận & Quét VietQR Giữ Chỗ</span>
+                    <span>Xác Nhận Giữ Chỗ</span>
                     <ArrowRight className="w-[18px] h-[18px] text-white" />
                   </>
                 )}
               </button>
               <div className="flex items-center justify-center space-x-1 text-center text-[11px] text-slate-400">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Thanh toán cọc qua VietQR • Hoàn cọc theo chính sách hủy của từng sân</span>
+                <span>Mức cọc do từng sân quy định • Hoàn cọc theo chính sách của sân</span>
               </div>
             </div>
           </div>
@@ -1057,8 +1063,8 @@ export default function PitchDetail({
                     <Clock className="w-3.5 h-3.5" />
                     <span>Đơn giữ chỗ đã lưu trong hệ thống</span>
                   </div>
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white">Quét Mã VietQR Nhận Sân</h3>
-                  <p className="text-xs text-slate-500">Mã đơn vé đã được lưu vào hệ thống. Quét QR để chuyển cọc cho chủ sân.</p>
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white">Mã Giữ Chỗ Của Bạn</h3>
+                  <p className="text-xs text-slate-500">Bắt đầu cọc trực tiếp với chủ sân để chắc chắn giữ được ca. Hệ thống không tự trừ tiền.</p>
                 </div>
 
                 {/* Tóm tắt cọc */}
@@ -1076,24 +1082,23 @@ export default function PitchDetail({
                     <strong className="font-mono text-[#0b4f6c] dark:text-sky-400 font-bold">{bookingConfirmed?.code || "—"}</strong>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700 text-sm">
-                    <span className="font-bold text-slate-800 dark:text-slate-200">Số tiền cọc cần chuyển ({depositOption}):</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">Mức cọc dự kiến ({depositOption}):</span>
                     <strong className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-base">
                       {depositAmount.toLocaleString("vi-VN")} đ
                     </strong>
                   </div>
                 </div>
 
-                {/* Mã QR Động Napas247 */}
+                {/* Mã QR vé giữ chỗ (không phải mã ngân hàng) */}
                 <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border-2 border-emerald-500 shadow-sm">
-                  <img
-                    src={`https://img.vietqr.io/image/970422-98202598888-compact2.png?amount=${depositAmount}&addInfo=${encodeURIComponent(bookingConfirmed?.code || "VS7192")}&accountName=VAOSAN%20SPORTS%20ECOSYSTEM`}
-                    alt="VietQR Napas247"
-                    className="w-52 h-52 object-contain"
-                  />
-                  <div className="text-center mt-2 text-xs text-slate-600">
-                    <span>Nội dung chuyển khoản: </span>
-                    <strong className="text-[#0b4f6c] font-mono text-sm">{bookingConfirmed?.code || "VS7192"}</strong>
+                  <div className="w-44 h-44 flex items-center justify-center">
+                    <QrCode className="w-40 h-40 text-slate-900" />
                   </div>
+                  <div className="text-center mt-2 text-xs text-slate-600">
+                    <span>Mã giữ chỗ: </span>
+                    <strong className="text-[#0b4f6c] font-mono text-sm">{bookingConfirmed?.code || "—"}</strong>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">Liên hệ chủ sân để hoàn tất cọc và xác nhận ca.</p>
                 </div>
 
                 <button
@@ -1102,7 +1107,7 @@ export default function PitchDetail({
                   className="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
                 >
                   <CheckCircle2 className="w-5 h-5 text-white" />
-                  <span>Xác Nhận Đã Chuyển Khoản Thành Công</span>
+                  <span>Đã Đặt Giữ Chỗ Thành Công</span>
                 </button>
               </>
             ) : (

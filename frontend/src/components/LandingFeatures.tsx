@@ -337,7 +337,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
           </h2>
 
           <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed max-w-2xl mx-auto">
-            Hòa mình vào hệ sinh thái quản lý sân bóng và giải đấu thông minh hàng đầu. Đặt sân tức thì, kiểm soát IoT dàn đèn và tổ chức giải đấu chuyên nghiệp chuẩn VFF.
+            Hòa mình vào hệ sinh thái quản lý sân bóng và giải đấu SoccerHub. Đặt sân tức thì, theo dõi doanh thu và tổ chức giải đấu chuyên nghiệp.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3.5">
@@ -356,7 +356,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
               <Store className="w-4 h-4 text-[#0b4f6c]" />
-              <span>Dành Cho Chủ Sân (Quản Lý IoT)</span>
+              <span>Dành Cho Chủ Sân (Quản Lý Cụm Sân)</span>
             </button>
 
             <button

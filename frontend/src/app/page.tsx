@@ -17,7 +17,6 @@ import PlayerProfileConsole from "@/components/PlayerProfileConsole";
 import TeamClubManagement from "@/components/TeamClubManagement";
 import StadiumOwnerOnboarding from "@/components/StadiumOwnerOnboarding";
 import MultiSportArena from "@/components/MultiSportArena";
-import StadiumIoTConsole from "@/components/StadiumIoTConsole";
 import GuestFeatureBanner from "@/components/GuestFeatureBanner";
 import { MapPin, Trophy, Users, ShieldCheck, ShieldAlert, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -66,7 +65,7 @@ export default function Home() {
   // MA TRẬN PHÂN QUYỀN TAB (RBAC)
   // ============================================================
   // Tab chỉ dành cho OWNER (Chủ sân)
-  const OWNER_TABS = ["admin", "owner-onboarding", "iot-console", "multi-sport"];
+  const OWNER_TABS = ["admin", "owner-onboarding", "multi-sport"];
   // Tab chỉ dành cho ORGANIZER hoặc người có quyền điều hành giải
   const ORGANIZER_TABS = ["organizer"];
   // Tab yêu cầu đăng nhập (bất kỳ vai trò nào cũng phải có tài khoản)
@@ -212,7 +211,7 @@ export default function Home() {
       const savedPending = pendingTab;
       setPendingTab(null);
 
-      const ownerTabs = ["admin", "owner-onboarding", "iot-console", "multi-sport"];
+      const ownerTabs = ["admin", "owner-onboarding", "multi-sport"];
       const organizerTabs = ["organizer"];
       const authRequiredTabs = ["my-activities", "profile", "team-management", "membership"];
 
@@ -347,10 +346,6 @@ export default function Home() {
               onNavigateToBooking={() => handleTabChange("booking")}
               onNavigateToChokego={() => handleTabChange("community")}
             />
-          )}
-
-          {activeTab === "iot-console" && (
-            <StadiumIoTConsole />
           )}
 
           {activeTab === "tournaments" && (
