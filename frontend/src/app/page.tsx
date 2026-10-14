@@ -499,8 +499,9 @@ export default function Home() {
 
           {(activeTab === "my-activities" || activeTab === "schedule") && (
             currentUser ? (
-              <ActivitySchedule 
-                onBackToHome={() => handleTabChange("booking")} 
+              <ActivitySchedule
+                user={currentUser}
+                onBackToHome={() => handleTabChange("booking")}
                 onNavigateTab={handleTabChange}
               />
             ) : (

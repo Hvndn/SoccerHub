@@ -1,39 +1,210 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Home, ChevronRight, Calendar, PlusCircle, Radio, Clock, MapPin, Trophy, Users, 
-  ShieldCheck, Zap, QrCode, Video, MessageSquare, AlertTriangle, Download, Wallet,
-  TrendingUp, Activity, PhoneCall, CheckCircle2, ChevronDown, RefreshCw, XCircle,
-  PlayCircle, FileText
-} from 'lucide-react';
+"use client";
+
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Home, ChevronRight, Calendar, Clock, MapPin, Trophy, Users, ShieldCheck, Zap,
+  QrCode, Video, MessageSquare, CheckCircle2, RefreshCw, XCircle, PlayCircle, FileText
+} from "lucide-react";
+import { API_BASE_URL } from "@/lib/api";
+import {
+  fetchTournaments, sportLabel, formatLabel,
+  type Tournament, type TournamentBracketData,
+} from "@/lib/tournamentService";
 
 interface ActivityScheduleProps {
+  user?: any;
   onBackToHome?: () => void;
   onNavigateTab?: (tab: string) => void;
 }
 
-export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
-  onBackToHome,
-  onNavigateTab
-}) => {
-  const [activeFilter, setActiveFilter] = useState<'upcoming' | 'tournaments' | 'matchmaking' | 'history' | 'cancelled'>('upcoming');
-  const [secondsRemaining, setSecondsRemaining] = useState(1 * 3600 + 45 * 60 + 20);
-  const [showQRModal, setShowQRModal] = useState(false);
-  const [showCancelModal, setShowCancelModal] = useState(false);
+type MatchRow = {
+  key: string;
+  matchId: string;
+  roundName: string;
+  tournamentId: number;
+  tournamentTitle: string;
+  teamA: string;
+  teamB: string;
+  eloA?: number;
+  eloB?: number;
+  scoreA?: number;
+  scoreB?: number;
+  status: string;
+  matchDate?: string;
+  timeSlot?: string;
+  pitchName?: string;
+  startAt?: Date;
+};
 
-  // Countdown effect
+const WEEKDAY = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+const money = (n?: number | null) => `${(n ?? 0).toLocaleString("vi-VN")}đ`;
+
+/** "2026-11-15" + "17:00 - 18:30" -> Date (dùng mốc đầu khung giờ). */
+function parseStart(date?: string, slot?: string): Date | undefined {
+  if (!date) return undefined;
+  const hhmm = /(\d{1,2}):(\d{2})/.exec(slot ?? "");
+  const d = new Date(`${date}T${hhmm ? `${hhmm[1].padStart(2, "0")}:${hhmm[2]}` : "00:00"}:00`);
+  return Number.isNaN(d.getTime()) ? undefined : d;
+}
+
+export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
+  user,
+  onBackToHome,
+  onNavigateTab,
+}) => {
+  const [activeFilter, setActiveFilter] = useState<
+    "upcoming" | "tournaments" | "matchmaking" | "history" | "cancelled"
+  >("upcoming");
+
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [myBookings, setMyBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [now, setNow] = useState(() => new Date());
+  const [notice, setNotice] = useState<string | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<MatchRow | null>(null);
+
+  // Đồng hồ 1 nhịp/giây cho countdown + trạng thái "đã bắt đầu"
   useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsRemaining(prev => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
   }, []);
 
-  const formatCountdown = (totalSec: number) => {
-    const hours = Math.floor(totalSec / 3600);
-    const minutes = Math.floor((totalSec % 3600) / 60);
-    const seconds = totalSec % 60;
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  useEffect(() => {
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(null), 4000);
+    return () => clearTimeout(t);
+  }, [notice]);
+
+  const load = async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const [ts, ps] = await Promise.all([
+        fetchTournaments(true).catch(() => [] as Tournament[]),
+        fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`)
+          .then((r) => (r.ok ? r.json() : []))
+          .catch(() => [] as any[]),
+      ]);
+      setTournaments(ts);
+      setPosts(Array.isArray(ps) ? ps : []);
+
+      // Vé của chính mình: tra theo SĐT trong tài khoản (API search bookings)
+      const phone = (user?.phone ?? "").toString().replace(/\s/g, "");
+      if (phone.length >= 8) {
+        const bs = await fetch(`${API_BASE_URL}/api/v1/pitches/bookings/search?query=${encodeURIComponent(phone)}`)
+          .then((r) => (r.ok ? r.json() : []))
+          .catch(() => [] as any[]);
+        setMyBookings(Array.isArray(bs) ? bs : []);
+      } else {
+        setMyBookings([]);
+      }
+    } catch (e: any) {
+      setLoadError(e?.message || "Không tải được dữ liệu từ máy chủ.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.phone]);
+
+  /** Gom toàn bộ trận trong mọi nhánh đấu ra một danh sách phẳng. */
+  const allMatches = useMemo<MatchRow[]>(() => {
+    const rows: MatchRow[] = [];
+    for (const t of tournaments) {
+      if (!t.bracketJson) continue;
+      let b: TournamentBracketData | null = null;
+      try {
+        const p = JSON.parse(t.bracketJson) as TournamentBracketData;
+        b = p && Array.isArray(p.rounds) ? p : null;
+      } catch {
+        b = null;
+      }
+      if (!b) continue;
+      for (const r of b.rounds) {
+        for (const m of r.matches) {
+          if (!m.teamA || !m.teamB || m.status === "BYE") continue;
+          rows.push({
+            key: `t${t.id}-${m.matchId}`,
+            matchId: m.matchId,
+            roundName: r.name,
+            tournamentId: t.id,
+            tournamentTitle: t.title,
+            teamA: m.teamA.name,
+            teamB: m.teamB.name,
+            eloA: m.teamA.elo,
+            eloB: m.teamB.elo,
+            scoreA: m.scoreA,
+            scoreB: m.scoreB,
+            status: m.status ?? "SCHEDULED",
+            matchDate: m.matchDate,
+            timeSlot: m.timeSlot,
+            pitchName: m.pitchName ?? t.pitchName ?? t.location ?? undefined,
+            startAt: parseStart(m.matchDate, m.timeSlot),
+          });
+        }
+      }
+    }
+    return rows.sort((a, b) => (a.startAt?.getTime() ?? Infinity) - (b.startAt?.getTime() ?? Infinity));
+  }, [tournaments]);
+
+  const upcoming = useMemo(
+    () => allMatches.filter((m) => m.status !== "DONE" && (m.startAt ? m.startAt.getTime() > now.getTime() : false)),
+    [allMatches, now]
+  );
+  const running = useMemo(
+    () => allMatches.filter((m) => m.status !== "DONE" && m.startAt && m.startAt.getTime() <= now.getTime() && now.getTime() - m.startAt.getTime() < 6 * 3600 * 1000),
+    [allMatches, now]
+  );
+  const doneMatches = useMemo(() => allMatches.filter((m) => m.status === "DONE"), [allMatches]);
+
+  const openPosts = useMemo(() => posts.filter((p: any) => (p.status ?? "OPEN") === "OPEN"), [posts]);
+  const matchedPosts = useMemo(() => posts.filter((p: any) => p.status === "MATCHED"), [posts]);
+  const cancelledPosts = useMemo(() => posts.filter((p: any) => p.status === "CANCELLED"), [posts]);
+
+  /** Trận nổi bật: đang diễn ra, nếu không thì trận sắp tới gần nhất. */
+  const hero = running[0] ?? upcoming[0] ?? null;
+  const heroSeconds = hero?.startAt ? Math.max(0, Math.floor((hero.startAt.getTime() - now.getTime()) / 1000)) : 0;
+
+  const fmtCountdown = (total: number) => {
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  };
+
+  const listFor = (filter: typeof activeFilter): MatchRow[] => {
+    switch (filter) {
+      case "upcoming":
+      case "tournaments":
+        return upcoming;
+      case "history":
+        return doneMatches;
+      default:
+        return [];
+    }
+  };
+
+  const visibleMatches = listFor(activeFilter);
+
+  const filterTabs: { id: typeof activeFilter; label: string; count: number; tone: string }[] = [
+    { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-emerald-500 text-white" },
+    { id: "tournaments", label: "Lịch đấu giải", count: allMatches.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
+    { id: "matchmaking", label: "Kèo đã ghép", count: matchedPosts.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
+    { id: "history", label: "Đã đá", count: doneMatches.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
+    { id: "cancelled", label: "Đã hủy", count: cancelledPosts.length, tone: "bg-rose-100 text-rose-700" },
+  ];
+
+  const dateBox = (m: MatchRow) => {
+    const d = m.startAt ?? (m.matchDate ? new Date(`${m.matchDate}T00:00:00`) : null);
+    if (!d) return { top: "—", num: "—", bot: "—" };
+    return { top: WEEKDAY[d.getDay()], num: String(d.getDate()), bot: d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) };
   };
 
   return (
@@ -41,7 +212,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
       <div className="w-full py-2">
         <div className="flex flex-col w-full gap-6">
 
-          {/* 1. SUB-HEADER / BREADCRUMB & HIGH-LEVEL ACTIONS */}
+          {/* 1. BREADCRUMB & ACTIONS */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex flex-col gap-1.5">
               <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -60,652 +231,445 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                   Lịch Trình & Vé Thi Đấu
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full bg-lime-400 text-slate-950 font-black text-xs uppercase tracking-wide">
-                  Mùa Giải 2025
+                  {tournaments.length} giải trong CSDL
                 </span>
               </div>
             </div>
 
-            {/* Top CTA Action Cluster */}
             <div className="flex flex-wrap items-center gap-3">
-              <button 
-                onClick={() => alert('Đã xuất file lịch thi đấu .ics và đồng bộ thành công với Google Calendar!')}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-bold shadow-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border border-slate-200 dark:border-slate-800"
+              <button
+                onClick={load}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-bold shadow-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border border-slate-200 dark:border-slate-800 disabled:opacity-50"
               >
-                <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Xuất iCal / Google Calendar</span>
+                <RefreshCw className={`w-4 h-4 text-emerald-600 dark:text-emerald-400 ${loading ? "animate-spin" : ""}`} />
+                <span>{loading ? "Đang tải…" : "Tải lại từ CSDL"}</span>
               </button>
 
-              <button 
-                onClick={() => onNavigateTab && onNavigateTab('booking')}
+              <button
+                onClick={() => onNavigateTab && onNavigateTab("booking")}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-md transition-all active:scale-95"
               >
-                <PlusCircle className="w-4 h-4" />
-                <span>+ Đặt Thêm Sân Mới</span>
+                <Calendar className="w-4 h-4" />
+                <span>+ Đặt Sân Mới</span>
               </button>
             </div>
           </div>
 
-          {/* 2. FILTER RIBBON & TAB STRIP */}
+          {loadError && (
+            <p className="rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 px-4 py-3 text-xs font-bold text-rose-700 dark:text-rose-300">
+              {loadError}
+            </p>
+          )}
+
+          {/* 2. FILTER RIBBON — số liệu đếm từ CSDL */}
           <div className="flex items-center justify-between overflow-x-auto pb-1 gap-4">
             <div className="flex items-center gap-2 shrink-0">
-              <button 
-                onClick={() => setActiveFilter('upcoming')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                  activeFilter === 'upcoming' 
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm' 
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-                }`}
-              >
-                <span>Sắp diễn ra</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white font-mono text-[11px] font-bold">3</span>
-              </button>
-
-              <button 
-                onClick={() => setActiveFilter('tournaments')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                  activeFilter === 'tournaments' 
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm' 
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-                }`}
-              >
-                <span>Lịch đấu giải</span>
-                <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono text-[11px] font-bold">1</span>
-              </button>
-
-              <button 
-                onClick={() => setActiveFilter('matchmaking')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                  activeFilter === 'matchmaking' 
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm' 
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-                }`}
-              >
-                <span>Kèo đã ghép</span>
-                <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono text-[11px] font-bold">2</span>
-              </button>
-
-              <button 
-                onClick={() => setActiveFilter('history')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                  activeFilter === 'history' 
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm' 
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-                }`}
-              >
-                <span>Lịch sử đã đá/đánh</span>
-                <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono text-[11px] font-bold">28</span>
-              </button>
-
-              <button 
-                onClick={() => setActiveFilter('cancelled')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                  activeFilter === 'cancelled' 
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm' 
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-                }`}
-              >
-                <span>Đã hủy</span>
-                <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-mono text-[11px] font-bold">1</span>
-              </button>
+              {filterTabs.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setActiveFilter(t.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                    activeFilter === t.id
+                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm"
+                      : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800"
+                  }`}
+                >
+                  <span>{t.label}</span>
+                  <span className={`px-2 py-0.5 rounded-full font-mono text-[11px] font-bold ${t.tone}`}>{t.count}</span>
+                </button>
+              ))}
             </div>
 
             <div className="hidden lg:flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-medium shrink-0">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Tự động đồng bộ IoT sân bãi theo thời gian thực
+              Lịch lấy trực tiếp từ bảng <span className="font-mono">tournaments</span> &amp;{" "}
+              <span className="font-mono">matchmaking_posts</span>
             </div>
           </div>
 
-          {/* 3. PRIMARY 2-COLUMN RESPONSIVE LAYOUT */}
+          {/* 3. NỘI DUNG */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            {/* LEFT COLUMN: Upcoming Matches & Historical Feed (8 Cols) */}
             <div className="lg:col-span-8 flex flex-col gap-6">
-              
-              {/* HERO IMMINENT MATCH BANNER */}
-              <div className="relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-md p-6 lg:p-7 flex flex-col gap-5 border border-slate-200/80 dark:border-slate-800">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-600 via-lime-400 to-teal-500"></div>
 
-                {/* Header status with animated countdown */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white font-mono text-xs font-bold">
-                      <span className="w-2 h-2 rounded-full bg-lime-400 animate-ping"></span>
-                      TRẬN TIẾP THEO
-                    </span>
-                    <span className="text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                      <Clock className="w-4 h-4 text-rose-500" />
-                      Khởi tranh sau: <span className="font-mono font-black tracking-wider text-base">{formatCountdown(secondsRemaining)}</span>
-                    </span>
-                  </div>
+              {/* HERO: trận sắp tới / đang diễn ra */}
+              {hero ? (
+                <div className="relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-md p-6 lg:p-7 flex flex-col gap-5 border border-slate-200/80 dark:border-slate-800">
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-600 via-lime-400 to-teal-500"></div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-400 font-bold text-xs">
-                      Bóng Đá Sân 7 Phủi
-                    </span>
-                    <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-xs font-bold">
-                      Elo Rating 1,450
-                    </span>
-                  </div>
-                </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white font-mono text-xs font-bold">
+                        <span className="w-2 h-2 rounded-full bg-lime-400 animate-ping"></span>
+                        {running.length ? "ĐANG DIỄN RA" : "TRẬN TIẾP THEO"}
+                      </span>
+                      {hero.startAt && !running.length && (
+                        <span className="text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                          <Clock className="w-4 h-4 text-rose-500" />
+                          Khởi tranh sau: <span className="font-mono font-black tracking-wider text-base">{fmtCountdown(heroSeconds)}</span>
+                        </span>
+                      )}
+                    </div>
 
-                {/* Match Info & Court Visual Splice */}
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                  <div className="relative w-full md:w-48 h-36 rounded-lg overflow-hidden shrink-0 shadow-xs border border-slate-200 dark:border-slate-800">
-                    <img 
-                      src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80" 
-                      alt="Trận Trực Tiếp Sân 7A"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute bottom-2 left-2 px-2 py-1 rounded bg-slate-950/80 backdrop-blur-sm text-white font-mono text-xs font-bold">
-                      Sân 7A Pro
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-400 font-bold text-xs">
+                        {sportLabel(tournaments.find((t) => t.id === hero.tournamentId)?.sportType)}
+                      </span>
+                      <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-xs font-bold">
+                        {hero.matchId}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2.5 flex-1 min-w-0">
+                  <div className="flex flex-col gap-3 flex-1 min-w-0">
                     <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                      Bóng Đá Sân 7: FC Saigon Warriors vs FC Anh Em Kiến Trúc
+                      {hero.teamA} vs {hero.teamB}
                     </h2>
 
                     <div className="flex flex-wrap items-center gap-y-1.5 gap-x-4 text-xs">
                       <span className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
                         <Clock className="w-4 h-4 text-emerald-600" />
-                        19:30 - 21:00 (Tối nay, 18/10 • 90 Phút)
+                        {hero.timeSlot ?? "Chưa xếp giờ"}
+                        {hero.matchDate ? ` (${prettyDate(hero.matchDate)})` : ""}
                       </span>
                       <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                         <MapPin className="w-4 h-4 text-emerald-600" />
-                        Cụm D-Sport Oasis Q.7 (Cỏ Nhân Tạo 50mm)
+                        {hero.pitchName ?? "Chưa xếp sân"}
                       </span>
                     </div>
 
-                    {/* Team Rosters & Elo Rating Nodes */}
+                    {/* Đội hình lấy từ danh sách đội đã đăng ký trong CSDL */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                      {/* Team A (Your Team) */}
-                      <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950 flex flex-col gap-1.5 border border-slate-200/60 dark:border-slate-800">
-                        <div className="flex items-center justify-between text-[10px] font-bold text-slate-500">
-                          <span className="uppercase tracking-wider text-emerald-700 dark:text-emerald-400">ĐỘI CỦA BẠN (Sài Gòn Warriors)</span>
-                          <span className="font-mono text-emerald-700 dark:text-emerald-400">Avg 1,450</span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[10px]">AN</span>
-                            <span>Bạn (Nguyễn Văn An)</span>
+                      {[hero.teamA, hero.teamB].map((name, i) => {
+                        const entry = tournaments.find((t) => t.id === hero.tournamentId)?.teams?.find((z) => z.teamName === name);
+                        const initials = name.split(" ").filter(Boolean).slice(-2).map((w) => w[0]).join("").toUpperCase();
+                        return (
+                          <div key={i} className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950 flex flex-col gap-1.5 border border-slate-200/60 dark:border-slate-800">
+                            <div className="flex items-center justify-between text-[10px] font-bold text-slate-500">
+                              <span className="uppercase tracking-wider">
+                                {i === 0 ? "ĐỘI A" : "ĐỘI B"}
+                              </span>
+                              <span className={`font-mono ${i === 0 ? "text-emerald-700 dark:text-emerald-400" : ""}`}>
+                                Elo {i === 0 ? (hero.eloA ?? entry?.eloRating ?? "—") : (hero.eloB ?? entry?.eloRating ?? "—")}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
+                                i === 0 ? "bg-emerald-700 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                              }`}>
+                                {initials || "?"}
+                              </span>
+                              <span className="truncate">{name}</span>
+                            </div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                              {entry
+                                ? `Trọng tài đội: ${entry.captainName ?? "—"} · ${entry.memberCount ?? "—"} thành viên`
+                                : "Không tìm thấy hồ sơ đội trong giải"}
+                            </div>
                           </div>
-                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-emerald-600">Elo 1,450</span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px]">TL</span>
-                            <span>Tuấn Lê</span>
-                          </div>
-                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-slate-500">Elo 1,420</span>
-                        </div>
-                      </div>
-
-                      {/* Team B (Opponents) */}
-                      <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950 flex flex-col gap-1.5 border border-slate-200/60 dark:border-slate-800">
-                        <div className="flex items-center justify-between text-[10px] font-bold text-slate-500">
-                          <span className="uppercase tracking-wider">ĐỐI THỦ (Anh Em Kiến Trúc)</span>
-                          <span className="font-mono">Avg 1,430</span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px]">MK</span>
-                            <span>Minh Khang</span>
-                          </div>
-                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-slate-500">Elo 1,440</span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center text-[10px]">QB</span>
-                            <span>Quốc Bảo</span>
-                          </div>
-                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 font-mono text-slate-500">Elo 1,420</span>
-                        </div>
-                      </div>
+                        );
+                      })}
                     </div>
                   </div>
-                </div>
 
-                {/* IoT Realtime Health Indicator Chips */}
-                <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
-                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    Đã cọc 50% (45.000đ)
-                  </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
-                    <Zap className="w-3.5 h-3.5 text-amber-500" />
-                    Hệ thống IoT sẵn sàng (Bật đèn 19:25)
-                  </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
-                    <Video className="w-3.5 h-3.5 text-emerald-600" />
-                    AI Smart Replay kích hoạt tự động
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        onClick={() => setSelectedMatch(hero)}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold shadow-sm transition-all active:scale-95"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Xem Vé & Thông Tin Trận
+                      </button>
+                      <button
+                        onClick={() => onNavigateTab && onNavigateTab("tournaments")}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                      >
+                        <Trophy className="w-4 h-4 text-emerald-600" />
+                        Mở Nhánh Đấu
+                      </button>
+                    </div>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {hero.roundName} · {hero.tournamentTitle}
+                    </span>
                   </div>
                 </div>
-
-                {/* Interactive Match Action Buttons */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button 
-                      onClick={() => setShowQRModal(true)}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold shadow-sm transition-all active:scale-95"
-                    >
-                      <QrCode className="w-4 h-4" />
-                      Vé Vào Sân & Mở Tủ Đồ #09
-                    </button>
-                    <button 
-                      onClick={() => alert('Đã mở sa bàn chiến thuật & phòng chat nhóm trận đấu!')}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-                    >
-                      <MessageSquare className="w-4 h-4 text-emerald-600" />
-                      Sa Bàn & Kênh Nhóm (4)
-                    </button>
-                  </div>
-                  <button 
-                    onClick={() => setShowCancelModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold transition-colors" 
-                    title="Đổi giờ hoặc hủy trước 2 tiếng miễn phí"
-                  >
-                    <XCircle className="w-4 h-4 text-rose-500" />
-                    Báo Hủy / Đổi Giờ
-                  </button>
+              ) : (
+                <div className="rounded-xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center">
+                  <Calendar className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+                  <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-300">
+                    Chưa có trận nào sắp diễn ra
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {tournaments.length === 0
+                      ? "Chưa đọc được giải đấu từ máy chủ. Bấm “Tải lại từ CSDL” để thử lại."
+                      : "BTC chưa bốc thăm hoặc chưa xếp lịch cho giải nào. Mở tab Điều Hành Giải Đấu để bốc thăm và xếp lịch."}
+                  </p>
                 </div>
-              </div>
+              )}
 
-              {/* UPCOMING QUEUE CARDS */}
+              {/* DANH SÁCH TRẬN THEO BỘ LỌC */}
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Các Trận Tiếp Theo Trong Tuần</h3>
-                  <span className="text-xs text-slate-500 font-medium">Sắp xếp theo thứ tự thời gian</span>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {activeFilter === "history" ? "Kết Quả Các Trận Đã Đánh" : "Các Trận Sắp Tới"}
+                    <span className="ml-2 font-mono text-xs text-slate-500">({visibleMatches.length})</span>
+                  </h3>
+                  <span className="text-xs text-slate-500 font-medium">Sắp xếp theo thời gian</span>
                 </div>
 
-                {/* Match Card 2: Tournament Semi-Final */}
-                <div className="rounded-xl bg-white dark:bg-slate-900 shadow-xs p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center shrink-0 text-center border border-slate-200 dark:border-slate-700">
-                      <span className="text-[10px] uppercase font-bold text-slate-500">THỨ 7</span>
-                      <span className="text-lg leading-none text-emerald-700 dark:text-emerald-400 font-black">19</span>
-                      <span className="text-[9px] text-slate-400 font-bold">T10</span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 font-bold text-[11px]">BÁN KẾT CÚP</span>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white">Giải Bóng Đá Phong Trào VaoSan Cup 2026</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-xs">
-                        <span className="flex items-center gap-1 text-slate-900 dark:text-white font-semibold">
-                          <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                          07:30 - 09:30 (Sáng mai)
-                        </span>
-                        <span>•</span>
-                        <span>Sân 7A Cụm Oasis Q.7</span>
-                        <span>•</span>
-                        <span className="text-emerald-600 font-semibold">Trọng tài VFF cấp 2</span>
-                      </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-300">
-                        Đối thủ: <strong className="text-slate-900 dark:text-white">FC Thép Xanh / FC Sài Gòn</strong> (Hạt giống số #2) • Thể thức 2 hiệp 30 phút (Sân 7 người)
-                      </p>
-                    </div>
+                {visibleMatches.length === 0 ? (
+                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {activeFilter === "history"
+                        ? "Chưa có trận nào kết thúc."
+                        : "Chưa có trận nào khớp bộ lọc này."}
+                    </p>
                   </div>
+                ) : (
+                  visibleMatches.map((m) => {
+                    const db = dateBox(m);
+                    return (
+                      <button
+                        key={m.key}
+                        onClick={() => setSelectedMatch(m)}
+                        className="w-full text-left rounded-xl bg-white dark:bg-slate-900 shadow-xs p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center shrink-0 text-center border border-slate-200 dark:border-slate-700">
+                            <span className="text-[10px] uppercase font-bold text-slate-500">{db.top}</span>
+                            <span className="text-lg leading-none text-emerald-700 dark:text-emerald-400 font-black">{db.num}</span>
+                            <span className="text-[9px] text-slate-400 font-bold">{db.bot}</span>
+                          </div>
+                          <div className="flex flex-col gap-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                m.status === "DONE"
+                                  ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400"
+                                  : "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400"
+                              }`}>
+                                {m.status === "DONE" ? "ĐÃ ĐÁ" : m.roundName.toUpperCase()}
+                              </span>
+                              <span className="text-sm font-bold text-slate-900 dark:text-white">{m.tournamentTitle}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-xs flex-wrap">
+                              <span className="flex items-center gap-1 text-slate-900 dark:text-white font-semibold">
+                                <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                                {m.timeSlot ?? "Chưa xếp giờ"}
+                              </span>
+                              <span>•</span>
+                              <span>{m.pitchName ?? "Chưa xếp sân"}</span>
+                              <span>•</span>
+                              <span className="font-mono text-slate-500">{m.matchId}</span>
+                            </div>
+                            <p className="text-xs text-slate-600 dark:text-slate-300">
+                              <strong className="text-slate-900 dark:text-white">{m.teamA}</strong>
+                              {m.status === "DONE" && (
+                                <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                                  {" "}{m.scoreA}-{m.scoreB}{" "}
+                                </span>
+                              )}
+                              <strong className="text-slate-900 dark:text-white">{m.teamB}</strong>
+                            </p>
+                          </div>
+                        </div>
 
-                  <div className="flex flex-row md:flex-col items-end gap-2 shrink-0 w-full md:w-auto justify-between md:justify-start">
-                    <button className="px-3.5 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors">
-                      <Trophy className="w-3.5 h-3.5 text-amber-500" />
-                      Xem Nhánh Đấu & Điều Lệ
-                    </button>
-                    <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="text-xs text-emerald-700 dark:text-emerald-400 font-bold hover:underline flex items-center gap-1">
-                      <span>Chỉ đường Google Maps</span>
-                    </a>
-                  </div>
-                </div>
-
-                {/* Match Card 3: Football Matchday */}
-                <div className="rounded-xl bg-white dark:bg-slate-900 shadow-xs p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center shrink-0 text-center border border-slate-200 dark:border-slate-700">
-                      <span className="text-[10px] uppercase font-bold text-slate-500">CHỦ NHẬT</span>
-                      <span className="text-lg leading-none text-lime-600 dark:text-lime-400 font-black">20</span>
-                      <span className="text-[9px] text-slate-400 font-bold">T10</span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]">Bóng Đá Sân 7 Phủi</span>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white">FC Sài Gòn Warriors vs FC Anh Em Kiến Trúc</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-xs">
-                        <span className="flex items-center gap-1 text-slate-900 dark:text-white font-semibold">
-                          <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                          18:00 - 19:30 (Chủ Nhật)
-                        </span>
-                        <span>•</span>
-                        <span>Cụm Sân 7A Nam Sài Gòn (Cỏ FIFA Star 2)</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-xs pt-0.5">
-                        <span className="px-2 py-0.5 rounded bg-lime-100 dark:bg-lime-950 text-lime-900 dark:text-lime-400 font-bold">Vị trí: Tiền vệ trung tâm</span>
-                        <span className="text-slate-500">Áo Đen Số #10</span>
-                        <span className="text-emerald-600 font-mono font-bold">Đã đủ 14/14 cầu thủ</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-row md:flex-col items-end gap-2 shrink-0 w-full md:w-auto justify-between md:justify-start">
-                    <button className="px-3.5 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors">
-                      <Users className="w-3.5 h-3.5 text-emerald-600" />
-                      Xem Đội Hình & Chiến Thuật
-                    </button>
-                    <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      Quỹ FairPlay Đã Khóa
-                    </span>
-                  </div>
-                </div>
+                        <div className="flex flex-row md:flex-col items-end gap-2 shrink-0">
+                          <span className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold flex items-center gap-1.5">
+                            <QrCode className="w-3.5 h-3.5 text-emerald-600" />
+                            Chi tiết
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
               </div>
 
-              {/* MATCH HISTORY & RECENT RESULTS */}
-              <div className="flex flex-col gap-4 pt-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white">Nhật Ký & Kết Quả Trận Đấu Gần Đây</h3>
-                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs">Tháng 10/2025</span>
-                  </div>
-                  <a href="#" className="text-xs text-emerald-700 dark:text-emerald-400 font-bold hover:underline flex items-center gap-1">
-                    <span>Xem toàn bộ 28 trận</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-
-                <div className="rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-800">
-                  {/* Item 1: Football Win */}
-                  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-lime-400 text-slate-950 font-mono text-xs font-black">THẮNG 3 - 1</span>
-                      <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Bóng Đá Sân 7: Vòng Tứ Kết Cúp Mùa Thu 2026</span>
-                        <span className="text-[11px] text-slate-500">16/10/2026 • 2 Bàn thắng, 1 Kiến tạo • Sân 7A Oasis Q.7</span>
+              {/* VÉ ĐẶT SÂN CỦA TÔI (tra theo SĐT trong tài khoản) */}
+              <div className="flex flex-col gap-3">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Vé Đặt Sân Của Tôi
+                  <span className="ml-2 font-mono text-xs text-slate-500">({myBookings.length})</span>
+                </h3>
+                {myBookings.length === 0 ? (
+                  <p className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 text-xs text-slate-500 dark:text-slate-400">
+                    {user?.phone
+                      ? "Chưa có vé nào đặt bằng số điện thoại trong tài khoản. Bấm “Tải lại từ CSDL” sau khi đặt sân."
+                      : "Tài khoản chưa có số điện thoại nên chưa tra cứu được vé. Cập nhật hồ sơ trước."}
+                  </p>
+                ) : (
+                  myBookings.map((b) => (
+                    <div key={b.id} className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 flex flex-wrap items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                          {b.courtName ?? b.courtType ?? "Sân"} · {b.timeSlot}
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          {b.bookingDate} · Mã vé <span className="font-mono font-bold">{b.code}</span> · Tổng {money(b.totalPrice)} (cọc {money(b.depositPaid)})
+                        </p>
                       </div>
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                        b.status === "CANCELLED"
+                          ? "bg-rose-100 text-rose-700"
+                          : b.status === "RESALE"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700"
+                      }`}>
+                        {b.status}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 font-mono text-xs font-bold">+25 Elo</span>
-                      <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold transition-colors">
-                        <PlayCircle className="w-3.5 h-3.5 text-emerald-600" />
-                        AI Highlights (60s)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Item 2: Football Win */}
-                  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-lime-400 text-slate-950 font-mono text-xs font-black">THẮNG 4 - 2</span>
-                      <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Bóng Đá 7 Người Phủi Giao Lưu Cuối Tuần</span>
-                        <span className="text-[11px] text-slate-500">13/10/2026 • Đóng góp: 1 Bàn thắng, 2 Kiến tạo (MVP Trận)</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 font-mono text-xs font-bold">+18 Elo</span>
-                      <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold transition-colors">
-                        <PlayCircle className="w-3.5 h-3.5 text-emerald-600" />
-                        AI Highlights (45s)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Item 3: Football Loss */}
-                  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-xs font-bold">THUA 2 - 3</span>
-                      <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Bóng Đá Sân 5: Trận Phân Hạng Elo Đêm</span>
-                        <span className="text-[11px] text-slate-500">10/10/2026 • Tỉ số: 2 - 3 vs @FC HoangLong</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 font-mono text-xs font-bold">-12 Elo</span>
-                      <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold transition-colors">
-                        <FileText className="w-3.5 h-3.5 text-slate-400" />
-                        Xem Thống Kê Trận
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  ))
+                )}
               </div>
             </div>
 
-            {/* RIGHT COLUMN: Pass, Insights Radar & Policies (4 Cols) */}
-            <div className="lg:col-span-4 flex flex-col gap-6">
-              
-              {/* WIDGET 1: ACTIVE MATCHDAY PASS (QR ACCESSIBILITY) */}
-              <div className="rounded-xl bg-white dark:bg-slate-900 shadow-md p-6 flex flex-col gap-4 border border-slate-200/80 dark:border-slate-800 relative overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <QrCode className="w-5 h-5 text-emerald-600" />
-                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Vé Vào Sân Nhanh</h3>
+            {/* CỘT PHẢI: CHỢ KÈO THẬT */}
+            <aside className="lg:col-span-4 flex flex-col gap-6">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-5 space-y-3">
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-500" />
+                  Kèo Ghép Đang Mở ({openPosts.length})
+                </h3>
+
+                {openPosts.length === 0 ? (
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Chưa có kèo nào đang mở. Mở tab Chợ Kèo để tạo kèo đầu tiên.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                    {openPosts.slice(0, 8).map((p: any) => (
+                      <div key={p.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{p.teamName}</span>
+                          <span className="font-mono text-[10px] font-bold text-amber-600 shrink-0">Elo {p.eloRating}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          {p.pitchName} · {p.matchTime}
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Cọc dự kiến {money(p.estimatedFee)} · {p.paymentModel}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-lime-400 text-slate-950 font-mono text-[10px] font-black animate-pulse">SẴN SÀNG</span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Quét tự động tại Barrier Cổng A & Tủ đồ thông minh CLB D-Sport Oasis.
-                </p>
+                )}
 
-                {/* Dynamic QR Box Mockup */}
-                <div className="relative bg-slate-50 dark:bg-slate-950 rounded-lg p-5 flex flex-col items-center justify-center gap-3 border border-slate-200/60 dark:border-slate-800">
-                  <div className="w-44 h-44 bg-white p-3 rounded-lg shadow-sm flex items-center justify-center relative overflow-hidden border border-slate-200">
-                    {/* Simulated Clean SVG QR Code */}
-                    <svg className="w-full h-full text-slate-900" fill="currentColor" viewBox="0 0 100 100">
-                      <rect x="0" y="0" width="30" height="30" rx="3"></rect>
-                      <rect x="5" y="5" width="20" height="20" fill="white"></rect>
-                      <rect x="10" y="10" width="10" height="10"></rect>
-                      
-                      <rect x="70" y="0" width="30" height="30" rx="3"></rect>
-                      <rect x="75" y="5" width="20" height="20" fill="white"></rect>
-                      <rect x="80" y="10" width="10" height="10"></rect>
-
-                      <rect x="0" y="70" width="30" height="30" rx="3"></rect>
-                      <rect x="5" y="75" width="20" height="20" fill="white"></rect>
-                      <rect x="10" y="80" width="10" height="10"></rect>
-
-                      <rect x="40" y="10" width="20" height="6"></rect>
-                      <rect x="40" y="22" width="12" height="6"></rect>
-                      <rect x="10" y="40" width="6" height="20"></rect>
-                      <rect x="45" y="45" width="10" height="10" fill="#059669"></rect>
-                      <rect x="65" y="40" width="25" height="6"></rect>
-                      <rect x="40" y="70" width="12" height="12"></rect>
-                      <rect x="60" y="65" width="15" height="8"></rect>
-                      <rect x="80" y="80" width="15" height="15"></rect>
-                    </svg>
-                    <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent animate-bounce"></div>
-                  </div>
-
-                  <div className="text-center flex flex-col gap-0.5">
-                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">Mã vé: #VS-7829-PB</span>
-                    <span className="text-[11px] text-slate-500">Hiệu lực: 19:15 - 21:15 tối nay</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <button 
-                    onClick={() => alert('Đã lưu mã QR vé vào thư viện ảnh!')}
-                    className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold flex items-center justify-center gap-1 hover:bg-slate-200 transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                    Lưu Mã Ảnh
-                  </button>
-                  <button 
-                    onClick={() => alert('Đã thêm Smart Pass vào Apple Wallet / Google Wallet!')}
-                    className="px-3 py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-xs font-bold flex items-center justify-center gap-1 hover:opacity-90 transition-opacity"
-                  >
-                    <Wallet className="w-4 h-4" />
-                    Apple Wallet
-                  </button>
-                </div>
+                <button
+                  onClick={() => onNavigateTab && onNavigateTab("matchmaking")}
+                  className="w-full px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all active:scale-95"
+                >
+                  Mở Chợ Kèo
+                </button>
               </div>
 
-              {/* WIDGET 2: PERFORMANCE & PLAYTIME METRICS */}
-              <div className="rounded-xl bg-white dark:bg-slate-900 shadow-xs p-6 flex flex-col gap-5 border border-slate-200/80 dark:border-slate-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-emerald-600" />
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white">Chỉ Số Ra Sân Tháng 10</h3>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-5 space-y-2">
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  Thống Kê Nhanh
+                </h3>
+                {[
+                  { label: "Giải trong CSDL", value: tournaments.length },
+                  { label: "Trận sắp diễn ra", value: upcoming.length },
+                  { label: "Trận đã đánh", value: doneMatches.length },
+                  { label: "Kèo đang mở", value: openPosts.length },
+                  { label: "Vé của tôi", value: myBookings.length },
+                ].map((s) => (
+                  <div key={s.label} className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500 dark:text-slate-400">{s.label}</span>
+                    <span className="font-mono font-black text-slate-900 dark:text-white">{s.value}</span>
                   </div>
-                  <span className="text-xs text-emerald-600 font-bold">Top 5% Tích Cực</span>
-                </div>
-
-                {/* Metric Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 flex flex-col gap-1 border border-slate-200/60 dark:border-slate-800">
-                    <span className="text-[11px] text-slate-500 font-medium">Tổng giờ trên sân</span>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl font-black text-emerald-600 font-mono">24.5</span>
-                      <span className="text-xs text-slate-500 font-semibold">Giờ</span>
-                    </div>
-                    <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
-                      <TrendingUp className="w-3 h-3" />
-                      +18% so với T9
-                    </span>
-                  </div>
-
-                  <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 flex flex-col gap-1 border border-slate-200/60 dark:border-slate-800">
-                    <span className="text-[11px] text-slate-500 font-medium">Trận đấu (Thắng-Thua)</span>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">16</span>
-                      <span className="text-xs text-slate-500 font-semibold">Trận</span>
-                    </div>
-                    <span className="text-[10px] text-lime-600 dark:text-lime-400 font-extrabold">
-                      11W - 5L (68.7% Win)
-                    </span>
-                  </div>
-
-                  <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 flex flex-col gap-1 border border-slate-200/60 dark:border-slate-800">
-                    <span className="text-[11px] text-slate-500 font-medium">Ước tính tiêu hao</span>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">14.2k</span>
-                      <span className="text-xs text-slate-500 font-semibold">kcal</span>
-                    </div>
-                    <span className="text-[10px] text-slate-500">~880 kcal/trận</span>
-                  </div>
-
-                  <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-950 flex flex-col gap-1 border border-slate-200/60 dark:border-slate-800">
-                    <span className="text-[11px] text-slate-500 font-medium">Chỉ Số Elo Bóng Đá</span>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl font-black text-emerald-600 font-mono">1,450</span>
-                      <span className="text-xs text-slate-500 font-semibold">Elo</span>
-                    </div>
-                    <span className="text-[10px] text-emerald-600 font-bold">Bán Chuyên Phủi Serie B</span>
-                  </div>
-                </div>
-
-                {/* Football Pitch Format Distribution Bar */}
-                <div className="flex flex-col gap-2 pt-1">
-                  <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span>Phân bổ loại sân thi đấu</span>
-                    <span className="text-slate-900 dark:text-white font-bold">Sân 7 Phủi chiếm 70%</span>
-                  </div>
-                  <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex">
-                    <div className="h-full bg-emerald-600" style={{ width: '70%' }} title="Bóng đá Sân 7: 70%"></div>
-                    <div className="h-full bg-sky-500" style={{ width: '20%' }} title="Futsal Sân 5: 20%"></div>
-                    <div className="h-full bg-amber-400" style={{ width: '10%' }} title="Sân 11 FIFA: 10%"></div>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-600"></span> Sân 7 Phủi (70%)</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-500"></span> Futsal Sân 5 (20%)</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400"></span> Sân 11 FIFA (10%)</span>
-                  </div>
-                </div>
+                ))}
               </div>
-
-              {/* WIDGET 3: BOOKING INTEGRITY & REFUND POLICY */}
-              <div className="rounded-xl bg-slate-100/80 dark:bg-slate-900/60 shadow-xs p-6 flex flex-col gap-4 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2 text-slate-900 dark:text-white text-base font-bold">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                  <span>Chính Sách Giữ Chỗ & FairPlay</span>
-                </div>
-                <div className="flex flex-col gap-3 text-xs text-slate-600 dark:text-slate-300">
-                  <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong>Hoàn 100% tiền cọc:</strong> Nếu báo hủy trước thời điểm bắt đầu tối thiểu 2 giờ.</span>
-                  </div>
-                  <div className="flex items-start gap-2.5">
-                    <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                    <span><strong>Hoàn 50% tiền cọc:</strong> Nếu hủy trước từ 1 đến 2 giờ. Tiền hoàn lập tức về Ví VaoSan.</span>
-                  </div>
-                  <div className="flex items-start gap-2.5">
-                    <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                    <span><strong>Cam kết chống bùng kèo:</strong> Quỹ bảo chứng FairPlay tự động đền bù 100% chi phí sân nếu bạn ghép đối thủ bỏ trận vô cớ.</span>
-                  </div>
-                </div>
-                <div className="p-3 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-between border border-slate-200 dark:border-slate-800">
-                  <div className="flex items-center gap-2 text-slate-900 dark:text-white text-xs font-bold">
-                    <PhoneCall className="w-4 h-4 text-emerald-600" />
-                    <span>Hỗ trợ sự cố sân:</span>
-                  </div>
-                  <a href="tel:19006886" className="font-mono font-bold text-emerald-600 hover:underline text-xs">1900 6886 (24/7)</a>
-                </div>
-              </div>
-
-            </div>
+            </aside>
           </div>
         </div>
       </div>
 
-      {/* QR Pass Modal */}
-      {showQRModal && (
+      {/* MODAL: CHI TIẾT TRẬN */}
+      {selectedMatch && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 text-center shadow-2xl animate-modal-pop text-slate-900 dark:text-white my-auto max-h-[92vh] overflow-y-auto">
-            <h3 className="text-lg font-bold">Vé Vào Sân & Mở Tủ Đồ</h3>
-            <p className="text-xs text-slate-500">Đưa mã QR này trước ống kính camera barrier cổng sân PB-01</p>
-            <div className="w-56 h-56 mx-auto bg-white p-4 rounded-xl border border-slate-200 shadow-inner flex items-center justify-center">
-              <QrCode className="w-full h-full text-slate-900" />
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 dark:text-white">
+                <Trophy className="w-5 h-5 text-emerald-600" />
+                {selectedMatch.matchId} · {selectedMatch.roundName}
+              </h3>
+              <button onClick={() => setSelectedMatch(null)} className="text-slate-400 hover:text-slate-700 dark:hover:text-white">
+                ✕
+              </button>
             </div>
-            <div className="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl text-xs font-mono font-bold text-emerald-600">
-              #VS-7829-PB • TỦ ĐỒ SỐ 09
+
+            <p className="text-sm font-bold text-slate-900 dark:text-white">
+              {selectedMatch.teamA}
+              {selectedMatch.status === "DONE" && (
+                <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                  {" "}{selectedMatch.scoreA}-{selectedMatch.scoreB}{" "}
+                </span>
+              )}
+              {selectedMatch.teamB}
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <span className="text-slate-500">Giải đấu:</span>
+                <div className="font-bold text-slate-900 dark:text-white">{selectedMatch.tournamentTitle}</div>
+              </div>
+              <div>
+                <span className="text-slate-500">Ngày giờ:</span>
+                <div className="font-bold text-slate-900 dark:text-white">
+                  {selectedMatch.matchDate ? prettyDate(selectedMatch.matchDate) : "Chưa xếp"} · {selectedMatch.timeSlot ?? "—"}
+                </div>
+              </div>
+              <div>
+                <span className="text-slate-500">Sân:</span>
+                <div className="font-bold text-slate-900 dark:text-white">{selectedMatch.pitchName ?? "Chưa xếp"}</div>
+              </div>
+              <div>
+                <span className="text-slate-500">Elo hạt giống:</span>
+                <div className="font-mono font-bold text-slate-900 dark:text-white">
+                  {selectedMatch.eloA ?? "—"} / {selectedMatch.eloB ?? "—"}
+                </div>
+              </div>
             </div>
-            <button 
-              onClick={() => setShowQRModal(false)}
-              className="w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold text-xs"
-            >
-              Đóng
-            </button>
+
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Vé thi đấu được cấp khi BTC nhập kết quả và thanh toán lệ phí trên CSDL. Muốn sửa tỷ số hoặc hoàn
+              tiền cọc, vào tab Điều Hành Giải Đấu › Bảng Đấu &amp; Nhánh Bracket.
+            </p>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setSelectedMatch(null); onNavigateTab && onNavigateTab("tournaments"); }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold"
+              >
+                Mở nhánh đấu
+              </button>
+              <button
+                onClick={() => setSelectedMatch(null)}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold"
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Cancel Modal */}
-      {showCancelModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 dark:text-white my-auto max-h-[92vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-rose-600">Báo Hủy / Đổi Giờ Đặt Sân</h3>
-            <p className="text-xs text-slate-500">
-              Trận đấu còn hơn 1 giờ 45 phút nữa mới bắt đầu. Bạn được **hoàn 100% tiền cọc** (45.000đ) về Ví VaoSan ngay lập tức.
-            </p>
-            <div className="space-y-2 text-xs">
-              <label className="block font-bold">Lý do hủy trận:</label>
-              <select className="w-full bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
-                <option>Bận công việc đột xuất</option>
-                <option>Thời tiết không thuận lợi</option>
-                <option>Muốn đổi sang khung giờ khác</option>
-              </select>
-            </div>
-            <div className="flex justify-end gap-3 pt-2">
-              <button 
-                onClick={() => setShowCancelModal(false)}
-                className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold"
-              >
-                Giữ Lịch Trình
-              </button>
-              <button 
-                onClick={() => {
-                  alert('Đã hủy lịch thành công. Tiền cọc 45.000đ đã được hoàn vào ví VaoSan!');
-                  setShowCancelModal(false);
-                }}
-                className="px-4 py-2 rounded-xl bg-rose-600 text-white font-bold text-xs shadow-md"
-              >
-                Xác Nhận Hủy & Hoàn Tiền
-              </button>
-            </div>
-          </div>
+      {/* Toast */}
+      {notice && (
+        <div className="fixed inset-x-4 bottom-4 z-[60] mx-auto max-w-md">
+          <div className="rounded-xl bg-slate-900 text-white text-xs font-bold px-4 py-3 shadow-lg">{notice}</div>
         </div>
       )}
     </div>
   );
 };
+
+function prettyDate(iso?: string): string {
+  if (!iso) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+}
+
 export default ActivitySchedule;
