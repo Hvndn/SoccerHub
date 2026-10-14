@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api";
 import { sportLabel, formatLabel, formatMoney } from "@/lib/tournamentService";
@@ -121,6 +121,108 @@ export default function TournamentOrganizerPortal({
 
   const countBySportFilter = (id: string) =>
     id === "all" ? tournaments.length : tournaments.filter((t: any) => t.sport === id).length;
+
+  // Giải dùng làm nguồn cho BXH / kết quả / lịch: giải đầu tiên đã bốc thăm trong CSDL.
+  const activeTournamentId = useMemo(() => {
+    const withBracket = dbTournaments.find((t: any) => t.bracketJson);
+    return withBracket?.id ?? dbTournaments[0]?.id ?? null;
+  }, [dbTournaments]);
+
+  const activeTournament = useMemo(
+    () => dbTournaments.find((t: any) => t.id === activeTournamentId) ?? null,
+    [dbTournaments, activeTournamentId]
+  );
+
+  // Nhánh đấu parse từ bracketJson (nguồn thật, không cần gọi API thêm).
+  const activeBracket = useMemo(() => {
+    if (!activeTournament?.bracketJson) return null;
+    try {
+      const p = JSON.parse(activeTournament.bracketJson);
+      return p && Array.isArray(p.rounds) ? p : null;
+    } catch {
+      return null;
+    }
+  }, [activeTournament]);
+
+  const doneMatches = useMemo(() => {
+    if (!activeBracket) return [];
+    return activeBracket.rounds
+      .flatMap((r: any) => r.matches)
+      .filter((m: any) => m.status === "DONE" && m.teamA && m.teamB)
+      .map((m: any) => ({
+        matchId: m.matchId,
+        teamA: m.teamA.name,
+        teamB: m.teamB.name,
+        scoreA: m.scoreA ?? 0,
+        scoreB: m.scoreB ?? 0,
+        matchDate: m.matchDate,
+      }));
+  }, [activeBracket]);
+
+  const scheduledMatches = useMemo(() => {
+    if (!activeBracket) return [];
+    return activeBracket.rounds
+      .flatMap((r: any) => r.matches)
+      .filter((m: any) => m.status !== "BYE" && m.teamA && m.teamB)
+      .map((m: any) => ({
+        matchId: m.matchId,
+        teamA: m.teamA.name,
+        teamB: m.teamB.name,
+        matchDate: m.matchDate,
+        timeSlot: m.timeSlot,
+        pitchName: m.pitchName,
+      }))
+      .sort((a: any, b: any) => (a.matchDate ?? "").localeCompare(b.matchDate ?? ""));
+  }, [activeBracket]);
+
+  // BXH tính từ các trận DONE (thắng 3đ, hòa 1đ; xếp điểm → hiệu số → Elo)
+  const standings = useMemo(() => {
+    if (!activeTournament) return [];
+    const base = new Map<string, any>();
+    for (const t of activeTournament.teams ?? []) {
+      base.set(t.teamName, {
+        team: t.teamName,
+        elo: t.eloRating ?? 1200,
+        played: 0,
+        won: 0,
+        drawn: 0,
+        lost: 0,
+        gf: 0,
+        ga: 0,
+      });
+    }
+    for (const m of doneMatches) {
+      const a = base.get(m.teamA);
+      const b = base.get(m.teamB);
+      if (a) { a.played++; a.gf += m.scoreA; a.ga += m.scoreB; }
+      if (b) { b.played++; b.gf += m.scoreB; b.ga += m.scoreA; }
+      if (m.scoreA === m.scoreB) {
+        if (a) a.drawn++;
+        if (b) b.drawn++;
+      } else if (m.scoreA > m.scoreB) {
+        if (a) a.won++;
+        if (b) b.lost++;
+      } else {
+        if (b) b.won++;
+        if (a) a.lost++;
+      }
+    }
+    return Array.from(base.values())
+      .map((r: any) => ({ ...r, points: r.won * 3 + r.drawn, diff: r.gf - r.ga }))
+      .sort((x: any, y: any) => y.points - x.points || y.diff - x.diff || y.elo - x.elo);
+  }, [activeTournament, doneMatches]);
+
+  // Vua phá lưới đọc từ bảng goal_events của giải
+  const [topScorers, setTopScorers] = useState<any[]>([]);
+  useEffect(() => {
+    let alive = true;
+    if (!activeTournamentId) { setTopScorers([]); return; }
+    fetch(`${API_BASE_URL}/api/v1/tournaments/${activeTournamentId}/scorers`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => { if (alive && Array.isArray(d)) setTopScorers(d.slice(0, 5)); })
+      .catch(() => { if (alive) setTopScorers([]); });
+    return () => { alive = false; };
+  }, [activeTournamentId]);
 
   const filteredTournaments = selectedSport === "all"
     ? tournaments
@@ -648,19 +750,18 @@ export default function TournamentOrganizerPortal({
 
           {/* 3. DATA TABLES & INCIDENT LOGS */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-            
             {/* TABS HEADER */}
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar">
                 {[
-                  { id: "standings", label: "Bảng Xếp Hạng Bảng A" },
-                  { id: "var_logs", label: "Nhật Ký VAR & Kỷ Luật (4)" },
-                  { id: "schedule", label: "Lịch Thi Đấu Chi Tiết" }
+                  { id: "standings", label: "Bảng Xếp Hạng" },
+                  { id: "var_logs", label: "Kết Quả & Vua Phá Lưới" },
+                  { id: "schedule", label: "Lịch Thi Đấu" }
                 ].map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => setBottomTab(tab.id as any)}
-                    className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${
+                    className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
                       bottomTab === tab.id
                         ? "bg-[#0b4f6c] text-white shadow-md"
                         : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -672,104 +773,184 @@ export default function TournamentOrganizerPortal({
               </div>
 
               <button
-                onClick={() => alert("Đồng bộ dữ liệu bảng đấu từ máy chủ AWS S3...")}
-                className="text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center space-x-1"
+                onClick={fetchDbTournaments}
+                disabled={loadingDb}
+                className="text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center space-x-1 shrink-0 disabled:opacity-50"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Cập Nhật Data</span>
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingDb ? "animate-spin" : ""}`} />
+                <span>{loadingDb ? "Đang tải…" : "Tải lại từ CSDL"}</span>
               </button>
             </div>
 
-            {/* TAB CONTENT: STANDINGS */}
-            {bottomTab === "standings" && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-black uppercase text-slate-400 tracking-wider">
-                      <th className="py-3 px-3">Hạng</th>
-                      <th className="py-3 px-3">Đội Bóng (FC)</th>
-                      <th className="py-3 px-3">Số Trận</th>
-                      <th className="py-3 px-3">Thắng/Thua</th>
-                      <th className="py-3 px-3">Hiệu Số</th>
-                      <th className="py-3 px-3">Elo VFF</th>
-                      <th className="py-3 px-3 text-right">Trạng Thái</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-medium">
-                    {[
-                      { rank: 1, name: "FC Saigon Warriors", played: 4, record: "4 - 0", diff: "+12", elo: "1,650", status: "Vào Bán Kết" },
-                      { rank: 2, name: "FC Titan Sài Gòn", played: 4, record: "3 - 1", diff: "+6", elo: "1,580", status: "Vào Bán Kết" },
-                      { rank: 3, name: "FC Hùng Dũng Q.7", played: 4, record: "2 - 2", diff: "+2", elo: "1,520", status: "Dừng Bước Tứ Kết" },
-                      { rank: 4, name: "FC Chiến Thắng", played: 4, record: "1 - 3", diff: "-5", elo: "1,470", status: "Vòng Bảng" }
-                    ].map(row => (
-                      <tr key={row.rank} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <td className="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">
-                          #{row.rank}
-                        </td>
-                        <td className="py-3 px-3 font-bold text-slate-900 dark:text-white">
-                          {row.name}
-                        </td>
-                        <td className="py-3 px-3 font-mono text-slate-600 dark:text-slate-300">
-                          {row.played}
-                        </td>
-                        <td className="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                          {row.record}
-                        </td>
-                        <td className="py-3 px-3 font-mono font-bold text-sky-600 dark:text-sky-400">
-                          {row.diff}
-                        </td>
-                        <td className="py-3 px-3 font-mono font-bold text-amber-500">
-                          {row.elo}
-                        </td>
-                        <td className="py-3 px-3 text-right">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
-                            row.status.includes("Bán Kết")
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                              : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                          }`}>
-                            {row.status}
-                          </span>
-                        </td>
+            {/* Chưa chọn giải có nhánh đấu */}
+            {!activeBracket && (
+              <p className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">
+                {dbTournaments.length === 0
+                  ? "Chưa đọc được danh sách giải từ CSDL."
+                  : "Chưa giải nào trong CSDL đã bốc thăm. Mở tab “Giải Đấu & BXH › Bảng Đấu & Nhánh Bracket” để bốc thăm và nhập kết quả."}
+              </p>
+            )}
+
+            {/* TAB CONTENT: BXH TÍNH TỪ TRẬN ĐÃ ĐÁ */}
+            {bottomTab === "standings" && activeBracket && (
+              standings.length === 0 ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">
+                  Chưa có trận nào có kết quả nên chưa xếp hạng được.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[620px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                        <th className="py-3 px-3">Hạng</th>
+                        <th className="py-3 px-3">Đội Bóng (FC)</th>
+                        <th className="py-3 px-3 text-center">Trận</th>
+                        <th className="py-3 px-3 text-center">T</th>
+                        <th className="py-3 px-3 text-center">H</th>
+                        <th className="py-3 px-3 text-center">B</th>
+                        <th className="py-3 px-3 text-center">HS</th>
+                        <th className="py-3 px-3 text-center">Điểm</th>
+                        <th className="py-3 px-3 text-right">Elo VFF</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-medium">
+                      {standings.map((row: any, idx: number) => (
+                        <tr
+                          key={row.team}
+                          className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${
+                            idx === 0 ? "bg-emerald-50 dark:bg-emerald-950/20" : ""
+                          }`}
+                        >
+                          <td className="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white sticky left-0 bg-white dark:bg-slate-900">
+                            #{idx + 1}
+                          </td>
+                          <td className="py-3 px-3 font-bold text-slate-900 dark:text-white">
+                            {idx === 0 ? "👑 " : ""}
+                            {row.team}
+                          </td>
+                          <td className="py-3 px-3 text-center font-mono text-slate-600 dark:text-slate-300">{row.played}</td>
+                          <td className="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{row.won}</td>
+                          <td className="py-3 px-3 text-center font-mono font-bold text-amber-600 dark:text-amber-400">{row.drawn}</td>
+                          <td className="py-3 px-3 text-center font-mono font-bold text-rose-500">{row.lost}</td>
+                          <td className="py-3 px-3 text-center font-mono font-bold text-sky-600 dark:text-sky-400">
+                            {row.diff > 0 ? `+${row.diff}` : row.diff}
+                          </td>
+                          <td className="py-3 px-3 text-center font-mono font-black text-slate-900 dark:text-white">{row.points}</td>
+                          <td className="py-3 px-3 text-right">
+                            <span className="font-mono font-bold text-amber-500">{row.elo.toLocaleString("vi-VN")}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )
             )}
 
-            {/* TAB CONTENT: VAR LOGS */}
-            {bottomTab === "var_logs" && (
-              <div className="space-y-3 font-mono text-xs">
-                {[
-                  { time: "14:22:10", court: "Sân 7A", type: "VAR Check", detail: "Kiểm tra lỗi việt vị dẫn đến bàn thắng phút 42 - FC Titan khiếu nại -> Bàn thắng hợp lệ.", result: "Valid Goal" },
-                  { time: "14:05:45", court: "Sân 7C", type: "Thẻ Vàng", detail: "Cảnh cáo cầu thủ Trần Quốc Anh (Phạm lỗi kê chân nguy hiểm phản công).", result: "Yellow Card" },
-                  { time: "13:40:12", court: "Sân 7B", type: "Y Tế", detail: "Tạm dừng 5 phút chăm sóc y tế sẹo cơ đùi cho thủ môn Nguyễn Bảo Long.", result: "Medical Timeout" },
-                  { time: "13:10:00", court: "Sân 7A", type: "Bốc Thăm", detail: "Bốc thăm chọn sân và quyền giao bóng trận Bán Kết SF1.", result: "Done" }
-                ].map((log, idx) => (
-                  <div key={idx} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 flex items-start space-x-3">
-                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center justify-between text-slate-400">
-                        <span className="font-bold text-slate-700 dark:text-slate-300">{log.court} • {log.type}</span>
-                        <span>{log.time}</span>
-                      </div>
-                      <p className="text-slate-800 dark:text-slate-200 font-sans font-medium">
-                        {log.detail}
-                      </p>
+            {/* TAB CONTENT: KẾT QUẢ & VUA PHÁ LƯỚI (đọc từ goal_events) */}
+            {bottomTab === "var_logs" && activeBracket && (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-black uppercase text-slate-400 tracking-wider mb-2">
+                    Kết quả đã ghi nhận ({doneMatches.length})
+                  </p>
+                  {doneMatches.length === 0 ? (
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Chưa có trận nào kết thúc.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {doneMatches.map((m: any) => (
+                        <div
+                          key={m.matchId}
+                          className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs"
+                        >
+                          <span className="font-mono text-slate-400 shrink-0">{m.matchId}</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
+                            {m.teamA} <span className="font-mono text-emerald-600 dark:text-emerald-400">{m.scoreA}-{m.scoreB}</span> {m.teamB}
+                          </span>
+                          <span className="font-mono text-slate-400 shrink-0">
+                            {m.matchDate ? m.matchDate.split("-").reverse().join("/") : "—"}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ))}
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-xs font-black uppercase text-slate-400 tracking-wider mb-2">
+                    Vua phá lưới giải ({topScorers.length})
+                  </p>
+                  {topScorers.length === 0 ? (
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Chưa có dữ liệu cầu thủ ghi bàn. Khi nhập kết quả ở tab Bracket, mục “Ghi bàn/kiến tạo” sẽ ghi vào bảng{" "}
+                      <span className="font-mono">goal_events</span>.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {topScorers.map((s: any, idx: number) => (
+                        <div
+                          key={`${s.playerName}-${s.teamName}`}
+                          className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="w-6 h-6 rounded-full bg-[#0b4f6c] text-white font-black text-[10px] flex items-center justify-center shrink-0">
+                              {idx + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="font-bold text-slate-900 dark:text-white truncate">{s.playerName}</p>
+                              <p className="text-[10px] text-slate-400 truncate">{s.teamName}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 font-mono shrink-0">
+                            <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+                              {s.goals}⚽
+                            </span>
+                            {s.assists > 0 && (
+                              <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold">
+                                {s.assists}👟
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* TAB CONTENT: DETAILED SCHEDULE */}
-            {bottomTab === "schedule" && (
-              <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2 font-medium">
-                <p>• 14:00 - 15:15: Bán Kết 1 (Bóng Đá Sân 7: FC Saigon Warriors vs FC Anh Em Kiến Trúc)</p>
-                <p>• 15:30 - 16:45: Bán Kết 2 (FC Hạt Điều vs FC Bất Động Sản)</p>
-                <p>• 17:00 - 18:30: CHUNG KẾT TRANH CÚP VÔ ĐỊCH 80 TRỆU</p>
-                <p>• 18:45: Lễ Trao Giải & Smart Escrow Disbursement qua VietQR Auto-Payout</p>
-              </div>
+            {/* TAB CONTENT: LỊCH THI ĐẤU THẬT */}
+            {bottomTab === "schedule" && activeBracket && (
+              scheduledMatches.length === 0 ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">
+                  BTC chưa bấm “Xếp lịch thi đấu” cho giải này nên chưa có ngày/giờ cho từng trận.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {scheduledMatches.map((m: any) => (
+                    <div
+                      key={m.matchId}
+                      className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="font-mono text-slate-400 shrink-0">{m.matchId}</span>
+                        <span className="font-bold text-slate-900 dark:text-white truncate">
+                          {m.teamA} vs {m.teamB}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 font-mono text-slate-500 shrink-0">
+                        {m.matchDate && (
+                          <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold">
+                            {m.matchDate.split("-").reverse().join("/")}
+                          </span>
+                        )}
+                        {m.timeSlot && <span className="font-bold text-slate-700 dark:text-slate-300">{m.timeSlot}</span>}
+                        {m.pitchName && <span className="text-emerald-700 dark:text-emerald-400 truncate max-w-[200px]">{m.pitchName}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
             )}
 
           </div>
