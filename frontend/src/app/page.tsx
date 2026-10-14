@@ -280,7 +280,7 @@ export default function Home() {
 
       {/* Toast Cảnh Báo Phân Quyền Vai Trò - Kích thước lớn dễ nhìn */}
       {roleWarning && (
-        <div className="fixed top-20 right-6 z-50 flex items-center space-x-4 bg-slate-900/98 text-white px-6 py-4 rounded-2xl shadow-2xl border-2 border-rose-500 animate-slide-up max-w-lg backdrop-blur-md">
+        <div className="fixed top-20 inset-x-4 sm:inset-x-auto sm:right-6 z-50 flex items-center space-x-4 bg-slate-900/98 text-white px-6 py-4 rounded-2xl shadow-2xl border-2 border-rose-500 animate-fade-in-up sm:max-w-lg backdrop-blur-md">
           <ShieldAlert className="w-6 h-6 text-rose-400 shrink-0 animate-pulse" />
           <span className="text-sm font-bold leading-relaxed">{roleWarning}</span>
           <button 

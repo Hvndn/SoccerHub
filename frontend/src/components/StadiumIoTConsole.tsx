@@ -179,7 +179,7 @@ export default function StadiumIoTConsole() {
     <div className="space-y-8 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-8 min-h-screen transition-colors duration-200">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-6 right-6 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-bounce">
+        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-bounce">
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
           <span className="font-semibold text-xs sm:text-sm">{toastMsg}</span>
         </div>

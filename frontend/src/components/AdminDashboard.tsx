@@ -636,7 +636,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     <div className="space-y-8 animate-fade-in-up pb-16">
       {/* Toast Feedback Notification */}
       {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
+        <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           <span className="text-xs font-bold">{toastMsg}</span>
         </div>
@@ -1114,7 +1114,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
 
             {/* THANH CHỌN NGÀY THI ĐẤU (QUAN TRỌNG: CHỦ SÂN XEM ĐƯỢC CA ĐẶT CỦA MỌI NGÀY) */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50/50 to-emerald-50/50 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 border border-sky-200/80 dark:border-slate-700/80 space-y-3 shadow-xs">
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50/50 to-emerald-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 border border-sky-200/80 dark:border-slate-700/80 space-y-3 shadow-xs">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="flex items-center space-x-2.5">
                   <div className="w-9 h-9 rounded-xl bg-sky-500/15 dark:bg-sky-400/20 text-[#0b4f6c] dark:text-sky-300 flex items-center justify-center shrink-0">

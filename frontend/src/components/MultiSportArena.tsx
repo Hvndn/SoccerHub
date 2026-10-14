@@ -229,7 +229,7 @@ export default function MultiSportArena() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 p-4 sm:p-6 lg:p-8">
       {/* Toast Notification */}
       {successToast && (
-        <div className="fixed top-6 right-6 z-50 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-bounce">
+        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-bounce">
           <CheckCircle2 className="w-6 h-6 flex-shrink-0" />
           <span className="font-semibold">{successToast}</span>
         </div>
@@ -610,8 +610,8 @@ export default function MultiSportArena() {
 
       {/* Court Booking Modal */}
       {bookingCourt && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">
                 Xác Nhận Đặt Ca Sân {bookingCourt.id}
@@ -672,8 +672,8 @@ export default function MultiSportArena() {
 
       {/* Match Joining Modal */}
       {joiningMatch && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">
                 Gia Nhập Kèo {joiningMatch.category}

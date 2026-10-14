@@ -99,9 +99,9 @@ export default function AdminTable<T>({
       <div className="overflow-x-auto -mx-1 px-1 rounded-xl border border-slate-200 dark:border-slate-800">
         <table className="w-full text-xs border-collapse min-w-[720px] bg-white dark:bg-slate-900">
           <thead>
-            <tr className="text-left text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60">
-              {columns.map((col) => (
-                <th key={col.key} scope="col" className={`py-2.5 px-3 font-bold whitespace-nowrap ${col.className ?? ""}`}>
+            <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60">
+              {columns.map((col, ci) => (
+                <th key={col.key} scope="col" className={`py-2.5 px-2 sm:px-3 font-bold whitespace-nowrap ${col.className ?? ""} ${ci === 0 ? "sticky left-0 bg-slate-50 dark:bg-slate-950 z-10" : ""}`}>
                   {col.sortable ? (
                     <button
                       type="button"
@@ -143,8 +143,8 @@ export default function AdminTable<T>({
             ) : (
               pageRows.map((row, idx) => (
                 <tr key={rowKey(row, idx)} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                  {columns.map((col) => (
-                    <td key={col.key} className={`py-2.5 px-3 align-middle ${col.className ?? ""}`}>
+                  {columns.map((col, ci) => (
+                    <td key={col.key} className={`py-2.5 px-2 sm:px-3 align-middle ${col.className ?? ""} ${ci === 0 ? "sticky left-0 bg-white dark:bg-slate-900 z-10" : ""}`}>
                       {col.render(row)}
                     </td>
                   ))}

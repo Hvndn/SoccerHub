@@ -227,7 +227,7 @@ export default function Navbar({
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300 w-full">
-        <div className="max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] h-13 sm:h-16 flex items-center justify-between gap-2 lg:gap-3 xl:gap-4">
+        <div className="max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] h-[52px] sm:h-16 flex items-center justify-between gap-2 lg:gap-3 xl:gap-4">
         {/* BRAND LOGO: TURFZONE */}
         <div
           onClick={() => {
@@ -271,7 +271,7 @@ export default function Navbar({
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                <ShieldCheck className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                <ShieldCheck className="w-[18px] h-[18px] text-emerald-500 shrink-0" />
                 <span>Quản Lý Cụm Sân & Doanh Thu</span>
               </button>
 
@@ -284,7 +284,7 @@ export default function Navbar({
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                <Zap className="w-4.5 h-4.5 text-amber-500 shrink-0" />
+                <Zap className="w-[18px] h-[18px] text-amber-500 shrink-0" />
                 <span>Điều Hành IoT Đèn & Barrier</span>
               </button>
 
@@ -297,7 +297,7 @@ export default function Navbar({
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                <Clock className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                <Clock className="w-[18px] h-[18px] text-emerald-400 shrink-0" />
                 <span>Sơ Đồ Ca Sân Realtime</span>
               </button>
             </>
@@ -322,7 +322,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Calendar className="w-4 h-4 xl:w-4.5 xl:h-4.5 text-emerald-600 shrink-0" />
+                <Calendar className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-emerald-600 shrink-0" />
                 <span>Đặt Sân Bóng Đá</span>
               </button>
 
@@ -335,7 +335,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Flame className="w-4 h-4 xl:w-4.5 xl:h-4.5 text-rose-500 fill-rose-500 shrink-0" />
+                <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-500 fill-rose-500 shrink-0" />
                 <span>Chợ Kèo &amp; Pass Sân</span>
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
                   HOT
@@ -351,7 +351,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Trophy className="w-4 h-4 xl:w-4.5 xl:h-4.5 text-amber-500 shrink-0" />
+                <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
                 <span>Giải Đấu &amp; BXH</span>
               </button>
 
@@ -364,7 +364,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Award className="w-4 h-4 xl:w-4.5 xl:h-4.5 text-amber-500 shrink-0" />
+                <Award className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
                 <span>Thẻ Hội Viên</span>
               </button>
             </>
@@ -403,7 +403,7 @@ export default function Navbar({
             >
               <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-[#0b4f6c] dark:text-sky-400" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-4.5 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center px-1.5 ring-2 ring-white dark:ring-slate-900 animate-pulse">
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center px-1.5 ring-2 ring-white dark:ring-slate-900 animate-pulse">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
@@ -415,7 +415,7 @@ export default function Navbar({
                 <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-800/60">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                      <Bell className="w-4.5 h-4.5 text-[#0b4f6c] dark:text-sky-400" />
+                      <Bell className="w-[18px] h-[18px] text-[#0b4f6c] dark:text-sky-400" />
                     </div>
                     <span className="font-extrabold text-base text-slate-900 dark:text-white">Trung Tâm Thông Báo</span>
                     {unreadCount > 0 && (
@@ -892,7 +892,7 @@ export default function Navbar({
                         }`}
                       >
                         <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                          <Calendar className="w-4.5 h-4.5 text-emerald-600" />
+                          <Calendar className="w-[18px] h-[18px] text-emerald-600" />
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Đặt Sân Bóng Đá</div>
@@ -913,7 +913,7 @@ export default function Navbar({
                         }`}
                       >
                         <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
-                          <Flame className="w-4.5 h-4.5 text-rose-500" />
+                          <Flame className="w-[18px] h-[18px] text-rose-500" />
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight flex items-center gap-1.5">
@@ -937,7 +937,7 @@ export default function Navbar({
                         }`}
                       >
                         <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-                          <Trophy className="w-4.5 h-4.5 text-amber-500" />
+                          <Trophy className="w-[18px] h-[18px] text-amber-500" />
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
@@ -958,7 +958,7 @@ export default function Navbar({
                         }`}
                       >
                         <div className="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">
-                          <Award className="w-4.5 h-4.5 text-sky-600" />
+                          <Award className="w-[18px] h-[18px] text-sky-600" />
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Thẻ Hội Viên & Ưu Đãi</div>
@@ -1024,7 +1024,7 @@ export default function Navbar({
         </div>
       )}
       {/* Height spacer so content does not get hidden under fixed navbar */}
-      <div className="h-13 sm:h-16 shrink-0 pointer-events-none" />
+      <div className="h-[52px] sm:h-16 shrink-0 pointer-events-none" />
     </>
   );
 }

@@ -26,7 +26,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
   const [dateChoice, setDateChoice] = useState("today");
 
   return (
-    <div className="relative w-full space-y-10 sm:space-y-14">
+    <div className="relative w-full space-y-10 sm:space-y-14 overflow-x-clip">
       {/* ========================================================
           FULL-WIDTH EDGE-TO-EDGE BANNER (GIAO DIỆN SÁNG TINH TẾ)
          ======================================================== */}

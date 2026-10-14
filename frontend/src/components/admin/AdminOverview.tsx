@@ -68,7 +68,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
             ))
           : kpis.map((k, i) => (
               <Reveal key={k.label} delay={Math.min(i, 5) * 70}>
-                <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-3 h-full">
+                <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 flex items-center gap-3 h-full">
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${k.tone}`}>
                     {k.icon}
                   </div>

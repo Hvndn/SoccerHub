@@ -312,7 +312,7 @@ export default function TournamentBracket() {
     <div className="space-y-8 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-50 bg-slate-900 dark:bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-fade-in-up max-w-sm">
+        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-slate-900 dark:bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-fade-in-up sm:max-w-sm">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 dark:text-white shrink-0" />
           <span className="font-semibold text-xs sm:text-sm">{toastMessage}</span>
         </div>
@@ -535,7 +535,7 @@ export default function TournamentBracket() {
                 <div className="space-y-2">
                   <div className="text-lg font-black text-emerald-400">FC Saigon Warriors</div>
                   <div className="text-xs text-slate-400">Elo 1,480 • Hạt Giống #1</div>
-                  <div className="text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
+                  <div className="text-4xl sm:text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
                     {scoreA}
                   </div>
                   <div className="flex justify-center space-x-2 pt-2">
@@ -569,7 +569,7 @@ export default function TournamentBracket() {
                 <div className="space-y-2">
                   <div className="text-lg font-black text-cyan-400">FC Anh Em Kiến Trúc</div>
                   <div className="text-xs text-slate-400">Elo 1,465 • Hạt Giống #2</div>
-                  <div className="text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
+                  <div className="text-4xl sm:text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
                     {scoreB}
                   </div>
                   <div className="flex justify-center space-x-2 pt-2">
@@ -705,37 +705,37 @@ export default function TournamentBracket() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="overflow-x-auto -mx-1 px-1">
+              <table className="w-full text-left border-collapse text-xs min-w-[640px]">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase font-bold text-[10px] tracking-wider">
-                    <th className="py-3 px-4">Hạng</th>
-                    <th className="py-3 px-4">Tên Đội / CLB</th>
-                    <th className="py-3 px-4 text-center">Trận</th>
-                    <th className="py-3 px-4 text-center">Thắng</th>
-                    <th className="py-3 px-4 text-center">Thua</th>
-                    <th className="py-3 px-4 text-center">Điểm</th>
-                    <th className="py-3 px-4 text-center">Elo Hiện Tại</th>
-                    <th className="py-3 px-4 text-right">Nguồn</th>
+                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase font-bold text-[11px] tracking-wider">
+                    <th className="py-3 px-2 sm:px-4 sticky left-0 bg-white dark:bg-slate-900 z-10">Hạng</th>
+                    <th className="py-3 px-2 sm:px-4">Tên Đội / CLB</th>
+                    <th className="py-3 px-2 sm:px-4 text-center">Trận</th>
+                    <th className="py-3 px-2 sm:px-4 text-center">Thắng</th>
+                    <th className="py-3 px-2 sm:px-4 text-center">Thua</th>
+                    <th className="py-3 px-2 sm:px-4 text-center">Điểm</th>
+                    <th className="py-3 px-2 sm:px-4 text-center">Elo Hiện Tại</th>
+                    <th className="py-3 px-2 sm:px-4 text-right">Nguồn</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 font-medium">
                   {tableRows.map((row, idx) => (
                     <tr key={row.team} className={`hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors ${idx === 0 ? "bg-emerald-50 dark:bg-emerald-950/20 text-slate-900 dark:text-white font-bold" : "text-slate-700 dark:text-slate-300"}`}>
-                      <td className="py-3.5 px-4 font-bold text-emerald-600 dark:text-emerald-400">#{idx + 1}</td>
-                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                      <td className="py-3.5 px-2 sm:px-4 font-bold text-emerald-600 dark:text-emerald-400 sticky left-0 bg-white dark:bg-slate-900 z-10">#{idx + 1}</td>
+                      <td className="py-3.5 px-2 sm:px-4 font-bold text-slate-900 dark:text-white">
                         {idx === 0 && "👑 "}{row.team}
                       </td>
-                      <td className="py-3.5 px-4 text-center font-mono">{row.played}</td>
-                      <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{row.won}</td>
-                      <td className="py-3.5 px-4 text-center font-mono text-rose-500">{row.lost}</td>
-                      <td className="py-3.5 px-4 text-center font-mono font-black">{row.points}</td>
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3.5 px-2 sm:px-4 text-center font-mono">{row.played}</td>
+                      <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{row.won}</td>
+                      <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-rose-500">{row.lost}</td>
+                      <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-black">{row.points}</td>
+                      <td className="py-3.5 px-2 sm:px-4 text-center">
                         <span className="bg-amber-400/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded font-bold font-mono">
                           {row.elo.toLocaleString("vi-VN")}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-3.5 px-2 sm:px-4 text-right">
                         {row.simulated ? (
                           <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 text-[10px] font-black">TEST</span>
                         ) : (

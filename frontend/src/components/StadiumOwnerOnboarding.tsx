@@ -637,8 +637,8 @@ export default function StadiumOwnerOnboarding({
 
       {/* ADD NEW PITCH MODAL */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
             <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Thêm Sân Mới Vào Cụm</h3>
             <div className="space-y-3 text-xs">
               <div className="space-y-1">

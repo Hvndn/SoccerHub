@@ -415,7 +415,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
                 <div className="rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-800">
                   {/* Item 1: Football Win */}
-                  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors border-b border-slate-100 dark:border-slate-800">
+                  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                       <span className="px-2.5 py-1 rounded bg-lime-400 text-slate-950 font-mono text-xs font-black">THẮNG 3 - 1</span>
                       <div className="flex flex-col">
@@ -433,7 +433,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                   </div>
 
                   {/* Item 2: Football Win */}
-                  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors border-b border-slate-100 dark:border-slate-800">
+                  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                       <span className="px-2.5 py-1 rounded bg-lime-400 text-slate-950 font-mono text-xs font-black">THẮNG 4 - 2</span>
                       <div className="flex flex-col">
@@ -451,7 +451,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                   </div>
 
                   {/* Item 3: Football Loss */}
-                  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors">
+                  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                     <div className="flex items-center gap-3">
                       <span className="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-xs font-bold">THUA 2 - 3</span>
                       <div className="flex flex-col">
@@ -649,8 +649,8 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
       {/* QR Pass Modal */}
       {showQRModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 text-center shadow-2xl animate-modal-pop text-slate-900 dark:text-white">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 text-center shadow-2xl animate-modal-pop text-slate-900 dark:text-white my-auto max-h-[92vh] overflow-y-auto">
             <h3 className="text-lg font-bold">Vé Vào Sân & Mở Tủ Đồ</h3>
             <p className="text-xs text-slate-500">Đưa mã QR này trước ống kính camera barrier cổng sân PB-01</p>
             <div className="w-56 h-56 mx-auto bg-white p-4 rounded-xl border border-slate-200 shadow-inner flex items-center justify-center">
@@ -671,8 +671,8 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
       {/* Cancel Modal */}
       {showCancelModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 dark:text-white">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 dark:text-white my-auto max-h-[92vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-rose-600">Báo Hủy / Đổi Giờ Đặt Sân</h3>
             <p className="text-xs text-slate-500">
               Trận đấu còn hơn 1 giờ 45 phút nữa mới bắt đầu. Bạn được **hoàn 100% tiền cọc** (45.000đ) về Ví VaoSan ngay lập tức.

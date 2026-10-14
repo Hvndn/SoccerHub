@@ -35,7 +35,7 @@ export function ConfirmModal({
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in overflow-y-auto"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onCancel();
       }}
@@ -44,7 +44,7 @@ export function ConfirmModal({
         role="alertdialog"
         aria-modal="true"
         aria-label={title}
-        className="animate-modal-pop w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4"
+        className="animate-modal-pop w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4 my-auto max-h-[92vh] overflow-y-auto"
       >
         <div className="flex items-start gap-3">
           <div
@@ -93,7 +93,7 @@ export function AdminToast({ toast, onClose }: { toast: { type: "ok" | "err"; te
   }, [toast, onClose]);
   if (!toast) return null;
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up max-w-sm">
+    <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up sm:max-w-sm">
       {toast.type === "ok" ? (
         <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
       ) : (

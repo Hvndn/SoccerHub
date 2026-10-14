@@ -382,7 +382,7 @@ export default function PitchDetail({
     <div className="w-full space-y-6 pb-20 text-slate-900 dark:text-white animate-fade-in">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-slide-up">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           <span className="text-sm font-bold">{toastMsg}</span>
         </div>
@@ -890,7 +890,7 @@ export default function PitchDetail({
               <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center space-x-2.5">
                   <div className="w-8 h-8 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 flex items-center justify-center font-bold">
-                    <Receipt className="w-4.5 h-4.5" />
+                    <Receipt className="w-[18px] h-[18px]" />
                   </div>
                   <div>
                     <h3 className="font-black text-sm text-slate-900 dark:text-white">Phiếu Đặt Chỗ Sân Bóng</h3>
@@ -1099,7 +1099,7 @@ export default function PitchDetail({
                 ) : (
                   <>
                     <span>Xác Nhận & Quét VietQR Giữ Chỗ</span>
-                    <ArrowRight className="w-4.5 h-4.5 text-white" />
+                    <ArrowRight className="w-[18px] h-[18px] text-white" />
                   </>
                 )}
               </button>
@@ -1154,8 +1154,8 @@ export default function PitchDetail({
 
       {/* 4. MODAL THANH TOÁN VIETQR NAPAS247 & MATCHDAY PASS */}
       {showQrModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 max-w-lg w-full rounded-3xl p-6 sm:p-7 space-y-5 border border-slate-200 dark:border-slate-800 shadow-2xl relative animate-modal-pop">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 max-w-lg w-full rounded-3xl p-6 sm:p-7 space-y-5 border border-slate-200 dark:border-slate-800 shadow-2xl relative animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
             <button
               onClick={() => setShowQrModal(false)}
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center font-bold transition-colors"

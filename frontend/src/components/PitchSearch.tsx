@@ -262,7 +262,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
     <div className="space-y-6">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-slide-up">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           <span className="text-sm font-bold">{toastMsg}</span>
         </div>
@@ -380,7 +380,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
       </section>
 
       {/* 2. BỘ LỌC TÌM SÂN THÔNG MINH (SMART FILTERS BAR) */}
-      <section className="w-full bg-white dark:bg-slate-900 p-4.5 sm:p-5 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3.5">
+      <section className="w-full bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3.5">
         {/* Hàng 1: Tabs loại sân thể thao */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth">
@@ -583,7 +583,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center space-x-2">
-                    <Lock className="w-4.5 h-4.5 text-amber-500" />
+                    <Lock className="w-[18px] h-[18px] text-amber-500" />
                     <span className="font-extrabold text-sm text-slate-900 dark:text-white">Redis Distributed Lock</span>
                   </div>
                   <span className="font-mono text-[10px] font-extrabold px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-full flex items-center">
@@ -863,7 +863,7 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
                       <button
                         type="button"
                         onClick={() => setSelectedPitchForSlot(pitch)}
-                        className="w-full sm:w-auto px-4.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
                       >
                         <span>Xem Ca & Đặt</span>
                         <ChevronRight className="w-4 h-4" />
@@ -1056,8 +1056,8 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
       {/* MODAL TẠO KÈO MỚI */}
       {showCreateMatchModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 animate-scale-up">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold">
@@ -1142,8 +1142,8 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
       {/* MODAL MÃ QR BARRIER TOÀN MÀN HÌNH */}
       {showQrModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl text-center space-y-4 animate-scale-up">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl text-center space-y-4 animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
                 Mã Check-in Barrier Tự Động

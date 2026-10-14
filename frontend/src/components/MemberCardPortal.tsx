@@ -162,7 +162,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               </div>
 
               {/* DIGITAL ATHLETE PASS (Thẻ Member Card) */}
-              <div className="w-full bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 rounded-2xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden border border-slate-800">
+              <div className="w-full bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 rounded-2xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden border border-slate-800">
                 {/* Decorative Field Blueprint Lines */}
                 <div className="absolute right-0 bottom-0 w-48 h-48 opacity-10 pointer-events-none">
                   <svg className="w-full h-full fill-none stroke-white" strokeWidth="2" viewBox="0 0 100 100">

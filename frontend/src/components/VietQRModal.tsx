@@ -35,8 +35,8 @@ export default function VietQRModal({ bookingData, onClose }: VietQRModalProps) 
   const depositAmount = 150000;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-xs">
-      <div className="glass-panel max-w-lg w-full rounded-3xl p-6 sm:p-8 space-y-6 border border-slate-200 dark:border-slate-700 shadow-2xl relative animate-modal-pop">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-xs overflow-y-auto">
+      <div className="glass-panel max-w-lg w-full rounded-3xl p-6 sm:p-8 space-y-6 border border-slate-200 dark:border-slate-700 shadow-2xl relative animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center font-bold transition-colors"

@@ -398,7 +398,7 @@ export default function PlayerProfileConsole({
             <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-5">
               {/* Avatar Box */}
               <div className="relative shrink-0">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-2xl sm:text-3xl lg:text-4xl flex items-center justify-center shadow-lg border-4 border-white dark:border-slate-850 overflow-hidden">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-2xl sm:text-3xl lg:text-4xl flex items-center justify-center shadow-lg border-4 border-white dark:border-slate-800 overflow-hidden">
                   {isAvatarUrl ? (
                     <img
                       src={displayAvatar}
@@ -464,7 +464,7 @@ export default function PlayerProfileConsole({
                   className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm min-h-[42px] ${
                     isEditingInline
                       ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
-                      : "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200"
+                      : "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200"
                   }`}
                 >
                   <Edit3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -477,7 +477,7 @@ export default function PlayerProfileConsole({
                     navigator.clipboard.writeText(window.location.href);
                     alert("Đã sao chép liên kết hồ sơ cầu thủ SoccerHub!");
                   }}
-                  className="p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-semibold transition-all shadow-sm shrink-0 min-h-[42px] min-w-[42px] flex items-center justify-center"
+                  className="p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-semibold transition-all shadow-sm shrink-0 min-h-[42px] min-w-[42px] flex items-center justify-center"
                   title="Chia sẻ hồ sơ"
                 >
                   <Share2 className="w-4 h-4" />
@@ -505,7 +505,7 @@ export default function PlayerProfileConsole({
           {/* BẢNG CHỈ SỐ THỂ CHẤT & THÔNG SỐ CẦU THỦ CHI TIẾT (MỚI BỔ SUNG) */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
             
-            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-850/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <Footprints className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
@@ -515,7 +515,7 @@ export default function PlayerProfileConsole({
               </div>
             </div>
 
-            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-850/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                 <Shirt className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
@@ -525,7 +525,7 @@ export default function PlayerProfileConsole({
               </div>
             </div>
 
-            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-850/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                 <Ruler className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
@@ -535,7 +535,7 @@ export default function PlayerProfileConsole({
               </div>
             </div>
 
-            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-850/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                 <Scale className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
@@ -545,7 +545,7 @@ export default function PlayerProfileConsole({
               </div>
             </div>
 
-            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-850/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                 <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
@@ -555,7 +555,7 @@ export default function PlayerProfileConsole({
               </div>
             </div>
 
-            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-850/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800 flex items-center gap-2 sm:gap-2.5">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-teal-100 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
@@ -1011,7 +1011,7 @@ export default function PlayerProfileConsole({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
                 
                 {/* Box ELO & Ranking */}
-                <div className="bg-slate-50 dark:bg-slate-850 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                <div className="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                       ĐIỂM ELO SOCCERHUB CHÍNH THỨC
@@ -1041,7 +1041,7 @@ export default function PlayerProfileConsole({
                 </div>
 
                 {/* Box Thành tích bàn thắng & Kiến tạo */}
-                <div className="bg-slate-50 dark:bg-slate-850 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                <div className="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                       ĐÓNG GÓP BÀN THẮNG & KIẾN TẠO
@@ -1104,7 +1104,7 @@ export default function PlayerProfileConsole({
               {/* Tóm tắt 5 trục Radar */}
               <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {currentStat.radarPoints.map((pt, i) => (
-                  <div key={i} className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800">
+                  <div key={i} className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
                     <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{pt.label}</p>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">{pt.val}</p>
                   </div>
@@ -1181,7 +1181,7 @@ export default function PlayerProfileConsole({
                   filteredMatches.map((m) => (
                     <div
                       key={m.id}
-                      className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200/70 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all space-y-3"
+                      className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all space-y-3"
                     >
                       {/* Dòng 1: Thời gian, Sân và Thể thức */}
                       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
@@ -1318,15 +1318,15 @@ export default function PlayerProfileConsole({
                   QUÃNG ĐƯỜNG DI CHUYỂN TRUNG BÌNH
                 </span>
                 <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
                     <span className="font-medium text-slate-700 dark:text-slate-300">Bóng đá sân 5 / trận</span>
                     <strong className="text-slate-900 dark:text-white">4.8 km</strong>
                   </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
                     <span className="font-medium text-slate-700 dark:text-slate-300">Bóng đá sân 7 / trận</span>
                     <strong className="text-emerald-600 dark:text-emerald-400">7.2 km</strong>
                   </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
                     <span className="font-medium text-slate-700 dark:text-slate-300">Bóng đá sân 11 / trận</span>
                     <strong className="text-slate-900 dark:text-white">10.5 km</strong>
                   </div>
@@ -1363,7 +1363,7 @@ export default function PlayerProfileConsole({
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200/70 dark:border-slate-800 flex items-center gap-3.5">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md">
                     <Award className="w-5 h-5" />
                   </div>
@@ -1377,7 +1377,7 @@ export default function PlayerProfileConsole({
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200/70 dark:border-slate-800 flex items-center gap-3.5">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
                     <Star className="w-5 h-5" />
                   </div>
@@ -1392,7 +1392,7 @@ export default function PlayerProfileConsole({
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-xs text-center text-slate-500 dark:text-slate-400">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-center text-slate-500 dark:text-slate-400">
                 Hồ sơ tự động cập nhật từ hệ thống giải đấu SoccerHub
               </div>
             </div>

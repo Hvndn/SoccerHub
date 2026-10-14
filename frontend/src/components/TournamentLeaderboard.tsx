@@ -621,12 +621,12 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   <div className="overflow-x-auto -mx-2 px-2">
                     <table className="w-full text-xs border-collapse min-w-[640px]">
                       <thead>
-                        <tr className="text-left text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                          <th scope="col" className="py-2 pr-3 font-bold">#</th>
-                          <th scope="col" className="py-2 pr-3 font-bold">Đội Bóng</th>
-                          <th scope="col" className="py-2 pr-3 font-bold">Đội Trưởng</th>
-                          <th scope="col" className="py-2 pr-3 font-bold">Giải Thi Đấu</th>
-                          <th scope="col" className="py-2 pr-3 font-bold text-right">Số ĐTV</th>
+                        <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                          <th scope="col" className="py-2 pr-2 sm:pr-3 font-bold sticky left-0 bg-white dark:bg-slate-900 z-10">#</th>
+                          <th scope="col" className="py-2 pr-2 sm:pr-3 font-bold">Đội Bóng</th>
+                          <th scope="col" className="py-2 pr-2 sm:pr-3 font-bold">Đội Trưởng</th>
+                          <th scope="col" className="py-2 pr-2 sm:pr-3 font-bold">Giải Thi Đấu</th>
+                          <th scope="col" className="py-2 pr-2 sm:pr-3 font-bold text-right">Số ĐTV</th>
                           <th scope="col" className="py-2 font-bold text-right">Điểm Elo</th>
                         </tr>
                       </thead>
@@ -638,7 +638,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                               idx === 0 ? 'bg-amber-50/60 dark:bg-amber-950/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
                             } transition-colors`}
                           >
-                            <td className="py-2.5 pr-3">
+                            <td className="py-2.5 pr-2 sm:pr-3 sticky left-0 bg-white dark:bg-slate-900 z-10">
                               <span className={`inline-flex w-6 h-6 items-center justify-center rounded-full font-mono font-black ${
                                 idx === 0 ? 'bg-amber-500 text-slate-950'
                                 : idx === 1 ? 'bg-slate-400 text-white'
