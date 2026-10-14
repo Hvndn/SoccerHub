@@ -1,374 +1,314 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  Shield,
   Users,
   Trophy,
-  DollarSign,
-  Plus,
-  UserPlus,
   Calendar,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  ChevronRight,
-  TrendingUp,
-  Award,
-  ArrowUpRight,
   Search,
-  Filter,
-  Share2,
-  Sparkles,
-  MapPin,
-  Flame,
-  Check,
-  Zap,
-  CreditCard
+  Loader2,
+  UserPlus,
+  ChevronRight,
+  Shield
 } from "lucide-react";
+import { fetchTournaments, sportLabel } from "@/lib/tournamentService";
 
 interface TeamClubManagementProps {
+  user?: any;
   onBackToHome?: () => void;
   onNavigateTab?: (tab: string) => void;
 }
 
+/**
+ * Quản lý đội bóng — toàn bộ dữ liệu lấy từ CSDL:
+ * - Danh sách đội = các đội bạn làm đội trưởng (đăng ký vào giải, bảng tournament_teams embed trong tournament).
+ * - Thành viên = các tài khoản cộng đồng có số điện thoại khớp (hệ thống không lưu danh sách cầu thủ theo đội nên hiển thị theo Elo/địa bàn).
+ * - Lịch đấu = các trận có đội của bạn trong bracketJson của giải.
+ * Không có sổ quỹ trong hệ thống nên tab "Quỹ Đội" bị gỡ, không bịa số liệu.
+ */
 export default function TeamClubManagement({
+  user,
   onBackToHome,
   onNavigateTab
 }: TeamClubManagementProps) {
-  const [activeSubTab, setActiveSubTab] = useState<"roster" | "fund" | "matches" | "recruitment">("roster");
+  const [activeSubTab, setActiveSubTab] = useState<"roster" | "matches">("roster");
   const [searchMember, setSearchMember] = useState("");
+  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Mock Team Data (Stitch Spec: FC Thunder VaoSan)
-  const teamInfo = {
-    name: "FC Thunder Saigon",
-    code: "FCT-88",
-    logo: "⚡",
-    sport: "Bóng Đá 7 Người",
-    eloRating: 1680,
-    rankTier: "Hạng Bạch Kim (Platinum)",
-    division: "Giải VĐCLB VaoSan Premier",
-    homePitch: "Sân Bóng Đá Đại Nam - Cụm A",
-    captain: "Trần Hoàng Long (@long_captain)",
-    foundedYear: 2024,
-    totalMembers: 16,
-    activeFund: "3,450,000 VNĐ",
-    winRate: "78.5%"
-  };
+  const myPhone = (user?.phone ?? "").toString().replace(/\s/g, "");
 
-  const members = [
-    { id: 1, name: "Trần Hoàng Long", role: "Đội Trưởng", pos: "Tiền Vệ (CM)", number: 10, elo: 1750, form: ["W", "W", "W", "D", "W"], attendance: "100%", status: "Ready" },
-    { id: 2, name: "Nguyễn Văn Hùng", role: "Phó Đội", pos: "Tiền Đạo (ST)", number: 9, elo: 1690, form: ["W", "W", "L", "W", "W"], attendance: "95%", status: "Ready" },
-    { id: 3, name: "Lê Minh Trí", role: "Thành Viên", pos: "Thủ Môn (GK)", number: 1, elo: 1640, form: ["W", "L", "W", "W", "W"], attendance: "90%", status: "Ready" },
-    { id: 4, name: "Phạm Quốc Bảo", role: "Thành Viên", pos: "Hậu Vệ (CB)", number: 4, elo: 1580, form: ["D", "W", "W", "W", "L"], attendance: "85%", status: "Injured" },
-    { id: 5, name: "Hoàng Anh Vũ", role: "Thành Viên", pos: "Tiền Vệ Cánh (LM)", number: 7, elo: 1620, form: ["W", "W", "W", "W", "D"], attendance: "100%", status: "Ready" },
-    { id: 6, name: "Đặng Tuấn Anh", role: "Thành Viên", pos: "Hậu Vệ Cánh (RB)", number: 2, elo: 1550, form: ["L", "W", "D", "W", "W"], attendance: "80%", status: "Busy" }
-  ];
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const data = await fetchTournaments();
+        if (alive) setTournaments(Array.isArray(data) ? data : []);
+      } catch (e: any) {
+        if (alive) setError(e?.message || "Không tải được danh sách giải");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
-  const fundHistory = [
-    { id: 1, type: "IN", desc: "Đóng quỹ tháng 9 (16 cầu thủ)", amount: "+ 4,000,000 VNĐ", date: "01/09/2026", status: "Hoàn tất" },
-    { id: 2, type: "OUT", desc: "Thanh toán cọc sân Đại Nam (Trận giao hữu FC Dragon)", amount: "- 650,000 VNĐ", date: "12/09/2026", status: "Đã chi" },
-    { id: 3, type: "OUT", desc: "Mua 2 thùng nước suối & gel lạnh sơ cứu", amount: "- 180,000 VNĐ", date: "14/09/2026", status: "Đã chi" },
-    { id: 4, type: "IN", desc: "Thưởng thắng trận thách đấu FC Real Star", amount: "+ 280,000 VNĐ", date: "15/09/2026", status: "Hoàn tất" }
-  ];
+  // Đội của tôi: các đội mà tôi là đội trưởng (theo số điện thoại đăng ký)
+  const myTeams = useMemo(() => {
+    if (!myPhone) return [];
+    const out: any[] = [];
+    for (const t of tournaments) {
+      for (const z of t.teams ?? []) {
+        if (String(z.captainPhone ?? "").replace(/\s/g, "") !== myPhone) continue;
+        out.push({ ...z, tournament: t });
+      }
+    }
+    return out;
+  }, [tournaments, myPhone]);
 
-  const upcomingMatches = [
-    { id: 1, opponent: "FC Dragon King", date: "Chủ Nhật, 20/09/2026", time: "19:30 - 21:00", pitch: "Sân Đại Nam - Sân 7A", type: "Giao Hữu Ghép Kèo Elo", bet: "Chia 50/50 Tiền Sân" },
-    { id: 2, opponent: "Phoenix Star FC", date: "Thứ Tư, 23/09/2026", time: "20:00 - 21:30", pitch: "Sân Sport Plus Tân Bình", type: "Vòng 4 Giải VaoSan League", bet: "Trận Đánh Điểm Elo x2" }
-  ];
+  const primaryTeam = myTeams[0] ?? null;
 
-  const filteredMembers = members.filter(
-    (m) =>
-      m.name.toLowerCase().includes(searchMember.toLowerCase()) ||
-      m.pos.toLowerCase().includes(searchMember.toLowerCase())
-  );
+  // Lịch đấu: quét bracket của các giải có đội của tôi
+  const myMatches = useMemo(() => {
+    const out: any[] = [];
+    if (!primaryTeam?.teamName) return out;
+    for (const t of tournaments) {
+      const team = (t.teams ?? []).find(
+        (z: any) => String(z.captainPhone ?? "").replace(/\s/g, "") === myPhone
+      );
+      if (!team?.teamName || !t.bracketJson) continue;
+      let bracket: any = null;
+      try {
+        bracket = JSON.parse(t.bracketJson);
+      } catch {
+        continue;
+      }
+      if (!Array.isArray(bracket?.rounds)) continue;
+      for (const r of bracket.rounds) {
+        for (const m of r.matches ?? []) {
+          if (!m.teamA || !m.teamB) continue;
+          const isA = m.teamA.name === team.teamName;
+          const isB = m.teamB.name === team.teamName;
+          if (!isA && !isB) continue;
+          out.push({
+            id: `${t.id}-${m.matchId}`,
+            round: r.name ?? r.roundName ?? "Vòng",
+            date: m.matchDate ?? "—",
+            time: m.timeSlot ?? "—",
+            pitch: m.pitchName ?? t.pitchName ?? t.location ?? "Chưa xếp sân",
+            myTeam: isA ? m.teamA.name : m.teamB.name,
+            opponent: isA ? m.teamB.name : m.teamA.name,
+            status: m.status ?? "PENDING",
+            score:
+              m.status === "DONE" ? `${m.scoreA ?? 0} - ${m.scoreB ?? 0}` : "Chưa đấu",
+            format: sportLabel(t.sportType)
+          });
+        }
+      }
+    }
+    return out;
+  }, [tournaments, primaryTeam, myPhone]);
+
+  const subTabs = [
+    { key: "roster", label: "Đội & Thành Viên", icon: Users },
+    { key: "matches", label: "Lịch Đấu", icon: Calendar }
+  ] as const;
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
-      {/* BANNER HEADER TEAM (STITCH SPEC) */}
-      <div className="relative rounded-3xl bg-gradient-to-r from-slate-900 via-[#0b4f6c] to-slate-900 text-white p-6 sm:p-8 overflow-hidden shadow-xl border border-slate-700/60">
-        <div className="absolute right-0 top-0 opacity-10 translate-x-12 -translate-y-6 pointer-events-none">
-          <Shield className="w-96 h-96 text-sky-400" />
-        </div>
-
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="flex items-center space-x-5">
-            <div className="w-20 h-20 rounded-2xl bg-slate-800/90 border-2 border-sky-400/80 flex items-center justify-center text-4xl shadow-lg shrink-0">
-              {teamInfo.logo}
+    <div className="space-y-6">
+      {/* HEADER — thông tin đội thật */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-5 sm:p-7">
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 py-10 text-slate-500">
+            <Loader2 className="w-5 h-5 animate-spin" /> Đang tải đội bóng của bạn…
+          </div>
+        ) : error ? (
+          <p className="py-6 text-center text-sm text-rose-500">{error}</p>
+        ) : primaryTeam ? (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-2xl shrink-0">
+              <Shield className="w-8 h-8" />
             </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center space-x-3">
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{teamInfo.name}</h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30">
-                  {teamInfo.code}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300 font-medium">
-                <span className="flex items-center space-x-1 font-semibold text-emerald-400">
-                  <Award className="w-4 h-4" />
-                  <span>Elo CLB: {teamInfo.eloRating}</span>
-                </span>
-                <span>•</span>
-                <span>{teamInfo.sport}</span>
-                <span>•</span>
-                <span className="text-amber-300 font-semibold">{teamInfo.rankTier}</span>
-              </div>
-
-              <p className="text-xs text-slate-400 flex items-center space-x-1">
-                <MapPin className="w-3.5 h-3.5 text-sky-400" />
-                <span>Sân nhà: {teamInfo.homePitch}</span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white truncate">
+                {primaryTeam.teamName}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Giải đang tham gia: {primaryTeam.tournament?.title || "—"} •{" "}
+                {primaryTeam.tournament?.location || primaryTeam.tournament?.pitchName || "Chưa xếp sân"}
               </p>
             </div>
+            <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center">
+              <div>
+                <p className="text-lg sm:text-xl font-black text-emerald-500 font-mono">
+                  {primaryTeam.eloRating ?? "—"}
+                </p>
+                <p className="text-[10px] text-slate-500 uppercase font-bold">Elo Đội</p>
+              </div>
+              <div>
+                <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono">
+                  {primaryTeam.memberCount ?? "—"}
+                </p>
+                <p className="text-[10px] text-slate-500 uppercase font-bold">Thành Viên</p>
+              </div>
+              <div>
+                <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono">
+                  {myTeams.length}
+                </p>
+                <p className="text-[10px] text-slate-500 uppercase font-bold">Giải Đã Đăng Ký</p>
+              </div>
+            </div>
           </div>
-
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-3 gap-3 w-full lg:w-auto bg-slate-950/40 p-4 rounded-2xl border border-slate-700/50 backdrop-blur-md">
-            <div className="text-center px-2">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Thành Viên</span>
-              <span className="text-lg font-black text-white">{teamInfo.totalMembers} Cầu thủ</span>
-            </div>
-            <div className="text-center px-2 border-x border-slate-800">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Quỹ Đội</span>
-              <span className="text-lg font-black text-emerald-400">{teamInfo.activeFund}</span>
-            </div>
-            <div className="text-center px-2">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Tỷ Lệ Thắng</span>
-              <span className="text-lg font-black text-sky-400">{teamInfo.winRate}</span>
-            </div>
+        ) : (
+          <div className="py-6 text-center space-y-3">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              Bạn chưa làm đội trưởng của đội nào trong hệ thống.
+            </p>
+            <p className="text-xs text-slate-400">
+              Đăng ký đội khi tham gia một giải đấu — số điện thoại của bạn sẽ được dùng để liên kết đội.
+            </p>
+            <button
+              type="button"
+              onClick={() => onNavigateTab?.("tournaments")}
+              className="px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs inline-flex items-center gap-1.5"
+            >
+              Xem Giải Đấu <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* SUB TABS NAVIGATION */}
-      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto">
-        <div className="flex items-center space-x-2">
+      {/* SUB TABS */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {subTabs.map((tab) => (
           <button
+            key={tab.key}
             type="button"
-            onClick={() => setActiveSubTab("roster")}
-            className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
-              activeSubTab === "roster"
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            onClick={() => setActiveSubTab(tab.key)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
+              activeSubTab === tab.key
+                ? "bg-emerald-500 text-white"
+                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800"
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>Danh Sách Cầu Thủ ({members.length})</span>
+            <tab.icon className="w-3.5 h-3.5 inline mr-1.5" />
+            {tab.label}
           </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveSubTab("fund")}
-            className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
-              activeSubTab === "fund"
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            <DollarSign className="w-4 h-4" />
-            <span>Quỹ Đội & Chi Phí</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveSubTab("matches")}
-            className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
-              activeSubTab === "matches"
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Lịch Đấu CLB</span>
-          </button>
-        </div>
-
-        <Link
-          href="/teams/members/new"
-          className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs shadow-sm flex items-center space-x-1.5 transition-all shrink-0 active:scale-95"
-        >
-          <UserPlus className="w-4 h-4" />
-          <span>Chiêu Mộ Cầu Thủ</span>
-        </Link>
+        ))}
       </div>
 
-      {/* TAB CONTENT: ROSTER */}
       {activeSubTab === "roster" && (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+            <h3 className="font-black text-slate-900 dark:text-white">Danh Sách Đội Của Bạn</h3>
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
-                type="text"
                 value={searchMember}
                 onChange={(e) => setSearchMember(e.target.value)}
-                placeholder="Tìm tên cầu thủ, vị trí thi đấu..."
-                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c]"
+                placeholder="Lọc theo tên đội hoặc giải…"
+                className="pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-xs w-full sm:w-72"
               />
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Hiển thị <span className="font-bold text-slate-900 dark:text-white">{filteredMembers.length}</span> / {members.length} cầu thủ
-            </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredMembers.map((m) => (
-              <div
-                key={m.id}
-                className="glass-panel p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-[#0b4f6c] dark:hover:border-sky-500 transition-all space-y-4"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-[#0b4f6c] dark:text-sky-400 font-black text-lg flex items-center justify-center border border-slate-200 dark:border-slate-700">
-                      #{m.number}
-                    </div>
-                    <div>
-                      <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">{m.name}</h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{m.pos}</p>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-400/20">
-                    {m.role}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 py-2 border-y border-slate-100 dark:border-slate-800 text-center text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-400 block font-bold">Elo Cá Nhân</span>
-                    <span className="font-mono font-extrabold text-slate-900 dark:text-white">{m.elo}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 block font-bold">Điểm Danh</span>
-                    <span className="font-mono font-extrabold text-emerald-500">{m.attendance}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 block font-bold">Trạng Thái</span>
-                    <span className={`font-bold ${m.status === "Ready" ? "text-emerald-500" : "text-amber-500"}`}>
-                      {m.status === "Ready" ? "Sẵn Sàng" : "Vắng Mặt"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <span className="text-slate-400 font-medium">5 Trận Gần Nhất:</span>
-                  <div className="flex space-x-1">
-                    {m.form.map((f, idx) => (
-                      <span
-                        key={idx}
-                        className={`w-5 h-5 rounded-md text-[10px] font-black flex items-center justify-center text-white ${
-                          f === "W" ? "bg-emerald-500" : f === "D" ? "bg-amber-500" : "bg-rose-500"
-                        }`}
+          {myTeams.length === 0 ? (
+            <p className="p-8 text-center text-sm text-slate-500">Chưa có đội nào.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="bg-slate-50 dark:bg-slate-950/60">
+                  <tr className="text-left text-slate-500">
+                    <th className="p-3 font-bold">Tên Đội</th>
+                    <th className="p-3 font-bold">Giải</th>
+                    <th className="p-3 font-bold">Số Người</th>
+                    <th className="p-3 font-bold">Elo</th>
+                    <th className="p-3 font-bold">Trạng Thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {myTeams
+                    .filter(
+                      (z) =>
+                        !searchMember ||
+                        z.teamName
+                          .toLowerCase()
+                          .includes(searchMember.toLowerCase()) ||
+                        (z.tournament?.title ?? "")
+                          .toLowerCase()
+                          .includes(searchMember.toLowerCase())
+                    )
+                    .map((z, i) => (
+                      <tr
+                        key={`${z.tournament?.id}-${i}`}
+                        className="border-t border-slate-100 dark:border-slate-800"
                       >
-                        {f}
-                      </span>
+                        <td className="p-3 font-bold text-slate-900 dark:text-white">
+                          {z.teamName}
+                        </td>
+                        <td className="p-3 text-slate-500">{z.tournament?.title || "—"}</td>
+                        <td className="p-3 font-mono">{z.memberCount ?? "—"}</td>
+                        <td className="p-3 font-mono text-emerald-500">{z.eloRating ?? "—"}</td>
+                        <td className="p-3">
+                          <span className="px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-500 font-bold text-[10px]">
+                            {z.registrationStatus === "CONFIRMED"
+                              ? "Đã Xác Nhận"
+                              : z.registrationStatus === "PENDING_PAYMENT"
+                              ? "Chờ Thanh Toán"
+                              : z.registrationStatus || "—"}
+                          </span>
+                        </td>
+                      </tr>
                     ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                </tbody>
+              </table>
+            </div>
+          )}
+          <p className="p-4 text-[11px] text-slate-400 border-t border-slate-200/80 dark:border-slate-800">
+            Hệ thống liên kết đội theo số điện thoại đội trưởng. Danh sách cầu thủ từng người chưa được lưu riêng theo đội nên không hiển thị tại đây.
+          </p>
         </div>
       )}
 
-      {/* TAB CONTENT: FUND */}
-      {activeSubTab === "fund" && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="glass-panel p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Số Dư Quỹ Hiện Tại</span>
-              <div className="text-2xl font-black text-emerald-500 font-mono">3,450,000 VNĐ</div>
-              <p className="text-[11px] text-slate-500">Đã kiểm toán & công khai minh bạch cho 16 cầu thủ</p>
-            </div>
-            <div className="glass-panel p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Thu Trong Tháng</span>
-              <div className="text-2xl font-black text-sky-500 font-mono">+ 4,280,000 VNĐ</div>
-              <p className="text-[11px] text-slate-500">Gồm đóng quỹ định kỳ + tiền thưởng thi đấu</p>
-            </div>
-            <div className="glass-panel p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Đã Chi Trận Đấu</span>
-              <div className="text-2xl font-black text-rose-500 font-mono">- 830,000 VNĐ</div>
-              <p className="text-[11px] text-slate-500">Tiền cọc sân, nước uống & y tế sân cỏ</p>
-            </div>
+      {activeSubTab === "matches" && (
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-slate-200/80 dark:border-slate-800">
+            <h3 className="font-black text-slate-900 dark:text-white">Lịch Đấu Của Đội</h3>
           </div>
-
-          <div className="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Lịch Sử Thu Chi Quỹ Đội</h3>
-            </div>
-
-            <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-              {fundHistory.map((item) => (
-                <div key={item.id} className="py-3 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center font-black ${
-                        item.type === "IN" ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+          {myMatches.length === 0 ? (
+            <p className="p-8 text-center text-sm text-slate-500">
+              Chưa có trận nào được xếp cho đội của bạn.
+            </p>
+          ) : (
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {myMatches.map((m) => (
+                <div key={m.id} className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-slate-900 dark:text-white text-sm">
+                      {m.myTeam} <span className="text-slate-400 font-normal">vs</span> {m.opponent}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {m.round} • {m.date} {m.time !== "—" ? `• ${m.time}` : ""} • {m.pitch}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-mono font-black text-slate-900 dark:text-white">
+                      {m.score}
+                    </p>
+                    <p
+                      className={`text-[10px] font-bold ${
+                        m.status === "DONE" ? "text-emerald-500" : "text-amber-500"
                       }`}
                     >
-                      {item.type === "IN" ? "+" : "-"}
-                    </div>
-                    <div>
-                      <p className="font-extrabold text-slate-900 dark:text-white">{item.desc}</p>
-                      <p className="text-[10px] text-slate-400 font-mono">{item.date}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`font-mono font-extrabold ${item.type === "IN" ? "text-emerald-500" : "text-rose-500"}`}>
-                      {item.amount}
-                    </span>
-                    <span className="block text-[10px] text-slate-400 font-semibold">{item.status}</span>
+                      {m.status === "DONE" ? "Đá Xong" : "Sắp Diễn Ra"}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB CONTENT: MATCHES */}
-      {activeSubTab === "matches" && (
-        <div className="space-y-4">
-          <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Lịch Thi Đấu Giao Hữu & Giải Đấu Sắp Tới</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {upcomingMatches.map((m) => (
-              <div key={m.id} className="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-400/20">
-                    {m.type}
-                  </span>
-                  <span className="text-xs font-mono font-bold text-amber-500">{m.bet}</span>
-                </div>
-
-                <div className="flex items-center justify-between py-2 text-center">
-                  <div className="space-y-1">
-                    <div className="w-10 h-10 rounded-xl bg-slate-800 text-white font-black text-xl flex items-center justify-center mx-auto">
-                      ⚡
-                    </div>
-                    <span className="font-extrabold text-xs text-slate-900 dark:text-white block">FC Thunder</span>
-                  </div>
-                  <div className="text-slate-400 font-black text-sm">VS</div>
-                  <div className="space-y-1">
-                    <div className="w-10 h-10 rounded-xl bg-sky-600 text-white font-black text-xl flex items-center justify-center mx-auto">
-                      🐉
-                    </div>
-                    <span className="font-extrabold text-xs text-slate-900 dark:text-white block">{m.opponent}</span>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1 text-xs text-slate-600 dark:text-slate-300">
-                  <p className="flex items-center space-x-1.5 font-bold text-slate-900 dark:text-white">
-                    <Clock className="w-3.5 h-3.5 text-[#0b4f6c] dark:text-sky-400" />
-                    <span>{m.date} ({m.time})</span>
-                  </p>
-                  <p className="flex items-center space-x-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{m.pitch}</span>
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
       )}
     </div>

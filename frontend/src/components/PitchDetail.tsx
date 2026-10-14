@@ -45,14 +45,12 @@ import { broadcastBookingEvent, subscribeToBookingEvents } from "@/lib/realtimeS
 interface PitchDetailProps {
   pitch: any | null;
   onBack: () => void;
-  onSelectSlot?: (pitch: any, slot: any) => void;
   user?: any;
 }
 
 export default function PitchDetail({
   pitch,
   onBack,
-  onSelectSlot,
   user
 }: PitchDetailProps) {
   // Lấy pitchId thật từ prop hoặc mặc định là 1 (Cụm sân thật trong database)

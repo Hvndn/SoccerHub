@@ -17,11 +17,12 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
 }) => {
   const [copiedCode, setCopiedCode] = useState(false);
 
-  const userName = user?.fullName || user?.name || "Nguyễn Văn An";
-  const userElo = user?.eloRating || 1200;
+  const userName = user?.fullName || user?.name || "Khách chưa đăng nhập";
+  const userElo = user?.eloRating ?? "—";
+  const memberId = user?.id ? `#SH-${user.id}` : "#SH-—";
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText("#VS-20259");
+    navigator.clipboard.writeText(memberId);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
   };
@@ -70,7 +71,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                   <span className="text-emerald-400">Hồ Sơ Đã Sẵn Sàng!</span>
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mt-2">
-                  Chúc mừng bạn đã gia nhập cộng đồng hơn 68.000 vận động viên phong trào và bán chuyên trên toàn quốc.
+                  Hồ sơ cầu thủ của bạn đã lưu trong hệ thống — dùng để nhận kèo, tham gia giải và đặt sân.
                 </p>
               </div>
 
@@ -81,8 +82,8 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                     <Ticket className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-white">Đã cộng voucher 50.000đ</p>
-                    <p className="text-[11px] text-slate-300">Sẵn sàng áp dụng cho ca đặt sân đầu tiên</p>
+                    <p className="text-xs font-bold text-white">Elo {userElo} • {user?.level || "Chưa xếp bậc"}</p>
+                    <p className="text-[11px] text-slate-300">Điểm cập nhật từ kết quả các giải trong hệ thống</p>
                   </div>
                 </div>
 
@@ -91,8 +92,8 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                     <Award className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-white">Mã thẻ VĐV: #VS-20259</p>
-                    <p className="text-[11px] text-slate-300">Định danh tích điểm, hạng bậc & check-in tự động</p>
+                    <p className="text-xs font-bold text-white">Mã thẻ VĐV: {memberId}</p>
+                    <p className="text-[11px] text-slate-300">Dùng để chủ sân đối chiếu khi nhận sân</p>
                   </div>
                 </div>
 
@@ -101,8 +102,8 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                     <Activity className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-white">Xác thực trình độ tự động</p>
-                    <p className="text-[11px] text-slate-300">Khởi tạo Football Elo 1,200 chuẩn VFF & Phủi</p>
+                    <p className="text-xs font-bold text-white">Điểm Elo từ kết quả thi đấu</p>
+                    <p className="text-[11px] text-slate-300">Elo {userElo} — cập nhật khi các giải trong hệ thống kết thúc</p>
                   </div>
                 </div>
               </div>
@@ -208,7 +209,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                       <div>
                         <span className="text-[10px] text-slate-400 uppercase block font-medium">Chỉ số xếp hạng</span>
                         <div className="flex items-center gap-1.5 font-mono text-xs font-bold">
-                          <span className="text-lime-400">VFF Serie B</span>
+                          <span className="text-lime-400">{user?.level || "Chưa xếp bậc"}</span>
                           <span className="text-slate-600">|</span>
                           <span className="text-white">Elo {userElo}</span>
                         </div>
@@ -233,7 +234,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
 
                 {/* Footer Thẻ */}
                 <div className="pt-3 border-t border-slate-800 flex items-center justify-between relative z-10 text-[11px]">
-                  <span className="font-mono text-slate-400 tracking-wider">#VS-20259-VN • HO CHI MINH CITY</span>
+                  <span className="font-mono text-slate-400 tracking-wider">{memberId} • SOCCERHUB</span>
                   <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> ĐÃ KÍCH HOẠT THÀNH CÔNG
                   </span>

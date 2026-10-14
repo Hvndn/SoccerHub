@@ -15,6 +15,7 @@ import java.util.*;
 public class CommunityEloController {
 
     private final MatchmakingPostRepository matchmakingPostRepository;
+    private final com.soccerhub.repository.UserRepository userRepository;
 
     @GetMapping("/matchmaking-posts")
     public ResponseEntity<List<MatchmakingPost>> getMatchmakingPosts() {
@@ -24,24 +25,30 @@ public class CommunityEloController {
 
     @PostMapping("/matchmaking-posts")
     public ResponseEntity<?> createMatchmakingPost(@RequestBody Map<String, Object> req) {
-        String teamName = (String) req.getOrDefault("teamName", "FC Tự Do");
-        String captainName = (String) req.getOrDefault("captainName", "Cầu Thủ");
-        String captainPhone = (String) req.getOrDefault("captainPhone", "");
-        Integer eloRating = req.get("eloRating") != null ? Integer.parseInt(req.get("eloRating").toString()) : 1200;
-        String pitchName = (String) req.getOrDefault("pitchName", "Sân Bóng Đá");
-        String address = (String) req.getOrDefault("address", "TP. Hồ Chí Minh");
-        String matchTime = (String) req.getOrDefault("matchTime", "19:30 Tối nay");
-        String pitchType = (String) req.getOrDefault("pitchType", "SAN_7");
-        String paymentModel = (String) req.getOrDefault("paymentModel", "SPLIT_EQUAL");
-        Long estimatedFee = req.get("estimatedFee") != null ? Long.parseLong(req.get("estimatedFee").toString()) : 50000L;
-        String note = (String) req.getOrDefault("note", "Tìm kèo giao lưu cọ xát nâng trình, fairplay.");
+        String teamName = str(req.get("teamName"));
+        String captainName = str(req.get("captainName"));
+        String captainPhone = str(req.get("captainPhone"));
+        String pitchName = str(req.get("pitchName"));
+        String address = str(req.get("address"));
+        String matchTime = str(req.get("matchTime"));
+
+        // Không bịa dữ liệu khi client thiếu thông tin bắt buộc
+        if (teamName == null || captainPhone == null || matchTime == null || pitchName == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Thiếu thông tin: cần teamName, captainPhone, matchTime và pitchName để đăng kèo."));
+        }
+
+        Integer eloRating = req.get("eloRating") != null ? Integer.parseInt(req.get("eloRating").toString()) : null;
+        String pitchType = str(req.get("pitchType"));
+        String paymentModel = str(req.get("paymentModel"));
+        Long estimatedFee = req.get("estimatedFee") != null ? Long.parseLong(req.get("estimatedFee").toString()) : null;
+        String note = str(req.get("note"));
 
         MatchmakingPost post = MatchmakingPost.builder()
                 .teamName(teamName)
-                .captainName(captainName)
+                .captainName(captainName != null ? captainName : captainPhone)
                 .captainPhone(captainPhone)
                 .eloRating(eloRating)
-                .reputationScore(98)
                 .pitchName(pitchName)
                 .address(address)
                 .matchTime(matchTime)
@@ -68,14 +75,19 @@ public class CommunityEloController {
             return ResponseEntity.badRequest().body(Map.of("error", "Kèo này đã có đội khác nhận!"));
         }
 
-        String opponentTeamName = (String) req.getOrDefault("opponentTeamName", "FC Thách Đấu");
-        String opponentCaptainName = (String) req.getOrDefault("opponentCaptainName", "Đội Trưởng Đối Thủ");
-        String opponentCaptainPhone = (String) req.getOrDefault("opponentCaptainPhone", "");
-        Integer opponentElo = req.get("opponentElo") != null ? Integer.parseInt(req.get("opponentElo").toString()) : 1200;
+        String opponentTeamName = str(req.get("opponentTeamName"));
+        String opponentCaptainName = str(req.get("opponentCaptainName"));
+        String opponentCaptainPhone = str(req.get("opponentCaptainPhone"));
+        Integer opponentElo = req.get("opponentElo") != null ? Integer.parseInt(req.get("opponentElo").toString()) : null;
+
+        if (opponentTeamName == null || opponentCaptainPhone == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Thiếu thông tin đội nhận kèo: cần opponentTeamName và opponentCaptainPhone."));
+        }
 
         post.setStatus("MATCHED");
         post.setOpponentTeamName(opponentTeamName);
-        post.setOpponentCaptainName(opponentCaptainName);
+        post.setOpponentCaptainName(opponentCaptainName != null ? opponentCaptainName : opponentCaptainPhone);
         post.setOpponentCaptainPhone(opponentCaptainPhone);
         post.setOpponentEloRating(opponentElo);
         post.setMatchedAt(LocalDateTime.now());
@@ -88,40 +100,55 @@ public class CommunityEloController {
         ));
     }
 
+    /** Đọc chuỗi từ request; chuỗi rỗng/khoảng trắng coi như null. */
+    private static String str(Object v) {
+        if (v == null) return null;
+        String s = v.toString().trim();
+        return s.isEmpty() ? null : s;
+    }
+
+    /** Chợ kèo khẩn cấp: lấy thật từ các bài đăng còn trạng thái OPEN trong bảng matchmaking_posts. */
     @GetMapping("/urgent-market")
     public ResponseEntity<List<Map<String, Object>>> getUrgentMarket() {
-        List<Map<String, Object>> market = Arrays.asList(
-            Map.of(
-                "id", "urg-1",
-                "matchTitle", "Trận Giao Hữu Sân 7 D-Sport Oasis",
-                "time", "19:30 Tối nay (Còn 30 phút)",
-                "location", "Sân D-Sport Oasis, Quận 7",
-                "neededRoles", List.of("Thủ Môn (GK)", "Tiền Đạo Cánh (RW)"),
-                "rewardNote", "Free 100% tiền sân + Nước uống giải khát",
-                "urgencyLevel", "HIGH"
-            ),
-            Map.of(
-                "id", "urg-2",
-                "matchTitle", "Kèo Sân 5 Futsal Tân Bình",
-                "time", "20:30 Tối nay",
-                "location", "Chảo Lửa Tân Bình Arena",
-                "neededRoles", List.of("Hậu vệ thòng (Fixer)"),
-                "rewardNote", "Cộng 25 điểm Elo uy tín VFF",
-                "urgencyLevel", "MEDIUM"
-            )
-        );
+        List<Map<String, Object>> market = new ArrayList<>();
+        for (MatchmakingPost p : matchmakingPostRepository.findAllByOrderByCreatedAtDesc()) {
+            if (!"OPEN".equalsIgnoreCase(p.getStatus())) continue;
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id", p.getId());
+            item.put("matchTitle", p.getTeamName() + " cần đối thủ");
+            item.put("teamName", p.getTeamName());
+            item.put("captainName", p.getCaptainName());
+            item.put("time", p.getMatchTime());
+            item.put("location", p.getPitchName() + (p.getAddress() != null ? " — " + p.getAddress() : ""));
+            item.put("eloRequired", p.getEloRating());
+            item.put("fee", p.getEstimatedFee());
+            item.put("note", p.getNote());
+            item.put("createdAt", p.getCreatedAt());
+            market.add(item);
+        }
         return ResponseEntity.ok(market);
     }
 
+    /** Bảng xếp hạng Elo: lấy thật từ cột elo_rating của bảng users. */
     @GetMapping("/players/leaderboard")
     public ResponseEntity<List<Map<String, Object>>> getEloLeaderboard() {
-        List<Map<String, Object>> leaderboard = Arrays.asList(
-            Map.of("rank", 1, "name", "Nguyễn Văn Hùng", "team", "FC Saigon Warriors", "elo", 1580, "winRate", "78%", "reputation", 99, "goals", "18 bàn"),
-            Map.of("rank", 2, "name", "Trần Tuấn Anh", "team", "FC Lộc Phát Q.7", "elo", 1520, "winRate", "72%", "reputation", 98, "goals", "15 bàn"),
-            Map.of("rank", 3, "name", "Lê Hoàng Minh", "team", "FC Anh Em Kiến Trúc", "elo", 1490, "winRate", "69%", "reputation", 97, "goals", "14 bàn"),
-            Map.of("rank", 4, "name", "Phạm Quốc Bảo", "team", "FC Titan Sài Gòn", "elo", 1440, "winRate", "65%", "reputation", 96, "goals", "12 bàn"),
-            Map.of("rank", 5, "name", "Đặng Ngọc Long", "team", "FC Nam Sài Gòn", "elo", 1410, "winRate", "62%", "reputation", 95, "goals", "10 bàn")
-        );
+        List<com.soccerhub.model.User> users = new ArrayList<>(userRepository.findAll());
+        users.removeIf(u -> u.getEloRating() == null);
+        users.sort((a, b) -> Integer.compare(b.getEloRating(), a.getEloRating()));
+
+        List<Map<String, Object>> leaderboard = new ArrayList<>();
+        int rank = 1;
+        for (com.soccerhub.model.User u : users) {
+            if (rank > 10) break;
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("rank", rank++);
+            row.put("id", u.getId());
+            row.put("name", u.getFullName());
+            row.put("team", u.getArea());
+            row.put("elo", u.getEloRating());
+            row.put("level", u.getLevel());
+            leaderboard.add(row);
+        }
         return ResponseEntity.ok(leaderboard);
     }
 }

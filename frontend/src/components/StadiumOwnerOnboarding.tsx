@@ -36,22 +36,17 @@ export default function StadiumOwnerOnboarding({
 }: StadiumOwnerOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1); // Step 1 is active by default
 
-  // Form States
+  // Form States — để trống, chủ sân tự khai báo (không điền sẵn dữ liệu mẫu)
   const [stadiumProfile, setStadiumProfile] = useState({
-    name: "Cụm Sân Bóng Đá D-Sport Oasis Q.7",
-    address: "Số 154 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7, TP.HCM",
-    lat: "10.7482",
-    lng: "106.7214",
-    openHours: "06:00 - 23:00",
-    phone: "0988 776 655"
+    name: "",
+    address: "",
+    lat: "",
+    lng: "",
+    openHours: "14:00 - 22:30",
+    phone: ""
   });
 
-  const [pitches, setPitches] = useState<any[]>([
-    { id: 101, name: "Sân Bóng Đá 7A", sport: "Bóng đá 7 người", surface: "Cỏ nhân tạo FIFA Pro 50mm", normalPrice: 380000, peakPrice: 650000, status: "Ready" },
-    { id: 102, name: "Sân Bóng Đá 7B", sport: "Bóng đá 7 người", surface: "Cỏ nhân tạo 45mm", normalPrice: 350000, peakPrice: 600000, status: "Ready" },
-    { id: 103, name: "Sân Bóng Đá 5A (Futsal)", sport: "Bóng đá 5 người", surface: "Thảm PVC Futsal Pro", normalPrice: 220000, peakPrice: 400000, status: "Ready" },
-    { id: 104, name: "Sân Bóng Đá 11 Tiêu Chuẩn", sport: "Bóng đá 11 người", surface: "Cỏ tự nhiên Zeon Zoysia", normalPrice: 900000, peakPrice: 1500000, status: "Ready" }
-  ]);
+  const [pitches, setPitches] = useState<any[]>([]);
 
   const [loadingPitches, setLoadingPitches] = useState(false);
   const [submittingPitch, setSubmittingPitch] = useState(false);
@@ -69,29 +64,23 @@ export default function StadiumOwnerOnboarding({
         const mapped = data.map((item: any) => ({
           id: item.id,
           name: item.name,
-          sport: item.type || "Bóng đá 7 người",
-          surface: "Cỏ nhân tạo Pro 50mm",
-          normalPrice: item.pricePerHour || 350000,
-          peakPrice: Math.round((item.pricePerHour || 350000) * 1.5),
+          sport: item.pitchTypes?.[0] || "Chưa khai báo bộ môn",
+          surface: item.amenities?.[0] ? `Tiện ích: ${item.amenities[0]}` : "Chưa khai báo mặt sân",
+          normalPrice: item.avgPricePerHour || item.pricePerHour || 0,
+          peakPrice: item.peakPricePerHour || item.avgPricePerHour || 0,
           status: item.status || "Ready"
         }));
         setPitches(mapped);
       }
     } catch (err) {
-      console.log("Using fallback pitches offline/guest mode");
+      // Không có sân hoặc chưa đăng nhập chủ sân → để trống, không bịa dữ liệu mẫu
+      setPitches([]);
     } finally {
       setLoadingPitches(false);
     }
   };
 
-  const [vietQRInfo, setVietQRInfo] = useState({
-    bank: "Vietcombank (VCB)",
-    accountNumber: "0071000982341",
-    accountName: "TRAN HUU NAM",
-    depositRate: "50%"
-  });
-
-  const [aiPricingEnabled, setAiPricingEnabled] = useState(true);
+  // Bước 3 không còn form tài khoản giả — xem nội dung "Chính Sách Thanh Toán" bên dưới
 
   // New Pitch Modal state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -106,12 +95,10 @@ export default function StadiumOwnerOnboarding({
     try {
       const created = await createPitchApi({
         name: newPitchName,
-        type: newSport,
-        pricePerHour: newNormalPrice,
-        location: stadiumProfile.address,
-        phone: stadiumProfile.phone,
-        status: "AVAILABLE",
-        imageUrl: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=800&q=80"
+        avgPricePerHour: newNormalPrice,
+        peakPricePerHour: newPeakPrice,
+        address: stadiumProfile.address || undefined,
+        phone: stadiumProfile.phone || undefined
       });
 
       setPitches((prev) => [
@@ -119,31 +106,20 @@ export default function StadiumOwnerOnboarding({
         {
           id: created.id || Date.now(),
           name: created.name,
-          sport: created.type,
-          surface: "Cỏ nhân tạo Pro 50mm",
-          normalPrice: created.pricePerHour,
-          peakPrice: newPeakPrice,
+          sport: created.pitchTypes?.[0] || "Chưa khai báo bộ môn",
+          surface: "Tiện ích: Chưa khai báo",
+          normalPrice: created.avgPricePerHour || created.pricePerHour || newNormalPrice,
+          peakPrice: created.peakPricePerHour || newPeakPrice,
           status: "Ready"
         }
       ]);
       setNewPitchName("");
       setShowAddModal(false);
     } catch (err: any) {
-      alert("Đã thêm sân mới thành công (chế độ demo/offline).");
-      setPitches((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          name: newPitchName,
-          sport: newSport,
-          surface: "Cỏ nhân tạo Pro 50mm",
-          normalPrice: newNormalPrice,
-          peakPrice: newPeakPrice,
-          status: "Ready"
-        }
-      ]);
-      setNewPitchName("");
-      setShowAddModal(false);
+      alert(
+        "Không thêm được sân vào CSDL: " +
+          (err?.message || "kiểm tra lại đăng nhập chủ sân và kết nối máy chủ")
+      );
     } finally {
       setSubmittingPitch(false);
     }
@@ -152,27 +128,36 @@ export default function StadiumOwnerOnboarding({
   const [isFinalSubmitting, setIsFinalSubmitting] = useState(false);
 
   const handleFinalSubmit = async () => {
+    if (!stadiumProfile.name.trim()) {
+      alert("Bạn chưa nhập tên cụm sân ở Bước 1.");
+      setCurrentStep(1);
+      return;
+    }
     setIsFinalSubmitting(true);
+    let ok = false;
     try {
-      await createPitchApi({
-        name: stadiumProfile.name || "Cụm Sân Bóng Đá Mới",
-        address: stadiumProfile.address || "TP.HCM",
-        phone: stadiumProfile.phone || "0912345678",
-        area: "Quận 7, TP.HCM",
-        avgPricePerHour: 350000,
-        peakPricePerHour: 600000,
-        type: "Cụm Sân 5, 7, 11",
-        status: "AVAILABLE",
-        pitchTypes: ["Sân 7 Cỏ Nhân Tạo", "Sân 5 Futsal"],
-        amenities: ["Camera AI VAR Replay", "Tắm nóng lạnh", "Bãi xe ô tô"],
-        imageUrl: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=800&q=80",
-        description: `Cụm sân bóng đá ${stadiumProfile.name} mở cửa từ ${stadiumProfile.openHours}.`
+      const [openT, closeT] = (stadiumProfile.openHours || "").split("-").map((s) => s.trim());
+      const created = await createPitchApi({
+        name: stadiumProfile.name,
+        address: stadiumProfile.address,
+        phone: stadiumProfile.phone || undefined,
+        latitude: stadiumProfile.lat ? Number(stadiumProfile.lat) : undefined,
+        longitude: stadiumProfile.lng ? Number(stadiumProfile.lng) : undefined,
+        openTime: openT || undefined,
+        closeTime: closeT || undefined,
+        description: stadiumProfile.address
+          ? `Cụm sân mở cửa ${stadiumProfile.openHours}.`
+          : undefined
       });
-    } catch (err) {
-      console.error("Lỗi gửi cụm sân về CSDL PostgreSQL:", err);
+      ok = true;
+      // Nạp lại danh sách sân thật sau khi tạo
+      await fetchMyPitches();
+      console.log("Đã tạo cụm sân id =", created?.id);
+    } catch (err: any) {
+      alert("Không lưu được cụm sân vào CSDL: " + (err?.message || "lỗi máy chủ"));
     } finally {
       setIsFinalSubmitting(false);
-      if (onComplete) onComplete();
+      if (ok && onComplete) onComplete();
     }
   };
 
@@ -192,20 +177,20 @@ export default function StadiumOwnerOnboarding({
         <div>
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0b4f6c]/10 dark:bg-sky-500/10 border border-[#0b4f6c]/20 dark:border-sky-400/20 text-[#0b4f6c] dark:text-sky-400 text-xs font-bold mb-2">
             <ShieldCheck className="w-4 h-4" />
-            <span>VaoSan Kick-ON Pro Manager • Quy Trình Onboarding Chủ Sân</span>
+            <span>SoccerHub • Quy Trình Onboarding Chủ Sân</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
             Khởi Tạo & Cấu Hình Cụm Sân (Stadium Setup Wizard)
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-            Thiết lập danh mục ca sân, tọa độ GPS PostGIS và tích hợp VietQR tự động khóa slot sau 1s.
+            Khai báo hồ sơ, tọa độ GPS, danh mục sân và mở ca nhận khách — dữ liệu lưu thẳng vào hệ thống.
           </p>
         </div>
 
         <div className="flex items-center space-x-3 shrink-0">
           <div className="text-right hidden sm:block text-xs">
-            <span className="font-extrabold text-slate-900 dark:text-white block">Trần Hữu Nam</span>
-            <span className="text-slate-400 font-medium">Hotline Hỗ Trợ: 1900 6886</span>
+            <span className="font-extrabold text-slate-900 dark:text-white block">Hỗ trợ chủ sân</span>
+            <span className="text-slate-400 font-medium">Xem tab "Quản Lý Cụm Sân & Doanh Thu"</span>
           </div>
           <button
             type="button"
@@ -220,8 +205,8 @@ export default function StadiumOwnerOnboarding({
       {/* STEPPER BAR (4 BƯỚC NỔI BẬT) */}
       <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
         <div className="flex items-center justify-between text-xs font-bold text-slate-500">
-          <span>Tiến trình hoàn tất: <strong className="text-emerald-500 font-mono text-sm">50% HOÀN TẤT</strong></span>
-          <span>Ước tính thời gian còn lại: ~ 3 phút</span>
+          <span>Tiến trình hoàn tất: <strong className="text-emerald-500 font-mono text-sm">{currentStep * 25}% HOÀN TẤT</strong></span>
+          <span>Bước {currentStep} / 4</span>
         </div>
 
         {/* Progress Bar Track */}
@@ -252,7 +237,7 @@ export default function StadiumOwnerOnboarding({
             </div>
             <div>
               <span className="text-[10px] uppercase font-bold block opacity-80">Bước 1</span>
-              <span className="text-xs font-extrabold block leading-tight">Hồ Sơ & GPS PostGIS</span>
+              <span className="text-xs font-extrabold block leading-tight">Hồ Sơ &amp; Địa Chỉ</span>
             </div>
           </button>
 
@@ -296,7 +281,7 @@ export default function StadiumOwnerOnboarding({
             </div>
             <div>
               <span className="text-[10px] uppercase font-bold block opacity-80">Bước 3</span>
-              <span className="text-xs font-extrabold block leading-tight">VietQR & Cọc Tự Động</span>
+              <span className="text-xs font-extrabold block leading-tight">Chính Sách Thanh Toán</span>
             </div>
           </button>
 
@@ -314,7 +299,7 @@ export default function StadiumOwnerOnboarding({
             </div>
             <div>
               <span className="text-[10px] uppercase font-bold block opacity-80">Bước 4</span>
-              <span className="text-xs font-extrabold block leading-tight">AI Dynamic & Nhận Khách</span>
+              <span className="text-xs font-extrabold block leading-tight">Kiểm Tra &amp; Mở Cửa</span>
             </div>
           </button>
         </div>
@@ -325,7 +310,7 @@ export default function StadiumOwnerOnboarding({
         <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
           <div className="flex items-center space-x-2 border-b border-slate-100 dark:border-slate-800 pb-3">
             <Building className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
-            <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Bước 1/4: Hồ Sơ Cụm Sân & Tọa Độ GPS PostGIS</h2>
+            <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Bước 1/4: Hồ Sơ Cụm Sân &amp; Tọa Độ GPS</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
@@ -361,8 +346,8 @@ export default function StadiumOwnerOnboarding({
 
             <div className="space-y-1.5">
               <label className="font-extrabold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                <span>Tọa Độ PostGIS GPS (Vĩ Độ - Lat):</span>
-                <span className="text-[10px] text-emerald-500 font-bold">PostGIS Verified</span>
+                <span>Tọa Độ GPS (Vĩ Độ - Lat):</span>
+                <span className="text-[10px] text-slate-400 font-bold">Tùy chọn</span>
               </label>
               <input
                 type="text"
@@ -373,7 +358,7 @@ export default function StadiumOwnerOnboarding({
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-extrabold text-slate-700 dark:text-slate-300">Tọa Độ PostGIS GPS (Kinh Độ - Lng):</label>
+              <label className="font-extrabold text-slate-700 dark:text-slate-300">Tọa Độ GPS (Kinh Độ - Lng):</label>
               <input
                 type="text"
                 value={stadiumProfile.lng}
@@ -391,7 +376,11 @@ export default function StadiumOwnerOnboarding({
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
             <div>
               <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Bước 2/4: Khai Báo Danh Mục Sân & Cấu Hình Biểu Giá Ca</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Đã gắn vị trí GPS PostGIS: 10.7482° N, 106.7214° E (Q.7, TP.HCM)</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {stadiumProfile.lat && stadiumProfile.lng
+                  ? `Tọa độ đã khai báo: ${stadiumProfile.lat}, ${stadiumProfile.lng}`
+                  : "Chưa khai báo tọa độ GPS — có thể bỏ trống."}
+              </p>
             </div>
 
             <button
@@ -466,120 +455,74 @@ export default function StadiumOwnerOnboarding({
         </div>
       )}
 
-      {/* STEP 3 CONTENT: VIETQR INTEGRATION */}
+      {/* STEP 3 CONTENT: CHÍNH SÁCH THANH TOÁN */}
       {currentStep === 3 && (
         <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
           <div className="flex items-center space-x-2 border-b border-slate-100 dark:border-slate-800 pb-3">
             <QrCode className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
-            <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Bước 3/4: Tích Hợp VietQR Napas247 Nhận Cọc Tự Động</h2>
+            <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Bước 3/4: Chính Sách Thanh Toán &amp; Tiền Cọc</h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-xs">
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="font-extrabold text-slate-700 dark:text-slate-300">Chọn Ngân Hàng Thụ Hưởng:</label>
-                <select
-                  value={vietQRInfo.bank}
-                  onChange={(e) => setVietQRInfo({ ...vietQRInfo, bank: e.target.value })}
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold text-slate-900 dark:text-white"
-                >
-                  <option>Vietcombank (VCB)</option>
-                  <option>MBBank (Quân Đội)</option>
-                  <option>Techcombank (TCB)</option>
-                  <option>VietinBank</option>
-                  <option>BIDV</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-extrabold text-slate-700 dark:text-slate-300">Số Tài Khoản Ngân Hàng:</label>
-                <input
-                  type="text"
-                  value={vietQRInfo.accountNumber}
-                  onChange={(e) => setVietQRInfo({ ...vietQRInfo, accountNumber: e.target.value })}
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-extrabold text-slate-700 dark:text-slate-300">Tên Chủ Tài Khoản (In hoa không dấu):</label>
-                <input
-                  type="text"
-                  value={vietQRInfo.accountName}
-                  onChange={(e) => setVietQRInfo({ ...vietQRInfo, accountName: e.target.value })}
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-mono font-bold text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-extrabold text-slate-700 dark:text-slate-300">Tỷ Lệ Đặt Cọc Khóa Slot Tự Động:</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {["30%", "50%", "100%"].map((rate) => (
-                    <button
-                      key={rate}
-                      type="button"
-                      onClick={() => setVietQRInfo({ ...vietQRInfo, depositRate: rate })}
-                      className={`p-2.5 rounded-xl border font-bold text-center transition-all ${
-                        vietQRInfo.depositRate === rate
-                          ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
-                          : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300"
-                      }`}
-                    >
-                      {rate} {rate === "50%" ? "(Khuyên Dùng)" : ""}
-                    </button>
-                  ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-xs">
+            <div className="space-y-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Hệ thống không giữ tiền giúp bạn — luồng thanh toán trong SoccerHub chạy như sau:
+              </p>
+              {[
+                { t: "1. Khách đặt ca", d: "Khách chọn khung giờ trống, hệ thống sinh đơn giữ chỗ trong CSDL, ca đó chuyển sang trạng thái Đã Đặt." },
+                { t: "2. Thu tiền theo quy định của sân", d: "Khách trả trực tiếp tại quầy hoặc chuyển khoản theo thông tin tài khoản chủ sân tự công bố. SoccerHub không can thiệp số tiền này." },
+                { t: "3. Check-in khi khách tới", d: "Chủ sân mở mã đơn ở tab Quản Lý Cụm Sân để xác nhận khách đã tới và bàn giao ca." },
+                { t: "4. Hủy ca", d: "Nếu khách không tới, chủ sân hủy đơn để ca trở lại trạng thái trống cho người khác đặt." }
+              ].map((s) => (
+                <div key={s.t} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
+                  <p className="font-extrabold text-slate-900 dark:text-white">{s.t}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{s.d}</p>
                 </div>
-              </div>
+              ))}
             </div>
 
-            {/* PREVIEW VIETQR CARD */}
-            <div className="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-3">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Mẫu Mã VietQR Tự Động Đã Kích Hoạt</span>
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=VIETQR_ONBOARDING_${vietQRInfo.accountNumber}`}
-                alt="VietQR Onboarding Preview"
-                className="w-48 h-48 mx-auto object-contain rounded-xl border p-2 bg-white"
-              />
-              <p className="text-xs font-mono font-extrabold text-slate-900 dark:text-white">
-                {vietQRInfo.accountName} • {vietQRInfo.accountNumber} ({vietQRInfo.bank})
-              </p>
-              <p className="text-[11px] text-emerald-500 font-bold">
-                Tự động kiểm tra giao dịch Napas247 & khóa lịch tức thì trong 1s
+            <div className="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 text-left">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Gợi ý khai báo cho khách hàng</span>
+              <div className="space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+                <p>• Ghi rõ mức cọc (nếu có) và chính sách hoàn cọc trong phần <strong>Mô tả sân</strong> ở Bước 1 hoặc tab quản lý.</p>
+                <p>• Đăng số tài khoản nhận tiền ở phần mô tả sân để khách tự chuyển khi đặt giúp bạn.</p>
+                <p>• Ca giờ vàng (chiều/tối) nên để giá cao hơn giờ thường — chỉnh trực tiếp ở tab "Quản Lý Cụm Sân &amp; Doanh Thu".</p>
+              </div>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold pt-2 border-t border-slate-100 dark:border-slate-800">
+                Mọi thay đổi giá và cọc được lưu ngay vào CSDL.
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* STEP 4 CONTENT: AI DYNAMIC PRICING & GO LIVE */}
+      {/* STEP 4 CONTENT: KIỂM TRA & MỞ CỬA NHẬN KHÁCH */}
       {currentStep === 4 && (
         <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 text-center">
           <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto text-3xl border border-emerald-400/30">
-            🎉
+            🏟️
           </div>
           <div className="space-y-2 max-w-xl mx-auto">
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white">Khởi Tạo Cụm Sân Thành Công!</h2>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">Sẵn Sàng Mở Cửa Nhận Khách</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Hệ thống VaoSan đã kết nối xong tọa độ PostGIS, danh mục {pitches.length} sân con và mã nhận cọc VietQR Napas247 cho <strong className="text-slate-900 dark:text-white">{stadiumProfile.name}</strong>.
+              Bấm nút bên dưới để lưu cụm sân vào hệ thống. Sau đó thêm sân con và biểu giá ở tab
+              "Quản Lý Cụm Sân &amp; Doanh Thu".
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 max-w-md mx-auto text-xs text-left space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="font-extrabold text-slate-900 dark:text-white">Bật AI Dynamic Pricing Tự Động:</span>
-              <button
-                type="button"
-                onClick={() => setAiPricingEnabled(!aiPricingEnabled)}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                  aiPricingEnabled ? "bg-emerald-500 text-white" : "bg-slate-300 text-slate-700"
-                }`}
-              >
-                {aiPricingEnabled ? "Đã Kích Hoạt" : "Tắt"}
-              </button>
-            </div>
-            <p className="text-[11px] text-slate-400">
-              Thuật toán AI tự động tăng +20% giờ vàng và giảm -15% giờ vắng mưa rào giúp tối ưu tỷ lệ lấp đầy đạt &gt;90%.
-            </p>
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 max-w-md mx-auto text-xs text-left space-y-2">
+            {[
+              ["Tên cụm sân", stadiumProfile.name || "Chưa nhập (bắt buộc)"],
+              ["Địa chỉ", stadiumProfile.address || "Chưa khai báo"],
+              ["Số điện thoại", stadiumProfile.phone || "Chưa khai báo"],
+              ["Giờ mở cửa", stadiumProfile.openHours || "14:00 - 22:30"],
+              ["Sân đã khai báo", `${pitches.length} sân`]
+            ].map(([k, v]) => (
+              <div key={k} className="flex items-center justify-between gap-3">
+                <span className="font-extrabold text-slate-900 dark:text-white">{k}:</span>
+                <span className="text-slate-500 dark:text-slate-400 truncate">{v}</span>
+              </div>
+            ))}
           </div>
 
           <button
@@ -611,7 +554,7 @@ export default function StadiumOwnerOnboarding({
           ← Quay Lại Bước {Math.max(1, currentStep - 1)}
         </button>
 
-        <span className="text-[11px] text-slate-400 font-medium">Đã tự động lưu nháp 20 giây trước</span>
+        <span className="text-[11px] text-slate-400 font-medium">Dữ liệu được lưu khi bạn bấm "Lưu &amp; Tiếp Tục"</span>
 
         <button
           type="button"

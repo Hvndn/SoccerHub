@@ -29,11 +29,16 @@ export interface CreatePitchPayload {
   location?: string;
   area?: string;
   phone?: string;
+  latitude?: number;
+  longitude?: number;
   avgPricePerHour?: number;
   pricePerHour?: number;
   peakPricePerHour?: number;
   type?: string;
   status?: string;
+  openTime?: string;
+  closeTime?: string;
+  slotDurationMinutes?: number;
   pitchTypes?: string[];
   amenities?: string[];
   imageUrl?: string;

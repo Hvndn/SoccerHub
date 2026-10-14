@@ -65,7 +65,7 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
                 <div className="font-bold text-slate-900 flex items-center gap-1.5">
                   <span>{user.fullName || user.name || "Cầu Thủ"}</span>
                   <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-100 text-amber-800 font-extrabold border border-amber-200">
-                    Elo {user.eloRating || 1200}
+                    Elo {user.eloRating ?? "—"}
                   </span>
                 </div>
                 <div className="text-slate-500 text-[11px] mt-0.5">

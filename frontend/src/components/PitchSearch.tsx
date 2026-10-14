@@ -41,7 +41,6 @@ import {
 } from "lucide-react";
 
 import PitchDetail from "./PitchDetail";
-import SmartPaymentPass from "./SmartPaymentPass";
 import { getAllPitchesApi } from "@/lib/pitchService";
 import { API_BASE_URL } from "@/lib/api";
 import { fetchTournaments } from "@/lib/tournamentService";
@@ -50,10 +49,9 @@ import { subscribeToBookingEvents } from "@/lib/realtimeService";
 
 interface PitchSearchProps {
   user?: any;
-  onSelectSlot: (pitch: any, slot: any) => void;
 }
 
-export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
+export default function PitchSearch({ user }: PitchSearchProps) {
   // Bộ lọc chính
   const [selectedSport, setSelectedSport] = useState("ALL");
   const [selectedDistrict, setSelectedDistrict] = useState("ALL");
@@ -64,7 +62,6 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
 
   // Điều hướng & Modal
   const [selectedPitchForSlot, setSelectedPitchForSlot] = useState<any>(null);
-  const [checkoutBookingData, setCheckoutBookingData] = useState<{ pitch: any; slot: any } | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   // Kèo ghép & tương tác
@@ -318,20 +315,6 @@ export default function PitchSearch({ user, onSelectSlot }: PitchSearchProps) {
         pitch={selectedPitchForSlot}
         user={user}
         onBack={() => setSelectedPitchForSlot(null)}
-        onSelectSlot={(pitch, slot) => {
-          setSelectedPitchForSlot(null);
-          setCheckoutBookingData({ pitch, slot });
-        }}
-      />
-    );
-  }
-
-  // Điều hướng sang trang thanh toán nếu có
-  if (checkoutBookingData) {
-    return (
-      <SmartPaymentPass
-        bookingData={checkoutBookingData}
-        onBack={() => setCheckoutBookingData(null)}
       />
     );
   }

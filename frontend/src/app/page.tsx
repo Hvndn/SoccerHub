@@ -9,22 +9,18 @@ import TournamentBracket from "@/components/TournamentBracket";
 import TournamentLeaderboard from "@/components/TournamentLeaderboard";
 import RefereePanel from "@/components/RefereePanel";
 import CommunityElo from "@/components/CommunityElo";
-import PlayerDashboard from "@/components/PlayerDashboard";
 import AdminDashboard from "@/components/AdminDashboard";
 import ActivitySchedule from "@/components/ActivitySchedule";
 import MemberCardPortal from "@/components/MemberCardPortal";
 import TournamentOrganizerPortal from "@/components/TournamentOrganizerPortal";
 import PlayerProfileConsole from "@/components/PlayerProfileConsole";
 import TeamClubManagement from "@/components/TeamClubManagement";
-import PostMatchUtilities from "@/components/PostMatchUtilities";
-import UrgentSlotMarketplace from "@/components/UrgentSlotMarketplace";
 import StadiumOwnerOnboarding from "@/components/StadiumOwnerOnboarding";
 import MultiSportArena from "@/components/MultiSportArena";
 import StadiumIoTConsole from "@/components/StadiumIoTConsole";
 import GuestFeatureBanner from "@/components/GuestFeatureBanner";
 import { MapPin, Trophy, Users, ShieldCheck, ShieldAlert, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import VietQRModal from "@/components/VietQRModal";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 
@@ -37,7 +33,6 @@ export default function Home() {
   const [isTabChanging, setIsTabChanging] = useState(false);
 
   // Modals state
-  const [bookingModalData, setBookingModalData] = useState<{ pitch: any; slot: any } | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authRole, setAuthRole] = useState<"PLAYER" | "OWNER" | "ORGANIZER">("PLAYER");
@@ -75,9 +70,9 @@ export default function Home() {
   // Tab chỉ dành cho ORGANIZER hoặc người có quyền điều hành giải
   const ORGANIZER_TABS = ["organizer"];
   // Tab yêu cầu đăng nhập (bất kỳ vai trò nào cũng phải có tài khoản)
-  const AUTH_REQUIRED_TABS = ["my-activities", "profile", "post-match", "team-management", "membership"];
+  const AUTH_REQUIRED_TABS = ["my-activities", "profile", "team-management", "membership"];
   // Tab bị cấm với OWNER (Chủ sân không được dùng chức năng dành cho Cầu thủ)
-  const PLAYER_ONLY_TABS = ["booking", "urgent-resale", "community", "tournaments", "team-management", "post-match", "membership"];
+  const PLAYER_ONLY_TABS = ["booking", "community", "tournaments", "team-management", "membership"];
 
   // Role Guard: Tự động điều hướng và bảo vệ phân quyền nhất quán khi role thay đổi
   React.useEffect(() => {
@@ -199,16 +194,6 @@ export default function Home() {
     }, 120);
   };
 
-  const handleSelectSlot = (pitch: any, slot: any) => {
-    if (!currentUser) {
-      setAuthMode("login");
-      setAuthRole("PLAYER");
-      setIsAuthOpen(true);
-      return;
-    }
-    setBookingModalData({ pitch, slot });
-  };
-
   const handleOpenAuth = (
     mode: "login" | "register",
     role: "PLAYER" | "OWNER" | "ORGANIZER" = "PLAYER"
@@ -229,7 +214,7 @@ export default function Home() {
 
       const ownerTabs = ["admin", "owner-onboarding", "iot-console", "multi-sport"];
       const organizerTabs = ["organizer"];
-      const authRequiredTabs = ["my-activities", "profile", "post-match", "team-management", "membership"];
+      const authRequiredTabs = ["my-activities", "profile", "team-management", "membership"];
 
       const canAccess =
         (ownerTabs.includes(savedPending) && userData?.role === "OWNER") ||
@@ -329,7 +314,6 @@ export default function Home() {
             ) : currentUser ? (
               <PitchSearch
                 user={currentUser}
-                onSelectSlot={handleSelectSlot}
               />
             ) : (
               <div className="space-y-16 sm:space-y-24">
@@ -369,14 +353,6 @@ export default function Home() {
             <StadiumIoTConsole />
           )}
 
-          {activeTab === "urgent-resale" && (
-            <UrgentSlotMarketplace
-              onBackToHome={() => handleTabChange("booking")}
-              onNavigateTab={handleTabChange}
-              onSelectSlot={handleSelectSlot}
-            />
-          )}
-
           {activeTab === "tournaments" && (
             <CommunityElo 
               user={currentUser} 
@@ -390,7 +366,7 @@ export default function Home() {
               {!currentUser && (
                 <GuestFeatureBanner
                   title="Cộng Đồng Cầu Thủ & Hệ Thống Rating Elo"
-                  description="Tham gia cộng đồng thể thao VaoSan. Ghép trận ngẫu nhiên (Matchmaking) tìm đối thủ phù hợp trình độ và theo dõi chỉ số Elo thăng hạng của bản thân."
+                  description="Tham gia cộng đồng SoccerHub. Ghép trận ngẫu nhiên (Matchmaking) tìm đối thủ phù hợp trình độ và theo dõi chỉ số Elo thăng hạng của bản thân."
                   features={[
                     "Tính điểm Elo chuẩn thể thao",
                     "Ghép trận tìm đối thủ theo trình độ",
@@ -407,6 +383,7 @@ export default function Home() {
           {activeTab === "team-management" && (
             currentUser ? (
               <TeamClubManagement
+                user={currentUser}
                 onBackToHome={() => handleTabChange("booking")}
                 onNavigateTab={handleTabChange}
               />
@@ -419,34 +396,6 @@ export default function Home() {
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
                   <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
                     Đăng nhập để quản lý đội bóng, thành viên và lịch thi đấu của CLB.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleOpenAuth("login", "PLAYER")}
-                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
-                >
-                  Đăng Nhập Ngay
-                </button>
-              </div>
-            )
-          )}
-
-          {activeTab === "post-match" && (
-            currentUser ? (
-              <PostMatchUtilities
-                onBackToHome={() => handleTabChange("booking")}
-                onNavigateTab={handleTabChange}
-              />
-            ) : (
-              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
-                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
-                  <ShieldAlert className="w-8 h-8 text-amber-500" />
-                </div>
-                <div className="space-y-2">
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
-                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                    Đăng nhập để xem thống kê, phân tích sau trận và ghi chép kết quả.
                   </p>
                 </div>
                 <button
@@ -639,14 +588,6 @@ export default function Home() {
           </motion.div>
         </AnimatePresence>
       </main>
-
-      {/* VietQR Payment & Ticket Modal */}
-      {bookingModalData && (
-        <VietQRModal
-          bookingData={bookingModalData}
-          onClose={() => setBookingModalData(null)}
-        />
-      )}
 
       {/* Auth Modal (Login / Register) */}
       <AuthModal
