@@ -69,36 +69,36 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           FULL-WIDTH EDGE-TO-EDGE BANNER (GIAO DIỆN SÁNG TINH TẾ)
          ======================================================== */}
       <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden shadow-xs border-y border-slate-200/80 bg-white">
-        {/* Soft Ambient Accents */}
-        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-emerald-50/70 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 left-10 w-[450px] h-[450px] bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
+        {/* Soft Ambient Accents (ẩn trên mobile để tối giản) */}
+        <div className="hidden sm:block absolute top-0 right-1/4 w-[500px] h-[500px] bg-emerald-50/70 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden sm:block absolute -bottom-20 left-10 w-[450px] h-[450px] bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
 
         {/* Inner Content Container Aligned with Site Container (max-w-[1720px]) */}
-        <div className="relative z-10 max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-6 xl:px-[50px] py-10 sm:py-16 lg:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-14 items-center">
+        <div className="relative z-10 max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-6 xl:px-[50px] py-8 sm:py-16 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 xl:gap-14 items-center">
             
             {/* LEFT COLUMN: HERO CONTENT (7 COLS) */}
-            <div className="lg:col-span-7 space-y-5 sm:space-y-6">
+            <div className="lg:col-span-7 space-y-4 sm:space-y-6">
               {/* Main Headline: Đề tài quản lý sân bóng và giải đấu thể thao thông minh */}
-              <h1 className="text-2xl sm:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-black text-slate-900 tracking-tight leading-[1.18] uppercase font-sans">
-                Quản Lý Sân Bóng &amp; <br />
+              <h1 className="text-[1.7rem] leading-[1.22] sm:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-black text-slate-900 tracking-tight sm:uppercase font-display">
+                Quản Lý Sân Bóng &amp;{" "}
                 <span className="text-[#0b4f6c]">Giải Đấu Thể Thao Thông Minh</span>
               </h1>
 
-              {/* 2 Feature Items Chuẩn Đề Tài */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 pt-1">
-                <div className="flex items-center space-x-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs">
-                  <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 border border-amber-200">
-                    <Zap className="w-4 h-4 text-amber-700 fill-amber-700" />
+              {/* Feature chips — chỉ hiện từ tablet trở lên để tối giản mobile */}
+              <div className="hidden sm:grid sm:grid-cols-2 gap-5 pt-1">
+                <div className="flex items-center space-x-3 p-2.5 sm:p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 border border-amber-200">
+                    <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-700 fill-amber-700" />
                   </div>
                   <span className="font-extrabold text-xs sm:text-sm text-slate-800 leading-snug">
                     Đặt ca trực tiếp từ CSDL • Không trùng lịch
                   </span>
                 </div>
 
-                <div className="flex items-center space-x-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs">
-                  <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center shrink-0 border border-sky-200">
-                    <Shield className="w-4 h-4 text-sky-700 fill-sky-700" />
+                <div className="flex items-center space-x-3 p-2.5 sm:p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sky-100 flex items-center justify-center shrink-0 border border-sky-200">
+                    <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-700 fill-sky-700" />
                   </div>
                   <span className="font-extrabold text-xs sm:text-sm text-slate-800 leading-snug">
                     Sân 5 · 7 · 11 &amp; Futsal • Giải đấu theo Elo
@@ -106,18 +106,20 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                 </div>
               </div>
 
-              {/* Concise Thesis-Aligned Description */}
-              <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed max-w-2xl pt-1">
-                Nền tảng kết nối <strong>Cầu Thủ</strong>, <strong>Chủ Cụm Sân</strong> và <strong>Ban Tổ Chức Giải Đấu</strong>. 
-                Đặt sân online với thanh toán cọc qua <strong>VietQR</strong>, quản lý ca sân và giải đấu loại trực tiếp, cộng điểm <strong>Elo Rating</strong> cho từng trận.
+              {/* Concise Thesis-Aligned Description (rút gọn trên mobile) */}
+              <p className="text-[13px] sm:text-base text-slate-600 font-medium leading-relaxed max-w-2xl pt-1">
+                Nền tảng kết nối <strong>Cầu Thủ</strong>, <strong>Chủ Cụm Sân</strong> và <strong>Ban Tổ Chức Giải Đấu</strong>.
+                <span className="hidden sm:inline">
+                  {" "}Đặt sân online với thanh toán cọc qua <strong>VietQR</strong>, quản lý ca sân và giải đấu loại trực tiếp, cộng điểm <strong>Elo Rating</strong> cho từng trận.
+                </span>
               </p>
 
               {/* Action Button Strip */}
-              <div className="pt-2 flex flex-wrap items-center gap-4">
+              <div className="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
                 <button
                   type="button"
                   onClick={() => onOpenAuth("login", "PLAYER")}
-                  className="px-9 py-4 rounded-xl bg-[#0b4f6c] hover:bg-[#083b52] text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center space-x-2.5 cursor-pointer"
+                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-[#0b4f6c] hover:bg-[#083b52] text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-2.5 cursor-pointer"
                 >
                   <Users className="w-4 h-4 text-white" />
                   <span>Đặt Sân Ngay →</span>
@@ -126,7 +128,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                 <button
                   type="button"
                   onClick={() => onOpenAuth("login", "OWNER")}
-                  className="px-7 py-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm border border-slate-200 transition-all active:scale-95 flex items-center space-x-2 cursor-pointer shadow-xs"
+                  className="w-full sm:w-auto px-7 py-3.5 sm:py-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm border border-slate-200 transition-all active:scale-[0.98] flex items-center justify-center space-x-2 cursor-pointer shadow-xs"
                 >
                   <Shield className="w-4 h-4 text-sky-700" />
                   <span>Cổng Chủ Sân</span>
@@ -140,7 +142,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               <div className="absolute w-[360px] sm:w-[480px] h-[360px] sm:h-[480px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
 
               {/* The Actual Player Image from Nicepage Template - Clean & Dramatic */}
-              <div className="relative z-10 w-full max-w-[400px] sm:max-w-[480px]">
+              <div className="relative z-10 w-full max-w-[260px] sm:max-w-[480px]">
                 <img
                   src="/images/epic-goal-player.png"
                   alt="Striker Scoring Epic Last-Minute Goal"
@@ -156,8 +158,8 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
       {/* ========================================================
           SECTION 2: BỘ LỌC TÌM SÂN TRỐNG GPS & GIỜ VÀNG (DƯỚI TỰ SÁNG TẠO)
          ======================================================== */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl space-y-5">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4 sm:space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 flex items-center justify-center">
               <Search className="w-4 h-4" />
@@ -171,7 +173,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               </span>
             </div>
           </div>
-          <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800">
+          <span className="hidden sm:inline-block text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800">
             Dữ liệu trực tiếp từ CSDL
           </span>
         </div>

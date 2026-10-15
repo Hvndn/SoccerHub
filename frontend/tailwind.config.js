@@ -21,7 +21,14 @@ module.exports = {
         }
       },
       fontFamily: {
-        sans: ["Plus Jakarta Sans", "Inter", "sans-serif"],
+        // Be Vietnam Pro — hỗ trợ đầy đủ dấu tiếng Việt, đủ dải weight (100→900)
+        sans: ["var(--font-sans)", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
+        display: ["var(--font-sans)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+      },
+      fontSize: {
+        // Thang chữ mobile-first, tăng nhẹ để dễ đọc trên điện thoại
+        "2xs": ["0.6875rem", { lineHeight: "1rem" }],
       },
     },
   },

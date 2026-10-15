@@ -246,6 +246,9 @@ export default function Home() {
     setActiveTab("booking");
   };
 
+  // Thanh điều hướng dưới mobile hiển thị cho khách / Cầu thủ / Ban tổ chức
+  const showBottomNav = currentUser?.role !== "OWNER" && currentUser?.role !== "ADMIN";
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white relative transition-colors duration-300">
       {/* Top Page Progress Loading Bar */}
@@ -278,7 +281,7 @@ export default function Home() {
       )}
 
       {/* Main Content Body */}
-      <main className={`flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] pb-12 lg:pb-14 space-y-8 sm:space-y-16 ${!currentUser && activeTab === "booking" ? "pt-0" : "pt-4"}`}>
+      <main className={`flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] pb-12 lg:pb-14 space-y-8 sm:space-y-16 ${!currentUser && activeTab === "booking" ? "pt-0" : "pt-4"} ${showBottomNav ? "pb-28 lg:pb-14" : ""}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -594,10 +597,13 @@ export default function Home() {
       />
 
       {/* Footer */}
-      <footer className="glass-panel border-t border-slate-200 dark:border-slate-800 py-6 mt-12 transition-colors duration-300">
-        <div className="w-full max-w-full mx-auto px-3 sm:px-6 lg:px-10 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1">
-          <p>© 2026 <strong>SoccerHub - Nền Tảng Đặt Sân & Quản Lý Bóng Đá Thông Minh</strong>. Đồ Án Tốt Nghiệp: Hệ thống quản lý cụm sân bóng đá mini cỏ nhân tạo (Sân 5, Sân 7, Sân 11), giải đấu phủi và kết nối đối thủ AI.</p>
-          <p className="text-[#0b4f6c] dark:text-sky-400 font-semibold">Công nghệ: Spring Boot, MySQL, Next.js 14, Python FastAPI (tính điểm Elo), QR VietQR sinh từ STK báo cáo giải.</p>
+      <footer className={`glass-panel border-t border-slate-200 dark:border-slate-800 pt-6 transition-colors duration-300 ${showBottomNav ? "pb-28 lg:pb-6" : "pb-6"}`}>
+        <div className="w-full max-w-full mx-auto px-4 sm:px-6 lg:px-10 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1.5">
+          <p>
+            © 2026 <strong>SoccerHub</strong>
+            <span className="hidden sm:inline"> — Nền Tảng Đặt Sân &amp; Quản Lý Bóng Đá Thông Minh. Đồ Án Tốt Nghiệp: Hệ thống quản lý cụm sân bóng đá mini cỏ nhân tạo (Sân 5, Sân 7, Sân 11), giải đấu phủi và kết nối đối thủ AI.</span>
+          </p>
+          <p className="hidden sm:block text-[#0b4f6c] dark:text-sky-400 font-semibold">Công nghệ: Spring Boot, MySQL, Next.js 14, Python FastAPI (tính điểm Elo), QR VietQR sinh từ STK báo cáo giải.</p>
         </div>
       </footer>
     </div>

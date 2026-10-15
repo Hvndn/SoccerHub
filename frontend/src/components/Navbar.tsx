@@ -260,6 +260,43 @@ export default function Navbar({
     setShowMobileDrawer(false);
   };
 
+  // ============================================================
+  // THANH ĐIỀU HƯỚNG DƯỚI (MOBILE BOTTOM NAV) — trải nghiệm dạng app
+  // Chỉ hiển thị cho khách / Cầu thủ / Ban tổ chức (Chủ sân & Admin dùng drawer riêng)
+  // ============================================================
+  type MobileNavItem = {
+    key: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    tab?: string;
+    auth?: boolean;
+  };
+
+  const mobileNav: MobileNavItem[] =
+    user?.role === "ORGANIZER"
+      ? [
+          { key: "organizer", label: "Điều hành", tab: "organizer", icon: ShieldCheck },
+          { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
+          { key: "community", label: "Chợ kèo", tab: "community", icon: Flame },
+          { key: "profile", label: "Hồ sơ", tab: "profile", icon: User },
+        ]
+      : user
+      ? [
+          { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
+          { key: "community", label: "Chợ kèo", tab: "community", icon: Flame },
+          { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
+          { key: "my-activities", label: "Vé của tôi", tab: "my-activities", icon: Ticket },
+          { key: "profile", label: "Hồ sơ", tab: "profile", icon: User },
+        ]
+      : [
+          { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
+          { key: "community", label: "Chợ kèo", tab: "community", icon: Flame },
+          { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
+          { key: "login", label: "Đăng nhập", auth: true, icon: LogIn },
+        ];
+
+  const showBottomNav = user?.role !== "OWNER" && user?.role !== "ADMIN";
+
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300 w-full">
@@ -1249,6 +1286,53 @@ export default function Navbar({
             </div>
           </div>
         </div>
+      )}
+      {/* MOBILE BOTTOM NAVIGATION BAR — điều hướng nhanh dạng app */}
+      {showBottomNav && (
+        <nav
+          className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 shadow-[0_-6px_24px_rgba(15,23,42,0.08)]"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          aria-label="Điều hướng nhanh trên điện thoại"
+        >
+          <div
+            className="grid"
+            style={{ gridTemplateColumns: `repeat(${mobileNav.length}, minmax(0, 1fr))` }}
+          >
+            {mobileNav.map((item) => {
+              const Icon = item.icon;
+              const isActive = !!item.tab && activeTab === item.tab;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => {
+                    if (item.auth) {
+                      onOpenAuth("login");
+                    } else if (item.tab) {
+                      handleSelectSubTab(item.tab);
+                    }
+                  }}
+                  className={`relative flex flex-col items-center justify-center gap-1 pt-2.5 pb-2 transition-colors active:scale-95 ${
+                    isActive
+                      ? "text-[#0b4f6c] dark:text-sky-400"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <span
+                    className={`absolute top-0 h-[3px] w-10 rounded-full transition-all ${
+                      isActive ? "bg-[#0b4f6c] dark:bg-sky-400 opacity-100" : "opacity-0"
+                    }`}
+                  />
+                  <Icon className="w-[21px] h-[21px]" />
+                  <span className="text-[10px] font-bold leading-none tracking-tight">
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
       )}
       {/* Height spacer so content does not get hidden under fixed navbar */}
       <div className="h-[52px] sm:h-16 shrink-0 pointer-events-none" />
