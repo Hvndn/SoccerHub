@@ -50,6 +50,8 @@ export default function MatchmakingMarketplace({
   const [matchFormat, setMatchFormat] = useState("DOUBLES_MALE");
   const [paymentModel, setPaymentModel] = useState("SPLIT_EQUAL");
   const [joinedMatches, setJoinedMatches] = useState<string[]>([]);
+  // Trên mobile: gom bộ lọc nâng cao vào nút thu gọn cho gọn màn hình
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Dữ liệu kèo thật từ MySQL Backend
   const [posts, setPosts] = useState<any[]>([]);
@@ -261,13 +263,13 @@ export default function MatchmakingMarketplace({
   };
 
   return (
-    <div className="w-full space-y-6 pb-20 text-slate-900 dark:text-white animate-fade-in">
+    <div className="w-full space-y-4 sm:space-y-6 pb-20 text-slate-900 dark:text-white animate-fade-in">
       {/* 1. SUB-HEADER & LIVE BREADCRUMB RIBBON */}
       <section className="w-full bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Breadcrumb + AI Matchmaking Indicator */}
           <div className="space-y-1.5">
-            <div className="flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <div className="hidden sm:flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400">
               <span className="hover:text-[#006c49] cursor-pointer">Trang chủ</span>
               <span>/</span>
               <span>Chợ Kèo Ghép Đội</span>
@@ -292,15 +294,15 @@ export default function MatchmakingMarketplace({
           </div>
 
           {/* Action Bar Right */}
-            <div className="flex items-center space-x-2.5">
-              <button className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <button className="hidden sm:flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors shadow-xs">
                 <Filter className="w-4 h-4 text-[#006c49]" />
                 <span>Bộ Lọc Kèo Quanh Tôi</span>
               </button>
 
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all active:scale-95"
+                className="flex-1 sm:flex-none justify-center flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all active:scale-95"
               >
                 <PlusCircle className="w-4 h-4 text-white" />
                 <span>+ Tạo Kèo Giao Lưu Mới</span>
@@ -310,7 +312,7 @@ export default function MatchmakingMarketplace({
         </section>
 
       {/* 2. FILTER CONSOLE & SPORTS SWITCHER */}
-      <section className="w-full bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+      <section className="w-full bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
         {/* Sport Tabs */}
         <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
           <button
@@ -370,8 +372,25 @@ export default function MatchmakingMarketplace({
           </button>
         </div>
 
+        {/* Mobile: nút mở/đóng bộ lọc nâng cao */}
+        <button
+          type="button"
+          onClick={() => setShowMobileFilters((v) => !v)}
+          aria-expanded={showMobileFilters}
+          className="md:hidden w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left"
+        >
+          <span className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-100">
+            <Filter className="w-4 h-4 text-[#006c49]" />
+            Bộ lọc kèo nâng cao
+          </span>
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {showMobileFilters ? "Thu gọn" : "Mở rộng"}
+            <ChevronDown className={`w-4 h-4 transition-transform ${showMobileFilters ? "rotate-180" : ""}`} />
+          </span>
+        </button>
+
         {/* Advanced Filter Metrics Bar (5 Cols Grid) */}
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/60 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
+        <div className={`${showMobileFilters ? "grid" : "hidden"} md:grid bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/60 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-center`}>
           {/* Level / Elo */}
           <div className="space-y-1">
             <div className="flex justify-between items-center text-xs">

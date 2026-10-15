@@ -337,7 +337,7 @@ export default function PlayerProfileConsole({
   });
 
   return (
-    <div className="w-full text-slate-900 dark:text-slate-100 transition-colors space-y-6 pb-20">
+    <div className="w-full text-slate-900 dark:text-slate-100 transition-colors space-y-4 sm:space-y-6 pb-20">
       {/* ========================================================= */}
       {/* HEADER COCKPIT: BẢN HỒ SƠ CẦU THỦ CHI TIẾT TOÀN DIỆN      */}
       {/* ========================================================= */}

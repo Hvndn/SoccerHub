@@ -19,10 +19,10 @@ export default function GuestFeatureBanner({
   onOpenAuth,
 }: GuestFeatureBannerProps) {
   return (
-    <div className="bg-gradient-to-r from-[#0b4f6c]/10 via-[#0b4f6c]/5 to-transparent dark:from-[#0b4f6c]/30 dark:via-[#0b4f6c]/15 dark:to-slate-900 border border-[#0b4f6c]/25 dark:border-sky-500/30 rounded-3xl p-6 sm:p-8 mb-8 stadium-shadow relative overflow-hidden animate-fade-in-up">
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+    <div className="bg-gradient-to-r from-[#0b4f6c]/10 via-[#0b4f6c]/5 to-transparent dark:from-[#0b4f6c]/30 dark:via-[#0b4f6c]/15 dark:to-slate-900 border border-[#0b4f6c]/25 dark:border-sky-500/30 rounded-3xl p-4 sm:p-8 mb-8 stadium-shadow relative overflow-hidden animate-fade-in-up">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-6 relative z-10">
         <div className="space-y-3 max-w-2xl">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0b4f6c]/15 text-[#0b4f6c] dark:bg-sky-400/20 dark:text-sky-300 text-xs font-bold uppercase tracking-wider">
+          <div className="hidden sm:inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0b4f6c]/15 text-[#0b4f6c] dark:bg-sky-400/20 dark:text-sky-300 text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-[#0b4f6c] dark:text-sky-400" />
             <span>Giới Thiệu Chức Năng</span>
           </div>
@@ -30,15 +30,15 @@ export default function GuestFeatureBanner({
             <div className="w-10 h-10 rounded-2xl bg-[#0b4f6c] text-white flex items-center justify-center shrink-0 shadow-md">
               <Icon className="w-5 h-5 text-white" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {title}
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
             {description}
           </p>
 
-          <div className="flex flex-wrap gap-4 pt-1 text-xs font-bold text-slate-700 dark:text-slate-200">
+          <div className="hidden sm:flex flex-wrap gap-4 pt-1 text-xs font-bold text-slate-700 dark:text-slate-200">
             {features.map((feat, idx) => (
               <span key={idx} className="flex items-center space-x-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0" />

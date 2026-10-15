@@ -64,6 +64,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   // Mặc định OPEN — khớp với tab "Giải Đấu Đang Mở Đăng Ký" đang chọn sẵn.
   const [selectedStatus, setSelectedStatus] = useState<StatusFilter>('OPEN');
   const [selectedLocation, setSelectedLocation] = useState('ALL');
+  // Trên mobile: thu gọn thanh lọc nhanh cho gọn màn hình
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Dữ liệu giải đấu thật từ MySQL Backend (dùng cache dùng chung)
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -303,9 +305,9 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   // Đăng ký đội thi đấu: chuyển sang trang wizard riêng /tournaments/register (4 bước)
 
   return (
-    <div className="w-full text-slate-900 dark:text-slate-100 transition-colors space-y-6">
+    <div className="w-full text-slate-900 dark:text-slate-100 transition-colors space-y-4 sm:space-y-6">
       <div className="w-full">
-        <div className="flex flex-col w-full gap-6">
+        <div className="flex flex-col w-full gap-4 sm:gap-6">
           
           {/* 1. BREADCRUMBS & LIVE TICKER BAR */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -315,14 +317,14 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 <span>Trang chủ</span>
               </button>
               <ChevronRight className="w-3.5 h-3.5" />
-              <span className="text-slate-900 dark:text-white font-bold">Giải Đấu Bóng Đá & BXH Elo</span>
+              <span className="text-slate-900 dark:text-white font-bold">Giải Đấu Bóng Đá &amp; BXH Elo</span>
               <ChevronRight className="w-3.5 h-3.5" />
               <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold">
                 {featured ? featured.title : `${tournaments.length} giải trong CSDL`}
               </span>
             </div>
 
-            <div className="flex items-center gap-2 self-start md:self-auto bg-white dark:bg-slate-900 px-3 py-1.5 rounded-full shadow-xs border border-slate-200 dark:border-slate-800">
+            <div className="hidden md:flex items-center gap-2 self-start md:self-auto bg-white dark:bg-slate-900 px-3 py-1.5 rounded-full shadow-xs border border-slate-200 dark:border-slate-800">
               <span className="relative flex h-2.5 w-2.5">
                 <span className={`absolute inline-flex h-full w-full rounded-full ${latestResult ? 'animate-ping bg-emerald-400 opacity-75' : 'bg-slate-300 opacity-60'}`}></span>
                 <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${latestResult ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
@@ -379,13 +381,13 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             </div>
 
             {/* Quick CTAs */}
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 shrink-0 w-full sm:w-auto">
               <button 
                 onClick={() => {
                   const eloSection = document.getElementById('search-elo-section');
                   eloSection?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all"
+                className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all"
               >
                 <Search className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Tra cứu BXH Cá Nhân</span>
@@ -393,7 +395,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
               <Link
                 href="/tournaments/register"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold shadow-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold shadow-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>+ Đăng Ký Đội Thi Đấu</span>
@@ -404,7 +406,30 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
           {/* Form đăng ký đội đã chuyển sang trang wizard riêng: /tournaments/register (4 bước) */}
 
           {/* 3. SECONDARY FILTER BAR — <select> thật, gắn với trường dữ liệu thật */}
-          <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+          <div className="rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 overflow-hidden">
+            {/* Mobile: nút mở/đóng lọc nhanh */}
+            <button
+              type="button"
+              onClick={() => setShowMobileFilters((v) => !v)}
+              aria-expanded={showMobileFilters}
+              className="sm:hidden w-full flex items-center justify-between gap-2 px-4 py-3 text-left"
+            >
+              <span className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
+                <Filter className="w-3.5 h-3.5" />
+                Lọc nhanh
+                {hasActiveFilters && (
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-emerald-600 text-white normal-case">
+                    {visibleTournaments.length} giải
+                  </span>
+                )}
+              </span>
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {showMobileFilters ? "Thu gọn" : "Mở rộng"}
+                <ChevronDown className={`w-4 h-4 transition-transform ${showMobileFilters ? "rotate-180" : ""}`} />
+              </span>
+            </button>
+
+            <div className={`${showMobileFilters ? "flex" : "hidden"} sm:flex flex-wrap items-center gap-3 px-4 py-3`}>
             <span className="flex items-center gap-1 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
               <Filter className="w-3.5 h-3.5" />
               Lọc nhanh:
@@ -468,6 +493,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
             </div>
+            </div>
           </div>
 
           {/* 4. FEATURED TOURNAMENT HERO — 100% LẤY TỪ CSDL (không còn hardcode) */}
@@ -501,10 +527,10 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               </button>
             </div>
           ) : featured ? (
-          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm p-6 sm:p-8 border border-slate-200/90 dark:border-slate-800 hover-card-elevate transition-colors">
+          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm p-4 sm:p-8 border border-slate-200/90 dark:border-slate-800 hover-card-elevate transition-colors">
             {/* Ambient Soft Glow */}
-            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-emerald-50/60 dark:bg-emerald-950/40 blur-3xl pointer-events-none"></div>
-            <div className="absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-sky-50/50 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
+            <div className="hidden sm:block absolute -top-20 -right-20 w-96 h-96 rounded-full bg-emerald-50/60 dark:bg-emerald-950/40 blur-3xl pointer-events-none"></div>
+            <div className="hidden sm:block absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-sky-50/50 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               {/* Left Content */}
@@ -532,11 +558,11 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 </div>
 
                 <div>
-                  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  <h1 className="text-xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     {featured.title}
                   </h1>
                   {featured.description && (
-                    <p className="text-base sm:text-lg text-emerald-700 dark:text-emerald-400 font-bold mt-1">
+                    <p className="text-sm sm:text-lg text-emerald-700 dark:text-emerald-400 font-bold mt-1">
                       {featured.description}
                     </p>
                   )}
@@ -667,7 +693,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               }`}
             >
               <Calendar className="w-4 h-4" />
-              <span>Giải Đấu Đang Mở Đăng Ký ({openCount})</span>
+              <span className="sm:hidden">Đang Mở ({openCount})</span>
+              <span className="hidden sm:inline">Giải Đấu Đang Mở Đăng Ký ({openCount})</span>
             </button>
 
             <button 
@@ -682,7 +709,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               }`}
             >
               <Radio className="w-4 h-4 text-red-500 animate-pulse" />
-              <span>Lịch Thi Đấu & Kết Quả Live ({liveCount})</span>
+              <span className="sm:hidden">Lịch &amp; KQ ({liveCount})</span>
+              <span className="hidden sm:inline">Lịch Thi Đấu &amp; Kết Quả Live ({liveCount})</span>
             </button>
 
             <button 
@@ -697,7 +725,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               }`}
             >
               <Trophy className="w-4 h-4" />
-              <span>Bảng Đấu & Nhánh Bracket</span>
+              <span className="sm:hidden">Nhánh Đấu</span>
+              <span className="hidden sm:inline">Bảng Đấu &amp; Nhánh Bracket</span>
             </button>
 
             <button 
@@ -712,7 +741,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               }`}
             >
               <Award className="w-4 h-4" />
-              <span>Bảng Xếp Hạng Bóng Đá & Elo</span>
+              <span className="sm:hidden">Xếp Hạng Elo</span>
+              <span className="hidden sm:inline">Bảng Xếp Hạng Bóng Đá &amp; Elo</span>
             </button>
           </div>
 
