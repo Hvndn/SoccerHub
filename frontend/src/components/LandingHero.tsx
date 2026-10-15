@@ -136,8 +136,8 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               </div>
             </div>
 
-            {/* RIGHT COLUMN: CLEAN REAL PLAYER PHOTO WITHOUT UNNECESSARY BADGES (5 COLS) */}
-            <div className="lg:col-span-5 relative flex items-center justify-center">
+            {/* RIGHT COLUMN: CLEAN REAL PLAYER PHOTO WITHOUT UNNECESSARY BADGES (5 COLS) — ẩn trên mobile để gọn banner */}
+            <div className="hidden lg:flex lg:col-span-5 relative items-center justify-center">
               {/* Subtle Stadium Light Flare */}
               <div className="absolute w-[360px] sm:w-[480px] h-[360px] sm:h-[480px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
 
