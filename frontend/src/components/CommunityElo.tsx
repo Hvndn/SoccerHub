@@ -32,7 +32,7 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
       {/* ========================================================= */}
       {/* HEADER COCKPIT BANNER: CỘNG ĐỒNG CẦU THỦ & GIẢI ĐẤU PRO     */}
       {/* ========================================================= */}
-      <div className="bg-white rounded-3xl p-4 sm:p-7 border border-slate-200/90 shadow-sm relative overflow-hidden">
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-7 border border-slate-200/90 shadow-sm relative overflow-hidden">
         <div className="hidden sm:block absolute top-0 right-0 w-80 h-80 bg-emerald-50/60 rounded-full blur-3xl pointer-events-none" />
         <div className="hidden sm:block absolute -bottom-10 left-1/3 w-72 h-72 bg-sky-50/50 rounded-full blur-3xl pointer-events-none" />
 
@@ -45,7 +45,7 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
               </span>
             </div>
 
-            <h1 className="text-xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-2.5">
+            <h1 className="text-lg sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-2.5">
               <span>Cộng Đồng Kèo Cáp &amp; Giải Đấu Bóng Đá</span>
               <Trophy className="w-7 h-7 text-amber-500 hidden sm:inline-block shrink-0" />
             </h1>
@@ -79,11 +79,11 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
         {/* ========================================================= */}
         {/* TAB CHUYỂN ĐỔI CHÍNH 3 TRỤ CỘT CỦA CỘNG ĐỒNG             */}
         {/* ========================================================= */}
-        <div className="mt-4 sm:mt-6 pt-4 sm:pt-5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1.5 max-w-full scroll-smooth">
+        <div className="mt-3 sm:mt-6 pt-3 sm:pt-5 border-t border-slate-100 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-1.5 max-w-full scroll-smooth">
           <button
             type="button"
             onClick={() => setSubTab("matchmaking")}
-            className={`px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
               subTab === "matchmaking"
                 ? "bg-[#0b4f6c] text-white shadow-sm font-black"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
@@ -98,7 +98,7 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
           <button
             type="button"
             onClick={() => setSubTab("tournaments")}
-            className={`px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
               subTab === "tournaments"
                 ? "bg-[#0b4f6c] text-white shadow-sm font-black"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
@@ -115,7 +115,7 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
           <button
             type="button"
             onClick={() => setSubTab("organizer")}
-            className={`px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
               subTab === "organizer"
                 ? "bg-[#0b4f6c] text-white shadow-sm font-black"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"

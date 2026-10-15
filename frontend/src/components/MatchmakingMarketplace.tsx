@@ -263,9 +263,9 @@ export default function MatchmakingMarketplace({
   };
 
   return (
-    <div className="w-full space-y-4 sm:space-y-6 pb-20 text-slate-900 dark:text-white animate-fade-in">
+    <div className="w-full space-y-3 sm:space-y-6 pb-20 text-slate-900 dark:text-white animate-fade-in">
       {/* 1. SUB-HEADER & LIVE BREADCRUMB RIBBON */}
-      <section className="w-full bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <section className="w-full bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Breadcrumb + AI Matchmaking Indicator */}
           <div className="space-y-1.5">
@@ -302,22 +302,23 @@ export default function MatchmakingMarketplace({
 
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="flex-1 sm:flex-none justify-center flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all active:scale-95"
+                className="flex-1 sm:flex-none justify-center flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all active:scale-95"
               >
                 <PlusCircle className="w-4 h-4 text-white" />
-                <span>+ Tạo Kèo Giao Lưu Mới</span>
+                <span className="sm:hidden">+ Tạo Kèo</span>
+                <span className="hidden sm:inline">+ Tạo Kèo Giao Lưu Mới</span>
               </button>
             </div>
           </div>
         </section>
 
       {/* 2. FILTER CONSOLE & SPORTS SWITCHER */}
-      <section className="w-full bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+      <section className="w-full bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 sm:space-y-4">
         {/* Sport Tabs */}
         <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
           <button
             onClick={() => setSelectedSport("SAN_7")}
-            className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
+            className={`flex items-center space-x-2 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
               selectedSport === "SAN_7"
                 ? "bg-[#006c49] text-white shadow-md shadow-[#006c49]/20"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
@@ -377,7 +378,7 @@ export default function MatchmakingMarketplace({
           type="button"
           onClick={() => setShowMobileFilters((v) => !v)}
           aria-expanded={showMobileFilters}
-          className="md:hidden w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left"
+          className="md:hidden w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left"
         >
           <span className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-100">
             <Filter className="w-4 h-4 text-[#006c49]" />
@@ -390,7 +391,7 @@ export default function MatchmakingMarketplace({
         </button>
 
         {/* Advanced Filter Metrics Bar (5 Cols Grid) */}
-        <div className={`${showMobileFilters ? "grid" : "hidden"} md:grid bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/60 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-center`}>
+        <div className={`${showMobileFilters ? "grid" : "hidden"} md:grid bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-slate-700/60 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-center`}>
           {/* Level / Elo */}
           <div className="space-y-1">
             <div className="flex justify-between items-center text-xs">

@@ -305,9 +305,9 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   // Đăng ký đội thi đấu: chuyển sang trang wizard riêng /tournaments/register (4 bước)
 
   return (
-    <div className="w-full text-slate-900 dark:text-slate-100 transition-colors space-y-4 sm:space-y-6">
+    <div className="w-full text-slate-900 dark:text-slate-100 transition-colors space-y-3 sm:space-y-6">
       <div className="w-full">
-        <div className="flex flex-col w-full gap-4 sm:gap-6">
+        <div className="flex flex-col w-full gap-3 sm:gap-6">
           
           {/* 1. BREADCRUMBS & LIVE TICKER BAR */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -412,7 +412,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               type="button"
               onClick={() => setShowMobileFilters((v) => !v)}
               aria-expanded={showMobileFilters}
-              className="sm:hidden w-full flex items-center justify-between gap-2 px-4 py-3 text-left"
+              className="sm:hidden w-full flex items-center justify-between gap-2 px-3 py-2.5 text-left"
             >
               <span className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
                 <Filter className="w-3.5 h-3.5" />
@@ -429,7 +429,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               </span>
             </button>
 
-            <div className={`${showMobileFilters ? "flex" : "hidden"} sm:flex flex-wrap items-center gap-3 px-4 py-3`}>
+            <div className={`${showMobileFilters ? "flex" : "hidden"} sm:flex flex-wrap items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3`}>
             <span className="flex items-center gap-1 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
               <Filter className="w-3.5 h-3.5" />
               Lọc nhanh:
@@ -527,7 +527,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               </button>
             </div>
           ) : featured ? (
-          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm p-4 sm:p-8 border border-slate-200/90 dark:border-slate-800 hover-card-elevate transition-colors">
+          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm p-3 sm:p-8 border border-slate-200/90 dark:border-slate-800 hover-card-elevate transition-colors">
             {/* Ambient Soft Glow */}
             <div className="hidden sm:block absolute -top-20 -right-20 w-96 h-96 rounded-full bg-emerald-50/60 dark:bg-emerald-950/40 blur-3xl pointer-events-none"></div>
             <div className="hidden sm:block absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-sky-50/50 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
@@ -686,7 +686,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               role="tab"
               aria-selected={activeTab === 'open'}
               onClick={() => changeTab('open')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                 activeTab === 'open' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -702,7 +702,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               role="tab"
               aria-selected={activeTab === 'live'}
               onClick={() => changeTab('live')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                 activeTab === 'live' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -718,7 +718,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               role="tab"
               aria-selected={activeTab === 'bracket'}
               onClick={() => changeTab('bracket')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                 activeTab === 'bracket' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -734,7 +734,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               role="tab"
               aria-selected={activeTab === 'rankings'}
               onClick={() => changeTab('rankings')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                 activeTab === 'rankings' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'

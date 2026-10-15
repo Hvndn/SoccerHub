@@ -337,7 +337,7 @@ export default function PlayerProfileConsole({
   });
 
   return (
-    <div className="w-full text-slate-900 dark:text-slate-100 transition-colors space-y-4 sm:space-y-6 pb-20">
+    <div className="w-full text-slate-900 dark:text-slate-100 transition-colors space-y-3 sm:space-y-6 pb-20">
       {/* ========================================================= */}
       {/* HEADER COCKPIT: BẢN HỒ SƠ CẦU THỦ CHI TIẾT TOÀN DIỆN      */}
       {/* ========================================================= */}
@@ -360,7 +360,7 @@ export default function PlayerProfileConsole({
         </div>
 
         {/* Hàng thông tin chính */}
-        <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
+        <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6">
             
             {/* Bên trái: Avatar + Tên + Thông tin liên hệ */}

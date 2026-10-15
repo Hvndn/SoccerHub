@@ -449,10 +449,10 @@ export default function PitchSearch({ user }: PitchSearchProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
+        <div className="fixed bottom-24 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-4 sm:px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           <span className="text-sm font-bold">{toastMsg}</span>
         </div>
@@ -612,13 +612,13 @@ export default function PitchSearch({ user }: PitchSearchProps) {
       </section>
 
       {/* 2. BỘ LỌC TÌM SÂN THÔNG MINH (SMART FILTERS BAR) */}
-      <section className="w-full bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3.5">
+      <section className="w-full bg-white dark:bg-slate-900 p-2 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2.5 sm:space-y-3.5">
         {/* Mobile: nút mở/đóng bộ lọc để giữ giao diện tối giản */}
         <button
           type="button"
           onClick={() => setShowMobileFilters((v) => !v)}
           aria-expanded={showMobileFilters}
-          className="sm:hidden w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left cursor-pointer"
+          className="sm:hidden w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left cursor-pointer"
         >
           <span className="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-100">
             <SlidersHorizontal className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
@@ -976,16 +976,17 @@ export default function PitchSearch({ user }: PitchSearchProps) {
         )}
 
         {/* CỘT TRÁI (8 COLS): DANH SÁCH CỤM SÂN BÓNG ĐÁ THẬT ĐÀ NẴNG */}
-        <main className="xl:col-span-8 space-y-6">
+        <main className="xl:col-span-8 space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="text-xl font-black text-slate-900 dark:text-white">
+                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                   Sân Trống Khả Dụng Khung Giờ Tối
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase animate-pulse border border-emerald-500/30">
+                <span className="hidden sm:inline px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase animate-pulse border border-emerald-500/30">
                   LIVE
                 </span>
+                <span className="sm:hidden w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
               </div>
               <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                 Danh sách lấy từ bảng pitches và ma trận ca sân của hệ thống
@@ -993,22 +994,21 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             </div>
 
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold text-slate-500 hidden sm:inline">Sắp xếp:</span>
-              <span className="text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 px-3 py-1.5 rounded-xl border border-sky-200 dark:border-sky-800/60">
+              <span className="text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-sky-200 dark:border-sky-800/60 text-[11px] sm:text-xs">
                 Gần nhất
               </span>
             </div>
           </div>
 
           {/* DANH SÁCH CÁC THẺ SÂN BÓNG */}
-          <div className="space-y-5">
+          <div className="space-y-3 sm:space-y-5">
             {loadingRealPitches ? (
-              <div className="bg-white dark:bg-slate-900 rounded-3xl p-12 border border-slate-200 dark:border-slate-800 text-center space-y-3">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-8 sm:p-12 border border-slate-200 dark:border-slate-800 text-center space-y-3">
                 <Loader2 className="w-8 h-8 text-[#0b4f6c] dark:text-sky-400 animate-spin mx-auto" />
                 <p className="text-sm font-bold text-slate-500">Đang đồng bộ cụm sân từ máy chủ MySQL...</p>
               </div>
             ) : filteredPitches.length === 0 ? (
-              <div className="bg-white dark:bg-slate-900 rounded-3xl p-12 border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-8 sm:p-12 border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto border border-amber-500/20">
                   <MapPin className="w-8 h-8" />
                 </div>
@@ -1028,7 +1028,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                   className="group bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm sport-card-hover flex flex-col md:flex-row cursor-pointer"
                 >
                   {/* Thumbnail Visual */}
-                  <div className="md:w-5/12 relative min-h-[190px] md:min-h-[230px] overflow-hidden bg-slate-900">
+                  <div className="md:w-5/12 relative min-h-[150px] md:min-h-[230px] overflow-hidden bg-slate-900">
                     <img
                       src={pitch.imageUrl}
                       alt={pitch.name}
@@ -1055,7 +1055,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                   </div>
 
                   {/* Chi tiết sân & Ca trống hôm nay */}
-                  <div className="md:w-7/12 p-4 sm:p-6 flex flex-col justify-between space-y-4">
+                  <div className="md:w-7/12 p-3 sm:p-6 flex flex-col justify-between space-y-3 sm:space-y-4">
                     <div className="space-y-2.5">
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -1158,7 +1158,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
         </main>
 
         {/* CỘT PHẢI (4 COLS): CHỢ KÈO GHÉP ĐỘI ELO & THẺ CHECK-IN QUICKPASS */}
-        <aside className="xl:col-span-4 space-y-6">
+        <aside className="xl:col-span-4 space-y-4 sm:space-y-6">
           {/* WIDGET 1: CHỢ KÈO GHÉP ĐỘI — đọc từ bảng matchmaking_posts trong CSDL */}
           <section className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
