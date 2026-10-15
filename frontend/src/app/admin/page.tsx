@@ -73,22 +73,23 @@ function AdminConsole() {
           </div>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all active:scale-95"
+            aria-label="Về trang chủ"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all active:scale-95 whitespace-nowrap"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Về trang chủ</span>
+            <ArrowLeft className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">Về trang chủ</span>
           </Link>
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-6 sm:py-8">
+      <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-4 sm:py-8">
         {isLoading ? (
           <div className="space-y-3 max-w-5xl mx-auto" aria-label="Đang tải quyền quản trị">
             <div className="skeleton-shimmer h-8 w-64 rounded-xl" />
             <div className="skeleton-shimmer h-64 w-full rounded-2xl" />
           </div>
         ) : !user ? (
-          <div className="max-w-xl mx-auto text-center py-16 px-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+          <div className="max-w-xl mx-auto text-center py-10 sm:py-16 px-4 sm:px-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 sm:space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
               <LogIn className="w-8 h-8 text-rose-500" />
             </div>
@@ -104,7 +105,7 @@ function AdminConsole() {
             </Link>
           </div>
         ) : user.role !== "ADMIN" ? (
-          <div className="max-w-xl mx-auto text-center py-16 px-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+          <div className="max-w-xl mx-auto text-center py-10 sm:py-16 px-4 sm:px-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 sm:space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
               <ShieldCheck className="w-8 h-8 text-rose-500" />
             </div>
@@ -121,7 +122,7 @@ function AdminConsole() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-5 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-3 sm:gap-5 items-start">
             {/* Sidebar */}
             <nav aria-label="Mục quản trị" className="lg:sticky lg:top-[68px] rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 flex lg:flex-col gap-1 overflow-x-auto">
               {SECTIONS.map((s) => {
@@ -154,7 +155,7 @@ function AdminConsole() {
             </nav>
 
             {/* Content */}
-            <div className="min-w-0 space-y-4">
+            <div className="min-w-0 space-y-3 sm:space-y-4">
               <div key={section} className="animate-fade-in-up">
                 <h1 className="text-xl sm:text-2xl font-black tracking-tight mb-4">
                   {SECTION_TITLE[section]}

@@ -34,17 +34,18 @@ export default function RefereePanel() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-8">
       {/* Live Referee Header */}
-      <div className="glass-panel p-6 rounded-3xl border border-rose-500/40 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-rose-500/40 relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           <div>
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold mb-2">
               <Radio className="w-4 h-4 animate-pulse" />
-              <span>Biên Bản Trọng Tài & Điều Khiển Trận Đấu Realtime (WebSocket Active)</span>
+              <span className="sm:hidden">Biên Bản Trọng Tài Realtime</span>
+              <span className="hidden sm:inline">Biên Bản Trọng Tài & Điều Khiển Trận Đấu Realtime (WebSocket Active)</span>
             </div>
-            <h1 className="text-3xl font-extrabold text-white">Bảng Điều Khiển Trận Đấu Trực Tiếp</h1>
-            <p className="text-slate-400 text-xs mt-1">Cập nhật tỷ số, thẻ phạt, bàn thắng tức thì đến khán giả và hệ thống tự động tính BXH.</p>
+            <h1 className="text-xl sm:text-3xl font-extrabold text-white">Bảng Điều Khiển Trận Đấu Trực Tiếp</h1>
+            <p className="text-slate-400 text-xs mt-1 hidden sm:block">Cập nhật tỷ số, thẻ phạt, bàn thắng tức thì đến khán giả và hệ thống tự động tính BXH.</p>
           </div>
 
           <div className="flex items-center space-x-3">
@@ -62,7 +63,7 @@ export default function RefereePanel() {
       </div>
 
       {/* Main Scoreboard Display Component */}
-      <div className="glass-panel p-8 rounded-3xl border border-slate-800 text-center space-y-6 bg-slate-900/90 relative">
+      <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-800 text-center space-y-3 sm:space-y-6 bg-slate-900/90 relative">
         <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-slate-950 border border-slate-800 text-pitch-lime font-mono text-sm font-extrabold stadium-shadow">
           <Clock className="w-4 h-4 text-pitch-lime animate-spin" />
           <span>PHÚT {matchMinute}'</span>
@@ -80,10 +81,10 @@ export default function RefereePanel() {
           </div>
 
           {/* Big Score Counter */}
-          <div className="flex items-center justify-center space-x-4">
-            <span className="text-6xl font-extrabold text-pitch-lime font-mono tracking-tighter">{scoreA}</span>
-            <span className="text-4xl text-slate-600 font-bold">:</span>
-            <span className="text-6xl font-extrabold text-pitch-lime font-mono tracking-tighter">{scoreB}</span>
+          <div className="flex items-center justify-center space-x-2 sm:space-x-4">
+            <span className="text-4xl sm:text-6xl font-extrabold text-pitch-lime font-mono tracking-tighter">{scoreA}</span>
+            <span className="text-2xl sm:text-4xl text-slate-600 font-bold">:</span>
+            <span className="text-4xl sm:text-6xl font-extrabold text-pitch-lime font-mono tracking-tighter">{scoreB}</span>
           </div>
 
           {/* Team B */}
@@ -97,7 +98,7 @@ export default function RefereePanel() {
         </div>
 
         {/* Referee Interactive Control Actions */}
-        <div className="pt-6 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs max-w-3xl mx-auto">
+        <div className="pt-6 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs max-w-3xl mx-auto">
           {/* Team A Actions */}
           <div className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-3">
             <span className="font-bold text-pitch-emerald block text-center uppercase tracking-wider">Hành Động: FC Tigers</span>
@@ -151,21 +152,21 @@ export default function RefereePanel() {
       </div>
 
       {/* Match Event Log Timeline */}
-      <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-3 sm:space-y-4">
         <h3 className="text-lg font-bold text-white flex items-center">
           <Clock className="w-5 h-5 text-pitch-lime mr-2" /> Nhật Ký Diễn Biến Trận Đấu (Realtime Log)
         </h3>
 
         <div className="space-y-2">
           {events.map((evt) => (
-            <div key={evt.id} className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
-              <div className="flex items-center space-x-3">
+            <div key={evt.id} className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
                 <span className="px-2.5 py-1 rounded-lg bg-slate-950 text-pitch-lime font-mono font-extrabold">{evt.minute}'</span>
                 <span className="font-bold text-white">{evt.team}</span>
-                <span className="text-slate-400">• {evt.player}</span>
+                <span className="text-slate-400 truncate">• {evt.player}</span>
               </div>
               <div className="flex items-center space-x-2 font-semibold">
-                <span className="text-slate-300">{evt.detail}</span>
+                <span className="text-slate-300 hidden sm:inline">{evt.detail}</span>
                 <span className="px-2 py-0.5 rounded bg-slate-800 text-pitch-emerald font-extrabold uppercase text-[10px]">
                   {evt.type}
                 </span>

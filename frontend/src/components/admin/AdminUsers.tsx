@@ -185,7 +185,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="font-black text-slate-900 dark:text-white text-sm">Quản lý người dùng</h3>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             Khóa/mở tài khoản và phân vai trò. Không thể tự khóa hoặc tự đổi vai trò của chính mình.
           </p>
         </div>

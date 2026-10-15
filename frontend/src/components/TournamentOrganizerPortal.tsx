@@ -281,12 +281,12 @@ export default function TournamentOrganizerPortal({
 
 
   return (
-    <div className="space-y-8 animate-fade-in pb-16">
+    <div className="space-y-4 sm:space-y-8 animate-fade-in pb-16">
       {/* HEADER BAR */}
-      <div className="bg-white text-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm relative overflow-hidden">
+      <div className="bg-white text-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-slate-200/90 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-sky-50 via-emerald-50 to-transparent rounded-full blur-3xl pointer-events-none" />
         
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6">
           <div className="space-y-3">
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2 text-xs font-mono text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
@@ -297,11 +297,11 @@ export default function TournamentOrganizerPortal({
               </div>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
+            <h1 className="text-lg sm:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
               <span>Quản Lý Giải Đấu Bóng Đá SoccerHub</span>
               <Award className="w-8 h-8 text-amber-500 shrink-0 hidden sm:inline-block" />
             </h1>
-            <p className="text-sm text-slate-600 max-w-2xl font-medium leading-relaxed">
+            <p className="text-sm text-slate-600 max-w-2xl font-medium leading-relaxed hidden sm:block">
               Trung tâm điều hành giải đấu bóng đá tập trung: nhập tỷ số trọng tài, bốc thăm nhánh đấu, giải thưởng và sơ đồ nhánh đấu knockout thời gian thực.
             </p>
           </div>
@@ -333,10 +333,11 @@ export default function TournamentOrganizerPortal({
 
             <Link
               href="/tournaments/new"
-              className="px-5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="px-4 py-2.5 sm:px-5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>+ Khởi Tạo Giải Đấu Mới</span>
+              <span className="sm:hidden">+ Tạo Giải Mới</span>
+              <span className="hidden sm:inline">+ Khởi Tạo Giải Đấu Mới</span>
             </Link>
           </div>
         </div>
@@ -344,7 +345,7 @@ export default function TournamentOrganizerPortal({
         {/* Form tạo giải đã chuyển sang trang wizard riêng: /tournaments/new (4 bước) */}
 
         {/* SPORT CATEGORY FILTERS */}
-        <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+        <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between gap-3 sm:gap-4 overflow-x-auto no-scrollbar">
           <div className="flex items-center space-x-2">
             <span className="text-xs font-bold text-slate-500 mr-2 flex items-center gap-1.5">
               <Filter className="w-3.5 h-3.5 text-slate-500" /> Bộ Lọc Môn:
@@ -371,17 +372,17 @@ export default function TournamentOrganizerPortal({
       </div>
 
       {/* FOOTBALL TOURNAMENT BENTO CAROUSEL CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
         {loadingDb && filteredTournaments.length === 0 ? (
           [0, 1, 2].map((i) => (
-            <div key={i} className="rounded-3xl p-6 border border-slate-200/90 bg-white space-y-3">
+            <div key={i} className="rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/90 bg-white space-y-3">
               <div className="skeleton-shimmer h-5 w-2/3 rounded-lg" />
               <div className="skeleton-shimmer h-3 w-1/2 rounded-lg" />
               <div className="skeleton-shimmer h-2 w-full rounded-full" />
             </div>
           ))
         ) : filteredTournaments.length === 0 ? (
-          <div className="md:col-span-3 rounded-3xl p-10 text-center border border-dashed border-slate-300 bg-white">
+          <div className="md:col-span-3 rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-center border border-dashed border-slate-300 bg-white">
             <Trophy className="w-8 h-8 text-slate-300 mx-auto" />
             <p className="mt-3 text-sm font-bold text-slate-600">
               {selectedSport === "all"
@@ -392,7 +393,7 @@ export default function TournamentOrganizerPortal({
         ) : filteredTournaments.map((t: any) => (
           <div
             key={t.id}
-            className={`rounded-3xl p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-xs ${
+            className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-xs ${
               t.status === "live"
                 ? "bg-emerald-50/40 border-emerald-300 text-slate-900"
                 : "bg-white border-slate-200/90 text-slate-900"
@@ -402,7 +403,7 @@ export default function TournamentOrganizerPortal({
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-200/30 rounded-full blur-2xl pointer-events-none" />
             )}
 
-            <div className="space-y-4 relative z-10">
+            <div className="space-y-3 sm:space-y-4 relative z-10">
               <div className="flex items-center justify-between gap-2">
                 <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase flex items-center gap-1.5 ${
                   t.status === "live"
@@ -465,13 +466,13 @@ export default function TournamentOrganizerPortal({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* LEFT 8 COLS: UMPIRE CONSOLE + BRACKET ENGINE + DATA TABLES */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 space-y-4 sm:space-y-8">
 
           {/* 1. BẢNG ĐIỀU KHIỂN TRỌNG TÀI — chạy trên trận thật trong nhánh đấu */}
-          <div className="bg-white border border-slate-200/90 text-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
+          <div className="bg-white border border-slate-200/90 text-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-80 h-80 bg-rose-50/50 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-100 pb-5 mb-6">
               <div className="flex items-center space-x-3 min-w-0">
                 <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 font-bold shrink-0">
                   <Activity className="w-5 h-5" />
@@ -520,8 +521,8 @@ export default function TournamentOrganizerPortal({
             )}
 
             {/* Bảng điểm */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center bg-slate-50 p-6 rounded-2xl border border-slate-200">
-              <div className="p-6 rounded-2xl border border-emerald-300 bg-white">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 items-center bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200">
+              <div className="p-4 sm:p-6 rounded-2xl border border-emerald-300 bg-white">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <span className="w-3 h-3 rounded-full bg-emerald-500" />
@@ -538,7 +539,7 @@ export default function TournamentOrganizerPortal({
                 </div>
               </div>
 
-              <div className="p-6 rounded-2xl border border-sky-300 bg-white">
+              <div className="p-4 sm:p-6 rounded-2xl border border-sky-300 bg-white">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <span className="w-3 h-3 rounded-full bg-sky-500" />
@@ -617,8 +618,8 @@ export default function TournamentOrganizerPortal({
           </div>
 
           {/* 2. NHÁNH ĐẤU THẬT — parse từ bracketJson của giải đang chọn */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div className="min-w-0">
                 <span className="text-xs font-black uppercase text-[#0b4f6c] dark:text-sky-400 tracking-wider">
                   BRACKET ENGINE — NGUỒN CSDL
@@ -636,7 +637,7 @@ export default function TournamentOrganizerPortal({
             </div>
 
             {!activeBracket ? (
-              <p className="p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+              <p className="p-4 sm:p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
                 <Trophy className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
                 <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
                   {dbTournaments.length === 0
@@ -645,10 +646,10 @@ export default function TournamentOrganizerPortal({
                 </p>
               </p>
             ) : (
-              <div className="bg-slate-50 dark:bg-slate-950/80 p-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 overflow-x-auto no-scrollbar">
-                <div className="flex gap-6 items-start">
+              <div className="bg-slate-50 dark:bg-slate-950/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 overflow-x-auto no-scrollbar">
+                <div className="flex gap-3 sm:gap-6 items-start">
                   {activeBracket.rounds.map((r: any, ri: number) => (
-                    <div key={ri} className="min-w-[240px] flex-1 space-y-4">
+                    <div key={ri} className="min-w-[240px] flex-1 space-y-3 sm:space-y-4">
                       <div
                         className={`text-xs font-black uppercase tracking-wider text-center border-b pb-2 ${
                           ri === activeBracket.rounds.length - 1
@@ -720,7 +721,7 @@ export default function TournamentOrganizerPortal({
           </div>
 
           {/* 3. DATA TABLES & INCIDENT LOGS */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
             {/* TABS HEADER */}
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
               <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar">
@@ -820,7 +821,7 @@ export default function TournamentOrganizerPortal({
 
             {/* TAB CONTENT: KẾT QUẢ & VUA PHÁ LƯỚI (đọc từ goal_events) */}
             {bottomTab === "var_logs" && activeBracket && (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
                   <p className="text-xs font-black uppercase text-slate-400 tracking-wider mb-2">
                     Kết quả đã ghi nhận ({doneMatches.length})
@@ -929,10 +930,10 @@ export default function TournamentOrganizerPortal({
         </div>
 
         {/* RIGHT 4 COLS: THỐNG KÊ GIẢI + QUỸ THƯỞNG THẬT */}
-        <div className="lg:col-span-4 space-y-8">
+        <div className="lg:col-span-4 space-y-4 sm:space-y-8">
 
           {/* 1. THỐNG KÊ GIẢI ĐẤU (đếm từ CSDL) */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 text-white rounded-3xl p-6 shadow-xl space-y-6">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-3 sm:space-y-6">
             <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
               <div className="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 shrink-0">
                 <Cpu className="w-5 h-5" />
@@ -945,7 +946,7 @@ export default function TournamentOrganizerPortal({
               </div>
             </div>
 
-            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+            <div className="bg-slate-950 p-3 sm:p-4 rounded-2xl border border-slate-800 space-y-3">
               {activeTournament ? (
                 <>
                   <div className="flex items-center justify-between text-xs">
@@ -997,7 +998,7 @@ export default function TournamentOrganizerPortal({
           </div>
 
           {/* 2. QUỸ THƯỞNG THẬT (prizePool từ CSDL) */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center space-x-2.5">
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -1020,11 +1021,11 @@ export default function TournamentOrganizerPortal({
               </p>
             ) : (
               <>
-                <div className="text-center bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                <div className="text-center bg-slate-50 dark:bg-slate-950 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                     TỔNG GIẢI THƯỞNG
                   </span>
-                  <span className="text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
+                  <span className="text-xl sm:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
                     {formatMoney(activeTournament.prizePool)}
                   </span>
                   <span className="text-[10px] text-slate-400 font-bold block pt-1">
@@ -1040,7 +1041,7 @@ export default function TournamentOrganizerPortal({
           </div>
 
           {/* 3. THÔNG TIN SÂN & THỜI GIAN THI ĐẤU (thật) */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
             <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider">
               Thông Tin Giải Từ CSDL
             </h4>

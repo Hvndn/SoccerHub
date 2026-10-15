@@ -175,30 +175,30 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
   ];
 
   return (
-    <div className="space-y-16 sm:space-y-24">
+    <div className="space-y-10 sm:space-y-24">
       {/* --- SECTION 1: 4 TRỤ CỘT ĐỀ TÀI (BENTO GRID) --- */}
-      <section className="space-y-8">
+      <section className="space-y-5 sm:space-y-8">
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#0b4f6c]/10 dark:bg-sky-400/10 text-[#0b4f6c] dark:text-sky-300 text-xs font-black uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Bốn Trụ Cột Đột Phá Của Đề Tài</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-2xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
             Giải Pháp Toàn Diện Cho Thể Thao Số
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
             Hệ thống kết nối mượt mà từ lúc tìm sân, cáp kèo, đặt cọc cho đến khi tiếng còi bế mạc giải đấu vang lên.
           </p>
         </div>
 
         {/* 4 Pillars Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 lg:gap-8">
           {pillars.map((pillar, pi) => {
             const Icon = pillar.icon;
             return (
               <Reveal key={pillar.id} delay={pi * 80}>
               <div
-                className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-6 group relative overflow-hidden h-full"
+                className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 sm:space-y-6 group relative overflow-hidden h-full"
               >
                 {/* Decorative Top Ambient Light */}
                 <div className={`absolute top-0 right-0 w-48 h-48 bg-gradient-to-br ${pillar.gradient} opacity-5 group-hover:opacity-10 blur-2xl transition-opacity pointer-events-none`} />
@@ -215,13 +215,13 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
 
                   <div>
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{pillar.title}</span>
-                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
+                    <h3 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
                       {pillar.subtitle}
                     </h3>
                   </div>
 
                   {/* Bullet Points */}
-                  <div className="space-y-3 pt-2">
+                  <div className="space-y-2 sm:space-y-3 pt-1 sm:pt-2">
                     {pillar.points.map((pt, idx) => (
                       <div key={idx} className="flex items-start space-x-2.5">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
@@ -237,7 +237,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                 </div>
 
                 {/* Bottom Metric Strip */}
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold">
+                <div className="pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold">
                   <span className="text-slate-500 dark:text-slate-400">{pillar.metricLabel}</span>
                   <span className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-sm">
                     {pillar.metricValue}
@@ -251,19 +251,19 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       </section>
 
       {/* --- SECTION 2: DIRECT COMPARISON (TRUYỀN THỐNG VS SOCCERHUB) --- */}
-      <section className="w-full bg-slate-100/90 dark:bg-slate-900/60 p-6 sm:p-10 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-8">
+      <section className="w-full bg-slate-100/90 dark:bg-slate-900/60 p-4 sm:p-10 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5 sm:space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <span className="text-xs font-extrabold text-[#0b4f6c] dark:text-sky-400 uppercase tracking-wider block">
             So Sánh Đột Phá
           </span>
-          <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
             Tại Sao Chọn SoccerHub Thay Vì Sổ Tay &amp; Gọi Điện Thoại?
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
           {/* Traditional Issues Card */}
-          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-rose-200 dark:border-rose-950/80 space-y-5 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-rose-200 dark:border-rose-950/80 space-y-4 sm:space-y-5 shadow-sm">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center shrink-0">
@@ -279,9 +279,9 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               </span>
             </div>
 
-            <div className="space-y-3.5">
+            <div className="space-y-2.5 sm:space-y-3.5">
               {traditionalIssues.map((item, idx) => (
-                <div key={idx} className="flex items-start space-x-3 p-3.5 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30">
+                <div key={idx} className="flex items-start space-x-3 p-3 sm:p-3.5 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30">
                   <XCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="text-xs font-extrabold text-slate-900 dark:text-white">{item.title}</h4>
@@ -293,7 +293,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
           </div>
 
           {/* SoccerHub Smart Way Card */}
-          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-[#0b4f6c]/40 dark:border-sky-500/40 space-y-5 shadow-xl relative overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-[#0b4f6c]/40 dark:border-sky-500/40 space-y-4 sm:space-y-5 shadow-xl relative overflow-hidden">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-2xl bg-[#0b4f6c] text-white flex items-center justify-center shrink-0 shadow-md">
@@ -309,9 +309,9 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               </span>
             </div>
 
-            <div className="space-y-3.5">
+            <div className="space-y-2.5 sm:space-y-3.5">
               {platformAdvantages.map((item, idx) => (
-                <div key={idx} className="flex items-start space-x-3 p-3.5 rounded-2xl bg-[#0b4f6c]/5 dark:bg-sky-500/10 border border-[#0b4f6c]/15 dark:border-sky-500/20">
+                <div key={idx} className="flex items-start space-x-3 p-3 sm:p-3.5 rounded-2xl bg-[#0b4f6c]/5 dark:bg-sky-500/10 border border-[#0b4f6c]/15 dark:border-sky-500/20">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="text-xs font-extrabold text-slate-900 dark:text-white">{item.title}</h4>
@@ -325,26 +325,26 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       </section>
 
       {/* --- SECTION 3: FINAL CALL TO ACTION BANNER --- */}
-      <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-[#07384d] to-slate-950 text-white p-8 sm:p-14 border border-slate-800 shadow-2xl">
-        <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
+      <section className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-[#07384d] to-slate-950 text-white p-5 sm:p-14 border border-slate-800 shadow-2xl">
+        <div className="relative z-10 max-w-3xl mx-auto text-center space-y-4 sm:space-y-6">
           <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 text-sky-300 text-xs font-extrabold uppercase">
             <Trophy className="w-3.5 h-3.5 text-amber-400" />
             <span>Đồ Án Tốt Nghiệp Xuất Sắc • Trải Nghiệm Thực Tế Ngay</span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+          <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-tight">
             Sẵn Sàng Nâng Tầm Trải Nghiệm Thể Thao Của Bạn?
           </h2>
 
-          <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed max-w-2xl mx-auto">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-300 font-medium leading-relaxed max-w-2xl mx-auto">
             Hòa mình vào hệ sinh thái quản lý sân bóng và giải đấu SoccerHub. Đặt sân tức thì, theo dõi doanh thu và tổ chức giải đấu chuyên nghiệp.
           </p>
 
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-3.5">
             <button
               type="button"
               onClick={() => onExplore("PLAYER")}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
               <Users className="w-4 h-4" />
               <span>Khám Phá Cổng Cầu Thủ</span>
@@ -353,7 +353,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             <button
               type="button"
               onClick={() => onExplore("OWNER")}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
               <Store className="w-4 h-4 text-[#0b4f6c]" />
               <span>Dành Cho Chủ Sân (Quản Lý Cụm Sân)</span>
@@ -362,7 +362,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             <button
               type="button"
               onClick={() => onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER")}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 text-amber-300 font-black text-xs sm:text-sm border border-amber-400/30 transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 text-amber-300 font-black text-xs sm:text-sm border border-amber-400/30 transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
               <Trophy className="w-4 h-4 text-amber-400" />
               <span>Xem Giải Đấu &amp; Cây Nhánh</span>

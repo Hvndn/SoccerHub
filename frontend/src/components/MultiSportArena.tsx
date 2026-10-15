@@ -205,7 +205,7 @@ export default function MultiSportArena({
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 p-3 sm:p-6 lg:p-8">
       {/* Toast Notification */}
       {successToast && (
         <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-bounce">
@@ -216,10 +216,10 @@ export default function MultiSportArena({
 
       {/* Top Header Banner */}
       <div className="w-full mb-8">
-        <div className="bg-gradient-to-r from-slate-900 via-[#0b4f6c] to-slate-900 border border-sky-500/30 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-900 via-[#0b4f6c] to-slate-900 border border-sky-500/30 rounded-2xl p-4 sm:p-8 text-white shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
             <div>
               <div className="flex items-center space-x-3 mb-3">
                 <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
@@ -229,10 +229,10 @@ export default function MultiSportArena({
                   {courts[0]?.name || "Chưa có cụm sân nào"}
                 </span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+              <h1 className="text-xl sm:text-4xl font-extrabold tracking-tight">
                 Ma Trận Sơ Đồ Cụm Sân Bóng Đá Real-Time
               </h1>
-              <p className="mt-2 text-slate-300 text-sm sm:text-base max-w-2xl">
+              <p className="mt-2 text-slate-300 text-sm sm:text-base max-w-2xl hidden sm:block">
                 Đặt ca sân 5, sân 7, sân 11 và Futsal trong nhà tự động 24/7. Tìm đối thủ ghép trận theo chỉ số Elo, giữ chỗ tức thì qua mã đặt chỗ.
               </p>
             </div>
@@ -262,21 +262,21 @@ export default function MultiSportArena({
           </div>
 
           {/* Quick Stats Strip — số liệu đếm trực tiếp từ CSDL */}
-          <div className="mt-6 pt-6 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+          <div className="mt-6 pt-6 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-              <div className="text-2xl font-bold text-emerald-400">{courts.length} Sân</div>
+              <div className="text-lg sm:text-2xl font-bold text-emerald-400">{courts.length} Sân</div>
               <div className="text-xs text-slate-400 mt-0.5">Trong bảng pitches</div>
             </div>
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-              <div className="text-2xl font-bold text-sky-400">{matchQueues.length} Kèo Mở</div>
+              <div className="text-lg sm:text-2xl font-bold text-sky-400">{matchQueues.length} Kèo Mở</div>
               <div className="text-xs text-slate-400 mt-0.5">Bảng matchmaking_posts</div>
             </div>
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-              <div className="text-2xl font-bold text-cyan-400">Sân 5 · 7 · 11</div>
+              <div className="text-lg sm:text-2xl font-bold text-cyan-400">Sân 5 · 7 · 11</div>
               <div className="text-xs text-slate-400 mt-0.5">Loại mặt sân đang khai thác</div>
             </div>
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-              <div className="text-2xl font-bold text-amber-400">Cọc 50%</div>
+              <div className="text-lg sm:text-2xl font-bold text-amber-400">Cọc 50%</div>
               <div className="text-xs text-slate-400 mt-0.5">Thanh toán qua VietQR khi đặt</div>
             </div>
           </div>
@@ -284,24 +284,24 @@ export default function MultiSportArena({
       </div>
 
       {/* Main Grid Section */}
-      <div className="w-full space-y-8">
+      <div className="w-full space-y-4 sm:space-y-8">
 
         {/* Section 1: Court Matrix Filter & Legend */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-md">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 mb-6">
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                 <Activity className="w-5 h-5 text-emerald-500" />
                 <span>Trạng Thái Các Sân Bóng Trực Tiếp (Live Football Pitch Matrix)</span>
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 hidden sm:block">
                 Danh sách cụm sân đọc từ bảng pitches — bấm “Đặt Ca” để tạo đơn giữ chỗ thật trong CSDL
               </p>
             </div>
           </div>
 
           {/* Color Legend Bar */}
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800 mb-6 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800 mb-6 flex flex-wrap items-center justify-between gap-3 sm:gap-4 text-xs">
             <div className="flex items-center space-x-6 flex-wrap gap-y-2">
               <div className="flex items-center space-x-2">
                 <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
@@ -319,20 +319,20 @@ export default function MultiSportArena({
           </div>
 
           {/* Courts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {loadingCourts ? (
-              <p className="col-span-full text-sm text-slate-500 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+              <p className="col-span-full text-sm text-slate-500 p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                 Đang tải danh sách sân từ CSDL…
               </p>
             ) : filteredCourts.length === 0 ? (
-              <p className="col-span-full text-sm text-slate-500 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+              <p className="col-span-full text-sm text-slate-500 p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                 Chưa có sân nào khớp bộ lọc này trong CSDL.
               </p>
             ) : null}
             {filteredCourts.map((court) => (
               <div
                 key={court.id}
-                className={`rounded-xl border p-4 transition-all duration-200 flex flex-col justify-between relative ${
+                className={`rounded-xl border p-3 sm:p-4 transition-all duration-200 flex flex-col justify-between relative ${
                   court.status === 'available'
                     ? 'border-emerald-300 dark:border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-950/20 hover:shadow-lg hover:border-emerald-500'
                     : court.status === 'matching'
@@ -452,14 +452,14 @@ export default function MultiSportArena({
 
         {/* Section 2: Football Matchmaking Queue */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-md">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                   <Zap className="w-5 h-5 text-amber-500" />
                   <span>Sàn Ghép Kèo Đội Bóng Đá Phủi (Football Matchmaking Queue)</span>
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 hidden sm:block">
                   Gia nhập các kèo bóng đá đang thiếu cầu thủ, tự động chia tiền sân theo đầu người qua VietQR
                 </p>
               </div>
@@ -474,22 +474,22 @@ export default function MultiSportArena({
             </div>
 
             {/* Queue Cards */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {loadingMatches ? (
-                <p className="text-sm text-slate-500 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <p className="text-sm text-slate-500 p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                   Đang tải kèo từ CSDL…
                 </p>
               ) : matchQueues.length === 0 ? (
-                <p className="text-sm text-slate-500 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <p className="text-sm text-slate-500 p-3 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                   Chưa có kèo nào đang mở. Vào tab <strong>Chợ Kèo</strong> để đăng đội của bạn.
                 </p>
               ) : null}
               {matchQueues.map((match) => (
                 <div
                   key={match.id}
-                  className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-5 hover:border-amber-400/50 transition-all duration-200"
+                  className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-5 hover:border-amber-400/50 transition-all duration-200"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                     <div className="flex items-start space-x-4">
                       <div className="w-12 h-12 rounded-full border-2 border-emerald-500 bg-emerald-600 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
                         {(match.hostName || "?").trim().charAt(0).toUpperCase()}
@@ -508,7 +508,7 @@ export default function MultiSportArena({
                           {match.title}
                         </h3>
 
-                        <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
                           <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1 text-emerald-500" /> {match.time}</span>
                           <span className="flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1 text-cyan-500" /> {match.court}</span>
                           <span className="flex items-center"><Trophy className="w-3.5 h-3.5 mr-1 text-amber-500" /> Yêu cầu: {match.eloRequired}</span>
@@ -539,8 +539,8 @@ export default function MultiSportArena({
           </div>
 
           {/* Section 3: Tiện ích thật từ hồ sơ sân (bảng pitch_amenities) */}
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-md">
+          <div className="space-y-3 sm:space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center space-x-2">
                 <Sparkles className="w-5 h-5 text-emerald-500" />
                 <span>Tiện Ích Cụm Sân Trong Hồ Sơ</span>
@@ -574,7 +574,7 @@ export default function MultiSportArena({
                 );
               })()}
 
-              <p className="text-xs text-slate-500 mt-4 leading-relaxed">
+              <p className="text-xs text-slate-500 mt-4 leading-relaxed hidden sm:block">
                 Dịch vụ thuê áo, bóng hay trọng tài do từng cụm sân cung cấp — hỏi trực tiếp chủ
                 sân theo số điện thoại trong hồ sơ khi tới nhận sân.
               </p>
@@ -588,7 +588,7 @@ export default function MultiSportArena({
       {/* Court Booking Modal */}
       {bookingCourt && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 my-auto max-h-[92vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-5 my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">
                 Xác Nhận Đặt Ca Sân {bookingCourt.id}
@@ -650,7 +650,7 @@ export default function MultiSportArena({
       {/* Match Joining Modal */}
       {joiningMatch && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 my-auto max-h-[92vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-5 my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">
                 Gia Nhập Kèo {joiningMatch.category}

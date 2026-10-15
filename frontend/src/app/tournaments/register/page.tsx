@@ -39,7 +39,7 @@ const PHONE_RE = /^0\d{9}$/;
 
 export default function RegisterTeamPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-slate-500">Đang tải…</div>}>
+    <Suspense fallback={<div className="p-4 sm:p-8 text-sm text-slate-500">Đang tải…</div>}>
       <RegisterTeamWizard />
     </Suspense>
   );
@@ -176,7 +176,7 @@ function RegisterTeamWizard() {
           onPaidAck={() => setPaidAck(true)}
         />
       ) : (
-        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 sm:p-7">
+        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-7">
           {/* key={step} để replay animation fade mỗi lần sang bước mới */}
           <div key={step} className="animate-fade-in-up">
           {/* STEP 1 — chọn giải */}
@@ -348,7 +348,7 @@ function RegisterTeamWizard() {
           </div>
 
           {/* Footer nav */}
-          <div className="flex items-center justify-between gap-3 pt-6 mt-6 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between gap-3 pt-4 mt-4 sm:pt-6 sm:mt-6 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={goBack}
@@ -407,7 +407,7 @@ function PaymentSuccess({
   });
 
   return (
-    <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900 text-center space-y-4">
+    <div className="p-4 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900 text-center space-y-4">
       <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
       <h2 className="text-lg font-black text-slate-900 dark:text-white">Nộp đơn thành công!</h2>
       <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">

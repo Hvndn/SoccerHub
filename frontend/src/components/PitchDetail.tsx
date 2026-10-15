@@ -338,7 +338,7 @@ export default function PitchDetail({
   });
 
   return (
-    <div className="w-full space-y-6 pb-20 text-slate-900 dark:text-white animate-fade-in">
+    <div className="w-full space-y-4 sm:space-y-6 pb-20 text-slate-900 dark:text-white animate-fade-in">
       {/* Toast Notification */}
       {toastMsg && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
@@ -348,7 +348,7 @@ export default function PitchDetail({
       )}
 
       {/* 1. THANH ĐIỀU HƯỚNG BREADCRUMBS & IOT REALTIME */}
-      <nav aria-label="Breadcrumb" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <nav aria-label="Breadcrumb" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex items-center space-x-3">
           <button
             onClick={onBack}
@@ -380,7 +380,7 @@ export default function PitchDetail({
       </nav>
 
       {/* 2. HEADER CỤM SÂN & BENTO ẢNH BÓNG ĐÁ ĐỈNH CAO */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 sm:space-y-4">
         {/* Title & Metadata */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-2">
@@ -534,11 +534,11 @@ export default function PitchDetail({
       </div>
 
       {/* 3. MA TRẬN CHỌN CA SÂN & KHUNG GIỜ THI ĐẤU THỰC TẾ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
         {/* CỘT TRÁI: CHỌN NGÀY & MA TRẬN CA SÂN THẬT (8 COLS) */}
         <main className="lg:col-span-8 space-y-5">
           {/* Header Bảng Chọn Ca */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div>
               <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center space-x-2">
                 <Calendar className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
@@ -662,7 +662,7 @@ export default function PitchDetail({
           </div>
 
           {/* Bảng Ma Trận Sân Con & Các Ca Đá */}
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 sm:space-y-4">
             {isLoading ? (
               <div className="py-16 text-center space-y-3">
                 <RefreshCw className="w-8 h-8 text-[#0b4f6c] dark:text-sky-400 animate-spin mx-auto" />
@@ -802,7 +802,7 @@ export default function PitchDetail({
 
           {/* Quy trình nhận sân & chính sách cọc (mô tả đúng luồng đang chạy) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start space-x-3">
+            <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start space-x-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 font-bold">
                 <QrCode className="w-5 h-5 text-emerald-500" />
               </div>
@@ -817,7 +817,7 @@ export default function PitchDetail({
               </div>
             </div>
 
-            <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start space-x-3">
+            <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start space-x-3">
               <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0 font-bold">
                 <ShieldCheck className="w-5 h-5 text-sky-500" />
               </div>
@@ -837,7 +837,7 @@ export default function PitchDetail({
         {/* CỘT PHẢI: PHIẾU ĐẶT CHỖ & TÍNH TIỀN THÔNG MINH (4 COLS - STICKY) */}
         <aside className="lg:col-span-4 sticky top-20 space-y-4">
           {selectedSlot ? (
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-6 border border-slate-200 dark:border-slate-800 space-y-5 animate-fade-in">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 space-y-4 sm:space-y-5 animate-fade-in">
               {/* Header Phiếu Đặt */}
               <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center space-x-2.5">
@@ -1005,7 +1005,7 @@ export default function PitchDetail({
           </div>
         ) : (
             /* Placeholder khi chưa chọn ca nào */
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-8 border border-dashed border-slate-300 dark:border-slate-800 text-center space-y-4 animate-fade-in">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 border border-dashed border-slate-300 dark:border-slate-800 text-center space-y-4 animate-fade-in">
               <div className="w-16 h-16 rounded-2xl bg-[#0b4f6c]/10 dark:bg-sky-500/20 text-[#0b4f6c] dark:text-sky-400 mx-auto flex items-center justify-center">
                 <Calendar className="w-8 h-8 text-[#0b4f6c] dark:text-sky-400 animate-pulse" />
               </div>
@@ -1025,7 +1025,7 @@ export default function PitchDetail({
           )}
 
           {/* Card Chủ Sân & Liên Hệ Trực Tiếp */}
-          <div className="p-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+          <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-[#0b4f6c]/10 text-[#0b4f6c] dark:text-sky-400 flex items-center justify-center font-bold text-xs">
                 {venueData.ownerName ? venueData.ownerName.slice(0, 2).toUpperCase() : "CS"}
@@ -1049,7 +1049,7 @@ export default function PitchDetail({
       {/* 4. MODAL THANH TOÁN VIETQR NAPAS247 & MATCHDAY PASS */}
       {showQrModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 max-w-lg w-full rounded-3xl p-6 sm:p-7 space-y-5 border border-slate-200 dark:border-slate-800 shadow-2xl relative animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 max-w-lg w-full rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-4 sm:space-y-5 border border-slate-200 dark:border-slate-800 shadow-2xl relative animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
             <button
               onClick={() => setShowQrModal(false)}
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center font-bold transition-colors"

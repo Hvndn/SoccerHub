@@ -64,7 +64,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
   }, []);
 
   return (
-    <div className="relative w-full space-y-10 sm:space-y-14 overflow-x-clip">
+    <div className="relative w-full space-y-7 sm:space-y-14 overflow-x-clip">
       {/* ========================================================
           FULL-WIDTH EDGE-TO-EDGE BANNER (GIAO DIỆN SÁNG TINH TẾ)
          ======================================================== */}
@@ -74,7 +74,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         <div className="hidden sm:block absolute -bottom-20 left-10 w-[450px] h-[450px] bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
 
         {/* Inner Content Container Aligned with Site Container (max-w-[1720px]) */}
-        <div className="relative z-10 max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-6 xl:px-[50px] py-8 sm:py-16 lg:py-20">
+        <div className="relative z-10 max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-6 xl:px-[50px] py-6 sm:py-16 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 xl:gap-14 items-center">
             
             {/* LEFT COLUMN: HERO CONTENT (7 COLS) */}
@@ -158,7 +158,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
       {/* ========================================================
           SECTION 2: BỘ LỌC TÌM SÂN TRỐNG GPS & GIỜ VÀNG (DƯỚI TỰ SÁNG TẠO)
          ======================================================== */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4 sm:space-y-5">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-3 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 sm:space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 flex items-center justify-center">
@@ -178,7 +178,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5">
           {/* 1. Location Select */}
           <div className="space-y-1.5">
             <label htmlFor="hero-city" className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
@@ -255,7 +255,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
         {/* Action Row */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-          <div className="flex items-center space-x-2 text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-slate-300">
+          <div className="hidden sm:flex items-center space-x-2 text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-slate-300">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
             <span>Đặt ca theo giá niêm yết • Cọc 50% qua VietQR • Chính sách hoàn cọc theo từng sân</span>
           </div>
@@ -275,27 +275,27 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           SECTION 3: 4 CHỈ SỐ LẤY TRỰC TIẾP TỪ CSDL
          ======================================================== */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-          <div className="text-2xl sm:text-3xl font-mono font-black text-[#0b4f6c] dark:text-sky-400">
+        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+          <div className="text-xl sm:text-3xl font-mono font-black text-[#0b4f6c] dark:text-sky-400">
             {stats.loading ? "—" : stats.pitches}
           </div>
           <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cụm sân trong CSDL</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-          <div className="text-2xl sm:text-3xl font-mono font-black text-emerald-600 dark:text-emerald-400">
+        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+          <div className="text-xl sm:text-3xl font-mono font-black text-emerald-600 dark:text-emerald-400">
             {stats.loading ? "—" : stats.tournaments}
           </div>
           <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Giải đấu đã đăng</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-          <div className="text-2xl sm:text-3xl font-mono font-black text-amber-500">{stats.loading ? "—" : stats.matchesPlayed}</div>
+        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+          <div className="text-xl sm:text-3xl font-mono font-black text-amber-500">{stats.loading ? "—" : stats.matchesPlayed}</div>
           <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Trận đã có kết quả</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-          <div className="text-2xl sm:text-3xl font-mono font-black text-sky-500">{stats.loading ? "—" : stats.posts}</div>
+        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+          <div className="text-xl sm:text-3xl font-mono font-black text-sky-500">{stats.loading ? "—" : stats.posts}</div>
           <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kèo đang mở</div>
         </div>
       </div>

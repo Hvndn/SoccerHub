@@ -669,10 +669,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
     }));
 
   return (
-    <div className="space-y-8 animate-fade-in-up pb-16">
+    <div className="space-y-4 sm:space-y-8 animate-fade-in-up pb-16">
       {/* Toast Feedback Notification */}
       {toastMsg && (
-        <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
+        <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           <span className="text-xs font-bold">{toastMsg}</span>
         </div>
@@ -680,7 +680,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* POPUP THÔNG BÁO ĐƠN ĐẶT SÂN REALTIME TỪ CẦU THỦ */}
       {realtimeAlert && (
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 text-white p-4 sm:p-5 rounded-3xl shadow-2xl border-2 border-emerald-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-modal-pop relative overflow-hidden">
+        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 text-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-emerald-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 animate-modal-pop relative overflow-hidden">
           <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           
           <div className="flex items-start space-x-3.5 relative z-10">
@@ -735,7 +735,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* Real-time Order Notification Banner */}
       {notification && (
-        <div className="bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 px-5 py-3 rounded-2xl shadow-lg border border-sky-400/30 flex items-center justify-between animate-fade-in">
+        <div className="bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl shadow-lg border border-sky-400/30 flex items-center justify-between animate-fade-in">
           <div className="flex items-center space-x-3 text-xs font-bold">
             <Bell className="w-4 h-4 animate-bell-wiggle text-amber-300 shrink-0" />
             <span>{notification}</span>
@@ -750,8 +750,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       )}
 
       {/* HEADER BANNER WITH REAL BACKEND DATA */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
           <div>
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0b4f6c]/10 dark:bg-sky-500/10 border border-[#0b4f6c]/20 dark:border-sky-400/20 text-[#0b4f6c] dark:text-sky-400 text-sm font-bold mb-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -810,7 +810,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <button
               type="button"
               onClick={() => setShowHoursModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
+              className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 flex items-center space-x-1.5 whitespace-normal sm:whitespace-nowrap shrink-0"
               title="Cài đặt khung giờ mở cửa và đóng cửa cụm sân"
             >
               <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
@@ -906,8 +906,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       </div>
 
       {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
           <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block">
             Doanh Thu {matrixDate === upcomingDays[0]?.iso ? "Hôm Nay" : `Ngày ${matrixDate.split("-").reverse().join("/")}`}
           </span>
@@ -919,7 +919,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           </span>
         </div>
 
-        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
+        <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
           <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block">Tỷ Lệ Lấp Đầy Ca Sân</span>
           <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
             {pitchStats.occupancyRate}%
@@ -929,7 +929,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           </span>
         </div>
 
-        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
+        <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
           <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block">Đơn Cọc VietQR Online</span>
           <div className="text-2xl sm:text-3xl font-black text-sky-500 font-mono">
             {pitchStats.onlineBookings} Ca Online
@@ -937,7 +937,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           <span className="text-xs font-bold text-slate-500">Ca đặt qua trang đặt sân của SoccerHub</span>
         </div>
 
-        <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
+        <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
           <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block">Khách Vãng Lai Tại Quầy</span>
           <div className="text-2xl sm:text-3xl font-black text-amber-500 font-mono">
             {pitchStats.counterBookings} Ca Trực Tiếp
@@ -947,14 +947,14 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       </div>
 
       {/* QUICK SEARCH & CHECK-IN TOOLBAR */}
-      <div className="glass-panel p-5 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900">
+      <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900">
         <div className="flex items-center space-x-3 w-full sm:w-auto">
           <div className="w-10 h-10 rounded-xl bg-[#0b4f6c]/10 dark:bg-sky-500/20 text-[#0b4f6c] dark:text-sky-300 flex items-center justify-center shrink-0">
             <QrCode className="w-5 h-5" />
           </div>
           <div>
             <span className="text-sm font-black text-slate-900 dark:text-white block">Tra Cứu Mã Vé & Check-in Tiếp Nhận</span>
-            <span className="text-xs text-slate-400">Nhập mã vé đặt cọc hoặc Số Điện Thoại khách để check-in mở đèn</span>
+            <span className="hidden sm:inline text-xs text-slate-400">Nhập mã vé đặt cọc hoặc Số Điện Thoại khách để check-in mở đèn</span>
           </div>
         </div>
 
@@ -981,16 +981,16 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* --- SUB-TAB CONTENT 1: LIVE MATRIX VIEW --- */}
       {activeSubTab === "matrix" && (
-        <div className="space-y-6">
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5">
-            <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div className="space-y-3 sm:space-y-6">
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-5">
+            <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-3 sm:gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center space-x-2.5 shrink-0">
                 <BarChart2 className="w-5.5 h-5.5 text-[#0b4f6c] dark:text-sky-400" />
                 <div>
                   <h2 className="text-xl font-black text-slate-900 dark:text-white">
                     Sơ Đồ Ca Sân Thời Gian Thực (Owner Live Grid Matrix)
                   </h2>
-                  <span className="text-xs text-slate-400 block mt-0.5">
+                  <span className="hidden sm:block text-xs text-slate-400 mt-0.5">
                     Giờ mở cửa: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca thi đấu linh hoạt (1h - 2h) • Tự động chống trùng lịch
                   </span>
                 </div>
@@ -1139,7 +1139,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
 
             {/* THANH CHỌN NGÀY THI ĐẤU (QUAN TRỌNG: CHỦ SÂN XEM ĐƯỢC CA ĐẶT CỦA MỌI NGÀY) */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50/50 to-emerald-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 border border-sky-200/80 dark:border-slate-700/80 space-y-3 shadow-xs">
+            <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50/50 to-emerald-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 border border-sky-200/80 dark:border-slate-700/80 space-y-3 shadow-xs">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="flex items-center space-x-2.5">
                   <div className="w-9 h-9 rounded-xl bg-sky-500/15 dark:bg-sky-400/20 text-[#0b4f6c] dark:text-sky-300 flex items-center justify-center shrink-0">
@@ -1163,7 +1163,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                       Bấm vào các ngày bên dưới để xem sơ đồ ca, khách đã cọc và doanh thu của ngày đó
                     </p>
                   </div>
@@ -1223,7 +1223,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
 
             {/* COLOR CODES LEGEND */}
-            <div className="flex flex-wrap items-center gap-5 text-sm font-bold pt-1">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-sm font-bold pt-1">
               <span className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
                 <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-xs shrink-0" />
                 <span>Đã Cọc (CONFIRMED)</span>
@@ -1243,7 +1243,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
 
             {/* PITCH MATRIX GRID */}
-            <div className="space-y-4 pt-2">
+            <div className="space-y-3 sm:space-y-4 pt-2">
               {filteredMatrix.length === 0 ? (
                 <div className="py-12 text-center text-sm text-slate-400 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center space-y-2">
                   <AlertCircle className="w-8 h-8 text-amber-500" />
@@ -1252,7 +1252,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
               ) : (
                 filteredMatrix.map((pitch) => (
-                <div key={pitch.pitchId} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-3.5">
+                <div key={pitch.pitchId} className="p-3 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-3.5">
                   <div className="flex justify-between items-center text-sm">
                     <div className="flex items-center space-x-2.5">
                       <span className="font-black text-slate-900 dark:text-white text-base">{pitch.pitchName}</span>
@@ -1284,7 +1284,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                               setSelectedSlotForAction(slot);
                             }
                           }}
-                          className={`p-4 rounded-2xl border space-y-2 transition-all cursor-pointer hover:scale-[1.02] shadow-xs ${
+                          className={`p-3 sm:p-4 rounded-2xl border space-y-2 transition-all cursor-pointer hover:scale-[1.02] shadow-xs ${
                             slot.isContinuation
                               ? "bg-indigo-500/10 border-indigo-400 text-indigo-700 dark:text-indigo-300 font-bold"
                               : slot.isGapSlot
@@ -1357,15 +1357,15 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* --- SUB-TAB CONTENT 2: PITCH INVENTORY & MANAGEMENT --- */}
       {activeSubTab === "pitches" && (
-        <div className="space-y-6">
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5">
+        <div className="space-y-3 sm:space-y-6">
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
                 <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center space-x-2.5">
                   <Building className="w-5.5 h-5.5 text-[#0b4f6c] dark:text-sky-400" />
                   <span>Danh Sách Sân Con Trong Cụm ({pitchMatrix.length} Sân)</span>
                 </h2>
-                <p className="text-sm text-slate-400 font-medium mt-1">
+                <p className="hidden sm:block text-sm text-slate-400 font-medium mt-1">
                   Quản lý giá thuê, tình trạng sân và tiện ích cho từng sân con trong trung tâm thể thao.
                 </p>
               </div>
@@ -1380,9 +1380,9 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               {pitchMatrix.map((pitch) => (
-                <div key={pitch.pitchId} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+                <div key={pitch.pitchId} className="p-3 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center space-x-2.5">
@@ -1433,8 +1433,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* --- SUB-TAB CONTENT 3: GIÁ THUÊ SÂN (ghi vào bảng pitches qua API) --- */}
       {activeSubTab === "pricing" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center space-x-2">
                 <Sliders className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
@@ -1442,12 +1442,12 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               </div>
             </div>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400">
               Giá đọc và ghi thẳng vào bảng <code>pitches</code> trong CSDL. Ca bắt đầu từ 17:00, 18:00 và
               19:00 được tính theo giá giờ vàng khi thanh toán.
             </p>
 
-            <div className="space-y-4 pt-2">
+            <div className="space-y-3 sm:space-y-4 pt-2">
               {realPitches.length === 0 ? (
                 <p className="text-xs text-slate-500 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                   Chưa có cụm sân nào trong CSDL.
@@ -1459,7 +1459,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   return (
                     <div
                       key={String(p.id)}
-                      className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3"
+                      className="p-3 sm:p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <span className="font-extrabold text-sm text-slate-900 dark:text-white truncate">
@@ -1521,18 +1521,18 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
           </div>
 
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5">
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-5">
             <div className="flex items-center space-x-2 border-b border-slate-100 dark:border-slate-800 pb-3">
               <ShieldCheck className="w-5 h-5 text-emerald-500" />
               <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Tiền Cọc & Giữ Chỗ</h3>
             </div>
 
-            <div className="space-y-4 text-xs">
+            <div className="space-y-3 sm:space-y-4 text-xs">
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1.5">
                 <span className="font-extrabold text-slate-900 dark:text-white block">
                   Cọc khi đặt qua web / app: 50% giá ca
                 </span>
-                <p className="text-[11px] text-slate-500">
+                <p className="hidden sm:block text-[11px] text-slate-500">
                   Màn thanh toán VietQR hiển thị số cọc = 50% giá ca đã chọn; phần còn lại thu tại quầy
                   khi khách check-in.
                 </p>
@@ -1542,7 +1542,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <span className="font-extrabold text-slate-900 dark:text-white block">
                   Cọc đặt tại quầy: do chủ sân nhập
                 </span>
-                <p className="text-[11px] text-slate-500">
+                <p className="hidden sm:block text-[11px] text-slate-500">
                   Khi đặt offline, số tiền cọc được nhập cùng đơn và hiển thị trong ma trận
                   (đã cọc / còn phải thu).
                 </p>
@@ -1552,7 +1552,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <span className="font-extrabold text-amber-700 dark:text-amber-400 block">
                   Khách không đến (no-show)
                 </span>
-                <p className="text-[11px] text-slate-500">
+                <p className="hidden sm:block text-[11px] text-slate-500">
                   Hệ thống không tự động phạt cọc. Chủ sân đóng ca tại tab Ma trận với lý do
                   “khách không đến”, phần cọc và phạt do hai bên tự thoả thuận ngoài hệ thống.
                 </p>
@@ -1564,7 +1564,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* --- SUB-TAB CONTENT 4: CANTEEN POS --- */}
       {activeSubTab === "canteen" && (
-        <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5">
+        <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-5">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
             <div className="flex items-center space-x-2">
               <Coffee className="w-5 h-5 text-amber-500" />
@@ -1580,9 +1580,9 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {canteenItems.map((item) => (
-              <div key={item.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+              <div key={item.id} className="p-3 sm:p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
                 <div className="flex justify-between items-start">
                   <span className="font-extrabold text-xs text-slate-900 dark:text-white">{item.name}</span>
                   <span className="font-mono font-black text-emerald-500 text-xs">{item.price.toLocaleString("vi-VN")}đ</span>
@@ -1606,7 +1606,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           }}
         >
           <div 
-            className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-slate-900 p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3.5">
@@ -1623,7 +1623,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               </button>
             </div>
 
-            <form onSubmit={handleCreateNewPitch} className="space-y-4 text-sm">
+            <form onSubmit={handleCreateNewPitch} className="space-y-3 sm:space-y-4 text-sm">
               <div className="space-y-1.5">
                 <label className="font-extrabold text-slate-800 dark:text-slate-200">Tên Sân Con Mới:</label>
                 <input
@@ -1721,7 +1721,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           }}
         >
           <div 
-            className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-slate-900 p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3.5">
@@ -1738,7 +1738,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               </button>
             </div>
 
-            <form onSubmit={handleOfflineBookingSubmit} className="space-y-4 text-sm">
+            <form onSubmit={handleOfflineBookingSubmit} className="space-y-3 sm:space-y-4 text-sm">
               <div className="space-y-1.5">
                 <label className="font-extrabold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                   <span>Ngày Thi Đấu:</span>
@@ -1910,7 +1910,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           }}
         >
           <div 
-            className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-slate-900 p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3.5">
@@ -1994,7 +1994,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           }}
         >
           <div 
-            className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-slate-900 p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3.5">
@@ -2015,7 +2015,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               Chủ sân thiết lập thời gian bắt đầu mở cửa và đóng cửa cụm sân. Khách hàng khi đặt sân có thể <strong className="text-emerald-600 dark:text-emerald-400 font-bold">tự do chọn thời lượng thi đấu linh hoạt</strong> (1 tiếng, 1.5 tiếng hoặc 2 tiếng) tùy nhu cầu từng trận.
             </p>
 
-            <form onSubmit={handleUpdateOperatingHours} className="space-y-4 text-sm">
+            <form onSubmit={handleUpdateOperatingHours} className="space-y-3 sm:space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <label className="font-extrabold text-slate-800 dark:text-slate-200">Giờ Bắt Đầu Mở Cửa:</label>
@@ -2090,7 +2090,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           }}
         >
           <div 
-            className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-modal-pop my-auto"
+            className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-modal-pop my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -2120,7 +2120,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
 
             {/* Body */}
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-6 py-5 space-y-3 sm:space-y-4">
               <div>
                 <label className="block text-xs font-extrabold text-slate-800 dark:text-slate-200 mb-2">
                   Lý Do Hủy Ca <span className="text-rose-500">*</span>

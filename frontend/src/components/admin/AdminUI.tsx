@@ -44,7 +44,7 @@ export function ConfirmModal({
         role="alertdialog"
         aria-modal="true"
         aria-label={title}
-        className="animate-modal-pop w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4 my-auto max-h-[92vh] overflow-y-auto"
+        className="animate-modal-pop w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-4 sm:p-6 space-y-3 sm:space-y-4 my-auto max-h-[92vh] overflow-y-auto"
       >
         <div className="flex items-start gap-3">
           <div
@@ -93,7 +93,7 @@ export function AdminToast({ toast, onClose }: { toast: { type: "ok" | "err"; te
   }, [toast, onClose]);
   if (!toast) return null;
   return (
-    <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up sm:max-w-sm">
+    <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up sm:max-w-sm">
       {toast.type === "ok" ? (
         <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
       ) : (
@@ -107,7 +107,7 @@ export function AdminToast({ toast, onClose }: { toast: { type: "ok" | "err"; te
 /* ---------- Thẻ section ---------- */
 export function SectionCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs p-5 sm:p-6 ${className}`}>
+    <div className={`rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs p-3 sm:p-6 ${className}`}>
       {children}
     </div>
   );
@@ -132,7 +132,7 @@ export function StatusBadge({ tone, children }: { tone: "green" | "amber" | "ros
 /* ---------- Trạng thái rỗng ---------- */
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
-    <div className="p-8 text-center">
+    <div className="p-4 sm:p-8 text-center">
       <Search className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
       <p className="mt-3 text-sm font-bold text-slate-600 dark:text-slate-300">{title}</p>
       {hint && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{hint}</p>}

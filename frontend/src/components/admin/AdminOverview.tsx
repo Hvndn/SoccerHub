@@ -57,12 +57,12 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
   const maxRev = Math.max(1, ...monthly.map((m) => Number(m.revenue) || 0));
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3 sm:space-y-5">
       <SectionCard>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="font-black text-slate-900 dark:text-white text-sm">Bảo trì dữ liệu</h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Xóa kết quả trận và bàn thắng mồ côi (giải đã bị xóa).
             </p>
           </div>
@@ -86,7 +86,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         {loading
           ? [0, 1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 space-y-2">
+              <div key={i} className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 space-y-2">
                 <div className="skeleton-shimmer h-4 w-1/2 rounded-lg" />
                 <div className="skeleton-shimmer h-7 w-2/3 rounded-lg" />
               </div>

@@ -171,15 +171,15 @@ export default function StadiumOwnerOnboarding({
   };
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="space-y-4 sm:space-y-8 animate-fade-in-up">
       {/* TOP NAV BAR HEADER */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         <div>
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0b4f6c]/10 dark:bg-sky-500/10 border border-[#0b4f6c]/20 dark:border-sky-400/20 text-[#0b4f6c] dark:text-sky-400 text-xs font-bold mb-2">
             <ShieldCheck className="w-4 h-4" />
             <span>SoccerHub • Quy Trình Onboarding Chủ Sân</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-lg sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
             Khởi Tạo & Cấu Hình Cụm Sân (Stadium Setup Wizard)
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
@@ -203,7 +203,7 @@ export default function StadiumOwnerOnboarding({
       </div>
 
       {/* STEPPER BAR (4 BƯỚC NỔI BẬT) */}
-      <div className="glass-panel p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4">
         <div className="flex items-center justify-between text-xs font-bold text-slate-500">
           <span>Tiến trình hoàn tất: <strong className="text-emerald-500 font-mono text-sm">{currentStep * 25}% HOÀN TẤT</strong></span>
           <span>Bước {currentStep} / 4</span>
@@ -307,13 +307,13 @@ export default function StadiumOwnerOnboarding({
 
       {/* STEP 1 CONTENT: STADIUM PROFILE & GPS POSTGIS */}
       {currentStep === 1 && (
-        <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
+        <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-6">
           <div className="flex items-center space-x-2 border-b border-slate-100 dark:border-slate-800 pb-3">
             <Building className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
             <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Bước 1/4: Hồ Sơ Cụm Sân &amp; Tọa Độ GPS</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 text-xs">
             <div className="space-y-1.5">
               <label className="font-extrabold text-slate-700 dark:text-slate-300">Tên Cụm Sân Thể Thao:</label>
               <input
@@ -372,7 +372,7 @@ export default function StadiumOwnerOnboarding({
 
       {/* STEP 2 CONTENT: PITCH MATRIX & CA CONFIG (STITCH EXACT SPEC) */}
       {currentStep === 2 && (
-        <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
+        <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
             <div>
               <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Bước 2/4: Khai Báo Danh Mục Sân & Cấu Hình Biểu Giá Ca</h2>
@@ -410,7 +410,7 @@ export default function StadiumOwnerOnboarding({
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {loadingPitches ? (
                   <tr>
-                    <td colSpan={7} className="p-6 text-center text-slate-400 font-bold">
+                    <td colSpan={7} className="p-4 sm:p-6 text-center text-slate-400 font-bold">
                       <div className="flex items-center justify-center space-x-2">
                         <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
                         <span>Đang tải danh sách sân từ hệ thống database...</span>
@@ -419,7 +419,7 @@ export default function StadiumOwnerOnboarding({
                   </tr>
                 ) : pitches.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-6 text-center text-slate-400 font-bold">
+                    <td colSpan={7} className="p-4 sm:p-6 text-center text-slate-400 font-bold">
                       Chưa có sân bóng nào. Hãy bấm "+ Thêm Sân Mới" để tạo sân đầu tiên.
                     </td>
                   </tr>
@@ -457,13 +457,13 @@ export default function StadiumOwnerOnboarding({
 
       {/* STEP 3 CONTENT: CHÍNH SÁCH THANH TOÁN */}
       {currentStep === 3 && (
-        <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
+        <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-6">
           <div className="flex items-center space-x-2 border-b border-slate-100 dark:border-slate-800 pb-3">
             <QrCode className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
             <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Bước 3/4: Chính Sách Thanh Toán &amp; Tiền Cọc</h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-xs">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 text-xs">
             <div className="space-y-3">
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Hệ thống không giữ tiền giúp bạn — luồng thanh toán trong SoccerHub chạy như sau:
@@ -481,7 +481,7 @@ export default function StadiumOwnerOnboarding({
               ))}
             </div>
 
-            <div className="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 text-left">
+            <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 text-left">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Gợi ý khai báo cho khách hàng</span>
               <div className="space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                 <p>• Ghi rõ mức cọc (nếu có) và chính sách hoàn cọc trong phần <strong>Mô tả sân</strong> ở Bước 1 hoặc tab quản lý.</p>
@@ -498,19 +498,19 @@ export default function StadiumOwnerOnboarding({
 
       {/* STEP 4 CONTENT: KIỂM TRA & MỞ CỬA NHẬN KHÁCH */}
       {currentStep === 4 && (
-        <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 text-center">
-          <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto text-3xl border border-emerald-400/30">
+        <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-6 text-center">
+          <div className="w-16 h-16 rounded-2xl sm:rounded-3xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto text-3xl border border-emerald-400/30">
             🏟️
           </div>
           <div className="space-y-2 max-w-xl mx-auto">
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white">Sẵn Sàng Mở Cửa Nhận Khách</h2>
+            <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">Sẵn Sàng Mở Cửa Nhận Khách</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               Bấm nút bên dưới để lưu cụm sân vào hệ thống. Sau đó thêm sân con và biểu giá ở tab
               "Quản Lý Cụm Sân &amp; Doanh Thu".
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 max-w-md mx-auto text-xs text-left space-y-2">
+          <div className="p-3 sm:p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 max-w-md mx-auto text-xs text-left space-y-2">
             {[
               ["Tên cụm sân", stadiumProfile.name || "Chưa nhập (bắt buộc)"],
               ["Địa chỉ", stadiumProfile.address || "Chưa khai báo"],
@@ -529,7 +529,7 @@ export default function StadiumOwnerOnboarding({
             type="button"
             onClick={handleFinalSubmit}
             disabled={isFinalSubmitting}
-            className="px-8 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm transition-all shadow-xl active:scale-95 flex items-center justify-center space-x-2 mx-auto disabled:opacity-50"
+            className="px-5 py-3 sm:px-8 sm:py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm transition-all shadow-xl active:scale-95 flex items-center justify-center space-x-2 mx-auto disabled:opacity-50"
           >
             {isFinalSubmitting ? (
               <>
@@ -544,7 +544,7 @@ export default function StadiumOwnerOnboarding({
       )}
 
       {/* BOTTOM STICKY ACTION BAR (STITCH SPEC) */}
-      <div className="glass-panel p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="glass-panel p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
@@ -554,7 +554,7 @@ export default function StadiumOwnerOnboarding({
           ← Quay Lại Bước {Math.max(1, currentStep - 1)}
         </button>
 
-        <span className="text-[11px] text-slate-400 font-medium">Dữ liệu được lưu khi bạn bấm "Lưu &amp; Tiếp Tục"</span>
+        <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">Dữ liệu được lưu khi bạn bấm "Lưu &amp; Tiếp Tục"</span>
 
         <button
           type="button"
@@ -563,7 +563,7 @@ export default function StadiumOwnerOnboarding({
             else handleFinalSubmit();
           }}
           disabled={isFinalSubmitting}
-          className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs transition-all shadow-md active:scale-95 flex items-center space-x-1.5 disabled:opacity-50"
+          className="px-4 py-2.5 sm:px-6 sm:py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs transition-all shadow-md active:scale-95 flex items-center space-x-1.5 disabled:opacity-50"
         >
           {isFinalSubmitting ? (
             <>
@@ -571,9 +571,14 @@ export default function StadiumOwnerOnboarding({
               <span>Đang Lưu CSDL...</span>
             </>
           ) : (
-            <span>
-              {currentStep === 4 ? "Hoàn Tất & Mở Cửa Nhận Khách Ngay" : `Lưu & Tiếp Tục Sang Bước ${currentStep + 1} →`}
-            </span>
+            <>
+              <span className="sm:hidden">
+                {currentStep === 4 ? "Hoàn Tất & Mở Cửa" : `Tiếp Tục Sang Bước ${currentStep + 1} →`}
+              </span>
+              <span className="hidden sm:inline">
+                {currentStep === 4 ? "Hoàn Tất & Mở Cửa Nhận Khách Ngay" : `Lưu & Tiếp Tục Sang Bước ${currentStep + 1} →`}
+              </span>
+            </>
           )}
         </button>
       </div>
@@ -581,7 +586,7 @@ export default function StadiumOwnerOnboarding({
       {/* ADD NEW PITCH MODAL */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
             <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Thêm Sân Mới Vào Cụm</h3>
             <div className="space-y-3 text-xs">
               <div className="space-y-1">

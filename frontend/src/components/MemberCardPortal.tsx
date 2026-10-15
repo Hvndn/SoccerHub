@@ -28,20 +28,20 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-120px)] bg-[#f8f9ff] dark:bg-[#0b1c30] text-[#0b1c30] dark:text-[#f8f9ff] font-sans flex flex-col items-center justify-center p-4 sm:p-6 transition-colors duration-300">
+    <div className="w-full min-h-[calc(100vh-120px)] bg-[#f8f9ff] dark:bg-[#0b1c30] text-[#0b1c30] dark:text-[#f8f9ff] font-sans flex flex-col items-center justify-center p-3 sm:p-6 transition-colors duration-300">
       
       {/* Outer Card Container (Matching Stitch 100%) */}
       <div className="w-full max-w-[1240px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[720px]">
           
           {/* CỘT TRÁI (Slate / Emerald Stadium Lighting - 5 Cols) */}
-          <div className="lg:col-span-5 bg-[#213145] dark:bg-[#0f172a] text-white p-6 sm:p-8 md:p-10 flex flex-col justify-between relative overflow-hidden">
+          <div className="lg:col-span-5 bg-[#213145] dark:bg-[#0f172a] text-white p-4 sm:p-8 md:p-10 flex flex-col justify-between relative overflow-hidden">
             {/* Stadium Floodlight Glow Effects */}
             <div className="absolute -top-24 -left-24 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute bottom-10 right-0 w-64 h-64 bg-lime-400/10 rounded-full blur-2xl pointer-events-none"></div>
 
             {/* Left Header & Tagline */}
-            <div className="relative z-10 space-y-6">
+            <div className="relative z-10 space-y-3 sm:space-y-6">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[11px] uppercase tracking-widest text-emerald-400 font-extrabold bg-slate-900/80 border border-emerald-500/30 px-3 py-1 rounded-full">
                   SOCCERHUB 4.0
@@ -66,11 +66,11 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               </div>
 
               <div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-snug">
+                <h2 className="text-lg sm:text-3xl font-extrabold text-white tracking-tight leading-snug">
                   Tuyệt Vời,<br />
                   <span className="text-emerald-400">Hồ Sơ Đã Sẵn Sàng!</span>
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mt-2">
+                <p className="hidden sm:block text-xs sm:text-sm text-slate-300 leading-relaxed mt-2">
                   Hồ sơ cầu thủ của bạn đã lưu trong hệ thống — dùng để nhận kèo, tham gia giải và đặt sân.
                 </p>
               </div>
@@ -83,7 +83,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-white">Elo {userElo} • {user?.level || "Chưa xếp bậc"}</p>
-                    <p className="text-[11px] text-slate-300">Điểm cập nhật từ kết quả các giải trong hệ thống</p>
+                    <p className="hidden sm:block text-[11px] text-slate-300">Điểm cập nhật từ kết quả các giải trong hệ thống</p>
                   </div>
                 </div>
 
@@ -93,7 +93,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-white">Mã thẻ VĐV: {memberId}</p>
-                    <p className="text-[11px] text-slate-300">Dùng để chủ sân đối chiếu khi nhận sân</p>
+                    <p className="hidden sm:block text-[11px] text-slate-300">Dùng để chủ sân đối chiếu khi nhận sân</p>
                   </div>
                 </div>
 
@@ -103,7 +103,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-white">Điểm Elo từ kết quả thi đấu</p>
-                    <p className="text-[11px] text-slate-300">Elo {userElo} — cập nhật khi các giải trong hệ thống kết thúc</p>
+                    <p className="hidden sm:block text-[11px] text-slate-300">Elo {userElo} — cập nhật khi các giải trong hệ thống kết thúc</p>
                   </div>
                 </div>
               </div>
@@ -132,8 +132,8 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
           </div>
 
           {/* CỘT PHẢI (Nền Trắng Sáng - Hoàn Tất & Kích Hoạt - 7 Cols) */}
-          <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-6 sm:p-8 md:p-10 flex flex-col justify-between">
-            <div className="space-y-6">
+          <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-4 sm:p-8 md:p-10 flex flex-col justify-between">
+            <div className="space-y-3 sm:space-y-6">
               
               {/* Stepper & Title */}
               <div className="flex items-center justify-between gap-3">
@@ -154,16 +154,16 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               </div>
 
               <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <h1 className="text-lg sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   Thẻ Hội Viên Điện Tử Của Bạn
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                <p className="hidden sm:block text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
                   Hệ thống đã tạo sẵn thẻ định danh và quét 12 cụm sân thể thao gần bạn có ca trống tối nay.
                 </p>
               </div>
 
               {/* DIGITAL ATHLETE PASS (Thẻ Member Card) */}
-              <div className="w-full bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 rounded-2xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden border border-slate-800">
+              <div className="w-full bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 rounded-2xl p-3 sm:p-6 text-white shadow-xl relative overflow-hidden border border-slate-800">
                 {/* Decorative Field Blueprint Lines */}
                 <div className="absolute right-0 bottom-0 w-48 h-48 opacity-10 pointer-events-none">
                   <svg className="w-full h-full fill-none stroke-white" strokeWidth="2" viewBox="0 0 100 100">
@@ -200,7 +200,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 pt-1">
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1">
                       <div>
                         <span className="text-[10px] text-slate-400 uppercase block font-medium">Môn thi đấu</span>
                         <span className="text-xs font-bold text-emerald-400">Bóng Đá Sân 5, 7, 11</span>
@@ -284,7 +284,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                   onClick={() => onNavigateTab ? onNavigateTab('booking') : onBackToHome && onBackToHome()}
                   className="w-full sm:flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-95"
                 >
-                  <span>Vào Bảng Điều Khiển / Khám Phá Sân Ngay</span>
+                  <span className="sm:hidden">Khám Phá Sân Ngay</span><span className="hidden sm:inline">Vào Bảng Điều Khiển / Khám Phá Sân Ngay</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button 

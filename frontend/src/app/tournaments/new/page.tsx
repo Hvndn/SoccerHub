@@ -32,7 +32,7 @@ function isValidDate(s: string) {
 
 export default function NewTournamentPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-slate-500">Đang tải…</div>}>
+    <Suspense fallback={<div className="p-4 sm:p-8 text-sm text-slate-500">Đang tải…</div>}>
       <NewTournamentWizard />
     </Suspense>
   );
@@ -173,7 +173,7 @@ function NewTournamentWizard() {
 
       {/* Success state */}
       {createdId !== null ? (
-        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900 text-center space-y-3">
+        <div className="p-4 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900 text-center space-y-3">
           <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
           <h2 className="text-lg font-black text-slate-900 dark:text-white">
             Công bố giải đấu thành công!
@@ -204,7 +204,7 @@ function NewTournamentWizard() {
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 sm:p-7">
+        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-7">
           {/* key={step} để replay animation fade mỗi lần sang bước mới */}
           <div key={step} className="animate-fade-in-up">
           {/* STEP 1 */}
@@ -395,7 +395,7 @@ function NewTournamentWizard() {
               </div>
 
               {/* Tài khoản nhận lệ phí (tùy chọn — để hiện QR thu phí khi đội đăng ký) */}
-              <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-3.5 space-y-3">
+              <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-3 sm:p-3.5 space-y-3">
                 <p className="text-xs font-black text-slate-700 dark:text-slate-200">
                   Tài khoản nhận lệ phí <span className="font-medium text-slate-400">(tùy chọn)</span>
                 </p>
@@ -478,7 +478,7 @@ function NewTournamentWizard() {
           </div>
 
           {/* Footer nav */}
-          <div className="flex items-center justify-between gap-3 pt-6 mt-6 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between gap-3 pt-4 mt-4 sm:pt-6 sm:mt-6 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={goBack}

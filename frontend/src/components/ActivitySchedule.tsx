@@ -210,10 +210,10 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
   return (
     <div className="w-full bg-[#f8f9ff] dark:bg-[#0b1c30] text-[#0b1c30] dark:text-[#f8f9ff] font-sans transition-colors duration-300">
       <div className="w-full py-2">
-        <div className="flex flex-col w-full gap-6">
+        <div className="flex flex-col w-full gap-3 sm:gap-6">
 
           {/* 1. BREADCRUMB & ACTIONS */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
             <div className="flex flex-col gap-1.5">
               <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
                 <button onClick={onBackToHome} className="hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
@@ -227,7 +227,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
               </nav>
 
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <h1 className="text-lg sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   Lịch Trình & Vé Thi Đấu
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full bg-lime-400 text-slate-950 font-black text-xs uppercase tracking-wide">
@@ -263,7 +263,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
           )}
 
           {/* 2. FILTER RIBBON — số liệu đếm từ CSDL */}
-          <div className="flex items-center justify-between overflow-x-auto pb-1 gap-4">
+          <div className="flex items-center justify-between overflow-x-auto pb-1 gap-3 sm:gap-4">
             <div className="flex items-center gap-2 shrink-0">
               {filterTabs.map((t) => (
                 <button
@@ -289,12 +289,12 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
           </div>
 
           {/* 3. NỘI DUNG */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div className="lg:col-span-8 flex flex-col gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 items-start">
+            <div className="lg:col-span-8 flex flex-col gap-3 sm:gap-6">
 
               {/* HERO: trận sắp tới / đang diễn ra */}
               {hero ? (
-                <div className="relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-md p-6 lg:p-7 flex flex-col gap-5 border border-slate-200/80 dark:border-slate-800">
+                <div className="relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-md p-4 sm:p-6 lg:p-7 flex flex-col gap-3 sm:gap-5 border border-slate-200/80 dark:border-slate-800">
                   <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-600 via-lime-400 to-teal-500"></div>
 
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
@@ -361,7 +361,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                               </span>
                               <span className="truncate">{name}</span>
                             </div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            <div className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400">
                               {entry
                                 ? `Trọng tài đội: ${entry.captainName ?? "—"} · ${entry.memberCount ?? "—"} thành viên`
                                 : "Không tìm thấy hồ sơ đội trong giải"}
@@ -395,7 +395,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="rounded-xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center">
+                <div className="rounded-xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 p-4 sm:p-8 text-center">
                   <Calendar className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
                   <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-300">
                     Chưa có trận nào sắp diễn ra
@@ -409,7 +409,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
               )}
 
               {/* DANH SÁCH TRẬN THEO BỘ LỌC */}
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     {activeFilter === "history" ? "Kết Quả Các Trận Đã Đánh" : "Các Trận Sắp Tới"}
@@ -419,7 +419,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                 </div>
 
                 {visibleMatches.length === 0 ? (
-                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center">
+                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 p-4 sm:p-8 text-center">
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                       {activeFilter === "history"
                         ? "Chưa có trận nào kết thúc."
@@ -433,9 +433,9 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                       <button
                         key={m.key}
                         onClick={() => setSelectedMatch(m)}
-                        className="w-full text-left rounded-xl bg-white dark:bg-slate-900 shadow-xs p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-shadow"
+                        className="w-full text-left rounded-xl bg-white dark:bg-slate-900 shadow-xs p-3 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-5 border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-shadow"
                       >
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3 sm:gap-4">
                           <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center shrink-0 text-center border border-slate-200 dark:border-slate-700">
                             <span className="text-[10px] uppercase font-bold text-slate-500">{db.top}</span>
                             <span className="text-lg leading-none text-emerald-700 dark:text-emerald-400 font-black">{db.num}</span>
@@ -493,14 +493,14 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                   <span className="ml-2 font-mono text-xs text-slate-500">({myBookings.length})</span>
                 </h3>
                 {myBookings.length === 0 ? (
-                  <p className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 text-xs text-slate-500 dark:text-slate-400">
+                  <p className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 sm:p-5 text-xs text-slate-500 dark:text-slate-400">
                     {user?.phone
                       ? "Chưa có vé nào đặt bằng số điện thoại trong tài khoản. Bấm “Tải lại từ CSDL” sau khi đặt sân."
                       : "Tài khoản chưa có số điện thoại nên chưa tra cứu được vé. Cập nhật hồ sơ trước."}
                   </p>
                 ) : (
                   myBookings.map((b) => (
-                    <div key={b.id} className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 flex flex-wrap items-center justify-between gap-3">
+                    <div key={b.id} className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3">
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-900 dark:text-white">
                           {b.courtName ?? b.courtType ?? "Sân"} · {b.timeSlot}
@@ -525,8 +525,8 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
             </div>
 
             {/* CỘT PHẢI: CHỢ KÈO THẬT */}
-            <aside className="lg:col-span-4 flex flex-col gap-6">
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-5 space-y-3">
+            <aside className="lg:col-span-4 flex flex-col gap-3 sm:gap-6">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-3 sm:p-5 space-y-3">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
                   <Zap className="w-4 h-4 text-amber-500" />
                   Kèo Ghép Đang Mở ({openPosts.length})
@@ -563,7 +563,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                 </button>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-5 space-y-2">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-3 sm:p-5 space-y-2">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
                   Thống Kê Nhanh
@@ -588,8 +588,8 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
       {/* MODAL: CHI TIẾT TRẬN */}
       {selectedMatch && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-3 sm:space-y-4 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 dark:text-white">
                 <Trophy className="w-5 h-5 text-emerald-600" />
@@ -633,7 +633,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+            <p className="hidden sm:block text-[11px] text-slate-500 leading-relaxed">
               Vé thi đấu được cấp khi BTC nhập kết quả và thanh toán lệ phí trên CSDL. Muốn sửa tỷ số hoặc hoàn
               tiền cọc, vào tab Điều Hành Giải Đấu › Bảng Đấu &amp; Nhánh Bracket.
             </p>

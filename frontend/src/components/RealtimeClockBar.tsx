@@ -33,8 +33,8 @@ export default function RealtimeClockBar() {
   });
 
   return (
-    <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] pt-4 pb-1 flex justify-end">
-      <div className="inline-flex items-center space-x-3 bg-transparent text-right">
+    <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] pt-3 pb-1 sm:pt-4 flex justify-end">
+      <div className="inline-flex items-center space-x-2 sm:space-x-3 bg-transparent text-right">
         <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-pitch-emerald shrink-0 animate-pulse" />
         <div className="flex flex-col text-right leading-tight">
           <span className="text-base sm:text-lg font-extrabold text-pitch-emerald tracking-tight">

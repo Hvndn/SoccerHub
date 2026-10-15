@@ -132,7 +132,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <h3 className="font-black text-slate-900 dark:text-white text-sm">Đơn đặt sân & doanh thu</h3>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             100 đơn mới nhất. Tra cứu mã vé hoặc SĐT để soi chi tiết.
           </p>
         </div>

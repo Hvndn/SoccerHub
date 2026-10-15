@@ -81,12 +81,12 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in overflow-y-auto">
       <div
         role="dialog"
         aria-modal="true"
         aria-label={`Bốc thăm chia cặp ${tournamentTitle}`}
-        className="animate-modal-pop w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl p-6 sm:p-8 space-y-5 my-auto"
+        className="animate-modal-pop w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 my-auto"
       >
         <div className="text-center space-y-1">
           <div className="mx-auto w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
@@ -102,7 +102,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
         </div>
 
         {/* Cặp đang bốc */}
-        <div className="space-y-2.5 max-h-[40vh] overflow-y-auto pr-1">
+        <div className="space-y-2 sm:space-y-2.5 max-h-[34vh] sm:max-h-[40vh] overflow-y-auto pr-1">
           {pairs.map((p, i) => {
             const isLocked = i < locked;
             return (

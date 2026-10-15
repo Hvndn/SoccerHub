@@ -118,9 +118,9 @@ export default function TeamClubManagement({
   ] as const;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       {/* HEADER — thông tin đội thật */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-5 sm:p-7">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-3 sm:p-7">
         {loading ? (
           <div className="flex items-center justify-center gap-2 py-10 text-slate-500">
             <Loader2 className="w-5 h-5 animate-spin" /> Đang tải đội bóng của bạn…
@@ -128,8 +128,8 @@ export default function TeamClubManagement({
         ) : error ? (
           <p className="py-6 text-center text-sm text-rose-500">{error}</p>
         ) : primaryTeam ? (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-2xl shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg sm:text-2xl shrink-0">
               <Shield className="w-8 h-8" />
             </div>
             <div className="min-w-0 flex-1">
@@ -141,7 +141,7 @@ export default function TeamClubManagement({
                 {primaryTeam.tournament?.location || primaryTeam.tournament?.pitchName || "Chưa xếp sân"}
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center">
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 text-center">
               <div>
                 <p className="text-lg sm:text-xl font-black text-emerald-500 font-mono">
                   {primaryTeam.eloRating ?? "—"}
@@ -201,8 +201,8 @@ export default function TeamClubManagement({
       </div>
 
       {activeSubTab === "roster" && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="p-3 sm:p-5 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
             <h3 className="font-black text-slate-900 dark:text-white">Danh Sách Đội Của Bạn</h3>
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -215,7 +215,7 @@ export default function TeamClubManagement({
             </div>
           </div>
           {myTeams.length === 0 ? (
-            <p className="p-8 text-center text-sm text-slate-500">Chưa có đội nào.</p>
+            <p className="p-4 sm:p-8 text-center text-sm text-slate-500">Chưa có đội nào.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
@@ -266,25 +266,25 @@ export default function TeamClubManagement({
               </table>
             </div>
           )}
-          <p className="p-4 text-[11px] text-slate-400 border-t border-slate-200/80 dark:border-slate-800">
+          <p className="hidden sm:block p-3 sm:p-4 text-[11px] text-slate-400 border-t border-slate-200/80 dark:border-slate-800">
             Hệ thống liên kết đội theo số điện thoại đội trưởng. Danh sách cầu thủ từng người chưa được lưu riêng theo đội nên không hiển thị tại đây.
           </p>
         </div>
       )}
 
       {activeSubTab === "matches" && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-200/80 dark:border-slate-800">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="p-3 sm:p-5 border-b border-slate-200/80 dark:border-slate-800">
             <h3 className="font-black text-slate-900 dark:text-white">Lịch Đấu Của Đội</h3>
           </div>
           {myMatches.length === 0 ? (
-            <p className="p-8 text-center text-sm text-slate-500">
+            <p className="p-4 sm:p-8 text-center text-sm text-slate-500">
               Chưa có trận nào được xếp cho đội của bạn.
             </p>
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {myMatches.map((m) => (
-                <div key={m.id} className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div key={m.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-slate-900 dark:text-white text-sm">
                       {m.myTeam} <span className="text-slate-400 font-normal">vs</span> {m.opponent}
