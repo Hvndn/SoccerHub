@@ -583,7 +583,7 @@ export default function Navbar({
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 mt-3 w-[calc(100vw-24px)] max-w-[360px] sm:max-w-[540px] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border-2 border-slate-200 dark:border-slate-800 z-50 animate-modal-pop overflow-hidden">
+              <div className="absolute right-0 mt-3 w-[calc(100vw-24px)] max-w-[360px] sm:max-w-[540px] bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-slate-200 dark:border-slate-800 z-50 animate-modal-pop overflow-hidden">
                 {/* Header To Rõ */}
                 <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-800/60">
                   <div className="flex items-center space-x-3">

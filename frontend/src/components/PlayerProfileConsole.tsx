@@ -341,7 +341,7 @@ export default function PlayerProfileConsole({
       {/* ========================================================= */}
       {/* HEADER COCKPIT: BẢN HỒ SƠ CẦU THỦ CHI TIẾT TOÀN DIỆN      */}
       {/* ========================================================= */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
         {/* Banner ngầm tinh tế */}
         <div className="relative min-h-[5.5rem] sm:h-32 bg-gradient-to-r from-emerald-900 via-slate-900 to-teal-950 px-4 sm:px-8 py-3 flex items-center justify-between overflow-hidden">
           <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]" />
@@ -543,7 +543,7 @@ export default function PlayerProfileConsole({
         {/* BẢNG CHỈNH SỬA HỒ SƠ INLINE (NẰM TRỰC TIẾP TRÊN TRANG)    */}
         {/* ========================================================= */}
         {isEditingInline && (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-emerald-500/80 p-6 sm:p-8 shadow-md space-y-6">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border-2 border-emerald-500/80 p-4 sm:p-8 shadow-md space-y-4 sm:space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -777,7 +777,7 @@ export default function PlayerProfileConsole({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
           {/* 1. Trận đã đấu */}
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between animate-fade-in-up delay-stagger-1 hover-card-elevate">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between animate-fade-in-up delay-stagger-1 hover-card-elevate">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 TRẬN ĐÃ ĐẤU
@@ -809,7 +809,7 @@ export default function PlayerProfileConsole({
           </div>
 
           {/* 2. Chuỗi phong độ */}
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between animate-fade-in-up delay-stagger-2 hover-card-elevate">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between animate-fade-in-up delay-stagger-2 hover-card-elevate">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 CHUỖI PHONG ĐỘ
@@ -857,7 +857,7 @@ export default function PlayerProfileConsole({
           </div>
 
           {/* 3. Trận giữ sạch lưới */}
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between animate-fade-in-up delay-stagger-3 hover-card-elevate">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between animate-fade-in-up delay-stagger-3 hover-card-elevate">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 TRẬN KHÔNG THỦNG LƯỚI
@@ -882,7 +882,7 @@ export default function PlayerProfileConsole({
           </div>
 
           {/* 4. Bộ sưu tập danh hiệu */}
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between animate-fade-in-up delay-stagger-4 hover-card-elevate">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between animate-fade-in-up delay-stagger-4 hover-card-elevate">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 BỘ SƯU TẬP GIẢI ĐẤU
@@ -923,13 +923,13 @@ export default function PlayerProfileConsole({
         {/* ========================================================= */}
         {/* NỘI DUNG CHÍNH: 2 CỘT (CỘT TRÁI 8 PHẦN, CỘT PHẢI 4 PHẦN)  */}
         {/* ========================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
           
           {/* CỘT TRÁI (8 CỘT): ĐÁNH GIÁ NĂNG LỰC, ELO VÀ LỊCH SỬ TRẬN ĐẤU */}
-          <div className="lg:col-span-8 space-y-8">
+          <div className="lg:col-span-8 space-y-5 sm:space-y-8">
             
             {/* KHỐI 1: ELO & CHỈ SỐ KỸ NĂNG THEO MÔ HÌNH SÂN BÓNG */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-8 shadow-sm">
               
               {/* Header chuyển đổi thể thức sân bóng */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
@@ -989,10 +989,10 @@ export default function PlayerProfileConsole({
               </div>
 
               {/* Thông số Elo chính của thể thức đang chọn */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 pt-4 sm:pt-6">
                 
                 {/* Box ELO & Ranking */}
-                <div className="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                <div className="bg-slate-50 dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                       ĐIỂM ELO SOCCERHUB CHÍNH THỨC
@@ -1022,7 +1022,7 @@ export default function PlayerProfileConsole({
                 </div>
 
                 {/* Box Thành tích bàn thắng & Kiến tạo */}
-                <div className="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                <div className="bg-slate-50 dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                       ĐÓNG GÓP BÀN THẮNG & KIẾN TẠO
@@ -1061,7 +1061,7 @@ export default function PlayerProfileConsole({
                 </h3>
 
                 {perf.matches === 0 ? (
-                  <p className="text-sm text-slate-500 dark:text-slate-400 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-4 sm:p-6 text-center">
                     Bạn chưa làm trọng tài/đội trưởng của đội nào trong các giải trên hệ thống, nên chưa có thành
                     tích tính được. Số liệu sẽ tự cập nhật ngay khi bạn tham gia giải.
                   </p>
@@ -1114,7 +1114,7 @@ export default function PlayerProfileConsole({
             </div>
 
             {/* KHỐI 2: LỊCH SỬ THI ĐẤU & TRẬN KÈO PHỦI GẦN ĐÂY */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-8 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -1273,10 +1273,10 @@ export default function PlayerProfileConsole({
           </div>
 
           {/* CỘT PHẢI (4 CỘT): DỮ LIỆU THỂ LỰC & BỘ SƯU TẬP DANH HIỆU */}
-          <div className="lg:col-span-4 space-y-8">
+          <div className="lg:col-span-4 space-y-5 sm:space-y-8">
             
             {/* KHỐI 1: THỂ LỰC VẬN ĐỘNG & BẢNG ĐO QUÃNG ĐƯỜNG */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-sm space-y-4 sm:space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Heart className="w-4 h-4 text-rose-500" />
@@ -1340,7 +1340,7 @@ export default function PlayerProfileConsole({
             </div>
 
             {/* KHỐI 2: TỦ TRƯNG BÀY DANH HIỆU & HUY HIỆU PHỦI */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-amber-500" />

@@ -28,7 +28,7 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
   }, []);
 
   return (
-    <div className="w-full space-y-6 animate-fade-in pb-16">
+    <div className="w-full space-y-4 sm:space-y-6 animate-fade-in pb-10 sm:pb-16">
       {/* ========================================================= */}
       {/* HEADER COCKPIT BANNER: CỘNG ĐỒNG CẦU THỦ & GIẢI ĐẤU PRO     */}
       {/* ========================================================= */}

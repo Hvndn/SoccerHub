@@ -122,7 +122,7 @@ export default function TeamClubManagement({
       {/* HEADER — thông tin đội thật */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-3 sm:p-7">
         {loading ? (
-          <div className="flex items-center justify-center gap-2 py-10 text-slate-500">
+          <div className="flex items-center justify-center gap-2 py-8 sm:py-10 text-slate-500">
             <Loader2 className="w-5 h-5 animate-spin" /> Đang tải đội bóng của bạn…
           </div>
         ) : error ? (

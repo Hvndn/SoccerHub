@@ -127,7 +127,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
         {loading ? (
           <div className="skeleton-shimmer h-40 w-full rounded-xl" />
         ) : monthly.length === 0 ? (
-          <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-8">
+          <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-6 sm:py-8">
             Chưa có dữ liệu báo cáo. {report === null ? "Backend /admin/revenue-report hiện trả số liệu mẫu." : ""}
           </p>
         ) : (

@@ -451,7 +451,7 @@ export default function MultiSportArena({
         </div>
 
         {/* Section 2: Football Matchmaking Queue */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md">
             <div className="flex items-center justify-between mb-6">
               <div>

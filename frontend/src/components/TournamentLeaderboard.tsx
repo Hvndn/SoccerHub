@@ -498,7 +498,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
           {/* 4. FEATURED TOURNAMENT HERO — 100% LẤY TỪ CSDL (không còn hardcode) */}
           {loadingTournaments ? (
-            <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 animate-pulse space-y-4">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-8 animate-pulse space-y-4">
               <div className="h-5 w-56 rounded-lg bg-slate-200 dark:bg-slate-800"></div>
               <div className="h-9 w-2/3 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -532,7 +532,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             <div className="hidden sm:block absolute -top-20 -right-20 w-96 h-96 rounded-full bg-emerald-50/60 dark:bg-emerald-950/40 blur-3xl pointer-events-none"></div>
             <div className="hidden sm:block absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-sky-50/50 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 items-center">
               {/* Left Content */}
               <div className="lg:col-span-8 flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-2">
@@ -834,10 +834,10 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               })()}
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 items-start">
             
             {/* LEFT COLUMN (70% - Col span 8): TOURNAMENT CARDS & LIVE BRACKET */}
-            <div className="lg:col-span-8 flex flex-col gap-6">
+            <div className="lg:col-span-8 flex flex-col gap-3 sm:gap-6">
               
               {/* LIVE QUICK BRACKET — dựng từ bracketJson thật trong CSDL */}
               {activeTab === 'live' && (
@@ -862,7 +862,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 </div>
 
                 {liveRows.length === 0 ? (
-                  <p className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 py-4 sm:py-6 text-center">
                     BTC chưa xếp lịch cho giải nào. Mở tab <strong>Giải Đấu &amp; BXH › Bảng Đấu &amp; Nhánh Bracket</strong> để bốc thăm và xếp lịch.
                   </p>
                 ) : (
@@ -1126,7 +1126,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             </div>
 
             {/* RIGHT COLUMN (30% - Col span 4): LEADERBOARDS & ATHLETE PROFILE WIDGETS */}
-            <div className="lg:col-span-4 flex flex-col gap-6">
+            <div className="lg:col-span-4 flex flex-col gap-3 sm:gap-6">
               
               {/* WIDGET 1: ATHLETE PERSONAL ELO STATUS CARD — hiển thị hồ sơ THẬT của user đang đăng nhập */}
               <div id="search-elo-section" className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col gap-4">

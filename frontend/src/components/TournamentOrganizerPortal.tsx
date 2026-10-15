@@ -382,7 +382,7 @@ export default function TournamentOrganizerPortal({
             </div>
           ))
         ) : filteredTournaments.length === 0 ? (
-          <div className="md:col-span-3 rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-center border border-dashed border-slate-300 bg-white">
+          <div className="md:col-span-3 rounded-2xl sm:rounded-3xl p-4 sm:p-10 text-center border border-dashed border-slate-300 bg-white">
             <Trophy className="w-8 h-8 text-slate-300 mx-auto" />
             <p className="mt-3 text-sm font-bold text-slate-600">
               {selectedSport === "all"
@@ -463,7 +463,7 @@ export default function TournamentOrganizerPortal({
       </div>
 
       {/* MAIN CONTENT GRID: LIVE ELECTRONIC UMPIRE CONSOLE (LEFT 8) + AI SEEDING & ESCROW (RIGHT 4) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
         
         {/* LEFT 8 COLS: UMPIRE CONSOLE + BRACKET ENGINE + DATA TABLES */}
         <div className="lg:col-span-8 space-y-4 sm:space-y-8">
@@ -756,7 +756,7 @@ export default function TournamentOrganizerPortal({
 
             {/* Chưa chọn giải có nhánh đấu */}
             {!activeBracket && (
-              <p className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">
+              <p className="text-sm text-slate-500 dark:text-slate-400 py-4 sm:py-6 text-center">
                 {dbTournaments.length === 0
                   ? "Chưa đọc được danh sách giải từ CSDL."
                   : "Chưa giải nào trong CSDL đã bốc thăm. Mở tab “Giải Đấu & BXH › Bảng Đấu & Nhánh Bracket” để bốc thăm và nhập kết quả."}
@@ -766,7 +766,7 @@ export default function TournamentOrganizerPortal({
             {/* TAB CONTENT: BXH TÍNH TỪ TRẬN ĐÃ ĐÁ */}
             {bottomTab === "standings" && activeBracket && (
               standings.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">
+                <p className="text-sm text-slate-500 dark:text-slate-400 py-4 sm:py-6 text-center">
                   Chưa có trận nào có kết quả nên chưa xếp hạng được.
                 </p>
               ) : (
@@ -894,7 +894,7 @@ export default function TournamentOrganizerPortal({
             {/* TAB CONTENT: LỊCH THI ĐẤU THẬT */}
             {bottomTab === "schedule" && activeBracket && (
               scheduledMatches.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">
+                <p className="text-sm text-slate-500 dark:text-slate-400 py-4 sm:py-6 text-center">
                   BTC chưa bấm “Xếp lịch thi đấu” cho giải này nên chưa có ngày/giờ cho từng trận.
                 </p>
               ) : (

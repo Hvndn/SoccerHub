@@ -1267,7 +1267,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                     {pitch.slots.length === 0 ? (
-                      <div className="col-span-full py-8 text-center text-sm text-slate-400 bg-white/40 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-center space-x-2">
+                      <div className="col-span-full py-6 sm:py-8 text-center text-sm text-slate-400 bg-white/40 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-center space-x-2">
                         <AlertCircle className="w-5 h-5 text-slate-400" />
                         <span>Không có ca đá nào phù hợp với bộ lọc khung giờ / hình thức đã chọn.</span>
                       </div>

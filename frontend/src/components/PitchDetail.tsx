@@ -1005,7 +1005,7 @@ export default function PitchDetail({
           </div>
         ) : (
             /* Placeholder khi chưa chọn ca nào */
-            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 border border-dashed border-slate-300 dark:border-slate-800 text-center space-y-4 animate-fade-in">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-8 border border-dashed border-slate-300 dark:border-slate-800 text-center space-y-4 animate-fade-in">
               <div className="w-16 h-16 rounded-2xl bg-[#0b4f6c]/10 dark:bg-sky-500/20 text-[#0b4f6c] dark:text-sky-400 mx-auto flex items-center justify-center">
                 <Calendar className="w-8 h-8 text-[#0b4f6c] dark:text-sky-400 animate-pulse" />
               </div>

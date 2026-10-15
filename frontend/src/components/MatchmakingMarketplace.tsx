@@ -492,7 +492,7 @@ export default function MatchmakingMarketplace({
       </section>
 
       {/* 3. MAIN GRID CONTENT (68% LEFT + 32% RIGHT) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 items-start">
         {/* LEFT COLUMN: MATCH LISTINGS (68% WIDTH / 8 COLS) */}
         <main className="lg:col-span-8 space-y-5">
           <div className="flex items-center justify-between">
@@ -527,12 +527,12 @@ export default function MatchmakingMarketplace({
           {/* MATCH LISTINGS FROM REAL MYSQL BACKEND */}
           <div className="space-y-4">
             {loadingPosts ? (
-              <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+              <div className="p-5 sm:p-8 text-center bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800">
                 <RefreshCw className="w-6 h-6 animate-spin text-[#006c49] mx-auto mb-2" />
                 <p className="text-xs text-slate-500 font-bold">Đang tải danh sách các kèo giao lưu thật từ hệ thống...</p>
               </div>
             ) : posts.length === 0 ? (
-              <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="p-5 sm:p-8 text-center bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3">
                 <p className="text-sm text-slate-500 font-semibold">Chưa có kèo nào đang mở. Hãy là người đầu tiên tạo kèo!</p>
                 <button
                   onClick={() => setShowCreateModal(true)}
@@ -550,7 +550,7 @@ export default function MatchmakingMarketplace({
                 return (
                   <article 
                     key={post.id} 
-                    className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all space-y-4"
+                    className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-xl transition-all space-y-4"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center space-x-2">
@@ -665,7 +665,7 @@ export default function MatchmakingMarketplace({
         {/* RIGHT COLUMN: AI MATCH RADAR & ESCROW FAIRPLAY (32% WIDTH / 4 COLS) */}
         <aside className="lg:col-span-4 space-y-5">
           {/* WIDGET 1: GỢI Ý GHÉP KÈO (đọc từ bảng matchmaking_posts) */}
-          <section className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4 relative overflow-hidden">
+          <section className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-xl bg-[#006c49] text-white flex items-center justify-center font-bold">
@@ -729,7 +729,7 @@ export default function MatchmakingMarketplace({
           </section>
 
           {/* WIDGET 2: HỒ SƠ CẦU THỦ + SỐ LIỆU SÀN (lấy từ CSDL) */}
-          <section className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
+          <section className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="w-5 h-5 text-[#006c49]" />
@@ -778,7 +778,7 @@ export default function MatchmakingMarketplace({
           </section>
 
           {/* WIDGET 3: TOP ĐỘI ĐANG MỞ KÈO (xếp theo Elo thật trong bảng) */}
-          <section className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
+          <section className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Trophy className="w-5 h-5 text-amber-500" />
@@ -831,7 +831,7 @@ export default function MatchmakingMarketplace({
       {/* MODAL 1: TẠO KÈO GIAO LƯU BÓNG ĐÁ MỚI */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 dark:text-white my-auto max-h-[92vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 dark:text-white my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 dark:text-white">
                 <PlusCircle className="w-5 h-5 text-[#006c49]" />
@@ -959,7 +959,7 @@ export default function MatchmakingMarketplace({
       {/* MODAL 2: XÁC NHẬN BẮT KÈO ĐỐI THỦ */}
       {acceptingPost && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 dark:text-white my-auto max-h-[92vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-md w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 dark:text-white my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 dark:text-white">
                 <Zap className="w-5 h-5 text-[#006c49]" />

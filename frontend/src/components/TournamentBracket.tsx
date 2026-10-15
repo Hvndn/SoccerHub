@@ -1014,7 +1014,7 @@ export default function TournamentBracket() {
 
       {/* TAB 2: TÒA TRỌNG TÀI VAR — chạy trên trận thật trong nhánh đấu */}
       {activeTab === "var_referee" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-3 sm:space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
               <div className="min-w-0">
