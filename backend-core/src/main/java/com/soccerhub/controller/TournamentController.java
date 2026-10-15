@@ -41,6 +41,7 @@ public class TournamentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
     public ResponseEntity<Tournament> createTournament(@RequestBody Tournament tournament) {
         if (tournament.getRegisteredTeams() == null) {
             tournament.setRegisteredTeams(0);

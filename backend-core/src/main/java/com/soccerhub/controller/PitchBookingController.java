@@ -11,6 +11,7 @@ import com.soccerhub.service.PitchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +44,7 @@ public class PitchBookingController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> createPitch(@AuthenticationPrincipal User currentUser, @RequestBody CreatePitchRequest request) {
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Vui lòng đăng nhập với tài khoản Chủ Sân để tạo sân mới."));
@@ -58,6 +60,7 @@ public class PitchBookingController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> deletePitch(@AuthenticationPrincipal User currentUser, @PathVariable Long id) {
         try {
             pitchService.deletePitch(id, currentUser);
@@ -68,6 +71,7 @@ public class PitchBookingController {
     }
 
     @DeleteMapping("/clear-all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> clearAllPitches() {
         pitchService.clearAllPitches();
         return ResponseEntity.ok(Map.of("message", "Đã xóa tất cả dữ liệu sân bóng mẫu thành công."));
@@ -153,6 +157,7 @@ public class PitchBookingController {
      * API Cập Nhật Giờ Mở Cửa & Đóng Cửa Cụm Sân
      */
     @PutMapping("/{id}/operating-hours")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> updateOperatingHours(
             @PathVariable Long id,
             @RequestBody Map<String, Object> req
@@ -178,6 +183,7 @@ public class PitchBookingController {
      * API cập nhật giá thuê sân (giá thường & giá giờ vàng) của một cụm sân.
      */
     @PutMapping("/{id}/price")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> updatePitchPrice(
             @PathVariable Long id,
             @RequestBody Map<String, Object> req
@@ -509,6 +515,7 @@ public class PitchBookingController {
      * API Tạo Đặt Ca Tại Quầy hoặc Đặt Trực Tuyến (Lưu trực tiếp vào MySQL)
      */
     @PostMapping(value = {"/{id}/book-offline", "/{id}/offline-book"})
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> bookOfflineSlot(
             @PathVariable Long id,
             @RequestBody Map<String, Object> req
@@ -569,6 +576,7 @@ public class PitchBookingController {
      * API Thêm Sân Con Mới Vào Cụm Sân (Lưu trực tiếp vào MySQL)
      */
     @PostMapping("/{id}/add-court")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> addCourtToPitch(
             @PathVariable Long id,
             @RequestBody Map<String, Object> req
@@ -604,6 +612,7 @@ public class PitchBookingController {
      * API Check-in Khách Vào Sân
      */
     @PutMapping("/bookings/{bookingId}/check-in")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> checkInBooking(@PathVariable Long bookingId) {
         return bookingRepository.findById(bookingId).map(b -> {
             b.setStatus("PLAYING");
@@ -617,6 +626,7 @@ public class PitchBookingController {
      * API Hủy Ca Đặt (Có Lý Do Hủy và Gửi Thông Báo Tới Người Đặt Sân)
      */
     @PostMapping("/bookings/{bookingId}/cancel")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> cancelBookingWithReason(
             @PathVariable Long bookingId,
             @RequestBody(required = false) Map<String, Object> req
@@ -654,6 +664,7 @@ public class PitchBookingController {
     }
 
     @DeleteMapping("/bookings/{bookingId}")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> cancelBooking(
             @PathVariable Long bookingId,
             @RequestParam(required = false) String reason

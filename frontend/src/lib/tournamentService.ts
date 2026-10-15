@@ -145,17 +145,13 @@ export async function fetchTournaments(force = false): Promise<Tournament[]> {
 export async function createTournament(
   payload: Record<string, unknown>
 ): Promise<Tournament> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/tournaments`, {
+  // Bắt buộc gửi kèm token (backend yêu cầu ADMIN/ORGANIZER cho endpoint tạo giải)
+  const body = await apiRequest<Tournament>('/api/v1/tournaments', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  const body = await res.json().catch(() => null);
-  if (!res.ok) {
-    throw new Error(body?.error || 'Tạo giải đấu không thành công, vui lòng thử lại.');
-  }
   await fetchTournaments(true); // refresh cache so lists/badges re-sync
-  return body as Tournament;
+  return body;
 }
 
 export async function registerTeam(
