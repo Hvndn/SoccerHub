@@ -1,7 +1,10 @@
-/** Gọi trực tiếp AI service (FastAPI, không cần auth). Trả null khi AI offline. */
+/** Gọi AI service (FastAPI, không cần auth). Trả null khi AI offline. */
 const AI_BASE_URL =
-  (typeof process !== "undefined" && (process.env as any)?.NEXT_PUBLIC_AI_BASE_URL) ||
-  "http://localhost:8000";
+  (typeof process !== "undefined" &&
+    ((process.env as any)?.NEXT_PUBLIC_AI_BASE_URL || (process.env as any)?.AI_BASE_URL)) ||
+  (typeof process !== "undefined" && (process.env as any)?.NODE_ENV === "production"
+    ? "https://soccerhub-ai-service.onrender.com"
+    : "http://localhost:8000");
 
 /** Use Next.js API proxy to avoid CORS issues on mobile */
 const USE_PROXY = typeof window !== 'undefined';

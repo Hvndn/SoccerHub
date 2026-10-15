@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   ChevronRight,
   ShieldCheck,
+  ShieldAlert,
   Zap,
   Gift,
   QrCode,
@@ -103,9 +104,12 @@ export default function PitchSearch({ user }: PitchSearchProps) {
   }, []);
 
   const [featuredLiveSlots, setFeaturedLiveSlots] = useState<any[]>([]);
+  // Lỗi tải danh sách sân (VD: backend không phản hồi) — hiển thị thông báo thân thiện
+  const [pitchLoadError, setPitchLoadError] = useState<string | null>(null);
 
   const fetchPitches = async () => {
     setLoadingRealPitches(true);
+    setPitchLoadError(null);
     try {
       const data = await getAllPitchesApi();
       if (Array.isArray(data) && data.length > 0) {
@@ -200,6 +204,9 @@ export default function PitchSearch({ user }: PitchSearchProps) {
       }
     } catch (e) {
       console.warn("Lỗi tải danh sách sân từ database:", e);
+      setPitchLoadError(
+        "Không kết nối được máy chủ dữ liệu sân. Vui lòng kiểm tra mạng và thử lại."
+      );
     } finally {
       setLoadingRealPitches(false);
     }
@@ -680,6 +687,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             <div className="flex-1 min-w-0">
               <span className="text-[9px] text-slate-400 font-extrabold uppercase block leading-none">Khu Vực Địa Lý</span>
               <select
+                aria-label="Khu vực địa lý"
                 value={selectedDistrict}
                 onChange={(e) => setSelectedDistrict(e.target.value)}
                 className="w-full bg-transparent text-xs font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer mt-0.5"
@@ -699,6 +707,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             <div className="flex-1 min-w-0">
               <span className="text-[9px] text-slate-400 font-extrabold uppercase block leading-none">Khung Giờ Thi Đấu</span>
               <select
+                aria-label="Khung giờ thi đấu"
                 value={selectedTimeSlotFilter}
                 onChange={(e) => setSelectedTimeSlotFilter(e.target.value)}
                 className="w-full bg-transparent text-xs font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer mt-0.5"
@@ -717,6 +726,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             <div className="flex-1 min-w-0">
               <span className="text-[9px] text-slate-400 font-extrabold uppercase block leading-none">Quy Mô Sân Con</span>
               <select
+                aria-label="Quy mô sân con"
                 value={selectedPitchFormat}
                 onChange={(e) => setSelectedPitchFormat(e.target.value)}
                 className="w-full bg-transparent text-xs font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer mt-0.5"
@@ -941,6 +951,30 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
       {/* 4. MAIN COCKPIT: DANH SÁCH CỤM SÂN KHẢ DỤNG & CHỢ KÈO GHÉP ĐỘI */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        {/* THÔNG BÁO LỖI KẾT NỐI MÁY CHỦ (thân thiện, có nút thử lại) */}
+        {pitchLoadError && (
+          <div className="xl:col-span-12 flex items-start gap-3 rounded-2xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30 p-4">
+            <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
+                Chưa tải được dữ liệu sân
+              </p>
+              <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-0.5">
+                {pitchLoadError}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={fetchPitches}
+              disabled={loadingRealPitches}
+              className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white text-xs font-bold transition-colors"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingRealPitches ? "animate-spin" : ""}`} />
+              <span>Thử lại</span>
+            </button>
+          </div>
+        )}
+
         {/* CỘT TRÁI (8 COLS): DANH SÁCH CỤM SÂN BÓNG ĐÁ THẬT ĐÀ NẴNG */}
         <main className="xl:col-span-8 space-y-6">
           <div className="flex items-center justify-between">
@@ -1361,6 +1395,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                   Sân thi đấu:
                 </label>
                 <select
+                  aria-label="Sân thi đấu"
                   value={newMatchPitchId}
                   onChange={(e) => setNewMatchPitchId(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -1382,6 +1417,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                   Khung giờ thi đấu:
                 </label>
                 <select
+                  aria-label="Khung giờ thi đấu"
                   value={newMatchSlot}
                   onChange={(e) => setNewMatchSlot(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"

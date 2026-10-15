@@ -625,6 +625,7 @@ export default function PlayerProfileConsole({
                     Trình Độ Thi Đấu
                   </label>
                   <select
+                    aria-label="Trình độ thi đấu"
                     value={editForm.level}
                     onChange={(e) => setEditForm({ ...editForm, level: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -670,6 +671,7 @@ export default function PlayerProfileConsole({
                     Chân Thuận
                   </label>
                   <select
+                    aria-label="Chân thuận"
                     value={editForm.dominantFoot}
                     onChange={(e) => setEditForm({ ...editForm, dominantFoot: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 outline-none"

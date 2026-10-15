@@ -461,6 +461,7 @@ export default function MatchmakingMarketplace({
           <div className="space-y-1">
             <span className="text-slate-500 uppercase font-extrabold text-[10px] block">Thể thức thi đấu</span>
             <select
+              aria-label="Thể thức thi đấu"
               value={matchFormat}
               onChange={(e) => setMatchFormat(e.target.value)}
               className="w-full py-2 px-3 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-900 dark:text-white focus:outline-none"
@@ -476,6 +477,7 @@ export default function MatchmakingMarketplace({
           <div className="space-y-1">
             <span className="text-slate-500 uppercase font-extrabold text-[10px] block">Hình thức tiền sân</span>
             <select
+              aria-label="Hình thức tiền sân"
               value={paymentModel}
               onChange={(e) => setPaymentModel(e.target.value)}
               className="w-full py-2 px-3 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-900 dark:text-white focus:outline-none"
@@ -859,6 +861,7 @@ export default function MatchmakingMarketplace({
                 <div>
                   <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Thể Thức Sân</label>
                   <select 
+                    aria-label="Thể thức sân"
                     value={createPitchType}
                     onChange={(e) => setCreatePitchType(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none"
@@ -897,6 +900,7 @@ export default function MatchmakingMarketplace({
                 <div>
                   <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Hình Thức Tiền Sân</label>
                   <select 
+                    aria-label="Hình thức tiền sân"
                     value={createPaymentModel}
                     onChange={(e) => setCreatePaymentModel(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none"

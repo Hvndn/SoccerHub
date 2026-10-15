@@ -1,7 +1,14 @@
+/**
+ * URL backend: ưu tiên biến môi trường, nếu thiếu thì tự chọn theo môi trường chạy
+ * (production -> service thật, dev -> localhost) để không bao giờ rơi vào localhost
+ * trên bản đã deploy — tránh lỗi "failed to fetch".
+ */
+const PROD_API_BASE_URL = 'https://soccerhub-backend-core-production.up.railway.app';
+
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:8080';
+  (process.env.NODE_ENV === 'production' ? PROD_API_BASE_URL : 'http://localhost:8080');
 
 /**
  * Gọi API backend qua URL đã cấu hình (không hardcode localhost).

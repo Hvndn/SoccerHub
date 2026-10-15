@@ -181,11 +181,12 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {/* 1. Location Select */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
+            <label htmlFor="hero-city" className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
               <MapPin className="w-3.5 h-3.5 mr-1 text-rose-500" />
               Khu vực sân
             </label>
             <select
+              id="hero-city"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] shadow-xs cursor-pointer"
@@ -198,11 +199,12 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
           {/* 2. Pitch Size Select */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
+            <label htmlFor="hero-pitch-type" className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
               <Trophy className="w-3.5 h-3.5 mr-1 text-amber-500" />
               Quy chuẩn sân
             </label>
             <select
+              id="hero-pitch-type"
               value={pitchType}
               onChange={(e) => setPitchType(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] shadow-xs cursor-pointer"
@@ -215,11 +217,12 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
           {/* 3. Date Select */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
+            <label htmlFor="hero-date" className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
               <Clock className="w-3.5 h-3.5 mr-1 text-sky-500" />
               Ngày thi đấu
             </label>
             <select
+              id="hero-date"
               value={dateChoice}
               onChange={(e) => setDateChoice(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] shadow-xs cursor-pointer"
@@ -232,11 +235,12 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
           {/* 4. Time Slot Select */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
+            <label htmlFor="hero-timeslot" className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
               <Flame className="w-3.5 h-3.5 mr-1 text-orange-500" />
               Khung giờ đá
             </label>
             <select
+              id="hero-timeslot"
               value={timeSlot}
               onChange={(e) => setTimeSlot(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] shadow-xs cursor-pointer"

@@ -649,6 +649,7 @@ export default function PitchDetail({
             <div className="flex items-center space-x-2">
               <span className="text-xs text-slate-400 font-bold">Lọc giờ:</span>
               <select
+                aria-label="Lọc giờ đá"
                 value={selectedTimeFilter}
                 onChange={(e) => setSelectedTimeFilter(e.target.value)}
                 className="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
