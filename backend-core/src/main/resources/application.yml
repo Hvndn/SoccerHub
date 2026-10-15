@@ -22,11 +22,19 @@ spring:
       maximum-pool-size: 5
   jpa:
     hibernate:
-      ddl-auto: update
+      # Mặc định: tự tạo/cập nhật bảng khi MySQL sẵn sàng (cần cho lần chạy đầu).
+      # Trên cloud có thể đặt DDL_AUTO=none để app KHỞI ĐỘNG được ngay cả khi
+      # MySQL chưa kết nối (dùng khi cần kiểm tra service có bind cổng OK không),
+      # sau khi DB ổn thì xoá biến để quay lại tự đồng bộ schema.
+      ddl-auto: ${DDL_AUTO:update}
     # Chỉ bật khi debug local; Railway/Render production để false để log không bị ngập
     show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
+        # Bỏ bước dò JDBC metadata lúc bootstrap (dialect đã khai báo tường minh),
+        # giúp Hibernate KHÔNG phải mở kết nối DB ngay khi khởi động.
+        temp:
+          use_jdbc_metadata_defaults: false
         format_sql: ${JPA_SHOW_SQL:false}
         dialect: org.hibernate.dialect.MySQLDialect
   # Không dùng Redis — chỉ khởi động MySQL
