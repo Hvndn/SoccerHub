@@ -1,6 +1,7 @@
 package com.soccerhub.config;
 
 import com.soccerhub.model.MatchmakingPost;
+import com.soccerhub.model.Pitch;
 import com.soccerhub.model.Tournament;
 import com.soccerhub.model.TournamentTeamEntry;
 import com.soccerhub.model.User;
@@ -121,6 +122,102 @@ public class DataInitializer implements CommandLineRunner {
 
             tournamentRepository.saveAll(List.of(t1, t2, t3));
             log.info("Seeded 3 real football tournaments successfully.");
+        }
+
+        // 1b. Khởi tạo cụm sân thật nếu chưa có (màn Tìm Sân, Lịch Hoạt Động & thống kê lấy từ đây)
+        if (pitchRepository.count() == 0) {
+            Pitch s1 = Pitch.builder()
+                    .name("Cụm Sân Bóng Đá Đại Nắng")
+                    .address("154 Nguyễn Lương Bằng, P. Tân Phú, Quận 7")
+                    .area("Quận 7, TP.HCM")
+                    .phone("0908123456")
+                    .ownerName("Sân Đại Nắng")
+                    .latitude(10.7290).longitude(106.7210)
+                    .avgPricePerHour(280000).peakPricePerHour(360000)
+                    .rating(4.8).openTime("14:00").closeTime("23:00")
+                    .pitchTypes(new ArrayList<>(List.of("SAN_5", "SAN_7")))
+                    .amenities(new ArrayList<>(List.of("Giữ xe", "Wifi", "Nước uống", "Áo bib", "Đèn LED")))
+                    .imageUrl("https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=1200&q=80")
+                    .description("Cụm 3 sân 5 và 2 sân 7 cỏ nhân tạo có mái che, phù hợp giao lưu và tổ chức giải phủi.")
+                    .build();
+
+            Pitch s2 = Pitch.builder()
+                    .name("Sân Mini Phú Nhuận Arena")
+                    .address("12 Phan Xích Long, P. 2, Quận Phú Nhuận")
+                    .area("Q. Phú Nhuận, TP.HCM")
+                    .phone("0912345678")
+                    .ownerName("Arena Phú Nhuận")
+                    .latitude(10.7990).longitude(106.6860)
+                    .avgPricePerHour(240000).peakPricePerHour(300000)
+                    .rating(4.5).openTime("06:00").closeTime("22:30")
+                    .pitchTypes(new ArrayList<>(List.of("SAN_5")))
+                    .amenities(new ArrayList<>(List.of("Giữ xe", "Nước uống", "Căn tin")))
+                    .imageUrl("https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1200&q=80")
+                    .description("Sân 5 người trong nhà, mặt cỏ mới, thích hợp đá tối và dưỡng sinh sau giờ làm.")
+                    .build();
+
+            Pitch s3 = Pitch.builder()
+                    .name("Cụm Sân Nam Sài Gòn")
+                    .address("Khu dân cư Nam Sài Gòn, Huyện Nhà Bè")
+                    .area("Huyện Nhà Bè, TP.HCM")
+                    .phone("0933888999")
+                    .ownerName("Nam Sài Gòn Sport")
+                    .latitude(10.6830).longitude(106.7440)
+                    .avgPricePerHour(320000).peakPricePerHour(420000)
+                    .rating(4.9).openTime("15:00").closeTime("23:30")
+                    .pitchTypes(new ArrayList<>(List.of("SAN_7", "SAN_11")))
+                    .amenities(new ArrayList<>(List.of("Giữ xe", "Wifi", "Nước uống", "Áo bib", "Đèn LED", "Phòng thay đồ")))
+                    .imageUrl("https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80")
+                    .description("Cụm sân 7 FIFA và 1 sân 11 chuẩn thi đấu, có khán đài nhỏ, đăng cai giải phủi.")
+                    .build();
+
+            Pitch s4 = Pitch.builder()
+                    .name("Sân Bóng Hải Châu Center")
+                    .address("88 Nguyễn Văn Linh, Q. Hải Châu")
+                    .area("Q. Hải Châu, Đà Nẵng")
+                    .phone("0905111222")
+                    .ownerName("Hải Châu Center")
+                    .latitude(16.0540).longitude(108.2020)
+                    .avgPricePerHour(200000).peakPricePerHour(260000)
+                    .rating(4.6).openTime("06:00").closeTime("22:00")
+                    .pitchTypes(new ArrayList<>(List.of("SAN_5", "SAN_7")))
+                    .amenities(new ArrayList<>(List.of("Giữ xe", "Nước uống", "Đèn LED")))
+                    .imageUrl("https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1200&q=80")
+                    .description("Sân trung tâm Đà Nẵng, vị trí đắc địa, khung giờ vàng thường kín nên đặt sớm.")
+                    .build();
+
+            Pitch s5 = Pitch.builder()
+                    .name("Sân Cẩm Lệ Futsal & Sân 5")
+                    .address("Đường Nguyễn Hữu Thọ, Q. Cẩm Lệ")
+                    .area("Q. Cẩm Lệ, Đà Nẵng")
+                    .phone("0905333444")
+                    .ownerName("Cẩm Lệ Futsal")
+                    .latitude(16.0180).longitude(108.2050)
+                    .avgPricePerHour(180000).peakPricePerHour(230000)
+                    .rating(4.4).openTime("07:00").closeTime("22:30")
+                    .pitchTypes(new ArrayList<>(List.of("FUTSAL", "SAN_5")))
+                    .amenities(new ArrayList<>(List.of("Giữ xe", "Nước uống", "Áo bib", "Căn tin")))
+                    .imageUrl("https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80")
+                    .description("Sân futsal trong nhà mát mẻ quanh năm, kèm 2 sân 5 ngoài trời cho giao lưu.")
+                    .build();
+
+            Pitch s6 = Pitch.builder()
+                    .name("Sân 11 Thống Nhất Sport Complex")
+                    .address("Số 1 Nguyễn Kim, Q. 10")
+                    .area("Quận 10, TP.HCM")
+                    .phone("0977888999")
+                    .ownerName("Thống Nhất Complex")
+                    .latitude(10.7720).longitude(106.6680)
+                    .avgPricePerHour(450000).peakPricePerHour(600000)
+                    .rating(5.0).openTime("06:00").closeTime("22:00")
+                    .pitchTypes(new ArrayList<>(List.of("SAN_11")))
+                    .amenities(new ArrayList<>(List.of("Giữ xe", "Wifi", "Nước uống", "Phòng thay đồ", "Khán đài", "Đèn LED")))
+                    .imageUrl("https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=1200&q=80")
+                    .description("Sân 11 người cỏ tự nhiên chuẩn quốc gia, sân khấu tổ chức các giải doanh nghiệp.")
+                    .build();
+
+            pitchRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6));
+            log.info("Seeded 6 real football pitches successfully.");
         }
 
         // 2. Khởi tạo các bài đăng tìm đối giao lưu bóng đá thật nếu chưa có
