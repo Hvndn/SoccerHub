@@ -14,7 +14,6 @@ import java.util.Map;
 /** Thông báo hệ thống cho user đã đăng nhập + broadcast của ADMIN. */
 @RestController
 @RequestMapping("/api/v1/notifications")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class NotificationController {
 

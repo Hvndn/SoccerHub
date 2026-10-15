@@ -60,11 +60,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*")); // Allow Next.js frontend
+        
+        // Allow specific origins - configure via environment variable
+        String allowedOrigins = System.getenv().getOrDefault("ALLOWED_ORIGINS", 
+            "http://localhost:3000,http://localhost:3001,https://soccer-hub-wheat.vercel.app");
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // Cache preflight for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

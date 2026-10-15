@@ -6,7 +6,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/admin")
-@CrossOrigin(origins = "*")
 public class OwnerAdminController {
 
     @GetMapping("/revenue-report")

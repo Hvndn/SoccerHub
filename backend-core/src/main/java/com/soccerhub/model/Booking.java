@@ -46,7 +46,7 @@ public class Booking {
     private String status = "BOOKED"; // BOOKED, PLAYING, RESALE, CANCELLED
 
     @Builder.Default
-    private String via = "Tạo Tại Quầy"; // "VietQR Online", "Tạo Tại Quầy", "MoMo"
+    private String via = "Tạo Tại Quầy"; // "Đặt qua Website", "Tạo Tại Quầy" (giá trị cũ: "VietQR Online", "MoMo")
 
     @Column(unique = true)
     private String code; // VD: "VS-7829-01"

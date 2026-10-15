@@ -12,9 +12,14 @@ app = FastAPI(
 )
 
 # Cho phép frontend gọi trực tiếp từ trình duyệt
+import os
+
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001,https://soccer-hub-wheat.vercel.app").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
+    allow_credentials=False,  # AI service không dùng auth/cookie
     allow_methods=["*"],
     allow_headers=["*"],
 )

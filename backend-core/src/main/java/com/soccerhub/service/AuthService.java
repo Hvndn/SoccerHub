@@ -81,7 +81,7 @@ public class AuthService {
                 .role(role)
                 .position(position)
                 .eloRating(role == UserRole.PLAYER ? 1450 : 1500)
-                .area(req.getArea() != null ? req.getArea() : "Quận 7, TP.HCM")
+                .area(req.getArea() != null ? req.getArea() : null)
                 .favoriteSport(req.getFavoriteSport() != null ? req.getFavoriteSport() : "football")
                 .level(req.getLevel() != null ? req.getLevel() : "Nghiệp dư")
                 .avatar(getInitials(req.getFullName()))

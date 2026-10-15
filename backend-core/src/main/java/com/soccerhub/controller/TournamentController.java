@@ -24,7 +24,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
 @RequestMapping("/api/v1/tournaments")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class TournamentController {
 

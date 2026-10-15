@@ -29,10 +29,7 @@ spring:
       hibernate:
         format_sql: ${JPA_SHOW_SQL:false}
         dialect: org.hibernate.dialect.MySQLDialect
-  data:
-    redis:
-      host: ${SPRING_REDIS_HOST:localhost}
-      port: ${SPRING_REDIS_PORT:6379}
+  # Không dùng Redis — chỉ khởi động MySQL
 
 ai-service:
   url: ${AI_SERVICE_URL:http://localhost:8000}

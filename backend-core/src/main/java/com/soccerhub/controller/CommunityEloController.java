@@ -10,7 +10,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/community")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class CommunityEloController {
 

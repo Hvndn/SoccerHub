@@ -21,7 +21,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/pitches")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class PitchBookingController {
 
@@ -453,7 +452,7 @@ public class PitchBookingController {
         int bookedSlots = bookings.size();
 
         int totalRevenue = 0;
-        int vietQrOnlineCount = 0;
+        int onlineCount = 0;
         int offlineCounterCount = 0;
 
         for (Booking b : bookings) {
@@ -463,8 +462,10 @@ public class PitchBookingController {
                     : 0;
             totalRevenue += (deposit + cash);
 
-            if (b.getVia() != null && (b.getVia().contains("VietQR") || b.getVia().contains("Online") || b.getVia().contains("MoMo"))) {
-                vietQrOnlineCount++;
+            // Ca đặt qua website ("Đặt qua Website") hoặc giá trị cũ (VietQR/Online/MoMo) — còn lại là tại quầy
+            String via = b.getVia() != null ? b.getVia() : "";
+            if (via.contains("Website") || via.contains("VietQR") || via.contains("Online") || via.contains("MoMo")) {
+                onlineCount++;
             } else {
                 offlineCounterCount++;
             }
@@ -480,7 +481,7 @@ public class PitchBookingController {
         stats.put("occupancyRate", occupancyRate);
         stats.put("totalSlots", totalSlots);
         stats.put("bookedSlots", bookedSlots);
-        stats.put("onlineBookings", vietQrOnlineCount);
+        stats.put("onlineBookings", onlineCount);
         stats.put("counterBookings", offlineCounterCount);
         stats.put("openTime", pitch.getOpenTime());
         stats.put("closeTime", pitch.getCloseTime());

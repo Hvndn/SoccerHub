@@ -31,7 +31,7 @@ export async function apiRequest<T = any>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = getAuthToken();
-  
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
@@ -43,10 +43,15 @@ export async function apiRequest<T = any>(
 
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 
-  const response = await fetch(url, {
+  // Mobile-friendly fetch options
+  const fetchOptions: RequestInit = {
     ...options,
     headers,
-  });
+    credentials: 'include', // Important for cookies/auth on mobile Safari
+    cache: 'no-store', // Prevent caching issues on mobile
+  };
+
+  const response = await fetch(url, fetchOptions);
 
   let data: any;
   try {

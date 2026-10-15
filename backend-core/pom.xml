@@ -37,18 +37,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Redis & Distributed Locking -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
-
-        <!-- WebSocket Real-time -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
-
         <!-- Security & JWT -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

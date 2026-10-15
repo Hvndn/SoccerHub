@@ -597,7 +597,7 @@ export default function Home() {
       <footer className="glass-panel border-t border-slate-200 dark:border-slate-800 py-6 mt-12 transition-colors duration-300">
         <div className="w-full max-w-full mx-auto px-3 sm:px-6 lg:px-10 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1">
           <p>© 2026 <strong>SoccerHub - Nền Tảng Đặt Sân & Quản Lý Bóng Đá Thông Minh</strong>. Đồ Án Tốt Nghiệp: Hệ thống quản lý cụm sân bóng đá mini cỏ nhân tạo (Sân 5, Sân 7, Sân 11), giải đấu phủi và kết nối đối thủ AI.</p>
-          <p className="text-[#0b4f6c] dark:text-sky-400 font-semibold">Công nghệ: Spring Boot, MySQL 8.0, Next.js 14, Python FastAPI (tính điểm Elo), VietQR & WebSockets.</p>
+          <p className="text-[#0b4f6c] dark:text-sky-400 font-semibold">Công nghệ: Spring Boot, MySQL, Next.js 14, Python FastAPI (tính điểm Elo), QR VietQR sinh từ STK báo cáo giải.</p>
         </div>
       </footer>
     </div>
