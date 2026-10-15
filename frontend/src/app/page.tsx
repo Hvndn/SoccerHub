@@ -293,7 +293,7 @@ export default function Home() {
           >
           {activeTab === "booking" && (
             currentUser?.role === "OWNER" ? (
-              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl animate-fade-in">
+              <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-[#0b4f6c]/10 dark:bg-sky-500/20 text-[#0b4f6c] dark:text-sky-400 mx-auto flex items-center justify-center">
                   <ShieldCheck className="w-8 h-8 text-emerald-500" />
                 </div>
@@ -386,7 +386,7 @@ export default function Home() {
                 onNavigateTab={handleTabChange}
               />
             ) : (
-              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+              <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
                   <ShieldAlert className="w-8 h-8 text-amber-500" />
                 </div>
@@ -414,7 +414,7 @@ export default function Home() {
                 onNavigateTab={handleTabChange}
               />
             ) : (
-              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl animate-fade-in">
+              <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-rose-500/10 text-rose-500 mx-auto flex items-center justify-center">
                   <ShieldAlert className="w-8 h-8 text-rose-500" />
                 </div>
@@ -456,7 +456,7 @@ export default function Home() {
                 onNavigateTab={handleTabChange}
               />
             ) : (
-              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+              <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
                   <ShieldAlert className="w-8 h-8 text-amber-500" />
                 </div>
@@ -486,7 +486,7 @@ export default function Home() {
                 onNavigateTab={handleTabChange}
               />
             ) : (
-              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+              <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
                   <ShieldAlert className="w-8 h-8 text-amber-500" />
                 </div>
@@ -515,7 +515,7 @@ export default function Home() {
                 onOpenAuth={handleOpenAuth}
               />
             ) : currentUser ? (
-              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+              <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
                   <ShieldAlert className="w-8 h-8 text-rose-500" />
                 </div>
@@ -534,7 +534,7 @@ export default function Home() {
                 </button>
               </div>
             ) : (
-              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+              <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
                   <ShieldAlert className="w-8 h-8 text-amber-500" />
                 </div>
@@ -563,7 +563,7 @@ export default function Home() {
                 onNavigateTab={handleTabChange}
               />
             ) : (
-              <div className="py-16 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
+              <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
                   <ShieldAlert className="w-8 h-8 text-amber-500" />
                 </div>

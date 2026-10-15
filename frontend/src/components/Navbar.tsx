@@ -915,7 +915,7 @@ export default function Navbar({
           <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
             <div className="w-screen max-w-xs sm:max-w-sm bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col justify-between overflow-hidden animate-slide-left">
               {/* Drawer Header */}
-              <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/50">
+              <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/50">
                 <div className="flex items-center space-x-2">
                   <img
                     src="/turfzone-logo.png"
@@ -939,7 +939,7 @@ export default function Navbar({
               </div>
 
               {/* Drawer Body - Danh Sách Chức Năng Theo Role */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-6">
                 {/* User Snapshot Card nếu đã login */}
                 {user ? (
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-3">
@@ -1268,7 +1268,7 @@ export default function Navbar({
               </div>
 
               {/* Drawer Footer: Logout */}
-              <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50 space-y-3">
+              <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50 space-y-3">
                 {user && (
                   <button
                     type="button"
