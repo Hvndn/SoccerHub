@@ -34,7 +34,7 @@ export default function WizardPageShell({
             href="/"
             className="flex items-center gap-2 font-black text-lg tracking-tight text-slate-900 dark:text-white"
           >
-            <span className="text-emerald-600">Turf</span>Zone
+            <span className="text-emerald-700 dark:text-emerald-400">Turf</span>Zone
           </Link>
           <Link
             href={backHref}
@@ -71,7 +71,7 @@ export default function WizardPageShell({
       </main>
 
       <footer className="border-t border-slate-200 dark:border-slate-800 py-4">
-        <p className="text-center text-[11px] text-slate-400 dark:text-slate-500">
+        <p className="text-center text-[11px] text-slate-600 dark:text-slate-400">
           © 2026 SoccerHub — Đồ Án Tốt Nghiệp: Hệ thống quản lý sân bóng & giải đấu phủi.
         </p>
       </footer>

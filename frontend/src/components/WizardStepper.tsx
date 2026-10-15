@@ -30,6 +30,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
       <div
         className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden"
         role="progressbar"
+        aria-label={`Tiến độ bước ${current + 1} trên ${steps.length}`}
         aria-valuemin={1}
         aria-valuemax={steps.length}
         aria-valuenow={current + 1}
@@ -65,7 +66,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
                 <span
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ${
                     active
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-emerald-700 text-white"
                       : done
                       ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
                       : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"

@@ -173,7 +173,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               </span>
             </div>
           </div>
-          <span className="hidden sm:inline-block text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800">
+          <span className="hidden sm:inline-block text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800">
             Dữ liệu trực tiếp từ CSDL
           </span>
         </div>

@@ -250,7 +250,7 @@ export default function Home() {
   const showBottomNav = currentUser?.role !== "OWNER" && currentUser?.role !== "ADMIN";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white relative transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-emerald-700 selection:text-white relative transition-colors duration-300">
       {/* Top Page Progress Loading Bar */}
       {isTabChanging && (
         <div className="fixed top-0 left-0 right-0 h-1 bg-[#0b4f6c] dark:bg-sky-400 z-50 animate-top-loader stadium-shadow" />
@@ -430,7 +430,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => handleTabChange("booking")}
-                    className="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                    className="px-6 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                   >
                     Quay Lại Trang Tìm Sân Bóng
                   </button>

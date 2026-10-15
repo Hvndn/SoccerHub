@@ -360,12 +360,12 @@ export default function AuthModal({
           {mode === "register" && (
             <div className="mt-3 flex items-center gap-2 text-[11px] font-bold text-slate-500" aria-hidden>
               <span className={`flex items-center gap-1 ${regStep >= 1 ? "text-emerald-700" : ""}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 1 ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-500"}`}>1</span>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 1 ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-500"}`}>1</span>
                 Tài khoản
               </span>
               <span className="text-slate-300">›</span>
               <span className={`flex items-center gap-1 ${regStep >= 2 ? "text-emerald-700" : ""}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 2 ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-500"}`}>2</span>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 2 ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-500"}`}>2</span>
                 Hồ sơ thi đấu
               </span>
             </div>
@@ -430,7 +430,7 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-shimmer w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
+                className="btn-shimmer w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -636,7 +636,7 @@ export default function AuthModal({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-shimmer flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="btn-shimmer flex-1 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>

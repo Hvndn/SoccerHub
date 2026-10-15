@@ -855,7 +855,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 <button
                   type="button"
                   onClick={() => setSelectedPitchForSlot(featuredPitch)}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
                 >
                   <span>Chọn Khung Giờ Ngay</span>
                   <ArrowRight className="w-4 h-4 text-white" />
@@ -920,7 +920,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                           <button
                             type="button"
                             onClick={() => setSelectedPitchForSlot(featuredPitch)}
-                            className="px-2.5 sm:px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
+                            className="px-2.5 sm:px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
                           >
                             Chọn Ca
                           </button>
@@ -1115,7 +1115,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                             onClick={() => setSelectedPitchForSlot(pitch)}
                             className={`px-3 py-1.5 rounded-xl font-mono text-xs font-bold shrink-0 transition-all cursor-pointer ${
                               ts.status === "ACTIVE"
-                                ? "bg-emerald-600 text-white shadow-xs"
+                                ? "bg-emerald-700 text-white shadow-xs"
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                             }`}
                           >
@@ -1144,7 +1144,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                       <button
                         type="button"
                         onClick={() => setSelectedPitchForSlot(pitch)}
-                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
                       >
                         <span>Xem Ca & Đặt</span>
                         <ChevronRight className="w-4 h-4" />
@@ -1459,7 +1459,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 type="button"
                 disabled={creatingPost}
                 onClick={handleCreateFromWidget}
-                className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
+                className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
               >
                 {creatingPost && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 {creatingPost ? "Đang đăng…" : "Đăng Kèo Ngay"}

@@ -146,7 +146,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
           type="button"
           onClick={onDone}
           disabled={!done}
-          className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-wait"
+          className="w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-black transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-wait"
         >
           {done ? "Xem nhánh đấu chính thức" : `Đang bốc thăm… ${locked}/${pairs.length} cặp`}
         </button>

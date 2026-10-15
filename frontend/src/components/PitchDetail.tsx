@@ -389,7 +389,7 @@ export default function PitchDetail({
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>{pitchDetails?.pitchTypes?.[0] || "Sân cỏ nhân tạo"}</span>
               </span>
-              <span className="bg-emerald-500 text-white text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
+              <span className="bg-emerald-700 text-white text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
                 <Zap className="w-3.5 h-3.5" />
                 <span>Đèn LED chiếu sáng sân</span>
               </span>
@@ -466,7 +466,7 @@ export default function PitchDetail({
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
             <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
               <div>
-                <span className="font-black text-xs bg-emerald-600/90 backdrop-blur-md px-2.5 py-1 rounded text-white uppercase tracking-wider">
+                <span className="font-black text-xs bg-emerald-700/90 backdrop-blur-md px-2.5 py-1 rounded text-white uppercase tracking-wider">
                   {pitchDetails?.pitchTypes?.[0] || pitch?.sportBadge || "Sân bóng đá"}
                 </span>
                 <p className="font-black text-base sm:text-lg mt-1 text-white">
@@ -719,7 +719,7 @@ export default function PitchDetail({
                             <button
                               key={sIdx}
                               type="button"
-                              className="h-20 rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-emerald-400 btn-shimmer cursor-pointer"
+                              className="h-20 rounded-2xl bg-emerald-700 text-white shadow-lg shadow-emerald-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-emerald-400 btn-shimmer cursor-pointer"
                             >
                               <div className="absolute top-0 right-0 bg-emerald-300 text-slate-950 text-[9px] px-2 py-0.5 font-black rounded-bl uppercase shadow-xs">
                                 ĐANG CHỌN ⚽
@@ -983,7 +983,7 @@ export default function PitchDetail({
                 type="button"
                 onClick={handleStartBooking}
                 disabled={isBooking}
-                className="w-full py-3.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm sm:text-base shadow-lg shadow-emerald-500/30 flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 px-4 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm sm:text-base shadow-lg shadow-emerald-500/30 flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
               >
                 {isBooking ? (
                   <>
@@ -1105,7 +1105,7 @@ export default function PitchDetail({
                 <button
                   type="button"
                   onClick={handleCompletePayment}
-                  className="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                  className="w-full py-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
                 >
                   <CheckCircle2 className="w-5 h-5 text-white" />
                   <span>Đã Đặt Giữ Chỗ Thành Công</span>

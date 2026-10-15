@@ -173,7 +173,7 @@ export default function TeamClubManagement({
             <button
               type="button"
               onClick={() => onNavigateTab?.("tournaments")}
-              className="px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs inline-flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs inline-flex items-center gap-1.5"
             >
               Xem Giải Đấu <ChevronRight className="w-4 h-4" />
             </button>
@@ -190,7 +190,7 @@ export default function TeamClubManagement({
             onClick={() => setActiveSubTab(tab.key)}
             className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
               activeSubTab === tab.key
-                ? "bg-emerald-500 text-white"
+                ? "bg-emerald-700 text-white"
                 : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800"
             }`}
           >

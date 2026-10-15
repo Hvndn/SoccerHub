@@ -52,6 +52,53 @@ public class DataInitializer implements CommandLineRunner {
             log.info("Seeded default ADMIN account: admin@soccerhub.vn / admin123");
         }
 
+        // 0b. Tài khoản demo cho buổi bảo vệ / trình diễn (PLAYER - OWNER - ORGANIZER)
+        if (!userRepository.existsByEmail("player@soccerhub.vn")) {
+            userRepository.save(User.builder()
+                    .fullName("Nguyễn Văn Cầu Thủ")
+                    .email("player@soccerhub.vn")
+                    .phone("0912345678")
+                    .password(passwordEncoder.encode("player123"))
+                    .role(UserRole.PLAYER)
+                    .area("Quận 7, TP.HCM")
+                    .level("Trung bình")
+                    .position("Tiền đạo")
+                    .eloRating(1350)
+                    .enabled(true)
+                    .build());
+            log.info("Seeded demo PLAYER account: player@soccerhub.vn / player123");
+        }
+
+        if (!userRepository.existsByEmail("owner@soccerhub.vn")) {
+            userRepository.save(User.builder()
+                    .fullName("Trần Thị Chủ Sân")
+                    .email("owner@soccerhub.vn")
+                    .phone("0987654321")
+                    .password(passwordEncoder.encode("owner123"))
+                    .role(UserRole.OWNER)
+                    .area("Quận 7, TP.HCM")
+                    .level("Chủ cụm sân")
+                    .eloRating(1400)
+                    .enabled(true)
+                    .build());
+            log.info("Seeded demo OWNER account: owner@soccerhub.vn / owner123");
+        }
+
+        if (!userRepository.existsByEmail("organizer@soccerhub.vn")) {
+            userRepository.save(User.builder()
+                    .fullName("Lê Văn Ban Tổ Chức")
+                    .email("organizer@soccerhub.vn")
+                    .phone("0909876543")
+                    .password(passwordEncoder.encode("organizer123"))
+                    .role(UserRole.ORGANIZER)
+                    .area("Quận 10, TP.HCM")
+                    .level("Trưởng BTC giải")
+                    .eloRating(1450)
+                    .enabled(true)
+                    .build());
+            log.info("Seeded demo ORGANIZER account: organizer@soccerhub.vn / organizer123");
+        }
+
         // 1. Khởi tạo giải đấu thật nếu chưa có
         if (tournamentRepository.count() == 0) {
             Tournament t1 = Tournament.builder()
@@ -120,8 +167,53 @@ public class DataInitializer implements CommandLineRunner {
                     )))
                     .build();
 
-            tournamentRepository.saveAll(List.of(t1, t2, t3));
-            log.info("Seeded 3 real football tournaments successfully.");
+            Tournament t4 = Tournament.builder()
+                    .title("Giải Futsal Giao Hữu Doanh Nghiệp TP.HCM 2026")
+                    .description("Giải futsal trong nhà dành cho các đội văn phòng và doanh nghiệp, hình thức vòng tròn tính điểm nhanh gọn.")
+                    .sportType("FUTSAL")
+                    .format("ROUND_ROBIN")
+                    .pitchName("Sân Cẩm Lệ Futsal & Sân 5")
+                    .location("Quận 1, TP.HCM")
+                    .totalTeams(8)
+                    .registeredTeams(6)
+                    .prizePool(12000000L)
+                    .entryFee(600000L)
+                    .startDate("2026-11-22")
+                    .endDate("2026-11-23")
+                    .registrationDeadline("2026-11-19")
+                    .status("OPEN")
+                    .bannerUrl("https://images.unsplash.com/photo-1553778263-73a83bab9b0c?auto=format&fit=crop&w=1200&q=80")
+                    .teams(new ArrayList<>(List.of(
+                            TournamentTeamEntry.builder().teamName("FC FPT Software").captainName("Phan Quang Huy").captainPhone("0981222333").memberCount(9).eloRating(1320).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Viettel Pay").captainName("Đỗ Minh Châu").captainPhone("0982333444").memberCount(9).eloRating(1290).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Vinamilk").captainName("Lý Gia Hân").captainPhone("0983444555").memberCount(9).eloRating(1410).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(1)).build()
+                    )))
+                    .build();
+
+            Tournament t5 = Tournament.builder()
+                    .title("Giải Phủi Khu Vực Quận 7 - Mùa 2 (Đã Kết Thúc)")
+                    .description("Giải phủi khu vực Q.7 đã kết thúc, dùng để minh chứng tính năng lưu kết quả, BXH và cập nhật Elo tự động.")
+                    .sportType("SAN_7")
+                    .format("KNOCKOUT")
+                    .pitchName("Cụm Sân Bóng Đá Đại Nắng")
+                    .location("Quận 7, TP.HCM")
+                    .totalTeams(8)
+                    .registeredTeams(8)
+                    .prizePool(8000000L)
+                    .entryFee(500000L)
+                    .startDate("2026-08-01")
+                    .endDate("2026-08-03")
+                    .registrationDeadline("2026-07-28")
+                    .status("COMPLETED")
+                    .bannerUrl("https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1200&q=80")
+                    .teams(new ArrayList<>(List.of(
+                            TournamentTeamEntry.builder().teamName("FC Phù Đổng Q7").captainName("Nguyễn Văn An").captainPhone("0908123456").memberCount(12).eloRating(1450).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(90)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Đại Nắng").captainName("Võ Thanh Tâm").captainPhone("0908777888").memberCount(12).eloRating(1380).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(88)).build()
+                    )))
+                    .build();
+
+            tournamentRepository.saveAll(List.of(t1, t2, t3, t4, t5));
+            log.info("Seeded 5 real football tournaments successfully.");
         }
 
         // 1b. Khởi tạo cụm sân thật nếu chưa có (màn Tìm Sân, Lịch Hoạt Động & thống kê lấy từ đây)
@@ -216,8 +308,53 @@ public class DataInitializer implements CommandLineRunner {
                     .description("Sân 11 người cỏ tự nhiên chuẩn quốc gia, sân khấu tổ chức các giải doanh nghiệp.")
                     .build();
 
-            pitchRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6));
-            log.info("Seeded 6 real football pitches successfully.");
+            Pitch s7 = Pitch.builder()
+                    .name("Sân Mỹ Đình Futsal Center")
+                    .address("Khu liên hợp Thể thao Mỹ Đình, Nam Từ Liêm")
+                    .area("Nam Từ Liêm, Hà Nội")
+                    .phone("0988111222")
+                    .ownerName("Mỹ Đình Futsal Center")
+                    .latitude(21.0200).longitude(105.7650)
+                    .avgPricePerHour(300000).peakPricePerHour(400000)
+                    .rating(4.7).openTime("06:00").closeTime("23:00")
+                    .pitchTypes(new ArrayList<>(List.of("FUTSAL", "SAN_5")))
+                    .amenities(new ArrayList<>(List.of("Giữ xe", "Wifi", "Nước uống", "Phòng thay đồ", "Căn tin")))
+                    .imageUrl("https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=1200&q=80")
+                    .description("Cụm futsal chuẩn Hà Nội, hệ thống đèn LED hiện đại, mở cửa sáng sớm đến khuya.")
+                    .build();
+
+            Pitch s8 = Pitch.builder()
+                    .name("Sân Bóng Trung Tâm Cần Thơ")
+                    .address("200 Đường 3 Tháng 2, Ninh Kiều")
+                    .area("Ninh Kiều, Cần Thơ")
+                    .phone("0979333444")
+                    .ownerName("Cần Thơ Sport Arena")
+                    .latitude(10.0340).longitude(105.7880)
+                    .avgPricePerHour(220000).peakPricePerHour(280000)
+                    .rating(4.5).openTime("05:30").closeTime("22:30")
+                    .pitchTypes(new ArrayList<>(List.of("SAN_5", "SAN_7")))
+                    .amenities(new ArrayList<>(List.of("Giữ xe", "Nước uống", "Áo bib", "Đèn LED")))
+                    .imageUrl("https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80")
+                    .description("Sân cỏ nhân tạo ngay trung tâm Ninh Kiều, phù hợp đá sớm và giải phong trào miền Tây.")
+                    .build();
+
+            Pitch s9 = Pitch.builder()
+                    .name("Sân Nha Trang Beachside Futsal")
+                    .address("12 Trần Phú, Lộc Thọ")
+                    .area("TP. Nha Trang, Khánh Hòa")
+                    .phone("0984555666")
+                    .ownerName("Beachside Futsal")
+                    .latitude(12.2380).longitude(109.1960)
+                    .avgPricePerHour(260000).peakPricePerHour(340000)
+                    .rating(4.6).openTime("07:00").closeTime("23:00")
+                    .pitchTypes(new ArrayList<>(List.of("FUTSAL", "SAN_7")))
+                    .amenities(new ArrayList<>(List.of("Giữ xe", "Wifi", "Nước uống", "Phòng thay đồ")))
+                    .imageUrl("https://images.unsplash.com/photo-1486286701208-1d58e9338013?auto=format&fit=crop&w=1200&q=80")
+                    .description("Sân futsal ven biển Nha Trang, mát mẻ quanh năm, thường xuyên tổ chức giải tourist-friendly.")
+                    .build();
+
+            pitchRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6, s7, s8, s9));
+            log.info("Seeded 9 real football pitches successfully.");
         }
 
         // 2. Khởi tạo các bài đăng tìm đối giao lưu bóng đá thật nếu chưa có
@@ -273,8 +410,59 @@ public class DataInitializer implements CommandLineRunner {
                     .createdAt(LocalDateTime.now().minusHours(5))
                     .build();
 
-            matchmakingPostRepository.saveAll(List.of(p1, p2, p3));
-            log.info("Seeded 3 real football matchmaking posts successfully.");
+            MatchmakingPost p4 = MatchmakingPost.builder()
+                    .teamName("FC Quận 2 Brothers")
+                    .captainName("Bùi Trọng Nhân")
+                    .captainPhone("0901 222 333")
+                    .eloRating(1180)
+                    .reputationScore(92)
+                    .pitchName("Sân Bóng Thảo Điền Mini")
+                    .address("Quận 2 (TP. Thủ Đức), TP.HCM")
+                    .matchTime("19:00 Thứ Sáu tuần này")
+                    .pitchType("SAN_5")
+                    .paymentModel("SPLIT_EQUAL")
+                    .estimatedFee(40000L)
+                    .note("Đội mình 8 người, cần ghép thêm vài anh em để đủ 10 đá 5 người. Vui vẻ, fairplay.")
+                    .status("OPEN")
+                    .createdAt(LocalDateTime.now().minusMinutes(10))
+                    .build();
+
+            MatchmakingPost p5 = MatchmakingPost.builder()
+                    .teamName("FC Cầu Giấy Phủi")
+                    .captainName("Ngô Thành Đạt")
+                    .captainPhone("0902 333 444")
+                    .eloRating(1290)
+                    .reputationScore(96)
+                    .pitchName("Sân Mỹ Đình Futsal Center")
+                    .address("Nam Từ Liêm, Hà Nội")
+                    .matchTime("20:30 Tối nay")
+                    .pitchType("FUTSAL")
+                    .paymentModel("HOST_COVER")
+                    .estimatedFee(0L)
+                    .note("Kèo giao lưu futsal thường niên, đội nhà bao sân. Mời anh em Hà Nội ghé chơi.")
+                    .status("OPEN")
+                    .createdAt(LocalDateTime.now().minusHours(1))
+                    .build();
+
+            MatchmakingPost p6 = MatchmakingPost.builder()
+                    .teamName("FC Ninh Thuận Bình Minh")
+                    .captainName("Hoàng Minh Tuấn")
+                    .captainPhone("0903 444 555")
+                    .eloRating(1355)
+                    .reputationScore(94)
+                    .pitchName("Sân Thanh Niên Bình Minh")
+                    .address("TP. Phan Rang - Tháp Chàm, Ninh Thuận")
+                    .matchTime("07:00 Sáng Chủ Nhật")
+                    .pitchType("SAN_7")
+                    .paymentModel("LOSER_PAYS")
+                    .estimatedFee(70000L)
+                    .note("Đá sáng Chủ Nhật cho mát, đội thua chịu tiền sân trọn gói. Cần đối 1300+.")
+                    .status("OPEN")
+                    .createdAt(LocalDateTime.now().minusHours(3))
+                    .build();
+
+            matchmakingPostRepository.saveAll(List.of(p1, p2, p3, p4, p5, p6));
+            log.info("Seeded 6 real football matchmaking posts successfully.");
         }
     }
 }

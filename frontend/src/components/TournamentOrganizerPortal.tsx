@@ -333,7 +333,7 @@ export default function TournamentOrganizerPortal({
 
             <Link
               href="/tournaments/new"
-              className="px-4 py-2.5 sm:px-5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="px-4 py-2.5 sm:px-5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-emerald-700 hover:bg-emerald-800 text-white"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span className="sm:hidden">+ Tạo Giải Mới</span>
@@ -566,7 +566,7 @@ export default function TournamentOrganizerPortal({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <button
                     onClick={() => setUmpireScoreA(umpireScoreA + 1)}
-                    className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                    className="py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                   >
                     <Plus className="w-4 h-4 stroke-[3]" />
                     <span>+1 Bàn (Đội A)</span>

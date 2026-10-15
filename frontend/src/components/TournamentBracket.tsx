@@ -582,7 +582,7 @@ export default function TournamentBracket() {
               type="button"
               onClick={() => handleSaveScore(match)}
               disabled={savingMatch === match.matchId}
-              className="flex-1 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1"
+              className="flex-1 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-black transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1"
             >
               {savingMatch === match.matchId ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -672,7 +672,7 @@ export default function TournamentBracket() {
     <div className="space-y-4 sm:space-y-8 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-slate-900 dark:bg-emerald-600 text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-fade-in-up sm:max-w-sm">
+        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-slate-900 dark:bg-emerald-700 text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-fade-in-up sm:max-w-sm">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 dark:text-white shrink-0" />
           <span className="font-semibold text-xs sm:text-sm">{toastMessage}</span>
         </div>
@@ -882,7 +882,7 @@ export default function TournamentBracket() {
                         type="button"
                         onClick={() => handleConfirmPayment(t.teamName)}
                         disabled={confirmingTeam === t.teamName}
-                        className="shrink-0 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black transition-all active:scale-95 disabled:opacity-50"
+                        className="shrink-0 px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-black transition-all active:scale-95 disabled:opacity-50"
                       >
                         {confirmingTeam === t.teamName ? "…" : "Đã thu ✓"}
                       </button>
@@ -1071,7 +1071,7 @@ export default function TournamentBracket() {
                         <div className="flex justify-center space-x-2 pt-2">
                           <button
                             onClick={() => setVarScoreA(varScoreA + 1)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
+                            className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
                           >
                             +1 Bàn
                           </button>
@@ -1184,7 +1184,7 @@ export default function TournamentBracket() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => handleVarCheck("Bóng trong sân (In-Bounds)", "ok")}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
                       >
                         ✅ Bóng Trong Sân
                       </button>
@@ -1374,7 +1374,7 @@ export default function TournamentBracket() {
               <button
                 onClick={() => window.print()}
                 disabled={!varMatch}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition active:scale-95 disabled:opacity-40 print:hidden"
+                className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition active:scale-95 disabled:opacity-40 print:hidden"
               >
                 In / Lưu PDF
               </button>

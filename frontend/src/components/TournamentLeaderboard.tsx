@@ -395,7 +395,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
               <Link
                 href="/tournaments/register"
-                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold shadow-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold shadow-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 bg-emerald-700 hover:bg-emerald-800 text-white"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>+ Đăng Ký Đội Thi Đấu</span>
@@ -418,7 +418,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 <Filter className="w-3.5 h-3.5" />
                 Lọc nhanh
                 {hasActiveFilters && (
-                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-emerald-600 text-white normal-case">
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-emerald-700 text-white normal-case">
                     {visibleTournaments.length} giải
                   </span>
                 )}
@@ -624,7 +624,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   ) : (
                     <Link
                       href={`/tournaments/register?tournamentId=${featured.id}`}
-                      className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                      className="px-5 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                     >
                       <span>⚽ Đăng Ký Tham Gia Ngay (4 bước)</span>
                     </Link>
@@ -654,7 +654,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                       <span className="px-2 py-0.5 rounded bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-emerald-800 dark:text-emerald-300 font-bold text-[11px] flex items-center gap-1 shadow-xs truncate">
                         🏆 {featured.pitchName || featured.location || 'Sân chuẩn VFF'}
                       </span>
-                      <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-mono text-[11px] font-bold shrink-0">
+                      <span className="px-2 py-0.5 rounded bg-emerald-700 text-white font-mono text-[11px] font-bold shrink-0">
                         {formatShort(featured.format)}
                       </span>
                     </div>
@@ -956,7 +956,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 </div>
 
                 {loadingTournaments && visibleTournaments.length === 0 ? (
-                  <div className="space-y-4" aria-label="Đang tải danh sách giải đấu">
+                  <div role="status" className="space-y-4" aria-label="Đang tải danh sách giải đấu">
                     {[0, 1, 2].map((i) => (
                       <div key={i} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3">
                         <div className="skeleton-shimmer h-5 w-2/3 rounded-lg" />
@@ -1110,7 +1110,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                             ) : (
                               <Link
                                 href={`/tournaments/register?tournamentId=${t.id}`}
-                                className="px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95"
+                                className="px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 bg-emerald-700 hover:bg-emerald-800 text-white active:scale-95"
                               >
                                 + Nộp Danh Sách Đội Tham Gia
                               </Link>
@@ -1247,7 +1247,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                     <button
                       type="button"
                       onClick={() => onRequestLogin?.()}
-                      className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                      className="w-full py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                     >
                       <LogIn className="w-4 h-4" />
                       <span>Đăng Nhập Để Xem Elo</span>

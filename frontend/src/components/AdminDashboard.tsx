@@ -841,7 +841,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <button
               type="button"
               onClick={() => setShowOfflineModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
+              className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
             >
               <PhoneCall className="w-4 h-4 shrink-0" />
               <span>Đặt Ca Tại Quầy</span>
@@ -1373,7 +1373,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => setShowAddPitchModal(true)}
-                className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm shadow-md transition-all flex items-center space-x-2 active:scale-95"
+                className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-sm shadow-md transition-all flex items-center space-x-2 active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Thêm Sân Con Mới</span>
@@ -1509,7 +1509,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                         type="button"
                         disabled={saving}
                         onClick={() => savePitchPrice(p)}
-                        className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 flex items-center gap-1.5"
                       >
                         {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                         {saving ? "Đang lưu..." : "Lưu giá sân"}
@@ -1574,7 +1574,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
             <button
               onClick={() => showToast("🎉 Đã lưu tồn kho Canteen!")}
-              className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm shadow-xs transition-all active:scale-95"
+              className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-xs transition-all active:scale-95"
             >
               Lưu Kho Canteen
             </button>
@@ -1802,7 +1802,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       }}
                       className={`p-2 rounded-xl text-center font-bold text-xs border transition-all ${
                         offlineDuration === item.dur
-                          ? "bg-emerald-500 text-white border-emerald-500 shadow-xs"
+                          ? "bg-emerald-700 text-white border-emerald-500 shadow-xs"
                           : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300"
                       }`}
                     >
@@ -1860,7 +1860,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     onClick={() => setOfflineDepositType("PAID_CASH")}
                     className={`p-3.5 rounded-xl font-bold border transition-all text-sm ${
                       offlineDepositType === "PAID_CASH"
-                        ? "bg-emerald-500 text-white border-emerald-500 shadow-xs"
+                        ? "bg-emerald-700 text-white border-emerald-500 shadow-xs"
                         : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
                     }`}
                   >
@@ -1890,7 +1890,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm shadow-md transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-sm shadow-md transition-colors"
                 >
                   Xác Nhận Khóa Slot
                 </button>
@@ -1964,7 +1964,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <button
                   type="button"
                   onClick={() => handleConfirmCheckin(selectedSlotForAction)}
-                  className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95"
+                  className="w-full py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95"
                 >
                   <UserCheck className="w-5 h-5" />
                   <span>Xác Nhận Check-in Vào Sân & Mở Đèn</span>

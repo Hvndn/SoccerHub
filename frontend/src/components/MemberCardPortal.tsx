@@ -247,7 +247,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                   onClick={() => onNavigateTab && onNavigateTab('booking')}
                   className="text-left p-3.5 bg-slate-50 dark:bg-slate-950 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 transition flex items-center gap-3 group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:bg-emerald-800 group-hover:text-white transition">
                     <Calendar className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -282,7 +282,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               <div className="flex flex-col sm:flex-row items-center gap-3">
                 <button 
                   onClick={() => onNavigateTab ? onNavigateTab('booking') : onBackToHome && onBackToHome()}
-                  className="w-full sm:flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-95"
+                  className="w-full sm:flex-1 h-12 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-95"
                 >
                   <span className="sm:hidden">Khám Phá Sân Ngay</span><span className="hidden sm:inline">Vào Bảng Điều Khiển / Khám Phá Sân Ngay</span>
                   <ArrowRight className="w-4 h-4" />

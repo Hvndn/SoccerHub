@@ -274,7 +274,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                   <p className="text-xs text-slate-500 font-medium">Ghi sổ tay, nhắn tin Zalo, giữ chỗ bằng miệng</p>
                 </div>
               </div>
-              <span className="px-2.5 py-1 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 font-extrabold text-[10px] uppercase">
+              <span className="px-2.5 py-1 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 font-extrabold text-[10px] uppercase">
                 Rủi ro cao
               </span>
             </div>
@@ -344,7 +344,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             <button
               type="button"
               onClick={() => onExplore("PLAYER")}
-              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
               <Users className="w-4 h-4" />
               <span>Khám Phá Cổng Cầu Thủ</span>

@@ -358,12 +358,12 @@ function RegisterTeamWizard() {
               <ArrowLeft className="w-4 h-4" />
               <span>Quay lại</span>
             </button>
-            <span className="text-[11px] font-mono text-slate-400">Bước {step + 1}/{STEPS.length}</span>
+            <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">Bước {step + 1}/{STEPS.length}</span>
             {step < STEPS.length - 1 ? (
               <button
                 type="button"
                 onClick={goNext}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black transition-all active:scale-95"
               >
                 <span>Tiếp tục</span>
                 <ArrowRight className="w-4 h-4" />
@@ -373,7 +373,7 @@ function RegisterTeamWizard() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50"
               >
                 {submitting && <RefreshCw className="w-4 h-4 animate-spin" />}
                 <span>{submitting ? "Đang nộp…" : "Xác nhận & Nộp đơn"}</span>
@@ -451,7 +451,7 @@ function PaymentSuccess({
             <button
               type="button"
               onClick={onPaidAck}
-              className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-all active:scale-95"
+              className="w-full py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black transition-all active:scale-95"
             >
               Tôi đã chuyển khoản
             </button>

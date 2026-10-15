@@ -194,7 +194,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
   const visibleMatches = listFor(activeFilter);
 
   const filterTabs: { id: typeof activeFilter; label: string; count: number; tone: string }[] = [
-    { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-emerald-500 text-white" },
+    { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-emerald-700 text-white" },
     { id: "tournaments", label: "Lịch đấu giải", count: allMatches.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
     { id: "matchmaking", label: "Kèo đã ghép", count: matchedPosts.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
     { id: "history", label: "Đã đá", count: doneMatches.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },

@@ -64,7 +64,7 @@ function AdminConsole() {
         <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <Link href="/" className="flex items-center gap-2 font-black text-lg tracking-tight">
-              <span className="text-emerald-600">Turf</span>
+              <span className="text-emerald-700 dark:text-emerald-400">Turf</span>
               <span className="text-slate-900 dark:text-white">Zone</span>
             </Link>
             <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-black uppercase tracking-wider">
@@ -84,7 +84,7 @@ function AdminConsole() {
 
       <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-4 sm:py-8">
         {isLoading ? (
-          <div className="space-y-3 max-w-5xl mx-auto" aria-label="Đang tải quyền quản trị">
+          <div role="status" className="space-y-3 max-w-5xl mx-auto" aria-label="Đang tải quyền quản trị">
             <div className="skeleton-shimmer h-8 w-64 rounded-xl" />
             <div className="skeleton-shimmer h-64 w-full rounded-2xl" />
           </div>
@@ -99,7 +99,7 @@ function AdminConsole() {
             </p>
             <Link
               href="/"
-              className="inline-block px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm transition-all active:scale-95"
+              className="inline-block px-6 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm transition-all active:scale-95"
             >
               Về trang chủ để đăng nhập
             </Link>
@@ -138,7 +138,7 @@ function AdminConsole() {
                     aria-current={active ? "page" : undefined}
                     className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-left transition-all shrink-0 lg:shrink ${
                       active
-                        ? "bg-emerald-600 text-white shadow-md"
+                        ? "bg-emerald-700 text-white shadow-md"
                         : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                     }`}
                   >
@@ -173,7 +173,7 @@ function AdminConsole() {
       </main>
 
       <footer className="border-t border-slate-200 dark:border-slate-800 py-4">
-        <p className="text-center text-[11px] text-slate-400 dark:text-slate-500">
+        <p className="text-center text-[11px] text-slate-600 dark:text-slate-400">
           © 2026 SoccerHub — Khu vực quản trị hệ thống (Super Admin).
         </p>
       </footer>
