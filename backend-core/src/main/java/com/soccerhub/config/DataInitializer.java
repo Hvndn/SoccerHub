@@ -1,11 +1,13 @@
 package com.soccerhub.config;
 
+import com.soccerhub.model.MatchResult;
 import com.soccerhub.model.MatchmakingPost;
 import com.soccerhub.model.Pitch;
 import com.soccerhub.model.Tournament;
 import com.soccerhub.model.TournamentTeamEntry;
 import com.soccerhub.model.User;
 import com.soccerhub.model.UserRole;
+import com.soccerhub.repository.MatchResultRepository;
 import com.soccerhub.repository.MatchmakingPostRepository;
 import com.soccerhub.repository.PitchRepository;
 import com.soccerhub.repository.TournamentRepository;
@@ -16,9 +18,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -29,6 +34,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PitchRepository pitchRepository;
     private final TournamentRepository tournamentRepository;
     private final MatchmakingPostRepository matchmakingPostRepository;
+    private final MatchResultRepository matchResultRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -44,6 +50,12 @@ public class DataInitializer implements CommandLineRunner {
             seedTournaments();
         } catch (Exception e) {
             log.warn("[DataInitializer] Bỏ qua seed giải đấu do lỗi: {}", e.getMessage());
+        }
+
+        try {
+            seedCompletedTournamentWithResults();
+        } catch (Exception e) {
+            log.warn("[DataInitializer] Bỏ qua seed giải đã có kết quả do lỗi: {}", e.getMessage());
         }
 
         try {
@@ -242,6 +254,158 @@ public class DataInitializer implements CommandLineRunner {
 
             tournamentRepository.saveAll(List.of(t1, t2, t3, t4, t5));
             log.info("Seeded 5 real football tournaments successfully.");
+        }
+    }
+
+    /**
+     * Tạo thêm MỘT giải đấu đã kết thúc, có sẵn nhánh đấu + kết quả thi đấu thật.
+     *
+     * <p>Lý do: các giải seed ở trên đều chưa bốc thăm nên bảng xếp hạng phong độ và
+     * màn nhánh đấu mở ra trống trơn, rất bất lợi khi demo. Giải này có sẵn
+     * {@code bracketJson} và các dòng trong {@code match_results} — đúng nguồn dữ liệu
+     * mà {@code TeamFormService} dùng để tính chuỗi W/D/L — nên phong độ hiển thị
+     * đúng ngay khi mở app.</p>
+     */
+    private void seedCompletedTournamentWithResults() {
+        boolean alreadySeeded = tournamentRepository.findAll().stream()
+                .anyMatch(t -> t.getTitle() != null
+                        && t.getTitle().contains("Grandmaster")
+                        && t.getBracketJson() != null
+                        && !t.getBracketJson().isBlank());
+        if (alreadySeeded) {
+            return;
+        }
+
+        final String A = "FC Đại Nắng";
+        final String B = "FC Phù Đổng Q7";
+        final String C = "FC Thanh Đa";
+        final String D = "FC Bình Thạnh";
+
+        String pitch = "Cụm Sân 11 Ngôi Sao, Q.7";
+
+        // ---- Nhánh đấu: bán kết + chung kết, tất cả đã có tỷ số ----
+        Map<String, Object> semi1 = new LinkedHashMap<>();
+        semi1.put("matchId", "R1-M1");
+        semi1.put("teamA", node(A, 1));
+        semi1.put("teamB", node(B, 4));
+        semi1.put("scoreA", 3);
+        semi1.put("scoreB", 2);
+        semi1.put("status", "DONE");
+        semi1.put("winner", A);
+        semi1.put("matchDate", LocalDate.now().minusDays(21).toString());
+        semi1.put("timeSlot", "17:00 - 19:00");
+        semi1.put("pitchName", pitch);
+
+        Map<String, Object> semi2 = new LinkedHashMap<>();
+        semi2.put("matchId", "R1-M2");
+        semi2.put("teamA", node(C, 2));
+        semi2.put("teamB", node(D, 3));
+        semi2.put("scoreA", 1);
+        semi2.put("scoreB", 4);
+        semi2.put("status", "DONE");
+        semi2.put("winner", D);
+        semi2.put("matchDate", LocalDate.now().minusDays(21).toString());
+        semi2.put("timeSlot", "19:00 - 21:00");
+        semi2.put("pitchName", pitch);
+
+        Map<String, Object> finalMatch = new LinkedHashMap<>();
+        finalMatch.put("matchId", "R2-M1");
+        finalMatch.put("teamA", node(A, 1));
+        finalMatch.put("teamB", node(D, 3));
+        finalMatch.put("scoreA", 2);
+        finalMatch.put("scoreB", 2);
+        finalMatch.put("status", "DONE");
+        finalMatch.put("winner", A);
+        finalMatch.put("matchDate", LocalDate.now().minusDays(14).toString());
+        finalMatch.put("timeSlot", "18:00 - 20:00");
+        finalMatch.put("pitchName", pitch);
+
+        Map<String, Object> round1 = new LinkedHashMap<>();
+        round1.put("name", "Bán kết");
+        round1.put("matches", List.of(semi1, semi2));
+
+        Map<String, Object> round2 = new LinkedHashMap<>();
+        round2.put("name", "Chung kết");
+        round2.put("matches", List.of(finalMatch));
+
+        Map<String, Object> bracket = new LinkedHashMap<>();
+        bracket.put("tournamentId", 0); // sẽ ghi đè bằng id thật sau khi lưu
+        bracket.put("title", "SoccerHub Grandmaster Series 2026");
+        bracket.put("drawnAt", LocalDateTime.now().minusDays(22).toString());
+        bracket.put("method", "SEED_BY_REGISTERED_AT");
+        bracket.put("teamCount", 4);
+        bracket.put("rounds", List.of(round1, round2));
+
+        Tournament cup = Tournament.builder()
+                .title("SoccerHub Grandmaster Series 2026")
+                .description("Giải đấu bốc tháng đã kết thúc — kèm nhánh đấu và lịch sử thi đấu thật để xem ngay bảng xếp hạng phong độ.")
+                .sportType("SAN_7")
+                .format("KNOCKOUT")
+                .pitchName(pitch)
+                .location("Quận 7, TP.HCM")
+                .totalTeams(4)
+                .registeredTeams(4)
+                .prizePool(12000000L)
+                .entryFee(600000L)
+                .startDate(LocalDate.now().minusDays(22).toString())
+                .endDate(LocalDate.now().minusDays(14).toString())
+                .registrationDeadline(LocalDate.now().minusDays(24).toString())
+                .status("COMPLETED")
+                .bannerUrl("https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=1200&q=80")
+                .teams(new ArrayList<>(List.of(
+                        TournamentTeamEntry.builder().teamName(A).captainName("Võ Thanh Tâm").captainPhone("0908777888").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(40)).build(),
+                        TournamentTeamEntry.builder().teamName(C).captainName("Lê Minh Khoa").captainPhone("0903123456").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(39)).build(),
+                        TournamentTeamEntry.builder().teamName(D).captainName("Phạm Gia Bảo").captainPhone("0907654321").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(38)).build(),
+                        TournamentTeamEntry.builder().teamName(B).captainName("Đỗ Hoàng Long").captainPhone("0909988776").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(37)).build()
+                )))
+                .build();
+
+        Tournament saved = tournamentRepository.save(cup);
+
+        bracket.put("tournamentId", saved.getId());
+        saved.setBracketJson(bracketJsonOf(bracket));
+        tournamentRepository.save(saved);
+
+        // ---- Lịch sử thi đấu thật: nguồn tính phong độ (chuỗi W/D/L) ----
+        matchResultRepository.saveAll(List.of(
+                result(saved.getId(), "R1-M1", "Bán kết", A, B, 3, 2, A, LocalDateTime.now().minusDays(21).withHour(17)),
+                result(saved.getId(), "R1-M2", "Bán kết", C, D, 1, 4, D, LocalDateTime.now().minusDays(21).withHour(19)),
+                result(saved.getId(), "R2-M1", "Chung kết", A, D, 2, 2, A, LocalDateTime.now().minusDays(14).withHour(18))
+        ));
+
+        log.info("Seeded a COMPLETED tournament with bracket + 3 real match results.");
+    }
+
+    /** Node đội trong bracketJson. Phong độ để trống — sẽ được TeamFormService gắn live khi đọc. */
+    private static Map<String, Object> node(String teamName, int seed) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("name", teamName);
+        m.put("seed", seed);
+        return m;
+    }
+
+    private static MatchResult result(Long tournamentId, String matchId, String roundName,
+                                      String teamA, String teamB, int scoreA, int scoreB,
+                                      String winner, LocalDateTime playedAt) {
+        return MatchResult.builder()
+                .tournamentId(tournamentId)
+                .matchId(matchId)
+                .roundName(roundName)
+                .teamA(teamA)
+                .teamB(teamB)
+                .scoreA(scoreA)
+                .scoreB(scoreB)
+                .winner(winner)
+                .playedAt(playedAt)
+                .build();
+    }
+
+    /** Bọc Map thành chuỗi JSON cho bracketJson. */
+    private static String bracketJsonOf(Object value) {
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(value);
+        } catch (Exception e) {
+            return null;
         }
     }
 
