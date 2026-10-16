@@ -9,17 +9,17 @@ import PageSpinner from "@/components/PageSpinner";
  * Sau khi React mount xong thì tự ẩn đi, không chặn thao tác.
  */
 export default function BootSplash() {
-  const [mounted, setMounted] = useState(false);
+ const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+ useEffect(() => {
+ setMounted(true);
+ }, []);
 
-  if (mounted) return null;
+ if (mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[200] bg-slate-50 dark:bg-slate-950">
-      <PageSpinner className="h-full w-full" />
-    </div>
-  );
+ return (
+ <div className="fixed inset-0 z-[200] bg-slate-50 ">
+ <PageSpinner className="h-full w-full" />
+ </div>
+ );
 }

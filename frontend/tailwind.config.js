@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: "class",
+
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -11,8 +11,8 @@ module.exports = {
       colors: {
         /** Màu thương hiệu. Dùng class `bg-brand` / `text-brand` thay cho ghi hex tay. */
         brand: {
-          DEFAULT: "#0ea5e9", // Màu chính cho nút / trạng thái đang chọn
-          dark: "#0284c7",    // Hover & focus (đậm hơn 1 bậc để nhìn rõ)
+          DEFAULT: "#0369a1", // Màu chính cho nút / trạng thái đang chọn
+          dark: "#075985",    // Hover & focus (đậm hơn 1 bậc để nhìn rõ)
           ink: "#0b4f6c",     // Màu chữ thương hiệu — đạt WCAG AA trên nền trắng
         },
         pitch: {

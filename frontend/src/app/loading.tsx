@@ -5,9 +5,9 @@ import PageSpinner from "@/components/PageSpinner";
  * (applies cho toàn bộ route dưới app/).
  */
 export default function Loading() {
-  return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950">
-      <PageSpinner className="min-h-screen w-full" />
-    </div>
-  );
+ return (
+ <div className="min-h-screen w-full bg-slate-50 ">
+ <PageSpinner className="min-h-screen w-full" />
+ </div>
+ );
 }

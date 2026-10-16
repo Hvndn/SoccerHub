@@ -78,12 +78,8 @@ p {
   .tracking-widest { letter-spacing: 0.08em; }
 }
 
-/* --- DARK THEME TOGGLE VIA CLASS --- */
-html.dark body,
-body.dark-theme {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
-}
+
+
 
 /* Standard Solid Panel Utilities - High Contrast & Crisp Borders */
 .glass-panel {
@@ -91,12 +87,7 @@ body.dark-theme {
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
-html.dark .glass-panel,
-body.dark-theme .glass-panel {
-  background-color: #0f172a !important;
-  border: 1px solid #1e293b !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
-}/* --- NO-SCROLLBAR UTILITY FOR HORIZONTAL PILLS & TABS --- */
+/* --- NO-SCROLLBAR UTILITY FOR HORIZONTAL PILLS & TABS --- */
 .no-scrollbar::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
@@ -130,7 +121,7 @@ body.dark-theme .glass-panel {
 }
 
 .stadium-shadow {
-  box-shadow: 0 4px 14px -2px rgba(14, 165, 233, 0.25);
+  box-shadow: 0 4px 14px -2px rgba(3, 105, 161, 0.25);
 }
 
 /* Explicit Auth Modal Tab Track and Contrast Fixes */
@@ -138,11 +129,7 @@ body.dark-theme .glass-panel {
   background-color: #e2e8f0;
   border: 1px solid #cbd5e1;
 }
-html.dark .auth-tab-track,
-body.dark-theme .auth-tab-track {
-  background-color: #0f172a !important;
-  border-color: #334155 !important;
-}
+
 
 .auth-tab-btn-inactive {
   color: #475569;
@@ -151,23 +138,14 @@ body.dark-theme .auth-tab-track {
 .auth-tab-btn-inactive:hover {
   color: #0f172a;
 }
-html.dark .auth-tab-btn-inactive,
-body.dark-theme .auth-tab-btn-inactive {
-  color: #94a3b8 !important;
-}
-html.dark .auth-tab-btn-inactive:hover,
-body.dark-theme .auth-tab-btn-inactive:hover {
-  color: #ffffff !important;
-}
+
+
 
 .auth-label {
   color: #1e293b;
   font-weight: 700;
 }
-html.dark .auth-label,
-body.dark-theme .auth-label {
-  color: #cbd5e1 !important;
-}
+
 
 /* Explicit Auth Role Card Styles */
 .auth-role-card {
@@ -176,34 +154,19 @@ body.dark-theme .auth-label {
   color: #64748b;
 }
 .auth-role-card:hover {
-  border-color: #0ea5e9;
+  border-color: #0369a1;
   color: #0b4f6c;
-  background-color: rgba(14, 165, 233, 0.05);
+  background-color: rgba(3, 105, 161, 0.05);
 }
 .auth-role-card-active {
-  background-color: rgba(14, 165, 233, 0.08) !important;
-  border: 2px solid #0ea5e9 !important;
+  background-color: rgba(3, 105, 161, 0.08) !important;
+  border: 2px solid #0369a1 !important;
   color: #0b4f6c !important;
 }
 
-html.dark .auth-role-card,
-body.dark-theme .auth-role-card {
-  background-color: #0f172a !important;
-  border: 2px solid #334155 !important;
-  color: #94a3b8 !important;
-}
-html.dark .auth-role-card:hover,
-body.dark-theme .auth-role-card:hover {
-  border-color: #38bdf8 !important;
-  color: #38bdf8 !important;
-  background-color: rgba(56, 189, 248, 0.05) !important;
-}
-html.dark .auth-role-card-active,
-body.dark-theme .auth-role-card-active {
-  background-color: rgba(56, 189, 248, 0.1) !important;
-  border: 2px solid #38bdf8 !important;
-  color: #38bdf8 !important;
-}
+
+
+
 
 /* Solid Buttons Color Guarantee */
 button.bg-pitch-emerald,
@@ -339,7 +302,7 @@ button.bg-emerald-700,
 @media (hover: none) {
   .hover-card-elevate:active {
     transform: translateY(-2px);
-    box-shadow: 0 12px 18px -6px rgba(14, 165, 233, 0.15);
+    box-shadow: 0 12px 18px -6px rgba(3, 105, 161, 0.15);
   }
   .sport-card-hover:active {
     transform: translateY(-3px);
@@ -354,11 +317,9 @@ button.bg-emerald-700,
 }
 .hover-card-elevate:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(14, 165, 233, 0.12), 0 8px 10px -6px rgba(14, 165, 233, 0.08);
+  box-shadow: 0 20px 25px -5px rgba(3, 105, 161, 0.12), 0 8px 10px -6px rgba(3, 105, 161, 0.08);
 }
-html.dark .hover-card-elevate:hover {
-  box-shadow: 0 20px 25px -5px rgba(56, 189, 248, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-}
+
 
 /* Athletic Sport Hover Card (Dành cho Sân bóng, Giải đấu) */
 .sport-card-hover {
@@ -367,13 +328,10 @@ html.dark .hover-card-elevate:hover {
 }
 .sport-card-hover:hover {
   transform: translateY(-5px);
-  box-shadow: 0 20px 30px -10px rgba(16, 185, 129, 0.18), 0 10px 15px -8px rgba(14, 165, 233, 0.12);
+  box-shadow: 0 20px 30px -10px rgba(16, 185, 129, 0.18), 0 10px 15px -8px rgba(3, 105, 161, 0.12);
   border-color: rgba(16, 185, 129, 0.45) !important;
 }
-html.dark .sport-card-hover:hover {
-  box-shadow: 0 20px 30px -10px rgba(16, 185, 129, 0.25), 0 10px 15px -8px rgba(0, 0, 0, 0.7);
-  border-color: rgba(52, 211, 153, 0.5) !important;
-}
+
 
 /* Button Shimmer Beam Effect */
 @keyframes shimmerBeam {
@@ -451,7 +409,4 @@ html.dark .sport-card-hover:hover {
   background-size: 200% 100%;
   animation: skeletonPulse 1.8s infinite;
 }
-html.dark .skeleton-shimmer {
-  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
-  background-size: 200% 100%;
-}
+

@@ -102,8 +102,9 @@ Ngoài ra seed sẵn **một giải đã kết thúc** kèm nhánh đấu và 3 
 
 ## 🎨 Ghi chú thiết kế
 
-- **Màu thương hiệu:** `#0ea5e9` (cyan) cho toàn bộ nút; hover/focus dùng `#0284c7`.
-  Chữ thương hiệu `#0b4f6c` giữ cho phần chữ để đảm bảo độ tương phản WCAG AA.
+- **Màu thương hiệu:** nút bấm dùng `#0369a1` (sky-700) — chữ trắng trên nền này đạt **5.93:1**, vượt chuẩn WCAG AA (4.5:1).
+  Hover/focus dùng `#075985` (7.56:1). Chữ thương hiệu `#0b4f6c` dùng cho phần chữ để giữ độ tương phản cao.
+  *(Ghi chú: `#0ea5e9` xanh cyan sáng hơn chỉ đạt 2.77:1 với chữ trắng nên không dùng làm nền nút.)*
 - **Dark mode:** hỗ trợ đầy đủ, mọi panel/ảnh/chữ đều có biến thể `dark:`.
 - **Mobile:** không tràn ngang ở 390px trên toàn bộ các route (đã kiểm tra tự động).
 

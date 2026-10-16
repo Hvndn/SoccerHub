@@ -9,144 +9,144 @@ import { getAdminOverview, getRevenueReport, cleanOrphanData, type AdminOverview
 import { formatMoney } from "@/lib/tournamentService";
 
 export default function AdminOverview({ notify }: { notify: (type: "ok" | "err", text: string) => void }) {
-  const [data, setData] = useState<AdminOverview | null>(null);
-  const [report, setReport] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [chartIn, setChartIn] = useState(false);
+ const [data, setData] = useState<AdminOverview | null>(null);
+ const [report, setReport] = useState<any>(null);
+ const [loading, setLoading] = useState(true);
+ const [chartIn, setChartIn] = useState(false);
 
-  useEffect(() => {
-    const raf = requestAnimationFrame(() => setChartIn(true));
-    return () => cancelAnimationFrame(raf);
-  }, []);
+ useEffect(() => {
+ const raf = requestAnimationFrame(() => setChartIn(true));
+ return () => cancelAnimationFrame(raf);
+ }, []);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const [ov, rep] = await Promise.all([
-          getAdminOverview(),
-          getRevenueReport().catch(() => null),
-        ]);
-        if (alive) {
-          setData(ov);
-          setReport(rep);
-        }
-      } catch (err: any) {
-        if (alive) notify("err", err?.message || "Không tải được số liệu tổng quan.");
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [notify]);
+ useEffect(() => {
+ let alive = true;
+ (async () => {
+ try {
+ const [ov, rep] = await Promise.all([
+ getAdminOverview(),
+ getRevenueReport().catch(() => null),
+ ]);
+ if (alive) {
+ setData(ov);
+ setReport(rep);
+ }
+ } catch (err: any) {
+ if (alive) notify("err", err?.message || "Không tải được số liệu tổng quan.");
+ } finally {
+ if (alive) setLoading(false);
+ }
+ })();
+ return () => {
+ alive = false;
+ };
+ }, [notify]);
 
-  const kpis = data
-    ? [
-        { label: "Người dùng", value: data.totalUsers, icon: <Users className="w-5 h-5" />, tone: "bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300" },
-        { label: "Cụm sân", value: data.totalPitches, icon: <MapPin className="w-5 h-5" />, tone: "bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300" },
-        { label: "Giải đấu (mở)", value: data.openTournaments, suffix: `/${data.totalTournaments}`, icon: <Trophy className="w-5 h-5" />, tone: "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300" },
-        { label: "Đơn đặt sân", value: data.totalBookings, icon: <Ticket className="w-5 h-5" />, tone: "bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300" },
-        { label: "Tin chợ kèo", value: data.totalMatchmakingPosts, icon: <MessagesSquare className="w-5 h-5" />, tone: "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300" },
-        { label: "Cọc thu (đ)", value: data.totalRevenue, money: true, icon: <Wallet className="w-5 h-5" />, tone: "bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-lime-300" },
-      ]
-    : [];
+ const kpis = data
+ ? [
+ { label: "Người dùng", value: data.totalUsers, icon: <Users className="w-5 h-5" />, tone: "bg-sky-100 text-sky-700 " },
+ { label: "Cụm sân", value: data.totalPitches, icon: <MapPin className="w-5 h-5" />, tone: "bg-sky-100 text-sky-800 " },
+ { label: "Giải đấu (mở)", value: data.openTournaments, suffix: `/${data.totalTournaments}`, icon: <Trophy className="w-5 h-5" />, tone: "bg-amber-100 text-amber-700 " },
+ { label: "Đơn đặt sân", value: data.totalBookings, icon: <Ticket className="w-5 h-5" />, tone: "bg-indigo-100 text-indigo-700 " },
+ { label: "Tin chợ kèo", value: data.totalMatchmakingPosts, icon: <MessagesSquare className="w-5 h-5" />, tone: "bg-rose-100 text-rose-700 " },
+ { label: "Cọc thu (đ)", value: data.totalRevenue, money: true, icon: <Wallet className="w-5 h-5" />, tone: "bg-sky-100 text-sky-800 " },
+ ]
+ : [];
 
-  const monthly: any[] = Array.isArray(report?.monthlyChart) ? report.monthlyChart : [];
-  const maxRev = Math.max(1, ...monthly.map((m) => Number(m.revenue) || 0));
+ const monthly: any[] = Array.isArray(report?.monthlyChart) ? report.monthlyChart : [];
+ const maxRev = Math.max(1, ...monthly.map((m) => Number(m.revenue) || 0));
 
-  return (
-    <div className="space-y-3 sm:space-y-5">
-      <SectionCard>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="font-black text-slate-900 dark:text-white text-sm">Bảo trì dữ liệu</h2>            <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
-              Xóa kết quả trận và bàn thắng mồ côi (giải đã bị xóa).
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                const res = await cleanOrphanData();
-                notify("ok", res.message);
-              } catch (err: any) {
-                notify("err", err?.message || "Dọn dữ liệu thất bại.");
-              }
-            }}
-            className="shrink-0 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all active:scale-95"
-          >
-            Dọn dữ liệu mồ côi
-          </button>
-        </div>
-      </SectionCard>
+ return (
+ <div className="space-y-3 sm:space-y-5">
+ <SectionCard>
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+ <div>
+ <h2 className="font-black text-slate-900 text-sm">Bảo trì dữ liệu</h2> <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
+ Xóa kết quả trận và bàn thắng mồ côi (giải đã bị xóa).
+ </p>
+ </div>
+ <button
+ type="button"
+ onClick={async () => {
+ try {
+ const res = await cleanOrphanData();
+ notify("ok", res.message);
+ } catch (err: any) {
+ notify("err", err?.message || "Dọn dữ liệu thất bại.");
+ }
+ }}
+ className="shrink-0 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all active:scale-95"
+ >
+ Dọn dữ liệu mồ côi
+ </button>
+ </div>
+ </SectionCard>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        {loading
-          ? [0, 1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 space-y-2">
-                <div className="skeleton-shimmer h-4 w-1/2 rounded-lg" />
-                <div className="skeleton-shimmer h-7 w-2/3 rounded-lg" />
-              </div>
-            ))
-          : kpis.map((k, i) => (
-              <Reveal key={k.label} delay={Math.min(i, 5) * 70}>
-                <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 flex items-center gap-3 h-full">
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${k.tone}`}>
-                    {k.icon}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{k.label}</p>
-                    <p className="font-mono font-black text-lg sm:text-xl text-slate-900 dark:text-white truncate">
-                      <CountUp
-                        value={k.value}
-                        format={(n) =>
-                          k.money
-                            ? `${Math.round(n).toLocaleString("vi-VN")}đ`
-                            : `${Math.round(n).toLocaleString("vi-VN")}${k.suffix ?? ""}`
-                        }
-                      />
-                    </p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-      </div>
+ <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+ {loading
+ ? [0, 1, 2, 3, 4, 5].map((i) => (
+ <div key={i} className="rounded-2xl bg-white border border-slate-200 p-3 sm:p-4 space-y-2">
+ <div className="skeleton-shimmer h-4 w-1/2 rounded-lg" />
+ <div className="skeleton-shimmer h-7 w-2/3 rounded-lg" />
+ </div>
+ ))
+ : kpis.map((k, i) => (
+ <Reveal key={k.label} delay={Math.min(i, 5) * 70}>
+ <div className="rounded-2xl bg-white border border-slate-200 p-3 sm:p-4 flex items-center gap-3 h-full">
+ <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${k.tone}`}>
+ {k.icon}
+ </div>
+ <div className="min-w-0">
+ <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{k.label}</p>
+ <p className="font-mono font-black text-lg sm:text-xl text-slate-900 truncate">
+ <CountUp
+ value={k.value}
+ format={(n) =>
+ k.money
+ ? `${Math.round(n).toLocaleString("vi-VN")}đ`
+ : `${Math.round(n).toLocaleString("vi-VN")}${k.suffix ?? ""}`
+ }
+ />
+ </p>
+ </div>
+ </div>
+ </Reveal>
+ ))}
+ </div>
 
-      <SectionCard>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-black text-slate-900 dark:text-white text-sm">Doanh thu theo tháng</h3>          {report && (
-            <span className="text-[11px] font-mono text-slate-500">
-              Tổng tháng này: {formatMoney(report.totalRevenueThisMonth)} • Lấp đầy TB: {report.avgOccupancyRate}
-            </span>
-          )}
-        </div>
-        {loading ? (
-          <div className="skeleton-shimmer h-40 w-full rounded-xl" />
-        ) : monthly.length === 0 ? (
-          <p className="text-xs text-slate-500 text-center py-6 sm:py-8">
-            Chưa có dữ liệu báo cáo. {report === null ? "Backend /admin/revenue-report hiện trả số liệu mẫu." : ""}
-          </p>
-        ) : (
-          <div className="flex items-end gap-2 h-44" role="img" aria-label="Biểu đồ doanh thu theo tháng">
-            {monthly.map((m, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1.5 min-w-0 h-full justify-end">
-                <span className="text-[10px] font-mono font-bold text-sky-800 dark:text-sky-400 whitespace-nowrap">
-                  {(Number(m.revenue) / 1000000).toFixed(0)}tr
-                </span>
-                <div
-                  className="w-full rounded-t-lg bg-gradient-to-t from-[#0ea5e9] to-[#0284c7] transition-all duration-700"
-                  style={{ height: chartIn ? `${Math.max(4, Math.round((Number(m.revenue) / maxRev) * 100))}%` : "4%", transitionDelay: `${i * 60}ms` }}
-                />
-                <span className="text-[9px] font-bold text-slate-500 truncate w-full text-center">
-                  {String(m.month).replace(" (Dự kiến)", "*")}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </SectionCard>
-    </div>
-  );
+ <SectionCard>
+ <div className="flex items-center justify-between mb-4">
+ <h3 className="font-black text-slate-900 text-sm">Doanh thu theo tháng</h3> {report && (
+ <span className="text-[11px] font-mono text-slate-500">
+ Tổng tháng này: {formatMoney(report.totalRevenueThisMonth)} • Lấp đầy TB: {report.avgOccupancyRate}
+ </span>
+ )}
+ </div>
+ {loading ? (
+ <div className="skeleton-shimmer h-40 w-full rounded-xl" />
+ ) : monthly.length === 0 ? (
+ <p className="text-xs text-slate-500 text-center py-6 sm:py-8">
+ Chưa có dữ liệu báo cáo. {report === null ? "Backend /admin/revenue-report hiện trả số liệu mẫu." : ""}
+ </p>
+ ) : (
+ <div className="flex items-end gap-2 h-44" role="img" aria-label="Biểu đồ doanh thu theo tháng">
+ {monthly.map((m, i) => (
+ <div key={i} className="flex-1 flex flex-col items-center gap-1.5 min-w-0 h-full justify-end">
+ <span className="text-[10px] font-mono font-bold text-sky-800 whitespace-nowrap">
+ {(Number(m.revenue) / 1000000).toFixed(0)}tr
+ </span>
+ <div
+ className="w-full rounded-t-lg bg-gradient-to-t from-[#0369a1] to-[#075985] transition-all duration-700"
+ style={{ height: chartIn ? `${Math.max(4, Math.round((Number(m.revenue) / maxRev) * 100))}%` : "4%", transitionDelay: `${i * 60}ms` }}
+ />
+ <span className="text-[9px] font-bold text-slate-500 truncate w-full text-center">
+ {String(m.month).replace(" (Dự kiến)", "*")}
+ </span>
+ </div>
+ ))}
+ </div>
+ )}
+ </SectionCard>
+ </div>
+ );
 }

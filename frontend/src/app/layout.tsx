@@ -13,59 +13,59 @@ import Toaster from "@/components/Toaster";
  * khi tải font thất bại trên mạng di động.
  */
 const beVietnamPro = Be_Vietnam_Pro({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  variable: "--font-sans",
-  display: "swap",
-  fallback: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
+ subsets: ["latin", "vietnamese"],
+ weight: ["400", "500", "600", "700", "800", "900"],
+ variable: "--font-sans",
+ display: "swap",
+ fallback: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin", "vietnamese"],
-  weight: ["500", "600", "700", "800"],
-  variable: "--font-mono",
-  display: "swap",
-  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+ subsets: ["latin", "vietnamese"],
+ weight: ["500", "600", "700", "800"],
+ variable: "--font-mono",
+ display: "swap",
+ fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
 });
 
 export const metadata: Metadata = {
-  title: "SoccerHub - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh",
-  description: "Nền tảng quản lý sân bóng, giải đấu và AI gợi ý sân thông minh tích hợp lịch sử thi đấu",
+ title: "SoccerHub - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh",
+ description: "Nền tảng quản lý sân bóng, giải đấu và AI gợi ý sân thông minh tích hợp lịch sử thi đấu",
 };
 
 export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 5,
-  viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
-  ],
+ width: "device-width",
+ initialScale: 1,
+ maximumScale: 5,
+ viewportFit: "cover",
+ themeColor: [
+ { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+ { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+ ],
 };
 
 export default function RootLayout({
-  children,
+ children,
 }: {
-  children: React.ReactNode;
+ children: React.ReactNode;
 }) {
-  return (
-    <html
-      lang="vi"
-      suppressHydrationWarning
-      className={`${beVietnamPro.variable} ${jetbrainsMono.variable} overflow-x-hidden`}
-    >
-      <body className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden antialiased">
-        <AuthProvider>
-          <ThemeProvider>
-            {/* Vòng xoay hiện ngay khi F5, tự ẩn sau khi React mount */}
-            <BootSplash />
-            {/* Thông báo nhỏ góc phải, thay cho window.alert */}
-            <Toaster />
-            {children}
-          </ThemeProvider>
-        </AuthProvider>
-      </body>
-    </html>
-  );
+ return (
+ <html
+ lang="vi"
+ suppressHydrationWarning
+ className={`${beVietnamPro.variable} ${jetbrainsMono.variable} overflow-x-hidden`}
+ >
+ <body className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 overflow-x-hidden antialiased">
+ <AuthProvider>
+ <ThemeProvider>
+ {/* Vòng xoay hiện ngay khi F5, tự ẩn sau khi React mount */}
+ <BootSplash />
+ {/* Thông báo nhỏ góc phải, thay cho window.alert */}
+ <Toaster />
+ {children}
+ </ThemeProvider>
+ </AuthProvider>
+ </body>
+ </html>
+ );
 }
