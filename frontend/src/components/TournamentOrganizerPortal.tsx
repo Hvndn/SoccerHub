@@ -407,13 +407,13 @@ export default function TournamentOrganizerPortal({
                     ? "bg-rose-500 text-white animate-pulse"
                     : t.status === "active"
                     ? "bg-amber-500/20 text-amber-500 border border-amber-500/30"
-                    : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                    : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-500"
                 }`}>
                   {t.status === "live" && <Radio className="w-3 h-3 animate-spin" />}
                   {t.sportBadge}
                 </span>
 
-                <span className="text-[11px] font-mono text-slate-400 font-bold">
+                <span className="text-[11px] font-mono text-slate-500 font-bold">
                   {t.courts}
                 </span>
               </div>
@@ -422,14 +422,14 @@ export default function TournamentOrganizerPortal({
                 <h3 className="text-lg font-black tracking-tight leading-snug">
                   {t.title}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                <p className="text-xs text-slate-500 mt-1 font-medium">
                   {t.subtitle}
                 </p>
               </div>
 
               {/* Progress Bar */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] font-bold text-slate-400">
+                <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
                   <span>Tiến Độ Giải Đấu</span>
                   <span>{t.progress}%</span>
                 </div>
@@ -443,7 +443,7 @@ export default function TournamentOrganizerPortal({
             </div>
 
             <div className="pt-5 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2 relative z-10">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <span className="text-xs font-bold text-slate-500 flex items-center gap-1">
                 {t.hasBracket ? "✅ Đã bốc thăm — có nhánh đấu trong CSDL" : "⏳ Chưa bốc thăm"}
               </span>
 
@@ -636,7 +636,7 @@ export default function TournamentOrganizerPortal({
             {!activeBracket ? (
               <p className="p-4 sm:p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
                 <Trophy className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
-                <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                <p className="mt-3 text-sm text-slate-500">
                   {dbTournaments.length === 0
                     ? "Chưa đọc được giải đấu từ máy chủ."
                     : "Chưa giải nào bốc thăm. Vào tab “Giải Đấu & BXH › Bảng Đấu & Nhánh Bracket” để bấm Bốc thăm."}
@@ -651,7 +651,7 @@ export default function TournamentOrganizerPortal({
                         className={`text-xs font-black uppercase tracking-wider text-center border-b pb-2 ${
                           ri === activeBracket.rounds.length - 1
                             ? "text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800"
-                            : "text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800"
+                            : "text-slate-500 border-slate-200 dark:border-slate-800"
                         }`}
                       >
                         {r.name} ({r.matches.length})
@@ -680,7 +680,7 @@ export default function TournamentOrganizerPortal({
                             }`}
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <span className="font-mono text-[10px] text-slate-400">{m.matchId}</span>
+                              <span className="font-mono text-[10px] text-slate-500">{m.matchId}</span>
                               {m.matchDate && (
                                 <span className="font-mono text-[9px] text-sky-600 dark:text-sky-400">
                                   {m.matchDate.split("-").reverse().join("/")} {m.timeSlot ?? ""}
@@ -694,9 +694,9 @@ export default function TournamentOrganizerPortal({
                                   winner === t?.name
                                     ? "font-black text-sky-800 dark:text-sky-400"
                                     : winner && winner !== t?.name
-                                    ? "text-slate-400"
+                                    ? "text-slate-500"
                                     : t?.tbd
-                                    ? "italic text-slate-400"
+                                    ? "italic text-slate-500"
                                     : "text-slate-700 dark:text-slate-200 font-bold"
                                 }`}
                               >
@@ -705,7 +705,7 @@ export default function TournamentOrganizerPortal({
                               </div>
                             ))}
                             {m.status !== "DONE" && m.pitchName && (
-                              <div className="text-[9px] text-slate-400 truncate">{m.pitchName}</div>
+                              <div className="text-[9px] text-slate-500 truncate">{m.pitchName}</div>
                             )}
                           </div>
                         );
@@ -733,7 +733,7 @@ export default function TournamentOrganizerPortal({
                     className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
                       bottomTab === tab.id
                         ? "bg-[#0ea5e9] text-white shadow-md"
-                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        : "text-slate-600 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                     }`}
                   >
                     {tab.label}
@@ -753,7 +753,7 @@ export default function TournamentOrganizerPortal({
 
             {/* Chưa chọn giải có nhánh đấu */}
             {!activeBracket && (
-              <p className="text-sm text-slate-500 dark:text-slate-400 py-4 sm:py-6 text-center">
+              <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">
                 {dbTournaments.length === 0
                   ? "Chưa đọc được danh sách giải từ CSDL."
                   : "Chưa giải nào trong CSDL đã bốc thăm. Mở tab “Giải Đấu & BXH › Bảng Đấu & Nhánh Bracket” để bốc thăm và nhập kết quả."}
@@ -763,14 +763,14 @@ export default function TournamentOrganizerPortal({
             {/* TAB CONTENT: BXH TÍNH TỪ TRẬN ĐÃ ĐÁ */}
             {bottomTab === "standings" && activeBracket && (
               standings.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400 py-4 sm:py-6 text-center">
+                <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">
                   Chưa có trận nào có kết quả nên chưa xếp hạng được.
                 </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse min-w-[620px]">
                     <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                      <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-black uppercase text-slate-500 tracking-wider">
                         <th className="py-3 px-3">Hạng</th>
                         <th className="py-3 px-3">Đội Bóng (FC)</th>
                         <th className="py-3 px-3 text-center">Trận</th>
@@ -820,11 +820,11 @@ export default function TournamentOrganizerPortal({
             {bottomTab === "var_logs" && activeBracket && (
               <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <p className="text-xs font-black uppercase text-slate-400 tracking-wider mb-2">
+                  <p className="text-xs font-black uppercase text-slate-500 tracking-wider mb-2">
                     Kết quả đã ghi nhận ({doneMatches.length})
                   </p>
                   {doneMatches.length === 0 ? (
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Chưa có trận nào kết thúc.</p>
+                    <p className="text-xs text-slate-500">Chưa có trận nào kết thúc.</p>
                   ) : (
                     <div className="space-y-2">
                       {doneMatches.map((m: any) => (
@@ -832,11 +832,11 @@ export default function TournamentOrganizerPortal({
                           key={m.matchId}
                           className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs"
                         >
-                          <span className="font-mono text-slate-400 shrink-0">{m.matchId}</span>
+                          <span className="font-mono text-slate-500 shrink-0">{m.matchId}</span>
                           <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
                             {m.teamA} <span className="font-mono text-sky-700 dark:text-sky-400">{m.scoreA}-{m.scoreB}</span> {m.teamB}
                           </span>
-                          <span className="font-mono text-slate-400 shrink-0">
+                          <span className="font-mono text-slate-500 shrink-0">
                             {m.matchDate ? m.matchDate.split("-").reverse().join("/") : "—"}
                           </span>
                         </div>
@@ -846,11 +846,11 @@ export default function TournamentOrganizerPortal({
                 </div>
 
                 <div>
-                  <p className="text-xs font-black uppercase text-slate-400 tracking-wider mb-2">
+                  <p className="text-xs font-black uppercase text-slate-500 tracking-wider mb-2">
                     Vua phá lưới giải ({topScorers.length})
                   </p>
                   {topScorers.length === 0 ? (
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-slate-500">
                       Chưa có dữ liệu cầu thủ ghi bàn. Khi nhập kết quả ở tab Bracket, mục “Ghi bàn/kiến tạo” sẽ ghi vào bảng{" "}
                       <span className="font-mono">goal_events</span>.
                     </p>
@@ -867,7 +867,7 @@ export default function TournamentOrganizerPortal({
                             </span>
                             <div className="min-w-0">
                               <p className="font-bold text-slate-900 dark:text-white truncate">{s.playerName}</p>
-                              <p className="text-[10px] text-slate-400 truncate">{s.teamName}</p>
+                              <p className="text-[10px] text-slate-500 truncate">{s.teamName}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 font-mono shrink-0">
@@ -891,7 +891,7 @@ export default function TournamentOrganizerPortal({
             {/* TAB CONTENT: LỊCH THI ĐẤU THẬT */}
             {bottomTab === "schedule" && activeBracket && (
               scheduledMatches.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400 py-4 sm:py-6 text-center">
+                <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">
                   BTC chưa bấm “Xếp lịch thi đấu” cho giải này nên chưa có ngày/giờ cho từng trận.
                 </p>
               ) : (
@@ -902,7 +902,7 @@ export default function TournamentOrganizerPortal({
                       className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="font-mono text-slate-400 shrink-0">{m.matchId}</span>
+                        <span className="font-mono text-slate-500 shrink-0">{m.matchId}</span>
                         <span className="font-bold text-slate-900 dark:text-white truncate">
                           {m.teamA} vs {m.teamB}
                         </span>
@@ -947,7 +947,7 @@ export default function TournamentOrganizerPortal({
               {activeTournament ? (
                 <>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 dark:text-slate-400 font-bold">Đội đã đăng ký:</span>
+                    <span className="text-slate-500 font-bold">Đội đã đăng ký:</span>
                     <span className="text-sky-800 dark:text-sky-400 font-mono font-black">
                       {(activeTournament.teams?.length ?? 0)}/{activeTournament.totalTeams ?? 0}
                     </span>
@@ -970,18 +970,18 @@ export default function TournamentOrganizerPortal({
                     />
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 dark:text-slate-400 font-bold">Lệ phí mỗi đội:</span>
+                    <span className="text-slate-500 font-bold">Lệ phí mỗi đội:</span>
                     <span className="font-mono font-black">{formatMoney(activeTournament.entryFee ?? 0)}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 dark:text-slate-400 font-bold">Đội chờ xác nhận lệ phí:</span>
+                    <span className="text-slate-500 font-bold">Đội chờ xác nhận lệ phí:</span>
                     <span className="font-mono font-black text-amber-600 dark:text-amber-400">
                       {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT").length}
                     </span>
                   </div>
                 </>
               ) : (
-                <p className="text-xs text-slate-500 dark:text-slate-400">Chưa chọn được giải nào từ CSDL.</p>
+                <p className="text-xs text-slate-500">Chưa chọn được giải nào từ CSDL.</p>
               )}
             </div>
 
@@ -1013,24 +1013,24 @@ export default function TournamentOrganizerPortal({
             </div>
 
             {!activeTournament || !activeTournament.prizePool ? (
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500">
                 Giải này chưa khai báo giải thưởng trong CSDL.
               </p>
             ) : (
               <>
                 <div className="text-center bg-slate-50 dark:bg-slate-950 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                     TỔNG GIẢI THƯỞNG
                   </span>
                   <span className="text-xl sm:text-3xl font-black font-mono text-sky-700 dark:text-sky-400 tracking-tight">
                     {formatMoney(activeTournament.prizePool)}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-bold block pt-1">
+                  <span className="text-[10px] text-slate-500 font-bold block pt-1">
                     Số tiền do ban tổ chức khai trong hồ sơ giải
                   </span>
                 </div>
 
-                <p className="text-[10px] text-slate-400 leading-relaxed">
+                <p className="text-[10px] text-slate-500 leading-relaxed">
                   Hệ thống chưa có bảng phân bổ giải thưởng theo hạng trong CSDL — việc chia tiền do ban tổ chức thực hiện bên ngoài.
                 </p>
               </>
@@ -1039,12 +1039,12 @@ export default function TournamentOrganizerPortal({
 
           {/* 3. THÔNG TIN SÂN & THỜI GIAN THI ĐẤU (thật) */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
-            <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider">
+            <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider">
               Thông Tin Giải Từ CSDL
             </h4>
 
             {!activeTournament ? (
-              <p className="text-xs text-slate-500 dark:text-slate-400">Chưa chọn được giải.</p>
+              <p className="text-xs text-slate-500">Chưa chọn được giải.</p>
             ) : (
               <div className="space-y-2 text-xs">
                 {[
@@ -1059,7 +1059,7 @@ export default function TournamentOrganizerPortal({
                     key={r.label}
                     className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2"
                   >
-                    <span className="text-slate-500 dark:text-slate-400 shrink-0">{r.label}</span>
+                    <span className="text-slate-500 shrink-0">{r.label}</span>
                     <span className="font-bold text-slate-900 dark:text-white text-right truncate">{r.value}</span>
                   </div>
                 ))}

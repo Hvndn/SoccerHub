@@ -252,7 +252,7 @@ export default function MultiSportArena({
                   className={`px-3.5 py-2 rounded-lg text-xs font-extrabold transition-all ${
                     activeFilter === tab.id
                       ? 'bg-[#0ea5e9] text-white shadow-lg'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'
                   }`}
                 >
                   {tab.label}
@@ -265,19 +265,19 @@ export default function MultiSportArena({
           <div className="mt-6 pt-6 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
               <div className="text-lg sm:text-2xl font-bold text-emerald-400">{courts.length} Sân</div>
-              <div className="text-xs text-slate-400 mt-0.5 break-words">Trong bảng pitches</div>
+              <div className="text-xs text-slate-500 mt-0.5 break-words">Trong bảng pitches</div>
             </div>
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
               <div className="text-lg sm:text-2xl font-bold text-sky-400">{matchQueues.length} Kèo Mở</div>
-              <div className="text-xs text-slate-400 mt-0.5 break-words">Bảng matchmaking_posts</div>
+              <div className="text-xs text-slate-500 mt-0.5 break-words">Bảng matchmaking_posts</div>
             </div>
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
               <div className="text-lg sm:text-2xl font-bold text-cyan-400">Sân 5 · 7 · 11</div>
-              <div className="text-xs text-slate-400 mt-0.5 break-words">Loại mặt sân đang khai thác</div>
+              <div className="text-xs text-slate-500 mt-0.5 break-words">Loại mặt sân đang khai thác</div>
             </div>
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
               <div className="text-lg sm:text-2xl font-bold text-amber-400">Cọc 50%</div>
-              <div className="text-xs text-slate-400 mt-0.5 break-words">Thanh toán qua VietQR khi đặt</div>
+              <div className="text-xs text-slate-500 mt-0.5 break-words">Thanh toán qua VietQR khi đặt</div>
             </div>
           </div>
         </div>
@@ -294,7 +294,7 @@ export default function MultiSportArena({
                 <Activity className="w-5 h-5 text-emerald-500" />
                 <span>Trạng Thái Các Sân Bóng Trực Tiếp (Live Football Pitch Matrix)</span>
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 hidden sm:block">
+              <p className="text-xs sm:text-sm text-slate-500 mt-1 hidden sm:block">
                 Danh sách cụm sân đọc từ bảng pitches — bấm “Đặt Ca” để tạo đơn giữ chỗ thật trong CSDL
               </p>
             </div>
@@ -313,7 +313,7 @@ export default function MultiSportArena({
               </div>
             </div>
 
-            <div className="text-slate-500 dark:text-slate-400 text-xs flex items-center">
+            <div className="text-slate-500 text-xs flex items-center">
               <QrCode className="w-4 h-4 mr-1 text-emerald-500" /> Thanh toán cọc VietQR khi đặt
             </div>
           </div>
@@ -364,7 +364,7 @@ export default function MultiSportArena({
                       </span>
                     )}
                     {court.status === 'booked' && (
-                      <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                      <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-500 text-xs font-bold px-2.5 py-0.5 rounded-full">
                         Đã Khóa Sân
                       </span>
                     )}
@@ -374,7 +374,7 @@ export default function MultiSportArena({
                     {court.name}
                   </h3>
 
-                  <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1 mb-3">
+                  <div className="text-xs text-slate-500 space-y-1 mb-3">
                     <div>⚽ <span className="font-semibold text-slate-700 dark:text-slate-300">{court.fieldLabel}</span></div>
                     <div>🌱 {court.surface}</div>
                   </div>
@@ -392,7 +392,7 @@ export default function MultiSportArena({
                   {/* Features tags */}
                   <div className="flex flex-wrap gap-1 mb-4">
                     {court.features.length === 0 ? (
-                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded">
+                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded">
                         Chưa khai báo tiện ích
                       </span>
                     ) : (
@@ -408,9 +408,9 @@ export default function MultiSportArena({
                 {/* Bottom Action */}
                 <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
                   <div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Giá ca:</span>
+                    <span className="text-xs text-slate-500">Giá ca:</span>
                     <div className="text-sm font-extrabold text-sky-700 dark:text-sky-400">
-                      {court.pricePerHour.toLocaleString()}đ<span className="text-[10px] font-normal text-slate-500 dark:text-slate-400">/giờ</span>
+                      {court.pricePerHour.toLocaleString()}đ<span className="text-[10px] font-normal text-slate-500">/giờ</span>
                     </div>
                   </div>
 
@@ -442,7 +442,7 @@ export default function MultiSportArena({
                   )}
 
                   {court.status === 'booked' && (
-                    <span className="text-xs text-slate-400 font-medium italic">Không khả dụng</span>
+                    <span className="text-xs text-slate-500 font-medium italic">Không khả dụng</span>
                   )}
                 </div>
               </div>
@@ -459,7 +459,7 @@ export default function MultiSportArena({
                   <Zap className="w-5 h-5 text-amber-500" />
                   <span>Sàn Ghép Kèo Đội Bóng Đá Phủi (Football Matchmaking Queue)</span>
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 hidden sm:block">
+                <p className="text-xs sm:text-sm text-slate-500 mt-1 hidden sm:block">
                   Gia nhập các kèo bóng đá đang thiếu cầu thủ, tự động chia tiền sân theo đầu người qua VietQR
                 </p>
               </div>
@@ -499,7 +499,7 @@ export default function MultiSportArena({
                           <span className="bg-amber-400/20 text-amber-600 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-400/30">
                             {match.category}
                           </span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                          <span className="text-xs text-slate-500">
                             Đội Trưởng: <span className="font-semibold text-slate-800 dark:text-slate-200">{match.hostName}</span> ({match.hostForm ? `phong độ ${match.hostForm}` : "tân binh"})
                           </span>
                         </div>
@@ -508,7 +508,7 @@ export default function MultiSportArena({
                           {match.title}
                         </h3>
 
-                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-xs text-slate-500">
                           <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1 text-emerald-500" /> {match.time}</span>
                           <span className="flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1 text-cyan-500" /> {match.court}</span>
                           <span className="flex items-center"><Trophy className="w-3.5 h-3.5 mr-1 text-amber-500" /> Yêu cầu: {match.formInfo}</span>
@@ -518,7 +518,7 @@ export default function MultiSportArena({
 
                     <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-200 dark:border-slate-800">
                       <div className="text-left sm:text-right mb-2">
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Chi phí / cầu thủ:</div>
+                        <div className="text-xs text-slate-500">Chi phí / cầu thủ:</div>
                         <div className="text-lg font-black text-sky-700 dark:text-sky-400">
                           {match.costPerPerson.toLocaleString()}đ
                         </div>
@@ -595,7 +595,7 @@ export default function MultiSportArena({
               </h3>
               <button
                 onClick={() => setBookingCourt(null)}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-white text-xl font-bold"
+                className="text-slate-500 hover:text-slate-700 dark:hover:text-white text-xl font-bold"
               >
                 ✕
               </button>
@@ -620,7 +620,7 @@ export default function MultiSportArena({
               </div>
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl text-xs text-slate-500 dark:text-slate-400 space-y-1">
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl text-xs text-slate-500 space-y-1">
               <div className="font-semibold text-slate-700 dark:text-slate-200">ℹ️ Quy trình đặt ca:</div>
               <div>• Chọn ngày & khung giờ tại tab Đặt Sân để hệ thống sinh đơn giữ chỗ.</div>
               <div>• Cọc 50% giá ca (hoặc 100%) qua VietQR; chính sách hoàn cọc theo từng sân.</div>
@@ -657,7 +657,7 @@ export default function MultiSportArena({
               </h3>
               <button
                 onClick={() => setJoiningMatch(null)}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-white text-xl font-bold"
+                className="text-slate-500 hover:text-slate-700 dark:hover:text-white text-xl font-bold"
               >
                 ✕
               </button>

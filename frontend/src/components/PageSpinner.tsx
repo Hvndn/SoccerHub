@@ -22,7 +22,7 @@ export default function PageSpinner({ className = "" }: { className?: string }) 
         <span className="text-sm sm:text-base font-extrabold tracking-wide text-slate-700 dark:text-slate-200">
           TurfZone
         </span>
-        <span className="text-[11px] sm:text-xs font-medium text-slate-400 dark:text-slate-500">
+        <span className="text-[11px] sm:text-xs font-medium text-slate-500">
           Đang tải dữ liệu…
         </span>
       </span>

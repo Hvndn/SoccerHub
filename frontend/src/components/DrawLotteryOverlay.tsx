@@ -95,7 +95,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
           <h2 className="text-lg font-black text-slate-900 dark:text-white">
             {shuffling ? "Đang xáo thăm…" : done ? "Bốc thăm hoàn tất!" : "Đang khóa từng cặp…"}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500">
             {tournamentTitle} • {pairs.length} cặp đấu
             {byes.length > 0 && ` • ${byes.length} đội miễn vòng 1`}
           </p>
@@ -114,12 +114,12 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
                     : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950"
                 }`}
               >
-                <span className="font-mono text-[10px] font-black text-slate-400 w-12 shrink-0">{p.matchId}</span>
-                <span className={`flex-1 text-center text-sm font-black truncate ${isLocked ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500"}`}>
+                <span className="font-mono text-[10px] font-black text-slate-500 w-12 shrink-0">{p.matchId}</span>
+                <span className={`flex-1 text-center text-sm font-black truncate ${isLocked ? "text-slate-900 dark:text-white" : "text-slate-500"}`}>
                   {shown(i * 2, p.teamA)}
                 </span>
-                <span className="text-[10px] font-black text-slate-400 shrink-0">VS</span>
-                <span className={`flex-1 text-center text-sm font-black truncate ${isLocked ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500"}`}>
+                <span className="text-[10px] font-black text-slate-500 shrink-0">VS</span>
+                <span className={`flex-1 text-center text-sm font-black truncate ${isLocked ? "text-slate-900 dark:text-white" : "text-slate-500"}`}>
                   {shown(i * 2 + 1, p.teamB)}
                 </span>
                 {isLocked ? (

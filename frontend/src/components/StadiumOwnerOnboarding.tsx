@@ -181,7 +181,7 @@ export default function StadiumOwnerOnboarding({
           <h1 className="text-lg sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
             Khởi Tạo & Cấu Hình Cụm Sân (Stadium Setup Wizard)
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
             Khai báo hồ sơ, tọa độ GPS, danh mục sân và mở ca nhận khách — dữ liệu lưu thẳng vào hệ thống.
           </p>
         </div>
@@ -189,7 +189,7 @@ export default function StadiumOwnerOnboarding({
         <div className="flex items-center space-x-3 shrink-0">
           <div className="text-right hidden sm:block text-xs">
             <span className="font-extrabold text-slate-900 dark:text-white block">Hỗ trợ chủ sân</span>
-            <span className="text-slate-400 font-medium">Xem tab "Quản Lý Cụm Sân & Doanh Thu"</span>
+            <span className="text-slate-500 font-medium">Xem tab "Quản Lý Cụm Sân & Doanh Thu"</span>
           </div>
           <button
             type="button"
@@ -226,7 +226,7 @@ export default function StadiumOwnerOnboarding({
                 ? "bg-[#0ea5e9] text-white border-[#0ea5e9] shadow-md"
                 : currentStep > 1
                 ? "bg-[#0ea5e9]/10 border-sky-400 text-sky-700 dark:text-sky-400"
-                : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
+                : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500"
             }`}
           >
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
@@ -248,7 +248,7 @@ export default function StadiumOwnerOnboarding({
                 ? "bg-[#0ea5e9] text-white border-[#0ea5e9] shadow-md"
                 : currentStep > 2
                 ? "bg-[#0ea5e9]/10 border-sky-400 text-sky-700 dark:text-sky-400"
-                : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
+                : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500"
             }`}
           >
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
@@ -270,7 +270,7 @@ export default function StadiumOwnerOnboarding({
                 ? "bg-[#0ea5e9] text-white border-[#0ea5e9] shadow-md"
                 : currentStep > 3
                 ? "bg-[#0ea5e9]/10 border-sky-400 text-sky-700 dark:text-sky-400"
-                : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
+                : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500"
             }`}
           >
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
@@ -290,7 +290,7 @@ export default function StadiumOwnerOnboarding({
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 4
                 ? "bg-[#0ea5e9] text-white border-[#0ea5e9] shadow-md"
-                : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
+                : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500"
             }`}
           >
             <div className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-black text-xs shrink-0">
@@ -346,7 +346,7 @@ export default function StadiumOwnerOnboarding({
             <div className="space-y-1.5">
               <label className="font-extrabold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                 <span>Tọa Độ GPS (Vĩ Độ - Lat):</span>
-                <span className="text-[10px] text-slate-400 font-bold">Tùy chọn</span>
+                <span className="text-[10px] text-slate-500 font-bold">Tùy chọn</span>
               </label>
               <input
                 type="text"
@@ -375,7 +375,7 @@ export default function StadiumOwnerOnboarding({
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
             <div>
               <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Bước 2/4: Khai Báo Danh Mục Sân & Cấu Hình Biểu Giá Ca</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500">
                 {stadiumProfile.lat && stadiumProfile.lng
                   ? `Tọa độ đã khai báo: ${stadiumProfile.lat}, ${stadiumProfile.lng}`
                   : "Chưa khai báo tọa độ GPS — có thể bỏ trống."}
@@ -409,7 +409,7 @@ export default function StadiumOwnerOnboarding({
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {loadingPitches ? (
                   <tr>
-                    <td colSpan={7} className="p-4 sm:p-6 text-center text-slate-400 font-bold">
+                    <td colSpan={7} className="p-4 sm:p-6 text-center text-slate-500 font-bold">
                       <div className="flex items-center justify-center space-x-2">
                         <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
                         <span>Đang tải danh sách sân từ hệ thống database...</span>
@@ -418,7 +418,7 @@ export default function StadiumOwnerOnboarding({
                   </tr>
                 ) : pitches.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-4 sm:p-6 text-center text-slate-400 font-bold">
+                    <td colSpan={7} className="p-4 sm:p-6 text-center text-slate-500 font-bold">
                       Chưa có sân bóng nào. Hãy bấm "+ Thêm Sân Mới" để tạo sân đầu tiên.
                     </td>
                   </tr>
@@ -439,7 +439,7 @@ export default function StadiumOwnerOnboarding({
                         <button
                           type="button"
                           onClick={() => handleDeletePitch(p.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
                           title="Xóa sân"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -464,7 +464,7 @@ export default function StadiumOwnerOnboarding({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 text-xs">
             <div className="space-y-3">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500">
                 Hệ thống không giữ tiền giúp bạn — luồng thanh toán trong SoccerHub chạy như sau:
               </p>
               {[
@@ -475,13 +475,13 @@ export default function StadiumOwnerOnboarding({
               ].map((s) => (
                 <div key={s.t} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
                   <p className="font-extrabold text-slate-900 dark:text-white">{s.t}</p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{s.d}</p>
+                  <p className="text-[11px] text-slate-500 mt-1">{s.d}</p>
                 </div>
               ))}
             </div>
 
             <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 text-left">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Gợi ý khai báo cho khách hàng</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Gợi ý khai báo cho khách hàng</span>
               <div className="space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                 <p>• Ghi rõ mức cọc (nếu có) và chính sách hoàn cọc trong phần <strong>Mô tả sân</strong> ở Bước 1 hoặc tab quản lý.</p>
                 <p>• Đăng số tài khoản nhận tiền ở phần mô tả sân để khách tự chuyển khi đặt giúp bạn.</p>
@@ -503,7 +503,7 @@ export default function StadiumOwnerOnboarding({
           </div>
           <div className="space-y-2 max-w-xl mx-auto">
             <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white">Sẵn Sàng Mở Cửa Nhận Khách</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <p className="text-xs text-slate-500 font-medium">
               Bấm nút bên dưới để lưu cụm sân vào hệ thống. Sau đó thêm sân con và biểu giá ở tab
               "Quản Lý Cụm Sân &amp; Doanh Thu".
             </p>
@@ -519,7 +519,7 @@ export default function StadiumOwnerOnboarding({
             ].map(([k, v]) => (
               <div key={k} className="flex items-center justify-between gap-3">
                 <span className="font-extrabold text-slate-900 dark:text-white">{k}:</span>
-                <span className="text-slate-500 dark:text-slate-400 truncate">{v}</span>
+                <span className="text-slate-500 truncate">{v}</span>
               </div>
             ))}
           </div>
@@ -553,7 +553,7 @@ export default function StadiumOwnerOnboarding({
           ← Quay Lại Bước {Math.max(1, currentStep - 1)}
         </button>
 
-        <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">Dữ liệu được lưu khi bạn bấm "Lưu &amp; Tiếp Tục"</span>
+        <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">Dữ liệu được lưu khi bạn bấm "Lưu &amp; Tiếp Tục"</span>
 
         <button
           type="button"

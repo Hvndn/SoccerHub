@@ -69,7 +69,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
                       ? "bg-[#0ea5e9] text-white"
                       : done
                       ? "bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                   }`}
                 >
                   {done ? <Check className="h-4 w-4" /> : <span className="font-mono">{i + 1}</span>}
@@ -85,7 +85,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
                     {step.label}
                   </span>
                   {step.hint && (
-                    <span className="hidden truncate text-[10px] text-slate-500 dark:text-slate-400 sm:block">
+                    <span className="hidden truncate text-[10px] text-slate-500 sm:block">
                       {step.hint}
                     </span>
                   )}

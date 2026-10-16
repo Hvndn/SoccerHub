@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Bản demo đồ án — không cần index trên Google
+# Xoá dòng "Disallow: /" bên dưới nếu muốn chặn toàn bộ

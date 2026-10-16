@@ -85,7 +85,7 @@ export default function AdminTournaments({ notify }: { notify: (type: "ok" | "er
       render: (r) => (
         <div className="max-w-[260px]">
           <p className="font-bold text-slate-900 dark:text-white truncate">{r.title}</p>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+          <p className="text-[11px] text-slate-500">
             {sportLabel(r.sportType)} • {registeredCount(r)}/{r.totalTeams ?? "—"} đội
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function AdminTournaments({ notify }: { notify: (type: "ok" | "er
                 </option>
               ))}
             </select>
-            <Pencil className="w-3 h-3 absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Pencil className="w-3 h-3 absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
           </div>
         </div>
       ),
@@ -155,7 +155,7 @@ export default function AdminTournaments({ notify }: { notify: (type: "ok" | "er
     <SectionCard>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="font-black text-slate-900 dark:text-white text-sm">Quản lý giải đấu</h2>          <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <h2 className="font-black text-slate-900 dark:text-white text-sm">Quản lý giải đấu</h2>          <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
             Đóng/mở đăng ký và xóa giải rác. Xóa giải sẽ xóa kèm toàn bộ đội đã ghi danh.
           </p>
         </div>

@@ -28,7 +28,7 @@ export default function SafeImage({ src, alt, className = "", fallbackLabel, ...
       <div
         role="img"
         aria-label={alt || "Ảnh không tải được"}
-        className={`${className} flex flex-col items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500`}
+        className={`${className} flex flex-col items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500`}
       >
         <ImageOff className="w-6 h-6 shrink-0" />
         <span className="text-[10px] font-bold text-center px-2 leading-tight">

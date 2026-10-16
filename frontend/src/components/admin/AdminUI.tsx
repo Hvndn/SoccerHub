@@ -56,7 +56,7 @@ export function ConfirmModal({
           </div>
           <div>
             <h3 className="font-black text-slate-900 dark:text-white">{title}</h3>
-            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{message}</div>
+            <div className="mt-1 text-xs text-slate-500 leading-relaxed">{message}</div>
           </div>
         </div>
         <div className="flex justify-end gap-2.5">
@@ -135,7 +135,7 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
     <div className="p-4 sm:p-8 text-center">
       <Search className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
       <p className="mt-3 text-sm font-bold text-slate-600 dark:text-slate-300">{title}</p>
-      {hint && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
     </div>
   );
 }

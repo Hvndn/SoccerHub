@@ -523,7 +523,7 @@ export default function TournamentBracket() {
       setScores((s) => ({ ...s, [match.matchId]: { a: side === "a" ? v : (s[match.matchId]?.a ?? String(match.scoreA ?? 0)), b: side === "b" ? v : (s[match.matchId]?.b ?? String(match.scoreB ?? 0)) } }));
     return (
       <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className={`animate-fade-in-up rounded-2xl border overflow-hidden text-xs shadow-xs ${done ? "bg-sky-50 dark:bg-sky-950/30 border-sky-300 dark:border-sky-800" : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-800"}`}>
-        <div className="px-2.5 pt-2 font-mono text-[10px] font-black text-slate-400 flex items-center justify-between gap-1">
+        <div className="px-2.5 pt-2 font-mono text-[10px] font-black text-slate-500 flex items-center justify-between gap-1">
           <span>{match.matchId}</span>
           <div className="flex items-center gap-1">
             {done && <span className="text-sky-700 dark:text-sky-400">{match.winner ? "✓ ĐÃ ĐÁ" : "= HÒA"}</span>}
@@ -566,10 +566,10 @@ export default function TournamentBracket() {
           return (
             <div key={i}>
               {i === 1 && <div className="border-t border-slate-200 dark:border-slate-800" />}
-              <div className={`p-3 flex justify-between items-center gap-2 ${t?.tbd ? "text-slate-400 dark:text-slate-500 italic" : isWinner ? "text-sky-900 dark:text-emerald-200 font-black" : "text-slate-700 dark:text-slate-200 font-bold"}`}>
+              <div className={`p-3 flex justify-between items-center gap-2 ${t?.tbd ? "text-slate-500 italic" : isWinner ? "text-sky-900 dark:text-emerald-200 font-black" : "text-slate-700 dark:text-slate-200 font-bold"}`}>
                 <span className="truncate">{t?.name ?? "?"}{isWinner ? " 👑" : ""}</span>
                 {t && !t.tbd && (t.record || t.form) && (
-                  <span className="font-mono text-[10px] text-slate-400 shrink-0">{t.record ?? t.form}</span>
+                  <span className="font-mono text-[10px] text-slate-500 shrink-0">{t.record ?? t.form}</span>
                 )}
               </div>
             </div>
@@ -586,7 +586,7 @@ export default function TournamentBracket() {
               onChange={(e) => setScore("a", e.target.value)}
               className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-center font-mono font-black text-sm focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
             />
-            <span className="font-mono font-black text-slate-400">–</span>
+            <span className="font-mono font-black text-slate-500">–</span>
             <input
               type="number"
               min={0}
@@ -662,7 +662,7 @@ export default function TournamentBracket() {
                   </div>
                 ))}
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400">Cột: tên • đội • bàn • kiến tạo</span>
+                  <span className="text-[10px] text-slate-500">Cột: tên • đội • bàn • kiến tạo</span>
                   <button
                     type="button"
                     onClick={() => addScorerRow(match)}
@@ -715,7 +715,7 @@ export default function TournamentBracket() {
 
           {/* Tournament selector + management actions */}
           <div className="flex flex-col gap-3 min-w-0 lg:min-w-[320px]">
-            <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider" htmlFor="bracket-tournament">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider" htmlFor="bracket-tournament">
               Giải đấu đang quản lý
             </label>
             <select
@@ -810,7 +810,7 @@ export default function TournamentBracket() {
                 </button>
               )}
             </div>
-            <p className="hidden sm:block text-[10px] text-slate-400">
+            <p className="hidden sm:block text-[10px] text-slate-500">
               Giả lập, bốc thăm & xếp lịch yêu cầu đăng nhập ORGANIZER hoặc ADMIN.
             </p>
 
@@ -893,7 +893,7 @@ export default function TournamentBracket() {
                   <span>{scheduleBusy ? "Đang xếp lịch…" : "Sinh lịch & lưu vào CSDL"}</span>
                 </button>
                 <p className="hidden sm:block text-[9px] text-slate-500 leading-relaxed">
-                  Sân lấy từ <span className="font-bold text-slate-400">{selected?.pitchName || selected?.location || "Sân BTC"}</span> trong hồ sơ giải. Xếp lại sẽ ghi đè lịch cũ.
+                  Sân lấy từ <span className="font-bold text-slate-500">{selected?.pitchName || selected?.location || "Sân BTC"}</span> trong hồ sơ giải. Xếp lại sẽ ghi đè lịch cũ.
                 </p>
               </div>
             )}
@@ -909,7 +909,7 @@ export default function TournamentBracket() {
                     <div key={t.teamName} className="flex items-center justify-between gap-2 text-xs">
                       <span className="text-slate-200 font-bold truncate">
                         {t.teamName}
-                        <span className="text-slate-400 font-medium"> • {t.captainPhone || "—"}</span>
+                        <span className="text-slate-500 font-medium"> • {t.captainPhone || "—"}</span>
                       </span>
                       <button
                         type="button"
@@ -988,7 +988,7 @@ export default function TournamentBracket() {
               <Trophy className="w-5 h-5 text-emerald-500" />
               <span>Cây Nhánh Đấu {bracket ? `— ${bracket.rounds.length} vòng` : ""}</span>
             </h2>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <span className="text-xs text-slate-500 font-medium">
               {bracket ? `Bốc thăm lúc ${bracket.drawnAt?.slice(0, 16).replace("T", " ")} • Hạt giống theo thứ tự đăng ký` : "Chưa có nhánh đấu"}
             </span>
           </div>
@@ -1012,7 +1012,7 @@ export default function TournamentBracket() {
           {!selected ? (
             <div className="p-4 sm:p-8 text-center">
               <Trophy className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
-              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Chưa có giải đấu nào trong CSDL.</p>
+              <p className="mt-3 text-sm text-slate-500">Chưa có giải đấu nào trong CSDL.</p>
             </div>
           ) : !bracket ? (
             <div className="p-4 sm:p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
@@ -1020,7 +1020,7 @@ export default function TournamentBracket() {
               <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-300">
                 Giải “{selected.title}” chưa bốc thăm chia cặp
               </p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-slate-500">
                 {teamCount < 2
                   ? `Mới có ${teamCount} đội — cần ít nhất 2 đội. Dùng nút “Giả lập đủ đội (Test)” nếu thiếu.`
                   : `Đã có ${teamCount} đội. Bấm “Bốc thăm chia cặp” (hạt giống theo thứ tự đăng ký).`}
@@ -1058,7 +1058,7 @@ export default function TournamentBracket() {
                     : "Chọn một trận để điều khiển tỷ số"}
                 </span>
               </div>
-              <div className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+              <div className="text-xs font-mono font-bold text-slate-500">
                 {varMatch?.matchDate
                   ? `${varMatch.matchDate.split("-").reverse().join("/")} • ${varMatch.timeSlot ?? ""} • ${varMatch.pitchName ?? "Chưa xếp sân"}`
                   : "Chưa xếp lịch"}
@@ -1068,7 +1068,7 @@ export default function TournamentBracket() {
             {!varMatch ? (
               <div className="p-10 text-center">
                 <Video className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
-                <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                <p className="mt-3 text-sm text-slate-500">
                   {playableMatches.length
                     ? "Chưa chọn trận nào."
                     : "Giải chưa bốc thăm hoặc chưa có cặp đấu nào đủ 2 đội thật."}
@@ -1084,7 +1084,7 @@ export default function TournamentBracket() {
                 )}
 
                 <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-center shadow-2xl space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-center space-x-3 text-xs text-slate-500 dark:text-slate-400 uppercase font-mono tracking-widest font-bold">
+                  <div className="flex items-center justify-center space-x-3 text-xs text-slate-500 uppercase font-mono tracking-widest font-bold">
                     <Clock className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                     <span>
                       {varMatch.status === "DONE" ? "ĐÃ KẾT THÚC" : "ĐANG ĐIỀU KHIỂN"} • TỶ SỐ THỜI GIAN THỰC
@@ -1096,7 +1096,7 @@ export default function TournamentBracket() {
                       <div className="text-base sm:text-lg font-black text-sky-800 dark:text-sky-400 truncate">
                         {varMatch.teamA?.name}
                       </div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Thành tích {varMatch.teamA?.record ?? varMatch.teamA?.form ?? "—"}</div>
+                      <div className="text-[10px] text-slate-500 font-mono">Thành tích {varMatch.teamA?.record ?? varMatch.teamA?.form ?? "—"}</div>
                       <div className="text-2xl sm:text-6xl font-mono font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-900 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
                         {varScoreA}
                       </div>
@@ -1120,7 +1120,7 @@ export default function TournamentBracket() {
 
                     <div className="space-y-1">
                       <div className="text-xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">VS</div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{varMatch.matchId}</div>
+                      <div className="text-[10px] text-slate-500 font-mono">{varMatch.matchId}</div>
                       {varStatus && (
                         <div className="bg-amber-500/10 dark:bg-amber-400/20 text-amber-700 dark:text-amber-300 text-[10px] font-bold p-2 rounded-lg border border-amber-500/30 dark:border-amber-400/40">
                           VAR: {varStatus}
@@ -1132,7 +1132,7 @@ export default function TournamentBracket() {
                       <div className="text-base sm:text-lg font-black text-cyan-700 dark:text-cyan-400 truncate">
                         {varMatch.teamB?.name}
                       </div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Thành tích {varMatch.teamB?.record ?? varMatch.teamB?.form ?? "—"}</div>
+                      <div className="text-[10px] text-slate-500 font-mono">Thành tích {varMatch.teamB?.record ?? varMatch.teamB?.form ?? "—"}</div>
                       <div className="text-2xl sm:text-6xl font-mono font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-900 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
                         {varScoreB}
                       </div>
@@ -1234,7 +1234,7 @@ export default function TournamentBracket() {
                         ⚠️ Lỗi Kitchen
                       </button>
                     </div>
-                    <p className="hidden sm:block text-[10px] text-slate-400 leading-relaxed">
+                    <p className="hidden sm:block text-[10px] text-slate-500 leading-relaxed">
                       Camera là bộ công cụ mô phỏng dùng để minh hoạ luồng VAR. Quyết định bấm ở đây được ghi vào
                       nhật ký phiên làm việc của BTC, không ghi vào CSDL.
                     </p>
@@ -1253,7 +1253,7 @@ export default function TournamentBracket() {
               </h3>
 
               {varLog.length === 0 ? (
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-500">
                   Chưa có mốc nào trong phiên làm việc này. Các quyết định VAR và lần lưu kết quả sẽ hiện ở đây.
                 </p>
               ) : (
@@ -1314,7 +1314,7 @@ export default function TournamentBracket() {
               <ListOrdered className="w-5 h-5 text-emerald-500" />
               <span>Bảng Xếp Hạng {selected ? `— ${selected.title}` : ""}</span>
             </h2>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-slate-500">
               Thắng = 3 điểm • Phong độ cập nhật tự động từ lịch sử sau mỗi trận
             </span>
           </div>
@@ -1322,7 +1322,7 @@ export default function TournamentBracket() {
           {tableRows.length === 0 ? (
             <div className="p-4 sm:p-8 text-center">
               <Users className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
-              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-3 text-sm text-slate-500">
                 {selected ? "Giải chưa có đội nào ghi danh." : "Chưa chọn giải đấu."}
               </p>
             </div>
@@ -1330,7 +1330,7 @@ export default function TournamentBracket() {
             <div className="overflow-x-auto -mx-1 px-1">
               <table className="w-full text-left border-collapse text-xs min-w-[640px]">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase font-bold text-[11px] tracking-wider">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 uppercase font-bold text-[11px] tracking-wider">
                     <th className="py-3 px-2 sm:px-4 sticky left-0 bg-white dark:bg-slate-900 z-10">Hạng</th>
                     <th className="py-3 px-2 sm:px-4">Tên Đội / CLB</th>
                     <th className="py-3 px-2 sm:px-4 text-center">Trận</th>
@@ -1384,7 +1384,7 @@ export default function TournamentBracket() {
                 <FileText className="w-5 h-5 text-emerald-500" />
                 <span>Biên Bản Trận Đấu — E-Scoresheet</span>
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Dữ liệu lấy trực tiếp từ bảng <span className="font-mono">tournaments</span> &amp;{" "}
                 <span className="font-mono">match_results</span> trong CSDL
               </p>
@@ -1415,7 +1415,7 @@ export default function TournamentBracket() {
           {!varMatch ? (
             <div className="p-10 text-center">
               <FileText className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
-              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-3 text-sm text-slate-500">
                 Chưa có trận nào đủ 2 đội thật để lập biên bản. Bốc thăm giải trước đã.
               </p>
             </div>
@@ -1437,34 +1437,34 @@ export default function TournamentBracket() {
               {/* Thông tin trận */}
               <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Giải đấu:</span>{" "}
+                  <span className="text-slate-500">Giải đấu:</span>{" "}
                   <span className="font-bold text-slate-900 dark:text-white">{selected?.title ?? "—"}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Thể thức:</span>{" "}
+                  <span className="text-slate-500">Thể thức:</span>{" "}
                   <span className="font-bold text-slate-900 dark:text-white">{formatLabel(selected?.format)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Vòng đấu:</span>{" "}
+                  <span className="text-slate-500">Vòng đấu:</span>{" "}
                   <span className="font-bold text-slate-900 dark:text-white">
                     {varRound || "—"} ({varMatch.matchId})
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Thời gian:</span>{" "}
+                  <span className="text-slate-500">Thời gian:</span>{" "}
                   <span className="font-bold text-slate-900 dark:text-white">
                     {varMatch.matchDate ? prettyDate(varMatch.matchDate) : "Chưa xếp lịch"}
                     {varMatch.timeSlot ? ` · ${varMatch.timeSlot}` : ""}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Địa điểm:</span>{" "}
+                  <span className="text-slate-500">Địa điểm:</span>{" "}
                   <span className="font-bold text-slate-900 dark:text-white">
                     {varMatch.pitchName ?? selected?.pitchName ?? selected?.location ?? "Chưa xếp sân"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Trạng thái:</span>{" "}
+                  <span className="text-slate-500">Trạng thái:</span>{" "}
                   <span className="font-bold text-slate-900 dark:text-white">
                     {varMatch.status === "DONE" ? "Đã thi đấu xong" : "Chưa nhập kết quả"}
                   </span>
@@ -1513,7 +1513,7 @@ export default function TournamentBracket() {
               <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-200 dark:border-slate-700 print:border-slate-400">
                 <div className="flex items-center gap-2">
                   <CheckCircle2
-                    className={`w-5 h-5 ${varMatch.status === "DONE" ? "text-emerald-500" : "text-slate-400"}`}
+                    className={`w-5 h-5 ${varMatch.status === "DONE" ? "text-emerald-500" : "text-slate-500"}`}
                   />
                   <span className="font-bold text-slate-900 dark:text-white">
                     {varMatch.status === "DONE"

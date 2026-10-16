@@ -290,7 +290,7 @@ export default function MatchmakingMarketplace({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Breadcrumb + AI Matchmaking Indicator */}
           <div className="space-y-1.5">
-            <div className="hidden sm:flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <div className="hidden sm:flex items-center space-x-1.5 text-xs text-slate-500">
               <span className="hover:text-[#0b4f6c] cursor-pointer">Trang chủ</span>
               <span>/</span>
               <span>Chợ Kèo Ghép Đội</span>
@@ -305,7 +305,7 @@ export default function MatchmakingMarketplace({
               <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                 Ghép kèo theo phong độ thi đấu
               </span>
-              <span className="text-slate-400">•</span>
+              <span className="text-slate-500">•</span>
               <span className="px-3 py-0.5 rounded-full bg-[#0ea5e9]/10 text-[#0b4f6c] font-bold text-xs">
                 {onlineCaptains > 0
                   ? `${onlineCaptains} đội đang mở kèo trên sàn`
@@ -405,7 +405,7 @@ export default function MatchmakingMarketplace({
             <Filter className="w-4 h-4 text-[#0b4f6c]" />
             Bộ lọc kèo nâng cao
           </span>
-          <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
             {showMobileFilters ? "Thu gọn" : "Mở rộng"}
             <ChevronDown className={`w-4 h-4 transition-transform ${showMobileFilters ? "rotate-180" : ""}`} />
           </span>
@@ -612,7 +612,7 @@ export default function MatchmakingMarketplace({
                             Cap: {post.captainName}
                           </span>
                         </h3>
-                        <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center space-x-2 text-xs text-slate-500">
                           <span className="flex items-center space-x-1 text-slate-900 dark:text-white font-bold">
                             <MapPin className="w-4 h-4 text-[#0b4f6c]" />
                             <span>{post.pitchName}</span>
@@ -628,7 +628,7 @@ export default function MatchmakingMarketplace({
 
                       <div className="flex flex-col md:items-end bg-slate-50 dark:bg-slate-800/60 md:bg-transparent p-3 md:p-0 rounded-xl">
                         <div className="text-xl font-black text-slate-900 dark:text-white font-mono">
-                          {(post.estimatedFee || 50000).toLocaleString('vi-VN')}đ <span className="text-xs font-normal text-slate-400">/người</span>
+                          {(post.estimatedFee || 50000).toLocaleString('vi-VN')}đ <span className="text-xs font-normal text-slate-500">/người</span>
                         </div>
                         <span className="text-[11px] font-bold text-[#0b4f6c]">
                           {post.paymentModel === "SPLIT_EQUAL" ? "Chia đôi tiền sân (50/50)" : post.paymentModel === "LOSER_PAYS" ? "Đội thua trả tiền sân" : "Chủ kèo bao trọn"}
@@ -664,7 +664,7 @@ export default function MatchmakingMarketplace({
 
                       <div className="flex items-center space-x-2">
                         {isMatched ? (
-                          <span className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold">
+                          <span className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-bold">
                             Đã Đầy Đội
                           </span>
                         ) : (
@@ -706,19 +706,19 @@ export default function MatchmakingMarketplace({
 
             <div className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-3.5 flex items-center justify-between border border-slate-200 dark:border-slate-700">
               <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 uppercase font-extrabold">Hồ sơ của bạn</span>
+                <span className="text-[10px] text-slate-500 uppercase font-extrabold">Hồ sơ của bạn</span>
                 <span className="font-bold text-sm text-slate-900 dark:text-white">{userName}</span>
               </div>
               <div className="text-right font-mono text-xs">
                 <div className="font-extrabold text-[#0b4f6c]">{userTier}</div>
-                <div className="text-slate-400 text-[10px]">
+                <div className="text-slate-500 text-[10px]">
                   {myTeamPost ? `Phong độ: ${myTeamPost.record ?? myTeamPost.form ?? "—"}` : "Chưa đăng kèo"}
                 </div>
               </div>
             </div>
 
             <div className="space-y-2 text-xs">
-              <span className="text-[10px] uppercase font-extrabold text-slate-400 block">
+              <span className="text-[10px] uppercase font-extrabold text-slate-500 block">
                 Kèo đang mở trong CSDL:
               </span>
               {loadingPosts ? (
@@ -772,7 +772,7 @@ export default function MatchmakingMarketplace({
             </div>
 
             <div className="bg-slate-900 text-white rounded-2xl p-4 space-y-1 shadow-md">
-              <span className="text-[10px] text-slate-400 uppercase font-extrabold block">Phong độ đội của bạn</span>
+              <span className="text-[10px] text-slate-500 uppercase font-extrabold block">Phong độ đội của bạn</span>
               <div className="flex items-baseline justify-between font-mono">
                 <FormDots form={myForm} />
                 <span className="text-xs text-slate-300 font-bold">
@@ -801,7 +801,7 @@ export default function MatchmakingMarketplace({
                   {matchableCount}/{openKèoCount}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-[11px] flex items-start space-x-2">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-[11px] flex items-start space-x-2">
                 <Info className="w-4 h-4 text-[#0b4f6c] shrink-0 mt-0.5" />
                 <span>
                   Tên đội, trình độ và số liệu trên đều đọc trực tiếp từ CSDL — có kèo mới là danh sách tự cập nhật.
@@ -817,11 +817,11 @@ export default function MatchmakingMarketplace({
                 <Trophy className="w-5 h-5 text-amber-500" />
                 <h3 className="font-black text-sm text-slate-900 dark:text-white">Đội Mở Kèo Nhiều Nhất</h3>
               </div>
-              <span className="text-xs text-slate-400 font-semibold">{openKèoCount} kèo trong CSDL</span>
+              <span className="text-xs text-slate-500 font-semibold">{openKèoCount} kèo trong CSDL</span>
             </div>
 
             {topTeams.length === 0 ? (
-              <p className="text-xs text-slate-500 dark:text-slate-400 py-4 text-center">
+              <p className="text-xs text-slate-500 py-4 text-center">
                 Chưa có kèo nào. Bấm “+ Tạo Kèo Giao Lưu Mới” để mở kèo đầu tiên.
               </p>
             ) : (
@@ -847,7 +847,7 @@ export default function MatchmakingMarketplace({
                       </span>
                       <div className="min-w-0">
                         <p className="font-bold text-slate-900 dark:text-white truncate">{t.teamName}</p>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-slate-500">
                           {t.count} kèo đang mở • {t.pitchType ?? "Sân 7"}
                         </span>
                       </div>
@@ -872,7 +872,7 @@ export default function MatchmakingMarketplace({
               </h3>
               <button 
                 onClick={() => setShowCreateModal(false)}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                className="text-slate-500 hover:text-slate-700 dark:hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1000,7 +1000,7 @@ export default function MatchmakingMarketplace({
               </h3>
               <button 
                 onClick={() => setAcceptingPost(null)}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                className="text-slate-500 hover:text-slate-700 dark:hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1010,7 +1010,7 @@ export default function MatchmakingMarketplace({
               <span className="font-extrabold text-sky-900 dark:text-sky-300 block">
                 Đối đầu: {acceptingPost.teamName} (Cap: {acceptingPost.captainName})
               </span>
-              <div className="text-slate-600 dark:text-slate-400 flex justify-between">
+              <div className="text-slate-600 dark:text-slate-500 flex justify-between">
                 <span>Khung giờ & Sân:</span>
                 <strong className="text-slate-900 dark:text-white">{acceptingPost.matchTime} • {acceptingPost.pitchName}</strong>
               </div>
@@ -1041,7 +1041,7 @@ export default function MatchmakingMarketplace({
                 />
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-500 space-y-1">
                 <div className="flex justify-between">
                   <span>Phong độ đội bạn:</span>
                   <strong className="text-[#0b4f6c] font-mono font-bold">

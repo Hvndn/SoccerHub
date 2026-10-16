@@ -273,7 +273,7 @@ export default function Home() {
           <button 
             type="button" 
             onClick={() => setRoleWarning(null)} 
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-slate-500 hover:text-white rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -300,7 +300,7 @@ export default function Home() {
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
                     Không Gian Dành Cho Cầu Thủ Đặt Sân
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
                     Bạn đang đăng nhập bằng tài khoản <strong>Chủ Sân ({currentUser.fullName || currentUser.name})</strong>. Chức năng tìm kiếm và cọc sân này dành riêng cho Cầu Thủ. Vui lòng chuyển sang Bảng Điều Hành để quản lý cụm sân và theo dõi doanh thu.
                   </p>
                 </div>
@@ -421,7 +421,7 @@ export default function Home() {
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
                     Truy Cập Bị Từ Chối (403 Forbidden)
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
                     Trang Bảng Điều Hành và Quản Lý Doanh Thu chỉ dành riêng cho tài khoản <strong>Chủ Sân (OWNER)</strong>. Tài khoản Cầu Thủ hoặc khách chưa đăng nhập không có quyền truy cập khu vực này.
                   </p>
                 </div>
@@ -597,7 +597,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className={`glass-panel border-t border-slate-200 dark:border-slate-800 pt-6 transition-colors duration-300 ${showBottomNav ? "pb-28 lg:pb-6" : "pb-6"}`}>
-        <div className="w-full max-w-full mx-auto px-4 sm:px-6 lg:px-10 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1.5">
+        <div className="w-full max-w-full mx-auto px-4 sm:px-6 lg:px-10 text-center text-xs text-slate-500 space-y-1.5">
           <p>
             © 2026 <strong>SoccerHub</strong>
             <span className="hidden sm:inline"> — Nền Tảng Đặt Sân &amp; Quản Lý Bóng Đá Thông Minh. Đồ Án Tốt Nghiệp: Hệ thống quản lý cụm sân bóng đá mini cỏ nhân tạo (Sân 5, Sân 7, Sân 11), giải đấu phủi và kết nối đối thủ AI.</span>

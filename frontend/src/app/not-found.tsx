@@ -15,7 +15,7 @@ export default function NotFound() {
 
         <p className="font-mono text-5xl sm:text-6xl font-black text-[#0ea5e9]">404</p>
         <h1 className="text-xl sm:text-2xl font-black tracking-tight">Không tìm thấy trang này</h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+        <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
           Đường dẫn bạn mở không tồn tại hoặc đã được chuyển đi. Có thể bạn gõ nhầm địa chỉ,
           hoặc sân / giải đấu đó đã bị xoá.
         </p>

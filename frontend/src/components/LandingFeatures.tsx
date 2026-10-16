@@ -186,7 +186,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
           <h2 className="text-2xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
             Giải Pháp Toàn Diện Cho Thể Thao Số
           </h2>
-          <p className="hidden sm:block text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-600 dark:text-slate-500 leading-relaxed font-medium">
             Hệ thống kết nối mượt mà từ lúc tìm sân, cáp kèo, đặt cọc cho đến khi tiếng còi bế mạc giải đấu vang lên.
           </p>
         </div>
@@ -214,7 +214,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                   </div>
 
                   <div>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{pillar.title}</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{pillar.title}</span>
                     <h3 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
                       {pillar.subtitle}
                     </h3>
@@ -227,7 +227,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                         <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                         <div>
                           <strong className="text-xs font-black text-slate-800 dark:text-slate-200 block">{pt.title}</strong>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium mt-0.5">
+                          <p className="text-[11px] text-slate-500 leading-relaxed font-medium mt-0.5">
                             {pt.desc}
                           </p>
                         </div>
@@ -238,7 +238,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
 
                 {/* Bottom Metric Strip */}
                 <div className="pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-500 dark:text-slate-400">{pillar.metricLabel}</span>
+                  <span className="text-slate-500">{pillar.metricLabel}</span>
                   <span className="font-mono text-sky-700 dark:text-sky-400 font-black text-sm">
                     {pillar.metricValue}
                   </span>
@@ -285,7 +285,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                   <XCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="text-xs font-extrabold text-slate-900 dark:text-white">{item.title}</h4>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 leading-relaxed">{item.desc}</p>
+                    <p className="text-[11px] text-slate-500 font-medium mt-0.5 leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
               ))}

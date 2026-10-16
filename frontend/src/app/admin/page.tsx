@@ -94,7 +94,7 @@ function AdminConsole() {
               <LogIn className="w-8 h-8 text-rose-500" />
             </div>
             <h1 className="text-xl font-black">Khu vực quản trị hệ thống</h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-500">
               Bạn cần đăng nhập tài khoản <strong>Quản trị viên (ADMIN)</strong> để truy cập.
             </p>
             <Link
@@ -110,7 +110,7 @@ function AdminConsole() {
               <ShieldCheck className="w-8 h-8 text-rose-500" />
             </div>
             <h1 className="text-xl font-black">Truy cập bị từ chối</h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-500">
               Tài khoản <strong>{user.fullName || user.email}</strong> (vai trò {String(user.role)}) không có
               quyền quản trị hệ thống. Chỉ tài khoản <strong>ADMIN</strong> được vào khu vực này.
             </p>
@@ -145,7 +145,7 @@ function AdminConsole() {
                     <span className={active ? "text-white" : "text-sky-700 dark:text-sky-400"}>{s.icon}</span>
                     <span className="min-w-0">
                       <span className="block text-xs font-black whitespace-nowrap">{s.label}</span>
-                      <span className={`hidden lg:block text-[10px] ${active ? "text-cyan-50" : "text-slate-400"}`}>
+                      <span className={`hidden lg:block text-[10px] ${active ? "text-cyan-50" : "text-slate-500"}`}>
                         {s.desc}
                       </span>
                     </span>
@@ -173,7 +173,7 @@ function AdminConsole() {
       </main>
 
       <footer className="border-t border-slate-200 dark:border-slate-800 py-4">
-        <p className="text-center text-[11px] text-slate-600 dark:text-slate-400">
+        <p className="text-center text-[11px] text-slate-600 dark:text-slate-500">
           © 2026 SoccerHub — Khu vực quản trị hệ thống (Super Admin).
         </p>
       </footer>

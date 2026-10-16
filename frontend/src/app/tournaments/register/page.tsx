@@ -220,7 +220,7 @@ function RegisterTeamWizard() {
                         <span className="block text-sm font-black text-slate-900 dark:text-white truncate">
                           {t.title}
                         </span>
-                        <span className="mt-1 block text-[11px] text-slate-500 dark:text-slate-400">
+                        <span className="mt-1 block text-[11px] text-slate-500">
                           {sportLabel(t.sportType)} • Khởi tranh {formatDate(t.startDate)} •{" "}
                           {t.registeredTeams ?? 0}/{t.totalTeams ?? "—"} đội
                         </span>
@@ -332,7 +332,7 @@ function RegisterTeamWizard() {
                   </div>
                 </dl>
               </div>
-              <p className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="flex items-center gap-2 text-[11px] text-slate-500">
                 <Trophy className="w-3.5 h-3.5 text-sky-700" />
                 Hồ sơ được lưu vào CSDL & giữ chỗ tự động cho đội của bạn.
               </p>
@@ -357,7 +357,7 @@ function RegisterTeamWizard() {
               <ArrowLeft className="w-4 h-4" />
               <span>Quay lại</span>
             </button>
-            <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">Bước {step + 1}/{STEPS.length}</span>
+            <span className="text-[11px] font-mono text-slate-600 dark:text-slate-500">Bước {step + 1}/{STEPS.length}</span>
             {step < STEPS.length - 1 ? (
               <button
                 type="button"
@@ -409,7 +409,7 @@ function PaymentSuccess({
     <div className="p-4 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-emerald-900 text-center space-y-4">
       <CheckCircle2 className="w-12 h-12 text-sky-700 mx-auto" />
       <h2 className="text-lg font-black text-slate-900 dark:text-white">Nộp đơn thành công!</h2>
-      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+      <p className="text-xs sm:text-sm text-slate-500">
         Đội <strong className="text-slate-900 dark:text-white">“{teamName}”</strong> đã được ghi
         danh vào giải <strong className="text-slate-900 dark:text-white">“{selected.title}”</strong> ở
         trạng thái <strong className="text-amber-600">chờ xác nhận lệ phí</strong>.
@@ -437,7 +437,7 @@ function PaymentSuccess({
             </div>
           </div>
         ) : (
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500">
             Giải chưa công bố tài khoản nhận online — BTC sẽ liên hệ thu trực tiếp. Bạn vẫn giữ chỗ ở trạng thái chờ xác nhận.
           </p>
         )}

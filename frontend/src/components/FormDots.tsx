@@ -18,7 +18,7 @@ export default function FormDots({
   const chars = (form || "").toUpperCase().slice(0, 5).split("");
   if (chars.length === 0) {
     if (!showEmpty) return null;
-    return <span className="text-[10px] font-bold text-slate-400">Chưa có lịch sử</span>;
+    return <span className="text-[10px] font-bold text-slate-500">Chưa có lịch sử</span>;
   }
   const dot = size === "sm" ? "w-4 h-4 text-[8px]" : "w-5 h-5 text-[9px]";
   const color = (c: string) =>

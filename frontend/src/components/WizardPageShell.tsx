@@ -50,7 +50,7 @@ export default function WizardPageShell({
       <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-4 sm:py-8">
         <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5">
           {/* Breadcrumb */}
-          <nav aria-label="Điều hướng" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <nav aria-label="Điều hướng" className="flex items-center gap-1.5 text-xs text-slate-500">
             <MapPin className="w-3.5 h-3.5" />
             <Link href="/" className="hover:underline font-semibold">Trang chủ</Link>
             <span aria-hidden>›</span>
@@ -63,7 +63,7 @@ export default function WizardPageShell({
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
               {title}
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+            <p className="mt-1 text-xs sm:text-sm text-slate-500">{subtitle}</p>
           </div>
 
           {children}
@@ -71,7 +71,7 @@ export default function WizardPageShell({
       </main>
 
       <footer className="border-t border-slate-200 dark:border-slate-800 py-4">
-        <p className="text-center text-[11px] text-slate-600 dark:text-slate-400">
+        <p className="text-center text-[11px] text-slate-600 dark:text-slate-500">
           © 2026 SoccerHub — Đồ Án Tốt Nghiệp: Hệ thống quản lý sân bóng & giải đấu phủi.
         </p>
       </footer>

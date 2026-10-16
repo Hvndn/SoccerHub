@@ -142,7 +142,7 @@ export default function NotificationsModal({
               <h2 className="font-black text-base sm:text-lg text-slate-900 dark:text-white leading-tight">
                 Tất Cả Thông Báo
               </h2>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 {notifications.length} thông báo
                 {unread > 0 && <span className="font-bold text-[#0b4f6c] dark:text-sky-400"> • {unread} chưa đọc</span>}
               </p>
@@ -203,7 +203,7 @@ export default function NotificationsModal({
         {/* Danh sách */}
         <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
           {filtered.length === 0 ? (
-            <div className="py-16 flex flex-col items-center space-y-3 text-slate-400 px-6 text-center">
+            <div className="py-16 flex flex-col items-center space-y-3 text-slate-500 px-6 text-center">
               <Bell className="w-12 h-12 opacity-30" />
               <p className="text-sm font-semibold">
                 {notifications.length === 0
@@ -237,7 +237,7 @@ export default function NotificationsModal({
                       </div>
                     )}
                     <div className="flex items-center justify-between gap-2 pt-0.5">
-                      <p className="text-[11px] text-slate-400 font-mono">{formatTime(n.time)}</p>
+                      <p className="text-[11px] text-slate-500 font-mono">{formatTime(n.time)}</p>
                       <div className="flex items-center gap-1.5">
                         {n.link && (
                           <a
@@ -251,7 +251,7 @@ export default function NotificationsModal({
                           type="button"
                           onClick={() => onDelete(n.id)}
                           aria-label="Xóa thông báo này"
-                          className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -274,7 +274,7 @@ export default function NotificationsModal({
             >
               Xóa tất cả thông báo
             </button>
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-semibold text-slate-500">
               {filtered.length}/{notifications.length} hiển thị
             </span>
           </div>

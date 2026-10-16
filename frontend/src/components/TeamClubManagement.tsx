@@ -136,7 +136,7 @@ export default function TeamClubManagement({
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white truncate">
                 {primaryTeam.teamName}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Giải đang tham gia: {primaryTeam.tournament?.title || "—"} •{" "}
                 {primaryTeam.tournament?.location || primaryTeam.tournament?.pitchName || "Chưa xếp sân"}
               </p>
@@ -167,7 +167,7 @@ export default function TeamClubManagement({
             <p className="text-sm text-slate-600 dark:text-slate-300">
               Bạn chưa làm đội trưởng của đội nào trong hệ thống.
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Đăng ký đội khi tham gia một giải đấu — số điện thoại của bạn sẽ được dùng để liên kết đội.
             </p>
             <button
@@ -205,7 +205,7 @@ export default function TeamClubManagement({
           <div className="p-3 sm:p-5 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
             <h3 className="font-black text-slate-900 dark:text-white">Danh Sách Đội Của Bạn</h3>
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 value={searchMember}
                 onChange={(e) => setSearchMember(e.target.value)}
@@ -268,7 +268,7 @@ export default function TeamClubManagement({
               </table>
             </div>
           )}
-          <p className="hidden sm:block p-3 sm:p-4 text-[11px] text-slate-400 border-t border-slate-200/80 dark:border-slate-800">
+          <p className="hidden sm:block p-3 sm:p-4 text-[11px] text-slate-500 border-t border-slate-200/80 dark:border-slate-800">
             Hệ thống liên kết đội theo số điện thoại đội trưởng. Danh sách cầu thủ từng người chưa được lưu riêng theo đội nên không hiển thị tại đây.
           </p>
         </div>
@@ -289,7 +289,7 @@ export default function TeamClubManagement({
                 <div key={m.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-slate-900 dark:text-white text-sm">
-                      {m.myTeam} <span className="text-slate-400 font-normal">vs</span> {m.opponent}
+                      {m.myTeam} <span className="text-slate-500 font-normal">vs</span> {m.opponent}
                     </p>
                     <p className="text-[11px] text-slate-500 mt-0.5">
                       {m.round} • {m.date} {m.time !== "—" ? `• ${m.time}` : ""} • {m.pitch}

@@ -93,7 +93,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
       render: (r) => (
         <div>
           <p className="font-bold text-slate-900 dark:text-white">{r.fullName}</p>
-          <p className="text-[11px] font-mono text-slate-400 truncate max-w-[220px]">{r.email}</p>
+          <p className="text-[11px] font-mono text-slate-500 truncate max-w-[220px]">{r.email}</p>
         </div>
       ),
     },
@@ -164,14 +164,14 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
                 </option>
               ))}
             </select>
-            <ShieldCheck className="w-3 h-3 absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <ShieldCheck className="w-3 h-3 absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
           </div>
           <button
             type="button"
             title={`Xóa tài khoản ${r.fullName}`}
             disabled={busyId === r.id}
             onClick={() => setConfirm({ kind: "delete", user: r })}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 hover:border-rose-200 dark:hover:border-rose-900 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all disabled:opacity-50"
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-rose-600 hover:border-rose-200 dark:hover:border-rose-900 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all disabled:opacity-50"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -184,7 +184,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
     <SectionCard>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="font-black text-slate-900 dark:text-white text-sm">Quản lý người dùng</h2>          <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <h2 className="font-black text-slate-900 dark:text-white text-sm">Quản lý người dùng</h2>          <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
             Khóa/mở tài khoản và phân vai trò. Không thể tự khóa hoặc tự đổi vai trò của chính mình.
           </p>
         </div>

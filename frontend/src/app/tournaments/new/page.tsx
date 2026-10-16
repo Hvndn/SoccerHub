@@ -178,7 +178,7 @@ function NewTournamentWizard() {
           <h2 className="text-lg font-black text-slate-900 dark:text-white">
             Công bố giải đấu thành công!
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-500">
             Giải <strong className="text-slate-900 dark:text-white">“{form.title}”</strong> đã được
             lưu vào CSDL và hiển thị trong danh sách Giải Đấu & BXH.
           </p>
@@ -270,7 +270,7 @@ function NewTournamentWizard() {
                       <span className="block text-sm font-black text-slate-900 dark:text-white">
                         {f === "KNOCKOUT" ? "Loại trực tiếp" : "Vòng tròn tính điểm"}
                       </span>
-                      <span className="block mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      <span className="block mt-1 text-xs text-slate-500">
                         {f === "KNOCKOUT"
                           ? "Thua là loại — kịch tính, phù hợp cúp ngắn ngày."
                           : "Đá vòng tròn — công bằng, phù hợp league dài hơi."}
@@ -397,7 +397,7 @@ function NewTournamentWizard() {
               {/* Tài khoản nhận lệ phí (tùy chọn — để hiện QR thu phí khi đội đăng ký) */}
               <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-3 sm:p-3.5 space-y-3">
                 <p className="text-xs font-black text-slate-700 dark:text-slate-200">
-                  Tài khoản nhận lệ phí <span className="font-medium text-slate-400">(tùy chọn)</span>
+                  Tài khoản nhận lệ phí <span className="font-medium text-slate-500">(tùy chọn)</span>
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
@@ -488,7 +488,7 @@ function NewTournamentWizard() {
               <ArrowLeft className="w-4 h-4" />
               <span>Quay lại</span>
             </button>
-            <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">Bước {step + 1}/{STEPS.length}</span>
+            <span className="text-[11px] font-mono text-slate-600 dark:text-slate-500">Bước {step + 1}/{STEPS.length}</span>
             {step < STEPS.length - 1 ? (
               <button
                 type="button"

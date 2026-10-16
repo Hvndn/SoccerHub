@@ -169,7 +169,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               <span className="text-xs sm:text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider block">
                 Bộ Lọc Tìm Sân Trống Theo Khu Vực &amp; Giờ Vàng
               </span>
-              <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <span className="text-[10px] sm:text-xs text-slate-500 font-medium">
                 Lọc theo khu vực, loại sân và khung giờ trống trong ngày
               </span>
             </div>
@@ -182,7 +182,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5">
           {/* 1. Location Select */}
           <div className="space-y-1.5">
-            <label htmlFor="hero-city" className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
+            <label htmlFor="hero-city" className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center">
               <MapPin className="w-3.5 h-3.5 mr-1 text-rose-500" />
               Khu vực sân
             </label>
@@ -200,7 +200,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
           {/* 2. Pitch Size Select */}
           <div className="space-y-1.5">
-            <label htmlFor="hero-pitch-type" className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
+            <label htmlFor="hero-pitch-type" className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center">
               <Trophy className="w-3.5 h-3.5 mr-1 text-amber-500" />
               Quy chuẩn sân
             </label>
@@ -218,7 +218,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
           {/* 3. Date Select */}
           <div className="space-y-1.5">
-            <label htmlFor="hero-date" className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
+            <label htmlFor="hero-date" className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center">
               <Clock className="w-3.5 h-3.5 mr-1 text-sky-500" />
               Ngày thi đấu
             </label>
@@ -236,7 +236,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
           {/* 4. Time Slot Select */}
           <div className="space-y-1.5">
-            <label htmlFor="hero-timeslot" className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center">
+            <label htmlFor="hero-timeslot" className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center">
               <Flame className="w-3.5 h-3.5 mr-1 text-orange-500" />
               Khung giờ đá
             </label>
@@ -280,24 +280,24 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           <div className="text-xl sm:text-3xl font-mono font-black text-[#0b4f6c] dark:text-sky-400">
             {stats.loading ? "—" : stats.pitches}
           </div>
-          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cụm sân trong CSDL</div>
+          <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Cụm sân trong CSDL</div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1 min-w-0">
           <div className="text-xl sm:text-3xl font-mono font-black text-sky-700 dark:text-sky-400">
             {stats.loading ? "—" : stats.tournaments}
           </div>
-          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Giải đấu đã đăng</div>
+          <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Giải đấu đã đăng</div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1 min-w-0">
           <div className="text-xl sm:text-3xl font-mono font-black text-amber-500">{stats.loading ? "—" : stats.matchesPlayed}</div>
-          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Trận đã có kết quả</div>
+          <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Trận đã có kết quả</div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1 min-w-0">
           <div className="text-xl sm:text-3xl font-mono font-black text-sky-500">{stats.loading ? "—" : stats.posts}</div>
-          <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kèo đang mở</div>
+          <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Kèo đang mở</div>
         </div>
       </div>
     </div>

@@ -192,14 +192,14 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
               <span className="text-[11px] text-slate-500">Top {formBoard.length} đội • xếp theo tỷ lệ thắng</span>
             </div>
             {formBoard.length === 0 ? (
-              <p className="text-xs text-slate-500 dark:text-slate-400 py-4 text-center">
+              <p className="text-xs text-slate-500 py-4 text-center">
                 Chưa có đội nào có lịch sử thi đấu. Nhập kết quả trận đấu trong giải để bảng tự cập nhật.
               </p>
             ) : (
               <div className="overflow-x-auto -mx-1 px-1">
                 <table className="w-full text-xs border-collapse min-w-[520px]">
                   <thead>
-                    <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                    <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">
                       <th scope="col" className="py-2 pr-2 font-bold">#</th>
                       <th scope="col" className="py-2 pr-2 font-bold">Đội Bóng</th>
                       <th scope="col" className="py-2 pr-2 font-bold">5 Trận Gần Nhất</th>
@@ -210,7 +210,7 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
                   <tbody>
                     {formBoard.map((r: any) => (
                       <tr key={r.teamName ?? r.name ?? r.rank} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0">
-                        <td className="py-2.5 pr-2 font-black text-slate-400">{r.rank}</td>
+                        <td className="py-2.5 pr-2 font-black text-slate-500">{r.rank}</td>
                         <td className="py-2.5 pr-2 font-bold text-slate-900 dark:text-white truncate max-w-[160px]">{r.teamName ?? r.name ?? "—"}</td>
                         <td className="py-2.5 pr-2"><FormDots form={r.form} size="sm" /></td>
                         <td className="py-2.5 pr-2 text-center font-mono font-bold text-slate-600 dark:text-slate-300">{r.record ?? "0-0-0"}</td>

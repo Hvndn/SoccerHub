@@ -620,8 +620,8 @@ export default function Navbar({
                 {/* Notification List Rộng Rãi */}
                 <div className="max-h-[480px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
                   {notifications.length === 0 ? (
-                    <div className="py-16 flex flex-col items-center space-y-3 text-slate-400">
-                      <Bell className="w-12 h-12 opacity-30 text-slate-400" />
+                    <div className="py-16 flex flex-col items-center space-y-3 text-slate-500">
+                      <Bell className="w-12 h-12 opacity-30 text-slate-500" />
                       <p className="text-sm font-semibold">Chưa có thông báo nào từ hệ thống</p>
                     </div>
                   ) : (
@@ -664,14 +664,14 @@ export default function Navbar({
                               </div>
                             )}
 
-                            <p className="text-[11px] text-slate-400 font-mono mt-1.5">{formatTime(notif.time)}</p>
+                            <p className="text-[11px] text-slate-500 font-mono mt-1.5">{formatTime(notif.time)}</p>
                           </div>
 
                           {/* Nút xóa */}
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); removeNotification(notif.id); }}
-                            className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0"
+                            className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0"
                             title="Xóa thông báo"
                           >
                             <X className="w-4 h-4" />
@@ -695,7 +695,7 @@ export default function Navbar({
                     >
                       Xem tất cả →
                     </button>
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{notifications.length} thông báo</span>
+                    <span className="text-xs font-semibold text-slate-500">{notifications.length} thông báo</span>
                     <button
                       type="button"
                       onClick={() => clearAllNotifications()}
@@ -735,7 +735,7 @@ export default function Navbar({
                   <div className="text-xs font-extrabold text-slate-900 dark:text-white leading-tight truncate">
                     {user.fullName || user.name || "Người Dùng"}
                   </div>
-                  <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono flex items-center justify-end space-x-1 whitespace-nowrap">
+                  <div className="text-[10px] font-bold text-slate-500 font-mono flex items-center justify-end space-x-1 whitespace-nowrap">
                     <span className="text-[#0b4f6c] dark:text-sky-400 font-extrabold shrink-0">
                       {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'BTC' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
                     </span>
@@ -744,7 +744,7 @@ export default function Navbar({
                     ) : (
                       <span className="shrink-0">• {user.level || "Phong trào"}</span>
                     )}
-                    <ChevronDown className={`w-3 h-3 text-slate-400 shrink-0 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3 h-3 text-slate-500 shrink-0 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`} />
                   </div>
                 </div>
 
@@ -764,7 +764,7 @@ export default function Navbar({
                         {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'Ban Tổ Chức' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
                       </span>
                     </div>
-                    <p className="text-[10px] font-mono text-slate-400 truncate mt-0.5">
+                    <p className="text-[10px] font-mono text-slate-500 truncate mt-0.5">
                       {user.email || user.phone || ""}
                     </p>
                   </div>
@@ -963,7 +963,7 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => setShowMobileDrawer(false)}
-                  className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                  className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-500 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
                   title="Đóng menu"
                 >
                   <X className="w-5 h-5" />
@@ -1004,7 +1004,7 @@ export default function Navbar({
                     <p className="font-extrabold text-xs text-[#0b4f6c] dark:text-sky-300">
                       Gia nhập cộng đồng SoccerHub
                     </p>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                    <p className="text-[11px] text-slate-600 dark:text-slate-500 leading-relaxed">
                       Đăng nhập để theo dõi lịch trình, giải đấu và phong độ thi đấu của bạn.
                     </p>
                     <div className="flex items-center space-x-2 pt-1">
@@ -1034,7 +1034,7 @@ export default function Navbar({
 
                 {/* Danh mục menu điều hướng chính đồng bộ 100% với PC Dropdowns */}
                 <div className="space-y-3">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 px-1 block">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 px-1 block">
                     Danh Mục Nền Tảng
                   </span>
 
@@ -1054,7 +1054,7 @@ export default function Navbar({
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Quản Lý Cụm Sân & Doanh Thu</div>
-                          <div className={`text-[10px] ${activeTab === "admin" ? "text-white/80 dark:text-slate-900/80" : "text-slate-400"}`}>Điều hành doanh thu, ca sân & giá cọc</div>
+                          <div className={`text-[10px] ${activeTab === "admin" ? "text-white/80 dark:text-slate-900/80" : "text-slate-500"}`}>Điều hành doanh thu, ca sân & giá cọc</div>
                         </div>
                       </button>
 
@@ -1072,7 +1072,7 @@ export default function Navbar({
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Sơ Đồ Ca Sân Realtime</div>
-                          <div className={`text-[10px] ${activeTab === "multi-sport" ? "text-white/80 dark:text-slate-900/80" : "text-slate-400"}`}>Ma trận slot & trạng thái thi đấu trực tiếp</div>
+                          <div className={`text-[10px] ${activeTab === "multi-sport" ? "text-white/80 dark:text-slate-900/80" : "text-slate-500"}`}>Ma trận slot & trạng thái thi đấu trực tiếp</div>
                         </div>
                       </button>
                     </div>
@@ -1113,7 +1113,7 @@ export default function Navbar({
                             <span>Điều Hành Giải Đấu</span>
                             <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-[#0ea5e9] text-white">BTC</span>
                           </div>
-                          <div className={`text-[10px] ${activeTab === "organizer" ? "text-white/80" : "text-slate-400"}`}>
+                          <div className={`text-[10px] ${activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
                             Tạo giải, duyệt đội & bốc thăm
                           </div>
                         </div>
@@ -1133,7 +1133,7 @@ export default function Navbar({
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
-                          <div className={`text-[10px] ${activeTab === "tournaments" ? "text-white/80" : "text-slate-400"}`}>
+                          <div className={`text-[10px] ${activeTab === "tournaments" ? "text-white/80" : "text-slate-500"}`}>
                             Theo dõi nhánh đấu & phong độ thi đấu
                           </div>
                         </div>
@@ -1156,7 +1156,7 @@ export default function Navbar({
                             <span>Chợ Kèo & Pass Sân</span>
                             <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-rose-500 text-white">HOT</span>
                           </div>
-                          <div className={`text-[10px] ${activeTab === "community" || activeTab === "urgent-resale" ? "text-white/80" : "text-slate-400"}`}>
+                          <div className={`text-[10px] ${activeTab === "community" || activeTab === "urgent-resale" ? "text-white/80" : "text-slate-500"}`}>
                             Tìm đối cáp kèo & tuyển quân
                           </div>
                         </div>
@@ -1179,7 +1179,7 @@ export default function Navbar({
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Đặt Sân Bóng Đá</div>
-                          <div className={`text-[10px] ${activeTab === "booking" ? "text-white/80" : "text-slate-400"}`}>
+                          <div className={`text-[10px] ${activeTab === "booking" ? "text-white/80" : "text-slate-500"}`}>
                             Tìm cụm sân gần nhất & giữ chỗ online
                           </div>
                         </div>
@@ -1203,7 +1203,7 @@ export default function Navbar({
                             <span>Chợ Kèo & Pass Sân</span>
                             <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-rose-500 text-white">HOT</span>
                           </div>
-                          <div className={`text-[10px] ${activeTab === "community" || activeTab === "urgent-resale" ? "text-white/80" : "text-slate-400"}`}>
+                          <div className={`text-[10px] ${activeTab === "community" || activeTab === "urgent-resale" ? "text-white/80" : "text-slate-500"}`}>
                             Tìm đối cáp kèo, pass sân gấp & tuyển quân
                           </div>
                         </div>
@@ -1224,7 +1224,7 @@ export default function Navbar({
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
-                          <div className={`text-[10px] ${activeTab === "tournaments" || activeTab === "organizer" ? "text-white/80" : "text-slate-400"}`}>
+                          <div className={`text-[10px] ${activeTab === "tournaments" || activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
                             Đăng ký giải, nhánh đấu & lịch sử thi đấu
                           </div>
                         </div>
@@ -1246,7 +1246,7 @@ export default function Navbar({
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Thẻ Hội Viên & Ưu Đãi</div>
-                          <div className={`text-[10px] ${activeTab === "membership" ? "text-white/80" : "text-slate-400"}`}>
+                          <div className={`text-[10px] ${activeTab === "membership" ? "text-white/80" : "text-slate-500"}`}>
                             Gói Pass tháng, tích điểm MP & quà tặng
                           </div>
                         </div>
@@ -1256,7 +1256,7 @@ export default function Navbar({
                       {/* KHỐI CÁ NHÂN VĐV NẾU ĐÃ LOGIN (LỊCH TRÌNH & HỒ SƠ) */}
                       {user && (
                         <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800/80 space-y-2">
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 px-1 block">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 px-1 block">
                             Hồ Sơ & Hoạt Động
                           </span>
 
@@ -1347,7 +1347,7 @@ export default function Navbar({
                   className={`relative flex flex-col items-center justify-center gap-1 pt-2.5 pb-2 transition-colors active:scale-95 ${
                     isActive
                       ? "text-[#0b4f6c] dark:text-sky-400"
-                      : "text-slate-500 dark:text-slate-400"
+                      : "text-slate-500"
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >

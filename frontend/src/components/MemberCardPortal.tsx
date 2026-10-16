@@ -112,7 +112,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
             {/* Left Footer: Football Pitch Formats Sync */}
             <div className="relative z-10 pt-6 mt-4 border-t border-slate-700/60">
               <div className="flex items-center justify-between text-slate-300 mb-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Đồng bộ toàn bộ quy chuẩn sân</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Đồng bộ toàn bộ quy chuẩn sân</span>
                 <div className="flex items-center gap-1.5 bg-[#0ea5e9]/20 px-2 py-0.5 rounded-full border border-[#0ea5e9]/30">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#0ea5e9] animate-pulse"></span>
                   <span className="font-mono text-[10px] text-lime-400 font-bold tracking-wide">LIVE SYNC</span>
@@ -157,7 +157,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                 <h1 className="text-lg sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   Thẻ Hội Viên Điện Tử Của Bạn
                 </h1>
-                <p className="hidden sm:block text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                <p className="hidden sm:block text-xs sm:text-sm text-slate-500 mt-1">
                   Hệ thống đã tạo sẵn thẻ định danh và quét 12 cụm sân thể thao gần bạn có ca trống tối nay.
                 </p>
               </div>
@@ -181,7 +181,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                     </div>
                     <div>
                       <p className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white">SoccerHub SPORTS PASS</p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono">Universal Athlete ID</p>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest font-mono">Universal Athlete ID</p>
                     </div>
                   </div>
                   <span className="px-2.5 py-1 rounded bg-lime-500/15 dark:bg-[#0ea5e9]/20 text-sky-800 dark:text-sky-400 font-mono text-xs font-black border border-lime-500/40 dark:border-sky-400/30">
@@ -193,7 +193,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                 <div className="grid grid-cols-12 gap-3 items-center relative z-10 my-4">
                   <div className="col-span-8 space-y-2">
                     <div>
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Họ và Tên Vận Động Viên</span>
+                      <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Họ và Tên Vận Động Viên</span>
                       <div className="flex items-center gap-2">
                         <p className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">{userName}</p>
                         <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">Phong Trào</span>
@@ -202,15 +202,15 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
 
                     <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1">
                       <div>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-medium">Môn thi đấu</span>
+                        <span className="text-[10px] text-slate-500 uppercase block font-medium">Môn thi đấu</span>
                         <span className="text-xs font-bold text-sky-800 dark:text-sky-400">Bóng Đá Sân 5, 7, 11</span>
                       </div>
                       <div className="w-px h-6 bg-slate-200 dark:bg-slate-800"></div>
                       <div>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-medium">Chỉ số xếp hạng</span>
+                        <span className="text-[10px] text-slate-500 uppercase block font-medium">Chỉ số xếp hạng</span>
                         <div className="flex items-center gap-1.5 font-mono text-xs font-bold">
                           <span className="text-sky-800 dark:text-sky-400">{user?.level || "Chưa xếp bậc"}</span>
-                          <span className="text-slate-400 dark:text-slate-600">|</span>
+                          <span className="text-slate-500 dark:text-slate-600">|</span>
                           <span className="text-slate-900 dark:text-white">{userLevel}</span>
                         </div>
                       </div>
@@ -234,7 +234,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
 
                 {/* Footer Thẻ */}
                 <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between relative z-10 text-[11px]">
-                  <span className="font-mono text-slate-500 dark:text-slate-400 tracking-wider">{memberId} • SOCCERHUB</span>
+                  <span className="font-mono text-slate-500 tracking-wider">{memberId} • SOCCERHUB</span>
                   <span className="flex items-center gap-1.5 text-sky-800 dark:text-sky-400 font-bold">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> ĐÃ KÍCH HOẠT THÀNH CÔNG
                   </span>

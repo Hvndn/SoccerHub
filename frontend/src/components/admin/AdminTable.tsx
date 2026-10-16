@@ -78,7 +78,7 @@ export default function AdminTable<T>({
     <div className="space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="search"
             aria-label="Tìm kiếm trong bảng"
@@ -91,7 +91,7 @@ export default function AdminTable<T>({
             className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
           />
         </div>
-        <span className="text-[11px] font-mono text-slate-400 whitespace-nowrap">
+        <span className="text-[11px] font-mono text-slate-500 whitespace-nowrap">
           {filtered.length} dòng
         </span>
       </div>
@@ -99,7 +99,7 @@ export default function AdminTable<T>({
       <div className="overflow-x-auto -mx-1 px-1 rounded-xl border border-slate-200 dark:border-slate-800">
         <table className="w-full text-xs border-collapse min-w-[720px] bg-white dark:bg-slate-900">
           <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60">
+            <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60">
               {columns.map((col, ci) => (
                 <th key={col.key} scope="col" className={`py-2.5 px-2 sm:px-3 font-bold whitespace-nowrap ${col.className ?? ""} ${ci === 0 ? "sticky left-0 bg-slate-50 dark:bg-slate-950 z-10" : ""}`}>
                   {col.sortable ? (
@@ -157,7 +157,7 @@ export default function AdminTable<T>({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+          <span className="text-[11px] text-slate-500 font-semibold">
             Trang {safePage + 1}/{totalPages}
           </span>
           <div className="flex items-center gap-1.5">

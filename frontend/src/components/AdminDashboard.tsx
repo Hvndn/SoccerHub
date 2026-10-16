@@ -765,7 +765,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <span>{activePitch ? activePitch.name.replace(/đà nẵng/i, "Đà Nẵng") : "Chưa chọn cụm sân nào"}</span>
               {isLoadingBackend && <RefreshCw className="w-5 h-5 text-sky-500 animate-spin" />}
             </h1>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 font-medium mt-1">
               <span className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
                 <span>{activePitch?.address || "Chưa khai báo địa chỉ"}</span>
@@ -908,7 +908,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
-          <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block">
+          <span className="text-sm font-bold text-slate-500 uppercase tracking-wider block">
             Doanh Thu {matrixDate === upcomingDays[0]?.iso ? "Hôm Nay" : `Ngày ${matrixDate.split("-").reverse().join("/")}`}
           </span>
           <div className="text-2xl sm:text-3xl font-black text-emerald-500 font-mono">
@@ -920,7 +920,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         </div>
 
         <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
-          <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block">Tỷ Lệ Lấp Đầy Ca Sân</span>
+          <span className="text-sm font-bold text-slate-500 uppercase tracking-wider block">Tỷ Lệ Lấp Đầy Ca Sân</span>
           <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
             {pitchStats.occupancyRate}%
           </div>
@@ -930,7 +930,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         </div>
 
         <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
-          <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block">Đơn Cọc VietQR Online</span>
+          <span className="text-sm font-bold text-slate-500 uppercase tracking-wider block">Đơn Cọc VietQR Online</span>
           <div className="text-2xl sm:text-3xl font-black text-sky-500 font-mono">
             {pitchStats.onlineBookings} Ca Online
           </div>
@@ -938,7 +938,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         </div>
 
         <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
-          <span className="text-sm font-bold text-slate-400 uppercase tracking-wider block">Khách Vãng Lai Tại Quầy</span>
+          <span className="text-sm font-bold text-slate-500 uppercase tracking-wider block">Khách Vãng Lai Tại Quầy</span>
           <div className="text-2xl sm:text-3xl font-black text-amber-500 font-mono">
             {pitchStats.counterBookings} Ca Trực Tiếp
           </div>
@@ -954,13 +954,13 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           </div>
           <div>
             <span className="text-sm font-black text-slate-900 dark:text-white block">Tra Cứu Mã Vé & Check-in Tiếp Nhận</span>
-            <span className="hidden sm:inline text-xs text-slate-400">Nhập mã vé đặt cọc hoặc Số Điện Thoại khách để check-in mở đèn</span>
+            <span className="hidden sm:inline text-xs text-slate-500">Nhập mã vé đặt cọc hoặc Số Điện Thoại khách để check-in mở đèn</span>
           </div>
         </div>
 
         <div className="flex items-center space-x-2.5 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-80">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
             <input
               type="text"
               value={searchCodeInput}
@@ -990,7 +990,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   <h2 className="text-xl font-black text-slate-900 dark:text-white">
                     Sơ Đồ Ca Sân Thời Gian Thực (Owner Live Grid Matrix)
                   </h2>
-                  <span className="hidden sm:block text-xs text-slate-400 mt-0.5">
+                  <span className="hidden sm:block text-xs text-slate-500 mt-0.5">
                     Giờ mở cửa: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca thi đấu linh hoạt (1h - 2h) • Tự động chống trùng lịch
                   </span>
                 </div>
@@ -1011,7 +1011,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       matrixDuration === 60
                         ? "bg-[#0ea5e9] text-white shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        : "text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
                     1 Tiếng
@@ -1026,7 +1026,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       matrixDuration === 90
                         ? "bg-[#0ea5e9] text-white shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        : "text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
                     1.5 Tiếng
@@ -1041,7 +1041,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       matrixDuration === 120
                         ? "bg-[#0ea5e9] text-white shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        : "text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
                     2 Tiếng
@@ -1163,7 +1163,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                         </span>
                       )}
                     </div>
-                    <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
                       Bấm vào các ngày bên dưới để xem sơ đồ ca, khách đã cọc và doanh thu của ngày đó
                     </p>
                   </div>
@@ -1171,7 +1171,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
                 <div className="flex items-center space-x-2 shrink-0">
                   <div className="flex items-center space-x-1.5 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Chọn ngày khác:</span>
+                    <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">Chọn ngày khác:</span>
                     <input
                       type="date"
                       value={matrixDate}
@@ -1236,7 +1236,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <span className="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-xs shrink-0" />
                 <span>Sàn Nhượng Ca Gấp</span>
               </span>
-              <span className="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
+              <span className="flex items-center space-x-2 text-slate-500">
                 <span className="w-3.5 h-3.5 rounded-full bg-slate-300 dark:bg-slate-700 shrink-0" />
                 <span>Ca Trống (AVAILABLE)</span>
               </span>
@@ -1245,7 +1245,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             {/* PITCH MATRIX GRID */}
             <div className="space-y-3 sm:space-y-4 pt-2">
               {filteredMatrix.length === 0 ? (
-                <div className="py-12 text-center text-sm text-slate-400 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center space-y-2">
+                <div className="py-12 text-center text-sm text-slate-500 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center space-y-2">
                   <AlertCircle className="w-8 h-8 text-amber-500" />
                   <span className="font-bold text-slate-700 dark:text-slate-300">Không tìm thấy sân con hoặc ca đá nào phù hợp</span>
                   <span className="text-xs">Vui lòng chọn Đặt Lại bộ lọc để hiển thị toàn bộ ma trận ca sân</span>
@@ -1260,15 +1260,15 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                         {pitch.type}
                       </span>
                     </div>
-                    <div className="text-xs font-mono text-slate-400">
+                    <div className="text-xs font-mono text-slate-500">
                       Giá cơ bản: <strong className="text-slate-900 dark:text-white font-bold text-sm">{(pitch.basePrice/1000).toFixed(0)}k/ca</strong>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                     {pitch.slots.length === 0 ? (
-                      <div className="col-span-full py-6 sm:py-8 text-center text-sm text-slate-400 bg-white/40 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-center space-x-2">
-                        <AlertCircle className="w-5 h-5 text-slate-400" />
+                      <div className="col-span-full py-6 sm:py-8 text-center text-sm text-slate-500 bg-white/40 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-center space-x-2">
+                        <AlertCircle className="w-5 h-5 text-slate-500" />
                         <span>Không có ca đá nào phù hợp với bộ lọc khung giờ / hình thức đã chọn.</span>
                       </div>
                     ) : (
@@ -1304,7 +1304,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                           </div>
                           
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <p className={`font-black truncate text-sm ${slot.status === "empty" ? "text-slate-400 dark:text-slate-500" : "text-slate-900 dark:text-white"}`}>
+                            <p className={`font-black truncate text-sm ${slot.status === "empty" ? "text-slate-500" : "text-slate-900 dark:text-white"}`}>
                               {slot.customer}
                             </p>
                             {slot.isContinuation && (
@@ -1328,7 +1328,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                           
                           <div className="text-xs space-y-1 opacity-90 font-mono">
                             <span className="block text-slate-500">
-                              Cọc: <strong className={slot.isContinuation ? "text-indigo-600 dark:text-indigo-400 font-bold" : slot.status === "empty" ? "text-slate-400" : "text-sky-700 dark:text-sky-400 font-bold"}>
+                              Cọc: <strong className={slot.isContinuation ? "text-indigo-600 dark:text-indigo-400 font-bold" : slot.status === "empty" ? "text-slate-500" : "text-sky-700 dark:text-sky-400 font-bold"}>
                                 {slot.isContinuation ? "Đã tính ở ca trước" : slot.depositPaid}
                               </strong>
                             </span>
@@ -1336,7 +1336,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                               <span className="block text-rose-500 font-bold">Thu tại quầy: <strong>{slot.cashDue}</strong></span>
                             )}
                             {slot.isContinuation && (
-                              <span className="block text-slate-400 text-[11px]">Cùng đơn: #{slot.code}</span>
+                              <span className="block text-slate-500 text-[11px]">Cùng đơn: #{slot.code}</span>
                             )}
                           </div>
 
@@ -1365,7 +1365,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   <Building className="w-5.5 h-5.5 text-[#0b4f6c] dark:text-sky-400" />
                   <span>Danh Sách Sân Con Trong Cụm ({pitchMatrix.length} Sân)</span>
                 </h2>
-                <p className="hidden sm:block text-sm text-slate-400 font-medium mt-1">
+                <p className="hidden sm:block text-sm text-slate-500 font-medium mt-1">
                   Quản lý giá thuê, tình trạng sân và tiện ích cho từng sân con trong trung tâm thể thao.
                 </p>
               </div>
@@ -1391,7 +1391,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                           {pitch.type}
                         </span>
                       </div>
-                      <span className="text-xs text-slate-400 font-medium mt-0.5 block">Mã sân: {pitch.pitchId}</span>
+                      <span className="text-xs text-slate-500 font-medium mt-0.5 block">Mã sân: {pitch.pitchId}</span>
                     </div>
 
                     <span className="px-3 py-1 rounded-full bg-[#0ea5e9]/10 text-emerald-500 text-xs font-bold border border-[#0ea5e9]/20">
@@ -1401,17 +1401,17 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
                   <div className="grid grid-cols-2 gap-3 text-sm font-mono p-3.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
                     <div>
-                      <span className="text-slate-400 block text-xs font-semibold">GIÁ GIỜ THƯỜNG</span>
+                      <span className="text-slate-500 block text-xs font-semibold">GIÁ GIỜ THƯỜNG</span>
                       <strong className="text-slate-900 dark:text-white font-extrabold text-sm sm:text-base">{pitch.basePrice.toLocaleString("vi-VN")} đ/ca</strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-xs font-semibold">GIÁ GIỜ VÀNG</span>
+                      <span className="text-slate-500 block text-xs font-semibold">GIÁ GIỜ VÀNG</span>
                       <strong className="text-amber-500 font-black text-sm sm:text-base">{pitch.peakPrice.toLocaleString("vi-VN")} đ/ca</strong>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between text-sm pt-2">
-                    <span className="text-slate-400 text-xs sm:text-sm">
+                    <span className="text-slate-500 text-xs sm:text-sm">
                       Tiện ích:{" "}
                       {activePitch?.amenities?.length
                         ? activePitch.amenities.join(", ")
@@ -1442,7 +1442,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               </div>
             </div>
 
-            <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400">
+            <p className="hidden sm:block text-xs text-slate-500">
               Giá đọc và ghi thẳng vào bảng <code>pitches</code> trong CSDL. Ca bắt đầu từ 17:00, 18:00 và
               19:00 được tính theo giá giờ vàng khi thanh toán.
             </p>
@@ -1465,13 +1465,13 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                         <span className="font-extrabold text-sm text-slate-900 dark:text-white truncate">
                           {p.name}
                         </span>
-                        <span className="text-[11px] font-mono text-slate-400 shrink-0">
+                        <span className="text-[11px] font-mono text-slate-500 shrink-0">
                           {p.openTime ?? "—"} - {p.closeTime ?? "—"}
                         </span>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <label className="space-y-1">
-                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                          <span className="text-[11px] font-bold text-slate-500">
                             Giá thường (đ/ca)
                           </span>
                           <input
@@ -1488,7 +1488,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                           />
                         </label>
                         <label className="space-y-1">
-                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                          <span className="text-[11px] font-bold text-slate-500">
                             Giá giờ vàng (đ/ca)
                           </span>
                           <input
@@ -1587,7 +1587,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   <span className="font-extrabold text-xs text-slate-900 dark:text-white">{item.name}</span>
                   <span className="font-mono font-black text-emerald-500 text-xs">{item.price.toLocaleString("vi-VN")}đ</span>
                 </div>
-                <div className="flex justify-between text-[11px] text-slate-400 font-mono">
+                <div className="flex justify-between text-[11px] text-slate-500 font-mono">
                   <span>Đã bán hôm nay: <strong className="text-slate-900 dark:text-white">{item.soldToday}</strong></span>
                   <span>Tồn kho: <strong className="text-sky-500">{item.stock}</strong></span>
                 </div>
@@ -1617,7 +1617,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button 
                 type="button"
                 onClick={() => setShowAddPitchModal(false)} 
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1732,7 +1732,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button 
                 type="button"
                 onClick={() => setShowOfflineModal(false)} 
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1807,7 +1807,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       }`}
                     >
                       <span className="block font-black">{item.label}</span>
-                      <span className={`text-[10px] ${offlineDuration === item.dur ? "text-cyan-50" : "text-slate-400"}`}>({item.sub})</span>
+                      <span className={`text-[10px] ${offlineDuration === item.dur ? "text-cyan-50" : "text-slate-500"}`}>({item.sub})</span>
                     </button>
                   ))}
                 </div>
@@ -1861,7 +1861,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     className={`p-3.5 rounded-xl font-bold border transition-all text-sm ${
                       offlineDepositType === "PAID_CASH"
                         ? "bg-[#0ea5e9] text-white border-[#0ea5e9] shadow-xs"
-                        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300"
                     }`}
                   >
                     Đã Thu Cọc Mặt Quầy (50%)
@@ -1872,7 +1872,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     className={`p-3.5 rounded-xl font-bold border transition-all text-sm ${
                       offlineDepositType === "TRUST"
                         ? "bg-amber-500 text-white border-amber-500 shadow-xs"
-                        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300"
                     }`}
                   >
                     Chưa Cọc (Khách Quen Tin Tưởng)
@@ -1921,7 +1921,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button 
                 type="button"
                 onClick={() => setSelectedSlotForAction(null)} 
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1930,19 +1930,19 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <div className="space-y-3.5 text-sm">
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 space-y-2.5 border border-slate-200/60 dark:border-slate-700/60">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Khách đặt:</span>
+                  <span className="text-slate-500">Khách đặt:</span>
                   <strong className="text-slate-900 dark:text-white font-black text-sm">{selectedSlotForAction.customer}</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Số điện thoại:</span>
+                  <span className="text-slate-500">Số điện thoại:</span>
                   <strong className="font-mono text-slate-900 dark:text-white font-bold">{selectedSlotForAction.phone}</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Khung giờ:</span>
+                  <span className="text-slate-500">Khung giờ:</span>
                   <strong className="font-mono text-emerald-500 font-black text-sm">{selectedSlotForAction.time}</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Mã vé check-in:</span>
+                  <span className="text-slate-500">Mã vé check-in:</span>
                   <strong className="font-mono text-sky-500 font-extrabold text-sm">{selectedSlotForAction.code}</strong>
                 </div>
               </div>
@@ -2005,7 +2005,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button 
                 type="button"
                 onClick={() => setShowHoursModal(false)} 
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2113,7 +2113,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   setSlotToCancel(null);
                   setCancelReasonInput("");
                 }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-rose-100/50 dark:hover:bg-slate-800 transition-colors"
+                className="text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-rose-100/50 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2141,7 +2141,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
                         cancelReasonInput === reason
                           ? "bg-rose-600 text-white border-rose-600 shadow-sm"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-rose-300 hover:text-rose-600"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-rose-300 hover:text-rose-600"
                       }`}
                     >
                       {reason}
@@ -2154,7 +2154,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   onChange={(e) => setCancelReasonInput(e.target.value)}
                   placeholder="Hoặc nhập lý do cụ thể... (bắt buộc)"
                   rows={3}
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm text-slate-900 dark:text-white font-medium placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none"
                 />
               </div>
 
