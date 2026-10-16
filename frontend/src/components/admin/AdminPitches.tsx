@@ -84,8 +84,7 @@ export default function AdminPitches({ notify }: { notify: (type: "ok" | "err", 
     <SectionCard>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-black text-slate-900 dark:text-white text-sm">Quản lý sân bóng</h3>
-          <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <h2 className="font-black text-slate-900 dark:text-white text-sm">Quản lý sân bóng</h2>          <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             Danh sách cụm sân trong CSDL. Thêm/sửa sân thực hiện ở Bảng điều hành Chủ sân.
           </p>
         </div>

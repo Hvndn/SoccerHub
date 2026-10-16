@@ -61,8 +61,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
       <SectionCard>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="font-black text-slate-900 dark:text-white text-sm">Bảo trì dữ liệu</h3>
-            <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            <h2 className="font-black text-slate-900 dark:text-white text-sm">Bảo trì dữ liệu</h2>            <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Xóa kết quả trận và bàn thắng mồ côi (giải đã bị xóa).
             </p>
           </div>
@@ -117,8 +116,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
 
       <SectionCard>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-black text-slate-900 dark:text-white text-sm">Doanh thu theo tháng</h3>
-          {report && (
+          <h3 className="font-black text-slate-900 dark:text-white text-sm">Doanh thu theo tháng</h3>          {report && (
             <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
               Tổng tháng này: {formatMoney(report.totalRevenueThisMonth)} • Lấp đầy TB: {report.avgOccupancyRate}
             </span>

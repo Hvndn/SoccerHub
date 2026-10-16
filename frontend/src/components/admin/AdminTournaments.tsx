@@ -155,8 +155,7 @@ export default function AdminTournaments({ notify }: { notify: (type: "ok" | "er
     <SectionCard>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-black text-slate-900 dark:text-white text-sm">Quản lý giải đấu</h3>
-          <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <h2 className="font-black text-slate-900 dark:text-white text-sm">Quản lý giải đấu</h2>          <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             Đóng/mở đăng ký và xóa giải rác. Xóa giải sẽ xóa kèm toàn bộ đội đã ghi danh.
           </p>
         </div>

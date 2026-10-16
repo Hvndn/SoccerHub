@@ -141,8 +141,7 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
     <SectionCard>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-black text-slate-900 dark:text-white text-sm">Kiểm duyệt chợ kèo</h3>
-          <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <h2 className="font-black text-slate-900 dark:text-white text-sm">Kiểm duyệt chợ kèo</h2>          <p className="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             Gỡ tin đăng vi phạm (spam, sai sự thật). Hành động không thể hoàn tác.
           </p>
         </div>
