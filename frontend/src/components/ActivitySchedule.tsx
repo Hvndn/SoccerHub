@@ -5,7 +5,7 @@ import {
   Home, ChevronRight, Calendar, Clock, MapPin, Trophy, Users, ShieldCheck, Zap,
   QrCode, Video, MessageSquare, CheckCircle2, RefreshCw, XCircle, PlayCircle, FileText
 } from "lucide-react";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, apiRequest } from "@/lib/api";
 import {
   fetchTournaments, sportLabel, formatLabel,
   type Tournament, type TournamentBracketData,
@@ -67,6 +67,30 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
   const [now, setNow] = useState(() => new Date());
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedMatch, setSelectedMatch] = useState<MatchRow | null>(null);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+
+  /** Người đặt tự hủy vé của mình (chỉ khi ca chưa bắt đầu) — backend cũng kiểm lại SĐT. */
+  const cancelMyBooking = async (b: any) => {
+    const ok = window.confirm(
+      `Hủy vé mã ${b.code}?\n\n${b.courtName ?? ""} · ${b.timeSlot} · ${b.bookingDate}\n\n` +
+        `Tiền cọc ${money(b.depositPaid)} sẽ được hoàn lại theo chính sách của chủ sân.`
+    );
+    if (!ok) return;
+    try {
+      setCancellingId(b.id);
+      const res = await apiRequest<any>(`/api/v1/pitches/bookings/${b.id}/cancel-by-customer`, {
+        method: "POST",
+        body: JSON.stringify({ reason: "Người đặt tự hủy từ màn Vé của tôi" }),
+      });
+      setNotice(`Đã hủy vé ${b.code}. Khung giờ đã mở lại cho khách khác.`);
+      await load();
+      void res;
+    } catch (e: any) {
+      setNotice(e?.message || "Không hủy được vé. Vui lòng thử lại.");
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   // Đồng hồ 1 nhịp/giây cho countdown + trạng thái "đã bắt đầu"
   useEffect(() => {
@@ -503,27 +527,54 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                       : "Tài khoản chưa có số điện thoại nên chưa tra cứu được vé. Cập nhật hồ sơ trước."}
                   </p>
                 ) : (
-                  myBookings.map((b) => (
-                    <div key={b.id} className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">
-                          {b.courtName ?? b.courtType ?? "Sân"} · {b.timeSlot}
-                        </p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                          {b.bookingDate} · Mã vé <span className="font-mono font-bold">{b.code}</span> · Tổng {money(b.totalPrice)} (cọc {money(b.depositPaid)})
-                        </p>
+                  myBookings.map((b) => {
+                    const today = new Date().toISOString().slice(0, 10);
+                    const started =
+                      b.status === "PLAYING" ||
+                      b.status === "COMPLETED" ||
+                      (b.bookingDate ? String(b.bookingDate) < today : false);
+                    const canCancel = b.status === "BOOKED" || b.status === "RESALE";
+                    return (
+                      <div key={b.id} className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">
+                            {b.courtName ?? b.courtType ?? "Sân"} · {b.timeSlot}
+                          </p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                            {b.bookingDate} · Mã vé <span className="font-mono font-bold">{b.code}</span> · Tổng {money(b.totalPrice)} (cọc {money(b.depositPaid)})
+                          </p>
+                          {b.status === "CANCELLED" && b.cancelReason && (
+                            <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-0.5">
+                              Lý do: {b.cancelReason}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                            b.status === "CANCELLED"
+                              ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                              : b.status === "RESALE"
+                              ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                              : b.status === "COMPLETED"
+                              ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                              : "bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300"
+                          }`}>
+                            {b.status}
+                          </span>
+                          {canCancel && !started && (
+                            <button
+                              type="button"
+                              onClick={() => cancelMyBooking(b)}
+                              disabled={cancellingId === b.id}
+                              className="px-2.5 py-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-50"
+                            >
+                              {cancellingId === b.id ? "Đang hủy…" : "Hủy vé"}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
-                        b.status === "CANCELLED"
-                          ? "bg-rose-100 text-rose-700"
-                          : b.status === "RESALE"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-sky-100 text-sky-800"
-                      }`}>
-                        {b.status}
-                      </span>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>

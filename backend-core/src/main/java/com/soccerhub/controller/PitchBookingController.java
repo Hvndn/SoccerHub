@@ -240,8 +240,12 @@ public class PitchBookingController {
         int slotDuration = (duration != null && duration > 0) ? duration : defaultDuration;
         List<String> standardSlots = generateTimeSlots(pitch.getOpenTime(), pitch.getCloseTime(), slotDuration);
 
-        // Lấy tất cả booking trong ngày để kiểm tra chống trùng giờ linh hoạt
-        List<Booking> dayBookings = bookingRepository.findByPitchIdAndBookingDate(id, targetDate);
+        // Lấy tất cả booking trong ngày để kiểm tra chống trùng giờ linh hoạt.
+        // Đơn đã hủy (CANCELLED) vẫn giữ trong CSDL để khách xem lịch sử,
+        // nhưng KHÔNG được coi là đã chiếm khung giờ.
+        List<Booking> dayBookings = bookingRepository.findByPitchIdAndBookingDate(id, targetDate).stream()
+                .filter(b -> !"CANCELLED".equals(b.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
 
         List<Map<String, Object>> matrix = new ArrayList<>();
 
@@ -450,7 +454,11 @@ public class PitchBookingController {
                 ? date.trim() 
                 : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-        List<Booking> bookings = bookingRepository.findByPitchIdAndBookingDate(id, targetDate);
+        // Đơn CANCELLED không chiếm ca và không tính doanh thu
+        List<Booking> allDayBookings = bookingRepository.findByPitchIdAndBookingDate(id, targetDate);
+        List<Booking> bookings = allDayBookings.stream()
+                .filter(b -> !"CANCELLED".equals(b.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
 
         int duration = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0) ? pitch.getSlotDurationMinutes() : 120;
         int slotsPerCourt = generateTimeSlots(pitch.getOpenTime(), pitch.getCloseTime(), duration).size();
@@ -489,6 +497,7 @@ public class PitchBookingController {
         stats.put("bookedSlots", bookedSlots);
         stats.put("onlineBookings", onlineCount);
         stats.put("counterBookings", offlineCounterCount);
+        stats.put("cancelledBookings", allDayBookings.size() - bookings.size());
         stats.put("openTime", pitch.getOpenTime());
         stats.put("closeTime", pitch.getCloseTime());
         stats.put("slotDurationMinutes", pitch.getSlotDurationMinutes());
@@ -538,8 +547,11 @@ public class PitchBookingController {
             return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập đầy đủ thông tin đặt sân."));
         }
 
-        // Kiểm tra xem ca đã có người đặt chưa (Kiểm tra trùng giờ linh hoạt)
-        List<Booking> courtBookings = bookingRepository.findByPitchIdAndBookingDate(id, bookingDate);
+        // Kiểm tra xem ca đã có người đặt chưa (Kiểm tra trùng giờ linh hoạt).
+        // Đơn đã hủy thì ca đã trống trở lại nên không tính trùng.
+        List<Booking> courtBookings = bookingRepository.findByPitchIdAndBookingDate(id, bookingDate).stream()
+                .filter(b -> !"CANCELLED".equals(b.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
         boolean isConflict = courtBookings.stream()
                 .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()));
         if (isConflict) {
@@ -661,6 +673,74 @@ public class PitchBookingController {
 
             return ResponseEntity.ok((Object) resp);
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy đơn đặt này.")));
+    }
+
+    /**
+     * API Người Đặt Tự Hủy Vé Của Mình.
+     * - Chỉ chủ vé được hủy (đối chiếu SĐT trong tài khoản với SĐT trên đơn)
+     * - Chỉ hủy được khi ca CHƯA BẮT ĐẦU (đã đá / đang đá thì không đổi)
+     * - Giữ lại đơn ở trạng thái CANCELLED để khách còn xem được lịch sử,
+     *   các API ma trận/thống kê đã loại đơn CANCELLED nên ca trống lại cho người khác đặt.
+     */
+    @PostMapping("/bookings/{bookingId}/cancel-by-customer")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> cancelBookingByCustomer(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long bookingId,
+            @RequestBody(required = false) Map<String, Object> req
+    ) {
+        String reason = (req != null && req.get("reason") != null && !req.get("reason").toString().trim().isEmpty())
+                ? req.get("reason").toString().trim()
+                : "Người đặt tự hủy";
+
+        return bookingRepository.findById(bookingId).map(b -> {
+            String ownerPhone = currentUser != null && currentUser.getPhone() != null
+                    ? currentUser.getPhone().replaceAll("\\s", "")
+                    : "";
+            String bookingPhone = b.getCustomerPhone() != null ? b.getCustomerPhone().replaceAll("\\s", "") : "";
+
+            if (ownerPhone.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Tài khoản của bạn chưa có số điện thoại nên không tự hủy được. Vui lòng liên hệ chủ sân."));
+            }
+            if (!ownerPhone.equals(bookingPhone)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                        "message", "Bạn chỉ có thể hủy vé đặt bằng chính số điện thoại của mình."));
+            }
+            if ("CANCELLED".equals(b.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Vé này đã được hủy trước đó."));
+            }
+            if ("PLAYING".equals(b.getStatus()) || "COMPLETED".equals(b.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Ca đã bắt đầu hoặc đã diễn ra nên không thể tự hủy. Vui lòng trao đổi với chủ sân."));
+            }
+            try {
+                if (LocalDate.parse(b.getBookingDate()).isBefore(LocalDate.now())) {
+                    return ResponseEntity.badRequest().body(Map.of(
+                            "message", "Ca đã qua không thể tự hủy trực tuyến. Vui lòng liên hệ chủ sân."));
+                }
+            } catch (Exception parseErr) {
+                // Ngày lưu không đúng định dạng thì cho qua, không chặn người dùng
+            }
+
+            b.setStatus("CANCELLED");
+            b.setCancelReason(reason);
+            b.setCancelledBy("CUSTOMER");
+            bookingRepository.save(b);
+
+            notificationService.notify("OWNER",
+                    "Khách hủy ca: " + b.getCustomerName(),
+                    b.getCustomerName() + " (" + b.getCustomerPhone() + ") vừa hủy " + b.getCourtName()
+                            + " ca " + b.getTimeSlot() + " ngày " + b.getBookingDate() + ". Lý do: " + reason + ".",
+                    "BOOKING", null);
+
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("message", "Đã hủy vé thành công. Khung giờ đã mở lại cho khách khác đặt.");
+            resp.put("bookingId", bookingId);
+            resp.put("code", b.getCode() != null ? b.getCode() : "—");
+            resp.put("refundDeposit", b.getDepositPaid() != null ? b.getDepositPaid() : 0);
+            return ResponseEntity.ok((Object) resp);
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy vé đặt này.")));
     }
 
     @DeleteMapping("/bookings/{bookingId}")
