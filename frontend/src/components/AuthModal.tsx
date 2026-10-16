@@ -38,7 +38,7 @@ const LEVELS = ["Mới chơi", "Phong trào", "Bán chuyên", "Chuyên nghiệp"
 const SPORTS = ["Bóng Đá Sân 5", "Bóng Đá Sân 7", "Bóng Đá Sân 11", "Futsal"];
 
 const inputCls =
-  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-emerald-500 placeholder:text-slate-400 transition-shadow";
+  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-[#247BA0] focus:border-emerald-500 placeholder:text-slate-400 transition-shadow";
 const labelCls = "block text-xs font-bold text-slate-700 mb-1.5";
 
 function passwordScore(pw: string): number {
@@ -51,7 +51,7 @@ function passwordScore(pw: string): number {
 }
 
 const STRENGTH_LABEL = ["Quá yếu", "Yếu", "Trung bình", "Khá", "Mạnh"];
-const STRENGTH_COLOR = ["bg-slate-200", "bg-rose-500", "bg-amber-500", "bg-sky-500", "bg-sky-500"];
+const STRENGTH_COLOR = ["bg-slate-200", "bg-rose-500", "bg-amber-500", "bg-[#247BA0]", "bg-[#247BA0]"];
 
 export default function AuthModal({
   isOpen,
@@ -363,12 +363,12 @@ export default function AuthModal({
           {mode === "register" && (
             <div className="mt-3 flex items-center gap-2 text-[11px] font-bold text-slate-500" aria-hidden>
               <span className={`flex items-center gap-1 ${regStep >= 1 ? "text-sky-800" : ""}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 1 ? "bg-sky-500 text-white" : "bg-slate-200 text-slate-500"}`}>1</span>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 1 ? "bg-[#247BA0] text-white" : "bg-slate-200 text-slate-500"}`}>1</span>
                 Tài khoản & vai trò
               </span>
               <span className="text-slate-300">›</span>
               <span className={`flex items-center gap-1 ${regStep >= 2 ? "text-sky-800" : ""}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 2 ? "bg-sky-500 text-white" : "bg-slate-200 text-slate-500"}`}>2</span>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 2 ? "bg-[#247BA0] text-white" : "bg-slate-200 text-slate-500"}`}>2</span>
                 Hồ sơ thi đấu
               </span>
             </div>
@@ -433,7 +433,7 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-shimmer w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
+                className="btn-shimmer w-full py-3 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -618,7 +618,7 @@ export default function AuthModal({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-shimmer flex-1 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="btn-shimmer flex-1 py-2.5 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>

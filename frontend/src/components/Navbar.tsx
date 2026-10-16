@@ -337,7 +337,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("admin")}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   activeTab === "admin"
-                    ? "bg-sky-500 text-white shadow-md"
+                    ? "bg-[#247BA0] text-white shadow-md"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
@@ -350,7 +350,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("multi-sport")}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   activeTab === "multi-sport"
-                    ? "bg-sky-500 text-white shadow-md"
+                    ? "bg-[#247BA0] text-white shadow-md"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
@@ -375,7 +375,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("organizer")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "organizer"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -391,7 +391,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("tournaments")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "tournaments"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -404,7 +404,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("community")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "community" || activeTab === "urgent-resale"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -423,7 +423,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("booking")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "booking"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -436,7 +436,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("community")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "community" || activeTab === "urgent-resale"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -452,7 +452,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("tournaments")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "tournaments"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -463,7 +463,7 @@ export default function Navbar({
               <button
                 type="button"
                 onClick={() => onOpenAuth("register")}
-                className="flex items-center space-x-1.5 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-black transition-all bg-sky-500 hover:bg-sky-600 text-white shadow-md active:scale-95"
+                className="flex items-center space-x-1.5 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-black transition-all bg-[#247BA0] hover:bg-[#1f6c8d] text-white shadow-md active:scale-95"
               >
                 <Plus className="w-4 h-4 shrink-0" />
                 <span>Tham Gia Ngay</span>
@@ -477,7 +477,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("booking")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "booking"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -490,7 +490,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("community")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "community" || activeTab === "urgent-resale"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -506,7 +506,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("tournaments")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "tournaments"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -519,7 +519,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("team-management")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "team-management"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -532,7 +532,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("membership")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "membership"
-                    ? "bg-sky-500 text-white shadow-sm font-black"
+                    ? "bg-[#247BA0] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -599,7 +599,7 @@ export default function Navbar({
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="px-2.5 py-1 rounded-full bg-sky-50 dark:bg-sky-950/50 text-xs text-sky-700 dark:text-sky-400 font-bold flex items-center space-x-1.5 border border-sky-200 dark:border-sky-800">
-                      <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse inline-block" />
+                      <span className="w-2 h-2 rounded-full bg-[#247BA0] animate-pulse inline-block" />
                       <span>Live Realtime</span>
                     </span>
                   </div>
@@ -638,7 +638,7 @@ export default function Navbar({
                             <div className="flex items-start justify-between gap-2">
                               <p className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">{notif.title}</p>
                               {!notif.read && (
-                                <span className="w-2.5 h-2.5 rounded-full bg-sky-500 mt-1 shrink-0" />
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#247BA0] mt-1 shrink-0" />
                               )}
                             </div>
                             <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium">{notif.message}</p>
@@ -716,7 +716,7 @@ export default function Navbar({
                   </div>
                 </div>
 
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0b4f6c] dark:bg-sky-500 border-2 border-sky-400 text-white dark:text-white font-extrabold text-[10px] sm:text-xs flex items-center justify-center shrink-0 shadow-sm">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0b4f6c] dark:bg-[#247BA0] border-2 border-sky-400 text-white dark:text-white font-extrabold text-[10px] sm:text-xs flex items-center justify-center shrink-0 shadow-sm">
                   {user.avatar || (user.fullName ? user.fullName.substring(0, 2).toUpperCase() : user.name ? user.name.substring(0, 2).toUpperCase() : "SH")}
                 </div>
               </div>
@@ -728,7 +728,7 @@ export default function Navbar({
                       <p className="font-extrabold text-xs text-slate-900 dark:text-white truncate max-w-[140px]">
                         {user.fullName || user.name || "Người Dùng"}
                       </p>
-                      <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#0b4f6c]/10 dark:bg-sky-400/20 text-[#0b4f6c] dark:text-sky-400">
+                      <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#0b4f6c]/10 dark:bg-[#247BA0]/20 text-[#0b4f6c] dark:text-sky-400">
                         {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'Ban Tổ Chức' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
                       </span>
                     </div>
@@ -881,7 +881,7 @@ export default function Navbar({
               <button
                 type="button"
                 onClick={() => onOpenAuth("register")}
-                className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-xs transition-all shadow-md hidden sm:flex items-center space-x-1 active:scale-95"
+                className="px-3.5 py-2 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-extrabold text-xs transition-all shadow-md hidden sm:flex items-center space-x-1 active:scale-95"
               >
                 <span>Đăng Ký</span>
               </button>
@@ -944,14 +944,14 @@ export default function Navbar({
                 {user ? (
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-3">
                     <div className="flex items-center space-x-3">
-                      <div className="w-11 h-11 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-white flex items-center justify-center font-black text-lg shrink-0">
+                      <div className="w-11 h-11 rounded-xl bg-[#0b4f6c] dark:bg-[#247BA0] text-white dark:text-white flex items-center justify-center font-black text-lg shrink-0">
                         {(user.fullName || user.name || "U").charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-black text-sm text-slate-900 dark:text-white truncate">
                           {user.fullName || user.name || "Cầu Thủ SoccerHub"}
                         </p>
-                        <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-sky-50 dark:bg-sky-500/10 text-[#0b4f6c] dark:text-sky-300">
+                        <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-sky-50 dark:bg-[#247BA0]/10 text-[#0b4f6c] dark:text-sky-300">
                           {user.role === "OWNER" ? "Chủ Sân Đối Tác" : user.role === "ORGANIZER" ? "Ban Tổ Chức" : user.role === "ADMIN" ? "Quản Trị Viên" : "VĐV Chuyên Nghiệp"}
                         </span>
                       </div>
@@ -982,7 +982,7 @@ export default function Navbar({
                           setShowMobileDrawer(false);
                           onOpenAuth("login");
                         }}
-                        className="flex-1 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs text-center shadow-xs"
+                        className="flex-1 py-2 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-bold text-xs text-center shadow-xs"
                       >
                         Đăng Nhập
                       </button>
@@ -1013,11 +1013,11 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("admin")}
                         className={`w-full text-left p-3 rounded-2xl flex items-center space-x-3 transition-colors ${
                           activeTab === "admin"
-                            ? "bg-sky-500 text-white shadow-md font-extrabold"
+                            ? "bg-[#247BA0] text-white shadow-md font-extrabold"
                             : "bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                         }`}
                       >
-                        <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-[#247BA0]/10 text-emerald-500 flex items-center justify-center shrink-0">
                           <ShieldCheck className="w-4 h-4 text-emerald-500" />
                         </div>
                         <div>
@@ -1031,11 +1031,11 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("multi-sport")}
                         className={`w-full text-left p-3 rounded-2xl flex items-center space-x-3 transition-colors ${
                           activeTab === "multi-sport"
-                            ? "bg-sky-500 text-white shadow-md font-extrabold"
+                            ? "bg-[#247BA0] text-white shadow-md font-extrabold"
                             : "bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                         }`}
                       >
-                        <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-[#247BA0]/10 text-sky-500 flex items-center justify-center shrink-0">
                           <Clock className="w-4 h-4 text-sky-500" />
                         </div>
                         <div>
@@ -1069,11 +1069,11 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("organizer")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "organizer"
-                            ? "bg-sky-500 text-white shadow-md font-extrabold"
+                            ? "bg-[#247BA0] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
-                        <div className="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-700 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-[#247BA0]/10 text-sky-700 flex items-center justify-center shrink-0">
                           <Trophy className="w-[18px] h-[18px] text-sky-700" />
                         </div>
                         <div>
@@ -1092,7 +1092,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("tournaments")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "tournaments"
-                            ? "bg-sky-500 text-white shadow-md font-extrabold"
+                            ? "bg-[#247BA0] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1112,7 +1112,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("community")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "community" || activeTab === "urgent-resale"
-                            ? "bg-sky-500 text-white shadow-md font-extrabold"
+                            ? "bg-[#247BA0] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1138,11 +1138,11 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("booking")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "booking"
-                            ? "bg-sky-500 text-white shadow-md font-extrabold"
+                            ? "bg-[#247BA0] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
-                        <div className="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-700 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-[#247BA0]/10 text-sky-700 flex items-center justify-center shrink-0">
                           <Calendar className="w-[18px] h-[18px] text-sky-700" />
                         </div>
                         <div>
@@ -1159,7 +1159,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("community")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "community" || activeTab === "urgent-resale"
-                            ? "bg-sky-500 text-white shadow-md font-extrabold"
+                            ? "bg-[#247BA0] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1183,7 +1183,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("tournaments")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "tournaments" || activeTab === "organizer"
-                            ? "bg-sky-500 text-white shadow-md font-extrabold"
+                            ? "bg-[#247BA0] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1205,11 +1205,11 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("membership")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "membership"
-                            ? "bg-sky-500 text-white shadow-md font-extrabold"
+                            ? "bg-[#247BA0] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
-                        <div className="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-[#247BA0]/10 text-sky-600 flex items-center justify-center shrink-0">
                           <Award className="w-[18px] h-[18px] text-sky-600" />
                         </div>
                         <div>
@@ -1232,7 +1232,7 @@ export default function Navbar({
                             type="button"
                             onClick={() => handleSelectSubTab("my-activities")}
                             className={`w-full text-left p-2.5 rounded-xl flex items-center space-x-3 transition-colors ${
-                              activeTab === "my-activities" ? "bg-[#0b4f6c]/10 dark:bg-sky-500/20 font-black text-[#0b4f6c] dark:text-sky-300" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                              activeTab === "my-activities" ? "bg-[#0b4f6c]/10 dark:bg-[#247BA0]/20 font-black text-[#0b4f6c] dark:text-sky-300" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                             }`}
                           >
                             <Calendar className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -1243,7 +1243,7 @@ export default function Navbar({
                             type="button"
                             onClick={() => handleSelectSubTab("profile")}
                             className={`w-full text-left p-2.5 rounded-xl flex items-center space-x-3 transition-colors ${
-                              activeTab === "profile" ? "bg-[#0b4f6c]/10 dark:bg-sky-500/20 font-black text-[#0b4f6c] dark:text-sky-300" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                              activeTab === "profile" ? "bg-[#0b4f6c]/10 dark:bg-[#247BA0]/20 font-black text-[#0b4f6c] dark:text-sky-300" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                             }`}
                           >
                             <User className="w-4 h-4 text-sky-500 shrink-0" />
@@ -1254,7 +1254,7 @@ export default function Navbar({
                             type="button"
                             onClick={() => handleSelectSubTab("team-management")}
                             className={`w-full text-left p-2.5 rounded-xl flex items-center space-x-3 transition-colors ${
-                              activeTab === "team-management" ? "bg-[#0b4f6c]/10 dark:bg-sky-500/20 font-black text-[#0b4f6c] dark:text-sky-300" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                              activeTab === "team-management" ? "bg-[#0b4f6c]/10 dark:bg-[#247BA0]/20 font-black text-[#0b4f6c] dark:text-sky-300" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                             }`}
                           >
                             <Users className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -1321,7 +1321,7 @@ export default function Navbar({
                 >
                   <span
                     className={`absolute top-0 h-[3px] w-10 rounded-full transition-all ${
-                      isActive ? "bg-[#0b4f6c] dark:bg-sky-400 opacity-100" : "opacity-0"
+                      isActive ? "bg-[#0b4f6c] dark:bg-[#247BA0] opacity-100" : "opacity-0"
                     }`}
                   />
                   <Icon className="w-[21px] h-[21px]" />

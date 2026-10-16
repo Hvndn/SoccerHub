@@ -121,7 +121,7 @@ export default function AdminTournaments({ notify }: { notify: (type: "ok" | "er
               value={r.status ?? "OPEN"}
               disabled={busyId === r.id}
               onChange={(e) => changeStatus(r, e.target.value)}
-              className="pl-2 pr-6 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-50 cursor-pointer"
+              className="pl-2 pr-6 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#247BA0] disabled:opacity-50 cursor-pointer"
             >
               {ALL_STATUS.map((s) => (
                 <option key={s} value={s}>

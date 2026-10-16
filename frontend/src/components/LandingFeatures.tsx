@@ -179,7 +179,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       {/* --- SECTION 1: 4 TRỤ CỘT ĐỀ TÀI (BENTO GRID) --- */}
       <section className="space-y-5 sm:space-y-8">
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#0b4f6c]/10 dark:bg-sky-400/10 text-[#0b4f6c] dark:text-sky-300 text-xs font-black uppercase tracking-wider">
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#0b4f6c]/10 dark:bg-[#247BA0]/10 text-[#0b4f6c] dark:text-sky-300 text-xs font-black uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Bốn Trụ Cột Đột Phá Của Đề Tài</span>
           </div>
@@ -293,7 +293,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
           </div>
 
           {/* SoccerHub Smart Way Card */}
-          <div className="bg-white dark:bg-slate-900 p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-[#0b4f6c]/40 dark:border-sky-500/40 space-y-4 sm:space-y-5 shadow-xl relative overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-[#0b4f6c]/40 dark:border-[#247BA0]/40 space-y-4 sm:space-y-5 shadow-xl relative overflow-hidden">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-2xl bg-[#0b4f6c] text-white flex items-center justify-center shrink-0 shadow-md">
@@ -311,7 +311,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
 
             <div className="space-y-2.5 sm:space-y-3.5">
               {platformAdvantages.map((item, idx) => (
-                <div key={idx} className="flex items-start space-x-3 p-3 sm:p-3.5 rounded-2xl bg-[#0b4f6c]/5 dark:bg-sky-500/10 border border-[#0b4f6c]/15 dark:border-sky-500/20">
+                <div key={idx} className="flex items-start space-x-3 p-3 sm:p-3.5 rounded-2xl bg-[#0b4f6c]/5 dark:bg-[#247BA0]/10 border border-[#0b4f6c]/15 dark:border-[#247BA0]/20">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="text-xs font-extrabold text-slate-900 dark:text-white">{item.title}</h4>
@@ -327,7 +327,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       {/* --- SECTION 3: FINAL CALL TO ACTION BANNER --- */}
       <section className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-5 sm:p-14 border border-slate-200 dark:border-slate-800 shadow-2xl">
         <div className="relative z-10 max-w-3xl mx-auto text-center space-y-4 sm:space-y-6">
-          <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 dark:border-sky-400/30 text-sky-700 dark:text-sky-300 text-xs font-extrabold uppercase">
+          <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full bg-[#247BA0]/10 dark:bg-[#247BA0]/20 border border-[#247BA0]/30 dark:border-sky-400/30 text-sky-700 dark:text-sky-300 text-xs font-extrabold uppercase">
             <Trophy className="w-3.5 h-3.5 text-amber-400" />
             <span>Đồ Án Tốt Nghiệp Xuất Sắc • Trải Nghiệm Thực Tế Ngay</span>
           </div>
@@ -344,7 +344,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             <button
               type="button"
               onClick={() => onExplore("PLAYER")}
-              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
               <Users className="w-4 h-4" />
               <span>Khám Phá Cổng Cầu Thủ</span>

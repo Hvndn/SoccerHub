@@ -37,16 +37,16 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
           {/* CỘT TRÁI (Slate / Emerald Stadium Lighting - 5 Cols) */}
           <div className="lg:col-span-5 bg-[#213145] dark:bg-[#0f172a] text-white p-4 sm:p-8 md:p-10 flex flex-col justify-between relative overflow-hidden">
             {/* Stadium Floodlight Glow Effects */}
-            <div className="absolute -top-24 -left-24 w-80 h-80 bg-sky-500/20 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-10 right-0 w-64 h-64 bg-sky-400/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div className="absolute -top-24 -left-24 w-80 h-80 bg-[#247BA0]/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-10 right-0 w-64 h-64 bg-[#247BA0]/10 rounded-full blur-2xl pointer-events-none"></div>
 
             {/* Left Header & Tagline */}
             <div className="relative z-10 space-y-3 sm:space-y-6">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[11px] uppercase tracking-widest text-emerald-400 font-extrabold bg-slate-900/80 border border-sky-500/30 px-3 py-1 rounded-full">
+                <span className="font-mono text-[11px] uppercase tracking-widest text-emerald-400 font-extrabold bg-slate-900/80 border border-[#247BA0]/30 px-3 py-1 rounded-full">
                   SOCCERHUB 4.0
                 </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#247BA0]"></span>
                 <span className="text-[11px] tracking-wide text-slate-300 font-bold uppercase">
                   HỆ SINH THÁI BÓNG ĐÁ THÔNG MINH
                 </span>
@@ -56,11 +56,11 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               <div className="relative inline-block my-2">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-emerald-600 to-emerald-400 p-0.5 shadow-lg shadow-emerald-600/30 flex items-center justify-center">
                   <div className="w-full h-full bg-[#213145] rounded-2xl flex items-center justify-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-sky-500/10"></div>
+                    <div className="absolute inset-0 bg-[#247BA0]/10"></div>
                     <Trophy className="w-10 h-10 text-lime-400" />
                   </div>
                 </div>
-                <span className="absolute -bottom-2 -right-2 bg-sky-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-slate-900">
+                <span className="absolute -bottom-2 -right-2 bg-[#247BA0] text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-slate-900">
                   <ShieldCheck className="w-3 h-3" /> READY
                 </span>
               </div>
@@ -78,7 +78,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               {/* Activated Privileges List */}
               <div className="space-y-3 pt-2">
                 <div className="bg-slate-900/60 p-3 rounded-xl flex items-start gap-3 border border-slate-700/60 backdrop-blur-sm">
-                  <div className="w-8 h-8 rounded-lg bg-sky-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#247BA0]/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
                     <Ticket className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
@@ -88,7 +88,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                 </div>
 
                 <div className="bg-slate-900/60 p-3 rounded-xl flex items-start gap-3 border border-slate-700/60 backdrop-blur-sm">
-                  <div className="w-8 h-8 rounded-lg bg-sky-400/20 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#247BA0]/20 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
                     <Award className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
@@ -98,7 +98,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                 </div>
 
                 <div className="bg-slate-900/60 p-3 rounded-xl flex items-start gap-3 border border-slate-700/60 backdrop-blur-sm">
-                  <div className="w-8 h-8 rounded-lg bg-sky-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#247BA0]/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
                     <Activity className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
@@ -113,8 +113,8 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
             <div className="relative z-10 pt-6 mt-4 border-t border-slate-700/60">
               <div className="flex items-center justify-between text-slate-300 mb-2">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Đồng bộ toàn bộ quy chuẩn sân</span>
-                <div className="flex items-center gap-1.5 bg-sky-500/20 px-2 py-0.5 rounded-full border border-sky-500/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
+                <div className="flex items-center gap-1.5 bg-[#247BA0]/20 px-2 py-0.5 rounded-full border border-[#247BA0]/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#247BA0] animate-pulse"></span>
                   <span className="font-mono text-[10px] text-lime-400 font-bold tracking-wide">LIVE SYNC</span>
                 </div>
               </div>
@@ -141,15 +141,15 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                   <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold uppercase tracking-wider">
                     HOÀN TẤT THIẾT LẬP
                   </span>
-                  <span className="px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-800 dark:text-sky-400 text-[11px] font-extrabold flex items-center gap-1 border border-sky-500/20">
+                  <span className="px-2.5 py-1 rounded-full bg-[#247BA0]/10 text-sky-800 dark:text-sky-400 text-[11px] font-extrabold flex items-center gap-1 border border-[#247BA0]/20">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Bước 3/3
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <span className="w-6 h-1.5 rounded-full bg-sky-500"></span>
-                  <span className="w-6 h-1.5 rounded-full bg-sky-500"></span>
-                  <span className="w-6 h-1.5 rounded-full bg-sky-500"></span>
+                  <span className="w-6 h-1.5 rounded-full bg-[#247BA0]"></span>
+                  <span className="w-6 h-1.5 rounded-full bg-[#247BA0]"></span>
+                  <span className="w-6 h-1.5 rounded-full bg-[#247BA0]"></span>
                 </div>
               </div>
 
@@ -176,7 +176,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                 {/* Header Thẻ */}
                 <div className="flex items-center justify-between relative z-10 mb-4">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center text-white font-black">
+                    <div className="w-8 h-8 rounded-lg bg-[#247BA0] flex items-center justify-center text-white font-black">
                       <Sparkles className="w-4 h-4" />
                     </div>
                     <div>
@@ -184,7 +184,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                       <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono">Universal Athlete ID</p>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 rounded bg-lime-500/15 dark:bg-sky-400/20 text-sky-800 dark:text-sky-400 font-mono text-xs font-black border border-lime-500/40 dark:border-sky-400/30">
+                  <span className="px-2.5 py-1 rounded bg-lime-500/15 dark:bg-[#247BA0]/20 text-sky-800 dark:text-sky-400 font-mono text-xs font-black border border-lime-500/40 dark:border-sky-400/30">
                     TIER: PRO-AM
                   </span>
                 </div>
@@ -247,13 +247,13 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                   onClick={() => onNavigateTab && onNavigateTab('booking')}
                   className="text-left p-3.5 bg-slate-50 dark:bg-slate-950 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 transition flex items-center gap-3 group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 group-hover:bg-sky-600 group-hover:text-slate-950 transition">
+                  <div className="w-10 h-10 rounded-lg bg-[#247BA0]/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 group-hover:bg-[#1f6c8d] group-hover:text-slate-950 transition">
                     <Calendar className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-sky-700 transition truncate">Đặt sân gần bạn ngay</p>
-                      <span className="text-[10px] text-lime-800 dark:text-sky-400 font-extrabold bg-sky-400/20 px-1.5 py-0.5 rounded">-50K</span>
+                      <span className="text-[10px] text-lime-800 dark:text-sky-400 font-extrabold bg-[#247BA0]/20 px-1.5 py-0.5 rounded">-50K</span>
                     </div>
                     <p className="text-[11px] text-slate-500 truncate">Ca đẹp từ 18:30 - 21:00 tối nay</p>
                   </div>
@@ -282,7 +282,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               <div className="flex flex-col sm:flex-row items-center gap-3">
                 <button 
                   onClick={() => onNavigateTab ? onNavigateTab('booking') : onBackToHome && onBackToHome()}
-                  className="w-full sm:flex-1 h-12 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-95"
+                  className="w-full sm:flex-1 h-12 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-95"
                 >
                   <span className="sm:hidden">Khám Phá Sân Ngay</span><span className="hidden sm:inline">Vào Bảng Điều Khiển / Khám Phá Sân Ngay</span>
                   <ArrowRight className="w-4 h-4" />

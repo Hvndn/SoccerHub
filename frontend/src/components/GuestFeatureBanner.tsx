@@ -22,7 +22,7 @@ export default function GuestFeatureBanner({
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3 sm:p-8 mb-6 sm:mb-8 stadium-shadow relative overflow-hidden animate-fade-in-up">
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
         <div className="space-y-3 max-w-2xl">
-          <div className="hidden sm:inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0b4f6c]/15 text-[#0b4f6c] dark:bg-sky-400/20 dark:text-sky-300 text-xs font-bold uppercase tracking-wider">
+          <div className="hidden sm:inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0b4f6c]/15 text-[#0b4f6c] dark:bg-[#247BA0]/20 dark:text-sky-300 text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-[#0b4f6c] dark:text-sky-400" />
             <span>Giới Thiệu Chức Năng</span>
           </div>
@@ -59,7 +59,7 @@ export default function GuestFeatureBanner({
           </button>
           <button
             onClick={() => onOpenAuth("register")}
-            className="px-5 py-3 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
+            className="px-5 py-3 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
           >
             <UserPlus className="w-4 h-4 text-white" />
             <span>Đăng Ký Tài Khoản</span>

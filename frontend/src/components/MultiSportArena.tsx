@@ -208,7 +208,7 @@ export default function MultiSportArena({
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 p-3 sm:p-6 lg:p-8">
       {/* Toast Notification */}
       {successToast && (
-        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-sky-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 border border-sky-400 animate-bounce">
+        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-[#247BA0] text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 border border-sky-400 animate-bounce">
           <CheckCircle2 className="w-6 h-6 flex-shrink-0" />
           <span className="font-semibold">{successToast}</span>
         </div>
@@ -217,15 +217,15 @@ export default function MultiSportArena({
       {/* Top Header Banner */}
       <div className="w-full mb-8">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-8 text-slate-900 dark:text-white shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#247BA0]/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
             <div>
               <div className="flex items-center space-x-3 mb-3">
-                <span className="bg-sky-500/10 dark:bg-sky-500/20 text-sky-800 dark:text-sky-300 border border-sky-500/30 dark:border-sky-500/40 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+                <span className="bg-[#247BA0]/10 dark:bg-[#247BA0]/20 text-sky-800 dark:text-sky-300 border border-[#247BA0]/30 dark:border-[#247BA0]/40 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5" /> Danh sách đọc từ CSDL
                 </span>
-                <span className="bg-sky-500/10 dark:bg-sky-400/20 text-sky-700 dark:text-sky-300 border border-sky-500/30 text-xs font-bold px-3 py-1 rounded-full">
+                <span className="bg-[#247BA0]/10 dark:bg-[#247BA0]/20 text-sky-700 dark:text-sky-300 border border-[#247BA0]/30 text-xs font-bold px-3 py-1 rounded-full">
                   {courts[0]?.name || "Chưa có cụm sân nào"}
                 </span>
               </div>
@@ -304,7 +304,7 @@ export default function MultiSportArena({
           <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800 mb-6 flex flex-wrap items-center justify-between gap-3 sm:gap-4 text-xs">
             <div className="flex items-center space-x-6 flex-wrap gap-y-2">
               <div className="flex items-center space-x-2">
-                <span className="w-3 h-3 rounded-full bg-sky-500"></span>
+                <span className="w-3 h-3 rounded-full bg-[#247BA0]"></span>
                 <span className="font-medium text-slate-700 dark:text-slate-300">Xanh Emerald: đang mở đặt ca</span>
               </div>
               <div className="flex items-center space-x-2">
@@ -334,7 +334,7 @@ export default function MultiSportArena({
                 key={court.id}
                 className={`rounded-xl border p-3 sm:p-4 transition-all duration-200 flex flex-col justify-between relative ${
                   court.status === 'available'
-                    ? 'border-sky-300 dark:border-sky-500/40 bg-sky-50/40 dark:bg-sky-950/20 hover:shadow-lg hover:border-emerald-500'
+                    ? 'border-sky-300 dark:border-[#247BA0]/40 bg-sky-50/40 dark:bg-sky-950/20 hover:shadow-lg hover:border-emerald-500'
                     : court.status === 'matching'
                     ? 'border-amber-300 dark:border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/20 hover:shadow-lg hover:border-amber-500'
                     : court.status === 'live'
@@ -349,7 +349,7 @@ export default function MultiSportArena({
                       {court.id}
                     </span>
                     {court.status === 'available' && (
-                      <span className="bg-sky-500/20 text-sky-800 dark:text-sky-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-sky-500/30 flex items-center gap-1">
+                      <span className="bg-[#247BA0]/20 text-sky-800 dark:text-sky-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-[#247BA0]/30 flex items-center gap-1">
                         <Check className="w-3 h-3" /> Ca Trống
                       </span>
                     )}
@@ -417,7 +417,7 @@ export default function MultiSportArena({
                   {court.status === 'available' && (
                     <button
                       onClick={() => setBookingCourt(court)}
-                      className="bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition"
+                      className="bg-[#247BA0] hover:bg-[#1f6c8d] text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition"
                     >
                       Đặt Sân Ngay
                     </button>
@@ -426,7 +426,7 @@ export default function MultiSportArena({
                   {court.status === 'matching' && (
                     <button
                       onClick={() => handleActionToast(`Bạn đã gửi yêu cầu tham gia ghép đội tại ${court.id}!`)}
-                      className="bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition"
+                      className="bg-[#247BA0] hover:bg-[#1f6c8d] text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition"
                     >
                       Vào Kèo Ngay
                     </button>
@@ -491,7 +491,7 @@ export default function MultiSportArena({
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                     <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 rounded-full border-2 border-sky-500 bg-sky-500 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full border-2 border-[#247BA0] bg-[#247BA0] text-white flex items-center justify-center font-black text-sm flex-shrink-0">
                         {(match.hostName || "?").trim().charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -526,7 +526,7 @@ export default function MultiSportArena({
 
                       <button
                         onClick={() => setJoiningMatch(match)}
-                        className="bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center space-x-1"
+                        className="bg-[#247BA0] hover:bg-[#1f6c8d] text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center space-x-1"
                       >
                         <span>Gia Nhập Đội</span>
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -638,7 +638,7 @@ export default function MultiSportArena({
                   setBookingCourt(null);
                   onNavigateToBooking?.();
                 }}
-                className="w-1/2 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-lg transition"
+                className="w-1/2 py-2.5 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-bold text-xs shadow-lg transition"
               >
                 Chọn Khung Giờ
               </button>
@@ -689,7 +689,7 @@ export default function MultiSportArena({
               <button
                 onClick={handleAcceptMatch}
                 disabled={accepting}
-                className="w-1/2 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-lg transition disabled:opacity-60"
+                className="w-1/2 py-2.5 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-bold text-xs shadow-lg transition disabled:opacity-60"
               >
                 {accepting ? "Đang chốt..." : "Xác Nhận Tham Gia"}
               </button>
