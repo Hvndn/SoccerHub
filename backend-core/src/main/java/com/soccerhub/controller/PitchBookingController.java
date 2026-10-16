@@ -959,10 +959,13 @@ public class PitchBookingController {
      *  một lượt query findByCode sẽ chậm và vô nghĩa. Số ngẫu nhiên 5 chữ số đảm bảo
      *  không trùng với dữ liệu cũ. */
     private String generateSimCode(Long pitchId) {
-        simCodeSeq++;
-        return SIM_PREFIX + pitchId + "-" + String.format("%05d", simCodeSeq % 100000);
+        simCodeSeq.incrementAndGet();
+        return SIM_PREFIX + pitchId + "-" + String.format("%05d", simCodeSeq.get() % 100000);
     }
 
-    /** Bộ đếm mã, khởi tạo ngẫu nhiên 1 lần cho mỗi lần gọi API. */
-    private int simCodeSeq = new java.util.Random().nextInt(1000, 99999);
+    /** Bộ đếm mã dùng chung — AtomicInteger để an toàn khi 2 request chạy song song
+     *  (nếu không, hai lệnh sinh cùng mã sẽ đụng ràng buộc unique của cột `code`). */
+    private final java.util.concurrent.atomic.AtomicInteger simCodeSeq =
+            new java.util.concurrent.atomic.AtomicInteger(
+                    new java.util.Random().nextInt(1000, 99999));
 }
