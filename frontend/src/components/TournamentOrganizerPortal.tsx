@@ -293,7 +293,7 @@ export default function TournamentOrganizerPortal({
           <div className="space-y-3">
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2 text-xs font-mono text-sky-900 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
-                <span className="w-2 h-2 rounded-full bg-[#0b4f6c] animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-ping" />
                 <span>
                   {loadingDb ? "Đang đồng bộ CSDL…" : `CSDL: ${dbTournaments.length} giải đấu`}
                 </span>
@@ -336,7 +336,7 @@ export default function TournamentOrganizerPortal({
 
             <Link
               href="/tournaments/new"
-              className="px-4 py-2.5 sm:px-5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-[#0b4f6c] hover:bg-[#083a50] text-white"
+              className="px-4 py-2.5 sm:px-5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-[#0ea5e9] hover:bg-[#0284c7] text-white"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span className="sm:hidden">+ Tạo Giải Mới</span>
@@ -528,7 +528,7 @@ export default function TournamentOrganizerPortal({
               <div className="p-4 sm:p-6 rounded-2xl border border-sky-300 bg-white">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
-                    <span className="w-3 h-3 rounded-full bg-[#0b4f6c]" />
+                    <span className="w-3 h-3 rounded-full bg-[#0ea5e9]" />
                     <span className="text-xs font-black tracking-wide text-slate-700">ĐỘI A</span>
                   </div>
                 </div>
@@ -545,7 +545,7 @@ export default function TournamentOrganizerPortal({
               <div className="p-4 sm:p-6 rounded-2xl border border-sky-300 bg-white">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
-                    <span className="w-3 h-3 rounded-full bg-[#0b4f6c]" />
+                    <span className="w-3 h-3 rounded-full bg-[#0ea5e9]" />
                     <span className="text-xs font-black tracking-wide text-slate-700">ĐỘI B</span>
                   </div>
                 </div>
@@ -569,14 +569,14 @@ export default function TournamentOrganizerPortal({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <button
                     onClick={() => setUmpireScoreA(umpireScoreA + 1)}
-                    className="py-3 px-4 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                    className="py-3 px-4 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                   >
                     <Plus className="w-4 h-4 stroke-[3]" />
                     <span>+1 Bàn (Đội A)</span>
                   </button>
                   <button
                     onClick={() => setUmpireScoreB(umpireScoreB + 1)}
-                    className="py-3 px-4 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                    className="py-3 px-4 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                   >
                     <Plus className="w-4 h-4 stroke-[3]" />
                     <span>+1 Bàn (Đội B)</span>
@@ -591,7 +591,7 @@ export default function TournamentOrganizerPortal({
                   <button
                     onClick={saveUmpireScore}
                     disabled={umpireBusy}
-                    className="py-3 px-4 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                    className="py-3 px-4 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50"
                   >
                     <CheckCircle2 className="w-4 h-4 text-purple-200" />
                     <span>{umpireBusy ? "Đang lưu…" : "Lưu KQ & Lịch Sử"}</span>
@@ -868,7 +868,7 @@ export default function TournamentOrganizerPortal({
                           className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="w-6 h-6 rounded-full bg-[#0b4f6c] text-white font-black text-[10px] flex items-center justify-center shrink-0">
+                            <span className="w-6 h-6 rounded-full bg-[#0ea5e9] text-white font-black text-[10px] flex items-center justify-center shrink-0">
                               {idx + 1}
                             </span>
                             <div className="min-w-0">
@@ -938,7 +938,7 @@ export default function TournamentOrganizerPortal({
           {/* 1. THỐNG KÊ GIẢI ĐẤU (đếm từ CSDL) */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-3 sm:space-y-6">
             <div className="flex items-center space-x-3 border-b border-slate-200 dark:border-slate-800 pb-4">
-              <div className="w-9 h-9 rounded-xl bg-[#0b4f6c]/10 dark:bg-[#0b4f6c]/20 border border-[#0b4f6c]/30 dark:border-[#0b4f6c]/40 flex items-center justify-center text-sky-700 dark:text-sky-400 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-[#0ea5e9]/10 dark:bg-[#0ea5e9]/20 border border-[#0ea5e9]/30 dark:border-[#0ea5e9]/40 flex items-center justify-center text-sky-700 dark:text-sky-400 shrink-0">
                 <Cpu className="w-5 h-5" />
               </div>
               <div>
@@ -993,7 +993,7 @@ export default function TournamentOrganizerPortal({
 
             <button
               onClick={() => onNavigateTab?.("tournaments")}
-              className="w-full py-3 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-black shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
+              className="w-full py-3 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-black shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
             >
               <Sparkles className="w-4 h-4" />
               <span>Mở Bảng Điều Hành Bốc Thăm</span>
@@ -1004,7 +1004,7 @@ export default function TournamentOrganizerPortal({
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center space-x-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#0b4f6c]/10 border border-[#0b4f6c]/30 flex items-center justify-center text-sky-700 dark:text-sky-400 shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-[#0ea5e9]/10 border border-[#0ea5e9]/30 flex items-center justify-center text-sky-700 dark:text-sky-400 shrink-0">
                   <Lock className="w-5 h-5" />
                 </div>
                 <div>

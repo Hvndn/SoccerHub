@@ -129,7 +129,7 @@ export default function TeamClubManagement({
           <p className="py-6 text-center text-sm text-rose-500">{error}</p>
         ) : primaryTeam ? (
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-[#0b4f6c]/10 text-emerald-500 flex items-center justify-center text-lg sm:text-2xl shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-[#0ea5e9]/10 text-emerald-500 flex items-center justify-center text-lg sm:text-2xl shrink-0">
               <Shield className="w-8 h-8" />
             </div>
             <div className="min-w-0 flex-1">
@@ -173,7 +173,7 @@ export default function TeamClubManagement({
             <button
               type="button"
               onClick={() => onNavigateTab?.("tournaments")}
-              className="px-5 py-2.5 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-bold text-xs inline-flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-2xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-xs inline-flex items-center gap-1.5"
             >
               Xem Giải Đấu <ChevronRight className="w-4 h-4" />
             </button>
@@ -254,7 +254,7 @@ export default function TeamClubManagement({
                           {z.record && z.record !== "0-0-0" ? `${z.record} • ${z.winRate ?? 0}%` : "Tân binh"}
                         </td>
                         <td className="p-3">
-                          <span className="px-2 py-1 rounded-full bg-[#0b4f6c]/10 text-emerald-500 font-bold text-[10px]">
+                          <span className="px-2 py-1 rounded-full bg-[#0ea5e9]/10 text-emerald-500 font-bold text-[10px]">
                             {z.registrationStatus === "CONFIRMED"
                               ? "Đã Xác Nhận"
                               : z.registrationStatus === "PENDING_PAYMENT"

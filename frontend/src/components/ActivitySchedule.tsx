@@ -198,7 +198,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
   const visibleMatches = listFor(activeFilter);
 
   const filterTabs: { id: typeof activeFilter; label: string; count: number; tone: string }[] = [
-    { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-[#0b4f6c] text-white" },
+    { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-[#0ea5e9] text-white" },
     { id: "tournaments", label: "Lịch đấu giải", count: allMatches.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
     { id: "matchmaking", label: "Kèo đã ghép", count: matchedPosts.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
     { id: "history", label: "Đã đá", count: doneMatches.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
@@ -234,7 +234,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                 <h1 className="text-lg sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   Lịch Trình & Vé Thi Đấu
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#0b4f6c] text-slate-950 font-black text-xs uppercase tracking-wide">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#0ea5e9] text-slate-950 font-black text-xs uppercase tracking-wide">
                   {tournaments.length} giải trong CSDL
                 </span>
               </div>
@@ -252,7 +252,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
               <button
                 onClick={() => onNavigateTab && onNavigateTab("booking")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-bold shadow-md transition-all active:scale-95"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold shadow-md transition-all active:scale-95"
               >
                 <Calendar className="w-4 h-4" />
                 <span>+ Đặt Sân Mới</span>
@@ -286,7 +286,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
             </div>
 
             <div className="hidden lg:flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-medium shrink-0">
-              <span className="w-2 h-2 rounded-full bg-[#0b4f6c] animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse"></span>
               Lịch lấy trực tiếp từ bảng <span className="font-mono">tournaments</span> &amp;{" "}
               <span className="font-mono">matchmaking_posts</span>
             </div>
@@ -304,7 +304,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                     <div className="flex items-center gap-2.5">
                       <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white font-mono text-xs font-bold">
-                        <span className="w-2 h-2 rounded-full bg-[#0b4f6c] animate-ping"></span>
+                        <span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-ping"></span>
                         {running.length ? "ĐANG DIỄN RA" : "TRẬN TIẾP THEO"}
                       </span>
                       {hero.startAt && !running.length && (
@@ -380,7 +380,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                     <div className="flex flex-wrap items-center gap-3">
                       <button
                         onClick={() => setSelectedMatch(hero)}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-extrabold shadow-sm transition-all active:scale-95"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-extrabold shadow-sm transition-all active:scale-95"
                       >
                         <FileText className="w-4 h-4" />
                         Xem Vé & Thông Tin Trận
@@ -563,7 +563,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
                 <button
                   onClick={() => onNavigateTab && onNavigateTab("matchmaking")}
-                  className="w-full px-3 py-2 rounded-lg bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-bold transition-all active:scale-95"
+                  className="w-full px-3 py-2 rounded-lg bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold transition-all active:scale-95"
                 >
                   Mở Chợ Kèo
                 </button>
@@ -647,7 +647,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
             <div className="flex gap-2">
               <button
                 onClick={() => { setSelectedMatch(null); onNavigateTab && onNavigateTab("tournaments"); }}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-bold"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold"
               >
                 Mở nhánh đấu
               </button>

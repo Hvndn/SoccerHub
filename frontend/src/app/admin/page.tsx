@@ -99,7 +99,7 @@ function AdminConsole() {
             </p>
             <Link
               href="/"
-              className="inline-block px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm transition-all active:scale-95"
+              className="inline-block px-6 py-3 rounded-2xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-sm transition-all active:scale-95"
             >
               Về trang chủ để đăng nhập
             </Link>

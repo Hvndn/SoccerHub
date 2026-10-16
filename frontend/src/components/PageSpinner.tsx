@@ -15,7 +15,7 @@ export default function PageSpinner({ className = "" }: { className?: string }) 
       {/* Vòng xoay: 2 lớp tròn đồng tâm, lớp trên chỉ viền trên để tạo cung quét */}
       <span className="relative block h-12 w-12 sm:h-14 sm:w-14">
         <span className="absolute inset-0 rounded-full border-4 border-slate-200/90 dark:border-slate-800" />
-        <span className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-[#0b4f6c] dark:border-t-sky-400" />
+        <span className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-[#0ea5e9] dark:border-t-sky-400" />
       </span>
 
       <span className="flex flex-col items-center gap-1.5">

@@ -352,7 +352,7 @@ export default function PlayerProfileConsole({
         <div className="relative min-h-[5.5rem] sm:h-32 bg-slate-100 dark:bg-slate-800 px-4 sm:px-8 py-3 flex items-center justify-between overflow-hidden">
           <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]" />
           <div className="relative z-10 max-w-full">
-            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-[#0b4f6c]/10 dark:bg-[#0b4f6c]/20 text-sky-800 dark:text-sky-300 border border-[#0b4f6c]/30">
+            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-[#0ea5e9]/10 dark:bg-[#0ea5e9]/20 text-sky-800 dark:text-sky-300 border border-[#0ea5e9]/30">
               <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-700 dark:text-sky-400 shrink-0" />
               <span className="truncate">HỒ SƠ CẦU THỦ THUỘC HỆ THỐNG</span>
             </span>
@@ -384,7 +384,7 @@ export default function PlayerProfileConsole({
                     <span>{initials}</span>
                   )}
                 </div>
-                <div className="absolute -bottom-1 -right-1 bg-[#0b4f6c] text-white p-1 sm:p-1.5 rounded-xl shadow-md border-2 border-white dark:border-slate-900" title="Tài khoản đã xác minh căn cước & số điện thoại">
+                <div className="absolute -bottom-1 -right-1 bg-[#0ea5e9] text-white p-1 sm:p-1.5 rounded-xl shadow-md border-2 border-white dark:border-slate-900" title="Tài khoản đã xác minh căn cước & số điện thoại">
                   <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
@@ -438,7 +438,7 @@ export default function PlayerProfileConsole({
                   onClick={handleToggleEdit}
                   className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm min-h-[42px] ${
                     isEditingInline
-                      ? "border-[#0b4f6c] bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300"
+                      ? "border-[#0ea5e9] bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300"
                       : "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200"
                   }`}
                 >
@@ -570,7 +570,7 @@ export default function PlayerProfileConsole({
             </div>
 
             {saveSuccessMsg && (
-              <div className="p-3.5 rounded-xl bg-sky-50 text-sky-900 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-300 dark:border-[#0b4f6c] text-xs flex items-center gap-2">
+              <div className="p-3.5 rounded-xl bg-sky-50 text-sky-900 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-300 dark:border-[#0ea5e9] text-xs flex items-center gap-2">
                 <Check className="w-4 h-4 text-sky-700" />
                 {saveSuccessMsg}
               </div>
@@ -593,7 +593,7 @@ export default function PlayerProfileConsole({
                     required
                     value={editForm.fullName}
                     onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                     placeholder="Ví dụ: Hồ Văn Diện"
                   />
                 </div>
@@ -606,7 +606,7 @@ export default function PlayerProfileConsole({
                     type="email"
                     value={editForm.email}
                     onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                     placeholder="cauthu@gmail.com"
                   />
                 </div>
@@ -619,7 +619,7 @@ export default function PlayerProfileConsole({
                     type="tel"
                     value={editForm.phone}
                     onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                     placeholder="0947 304 321"
                   />
                 </div>
@@ -634,7 +634,7 @@ export default function PlayerProfileConsole({
                     aria-label="Trình độ thi đấu"
                     value={editForm.level}
                     onChange={(e) => setEditForm({ ...editForm, level: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                   >
                     <option value="Mới bắt đầu">Mới bắt đầu</option>
                     <option value="Nghiệp dư">Nghiệp dư</option>
@@ -651,7 +651,7 @@ export default function PlayerProfileConsole({
                     type="text"
                     value={editForm.position}
                     onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                     placeholder="Ví dụ: Tiền vệ trung tâm (CM) / Hộ công"
                   />
                 </div>
@@ -664,7 +664,7 @@ export default function PlayerProfileConsole({
                     type="text"
                     value={editForm.area}
                     onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                     placeholder="Ví dụ: Đà Nẵng (Hải Châu / Cẩm Lệ)"
                   />
                 </div>
@@ -680,7 +680,7 @@ export default function PlayerProfileConsole({
                     aria-label="Chân thuận"
                     value={editForm.dominantFoot}
                     onChange={(e) => setEditForm({ ...editForm, dominantFoot: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                   >
                     <option value="Chân Phải">Chân Phải</option>
                     <option value="Chân Trái">Chân Trái</option>
@@ -696,7 +696,7 @@ export default function PlayerProfileConsole({
                     type="text"
                     value={editForm.jerseyNumber}
                     onChange={(e) => setEditForm({ ...editForm, jerseyNumber: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                     placeholder="10"
                   />
                 </div>
@@ -709,7 +709,7 @@ export default function PlayerProfileConsole({
                     type="text"
                     value={editForm.height}
                     onChange={(e) => setEditForm({ ...editForm, height: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                     placeholder="1m75"
                   />
                 </div>
@@ -722,7 +722,7 @@ export default function PlayerProfileConsole({
                     type="text"
                     value={editForm.weight}
                     onChange={(e) => setEditForm({ ...editForm, weight: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                     placeholder="68 kg"
                   />
                 </div>
@@ -737,7 +737,7 @@ export default function PlayerProfileConsole({
                     type="text"
                     value={editForm.currentClub}
                     onChange={(e) => setEditForm({ ...editForm, currentClub: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                     placeholder="FC Brothers Đà Nẵng"
                   />
                 </div>
@@ -750,7 +750,7 @@ export default function PlayerProfileConsole({
                     type="url"
                     value={editForm.avatar}
                     onChange={(e) => setEditForm({ ...editForm, avatar: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0b4f6c] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0284c7] outline-none"
                     placeholder="https://... ảnh chân dung"
                   />
                 </div>
@@ -767,7 +767,7 @@ export default function PlayerProfileConsole({
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs sm:text-sm font-bold shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs sm:text-sm font-bold shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
                   {isSaving ? "Đang lưu..." : "Lưu Thông Tin"}
@@ -805,7 +805,7 @@ export default function PlayerProfileConsole({
                 </span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mt-3 overflow-hidden flex">
-                <div className="bg-[#0b4f6c] h-full rounded-l-full" style={{ width: currentStat.winRate }} />
+                <div className="bg-[#0ea5e9] h-full rounded-l-full" style={{ width: currentStat.winRate }} />
                 <div className="bg-rose-500 h-full rounded-r-full" style={{ width: `${100 - parseFloat(currentStat.winRate)}%` }} />
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
@@ -1386,7 +1386,7 @@ export default function PlayerProfileConsole({
                   if (perf.goalsFor > 0) {
                     items.push({
                       icon: Star,
-                      cls: "bg-[#0b4f6c]",
+                      cls: "bg-[#0ea5e9]",
                       title: `Đã ghi ${perf.goalsFor} bàn trong các giải`,
                       sub: `${perf.matches} trận có kết quả • giữ sạch lưới ${perf.cleanSheets} trận`,
                     });

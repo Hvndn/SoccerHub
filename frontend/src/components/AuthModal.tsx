@@ -38,7 +38,7 @@ const LEVELS = ["Mới chơi", "Phong trào", "Bán chuyên", "Chuyên nghiệp"
 const SPORTS = ["Bóng Đá Sân 5", "Bóng Đá Sân 7", "Bóng Đá Sân 11", "Futsal"];
 
 const inputCls =
-  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-[#0b4f6c] focus:border-emerald-500 placeholder:text-slate-400 transition-shadow";
+  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-[#0284c7] focus:border-emerald-500 placeholder:text-slate-400 transition-shadow";
 const labelCls = "block text-xs font-bold text-slate-700 mb-1.5";
 
 function passwordScore(pw: string): number {
@@ -51,7 +51,7 @@ function passwordScore(pw: string): number {
 }
 
 const STRENGTH_LABEL = ["Quá yếu", "Yếu", "Trung bình", "Khá", "Mạnh"];
-const STRENGTH_COLOR = ["bg-slate-200", "bg-rose-500", "bg-amber-500", "bg-[#0b4f6c]", "bg-[#0b4f6c]"];
+const STRENGTH_COLOR = ["bg-slate-200", "bg-rose-500", "bg-amber-500", "bg-[#0ea5e9]", "bg-[#0ea5e9]"];
 
 export default function AuthModal({
   isOpen,
@@ -290,7 +290,7 @@ export default function AuthModal({
         </button>
 
         {/* Panel trái: ảnh sân + brand (ẩn trên mobile) */}
-        <div className="relative hidden md:flex flex-col justify-between overflow-hidden bg-[#0b4f6c] text-white p-8 min-h-[560px]">
+        <div className="relative hidden md:flex flex-col justify-between overflow-hidden bg-[#0ea5e9] text-white p-8 min-h-[560px]">
           <img
             src="https://images.unsplash.com/photo-1626248801379-51a0748a5f96?auto=format&fit=crop&w=800&q=80"
             alt=""
@@ -298,7 +298,7 @@ export default function AuthModal({
             loading="lazy"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0b4f6c] via-[#0b4f6c]/70 to-[#0b4f6c]/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0ea5e9] via-[#0ea5e9]/70 to-[#0ea5e9]/25" />
           <div className="relative">
             <p className="text-xl font-black tracking-tight">
               <span className="text-emerald-400">Turf</span>Zone
@@ -435,7 +435,7 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-shimmer w-full py-3 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
+                className="btn-shimmer w-full py-3 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -620,7 +620,7 @@ export default function AuthModal({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-shimmer flex-1 py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="btn-shimmer flex-1 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>

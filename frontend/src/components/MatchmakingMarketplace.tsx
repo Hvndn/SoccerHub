@@ -307,13 +307,13 @@ export default function MatchmakingMarketplace({
             <div className="flex items-center space-x-2 pt-0.5">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#acf847] opacity-75" />
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-[#006c49]" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-[#0ea5e9]" />
               </span>
               <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                 Ghép kèo theo phong độ thi đấu
               </span>
               <span className="text-slate-400">•</span>
-              <span className="px-3 py-0.5 rounded-full bg-[#0b4f6c]/10 text-[#006c49] font-bold text-xs">
+              <span className="px-3 py-0.5 rounded-full bg-[#0ea5e9]/10 text-[#006c49] font-bold text-xs">
                 {onlineCaptains > 0
                   ? `${onlineCaptains} đội đang mở kèo trên sàn`
                   : "Chưa có kèo nào đang mở"}
@@ -330,7 +330,7 @@ export default function MatchmakingMarketplace({
 
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="flex-1 sm:flex-none justify-center flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all active:scale-95"
+                className="flex-1 sm:flex-none justify-center flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-2xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-extrabold text-xs shadow-md transition-all active:scale-95"
               >
                 <PlusCircle className="w-4 h-4 text-white" />
                 <span className="sm:hidden">+ Tạo Kèo</span>
@@ -348,7 +348,7 @@ export default function MatchmakingMarketplace({
             onClick={() => setSelectedSport("SAN_7")}
             className={`flex items-center space-x-2 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
               selectedSport === "SAN_7"
-                ? "bg-[#006c49] text-white shadow-md shadow-[#006c49]/20"
+                ? "bg-[#0ea5e9] text-white shadow-md shadow-[#006c49]/20"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -362,7 +362,7 @@ export default function MatchmakingMarketplace({
             onClick={() => setSelectedSport("SAN_5")}
             className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
               selectedSport === "SAN_5"
-                ? "bg-[#006c49] text-white shadow-md shadow-[#006c49]/20"
+                ? "bg-[#0ea5e9] text-white shadow-md shadow-[#006c49]/20"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -376,7 +376,7 @@ export default function MatchmakingMarketplace({
             onClick={() => setSelectedSport("SAN_11")}
             className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
               selectedSport === "SAN_11"
-                ? "bg-[#006c49] text-white shadow-md shadow-[#006c49]/20"
+                ? "bg-[#0ea5e9] text-white shadow-md shadow-[#006c49]/20"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -390,7 +390,7 @@ export default function MatchmakingMarketplace({
             onClick={() => setSelectedSport("FUTSAL")}
             className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
               selectedSport === "FUTSAL"
-                ? "bg-[#006c49] text-white shadow-md shadow-[#006c49]/20"
+                ? "bg-[#0ea5e9] text-white shadow-md shadow-[#006c49]/20"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -435,7 +435,7 @@ export default function MatchmakingMarketplace({
                   onClick={() => setSelectedLevel(lvl)}
                   className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-mono font-bold transition-all ${
                     selectedLevel === lvl
-                      ? "bg-[#006c49] text-white shadow-xs"
+                      ? "bg-[#0ea5e9] text-white shadow-xs"
                       : "bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200"
                   }`}
                 >
@@ -566,7 +566,7 @@ export default function MatchmakingMarketplace({
                 <p className="text-sm text-slate-500 font-semibold">Chưa có kèo nào đang mở. Hãy là người đầu tiên tạo kèo!</p>
                 <button
                   onClick={() => setShowCreateModal(true)}
-                  className="px-5 py-2.5 rounded-2xl bg-[#006c49] text-white text-xs font-bold"
+                  className="px-5 py-2.5 rounded-2xl bg-[#0ea5e9] text-white text-xs font-bold"
                 >
                   + Đăng Tin Tạo Kèo Ngay
                 </button>
@@ -653,7 +653,7 @@ export default function MatchmakingMarketplace({
 
                     {/* Opponent matched info if any */}
                     {isMatched && (
-                      <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-[#0b4f6c]/30 rounded-xl text-xs flex items-center justify-between">
+                      <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-[#0ea5e9]/30 rounded-xl text-xs flex items-center justify-between">
                         <div>
                           <span className="font-bold text-sky-900 dark:text-sky-400">Đối thủ đã nhận: </span>
                           <strong className="text-slate-900 dark:text-white">{post.opponentTeamName}</strong> (Cap: {post.opponentCaptainName})
@@ -680,7 +680,7 @@ export default function MatchmakingMarketplace({
                               setAcceptingPost(post);
                               setAcceptOpponentTeam(`FC ${userName}`);
                             }}
-                            className="px-5 py-2.5 rounded-xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all flex items-center space-x-1.5 active:scale-95"
+                            className="px-5 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-extrabold text-xs shadow-md transition-all flex items-center space-x-1.5 active:scale-95"
                           >
                             <Zap className="w-4 h-4 text-white" />
                             <span>Bắt Kèo Giao Lưu Ngay</span>
@@ -701,7 +701,7 @@ export default function MatchmakingMarketplace({
           <section className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-xl bg-[#006c49] text-white flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-xl bg-[#0ea5e9] text-white flex items-center justify-center font-bold">
                   <Activity className="w-4 h-4 text-white" />
                 </div>
                 <h3 className="font-black text-sm text-slate-900 dark:text-white">Kèo Gợi Ý Cho Bạn</h3>
@@ -737,7 +737,7 @@ export default function MatchmakingMarketplace({
                   Chưa có kèo nào đang mở. Bấm “+ Tạo Kèo” để đăng ký đội của bạn lên sàn.
                 </p>
               ) : (
-                <div className="p-3.5 rounded-2xl bg-[#0b4f6c]/10 border border-[#0b4f6c]/20 space-y-1 text-[#006c49]">
+                <div className="p-3.5 rounded-2xl bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 space-y-1 text-[#006c49]">
                   <div className="flex items-center justify-between font-bold">
                     <span className="truncate pr-2">{recommendedPost.pitchName ?? "Chưa chọn sân"}</span>
                     <span className="font-mono shrink-0">{recommendedPost.matchTime ?? "—"}</span>
@@ -758,7 +758,7 @@ export default function MatchmakingMarketplace({
             {recommendedPost && (
               <button
                 onClick={() => setAcceptingPost(recommendedPost)}
-                className="w-full py-3 rounded-2xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center space-x-1.5 active:scale-95"
+                className="w-full py-3 rounded-2xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center space-x-1.5 active:scale-95"
               >
                 <Zap className="w-4 h-4 text-white" />
                 <span>Xem Chi Tiết &amp; Nhận Kèo</span>
@@ -985,7 +985,7 @@ export default function MatchmakingMarketplace({
                 <button 
                   type="submit"
                   disabled={creating}
-                  className="px-5 py-2 rounded-xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold flex items-center gap-1.5 shadow-md"
+                  className="px-5 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-extrabold flex items-center gap-1.5 shadow-md"
                 >
                   {creating && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                   <span>{creating ? "Đang lưu..." : "Đăng Kèo Lên Sàn"}</span>
@@ -1013,7 +1013,7 @@ export default function MatchmakingMarketplace({
               </button>
             </div>
 
-            <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-[#0b4f6c]/30 rounded-2xl text-xs space-y-1">
+            <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-[#0ea5e9]/30 rounded-2xl text-xs space-y-1">
               <span className="font-extrabold text-sky-900 dark:text-sky-300 block">
                 Đối đầu: {acceptingPost.teamName} (Cap: {acceptingPost.captainName})
               </span>
@@ -1072,7 +1072,7 @@ export default function MatchmakingMarketplace({
                 <button 
                   type="submit"
                   disabled={accepting}
-                  className="px-5 py-2 rounded-xl bg-[#006c49] hover:bg-[#005236] text-white font-extrabold flex items-center gap-1.5 shadow-md"
+                  className="px-5 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-extrabold flex items-center gap-1.5 shadow-md"
                 >
                   {accepting && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                   <span>{accepting ? "Đang chốt..." : "Chốt Kèo Giao Lưu"}</span>

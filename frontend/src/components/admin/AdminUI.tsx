@@ -73,7 +73,7 @@ export function ConfirmModal({
             onClick={onConfirm}
             disabled={busy}
             className={`px-4 py-2 rounded-xl text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50 ${
-              danger ? "bg-rose-600 hover:bg-rose-700" : "bg-[#0b4f6c] hover:bg-[#083a50]"
+              danger ? "bg-rose-600 hover:bg-rose-700" : "bg-[#0ea5e9] hover:bg-[#0284c7]"
             }`}
           >
             {busy ? "Đang xử lý…" : confirmLabel}

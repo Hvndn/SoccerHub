@@ -36,7 +36,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
         aria-valuenow={current + 1}
       >
         <div
-          className="h-full rounded-full bg-[#0b4f6c] transition-all duration-300"
+          className="h-full rounded-full bg-[#0ea5e9] transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>

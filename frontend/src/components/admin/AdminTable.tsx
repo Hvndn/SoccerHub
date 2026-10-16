@@ -88,7 +88,7 @@ export default function AdminTable<T>({
               setPage(0);
             }}
             placeholder={searchPlaceholder}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#0b4f6c]"
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
           />
         </div>
         <span className="text-[11px] font-mono text-slate-400 whitespace-nowrap">

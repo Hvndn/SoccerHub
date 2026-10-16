@@ -681,10 +681,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       {/* POPUP THÔNG BÁO ĐƠN ĐẶT SÂN REALTIME TỪ CẦU THỦ */}
       {realtimeAlert && (
         <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-sky-400 dark:border-sky-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 animate-modal-pop relative overflow-hidden">
-          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[#0b4f6c]/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[#0ea5e9]/10 rounded-full blur-2xl pointer-events-none" />
           
           <div className="flex items-start space-x-3.5 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-[#0b4f6c] text-white flex items-center justify-center shrink-0 shadow-lg animate-bell-wiggle">
+            <div className="w-12 h-12 rounded-2xl bg-[#0ea5e9] text-white flex items-center justify-center shrink-0 shadow-lg animate-bell-wiggle">
               <Bell className="w-6 h-6 fill-white text-white" />
             </div>
             <div className="space-y-1">
@@ -735,7 +735,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* Real-time Order Notification Banner */}
       {notification && (
-        <div className="bg-[#0b4f6c] dark:bg-[#0b4f6c] text-white dark:text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl shadow-lg border border-sky-400/30 flex items-center justify-between animate-fade-in">
+        <div className="bg-[#0ea5e9] dark:bg-[#0ea5e9] text-white dark:text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl shadow-lg border border-sky-400/30 flex items-center justify-between animate-fade-in">
           <div className="flex items-center space-x-3 text-xs font-bold">
             <Bell className="w-4 h-4 animate-bell-wiggle text-amber-300 shrink-0" />
             <span>{notification}</span>
@@ -753,7 +753,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4 shadow-sm">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
           <div className="min-w-0 flex-1">
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0b4f6c]/10 dark:bg-[#0b4f6c]/10 border border-[#0b4f6c]/20 dark:border-sky-400/20 text-[#0b4f6c] dark:text-sky-400 text-sm font-bold mb-2">
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0ea5e9]/10 dark:bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 dark:border-sky-400/20 text-[#0b4f6c] dark:text-sky-400 text-sm font-bold mb-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>
                 {activePitch 
@@ -821,7 +821,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => onNavigateTab("owner-onboarding")}
-                className="px-3.5 py-2 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
                 title="Khởi tạo hoặc thiết lập cụm sân mới qua Wizard 4 bước"
               >
                 <Building className="w-4 h-4 shrink-0" />
@@ -832,7 +832,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <button
               type="button"
               onClick={() => setShowAddPitchModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
+              className="px-3.5 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
             >
               <Plus className="w-4 h-4 shrink-0" />
               <span>Thêm Sân Con</span>
@@ -841,7 +841,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <button
               type="button"
               onClick={() => setShowOfflineModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
+              className="px-3.5 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
             >
               <PhoneCall className="w-4 h-4 shrink-0" />
               <span>Đặt Ca Tại Quầy</span>
@@ -949,7 +949,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       {/* QUICK SEARCH & CHECK-IN TOOLBAR */}
       <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900">
         <div className="flex items-center space-x-3 w-full sm:w-auto">
-          <div className="w-10 h-10 rounded-xl bg-[#0b4f6c]/10 dark:bg-[#0b4f6c]/20 text-[#0b4f6c] dark:text-sky-300 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[#0ea5e9]/10 dark:bg-[#0ea5e9]/20 text-[#0b4f6c] dark:text-sky-300 flex items-center justify-center shrink-0">
             <QrCode className="w-5 h-5" />
           </div>
           <div>
@@ -972,7 +972,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           </div>
           <button
             onClick={handleSearchBooking}
-            className="px-6 py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-sm sm:text-base font-black shadow-sm shrink-0 active:scale-95 transition-all"
+            className="px-6 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-sm sm:text-base font-black shadow-sm shrink-0 active:scale-95 transition-all"
           >
             Tra Cứu
           </button>
@@ -1054,7 +1054,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   <select
                     value={matrixFilterStatus}
                     onChange={(e) => setMatrixFilterStatus(e.target.value)}
-                    className="bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] dark:focus:ring-[#0b4f6c] cursor-pointer shadow-xs"
+                    className="bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#0284c7] cursor-pointer shadow-xs"
                   >
                     <option value="ALL">Tất cả trạng thái</option>
                     <option value="BOOKED">🟢 Đã Cọc (CONFIRMED)</option>
@@ -1070,7 +1070,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   <select
                     value={matrixFilterType}
                     onChange={(e) => setMatrixFilterType(e.target.value)}
-                    className="bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] dark:focus:ring-[#0b4f6c] cursor-pointer shadow-xs"
+                    className="bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#0284c7] cursor-pointer shadow-xs"
                   >
                     <option value="ALL">Tất cả loại sân</option>
                     <option value="Sân 5">Sân 5 Người</option>
@@ -1088,7 +1088,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   <select
                     value={matrixFilterTime}
                     onChange={(e) => setMatrixFilterTime(e.target.value)}
-                    className="bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] font-mono cursor-pointer shadow-xs"
+                    className="bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] font-mono cursor-pointer shadow-xs"
                   >
                     <option value="ALL">Tất cả ca ({availableTimeSlots.length} ca)</option>
                     <option value="PEAK">⭐ Khung Giờ Vàng (Cao Điểm)</option>
@@ -1109,7 +1109,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   <select
                     value={matrixFilterMethod}
                     onChange={(e) => setMatrixFilterMethod(e.target.value)}
-                    className="bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] cursor-pointer shadow-xs"
+                    className="bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] cursor-pointer shadow-xs"
                   >
                     <option value="ALL">Tất cả hình thức</option>
                     <option value="ONLINE">📱 Đặt qua Website SoccerHub</option>
@@ -1142,7 +1142,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 space-y-3 shadow-xs">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#0b4f6c]/15 dark:bg-[#0b4f6c]/20 text-[#0b4f6c] dark:text-sky-300 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#0ea5e9]/15 dark:bg-[#0ea5e9]/20 text-[#0b4f6c] dark:text-sky-300 flex items-center justify-center shrink-0">
                     <Calendar className="w-5 h-5" />
                   </div>
                   <div>
@@ -1150,7 +1150,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       <span className="text-xs font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider">
                         Lịch Đặt Ca Ngày:
                       </span>
-                      <span className="px-2.5 py-0.5 rounded-lg bg-[#0b4f6c] dark:bg-[#0b4f6c] text-white dark:text-white font-black text-xs font-mono shadow-xs">
+                      <span className="px-2.5 py-0.5 rounded-lg bg-[#0ea5e9] dark:bg-[#0ea5e9] text-white dark:text-white font-black text-xs font-mono shadow-xs">
                         {upcomingDays.find(d => d.iso === matrixDate)?.display || `Ngày ${matrixDate.split("-").reverse().join("/")}`}
                       </span>
                       {matrixDate === upcomingDays[0]?.iso ? (
@@ -1204,7 +1204,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       onClick={() => handleSelectDate(day.iso)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer ${
                         isSelected
-                          ? "bg-[#0ea5e9] text-white shadow-md scale-102 ring-2 ring-[#0ea5e9]/50"
+                          ? "bg-[#0ea5e9] text-white shadow-md scale-102 ring-2 ring-[#0284c7]/50"
                           : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-sky-300 hover:bg-sky-50/50 dark:hover:bg-slate-800"
                       }`}
                     >
@@ -1225,7 +1225,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             {/* COLOR CODES LEGEND */}
             <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-sm font-bold pt-1">
               <span className="flex items-center space-x-2 text-sky-700 dark:text-sky-400">
-                <span className="w-3.5 h-3.5 rounded-full bg-[#0b4f6c] shadow-xs shrink-0" />
+                <span className="w-3.5 h-3.5 rounded-full bg-[#0ea5e9] shadow-xs shrink-0" />
                 <span>Đã Cọc (CONFIRMED)</span>
               </span>
               <span className="flex items-center space-x-2 text-rose-500">
@@ -1292,7 +1292,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                               : slot.status === "playing"
                               ? "bg-rose-500/10 border-rose-400 text-rose-600 dark:text-rose-400 font-bold"
                               : slot.status === "booked"
-                              ? "bg-[#0b4f6c]/10 border-sky-400 text-sky-700 dark:text-sky-400 font-bold"
+                              ? "bg-[#0ea5e9]/10 border-sky-400 text-sky-700 dark:text-sky-400 font-bold"
                               : slot.status === "resale"
                               ? "bg-amber-500/10 border-amber-400 text-amber-600 dark:text-amber-400 font-bold"
                               : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:border-sky-400 hover:bg-sky-50/20"
@@ -1373,7 +1373,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => setShowAddPitchModal(true)}
-                className="px-4 py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-extrabold text-sm shadow-md transition-all flex items-center space-x-2 active:scale-95"
+                className="px-4 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-extrabold text-sm shadow-md transition-all flex items-center space-x-2 active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Thêm Sân Con Mới</span>
@@ -1387,14 +1387,14 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     <div>
                       <div className="flex items-center space-x-2.5">
                         <h3 className="font-black text-lg text-slate-900 dark:text-white">{pitch.pitchName}</h3>
-                        <span className="px-2.5 py-0.5 rounded-lg bg-[#0b4f6c]/10 text-[#0b4f6c] dark:text-sky-400 text-xs font-mono font-bold">
+                        <span className="px-2.5 py-0.5 rounded-lg bg-[#0ea5e9]/10 text-[#0b4f6c] dark:text-sky-400 text-xs font-mono font-bold">
                           {pitch.type}
                         </span>
                       </div>
                       <span className="text-xs text-slate-400 font-medium mt-0.5 block">Mã sân: {pitch.pitchId}</span>
                     </div>
 
-                    <span className="px-3 py-1 rounded-full bg-[#0b4f6c]/10 text-emerald-500 text-xs font-bold border border-[#0b4f6c]/20">
+                    <span className="px-3 py-1 rounded-full bg-[#0ea5e9]/10 text-emerald-500 text-xs font-bold border border-[#0ea5e9]/20">
                       ĐANG HOẠT ĐỘNG
                     </span>
                   </div>
@@ -1484,7 +1484,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                                 [String(p.id)]: { ...draft, avg: e.target.value },
                               })
                             }
-                            className="w-full bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:border-[#0b4f6c]"
+                            className="w-full bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:border-[#0ea5e9]"
                           />
                         </label>
                         <label className="space-y-1">
@@ -1501,7 +1501,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                                 [String(p.id)]: { ...draft, peak: e.target.value },
                               })
                             }
-                            className="w-full bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:border-[#0b4f6c]"
+                            className="w-full bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-mono focus:outline-none focus:border-[#0ea5e9]"
                           />
                         </label>
                       </div>
@@ -1509,7 +1509,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                         type="button"
                         disabled={saving}
                         onClick={() => savePitchPrice(p)}
-                        className="px-4 py-2 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 flex items-center gap-1.5"
                       >
                         {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                         {saving ? "Đang lưu..." : "Lưu giá sân"}
@@ -1574,7 +1574,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
             <button
               onClick={() => showToast("🎉 Đã lưu tồn kho Canteen!")}
-              className="px-5 py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-xs transition-all active:scale-95"
+              className="px-5 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-sm shadow-xs transition-all active:scale-95"
             >
               Lưu Kho Canteen
             </button>
@@ -1632,7 +1632,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   value={newPitchName}
                   onChange={(e) => setNewPitchName(e.target.value)}
                   placeholder="VD: Sân 7C Cỏ Nhân Tạo Mới"
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] text-sm"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] text-sm"
                 />
               </div>
 
@@ -1641,7 +1641,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <select
                   value={newPitchType}
                   onChange={(e) => setNewPitchType(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] text-sm cursor-pointer"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] text-sm cursor-pointer"
                 >
                   <option value="Sân 7 Người">Sân 7 Người (Cỏ Nhân Tạo Chuẩn VFF)</option>
                   <option value="Sân 5 Người">Sân 5 Người (Mini Cỏ / Futsal)</option>
@@ -1656,7 +1656,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     type="number"
                     value={newPitchBasePrice}
                     onChange={(e) => setNewPitchBasePrice(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] text-sm"
+                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] text-sm"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -1665,7 +1665,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     type="number"
                     value={newPitchPeakPrice}
                     onChange={(e) => setNewPitchPeakPrice(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] text-sm"
+                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] text-sm"
                   />
                 </div>
               </div>
@@ -1685,7 +1685,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     setShowAddPitchModal(false);
                     setShowHoursModal(true);
                   }}
-                  className="px-3.5 py-2 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-bold text-sm transition-colors shrink-0 shadow-xs"
+                  className="px-3.5 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-sm transition-colors shrink-0 shadow-xs"
                 >
                   Đổi Giờ
                 </button>
@@ -1701,7 +1701,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-md transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-sm shadow-md transition-colors"
                 >
                   Tạo Sân Mới
                 </button>
@@ -1750,7 +1750,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   <select
                     value={offlineDate}
                     onChange={(e) => setOfflineDate(e.target.value)}
-                    className="flex-1 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] text-sm cursor-pointer"
+                    className="flex-1 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] text-sm cursor-pointer"
                   >
                     {upcomingDays.map(d => (
                       <option key={d.iso} value={d.iso}>
@@ -1764,7 +1764,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     onChange={(e) => {
                       if (e.target.value) setOfflineDate(e.target.value);
                     }}
-                    className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0b4f6c]"
+                    className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
                   />
                 </div>
               </div>
@@ -1774,7 +1774,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <select
                   value={offlinePitchId}
                   onChange={(e) => setOfflinePitchId(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] text-sm cursor-pointer"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] text-sm cursor-pointer"
                 >
                   {pitchMatrix.map(p => (
                     <option key={p.pitchId} value={p.pitchId}>{p.pitchName}</option>
@@ -1818,7 +1818,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <select
                   value={offlineTime}
                   onChange={(e) => setOfflineTime(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] text-sm cursor-pointer"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] text-sm cursor-pointer"
                 >
                   {offlineAvailableSlots.map((slot) => (
                     <option key={slot} value={slot}>
@@ -1836,7 +1836,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   value={offlineCustomer}
                   onChange={(e) => setOfflineCustomer(e.target.value)}
                   placeholder="VD: Anh Cường FC Phủ Diễn"
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] text-sm"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] text-sm"
                 />
               </div>
 
@@ -1848,7 +1848,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                   value={offlinePhone}
                   onChange={(e) => setOfflinePhone(e.target.value)}
                   placeholder="VD: 0914 555 789"
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] text-sm"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] text-sm"
                 />
               </div>
 
@@ -1890,7 +1890,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-extrabold text-sm shadow-md transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-extrabold text-sm shadow-md transition-colors"
                 >
                   Xác Nhận Khóa Slot
                 </button>
@@ -1947,7 +1947,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#0b4f6c]/10 border border-[#0b4f6c]/20 space-y-2">
+              <div className="p-4 rounded-2xl bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 space-y-2">
                 <div className="flex justify-between items-center text-sm font-bold text-slate-900 dark:text-white">
                   <span>Tiền cọc đã thu:</span>
                   <span className="font-mono text-sky-700 dark:text-sky-400 font-black text-base">{selectedSlotForAction.depositPaid}</span>
@@ -1964,7 +1964,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <button
                   type="button"
                   onClick={() => handleConfirmCheckin(selectedSlotForAction)}
-                  className="w-full py-3.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95"
+                  className="w-full py-3.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95"
                 >
                   <UserCheck className="w-5 h-5" />
                   <span>Xác Nhận Check-in Vào Sân & Mở Đèn</span>
@@ -2066,7 +2066,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <button
                   type="submit"
                   disabled={isUpdatingHours}
-                  className="flex-1 py-3 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-extrabold text-sm shadow-md transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 py-3 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-extrabold text-sm shadow-md transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer"
                 >
                   {isUpdatingHours && <RefreshCw className="w-4 h-4 animate-spin mr-1" />}
                   <span>Lưu Giờ Hoạt Động Sân</span>

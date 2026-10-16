@@ -119,7 +119,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                 <button
                   type="button"
                   onClick={() => onOpenAuth("login", "PLAYER")}
-                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-2.5 cursor-pointer"
+                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-2.5 cursor-pointer"
                 >
                   <Users className="w-4 h-4 text-white" />
                   <span>Đặt Sân Ngay →</span>
@@ -161,7 +161,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
       <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-3 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 sm:space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#0b4f6c] dark:bg-[#0b4f6c] text-white dark:text-white flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#0ea5e9] dark:bg-[#0ea5e9] text-white dark:text-white flex items-center justify-center">
               <Search className="w-4 h-4" />
             </div>
             <div>
@@ -189,7 +189,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               id="hero-city"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] shadow-xs cursor-pointer"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] shadow-xs cursor-pointer"
             >
               <option value="dn">Đà Nẵng (Hải Châu, Cẩm Lệ, Liên Chiểu...)</option>
               <option value="hcm">TP. Hồ Chí Minh (Quận 7, Bình Thạnh...)</option>
@@ -207,7 +207,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               id="hero-pitch-type"
               value={pitchType}
               onChange={(e) => setPitchType(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] shadow-xs cursor-pointer"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] shadow-xs cursor-pointer"
             >
               <option value="7">Sân 7 Người (Cỏ FIFA Pro)</option>
               <option value="5">Sân 5 Người (Mini / Futsal)</option>
@@ -225,7 +225,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               id="hero-date"
               value={dateChoice}
               onChange={(e) => setDateChoice(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] shadow-xs cursor-pointer"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] shadow-xs cursor-pointer"
             >
               <option value="today">Hôm Nay (Tối nay có ca)</option>
               <option value="tomorrow">Ngày Mai (Đặt cọc giữ chỗ)</option>
@@ -243,7 +243,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               id="hero-timeslot"
               value={timeSlot}
               onChange={(e) => setTimeSlot(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0b4f6c] shadow-xs cursor-pointer"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] shadow-xs cursor-pointer"
             >
               <option value="gold">Giờ Vàng: 16:00 - 20:00</option>
               <option value="afternoon">Chiều Sớm: 14:00 - 16:00</option>
@@ -263,7 +263,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           <button
             type="button"
             onClick={() => onOpenAuth("login", "PLAYER")}
-            className="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-[#0b4f6c] to-sky-600 hover:from-[#083a50] hover:to-sky-500 text-white font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-[#0ea5e9] to-sky-600 hover:from-[#083a50] hover:to-sky-500 text-white font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
           >
             <Search className="w-4 h-4" />
             <span>Quét Ca Sân Trống Ngay</span>

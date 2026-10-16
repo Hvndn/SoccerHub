@@ -352,7 +352,7 @@ export default function PitchDetail({
         <div className="flex items-center space-x-3">
           <button
             onClick={onBack}
-            className="px-4 py-2 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-bold text-sm transition-all flex items-center space-x-1.5 active:scale-95 shadow-xs"
+            className="px-4 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-sm transition-all flex items-center space-x-1.5 active:scale-95 shadow-xs"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Quay Lại Tìm Sân</span>
@@ -373,8 +373,8 @@ export default function PitchDetail({
           </ol>
         </div>
 
-        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0b4f6c]/10 border border-[#0b4f6c]/20 text-sky-700 dark:text-sky-400 text-xs font-bold">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#0b4f6c] animate-pulse" />
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 text-sky-700 dark:text-sky-400 text-xs font-bold">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#0ea5e9] animate-pulse" />
           <span>Thông tin ca sân cập nhật theo thời gian thực</span>
         </div>
       </nav>
@@ -385,11 +385,11 @@ export default function PitchDetail({
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="bg-[#0b4f6c] text-white text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider inline-flex items-center space-x-1 shadow-xs">
+              <span className="bg-[#0ea5e9] text-white text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider inline-flex items-center space-x-1 shadow-xs">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>{pitchDetails?.pitchTypes?.[0] || "Sân cỏ nhân tạo"}</span>
               </span>
-              <span className="bg-[#0b4f6c] text-white text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
+              <span className="bg-[#0ea5e9] text-white text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
                 <Zap className="w-3.5 h-3.5" />
                 <span>Đèn LED chiếu sáng sân</span>
               </span>
@@ -420,7 +420,7 @@ export default function PitchDetail({
                 <span>Hotline: {venueData.phone}</span>
               </span>
               <span className="text-slate-400">•</span>
-              <span className="bg-[#0b4f6c]/10 text-sky-700 dark:text-sky-400 border border-[#0b4f6c]/20 px-2.5 py-0.5 rounded-lg text-xs font-bold font-mono">
+              <span className="bg-[#0ea5e9]/10 text-sky-700 dark:text-sky-400 border border-[#0ea5e9]/20 px-2.5 py-0.5 rounded-lg text-xs font-bold font-mono">
                 Mở cửa: {venueData.openTime} - {venueData.closeTime} (Linh hoạt 1h - 2h)
               </span>
             </div>
@@ -466,7 +466,7 @@ export default function PitchDetail({
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
             <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
               <div>
-                <span className="font-black text-xs bg-[#0b4f6c]/90 backdrop-blur-md px-2.5 py-1 rounded text-slate-950 uppercase tracking-wider">
+                <span className="font-black text-xs bg-[#0ea5e9]/90 backdrop-blur-md px-2.5 py-1 rounded text-slate-950 uppercase tracking-wider">
                   {pitchDetails?.pitchTypes?.[0] || pitch?.sportBadge || "Sân bóng đá"}
                 </span>
                 <p className="font-black text-base sm:text-lg mt-1 text-white">
@@ -552,7 +552,7 @@ export default function PitchDetail({
             {/* Chú thích màu sắc */}
             <div className="flex items-center space-x-3 text-xs font-bold flex-wrap">
               <div className="flex items-center space-x-1.5 text-sky-700 dark:text-sky-400">
-                <span className="w-3 h-3 rounded-full bg-[#0b4f6c] shadow-xs" />
+                <span className="w-3 h-3 rounded-full bg-[#0ea5e9] shadow-xs" />
                 <span>Đang chọn</span>
               </div>
               <div className="flex items-center space-x-1.5 text-slate-600 dark:text-slate-300">
@@ -600,13 +600,13 @@ export default function PitchDetail({
           {/* THÔNG TIN CA ĐÁ CỐ ĐỊNH NIÊM YẾT BỞI CHỦ SÂN */}
           <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#0b4f6c] dark:bg-[#0b4f6c] text-white dark:text-white flex items-center justify-center shrink-0 shadow-md">
+              <div className="w-10 h-10 rounded-2xl bg-[#0ea5e9] dark:bg-[#0ea5e9] text-white dark:text-white flex items-center justify-center shrink-0 shadow-md">
                 <Clock className="w-5 h-5" />
               </div>
               <div>
                 <span className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
                   <span>Khung Giờ Thi Đấu Cố Định</span>
-                  <span className="px-2 py-0.5 rounded-md bg-[#0b4f6c]/10 dark:bg-[#0b4f6c]/20 text-sky-700 dark:text-sky-400 text-xs font-bold font-mono border border-[#0b4f6c]/30">
+                  <span className="px-2 py-0.5 rounded-md bg-[#0ea5e9]/10 dark:bg-[#0ea5e9]/20 text-sky-700 dark:text-sky-400 text-xs font-bold font-mono border border-[#0ea5e9]/30">
                     {fixedSlotDuration} phút/ca
                   </span>
                 </span>
@@ -693,11 +693,11 @@ export default function PitchDetail({
                     {/* Court Info Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/80">
                       <div className="flex items-center space-x-2.5">
-                        <span className="w-3 h-3 rounded-full bg-[#0b4f6c] shadow-xs" />
+                        <span className="w-3 h-3 rounded-full bg-[#0ea5e9] shadow-xs" />
                         <span className="font-black text-base text-slate-900 dark:text-white">
                           {court.pitchName}
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-lg bg-[#0b4f6c]/10 text-[#0b4f6c] dark:text-sky-400 text-xs font-bold font-mono">
+                        <span className="px-2.5 py-0.5 rounded-lg bg-[#0ea5e9]/10 text-[#0b4f6c] dark:text-sky-400 text-xs font-bold font-mono">
                           {court.type}
                         </span>
                       </div>
@@ -719,7 +719,7 @@ export default function PitchDetail({
                             <button
                               key={sIdx}
                               type="button"
-                              className="h-20 rounded-2xl bg-[#0b4f6c] text-white shadow-lg shadow-sky-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-emerald-400 btn-shimmer cursor-pointer"
+                              className="h-20 rounded-2xl bg-[#0ea5e9] text-white shadow-lg shadow-sky-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-emerald-400 btn-shimmer cursor-pointer"
                             >
                               <div className="absolute top-0 right-0 bg-emerald-300 text-slate-950 text-[9px] px-2 py-0.5 font-black rounded-bl uppercase shadow-xs">
                                 ĐANG CHỌN ⚽
@@ -765,7 +765,7 @@ export default function PitchDetail({
                             className={`h-20 rounded-2xl shadow-xs flex flex-col items-center justify-center p-2 transition-all cursor-pointer border group relative ${
                               slot.isGapSlot
                                 ? "bg-amber-500/10 hover:bg-amber-500/20 border-amber-400/80 text-amber-950 dark:text-amber-100 ring-1 ring-amber-400/40"
-                                : "bg-white dark:bg-slate-900 hover:border-[#0b4f6c] hover:bg-sky-50/20 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700"
+                                : "bg-white dark:bg-slate-900 hover:border-[#0ea5e9] hover:bg-sky-50/20 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700"
                             }`}
                           >
                             {slot.isGapSlot ? (
@@ -803,7 +803,7 @@ export default function PitchDetail({
           {/* Quy trình nhận sân & chính sách cọc (mô tả đúng luồng đang chạy) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-[#0b4f6c]/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 font-bold">
+              <div className="w-10 h-10 rounded-xl bg-[#0ea5e9]/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 font-bold">
                 <QrCode className="w-5 h-5 text-emerald-500" />
               </div>
               <div className="space-y-1">
@@ -818,7 +818,7 @@ export default function PitchDetail({
             </div>
 
             <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-[#0b4f6c]/10 text-sky-500 flex items-center justify-center shrink-0 font-bold">
+              <div className="w-10 h-10 rounded-xl bg-[#0ea5e9]/10 text-sky-500 flex items-center justify-center shrink-0 font-bold">
                 <ShieldCheck className="w-5 h-5 text-sky-500" />
               </div>
               <div className="space-y-1">
@@ -841,7 +841,7 @@ export default function PitchDetail({
               {/* Header Phiếu Đặt */}
               <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#0b4f6c] dark:bg-[#0b4f6c] text-white dark:text-white flex items-center justify-center font-bold">
+                  <div className="w-8 h-8 rounded-xl bg-[#0ea5e9] dark:bg-[#0ea5e9] text-white dark:text-white flex items-center justify-center font-bold">
                     <Receipt className="w-[18px] h-[18px]" />
                   </div>
                   <div>
@@ -913,7 +913,7 @@ export default function PitchDetail({
                   onClick={() => setDepositOption("50%")}
                   className={`p-3 rounded-2xl cursor-pointer flex flex-col justify-between border-2 transition-all ${
                     depositOption === "50%"
-                      ? "bg-[#0b4f6c]/10 border-[#0b4f6c] shadow-xs"
+                      ? "bg-[#0ea5e9]/10 border-[#0ea5e9] shadow-xs"
                       : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                   }`}
                 >
@@ -931,7 +931,7 @@ export default function PitchDetail({
                   onClick={() => setDepositOption("100%")}
                   className={`p-3 rounded-2xl cursor-pointer flex flex-col justify-between border-2 transition-all ${
                     depositOption === "100%"
-                      ? "bg-[#0b4f6c]/10 border-[#0b4f6c] shadow-xs"
+                      ? "bg-[#0ea5e9]/10 border-[#0ea5e9] shadow-xs"
                       : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                   }`}
                 >
@@ -970,7 +970,7 @@ export default function PitchDetail({
                 <button
                   type="button"
                   onClick={() => showToast(`💸 Đã sao chép mức chia ${splitPerPlayer.toLocaleString("vi-VN")}đ/người (${splitCount} người)!`)}
-                  className="px-2.5 py-1.5 rounded-lg bg-[#0b4f6c] hover:bg-[#083a50] text-white font-bold text-xs transition-colors shrink-0 shadow-xs"
+                  className="px-2.5 py-1.5 rounded-lg bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-xs transition-colors shrink-0 shadow-xs"
                 >
                   Chia Tiền
                 </button>
@@ -983,7 +983,7 @@ export default function PitchDetail({
                 type="button"
                 onClick={handleStartBooking}
                 disabled={isBooking}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm sm:text-base shadow-lg shadow-[#0b4f6c]/30 flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 px-4 rounded-2xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-sm sm:text-base shadow-lg shadow-[#0ea5e9]/30 flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
               >
                 {isBooking ? (
                   <>
@@ -1006,7 +1006,7 @@ export default function PitchDetail({
         ) : (
             /* Placeholder khi chưa chọn ca nào */
             <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-8 border border-dashed border-slate-300 dark:border-slate-800 text-center space-y-4 animate-fade-in">
-              <div className="w-16 h-16 rounded-2xl bg-[#0b4f6c]/10 dark:bg-[#0b4f6c]/20 text-[#0b4f6c] dark:text-sky-400 mx-auto flex items-center justify-center">
+              <div className="w-16 h-16 rounded-2xl bg-[#0ea5e9]/10 dark:bg-[#0ea5e9]/20 text-[#0b4f6c] dark:text-sky-400 mx-auto flex items-center justify-center">
                 <Calendar className="w-8 h-8 text-[#0b4f6c] dark:text-sky-400 animate-pulse" />
               </div>
               <div className="space-y-1.5">
@@ -1018,7 +1018,7 @@ export default function PitchDetail({
                 </p>
               </div>
               <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 text-xs font-bold">
-                <span className="w-2 h-2 rounded-full bg-[#0b4f6c] animate-ping inline-block" />
+                <span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-ping inline-block" />
                 <span>Sẵn sàng giữ chỗ thời gian thực</span>
               </div>
             </div>
@@ -1027,7 +1027,7 @@ export default function PitchDetail({
           {/* Card Chủ Sân & Liên Hệ Trực Tiếp */}
           <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-[#0b4f6c]/10 text-[#0b4f6c] dark:text-sky-400 flex items-center justify-center font-bold text-xs">
+              <div className="w-10 h-10 rounded-full bg-[#0ea5e9]/10 text-[#0b4f6c] dark:text-sky-400 flex items-center justify-center font-bold text-xs">
                 {venueData.ownerName ? venueData.ownerName.slice(0, 2).toUpperCase() : "CS"}
               </div>
               <div>
@@ -1105,7 +1105,7 @@ export default function PitchDetail({
                 <button
                   type="button"
                   onClick={handleCompletePayment}
-                  className="w-full py-3.5 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                  className="w-full py-3.5 rounded-2xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
                 >
                   <CheckCircle2 className="w-5 h-5 text-white" />
                   <span>Đã Đặt Giữ Chỗ Thành Công</span>
@@ -1114,12 +1114,12 @@ export default function PitchDetail({
             ) : (
               /* Vé điện tử đã lưu trong CSDL */
               <div className="text-center space-y-5 py-2">
-                <div className="w-14 h-14 rounded-full bg-sky-100 dark:bg-[#0b4f6c]/20 text-sky-700 border-2 border-[#0b4f6c] mx-auto flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-sky-100 dark:bg-[#0ea5e9]/20 text-sky-700 border-2 border-[#0ea5e9] mx-auto flex items-center justify-center">
                   <CheckCircle2 className="w-8 h-8 text-emerald-500" />
                 </div>
 
                 <div>
-                  <span className="px-3 py-1 rounded-full bg-[#0b4f6c]/10 text-sky-700 text-xs font-bold uppercase tracking-wider border border-[#0b4f6c]/30">
+                  <span className="px-3 py-1 rounded-full bg-[#0ea5e9]/10 text-sky-700 text-xs font-bold uppercase tracking-wider border border-[#0ea5e9]/30">
                     ĐƠN GIỮ CHỖ ĐÃ LƯU VÀO CSDL
                   </span>
                   <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-2">Thẻ Vé Vào Sân Điện Tử</h3>

@@ -77,7 +77,7 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
           {/* User Quick Badge */}
           {user && (
             <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex items-center gap-3 shrink-0 self-start lg:self-auto shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-[#0b4f6c] text-white font-black text-sm flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-[#0ea5e9] text-white font-black text-sm flex items-center justify-center shadow-xs">
                 {user.fullName ? user.fullName.charAt(0) : "U"}
               </div>
               <div className="text-xs">
