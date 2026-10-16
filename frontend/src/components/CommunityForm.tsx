@@ -102,9 +102,9 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
           <button
             type="button"
             onClick={() => setSubTab("matchmaking")}
-            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
               subTab === "matchmaking"
-                ? "bg-[#0b4f6c] text-white shadow-sm font-bold"
+                ? "bg-[#0b4f6c] text-sky-100 shadow-sm"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
             }`}
           >
@@ -117,9 +117,9 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
           <button
             type="button"
             onClick={() => setSubTab("tournaments")}
-            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
               subTab === "tournaments"
-                ? "bg-[#0b4f6c] text-white shadow-sm font-bold"
+                ? "bg-[#0b4f6c] text-sky-100 shadow-sm"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
             }`}
           >
@@ -134,9 +134,9 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
           <button
             type="button"
             onClick={() => setSubTab("organizer")}
-            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
               subTab === "organizer"
-                ? "bg-[#0b4f6c] text-white shadow-sm font-bold"
+                ? "bg-[#0b4f6c] text-sky-100 shadow-sm"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
             }`}
           >
@@ -149,9 +149,9 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
           <button
             type="button"
             onClick={() => setSubTab("formboard")}
-            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
               subTab === "formboard"
-                ? "bg-[#0b4f6c] text-white shadow-sm font-bold"
+                ? "bg-[#0b4f6c] text-sky-100 shadow-sm"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
             }`}
           >
