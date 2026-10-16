@@ -17,6 +17,7 @@ export interface TournamentTeamEntry {
   won?: number | null;
   drawn?: number | null;
   lost?: number | null;
+  memberNames?: string | null;
 }
 
 export interface Tournament {
@@ -224,13 +225,15 @@ const friendlyAdminError = (err: unknown, fallback: string): string => {
 };
 
 /**
- * Nút "Giả lập đủ đội (Test)" — cần đăng nhập ORGANIZER/ADMIN (gửi kèm token).
+ * Nút "Giả lập đủ đội (Test)" — sinh đội ảo kèm đủ quân số + danh sách thành
+ * viên, lưu thật vào CSDL. count: chỉ thêm đúng n đội (mặc định lấp đầy sức chứa).
+ * Cần đăng nhập ORGANIZER/ADMIN (gửi kèm token).
  */
-export async function fillSimulatedTeams(tournamentId: number): Promise<{ message: string; added: number; registeredTeams: number }> {
+export async function fillSimulatedTeams(tournamentId: number, count?: number): Promise<{ message: string; added: number; registeredTeams: number }> {
   try {
     const body = await apiRequest<{ message: string; added: number; registeredTeams: number }>(
       `/api/v1/tournaments/${tournamentId}/fill-teams`,
-      { method: 'POST', body: JSON.stringify({}) }
+      { method: 'POST', body: JSON.stringify(count && count > 0 ? { count } : {}) }
     );
     await fetchTournaments(true);
     return body;

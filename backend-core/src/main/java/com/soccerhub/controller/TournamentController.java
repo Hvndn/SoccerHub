@@ -138,20 +138,53 @@ public class TournamentController {
             "FC Bình Tân", "FC Nhà Bè", "FC Cần Giờ", "FC Biên Hòa",
             "FC Vũng Tàu", "FC Cần Thơ", "FC Rạch Giá", "FC Cà Mau");
 
-    private static final List<String> SIM_CAPTAINS = List.of(
-            "Trần Hoàng Long", "Nguyễn Văn Hùng", "Lê Minh Trí", "Phạm Quốc Bảo",
-            "Hoàng Anh Vũ", "Đặng Tuấn Anh", "Vũ Minh Tuấn", "Đỗ Quang Huy",
-            "Bùi Tiến Dũng", "Ngô Đình Nam", "Lý Hoàng Nam", "Phan Văn Đức",
-            "Tô Văn Vũ", "Lưu Xuân Trường", "Hồ Tấn Tài", "Dương Thanh Hào",
-            "Trịnh Văn Lợi", "Cao Văn Triền", "Nguyễn Hoàng Đức", "Phạm Xuân Mạnh");
+    private static final List<String> SIM_FAMILY = List.of(
+            "Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ",
+            "Võ", "Đặng", "Bùi", "Đỗ", "Hồ", "Ngô", "Dương", "Lý",
+            "Trịnh", "Cao", "Lưu", "Tô");
+
+    private static final List<String> SIM_MIDDLE = List.of(
+            "Văn", "Thị", "Hữu", "Đức", "Minh", "Quang", "Thành", "Công",
+            "Xuân", "Đình", "Mạnh", "Tuấn", "Hải", "Bá", "Ngọc", "Gia");
+
+    private static final List<String> SIM_GIVEN = List.of(
+            "An", "Anh", "Bảo", "Bình", "Cường", "Dũng", "Giang", "Hải",
+            "Hiếu", "Hoàng", "Hùng", "Huy", "Khánh", "Khoa", "Long",
+            "Minh", "Nam", "Nhân", "Phong", "Phúc", "Quân", "Tài",
+            "Tâm", "Thắng", "Thanh", "Thiện", "Toàn", "Trung", "Tuấn",
+            "Tùng", "Việt", "Vinh", "Hưng", "Lộc", "Phát", "Sang",
+            "Sơn", "Tân", "Tiến", "Kiệt", "Khang", "Duy", "Hậu", "Lâm");
 
     /**
-     * Nút "Giả lập đủ đội (Test)": sinh đội ảo cho đủ sức chứa để demo
-     * bốc thăm khi số đội đăng ký thật chưa đủ.
+     * Sinh đội hình gồm đúng quân số theo thể thức sân (tên Việt ngẫu nhiên,
+     * không trùng trong đội). Đội trưởng = thành viên đầu tiên.
+     */
+    private static List<String> generateRoster(String sportType, ThreadLocalRandom rnd) {
+        int size;
+        if (sportType != null && (sportType.contains("11"))) size = 16 + rnd.nextInt(5);
+        else if (sportType != null && (sportType.contains("FUTSAL") || sportType.contains("5"))) size = 8 + rnd.nextInt(3);
+        else size = 12 + rnd.nextInt(3);
+        Set<String> used = new HashSet<>();
+        List<String> roster = new ArrayList<>();
+        int guard = 0;
+        while (roster.size() < size && guard++ < size * 50) {
+            String name = SIM_FAMILY.get(rnd.nextInt(SIM_FAMILY.size())) + " "
+                    + SIM_MIDDLE.get(rnd.nextInt(SIM_MIDDLE.size())) + " "
+                    + SIM_GIVEN.get(rnd.nextInt(SIM_GIVEN.size()));
+            if (used.add(name)) roster.add(name);
+        }
+        return roster;
+    }
+
+    /**
+     * Nút "Giả lập đủ đội (Test)": sinh đội ảo cho đủ sức chứa (8/12/16 đội
+     * tùy cấu hình giải) để demo bốc thăm khi số đội đăng ký thật chưa đủ.
+     * Mỗi đội có đủ quân số + danh sách thành viên, lưu thật vào CSDL.
+     * Body tuỳ chọn {"count": n} để chỉ thêm đúng n đội thay vì lấp đầy.
      */
     @PostMapping("/{id}/fill-teams")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
-    public ResponseEntity<?> fillTeams(@PathVariable Long id) {
+    public ResponseEntity<?> fillTeams(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
@@ -162,9 +195,17 @@ public class TournamentController {
             teams = new ArrayList<>();
             tournament.setTeams(teams);
         }
-        if (teams.size() >= cap) {
+        int target = cap;
+        if (body != null && body.get("count") != null) {
+            try {
+                int want = Integer.parseInt(body.get("count").toString());
+                if (want > 0) target = Math.min(cap, teams.size() + want);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        if (teams.size() >= target) {
             return ResponseEntity.ok(Map.of(
-                    "message", "Giải đã đủ " + cap + " đội, không cần giả lập thêm.",
+                    "message", "Giải đã đủ " + target + " đội, không cần giả lập thêm.",
                     "added", 0,
                     "registeredTeams", teams.size()));
         }
@@ -177,7 +218,7 @@ public class TournamentController {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         int added = 0;
         int autoIdx = 1;
-        while (teams.size() < cap) {
+        while (teams.size() < target) {
             String name = null;
             while (!pool.isEmpty()) {
                 String cand = pool.remove(0);
@@ -191,11 +232,13 @@ public class TournamentController {
                 if (existing.contains(name.toLowerCase())) continue;
             }
             existing.add(name.toLowerCase());
+            List<String> roster = generateRoster(tournament.getSportType(), rnd);
             teams.add(TournamentTeamEntry.builder()
                     .teamName(name)
-                    .captainName(SIM_CAPTAINS.get(rnd.nextInt(SIM_CAPTAINS.size())))
+                    .captainName(roster.isEmpty() ? "Trần Hoàng Long" : roster.get(0))
                     .captainPhone("09" + String.format("%08d", rnd.nextInt(100_000_000)))
-                    .memberCount(10 + rnd.nextInt(9))
+                    .memberCount(roster.size())
+                    .memberNames(String.join(",", roster))
                     .registrationStatus("SIMULATED")
                     .simulated(true)
                     .registeredAt(LocalDateTime.now())
@@ -206,7 +249,7 @@ public class TournamentController {
         tournament.setBracketJson(null); // danh sách đổi -> cần bốc thăm lại
         tournamentRepository.save(tournament);
         return ResponseEntity.ok(Map.of(
-                "message", "Đã giả lập thêm " + added + " đội Test, giải đủ " + cap + " đội.",
+                "message", "Đã giả lập thêm " + added + " đội Test kèm danh sách thành viên, giải có " + teams.size() + "/" + cap + " đội.",
                 "added", added,
                 "registeredTeams", tournament.getRegisteredTeams()));
     }

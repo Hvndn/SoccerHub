@@ -718,7 +718,7 @@ export default function TournamentBracket() {
               <button
                 onClick={handleFill}
                 disabled={!selected || full || fillBusy}
-                title="Sinh đội Test cho đủ sức chứa (chỉ dùng demo)"
+                title="Sinh đội Test kèm đủ quân số + danh sách thành viên cho đủ sức chứa (chỉ dùng demo)"
                 className="px-3.5 py-2.5 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {fillBusy ? (
