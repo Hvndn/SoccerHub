@@ -456,7 +456,7 @@ export default function MultiSportArena({
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                  <Zap className="w-5 h-5 text-amber-500" />
+                  <Zap className="w-5 h-5 text-amber-700" />
                   <span>Sàn Ghép Kèo Đội Bóng Đá Phủi (Football Matchmaking Queue)</span>
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 mt-1 hidden sm:block">
@@ -511,7 +511,7 @@ export default function MultiSportArena({
                         <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-xs text-slate-500">
                           <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1 text-emerald-500" /> {match.time}</span>
                           <span className="flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1 text-cyan-500" /> {match.court}</span>
-                          <span className="flex items-center"><Trophy className="w-3.5 h-3.5 mr-1 text-amber-500" /> Yêu cầu: {match.formInfo}</span>
+                          <span className="flex items-center"><Trophy className="w-3.5 h-3.5 mr-1 text-amber-700" /> Yêu cầu: {match.formInfo}</span>
                         </div>
                       </div>
                     </div>
@@ -675,7 +675,7 @@ export default function MultiSportArena({
               </div>
               <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-2 text-base font-extrabold text-slate-900 dark:text-white">
                 <span>Mức chia tiền sân:</span>
-                <span className="text-amber-500">{joiningMatch.costPerPerson.toLocaleString()}đ / cầu thủ</span>
+                <span className="text-amber-700">{joiningMatch.costPerPerson.toLocaleString()}đ / cầu thủ</span>
               </div>
             </div>
 

@@ -334,7 +334,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                       </span>
                       {hero.startAt && !running.length && (
                         <span className="text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                          <Clock className="w-4 h-4 text-rose-500" />
+                          <Clock className="w-4 h-4 text-rose-600" />
                           Khởi tranh sau: <span className="font-mono font-black tracking-wider text-base">{fmtCountdown(heroSeconds)}</span>
                         </span>
                       )}
@@ -583,7 +583,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
             <aside className="lg:col-span-4 flex flex-col gap-3 sm:gap-6">
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-3 sm:p-5 space-y-3">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-amber-500" />
+                  <Zap className="w-4 h-4 text-amber-700" />
                   Kèo Ghép Đang Mở ({openPosts.length})
                 </h3>
 

@@ -476,7 +476,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500" />
+              <Sparkles className="w-4 h-4 text-amber-700" />
               AI Gợi Ý Sân Cho Bạn
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
@@ -563,7 +563,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
               </span>
               {userMatchesPlayed > 0 ? (
                 <span className="hidden sm:inline-flex items-center space-x-1 text-[11px] sm:text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-400/20">
-                  <Flame className="w-3.5 h-3.5 text-amber-500" />
+                  <Flame className="w-3.5 h-3.5 text-amber-700" />
                   <span>Đã đá {userMatchesPlayed} trận</span>
                 </span>
               ) : null}
@@ -715,7 +715,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
         <div className={`${showMobileFilters ? "grid" : "hidden"} sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1`}>
           {/* Lọc Khu vực Đà Nẵng Thật */}
           <div className="bg-slate-50 dark:bg-slate-800/80 rounded-xl px-3.5 py-2 border border-slate-200 dark:border-slate-700 flex items-center space-x-2.5">
-            <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
+            <MapPin className="w-4 h-4 text-rose-600 shrink-0" />
             <div className="flex-1 min-w-0">
               <span className="text-[9px] text-slate-500 font-extrabold uppercase block leading-none">Khu Vực Địa Lý</span>
               <select
@@ -788,6 +788,8 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 step="50000"
                 value={maxBudget}
                 onChange={(e) => setMaxBudget(Number(e.target.value))}
+                aria-label="Ngân sách tối đa mỗi giờ"
+                aria-valuetext={maxBudget.toLocaleString("vi-VN") + " đồng"}
                 className="w-full accent-[#0ea5e9] cursor-pointer h-1.5 mt-1.5"
               />
             </div>
@@ -868,7 +870,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                     <div className="text-sm font-black text-slate-900 dark:text-white font-mono truncate">
                       {featuredPitch.priceDiscounted?.toLocaleString("vi-VN")}đ
                     </div>
-                    <span className="text-[11px] font-bold text-amber-500 block">
+                    <span className="text-[11px] font-bold text-amber-700 block">
                       {featuredPitch.rating
                         ? `Đánh giá ${featuredPitch.rating} (${featuredPitch.reviewsCount} đánh giá)`
                         : "Chưa có đánh giá nào"}
@@ -900,7 +902,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center space-x-2">
-                    <Lock className="w-[18px] h-[18px] text-amber-500" />
+                    <Lock className="w-[18px] h-[18px] text-amber-700" />
                     <span className="font-extrabold text-sm text-slate-900 dark:text-white">Trạng Thái Ca Sân Hôm Nay</span>
                   </div>
                   <span className="font-mono text-[10px] font-extrabold px-2.5 py-0.5 bg-sky-50 dark:bg-[#0ea5e9]/10 text-sky-800 dark:text-sky-400 border border-sky-200 dark:border-[#0ea5e9]/30 rounded-full flex items-center">
@@ -1041,7 +1043,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
               </div>
             ) : filteredPitches.length === 0 ? (
               <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-6 sm:p-12 border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
-                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto border border-amber-500/20">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center mx-auto border border-amber-500/20">
                   <MapPin className="w-8 h-8" />
                 </div>
                 <div className="space-y-1">
@@ -1077,7 +1079,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs font-bold">
                       <div className="flex items-center space-x-1">
-                        <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                        <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                         <span className="truncate max-w-[170px]">{pitch.districtName}</span>
                       </div>
                       <span className="bg-[#0ea5e9]/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px]">
@@ -1104,7 +1106,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                         </div>
                         {pitch.rating ? (
                           <div className="flex items-center space-x-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 rounded-xl shrink-0">
-                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                            <Star className="w-3.5 h-3.5 text-amber-700 fill-amber-500" />
                             <span className="font-extrabold text-xs text-slate-900 dark:text-white">
                               {pitch.rating}
                             </span>
@@ -1292,7 +1294,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
           <section className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200 dark:border-slate-800 space-y-4 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <QrCode className="w-5 h-5 text-amber-500" />
+                <QrCode className="w-5 h-5 text-amber-700" />
                 <h3 className="font-black text-sm text-slate-900 dark:text-white">SoccerHub QuickPass</h3>
               </div>
               <span className="px-2.5 py-0.5 rounded bg-[#0ea5e9] text-white font-black text-[9px] uppercase">
@@ -1333,7 +1335,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
           <section className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Trophy className="w-4 h-4 text-amber-500" />
+                <Trophy className="w-4 h-4 text-amber-700" />
                 <h3 className="font-black text-slate-900 dark:text-white text-xs uppercase tracking-wider">
                   Đội Phong Độ Cao Nhất
                 </h3>
@@ -1362,7 +1364,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                     <div className="flex items-center space-x-2 min-w-0">
                       <span
                         className={`font-black font-mono ${
-                          idx === 0 ? "text-amber-500" : "text-slate-500"
+                          idx === 0 ? "text-amber-700" : "text-slate-500"
                         }`}
                       >
                         #{idx + 1}

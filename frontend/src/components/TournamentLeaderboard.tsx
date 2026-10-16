@@ -553,7 +553,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   </span>
                   {deadlineDays !== null && deadlineDays >= 0 && deadlineDays <= 7 && (
                     <span className="px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-[11px] font-bold flex items-center gap-1 border border-rose-200 dark:border-rose-900">
-                      <Activity className="w-3.5 h-3.5 text-rose-500" />
+                      <Activity className="w-3.5 h-3.5 text-rose-600" />
                       Hạn chót: Còn {deadlineDays} ngày
                     </span>
                   )}
@@ -761,7 +761,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                 <div className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-amber-500" />
+                  <Trophy className="w-5 h-5 text-amber-700" />
                   <h2 className="text-base font-bold text-slate-900 dark:text-white">
                     Bảng Xếp Hạng Phong Độ Các Đội Đã Ghi Danh
                   </h2>
@@ -1329,7 +1329,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <Trophy className="w-5 h-5 text-amber-500" />
+                    <Trophy className="w-5 h-5 text-amber-700" />
                     <h3 className="font-bold text-slate-900 dark:text-white text-sm">
                       BXH Vua Phá Lưới & Kiến Tạo
                     </h3>

@@ -263,12 +263,12 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                   onClick={() => onNavigateTab && onNavigateTab('community')}
                   className="text-left p-3.5 bg-slate-50 dark:bg-slate-950 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 transition flex items-center gap-3 group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition">
+                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition">
                     <Users className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-500 transition truncate">Chợ Kèo Khẩn Cấp</p>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-700 transition truncate">Chợ Kèo Khẩn Cấp</p>
                       <span className="text-[10px] text-rose-600 font-extrabold bg-rose-500/10 px-1.5 py-0.5 rounded">8 KÈO</span>
                     </div>
                     <p className="text-[11px] text-slate-500 truncate">Đang thiếu 1-2 chân tối nay</p>

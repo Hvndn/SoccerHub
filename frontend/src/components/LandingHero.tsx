@@ -183,7 +183,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           {/* 1. Location Select */}
           <div className="space-y-1.5">
             <label htmlFor="hero-city" className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center">
-              <MapPin className="w-3.5 h-3.5 mr-1 text-rose-500" />
+              <MapPin className="w-3.5 h-3.5 mr-1 text-rose-600" />
               Khu vực sân
             </label>
             <select
@@ -201,7 +201,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           {/* 2. Pitch Size Select */}
           <div className="space-y-1.5">
             <label htmlFor="hero-pitch-type" className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center">
-              <Trophy className="w-3.5 h-3.5 mr-1 text-amber-500" />
+              <Trophy className="w-3.5 h-3.5 mr-1 text-amber-700" />
               Quy chuẩn sân
             </label>
             <select
@@ -291,7 +291,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1 min-w-0">
-          <div className="text-xl sm:text-3xl font-mono font-black text-amber-500">{stats.loading ? "—" : stats.matchesPlayed}</div>
+          <div className="text-xl sm:text-3xl font-mono font-black text-amber-700">{stats.loading ? "—" : stats.matchesPlayed}</div>
           <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Trận đã có kết quả</div>
         </div>
 

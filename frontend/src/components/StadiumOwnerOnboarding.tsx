@@ -439,7 +439,7 @@ export default function StadiumOwnerOnboarding({
                         <button
                           type="button"
                           onClick={() => handleDeletePitch(p.id)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
                           title="Xóa sân"
                         >
                           <Trash2 className="w-4 h-4" />

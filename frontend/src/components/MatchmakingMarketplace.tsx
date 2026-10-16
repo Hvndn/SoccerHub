@@ -582,7 +582,7 @@ export default function MatchmakingMarketplace({
                             ? "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700" 
                             : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 animate-pulse"
                         }`}>
-                          <Flame className="w-4 h-4 text-rose-500" />
+                          <Flame className="w-4 h-4 text-rose-600" />
                           <span>{isMatched ? "ĐÃ CÓ ĐỐI THỦ NHẬN KÈO" : "KÈO ĐANG MỞ CHỜ ĐỐI"}</span>
                         </span>
                         <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs">
@@ -814,7 +814,7 @@ export default function MatchmakingMarketplace({
           <section className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-amber-500" />
+                <Trophy className="w-5 h-5 text-amber-700" />
                 <h3 className="font-black text-sm text-slate-900 dark:text-white">Đội Mở Kèo Nhiều Nhất</h3>
               </div>
               <span className="text-xs text-slate-500 font-semibold">{openKèoCount} kèo trong CSDL</span>

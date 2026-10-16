@@ -414,7 +414,7 @@ export default function PlayerProfileConsole({
                     {displayPhone}
                   </span>
                   <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-medium">
-                    <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                     {displayArea}
                   </span>
                 </div>
@@ -821,7 +821,7 @@ export default function PlayerProfileConsole({
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 CHUỖI PHONG ĐỘ
               </span>
-              <span className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-500">
+              <span className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700">
                 <Flame className="w-4 h-4" />
               </span>
             </div>
@@ -900,7 +900,7 @@ export default function PlayerProfileConsole({
             </div>
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-amber-500 font-mono">
+                <span className="text-3xl font-extrabold text-amber-700 font-mono">
                   {String(perf.titles).padStart(2, "0")}
                 </span>
                 <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -913,7 +913,7 @@ export default function PlayerProfileConsole({
                   {perf.matches} trận đã đá
                 </span>
                 <span className="flex items-center gap-1">
-                  <Award className="w-3.5 h-3.5 text-amber-500" />
+                  <Award className="w-3.5 h-3.5 text-amber-700" />
                   {perf.wins} trận thắng
                 </span>
               </div>
@@ -1035,7 +1035,7 @@ export default function PlayerProfileConsole({
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                       ĐÓNG GÓP BÀN THẮNG & KIẾN TẠO
                     </span>
-                    <span className="text-xs font-bold text-amber-500">
+                    <span className="text-xs font-bold text-amber-700">
                       {currentStat.goals + currentStat.assists} G+A
                     </span>
                   </div>
@@ -1291,7 +1291,7 @@ export default function PlayerProfileConsole({
             <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-sm space-y-4 sm:space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-rose-500" />
+                  <Heart className="w-4 h-4 text-rose-600" />
                   Dữ Liệu Thể Lực Cầu Thủ
                 </h3>
                 <span className="text-[10px] text-slate-500 font-mono">Đồng bộ Smartwatch</span>
@@ -1355,7 +1355,7 @@ export default function PlayerProfileConsole({
             <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-amber-500" />
+                  <Trophy className="w-4 h-4 text-amber-700" />
                   Danh Hiệu & Huy Chương Đạt Được
                 </h3>
               </div>

@@ -66,7 +66,7 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
 
             <h1 className="text-lg sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-2.5">
               <span>Cộng Đồng Kèo Cáp &amp; Giải Đấu Bóng Đá</span>
-              <Trophy className="w-7 h-7 text-amber-500 hidden sm:inline-block shrink-0" />
+              <Trophy className="w-7 h-7 text-amber-700 hidden sm:inline-block shrink-0" />
             </h1>
 
             <p className="hidden sm:block text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed font-medium">
@@ -123,7 +123,7 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
             }`}
           >
-            <Trophy className={`w-4 h-4 ${subTab === "tournaments" ? "text-amber-200" : "text-amber-500"}`} />
+            <Trophy className={`w-4 h-4 ${subTab === "tournaments" ? "text-amber-200" : "text-amber-700"}`} />
             <span className="sm:hidden">Giải Đấu</span>
             <span className="hidden sm:inline">2. Danh Sách Giải Đấu &amp; Nhánh Bracket</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-sky-100 text-sky-900 font-black border border-sky-200">
@@ -155,7 +155,7 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
             }`}
           >
-            <Flame className={`w-4 h-4 ${subTab === "formboard" ? "text-amber-200" : "text-amber-500"}`} />
+            <Flame className={`w-4 h-4 ${subTab === "formboard" ? "text-amber-200" : "text-amber-700"}`} />
             <span className="sm:hidden">Phong Độ</span>
             <span className="hidden sm:inline">4. BXH Phong Độ 5 Trận</span>
           </button>
@@ -186,7 +186,7 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
           <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <Flame className="w-4 h-4 text-amber-500" />
+                <Flame className="w-4 h-4 text-amber-700" />
                 Bảng Phong Độ (lịch sử thật, không điểm số)
               </h3>
               <span className="text-[11px] text-slate-500">Top {formBoard.length} đội • xếp theo tỷ lệ thắng</span>

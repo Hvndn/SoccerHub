@@ -126,7 +126,7 @@ export default function TeamClubManagement({
             <Loader2 className="w-5 h-5 animate-spin" /> Đang tải đội bóng của bạn…
           </div>
         ) : error ? (
-          <p className="py-6 text-center text-sm text-rose-500">{error}</p>
+          <p className="py-6 text-center text-sm text-rose-600">{error}</p>
         ) : primaryTeam ? (
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
             <div className="w-16 h-16 rounded-2xl bg-[#0ea5e9]/10 text-emerald-500 flex items-center justify-center text-lg sm:text-2xl shrink-0">
@@ -301,7 +301,7 @@ export default function TeamClubManagement({
                     </p>
                     <p
                       className={`text-[10px] font-bold ${
-                        m.status === "DONE" ? "text-emerald-500" : "text-amber-500"
+                        m.status === "DONE" ? "text-emerald-500" : "text-amber-700"
                       }`}
                     >
                       {m.status === "DONE" ? "Đá Xong" : "Sắp Diễn Ra"}

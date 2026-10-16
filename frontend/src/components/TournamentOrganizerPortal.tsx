@@ -296,7 +296,7 @@ export default function TournamentOrganizerPortal({
 
             <h1 className="text-lg sm:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
               <span>Quản Lý Giải Đấu Bóng Đá SoccerHub</span>
-              <Award className="w-8 h-8 text-amber-500 shrink-0 hidden sm:inline-block" />
+              <Award className="w-8 h-8 text-amber-700 shrink-0 hidden sm:inline-block" />
             </h1>
             <p className="text-sm text-slate-600 max-w-2xl font-medium leading-relaxed hidden sm:block">
               Trung tâm điều hành giải đấu bóng đá tập trung: nhập tỷ số trọng tài, bốc thăm nhánh đấu, giải thưởng và sơ đồ nhánh đấu knockout thời gian thực.
@@ -406,7 +406,7 @@ export default function TournamentOrganizerPortal({
                   t.status === "live"
                     ? "bg-rose-500 text-white animate-pulse"
                     : t.status === "active"
-                    ? "bg-amber-500/20 text-amber-500 border border-amber-500/30"
+                    ? "bg-amber-500/20 text-amber-700 border border-amber-500/30"
                     : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-500"
                 }`}>
                   {t.status === "live" && <Radio className="w-3 h-3 animate-spin" />}
@@ -800,7 +800,7 @@ export default function TournamentOrganizerPortal({
                           <td className="py-3 px-3 text-center font-mono text-slate-600 dark:text-slate-300">{row.played}</td>
                           <td className="py-3 px-3 text-center font-mono font-bold text-sky-700 dark:text-sky-400">{row.won}</td>
                           <td className="py-3 px-3 text-center font-mono font-bold text-amber-600 dark:text-amber-400">{row.drawn}</td>
-                          <td className="py-3 px-3 text-center font-mono font-bold text-rose-500">{row.lost}</td>
+                          <td className="py-3 px-3 text-center font-mono font-bold text-rose-600">{row.lost}</td>
                           <td className="py-3 px-3 text-center font-mono font-bold text-sky-600 dark:text-sky-400">
                             {row.diff > 0 ? `+${row.diff}` : row.diff}
                           </td>

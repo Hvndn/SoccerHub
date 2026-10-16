@@ -68,12 +68,12 @@ function TypeIcon({ type }: { type: string }) {
   if (t === "BOOKING_CREATED")
     return <CheckCircle className="w-5 h-5 text-emerald-500" />;
   if (t === "BOOKING_CANCELLED")
-    return <XCircle className="w-5 h-5 text-rose-500" />;
+    return <XCircle className="w-5 h-5 text-rose-600" />;
   if (t === "BOOKING_CHECKED_IN")
     return <CheckCircle className="w-5 h-5 text-sky-500" />;
   if (t.startsWith("TOURNAMENT") || t.startsWith("MATCH") || t.startsWith("BRACKET"))
-    return <Trophy className="w-5 h-5 text-amber-500" />;
-  return <AlertCircle className="w-5 h-5 text-amber-500" />;
+    return <Trophy className="w-5 h-5 text-amber-700" />;
+  return <AlertCircle className="w-5 h-5 text-amber-700" />;
 }
 
 function TypeTone(type: string): string {
@@ -251,7 +251,7 @@ export default function NotificationsModal({
                           type="button"
                           onClick={() => onDelete(n.id)}
                           aria-label="Xóa thông báo này"
-                          className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

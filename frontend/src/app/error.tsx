@@ -25,7 +25,7 @@ export default function GlobalError({
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-6 sm:p-8 text-center space-y-4">
         <div className="w-16 h-16 rounded-2xl bg-rose-500/10 flex items-center justify-center mx-auto">
-          <AlertTriangle className="w-8 h-8 text-rose-500" />
+          <AlertTriangle className="w-8 h-8 text-rose-600" />
         </div>
 
         <h1 className="text-xl sm:text-2xl font-black tracking-tight">Ứng dụng gặp sự cố</h1>

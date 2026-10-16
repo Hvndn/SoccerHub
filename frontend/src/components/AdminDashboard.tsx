@@ -767,7 +767,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </h1>
             <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 font-medium mt-1">
               <span className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
+                <MapPin className="w-4 h-4 text-rose-600 shrink-0" />
                 <span>{activePitch?.address || "Chưa khai báo địa chỉ"}</span>
               </span>
               <span>•</span>
@@ -939,10 +939,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
         <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
           <span className="text-sm font-bold text-slate-500 uppercase tracking-wider block">Khách Vãng Lai Tại Quầy</span>
-          <div className="text-2xl sm:text-3xl font-black text-amber-500 font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-amber-700 font-mono">
             {pitchStats.counterBookings} Ca Trực Tiếp
           </div>
-          <span className="text-xs font-bold text-amber-500">Khóa lịch ca tức thì trên toàn sàn</span>
+          <span className="text-xs font-bold text-amber-700">Khóa lịch ca tức thì trên toàn sàn</span>
         </div>
       </div>
 
@@ -1128,7 +1128,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       setMatrixFilterTime("ALL");
                       setMatrixFilterMethod("ALL");
                     }}
-                    className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-sm font-bold flex items-center space-x-1.5 transition-all active:scale-95"
+                    className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 text-sm font-bold flex items-center space-x-1.5 transition-all active:scale-95"
                     title="Đặt lại tất cả các bộ lọc về mặc định"
                   >
                     <X className="w-4 h-4" />
@@ -1228,11 +1228,11 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <span className="w-3.5 h-3.5 rounded-full bg-[#0ea5e9] shadow-xs shrink-0" />
                 <span>Đã Cọc (CONFIRMED)</span>
               </span>
-              <span className="flex items-center space-x-2 text-rose-500">
+              <span className="flex items-center space-x-2 text-rose-600">
                 <span className="w-3.5 h-3.5 rounded-full bg-rose-500 shadow-xs shrink-0" />
                 <span>Đã Check-in Đá (IN_USE)</span>
               </span>
-              <span className="flex items-center space-x-2 text-amber-500">
+              <span className="flex items-center space-x-2 text-amber-700">
                 <span className="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-xs shrink-0" />
                 <span>Sàn Nhượng Ca Gấp</span>
               </span>
@@ -1246,7 +1246,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <div className="space-y-3 sm:space-y-4 pt-2">
               {filteredMatrix.length === 0 ? (
                 <div className="py-12 text-center text-sm text-slate-500 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center space-y-2">
-                  <AlertCircle className="w-8 h-8 text-amber-500" />
+                  <AlertCircle className="w-8 h-8 text-amber-700" />
                   <span className="font-bold text-slate-700 dark:text-slate-300">Không tìm thấy sân con hoặc ca đá nào phù hợp</span>
                   <span className="text-xs">Vui lòng chọn Đặt Lại bộ lọc để hiển thị toàn bộ ma trận ca sân</span>
                 </div>
@@ -1333,7 +1333,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                               </strong>
                             </span>
                             {slot.status === "booked" && !slot.isContinuation && (
-                              <span className="block text-rose-500 font-bold">Thu tại quầy: <strong>{slot.cashDue}</strong></span>
+                              <span className="block text-rose-600 font-bold">Thu tại quầy: <strong>{slot.cashDue}</strong></span>
                             )}
                             {slot.isContinuation && (
                               <span className="block text-slate-500 text-[11px]">Cùng đơn: #{slot.code}</span>
@@ -1406,7 +1406,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     </div>
                     <div>
                       <span className="text-slate-500 block text-xs font-semibold">GIÁ GIỜ VÀNG</span>
-                      <strong className="text-amber-500 font-black text-sm sm:text-base">{pitch.peakPrice.toLocaleString("vi-VN")} đ/ca</strong>
+                      <strong className="text-amber-700 font-black text-sm sm:text-base">{pitch.peakPrice.toLocaleString("vi-VN")} đ/ca</strong>
                     </div>
                   </div>
 
@@ -1567,7 +1567,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
         <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-5">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
             <div className="flex items-center space-x-2">
-              <Coffee className="w-5 h-5 text-amber-500" />
+              <Coffee className="w-5 h-5 text-amber-700" />
               <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
                 Quản Lý Dịch Vụ Canteen & Cho Thuê Vật Tư Tại Quầy
               </h2>
@@ -1954,7 +1954,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
                 <div className="flex justify-between items-center text-sm font-bold text-slate-900 dark:text-white">
                   <span>Tiền còn lại thu tại quầy:</span>
-                  <span className="font-mono text-rose-500 text-base font-black">{selectedSlotForAction.cashDue}</span>
+                  <span className="font-mono text-rose-600 text-base font-black">{selectedSlotForAction.cashDue}</span>
                 </div>
               </div>
             </div>
@@ -1974,7 +1974,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => handleCancelBooking(selectedSlotForAction)}
-                className="w-full py-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-bold text-sm border border-rose-500/20 transition-all flex items-center justify-center space-x-2 active:scale-95"
+                className="w-full py-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 font-bold text-sm border border-rose-500/20 transition-all flex items-center justify-center space-x-2 active:scale-95"
               >
                 <Trash2 className="w-4 h-4" />
                 <span>Hủy Đơn Đặt Này (Trả Về Ca Trống)</span>
@@ -2101,7 +2101,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-rose-700 dark:text-rose-300">Xác Nhận Hủy Ca Đặt Sân</h3>
-                  <p className="text-[11px] text-rose-500 dark:text-rose-400 font-medium mt-0.5">
+                  <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-0.5">
                     Ca: <strong>{slotToCancel?.time || slotToCancel?.timeSlot || "Không rõ"}</strong> &bull; Khách: <strong>{slotToCancel?.customer || "Không rõ"}</strong>
                   </p>
                 </div>
@@ -2123,7 +2123,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <div className="px-6 py-5 space-y-3 sm:space-y-4">
               <div>
                 <label className="block text-xs font-extrabold text-slate-800 dark:text-slate-200 mb-2">
-                  Lý Do Hủy Ca <span className="text-rose-500">*</span>
+                  Lý Do Hủy Ca <span className="text-rose-600">*</span>
                 </label>
 
                 {/* Preset reasons */}

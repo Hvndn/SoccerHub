@@ -387,7 +387,7 @@ export default function Home() {
             ) : (
               <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
-                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                  <ShieldAlert className="w-8 h-8 text-amber-700" />
                 </div>
                 <div className="space-y-2">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
@@ -414,8 +414,8 @@ export default function Home() {
               />
             ) : (
               <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl animate-fade-in">
-                <div className="w-16 h-16 rounded-2xl bg-rose-500/10 text-rose-500 mx-auto flex items-center justify-center">
-                  <ShieldAlert className="w-8 h-8 text-rose-500" />
+                <div className="w-16 h-16 rounded-2xl bg-rose-500/10 text-rose-600 mx-auto flex items-center justify-center">
+                  <ShieldAlert className="w-8 h-8 text-rose-600" />
                 </div>
                 <div className="space-y-2">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
@@ -457,7 +457,7 @@ export default function Home() {
             ) : (
               <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
-                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                  <ShieldAlert className="w-8 h-8 text-amber-700" />
                 </div>
                 <div className="space-y-2">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
@@ -487,7 +487,7 @@ export default function Home() {
             ) : (
               <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
-                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                  <ShieldAlert className="w-8 h-8 text-amber-700" />
                 </div>
                 <div className="space-y-2">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
@@ -516,7 +516,7 @@ export default function Home() {
             ) : currentUser ? (
               <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
-                  <ShieldAlert className="w-8 h-8 text-rose-500" />
+                  <ShieldAlert className="w-8 h-8 text-rose-600" />
                 </div>
                 <div className="space-y-2">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900">🚫 Truy Cập Bị Từ Chối</h2>
@@ -535,7 +535,7 @@ export default function Home() {
             ) : (
               <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
-                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                  <ShieldAlert className="w-8 h-8 text-amber-700" />
                 </div>
                 <div className="space-y-2">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập với Tài Khoản Ban Tổ Chức</h2>
@@ -564,7 +564,7 @@ export default function Home() {
             ) : (
               <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
-                  <ShieldAlert className="w-8 h-8 text-amber-500" />
+                  <ShieldAlert className="w-8 h-8 text-amber-700" />
                 </div>
                 <div className="space-y-2">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>

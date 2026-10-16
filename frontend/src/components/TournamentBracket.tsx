@@ -655,7 +655,7 @@ export default function TournamentBracket() {
                       type="button"
                       aria-label="Xóa dòng"
                       onClick={() => removeScorerRow(match.matchId, ri)}
-                      className="text-rose-500 hover:text-rose-700 font-black"
+                      className="text-rose-600 hover:text-rose-700 font-black"
                     >
                       ×
                     </button>
@@ -1248,7 +1248,7 @@ export default function TournamentBracket() {
           <div className="space-y-3 sm:space-y-6">
             <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-3 sm:space-y-4">
               <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center space-x-2">
-                <Zap className="w-5 h-5 text-amber-500" />
+                <Zap className="w-5 h-5 text-amber-700" />
                 <span>Nhật Ký Phiên VAR</span>
               </h3>
 
@@ -1268,7 +1268,7 @@ export default function TournamentBracket() {
                           e.tone === "ok"
                             ? "text-emerald-500"
                             : e.tone === "warn"
-                            ? "text-amber-500"
+                            ? "text-amber-700"
                             : "text-red-500"
                         }`}
                       >
@@ -1353,7 +1353,7 @@ export default function TournamentBracket() {
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono">{row.played}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-bold text-sky-700 dark:text-sky-400">{row.won}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-amber-600 dark:text-amber-400">{row.drawn}</td>
-                      <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-rose-500">{row.lost}</td>
+                      <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-rose-600">{row.lost}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono">{row.diff > 0 ? `+${row.diff}` : row.diff}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-black">{row.points}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center">

@@ -282,7 +282,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             <div className="space-y-2.5 sm:space-y-3.5">
               {traditionalIssues.map((item, idx) => (
                 <div key={idx} className="flex items-start space-x-3 p-3 sm:p-3.5 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30">
-                  <XCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                  <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="text-xs font-extrabold text-slate-900 dark:text-white">{item.title}</h4>
                     <p className="text-[11px] text-slate-500 font-medium mt-0.5 leading-relaxed">{item.desc}</p>

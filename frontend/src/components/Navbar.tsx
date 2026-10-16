@@ -407,7 +407,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Award className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
+                <Award className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-700 shrink-0" />
                 <span>Giải Đấu &amp; BXH</span>
               </button>
 
@@ -420,7 +420,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-500 fill-rose-500 shrink-0" />
+                <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
                 <span>Chợ Kèo &amp; Pass Sân</span>
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
                   HOT
@@ -452,7 +452,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-500 fill-rose-500 shrink-0" />
+                <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
                 <span>Chợ Kèo &amp; Pass Sân</span>
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
                   HOT
@@ -468,7 +468,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
+                <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-700 shrink-0" />
                 <span>Giải Đấu &amp; BXH</span>
               </button>
 
@@ -506,7 +506,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-500 fill-rose-500 shrink-0" />
+                <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
                 <span>Chợ Kèo &amp; Pass Sân</span>
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
                   HOT
@@ -522,7 +522,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
+                <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-700 shrink-0" />
                 <span>Giải Đấu &amp; BXH</span>
               </button>
 
@@ -548,7 +548,7 @@ export default function Navbar({
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <Award className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
+                <Award className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-700 shrink-0" />
                 <span>Thẻ Hội Viên</span>
               </button>
             </>
@@ -641,9 +641,9 @@ export default function Navbar({
                             "bg-amber-100 dark:bg-amber-900/40 text-amber-600"
                           }`}>
                             {notif.type === "BOOKING_CREATED" && <CheckCircle className="w-5 h-5 text-emerald-500" />}
-                            {notif.type === "BOOKING_CANCELLED" && <XCircle className="w-5 h-5 text-rose-500" />}
+                            {notif.type === "BOOKING_CANCELLED" && <XCircle className="w-5 h-5 text-rose-600" />}
                             {notif.type === "BOOKING_CHECKED_IN" && <CheckCircle className="w-5 h-5 text-sky-500" />}
-                            {(notif.type === "PROMO" || notif.type === "OPERATING_HOURS_UPDATED") && <AlertCircle className="w-5 h-5 text-amber-500" />}
+                            {(notif.type === "PROMO" || notif.type === "OPERATING_HOURS_UPDATED") && <AlertCircle className="w-5 h-5 text-amber-700" />}
                           </div>
 
                           <div className="flex-1 min-w-0 space-y-1">
@@ -671,7 +671,7 @@ export default function Navbar({
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); removeNotification(notif.id); }}
-                            className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0"
+                            className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0"
                             title="Xóa thông báo"
                           >
                             <X className="w-4 h-4" />
@@ -840,7 +840,7 @@ export default function Navbar({
                         }}
                         className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors"
                       >
-                        <Award className="w-4 h-4 text-amber-500" />
+                        <Award className="w-4 h-4 text-amber-700" />
                         <span>Giải Đấu & BXH</span>
                       </button>
 
@@ -893,7 +893,7 @@ export default function Navbar({
                       }}
                       className="w-full text-left px-3 py-2 rounded-xl text-xs font-extrabold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center space-x-2 transition-colors"
                     >
-                      <LogOut className="w-4 h-4 text-rose-500" />
+                      <LogOut className="w-4 h-4 text-rose-600" />
                       <span>Đăng Xuất</span>
                     </button>
                   </div>
@@ -1129,7 +1129,7 @@ export default function Navbar({
                         }`}
                       >
                         <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-                          <Award className="w-[18px] h-[18px] text-amber-500" />
+                          <Award className="w-[18px] h-[18px] text-amber-700" />
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
@@ -1149,7 +1149,7 @@ export default function Navbar({
                         }`}
                       >
                         <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
-                          <Flame className="w-[18px] h-[18px] text-rose-500" />
+                          <Flame className="w-[18px] h-[18px] text-rose-600" />
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight flex items-center gap-1.5">
@@ -1196,7 +1196,7 @@ export default function Navbar({
                         }`}
                       >
                         <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
-                          <Flame className="w-[18px] h-[18px] text-rose-500" />
+                          <Flame className="w-[18px] h-[18px] text-rose-600" />
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight flex items-center gap-1.5">
@@ -1220,7 +1220,7 @@ export default function Navbar({
                         }`}
                       >
                         <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-                          <Trophy className="w-[18px] h-[18px] text-amber-500" />
+                          <Trophy className="w-[18px] h-[18px] text-amber-700" />
                         </div>
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>

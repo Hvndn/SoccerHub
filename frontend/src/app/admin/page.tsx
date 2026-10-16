@@ -91,7 +91,7 @@ function AdminConsole() {
         ) : !user ? (
           <div className="max-w-xl mx-auto text-center py-10 sm:py-16 px-4 sm:px-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 sm:space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
-              <LogIn className="w-8 h-8 text-rose-500" />
+              <LogIn className="w-8 h-8 text-rose-600" />
             </div>
             <h1 className="text-xl font-black">Khu vực quản trị hệ thống</h1>
             <p className="text-xs sm:text-sm text-slate-500">
@@ -107,7 +107,7 @@ function AdminConsole() {
         ) : user.role !== "ADMIN" ? (
           <div className="max-w-xl mx-auto text-center py-10 sm:py-16 px-4 sm:px-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 sm:space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
-              <ShieldCheck className="w-8 h-8 text-rose-500" />
+              <ShieldCheck className="w-8 h-8 text-rose-600" />
             </div>
             <h1 className="text-xl font-black">Truy cập bị từ chối</h1>
             <p className="text-xs sm:text-sm text-slate-500">
