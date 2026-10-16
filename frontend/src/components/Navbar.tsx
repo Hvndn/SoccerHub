@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import SafeImage from "@/components/SafeImage";
 import {
   Trophy,
   Users,
@@ -325,13 +326,13 @@ export default function Navbar({
           title="SoccerHub - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh"
         >
           {/* Light Mode Logo Image */}
-          <img 
+          <SafeImage 
             src="/turfzone-logo.png" 
             alt="SoccerHub Logo" 
             className="h-8 sm:h-9 w-auto object-contain dark:hidden transition-transform group-hover:scale-105" 
           />
           {/* Dark Mode Logo Image */}
-          <img 
+          <SafeImage 
             src="/turfzone-logo-dark.png" 
             alt="SoccerHub Logo" 
             className="h-8 sm:h-9 w-auto object-contain hidden dark:block transition-transform group-hover:scale-105" 
@@ -948,12 +949,12 @@ export default function Navbar({
               {/* Drawer Header */}
               <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/50">
                 <div className="flex items-center space-x-2">
-                  <img
+                  <SafeImage
                     src="/turfzone-logo.png"
                     alt="SoccerHub Logo"
                     className="h-7 w-auto object-contain dark:hidden"
                   />
-                  <img
+                  <SafeImage
                     src="/turfzone-logo-dark.png"
                     alt="SoccerHub Logo"
                     className="h-7 w-auto object-contain hidden dark:block"

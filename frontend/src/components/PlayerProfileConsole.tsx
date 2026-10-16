@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
+import SafeImage from "@/components/SafeImage";
 import {
   User,
   ShieldCheck,
@@ -375,7 +376,7 @@ export default function PlayerProfileConsole({
               <div className="relative shrink-0">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-2xl sm:text-3xl lg:text-4xl flex items-center justify-center shadow-lg border-4 border-white dark:border-slate-800 overflow-hidden">
                   {isAvatarUrl ? (
-                    <img
+                    <SafeImage
                       src={displayAvatar}
                       alt={displayFullName}
                       className="w-full h-full object-cover"

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import SafeImage from "@/components/SafeImage";
 import {
   MapPin,
   Trophy,
@@ -143,7 +144,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
               {/* The Actual Player Image from Nicepage Template - Clean & Dramatic */}
               <div className="relative z-10 w-full max-w-[260px] sm:max-w-[480px]">
-                <img
+                <SafeImage
                   src="/images/epic-goal-player.png"
                   alt="Striker Scoring Epic Last-Minute Goal"
                   className="w-full h-auto object-contain drop-shadow-[0_25px_35px_rgba(0,0,0,0.55)]"

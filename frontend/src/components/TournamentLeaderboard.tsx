@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import SafeImage from "@/components/SafeImage";
 import Link from 'next/link';
 import CountUp from './CountUp';
 import FormDots from './FormDots';
@@ -302,7 +303,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
   // Hồ sơ thật của cầu thủ đang đăng nhập (fallback: trạng thái khách)
   const athleteName: string = user?.fullName || user?.name || '';
-  // Avatar chỉ render <img> khi thật sự là URL ảnh (tránh 404 với initials "BT")
+  // Avatar chỉ render <SafeImage> khi thật sự là URL ảnh (tránh 404 với initials "BT")
   const athleteAvatarUrl =
     user?.avatar && /^(https?:|data:|blob:|\/)/.test(user.avatar) ? user.avatar : null;
   const athleteInitials = athleteName
@@ -649,7 +650,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               <div className="lg:col-span-4 flex flex-col gap-3">
                 <div className="relative overflow-hidden rounded-2xl bg-slate-50 dark:bg-slate-950 p-3.5 border border-slate-200 dark:border-slate-800 flex flex-col gap-3 shadow-xs">
                   <div className="relative w-full h-44 rounded-xl overflow-hidden shadow-inner bg-slate-200 dark:bg-slate-800">
-                    <img 
+                    <SafeImage 
                       src={featured.bannerUrl || 'https://images.unsplash.com/photo-1626248801379-51a0748a5f96?auto=format&fit=crop&w=800&q=80'}
                       alt={featured.title}
                       loading="lazy"
@@ -1203,7 +1204,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                     {/* Athlete Profile Snippet — lấy từ hồ sơ thật */}
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800">
                       {athleteAvatarUrl ? (
-                        <img
+                        <SafeImage
                           src={athleteAvatarUrl}
                           alt={athleteName}
                           className="w-12 h-12 rounded-xl object-cover shrink-0"

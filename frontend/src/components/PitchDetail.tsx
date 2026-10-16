@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import SafeImage from "@/components/SafeImage";
 import {
   ArrowLeft,
   MapPin,
@@ -458,7 +459,7 @@ export default function PitchDetail({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 h-[280px] sm:h-[340px] rounded-2xl overflow-hidden shadow-xs">
           {/* Main Wide Photo (7 cols) */}
           <div className="md:col-span-7 relative h-full group overflow-hidden bg-slate-900 rounded-2xl">
-            <img
+            <SafeImage
               src={venueData.mainImage}
               alt="Sân Bóng Đá Cỏ Nhân Tạo Chuẩn VFF"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95"
@@ -479,7 +480,7 @@ export default function PitchDetail({
           {/* Secondary Photo Column (3 cols) */}
           <div className="hidden md:flex md:col-span-3 flex-col gap-3 h-full">
             <div className="relative flex-1 overflow-hidden group bg-slate-900 rounded-2xl">
-              <img
+              <SafeImage
                 src={venueData.subImages[0]}
                 alt="Bóng Thi Đấu & Điểm Phát Bóng"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -489,7 +490,7 @@ export default function PitchDetail({
               </div>
             </div>
             <div className="relative flex-1 overflow-hidden group bg-slate-900 rounded-2xl">
-              <img
+              <SafeImage
                 src={venueData.subImages[1]}
                 alt="Khung Thành & Khu Vực Kỹ Thuật"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

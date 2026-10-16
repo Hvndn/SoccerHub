@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import SafeImage from "@/components/SafeImage";
 import {
   X,
   AlertCircle,
@@ -291,7 +292,7 @@ export default function AuthModal({
 
         {/* Panel trái: ảnh sân + brand (ẩn trên mobile) */}
         <div className="relative hidden md:flex flex-col justify-between overflow-hidden bg-[#0ea5e9] text-white p-8 min-h-[560px]">
-          <img
+          <SafeImage
             src="https://images.unsplash.com/photo-1626248801379-51a0748a5f96?auto=format&fit=crop&w=800&q=80"
             alt=""
             aria-hidden

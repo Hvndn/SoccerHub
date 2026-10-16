@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import SafeImage from "@/components/SafeImage";
 import {
   Sparkles,
   MapPin,
@@ -1060,7 +1061,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 >
                   {/* Thumbnail Visual */}
                   <div className="md:w-5/12 relative min-h-[150px] md:min-h-[230px] overflow-hidden bg-slate-900">
-                    <img
+                    <SafeImage
                       src={pitch.imageUrl}
                       alt={pitch.name}
                       className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out brightness-95"
