@@ -954,14 +954,15 @@ public class PitchBookingController {
         return "VietQR";
     }
 
-    /** Mã đơn giả lập: SIM-{pitchId}-{5 chữ số}, đảm bảo không trùng cột unique */
+    /** Mã đơn giả lập: SIM-{pitchId}-{5 chữ số}.
+     *  Dùng bộ đếm tăng dần thay vì tra CSDL mỗi lần — sinh ~1500 đơn mà mỗi đơn
+     *  một lượt query findByCode sẽ chậm và vô nghĩa. Số ngẫu nhiên 5 chữ số đảm bảo
+     *  không trùng với dữ liệu cũ. */
     private String generateSimCode(Long pitchId) {
-        for (int attempt = 0; attempt < 40; attempt++) {
-            String code = SIM_PREFIX + pitchId + "-" + String.format("%05d", (int) (Math.random() * 100000));
-            if (bookingRepository.findByCode(code).isEmpty()) {
-                return code;
-            }
-        }
-        return SIM_PREFIX + pitchId + "-" + System.nanoTime();
+        simCodeSeq++;
+        return SIM_PREFIX + pitchId + "-" + String.format("%05d", simCodeSeq % 100000);
     }
+
+    /** Bộ đếm mã, khởi tạo ngẫu nhiên 1 lần cho mỗi lần gọi API. */
+    private int simCodeSeq = new java.util.Random().nextInt(1000, 99999);
 }
