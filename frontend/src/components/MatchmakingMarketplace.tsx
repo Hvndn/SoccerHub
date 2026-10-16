@@ -30,7 +30,7 @@ import {
   RefreshCw,
   X
 } from "lucide-react";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, apiRequest } from "@/lib/api";
 import FormDots from "./FormDots";
 
 interface MatchmakingMarketplaceProps {
@@ -222,9 +222,9 @@ export default function MatchmakingMarketplace({
     e.preventDefault();
     try {
       setCreating(true);
-      const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`, {
+      // Dùng apiRequest để tự gắn Authorization — endpoint đăng kèo yêu cầu đăng nhập
+      const res = await apiRequest<any>("/api/v1/community/matchmaking-posts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           teamName: createTeamName.trim() || `FC ${userName}`,
           captainName: userName,
@@ -239,17 +239,13 @@ export default function MatchmakingMarketplace({
         })
       });
 
-      if (res.ok) {
-        setShowCreateModal(false);
-        setCreateTeamName("");
-        setCreateNote("");
-        fetchPosts();
-      } else {
-        alert("Lỗi khi tạo kèo giao lưu, vui lòng thử lại.");
-      }
-    } catch (err) {
-      console.error("Lỗi khi tạo kèo:", err);
-      alert("Lỗi kết nối máy chủ khi tạo kèo.");
+      setShowCreateModal(false);
+      setCreateTeamName("");
+      setCreateNote("");
+      fetchPosts();
+      alert("Đã đăng kèo thành công! Các đội khác sẽ thấy kèo của bạn ngay.");
+    } catch (err: any) {
+      alert(err?.message || "Lỗi kết nối máy chủ khi tạo kèo.");
     } finally {
       setCreating(false);
     }
@@ -261,30 +257,25 @@ export default function MatchmakingMarketplace({
     if (!acceptingPost) return;
     try {
       setAccepting(true);
-      const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts/${acceptingPost.id}/accept`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          opponentTeamName: acceptOpponentTeam.trim() || `FC ${userName}`,
-          opponentCaptainName: userName,
-          opponentCaptainPhone: acceptOpponentPhone.trim() || user?.phone || ""
-        })
-      });
+      const data = await apiRequest<any>(
+        `/api/v1/community/matchmaking-posts/${acceptingPost.id}/accept`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            opponentTeamName: acceptOpponentTeam.trim() || `FC ${userName}`,
+            opponentCaptainName: userName,
+            opponentCaptainPhone: acceptOpponentPhone.trim() || user?.phone || ""
+          })
+        }
+      );
 
-      if (res.ok) {
-        const data = await res.json();
-        alert(data.message || "Ghép kèo thành công!");
-        setJoinedMatches([...joinedMatches, String(acceptingPost.id)]);
-        setAcceptingPost(null);
-        setAcceptOpponentTeam("");
-        fetchPosts();
-      } else {
-        const errData = await res.json();
-        alert(errData.error || "Không thể nhận kèo này.");
-      }
-    } catch (err) {
-      console.error("Lỗi khi nhận kèo:", err);
-      alert("Lỗi kết nối máy chủ khi nhận kèo.");
+      alert(data?.message || "Ghép kèo thành công!");
+      setJoinedMatches([...joinedMatches, String(acceptingPost.id)]);
+      setAcceptingPost(null);
+      setAcceptOpponentTeam("");
+      fetchPosts();
+    } catch (err: any) {
+      alert(err?.message || "Lỗi kết nối máy chủ khi nhận kèo.");
     } finally {
       setAccepting(false);
     }

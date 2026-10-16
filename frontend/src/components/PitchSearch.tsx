@@ -43,7 +43,7 @@ import {
 
 import PitchDetail from "./PitchDetail";
 import { getAllPitchesApi } from "@/lib/pitchService";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, apiRequest } from "@/lib/api";
 import { todayLocal } from "@/lib/dateUtils";
 import { fetchTournaments } from "@/lib/tournamentService";
 import { recommendPitches, type AiPitchCluster } from "@/lib/aiService";
@@ -356,11 +356,10 @@ export default function PitchSearch({ user }: PitchSearchProps) {
       return;
     }
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/v1/community/matchmaking-posts/${post.id}/accept`,
+      const data = await apiRequest<any>(
+        `/api/v1/community/matchmaking-posts/${post.id}/accept`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             opponentTeamName: user?.teamName || `FC ${userName}`,
             opponentCaptainName: userName,
@@ -368,16 +367,11 @@ export default function PitchSearch({ user }: PitchSearchProps) {
           }),
         }
       );
-      const data = await res.json().catch(() => ({} as any));
-      if (res.ok) {
-        showToast(data.message || "🎉 Ghép kèo thành công!");
-        fetchOpenPosts();
-      } else {
-        showToast(data.error || "Kèo này không còn nhận được, hãy tải lại.");
-        fetchOpenPosts();
-      }
-    } catch {
-      showToast("Lỗi kết nối máy chủ khi nhận kèo.");
+      showToast(data?.message || "🎉 Ghép kèo thành công!");
+      fetchOpenPosts();
+    } catch (e: any) {
+      showToast(e?.message || "Kèo này không còn nhận được, hãy tải lại.");
+      fetchOpenPosts();
     }
   };
 
@@ -395,9 +389,9 @@ export default function PitchSearch({ user }: PitchSearchProps) {
       realPitches.find((p: any) => String(p.id) === newMatchPitchId) ?? featuredPitch;
     setCreatingPost(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`, {
+      // apiRequest tự gắn Authorization — endpoint đăng kèo yêu cầu đăng nhập
+      await apiRequest("/api/v1/community/matchmaking-posts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           teamName: newMatchTitle.trim(),
           captainName: userName,
@@ -414,18 +408,13 @@ export default function PitchSearch({ user }: PitchSearchProps) {
           note: newMatchNeed.trim() || "Tìm kèo giao lưu, tinh thần thể thao vui vẻ.",
         }),
       });
-      if (res.ok) {
-        setShowCreateMatchModal(false);
-        setNewMatchTitle("");
-        setNewMatchNeed("");
-        showToast("🚀 Kèo của bạn đã được đăng lên Chợ Kèo!");
-        fetchOpenPosts();
-      } else {
-        const err = await res.json().catch(() => ({} as any));
-        showToast(err.error || "Đăng kèo thất bại, thử lại sau.");
-      }
-    } catch {
-      showToast("Lỗi kết nối máy chủ khi đăng kèo.");
+      setShowCreateMatchModal(false);
+      setNewMatchTitle("");
+      setNewMatchNeed("");
+      showToast("🚀 Kèo của bạn đã được đăng lên Chợ Kèo!");
+      fetchOpenPosts();
+    } catch (e: any) {
+      showToast(e?.message || "Lỗi kết nối máy chủ khi đăng kèo.");
     } finally {
       setCreatingPost(false);
     }

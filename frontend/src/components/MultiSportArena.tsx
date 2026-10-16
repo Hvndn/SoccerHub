@@ -21,7 +21,7 @@ import {
   QrCode
 } from 'lucide-react';
 
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, apiRequest } from "@/lib/api";
 
 interface Court {
   id: string;
@@ -177,22 +177,21 @@ export default function MultiSportArena({
     }
     setAccepting(true);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/v1/community/matchmaking-posts/${joiningMatch.id}/accept`,
+      // apiRequest tự gắn Authorization — endpoint nhận kèo yêu cầu đăng nhập
+      await apiRequest(
+        `/api/v1/community/matchmaking-posts/${joiningMatch.id}/accept`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             opponentTeamName: user.fullName || user.name || "Đội của tôi",
             opponentCaptainPhone: user.phone,
           }),
         }
       );
-      if (!res.ok) throw new Error("accept failed");
       handleActionToast(`Đã nhận kèo ${joiningMatch.id} thành công — kèo đã chốt trong CSDL.`);
       loadMatches();
-    } catch (e) {
-      handleActionToast("Không nhận được kèo (kèo có thể đã có người khác chốt).");
+    } catch (e: any) {
+      handleActionToast(e?.message || "Không nhận được kèo (kèo có thể đã có người khác chốt).");
     } finally {
       setAccepting(false);
       setJoiningMatch(null);

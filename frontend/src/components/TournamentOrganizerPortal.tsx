@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, apiRequest } from "@/lib/api";
 import { sportLabel, formatLabel, formatMoney } from "@/lib/tournamentService";
 import FormDots from "./FormDots";
 import {
@@ -258,21 +258,15 @@ export default function TournamentOrganizerPortal({
     }
     try {
       setUmpireBusy(true);
-      const res = await fetch(`${API_BASE_URL}/api/v1/tournaments/${activeTournamentId}/matches`, {
+      const body = await apiRequest<any>(`/api/v1/tournaments/${activeTournamentId}/matches`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("soccerhub_token") ?? ""}` },
         body: JSON.stringify({ matchId: umpireMatch.matchId, scoreA: umpireScoreA, scoreB: umpireScoreB }),
       });
-      const body = await res.json().catch(() => null);
-      if (!res.ok) {
-        setUmpireMsg(body?.message || "Lưu kết quả thất bại.");
-        return;
-      }
-      const formNote = (body.formChanges ?? []).map((c: any) => `${c.team} ${c.after?.record ?? ""}`).join(" • ");
-      setUmpireMsg(`${body.message}${formNote ? ` | Phong độ: ${formNote}` : ""}`);
+      const formNote = (body?.formChanges ?? []).map((c: any) => `${c.team} ${c.after?.record ?? ""}`).join(" • ");
+      setUmpireMsg(`${body?.message ?? "Đã lưu kết quả."}${formNote ? ` | Phong độ: ${formNote}` : ""}`);
       await fetchDbTournaments();
-    } catch {
-      setUmpireMsg("Không gọi được máy chủ. Kiểm tra kết nối rồi thử lại.");
+    } catch (e: any) {
+      setUmpireMsg(e?.message || "Không gọi được máy chủ. Kiểm tra kết nối rồi thử lại.");
     } finally {
       setUmpireBusy(false);
     }
