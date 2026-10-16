@@ -583,7 +583,7 @@ export default function PitchDetail({
  : "bg-white hover:bg-slate-50 border-slate-200 text-slate-900 "
  }`}
  >
- <span className={`text-[10px] uppercase tracking-wider font-extrabold ${selectedDate === d.iso ? "text-slate-950 font-black" : "text-slate-500"}`}>
+ <span className={`text-[10px] uppercase tracking-wider font-extrabold ${selectedDate === d.iso ? "text-white font-black" : "text-slate-500"}`}>
  {d.label}
  </span>
  <span className="text-sm font-black font-mono">{d.dateFormatted}</span>
