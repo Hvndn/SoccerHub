@@ -317,9 +317,9 @@ export default function MatchmakingMarketplace({
 
           {/* Action Bar Right */}
             <div className="flex items-center gap-2.5">
-              <button className="hidden sm:flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors shadow-xs">
-                <Filter className="w-4 h-4 text-[#0b4f6c]" />
-                <span>Bộ Lọc Kèo Quanh Tôi</span>
+              <button className="hidden sm:flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors shadow-xs">
+                <Filter className="w-4 h-4 shrink-0 text-[#0b4f6c]" />
+                <span className="whitespace-nowrap">Bộ Lọc Kèo Quanh Tôi</span>
               </button>
 
               <button
