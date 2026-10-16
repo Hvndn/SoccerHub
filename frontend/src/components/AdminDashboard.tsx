@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api";
+import { simulateBookings } from "@/lib/adminService";
 import {
   ShieldCheck,
   TrendingUp,
@@ -124,6 +125,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
   
   // Real-time notification banner
   const [notification, setNotification] = useState<string | null>(null);
+  const [simBusy, setSimBusy] = useState<"gen" | "clear" | null>(null);
 
   // Live Owner Matrix Data (Stateful from Real Database)
   const [pitchMatrix, setPitchMatrix] = useState<any[]>([]);
@@ -906,6 +908,51 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
       </div>
 
       {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
+
+      {/* Dữ liệu trống -> gợi ý tạo dữ liệu demo ngay tại dashboard chủ sân
+          (trước đây chỉ ADMIN tạo được ở /admin, chủ sân không có cách nào) */}
+      {(pitchStats.bookedSlots ?? 0) === 0 && !isLoadingBackend && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-3.5">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-black text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+              Cụm sân chưa có đơn nào
+            </p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              Tạo dữ liệu demo (14 ngày trước · 7 ngày sau) để doanh thu và tỷ lệ lấp đầy có số liệu khi thuyết trình.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              disabled={simBusy !== null}
+              onClick={async () => {
+                try {
+                  setSimBusy("gen");
+                  const res = await simulateBookings({
+                    pitchId: activePitch?.id || 1,
+                    pastDays: 14,
+                    futureDays: 7,
+                    perDay: 6,
+                  });
+                  showToast(`Đã tạo ${res.created} đơn giả lập cho cụm sân.`);
+                  // Nạp lại ma trận + thống kê để số liệu hiện ra ngay
+                  await loadMatrixAndStats(activePitch?.id || 1);
+                } catch (e: any) {
+                  showToast(e?.message || "Không tạo được dữ liệu demo.");
+                } finally {
+                  setSimBusy(null);
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              {simBusy === "gen" ? "Đang tạo…" : "Tạo đơn giả lập"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
           <span className="text-sm font-bold text-slate-500 uppercase tracking-wider block">
