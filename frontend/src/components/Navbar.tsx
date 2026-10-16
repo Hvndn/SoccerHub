@@ -348,7 +348,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("admin")}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   activeTab === "admin"
-                    ? "bg-[#0b4f6c] text-white shadow-md"
+                    ? "bg-[#0ea5e9] text-white shadow-md"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
@@ -361,7 +361,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("multi-sport")}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   activeTab === "multi-sport"
-                    ? "bg-[#0b4f6c] text-white shadow-md"
+                    ? "bg-[#0ea5e9] text-white shadow-md"
                     : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
@@ -386,7 +386,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("organizer")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "organizer"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -402,7 +402,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("tournaments")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "tournaments"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -415,7 +415,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("community")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "community" || activeTab === "urgent-resale"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -434,7 +434,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("booking")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "booking"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -447,7 +447,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("community")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "community" || activeTab === "urgent-resale"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -463,7 +463,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("tournaments")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "tournaments"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -488,7 +488,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("booking")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "booking"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -501,7 +501,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("community")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "community" || activeTab === "urgent-resale"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -517,7 +517,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("tournaments")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "tournaments"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -530,7 +530,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("team-management")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "team-management"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -543,7 +543,7 @@ export default function Navbar({
                 onClick={() => handleSelectSubTab("membership")}
                 className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
                   activeTab === "membership"
-                    ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                    ? "bg-[#0ea5e9] text-white shadow-sm font-black"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
@@ -1044,7 +1044,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("admin")}
                         className={`w-full text-left p-3 rounded-2xl flex items-center space-x-3 transition-colors ${
                           activeTab === "admin"
-                            ? "bg-[#0b4f6c] text-white shadow-md font-extrabold"
+                            ? "bg-[#0ea5e9] text-white shadow-md font-extrabold"
                             : "bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                         }`}
                       >
@@ -1062,7 +1062,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("multi-sport")}
                         className={`w-full text-left p-3 rounded-2xl flex items-center space-x-3 transition-colors ${
                           activeTab === "multi-sport"
-                            ? "bg-[#0b4f6c] text-white shadow-md font-extrabold"
+                            ? "bg-[#0ea5e9] text-white shadow-md font-extrabold"
                             : "bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                         }`}
                       >
@@ -1100,7 +1100,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("organizer")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "organizer"
-                            ? "bg-[#0b4f6c] text-white shadow-md font-extrabold"
+                            ? "bg-[#0ea5e9] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1123,7 +1123,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("tournaments")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "tournaments"
-                            ? "bg-[#0b4f6c] text-white shadow-md font-extrabold"
+                            ? "bg-[#0ea5e9] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1143,7 +1143,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("community")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "community" || activeTab === "urgent-resale"
-                            ? "bg-[#0b4f6c] text-white shadow-md font-extrabold"
+                            ? "bg-[#0ea5e9] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1169,7 +1169,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("booking")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "booking"
-                            ? "bg-[#0b4f6c] text-white shadow-md font-extrabold"
+                            ? "bg-[#0ea5e9] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1190,7 +1190,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("community")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "community" || activeTab === "urgent-resale"
-                            ? "bg-[#0b4f6c] text-white shadow-md font-extrabold"
+                            ? "bg-[#0ea5e9] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1214,7 +1214,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("tournaments")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "tournaments" || activeTab === "organizer"
-                            ? "bg-[#0b4f6c] text-white shadow-md font-extrabold"
+                            ? "bg-[#0ea5e9] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1236,7 +1236,7 @@ export default function Navbar({
                         onClick={() => handleSelectSubTab("membership")}
                         className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
                           activeTab === "membership"
-                            ? "bg-[#0b4f6c] text-white shadow-md font-extrabold"
+                            ? "bg-[#0ea5e9] text-white shadow-md font-extrabold"
                             : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
                         }`}
                       >
@@ -1352,7 +1352,7 @@ export default function Navbar({
                 >
                   <span
                     className={`absolute top-0 h-[3px] w-10 rounded-full transition-all ${
-                      isActive ? "bg-[#0b4f6c] dark:bg-[#0b4f6c] opacity-100" : "opacity-0"
+                      isActive ? "bg-[#0ea5e9] text-white dark:bg-[#0ea5e9] opacity-100" : "opacity-0"
                     }`}
                   />
                   <Icon className="w-[21px] h-[21px]" />

@@ -251,7 +251,7 @@ export default function MultiSportArena({
                   onClick={() => setActiveFilter(tab.id as any)}
                   className={`px-3.5 py-2 rounded-lg text-xs font-extrabold transition-all ${
                     activeFilter === tab.id
-                      ? 'bg-emerald-700 text-white shadow-lg'
+                      ? 'bg-[#0ea5e9] text-white shadow-lg'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'
                   }`}
                 >

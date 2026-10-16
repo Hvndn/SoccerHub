@@ -333,7 +333,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             <div className="hidden md:flex items-center gap-2 self-start md:self-auto bg-white dark:bg-slate-900 px-3 py-1.5 rounded-full shadow-xs border border-slate-200 dark:border-slate-800">
               <span className="relative flex h-2.5 w-2.5">
                 <span className={`absolute inline-flex h-full w-full rounded-full ${latestResult ? 'animate-ping bg-emerald-400 opacity-75' : 'bg-slate-300 opacity-60'}`}></span>
-                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${latestResult ? 'bg-[#0b4f6c]' : 'bg-slate-400'}`}></span>
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${latestResult ? 'bg-[#0ea5e9] text-white' : 'bg-slate-400'}`}></span>
               </span>
               {latestResult ? (
                 <>
@@ -372,7 +372,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                     onClick={() => setActiveSport(tab.key)}
                     className={`group flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b4f6c] focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 ${
                       isActive
-                        ? 'bg-emerald-700 text-white shadow-sm'
+                        ? 'bg-[#0ea5e9] text-white shadow-sm'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
@@ -694,7 +694,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               onClick={() => changeTab('open')}
               className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b4f6c] ${
                 activeTab === 'open' 
-                  ? 'bg-sky-500 text-slate-950 shadow-md' 
+                  ? 'bg-sky-500 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
               }`}
             >
@@ -710,7 +710,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               onClick={() => changeTab('live')}
               className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b4f6c] ${
                 activeTab === 'live' 
-                  ? 'bg-sky-500 text-slate-950 shadow-md' 
+                  ? 'bg-sky-500 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
               }`}
             >
@@ -726,7 +726,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               onClick={() => changeTab('bracket')}
               className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b4f6c] ${
                 activeTab === 'bracket' 
-                  ? 'bg-sky-500 text-slate-950 shadow-md' 
+                  ? 'bg-sky-500 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
               }`}
             >
@@ -742,7 +742,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               onClick={() => changeTab('rankings')}
               className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b4f6c] ${
                 activeTab === 'rankings' 
-                  ? 'bg-sky-500 text-slate-950 shadow-md' 
+                  ? 'bg-sky-500 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
               }`}
             >

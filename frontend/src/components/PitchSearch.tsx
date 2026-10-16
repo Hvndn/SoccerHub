@@ -656,7 +656,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 onClick={() => setSelectedSport(tab.id)}
                 className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
                   selectedSport === tab.id
-                    ? "bg-[#0b4f6c] text-white shadow-sm"
+                    ? "bg-[#0ea5e9] text-white shadow-sm"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
               >
@@ -685,7 +685,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${onlyAvailableTonight ? "bg-[#0b4f6c] animate-ping" : "bg-slate-400"}`} />
+            <span className={`w-2 h-2 rounded-full ${onlyAvailableTonight ? "bg-[#0ea5e9] text-white animate-ping" : "bg-slate-400"}`} />
             <span>Chỉ xem sân còn ca trống tối nay</span>
           </button>
         </div>
@@ -1126,7 +1126,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                             onClick={() => setSelectedPitchForSlot(pitch)}
                             className={`px-3 py-1.5 rounded-xl font-mono text-xs font-bold shrink-0 transition-all cursor-pointer ${
                               ts.status === "ACTIVE"
-                                ? "bg-[#0b4f6c] text-white shadow-xs"
+                                ? "bg-[#0ea5e9] text-white shadow-xs"
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                             }`}
                           >

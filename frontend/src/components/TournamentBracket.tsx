@@ -801,7 +801,7 @@ export default function TournamentBracket() {
                   title="Sinh ngày + khung giờ + sân cho từng trận, lưu vào CSDL"
                   className={`px-3.5 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40 ${
                     showScheduleForm
-                      ? "bg-[#0b4f6c] text-white shadow-lg"
+                      ? "bg-[#0ea5e9] text-white shadow-lg"
                       : "bg-[#0b4f6c]/20 text-sky-300 hover:bg-[#0b4f6c]/30 border border-[#0b4f6c]/40"
                   }`}
                 >
@@ -933,7 +933,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("bracket")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "bracket"
-                ? "bg-[#0b4f6c] text-white shadow-md"
+                ? "bg-[#0ea5e9] text-white shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -945,7 +945,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("var_referee")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "var_referee"
-                ? "bg-[#0b4f6c] text-white shadow-md"
+                ? "bg-[#0ea5e9] text-white shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -958,7 +958,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("standings")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "standings"
-                ? "bg-[#0b4f6c] text-white shadow-md"
+                ? "bg-[#0ea5e9] text-white shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -970,7 +970,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("esheet")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "esheet"
-                ? "bg-[#0b4f6c] text-white shadow-md"
+                ? "bg-[#0ea5e9] text-white shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >

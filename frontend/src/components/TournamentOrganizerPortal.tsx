@@ -359,7 +359,7 @@ export default function TournamentOrganizerPortal({
                 onClick={() => setSelectedSport(item.id)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
                   selectedSport === item.id
-                    ? "bg-[#0b4f6c] text-white shadow-xs"
+                    ? "bg-[#0ea5e9] text-white shadow-xs"
                     : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
                 }`}
               >
@@ -738,7 +738,7 @@ export default function TournamentOrganizerPortal({
                     onClick={() => setBottomTab(tab.id as any)}
                     className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
                       bottomTab === tab.id
-                        ? "bg-[#0b4f6c] text-white shadow-md"
+                        ? "bg-[#0ea5e9] text-white shadow-md"
                         : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                     }`}
                   >

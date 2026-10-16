@@ -843,7 +843,7 @@ export default function PlayerProfileConsole({
                       title={`${h.myTeam} ${h.score} ${h.opponent}`}
                       className={`w-6 h-6 rounded-md text-white text-[11px] font-bold flex items-center justify-center ${
                         h.result === "win"
-                          ? "bg-[#0b4f6c]"
+                          ? "bg-[#0ea5e9] text-white"
                           : h.result === "draw"
                           ? "bg-amber-500"
                           : "bg-rose-500"
@@ -1208,7 +1208,7 @@ export default function PlayerProfileConsole({
                           <span
                             className={`w-7 h-7 rounded-lg text-xs font-black flex items-center justify-center shrink-0 ${
                               m.result === "win"
-                                ? "bg-[#0b4f6c] text-white"
+                                ? "bg-[#0ea5e9] text-white"
                                 : "bg-rose-500 text-white"
                             }`}
                           >

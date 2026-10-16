@@ -224,14 +224,14 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(1)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 1
-                ? "bg-[#0b4f6c] text-white border-[#0b4f6c] shadow-md"
+                ? "bg-[#0ea5e9] text-white border-[#0ea5e9] shadow-md"
                 : currentStep > 1
                 ? "bg-[#0b4f6c]/10 border-sky-400 text-sky-700 dark:text-sky-400"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
             }`}
           >
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
-              currentStep > 1 ? "bg-[#0b4f6c] text-white" : "bg-slate-200 dark:bg-slate-800"
+              currentStep > 1 ? "bg-[#0ea5e9] text-white" : "bg-slate-200 dark:bg-slate-800"
             }`}>
               {currentStep > 1 ? <Check className="w-4 h-4 stroke-[3]" /> : "1"}
             </div>
@@ -246,14 +246,14 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(2)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 2
-                ? "bg-[#0b4f6c] text-white border-[#0b4f6c] shadow-md"
+                ? "bg-[#0ea5e9] text-white border-[#0ea5e9] shadow-md"
                 : currentStep > 2
                 ? "bg-[#0b4f6c]/10 border-sky-400 text-sky-700 dark:text-sky-400"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
             }`}
           >
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
-              currentStep > 2 ? "bg-[#0b4f6c] text-white" : currentStep === 2 ? "bg-white text-slate-900" : "bg-slate-200 dark:bg-slate-800"
+              currentStep > 2 ? "bg-[#0ea5e9] text-white" : currentStep === 2 ? "bg-white text-slate-900" : "bg-slate-200 dark:bg-slate-800"
             }`}>
               {currentStep > 2 ? <Check className="w-4 h-4 stroke-[3]" /> : "2"}
             </div>
@@ -268,14 +268,14 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(3)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 3
-                ? "bg-[#0b4f6c] text-white border-[#0b4f6c] shadow-md"
+                ? "bg-[#0ea5e9] text-white border-[#0ea5e9] shadow-md"
                 : currentStep > 3
                 ? "bg-[#0b4f6c]/10 border-sky-400 text-sky-700 dark:text-sky-400"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
             }`}
           >
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
-              currentStep > 3 ? "bg-[#0b4f6c] text-white" : currentStep === 3 ? "bg-white text-slate-900" : "bg-slate-200 dark:bg-slate-800"
+              currentStep > 3 ? "bg-[#0ea5e9] text-white" : currentStep === 3 ? "bg-white text-slate-900" : "bg-slate-200 dark:bg-slate-800"
             }`}>
               {currentStep > 3 ? <Check className="w-4 h-4 stroke-[3]" /> : "3"}
             </div>
@@ -290,7 +290,7 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(4)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 4
-                ? "bg-[#0b4f6c] text-white border-[#0b4f6c] shadow-md"
+                ? "bg-[#0ea5e9] text-white border-[#0ea5e9] shadow-md"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
             }`}
           >

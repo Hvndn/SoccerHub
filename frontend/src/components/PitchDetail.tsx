@@ -578,7 +578,7 @@ export default function PitchDetail({
                 onClick={() => setSelectedDate(d.iso)}
                 className={`flex-1 min-w-[130px] p-3 rounded-2xl flex flex-col items-center gap-0.5 shadow-xs text-center transition-all cursor-pointer border ${
                   selectedDate === d.iso
-                    ? "bg-[#0b4f6c] text-white border-[#0b4f6c] shadow-md font-black"
+                    ? "bg-[#0ea5e9] text-white border-[#0ea5e9] shadow-md font-black"
                     : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                 }`}
               >

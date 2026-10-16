@@ -359,7 +359,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                             </div>
                             <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                               <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
-                                i === 0 ? "bg-[#0b4f6c] text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                i === 0 ? "bg-[#0ea5e9] text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                               }`}>
                                 {initials || "?"}
                               </span>

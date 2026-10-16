@@ -365,12 +365,12 @@ export default function AuthModal({
           {mode === "register" && (
             <div className="mt-3 flex items-center gap-2 text-[11px] font-bold text-slate-500" aria-hidden>
               <span className={`flex items-center gap-1 ${regStep >= 1 ? "text-sky-800" : ""}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 1 ? "bg-[#0b4f6c] text-white" : "bg-slate-200 text-slate-500"}`}>1</span>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 1 ? "bg-[#0ea5e9] text-white" : "bg-slate-200 text-slate-500"}`}>1</span>
                 Tài khoản & vai trò
               </span>
               <span className="text-slate-300">›</span>
               <span className={`flex items-center gap-1 ${regStep >= 2 ? "text-sky-800" : ""}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 2 ? "bg-[#0b4f6c] text-white" : "bg-slate-200 text-slate-500"}`}>2</span>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 2 ? "bg-[#0ea5e9] text-white" : "bg-slate-200 text-slate-500"}`}>2</span>
                 Hồ sơ thi đấu
               </span>
             </div>

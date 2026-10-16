@@ -179,7 +179,7 @@ export default function NotificationsModal({
               onClick={() => setFilter(f.id)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                 filter === f.id
-                  ? "bg-[#0b4f6c] text-white shadow-md"
+                  ? "bg-[#0ea5e9] text-white shadow-md"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >

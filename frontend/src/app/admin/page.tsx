@@ -138,7 +138,7 @@ function AdminConsole() {
                     aria-current={active ? "page" : undefined}
                     className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-left transition-all shrink-0 lg:shrink ${
                       active
-                        ? "bg-[#0b4f6c] text-white shadow-md"
+                        ? "bg-[#0ea5e9] text-white shadow-md"
                         : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                     }`}
                   >
