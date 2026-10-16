@@ -28,13 +28,15 @@ public class TeamFormService {
         if (teamName == null || teamName.isBlank()) {
             return FormRecord.empty();
         }
+        String key = teamName.trim();
+        // Không phân biệt hoa/thường: tên đội do người dùng gõ tay ở nhiều màn hình
         List<MatchResult> results =
-                matchResultRepository.findByTeamAOrTeamBOrderByPlayedAtDesc(teamName, teamName);
+                matchResultRepository.findByTeamAIgnoreCaseOrTeamBIgnoreCaseOrderByPlayedAtDesc(key, key);
         int won = 0, drawn = 0, lost = 0;
         StringBuilder form = new StringBuilder();
         for (MatchResult r : results) {
             if (r.getScoreA() == null || r.getScoreB() == null) continue;
-            boolean isA = teamName.equals(r.getTeamA());
+            boolean isA = key.equalsIgnoreCase(trim(r.getTeamA()));
             int mine = isA ? r.getScoreA() : r.getScoreB();
             int theirs = isA ? r.getScoreB() : r.getScoreA();
             char c;
@@ -53,6 +55,10 @@ public class TeamFormService {
         int played = won + drawn + lost;
         int winRate = played == 0 ? 0 : (int) Math.round(100.0 * won / played);
         return new FormRecord(played, won, drawn, lost, winRate, form.toString());
+    }
+
+    private static String trim(String s) {
+        return s == null ? "" : s.trim();
     }
 
     /** Bản ghi phong độ bất biến của một đội. */
