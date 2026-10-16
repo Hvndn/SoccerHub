@@ -16,7 +16,7 @@ services:
     rootDir: backend-core
     plan: free
     buildCommand: mvn clean package -DskipTests
-    startCommand: java -jar target/backend-core-1.0.0.jar
+    startCommand: java -Xmx384m -Xms128m -XX:+UseG1GC -jar target/backend-core-1.0.0.jar
     envVars:
       - key: SPRING_DATASOURCE_URL
         sync: false

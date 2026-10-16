@@ -9,8 +9,49 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class SoccerHubApplication {
 
     public static void main(String[] args) {
+        configureRailwayMysqlUrl();
         logDatasourceDiagnostics();
         SpringApplication.run(SoccerHubApplication.class, args);
+    }
+
+    /**
+     * Tự động nhận diện biến MYSQL_URL hoặc DATABASE_URL do Railway / Render cung cấp
+     * (thường có format mysql://user:pass@host:port/dbname) và chuyển đổi sang chuẩn
+     * spring.datasource.* của Spring Boot để không bị lỗi kết nối hoặc thiếu JDBC scheme.
+     */
+    private static void configureRailwayMysqlUrl() {
+        if (isSet(getenv("SPRING_DATASOURCE_URL"))) {
+            return; // Đã có cấu hình URL trực tiếp
+        }
+        String rawUrl = firstNonBlank(getenv("MYSQL_URL"), getenv("MYSQLURL"), getenv("DATABASE_URL"));
+        if (isSet(rawUrl) && rawUrl.startsWith("mysql://")) {
+            try {
+                java.net.URI uri = new java.net.URI(rawUrl);
+                String host = uri.getHost();
+                int port = uri.getPort() > 0 ? uri.getPort() : 3306;
+                String path = uri.getPath();
+                String database = (path != null && path.length() > 1) ? path.substring(1) : "soccerhub_db";
+
+                String userInfo = uri.getUserInfo();
+                String user = null;
+                String pass = null;
+                if (userInfo != null && userInfo.contains(":")) {
+                    String[] parts = userInfo.split(":", 2);
+                    user = parts[0];
+                    pass = parts[1];
+                } else if (userInfo != null) {
+                    user = userInfo;
+                }
+
+                String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=15000&socketTimeout=60000";
+                System.setProperty("spring.datasource.url", jdbcUrl);
+                if (user != null) System.setProperty("spring.datasource.username", user);
+                if (pass != null) System.setProperty("spring.datasource.password", pass);
+                System.out.println("[SoccerHub] [Railway] Tự động chuyển đổi MYSQL_URL (" + host + ":" + port + "/" + database + ") sang Spring JDBC!");
+            } catch (Exception e) {
+                System.err.println("[SoccerHub] [Railway] Cảnh báo lỗi phân giải MYSQL_URL: " + e.getMessage());
+            }
+        }
     }
 
     /**
@@ -22,18 +63,18 @@ public class SoccerHubApplication {
      * Không in mật khẩu — chỉ in độ dài để xác nhận có hay không.
      */
     private static void logDatasourceDiagnostics() {
-        String explicitUrl = getenv("SPRING_DATASOURCE_URL");
+        String explicitUrl = System.getProperty("spring.datasource.url", getenv("SPRING_DATASOURCE_URL"));
         String mysqlHost = getenv("MYSQLHOST");
         String mysqlPort = getenv("MYSQLPORT");
         String mysqlDb = getenv("MYSQLDATABASE");
-        String user = firstNonBlank(getenv("SPRING_DATASOURCE_USERNAME"), getenv("MYSQLUSER"));
-        String password = firstNonBlank(getenv("SPRING_DATASOURCE_PASSWORD"), getenv("MYSQLPASSWORD"));
+        String user = firstNonBlank(System.getProperty("spring.datasource.username"), getenv("SPRING_DATASOURCE_USERNAME"), getenv("MYSQLUSER"));
+        String password = firstNonBlank(System.getProperty("spring.datasource.password"), getenv("SPRING_DATASOURCE_PASSWORD"), getenv("MYSQLPASSWORD"));
 
         String resolvedHost;
         String resolvedSource;
         if (isSet(explicitUrl)) {
             resolvedHost = explicitUrl;
-            resolvedSource = "SPRING_DATASOURCE_URL";
+            resolvedSource = System.getProperty("spring.datasource.url") != null ? "MYSQL_URL (Railway auto-convert)" : "SPRING_DATASOURCE_URL";
         } else if (isSet(mysqlHost)) {
             resolvedHost = mysqlHost + ":" + firstNonBlank(mysqlPort, "3306") + "/" + firstNonBlank(mysqlDb, "soccerhub_db");
             resolvedSource = "MYSQL* (Railway/plugin)";

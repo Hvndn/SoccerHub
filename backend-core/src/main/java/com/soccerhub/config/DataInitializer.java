@@ -33,8 +33,34 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        log.info("Checking & seeding real Football Tournaments and Matchmaking data...");
+        log.info("[DataInitializer] Kiểm tra và khởi tạo dữ liệu mẫu SoccerHub...");
+        try {
+            seedUsers();
+        } catch (Exception e) {
+            log.warn("[DataInitializer] Bỏ qua seed tài khoản demo/admin do lỗi: {}", e.getMessage());
+        }
 
+        try {
+            seedTournaments();
+        } catch (Exception e) {
+            log.warn("[DataInitializer] Bỏ qua seed giải đấu do lỗi: {}", e.getMessage());
+        }
+
+        try {
+            seedPitches();
+        } catch (Exception e) {
+            log.warn("[DataInitializer] Bỏ qua seed cụm sân do lỗi: {}", e.getMessage());
+        }
+
+        try {
+            seedMatchmaking();
+        } catch (Exception e) {
+            log.warn("[DataInitializer] Bỏ qua seed bài đăng tìm đối do lỗi: {}", e.getMessage());
+        }
+        log.info("[DataInitializer] Hoàn tất quá trình kiểm tra dữ liệu khởi tạo.");
+    }
+
+    private void seedUsers() {
         // 0. Tài khoản Super Admin mặc định (dùng để vào trang /admin)
         if (!userRepository.existsByEmail("admin@soccerhub.vn")) {
             User admin = User.builder()
@@ -98,7 +124,9 @@ public class DataInitializer implements CommandLineRunner {
                     .build());
             log.info("Seeded demo ORGANIZER account: organizer@soccerhub.vn / organizer123");
         }
+    }
 
+    private void seedTournaments() {
         // 1. Khởi tạo giải đấu thật nếu chưa có
         if (tournamentRepository.count() == 0) {
             Tournament t1 = Tournament.builder()
@@ -215,7 +243,9 @@ public class DataInitializer implements CommandLineRunner {
             tournamentRepository.saveAll(List.of(t1, t2, t3, t4, t5));
             log.info("Seeded 5 real football tournaments successfully.");
         }
+    }
 
+    private void seedPitches() {
         // 1b. Khởi tạo cụm sân thật nếu chưa có (màn Tìm Sân, Lịch Hoạt Động & thống kê lấy từ đây)
         if (pitchRepository.count() == 0) {
             Pitch s1 = Pitch.builder()
@@ -356,7 +386,9 @@ public class DataInitializer implements CommandLineRunner {
             pitchRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6, s7, s8, s9));
             log.info("Seeded 9 real football pitches successfully.");
         }
+    }
 
+    private void seedMatchmaking() {
         // 2. Khởi tạo các bài đăng tìm đối giao lưu bóng đá thật nếu chưa có
         if (matchmakingPostRepository.count() == 0) {
             MatchmakingPost p1 = MatchmakingPost.builder()
