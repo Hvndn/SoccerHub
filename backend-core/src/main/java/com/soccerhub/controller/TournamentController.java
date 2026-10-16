@@ -157,21 +157,21 @@ public class TournamentController {
 
     /**
      * Sinh đội hình gồm đúng quân số theo thể thức sân (tên Việt ngẫu nhiên,
-     * không trùng trong đội). Đội trưởng = thành viên đầu tiên.
+     * KHÔNG trùng với bất kỳ cầu thủ nào đã sinh trong cùng giải).
+     * Đội trưởng = thành viên đầu tiên.
      */
-    private static List<String> generateRoster(String sportType, ThreadLocalRandom rnd) {
+    private static List<String> generateRoster(String sportType, ThreadLocalRandom rnd, Set<String> usedInTournament) {
         int size;
         if (sportType != null && (sportType.contains("11"))) size = 16 + rnd.nextInt(5);
         else if (sportType != null && (sportType.contains("FUTSAL") || sportType.contains("5"))) size = 8 + rnd.nextInt(3);
         else size = 12 + rnd.nextInt(3);
-        Set<String> used = new HashSet<>();
         List<String> roster = new ArrayList<>();
         int guard = 0;
-        while (roster.size() < size && guard++ < size * 50) {
+        while (roster.size() < size && guard++ < size * 100) {
             String name = SIM_FAMILY.get(rnd.nextInt(SIM_FAMILY.size())) + " "
                     + SIM_MIDDLE.get(rnd.nextInt(SIM_MIDDLE.size())) + " "
                     + SIM_GIVEN.get(rnd.nextInt(SIM_GIVEN.size()));
-            if (used.add(name)) roster.add(name);
+            if (usedInTournament.add(name)) roster.add(name);
         }
         return roster;
     }
@@ -210,8 +210,17 @@ public class TournamentController {
                     "registeredTeams", teams.size()));
         }
         Set<String> existing = new HashSet<>();
+        Set<String> usedNames = new HashSet<>();
         for (TournamentTeamEntry t : teams) {
             if (t.getTeamName() != null) existing.add(t.getTeamName().toLowerCase());
+            // Tên đã có trong giải (đội thật) cũng không được trùng khi sinh đội ảo
+            if (t.getCaptainName() != null) usedNames.add(t.getCaptainName().trim());
+            if (t.getMemberNames() != null) {
+                for (String m : t.getMemberNames().split(",")) {
+                    String n = m.trim();
+                    if (!n.isEmpty()) usedNames.add(n);
+                }
+            }
         }
         List<String> pool = new ArrayList<>(SIM_TEAM_POOL);
         Collections.shuffle(pool);
@@ -232,7 +241,7 @@ public class TournamentController {
                 if (existing.contains(name.toLowerCase())) continue;
             }
             existing.add(name.toLowerCase());
-            List<String> roster = generateRoster(tournament.getSportType(), rnd);
+            List<String> roster = generateRoster(tournament.getSportType(), rnd, usedNames);
             teams.add(TournamentTeamEntry.builder()
                     .teamName(name)
                     .captainName(roster.isEmpty() ? "Trần Hoàng Long" : roster.get(0))
