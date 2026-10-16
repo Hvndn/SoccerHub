@@ -11,6 +11,9 @@ import java.util.Optional;
 public interface MatchResultRepository extends JpaRepository<MatchResult, Long> {
     List<MatchResult> findByTournamentIdOrderByPlayedAtAsc(Long tournamentId);
 
-    /** Bản ghi mới nhất của một trận — dùng để hoàn lại Elo khi BTC huỷ kết quả. */
+    /** Toàn bộ trận của một đội (cả hai phía A/B), mới nhất trước — nguồn tính phong độ. */
+    List<MatchResult> findByTeamAOrTeamBOrderByPlayedAtDesc(String teamA, String teamB);
+
+    /** Bản ghi mới nhất của một trận — dùng để xoá khi BTC huỷ kết quả. */
     Optional<MatchResult> findFirstByTournamentIdAndMatchIdOrderByPlayedAtDesc(Long tournamentId, String matchId);
 }

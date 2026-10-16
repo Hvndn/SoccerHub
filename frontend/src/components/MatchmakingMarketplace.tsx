@@ -31,6 +31,7 @@ import {
   X
 } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
+import FormDots from "./FormDots";
 
 interface MatchmakingMarketplaceProps {
   user?: any;
@@ -44,7 +45,7 @@ export default function MatchmakingMarketplace({
   onCreateMatch
 }: MatchmakingMarketplaceProps) {
   const [selectedSport, setSelectedSport] = useState("SAN_7");
-  const [selectedLevel, setSelectedLevel] = useState("2.5 - 3.5");
+  const [selectedLevel, setSelectedLevel] = useState("Tất cả");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("TONIGHT");
   const [radiusKm, setRadiusKm] = useState(5);
   const [matchFormat, setMatchFormat] = useState("DOUBLES_MALE");
@@ -76,13 +77,31 @@ export default function MatchmakingMarketplace({
   const [accepting, setAccepting] = useState(false);
 
   const userName = user?.fullName || user?.name || "Khách";
-  const userElo = user?.eloRating ?? 0;
   const userTier = user?.level || "Chưa xếp bậc";
+  // "Đội của tôi" để AI so phong độ: ưu tiên kèo đang mở của chính user
+  // (đã kèm form/record/winRate từ backend), chưa đăng kèo thì lấy mốc trung bình.
+  const myTeamPost: any | null =
+    (user?.phone
+      ? posts.find((p: any) => p.captainPhone && user?.phone && String(p.captainPhone).replace(/\s/g, "") === String(user.phone).replace(/\s/g, ""))
+      : null) ?? null;
+  const myWinRate = myTeamPost?.winRate ?? 50;
+  const myForm: string = myTeamPost?.form ?? "";
+  const myTeamName: string = myTeamPost?.teamName ?? userName;
 
-  // Sắp xếp kèo bằng AI (fallback: chênh lệch Elo local khi AI offline)
+  // Sắp xếp kèo bằng AI (fallback: chênh lệch tỷ lệ thắng local khi AI offline)
   const [aiOrder, setAiOrder] = useState<string[] | null>(null);
   const [aiSorting, setAiSorting] = useState(false);
   const [aiOffline, setAiOffline] = useState(false);
+
+  const formScoreOf = (a: string, b: string) => {
+    const x = (a || "").toUpperCase().slice(0, 5);
+    const y = (b || "").toUpperCase().slice(0, 5);
+    let s = 0;
+    for (let i = 0; i < Math.min(x.length, y.length); i++) {
+      if ("WDL".includes(x[i]) && x[i] === y[i]) s += 1;
+    }
+    return s;
+  };
 
   const sortByAi = async () => {
     if (posts.length === 0 || aiSorting) return;
@@ -90,11 +109,12 @@ export default function MatchmakingMarketplace({
       setAiSorting(true);
       setAiOffline(false);
       const res = await matchmakingAi(
-        { id: "me", name: userName, elo_rating: userElo },
+        { id: "me", name: myTeamName, win_rate: myWinRate, recent_form: myForm },
         posts.map((p: any) => ({
           id: String(p.id),
           name: p.teamName || "Kèo",
-          elo_rating: p.eloRating ?? 1200,
+          win_rate: p.winRate ?? 50,
+          recent_form: p.form ?? "",
           contact_phone: p.captainPhone ?? null,
         }))
       );
@@ -106,7 +126,8 @@ export default function MatchmakingMarketplace({
           [...posts]
             .sort(
               (a: any, b: any) =>
-                Math.abs((a.eloRating ?? 1200) - userElo) - Math.abs((b.eloRating ?? 1200) - userElo)
+                Math.abs((a.winRate ?? 50) - myWinRate) - Math.abs((b.winRate ?? 50) - myWinRate) ||
+                formScoreOf(b.form, myForm) - formScoreOf(a.form, myForm)
             )
             .map((p: any) => String(p.id))
         );
@@ -116,13 +137,22 @@ export default function MatchmakingMarketplace({
     }
   };
 
+  const postPassesFormFilter = (p: any) => {
+    const form: string = p.form ?? "";
+    const winRate: number = p.winRate ?? 50;
+    if (selectedLevel === "Có lịch sử") return form !== "";
+    if (selectedLevel === "Phong độ cao") return winRate >= 60;
+    if (selectedLevel === "Tân binh") return form === "";
+    return true;
+  };
+
   const visiblePosts = aiOrder
-    ? [...posts].sort((a: any, b: any) => {
+    ? [...posts].filter(postPassesFormFilter).sort((a: any, b: any) => {
         const ra = aiOrder.indexOf(String(a.id));
         const rb = aiOrder.indexOf(String(b.id));
         return (ra === -1 ? Number.MAX_SAFE_INTEGER : ra) - (rb === -1 ? Number.MAX_SAFE_INTEGER : rb);
       })
-    : posts;
+    : posts.filter(postPassesFormFilter);
 
   // Số liệu chợ kèo lấy thẳng từ CSDL — không hardcode.
   const openKèoCount = posts.length;
@@ -139,29 +169,29 @@ export default function MatchmakingMarketplace({
     }
     return map;
   }, [posts]);
-  // Số kèo nằm trong tầm Elo người chơi (±150) — thay cho con số % bịa.
+  // Số kèo cùng tầm phong độ với đội của bạn (chênh ≤15% tỷ lệ thắng) — thay cho con số % bịa.
   const matchableCount = useMemo(
-    () => posts.filter((p: any) => Math.abs((p.eloRating ?? 1200) - userElo) <= 150).length,
-    [posts, userElo]
+    () => posts.filter((p: any) => Math.abs((p.winRate ?? 50) - myWinRate) <= 15).length,
+    [posts, myWinRate]
   );
   // Bảng xếp đội mở kèo — gom từ bảng matchmaking_posts trong CSDL.
   const topTeams = useMemo(() => {
-    const map = new Map<string, { teamName: string; count: number; elo: number; pitchType?: string }>();
+    const map = new Map<string, { teamName: string; count: number; winRate: number; pitchType?: string }>();
     for (const p of posts) {
       const key = String(p.teamName ?? "—");
-      const cur = map.get(key) ?? { teamName: key, count: 0, elo: p.eloRating ?? 1200, pitchType: p.pitchType };
+      const cur = map.get(key) ?? { teamName: key, count: 0, winRate: p.winRate ?? 50, pitchType: p.pitchType };
       cur.count += 1;
-      cur.elo = Math.max(cur.elo, p.eloRating ?? 1200);
+      cur.winRate = Math.max(cur.winRate, p.winRate ?? 50);
       map.set(key, cur);
     }
-    return Array.from(map.values()).sort((a, b) => b.count - a.count || b.elo - a.elo).slice(0, 3);
+    return Array.from(map.values()).sort((a, b) => b.count - a.count || b.winRate - a.winRate).slice(0, 3);
   }, [posts]);
 
-  // Kèo gợi ý cho widget radar: ưu tiên kèo trong tầm Elo, không thì lấy kèo đầu tiên
+  // Kèo gợi ý cho widget radar: ưu tiên kèo cùng tầm phong độ, không thì lấy kèo đầu tiên
   const recommendedPost = useMemo(
     () =>
-      posts.find((p: any) => Math.abs((p.eloRating ?? 1200) - userElo) <= 150) ?? posts[0] ?? null,
-    [posts, userElo]
+      posts.find((p: any) => Math.abs((p.winRate ?? 50) - myWinRate) <= 15) ?? posts[0] ?? null,
+    [posts, myWinRate]
   );
 
   // Fetch real matchmaking posts
@@ -199,14 +229,13 @@ export default function MatchmakingMarketplace({
           teamName: createTeamName.trim() || `FC ${userName}`,
           captainName: userName,
           captainPhone: user?.phone || "",
-          eloRating: userElo,
           pitchName: createPitchName.trim() || "Chưa chọn sân",
           address: createAddress.trim(),
           matchTime: createMatchTime,
           pitchType: createPitchType,
           paymentModel: createPaymentModel,
           estimatedFee: createFee,
-          note: createNote.trim() || "Kèo giao lưu cọ xát nâng trình Elo, tinh thần thể thao vui vẻ."
+          note: createNote.trim() || "Kèo giao lưu cọ xát cho đội phong độ tương đương, tinh thần thể thao vui vẻ."
         })
       });
 
@@ -238,8 +267,7 @@ export default function MatchmakingMarketplace({
         body: JSON.stringify({
           opponentTeamName: acceptOpponentTeam.trim() || `FC ${userName}`,
           opponentCaptainName: userName,
-          opponentCaptainPhone: acceptOpponentPhone.trim() || user?.phone || "",
-          opponentElo: userElo
+          opponentCaptainPhone: acceptOpponentPhone.trim() || user?.phone || ""
         })
       });
 
@@ -282,7 +310,7 @@ export default function MatchmakingMarketplace({
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-[#006c49]" />
               </span>
               <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
-                Ghép kèo theo chỉ số Elo
+                Ghép kèo theo phong độ thi đấu
               </span>
               <span className="text-slate-400">•</span>
               <span className="px-3 py-0.5 rounded-full bg-[#247BA0]/10 text-[#006c49] font-bold text-xs">
@@ -392,14 +420,16 @@ export default function MatchmakingMarketplace({
 
         {/* Advanced Filter Metrics Bar (5 Cols Grid) */}
         <div className={`${showMobileFilters ? "grid" : "hidden"} md:grid bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-slate-700/60 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-center`}>
-          {/* Level / Elo */}
+          {/* Level / Phong độ */}
           <div className="space-y-1">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-500 uppercase font-extrabold text-[10px]">Trình độ & Hạng Elo</span>
-              <span className="text-[#006c49] font-bold text-[11px]">Khớp Elo {userElo}</span>
+              <span className="text-slate-500 uppercase font-extrabold text-[10px]">Lọc theo phong độ</span>
+              <span className="text-[#006c49] font-bold text-[11px]">
+                {selectedLevel === "Tất cả" ? "Mọi trình độ" : selectedLevel}
+              </span>
             </div>
             <div className="flex items-center space-x-1 pt-0.5">
-              {["Elo 1000-1200", "Elo 1200-1500", "Elo 1500+"].map((lvl) => (
+              {["Tất cả", "Có lịch sử", "Phong độ cao", "Tân binh"].map((lvl) => (
                 <button
                   key={lvl}
                   onClick={() => setSelectedLevel(lvl)}
@@ -467,7 +497,7 @@ export default function MatchmakingMarketplace({
               onChange={(e) => setMatchFormat(e.target.value)}
               className="w-full py-2 px-3 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-900 dark:text-white focus:outline-none"
             >
-              <option value="SAN_7">Kèo Bóng Đá Sân 7 (Tính điểm Elo)</option>
+              <option value="SAN_7">Kèo Bóng Đá Sân 7</option>
               <option value="SAN_5">Kèo Futsal / Sân 5 Người</option>
               <option value="SAN_11">Kèo Sân 11 Chuẩn VFF</option>
               <option value="SOLO_SLOT">Ghép Slot Lẻ / Tuyển Thủ Môn</option>
@@ -501,7 +531,7 @@ export default function MatchmakingMarketplace({
                 Kèo Đang Mở Đăng Ký ({openKèoCount})
               </h2>
               <span className="px-3 py-1 rounded-full bg-[#acf847] text-[#102000] font-mono text-xs font-extrabold">
-                {matchableCount}/{openKèoCount} kèo trong tầm Elo {userElo} ±150
+                {matchableCount}/{openKèoCount} kèo cùng tầm phong độ (±15%)
               </span>
             </div>
             <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500">
@@ -510,17 +540,17 @@ export default function MatchmakingMarketplace({
                 type="button"
                 onClick={sortByAi}
                 disabled={aiSorting || posts.length === 0}
-                title="Nhờ AI xếp kèo hợp trình độ Elo nhất lên đầu"
+                title="Nhờ AI xếp kèo cùng tầm phong độ nhất lên đầu"
                 className="text-[#006c49] font-bold hover:underline disabled:opacity-50 flex items-center gap-1"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{aiSorting ? "AI đang xếp…" : aiOrder ? (aiOffline ? "Theo chênh Elo (AI offline) ↻" : "AI đã xếp kèo ✓ xếp lại") : "AI xếp kèo hợp Elo ▼"}</span>
+                <span>{aiSorting ? "AI đang xếp…" : aiOrder ? (aiOffline ? "Theo phong độ (AI offline) ↻" : "AI đã xếp kèo ✓ xếp lại") : "AI xếp kèo cùng tầm ▼"}</span>
               </button>
             </div>
           </div>
           {aiOffline && aiOrder && (
             <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
-              AI service chưa phản hồi — đang xếp tạm theo chênh lệch Elo so với bạn ({userElo}).
+              AI service chưa phản hồi — đang xếp tạm theo độ tương đồng phong độ với đội của bạn.
             </p>
           )}
 
@@ -568,13 +598,16 @@ export default function MatchmakingMarketplace({
                         {isAiTop && (
                           <span className="px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-black text-xs flex items-center gap-1">
                             <Sparkles className="w-3.5 h-3.5" />
-                            <span>{aiOffline ? "Hợp Elo nhất" : "AI đề xuất"}</span>
+                            <span>{aiOffline ? "Hợp phong độ nhất" : "AI đề xuất"}</span>
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center space-x-1 text-[#006c49] font-mono font-bold text-xs">
+                      <div className="flex items-center space-x-1.5 text-[#006c49] font-mono font-bold text-xs">
                         <ShieldCheck className="w-4 h-4 text-[#006c49]" />
-                        <span>Elo Đội Tạo: {post.eloRating || 1200}</span>
+                        <FormDots form={post.form} size="sm" />
+                        <span className="text-slate-500 font-sans font-bold">
+                          {post.record && post.record !== "0-0-0" ? `${post.record} • ` : ""}Thắng {post.winRate ?? 50}%
+                        </span>
                       </div>
                     </div>
 
@@ -674,7 +707,7 @@ export default function MatchmakingMarketplace({
                 <h3 className="font-black text-sm text-slate-900 dark:text-white">Kèo Gợi Ý Cho Bạn</h3>
               </div>
               <span className="px-2.5 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-xs font-black">
-                {matchableCount}/{openKèoCount} hợp Elo
+                {matchableCount}/{openKèoCount} cùng tầm
               </span>
             </div>
 
@@ -685,7 +718,9 @@ export default function MatchmakingMarketplace({
               </div>
               <div className="text-right font-mono text-xs">
                 <div className="font-extrabold text-[#006c49]">{userTier}</div>
-                <div className="text-slate-400 text-[10px]">Elo {userElo}</div>
+                <div className="text-slate-400 text-[10px]">
+                  {myTeamPost ? `Phong độ: ${myTeamPost.record ?? myTeamPost.form ?? "—"}` : "Chưa đăng kèo"}
+                </div>
               </div>
             </div>
 
@@ -708,7 +743,10 @@ export default function MatchmakingMarketplace({
                     <span className="font-mono shrink-0">{recommendedPost.matchTime ?? "—"}</span>
                   </div>
                   <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
-                    {recommendedPost.teamName} mở kèo • Elo {recommendedPost.eloRating ?? "—"}
+                    {recommendedPost.teamName} mở kèo
+                    {recommendedPost.record && recommendedPost.record !== "0-0-0"
+                      ? ` • Thành tích ${recommendedPost.record}`
+                      : " • Tân binh chưa có lịch sử"}
                     {typeof recommendedPost.estimatedFee === "number"
                       ? ` • Cọc dự kiến ${recommendedPost.estimatedFee.toLocaleString("vi-VN")}đ`
                       : ""}
@@ -741,12 +779,14 @@ export default function MatchmakingMarketplace({
             </div>
 
             <div className="bg-slate-900 text-white rounded-2xl p-4 space-y-1 shadow-md">
-              <span className="text-[10px] text-slate-400 uppercase font-extrabold block">Trình độ Elo hiện tại</span>
+              <span className="text-[10px] text-slate-400 uppercase font-extrabold block">Phong độ đội của bạn</span>
               <div className="flex items-baseline justify-between font-mono">
-                <span className="text-2xl font-black text-[#acf847]">
-                  {(user?.eloRating ?? userElo).toLocaleString("vi-VN")}
+                <FormDots form={myForm} />
+                <span className="text-xs text-slate-300 font-bold">
+                  {myTeamPost
+                    ? `${myTeamPost.record ?? "0-0-0"} • Thắng ${myWinRate}%`
+                    : user?.level ?? "Chưa xếp bậc"}
                 </span>
-                <span className="text-xs text-slate-300 font-bold">{user?.level ?? "Chưa xếp bậc"}</span>
               </div>
               <p className="text-[11px] text-slate-300 pt-1">
                 {userName ? `${userName} • ${user?.position ?? "Cầu thủ"} • ${user?.area ?? "Chưa cập nhật khu vực"}` : "Đăng nhập để BTC và đội khác thấy hồ sơ của bạn."}
@@ -777,7 +817,7 @@ export default function MatchmakingMarketplace({
             </div>
           </section>
 
-          {/* WIDGET 3: TOP ĐỘI ĐANG MỞ KÈO (xếp theo Elo thật trong bảng) */}
+          {/* WIDGET 3: TOP ĐỘI ĐANG MỞ KÈO (nhiều kèo + phong độ cao) */}
           <section className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -819,7 +859,7 @@ export default function MatchmakingMarketplace({
                         </span>
                       </div>
                     </div>
-                    <span className="font-mono font-bold text-[#006c49] shrink-0">Elo {t.elo}</span>
+                    <span className="font-mono font-bold text-[#006c49] shrink-0">Thắng {t.winRate}%</span>
                   </div>
                 ))}
               </div>
@@ -929,7 +969,7 @@ export default function MatchmakingMarketplace({
                   rows={2}
                   value={createNote}
                   onChange={(e) => setCreateNote(e.target.value)}
-                  placeholder="Ví dụ: Tìm đội Elo tương đương, đá giao lưu vui vẻ, fairplay không quạu."
+                  placeholder="Ví dụ: Tìm đội phong độ tương đương, đá giao lưu vui vẻ, fairplay không quạu."
                   className="w-full bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#006c49]"
                 />
               </div>
@@ -1010,8 +1050,10 @@ export default function MatchmakingMarketplace({
 
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
                 <div className="flex justify-between">
-                  <span>Trình độ Elo của bạn:</span>
-                  <strong className="text-[#006c49] font-mono font-bold">{userElo} Elo</strong>
+                  <span>Phong độ đội bạn:</span>
+                  <strong className="text-[#006c49] font-mono font-bold">
+                    {myTeamPost ? `${myTeamPost.record ?? "0-0-0"} • Thắng ${myWinRate}%` : "Tân binh"}
+                  </strong>
                 </div>
                 <div className="flex justify-between">
                   <span>Cam kết tinh thần:</span>

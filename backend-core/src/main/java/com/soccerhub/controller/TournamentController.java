@@ -8,7 +8,7 @@ import com.soccerhub.model.TournamentTeamEntry;
 import com.soccerhub.repository.GoalEventRepository;
 import com.soccerhub.repository.MatchResultRepository;
 import com.soccerhub.repository.TournamentRepository;
-import com.soccerhub.service.AiEloClient;
+import com.soccerhub.service.TeamFormService;
 import com.soccerhub.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -30,13 +30,14 @@ public class TournamentController {
     private final TournamentRepository tournamentRepository;
     private final MatchResultRepository matchResultRepository;
     private final GoalEventRepository goalEventRepository;
-    private final AiEloClient aiEloClient;
+    private final TeamFormService teamFormService;
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
     @GetMapping
     public ResponseEntity<List<Tournament>> getTournaments() {
         List<Tournament> tournaments = tournamentRepository.findAll();
+        tournaments.forEach(this::attachForm);
         return ResponseEntity.ok(tournaments);
     }
 
@@ -59,8 +60,34 @@ public class TournamentController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getTournamentById(@PathVariable Long id) {
         return tournamentRepository.findById(id)
-                .map(ResponseEntity::ok)
+                .map(t -> {
+                    attachForm(t);
+                    return ResponseEntity.ok(t);
+                })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Gắn phong độ live (tính từ match_results) vào từng đội — field @Transient,
+     * không lưu DB. Frontend hiển thị chuỗi 5 trận + thành tích thay cho điểm Elo.
+     */
+    private void attachForm(Tournament t) {
+        if (t.getTeams() == null) return;
+        enrichEntries(t.getTeams());
+    }
+
+    /** Tính phong độ live cho danh sách đội (dùng khi bốc thăm + response). */
+    private void enrichEntries(List<TournamentTeamEntry> entries) {
+        for (TournamentTeamEntry e : entries) {
+            TeamFormService.FormRecord f = teamFormService.formOf(e.getTeamName());
+            e.setForm(f.form());
+            e.setRecord(f.record());
+            e.setWinRate(f.winRate());
+            e.setPlayed(f.played());
+            e.setWon(f.won());
+            e.setDrawn(f.drawn());
+            e.setLost(f.lost());
+        }
     }
 
     /** Admin: đóng / mở / kết thúc giải đấu. */
@@ -169,7 +196,6 @@ public class TournamentController {
                     .captainName(SIM_CAPTAINS.get(rnd.nextInt(SIM_CAPTAINS.size())))
                     .captainPhone("09" + String.format("%08d", rnd.nextInt(100_000_000)))
                     .memberCount(10 + rnd.nextInt(9))
-                    .eloRating(1200 + rnd.nextInt(501))
                     .registrationStatus("SIMULATED")
                     .simulated(true)
                     .registeredAt(LocalDateTime.now())
@@ -196,10 +222,14 @@ public class TournamentController {
         };
     }
 
-    private static Map<String, Object> teamNode(String name, Integer elo, Integer seed) {
+    private static Map<String, Object> teamNode(String name, TournamentTeamEntry entry, Integer seed) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("name", name);
-        m.put("elo", elo != null ? elo : 1200);
+        if (entry != null) {
+            m.put("form", entry.getForm());
+            m.put("record", entry.getRecord());
+            m.put("winRate", entry.getWinRate());
+        }
         if (seed != null) m.put("seed", seed);
         return m;
     }
@@ -227,7 +257,7 @@ public class TournamentController {
                     if (present == null) continue;
                     Map<String, Object> match = new LinkedHashMap<>();
                     match.put("matchId", "R" + (r + 1) + "-BYE" + (++m));
-                    match.put("bye", teamNode(present.getTeamName(), present.getEloRating(), null));
+                    match.put("bye", teamNode(present.getTeamName(), present, null));
                     match.put("status", "BYE");
                     match.put("winner", present.getTeamName());
                     matches.add(match);
@@ -236,8 +266,8 @@ public class TournamentController {
                 String matchId = "R" + (r + 1) + "-M" + (++m);
                 Map<String, Object> match = new LinkedHashMap<>();
                 match.put("matchId", matchId);
-                match.put("teamA", teamNode(a.getTeamName(), a.getEloRating(), null));
-                match.put("teamB", teamNode(b.getTeamName(), b.getEloRating(), null));
+                match.put("teamA", teamNode(a.getTeamName(), a, null));
+                match.put("teamB", teamNode(b.getTeamName(), b, null));
                 match.put("scoreA", 0);
                 match.put("scoreB", 0);
                 match.put("status", "SCHEDULED");
@@ -280,9 +310,10 @@ public class TournamentController {
 
     /**
      * Bốc thăm thật từ đội đã đăng ký:
-     * - KNOCKOUT: xếp hạt giống theo Elo, đội top được miễn khi lẻ lũy thừa 2.
+     * - KNOCKOUT: xếp hạt giống theo THỨ TỰ ĐĂNG KÝ (đội đóng phí trước xếp trên),
+     *   đội top được miễn khi lẻ lũy thừa 2.
      * - ROUND_ROBIN: vòng tròn 1 lượt (circle method), cho phép hòa.
-     * Kết quả lưu vào bracketJson.
+     * Kết quả lưu vào bracketJson. Phong độ mỗi đội lấy live từ lịch sử thi đấu.
      */
     @PostMapping("/{id}/draw")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
@@ -299,9 +330,12 @@ public class TournamentController {
         if (teams.size() < 2) {
             return ResponseEntity.badRequest().body(Map.of("message", "Cần ít nhất 2 đội đã đóng lệ phí mới bốc thăm được."));
         }
-        teams.sort((a, b) -> Integer.compare(
-                b.getEloRating() != null ? b.getEloRating() : 1200,
-                a.getEloRating() != null ? a.getEloRating() : 1200));
+        // Hạt giống = thứ tự đăng ký (registeredAt tăng dần, null xếp cuối)
+        teams.sort(Comparator.comparing(
+                TournamentTeamEntry::getRegisteredAt,
+                Comparator.nullsLast(Comparator.naturalOrder())));
+        // Gắn phong độ live để hiển thị cùng hạt giống trong nhánh đấu
+        enrichEntries(teams);
 
         if ("ROUND_ROBIN".equals(tournament.getFormat())) {
             return drawRoundRobin(tournament, teams);
@@ -318,7 +352,7 @@ public class TournamentController {
 
         for (int i = 0; i < byes; i++) {
             TournamentTeamEntry t = teams.get(i);
-            Map<String, Object> byeTeam = teamNode(t.getTeamName(), t.getEloRating(), i + 1);
+            Map<String, Object> byeTeam = teamNode(t.getTeamName(), t, i + 1);
             Map<String, Object> match = new LinkedHashMap<>();
             match.put("matchId", "R1-BYE" + (i + 1));
             match.put("bye", byeTeam);
@@ -335,8 +369,8 @@ public class TournamentController {
             String matchId = "R1-M" + (i + 1);
             Map<String, Object> match = new LinkedHashMap<>();
             match.put("matchId", matchId);
-            match.put("teamA", teamNode(a.getTeamName(), a.getEloRating(), byes + i + 1));
-            match.put("teamB", teamNode(b.getTeamName(), b.getEloRating(), n - i));
+            match.put("teamA", teamNode(a.getTeamName(), a, byes + i + 1));
+            match.put("teamB", teamNode(b.getTeamName(), b, n - i));
             match.put("scoreA", 0);
             match.put("scoreB", 0);
             match.put("status", "SCHEDULED");
@@ -349,7 +383,7 @@ public class TournamentController {
             TournamentTeamEntry leftover = rest.get(pairs);
             Map<String, Object> match = new LinkedHashMap<>();
             match.put("matchId", "R1-BYE" + (byes + 1));
-            match.put("bye", teamNode(leftover.getTeamName(), leftover.getEloRating(), null));
+            match.put("bye", teamNode(leftover.getTeamName(), leftover, null));
             match.put("status", "BYE");
             match.put("winner", leftover.getTeamName());
             round1.add(match);
@@ -399,7 +433,7 @@ public class TournamentController {
         bracket.put("tournamentId", tournament.getId());
         bracket.put("title", tournament.getTitle());
         bracket.put("drawnAt", LocalDateTime.now().toString());
-        bracket.put("method", "SEEDED_ELO");
+        bracket.put("method", "SEEDED_REGISTRATION");
         bracket.put("teamCount", n);
         bracket.put("rounds", rounds);
 
@@ -456,7 +490,7 @@ public class TournamentController {
 
     /**
      * Nhập kết quả một trận (BTC/ADMIN): lưu MatchResult, cập nhật nhánh đấu
-     * (đẩy đội thắng vào vòng sau), gọi AI tính Elo mới cho 2 đội.
+     * (đẩy đội thắng vào vòng sau). Phong độ hai đội tự cập nhật từ lịch sử.
      */
     @PostMapping("/{id}/matches")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
@@ -519,10 +553,9 @@ public class TournamentController {
         }
         String nameA = String.valueOf(teamA.get("name"));
         String nameB = String.valueOf(teamB.get("name"));
-        // Elo nguồn chuẩn = Elo HIỆN TẠI của đội trong CSDL (đã cộng dồn các trận trước).
-        // Elo trong bracket chỉ là snapshot lúc bốc thăm, dùng làm fallback khi thiếu đội.
-        int eloA = currentElo(tournament, nameA, teamA);
-        int eloB = currentElo(tournament, nameB, teamB);
+        // Phong độ TRƯỚC trận: tính từ các kết quả đã lưu (trận này chưa lưu nên chưa tính vào).
+        TeamFormService.FormRecord beforeA = teamFormService.formOf(nameA);
+        TeamFormService.FormRecord beforeB = teamFormService.formOf(nameB);
         String winner = scoreA.equals(scoreB) ? null : (scoreA > scoreB ? nameA : nameB);
 
         // 0. Ghi nhận cầu thủ ghi bàn/kiến tạo (optional) + đối chiếu tổng bàn
@@ -579,7 +612,10 @@ public class TournamentController {
                     if (node != null && Boolean.TRUE.equals(node.get("tbd"))
                             && slot.equals(node.get("name"))) {
                         node.put("name", winner);
-                        node.put("elo", winner.equals(nameA) ? eloA : eloB);
+                        TeamFormService.FormRecord wf = winner.equals(nameA) ? beforeA : beforeB;
+                        node.put("form", wf.form());
+                        node.put("record", wf.record());
+                        node.put("winRate", wf.winRate());
                         node.remove("tbd");
                     }
                 }
@@ -587,21 +623,8 @@ public class TournamentController {
         }
         }
 
-        // 3. Gọi AI tính Elo mới (fallback local nếu AI offline)
-        //    làm tròn một lần để tổng Elo toàn hệ thống không bị trôi theo phần .5
-        Map<String, Double> elo = aiEloClient.calculateElo(eloA, eloB, scoreA, scoreB);
-        int newEloA = (int) Math.round(elo.get("newA"));
-        int newEloB = (int) Math.round(elo.get("newB"));
-        // Chuẩn hoá delta về số nguyên khớp đúng thay đổi đã ghi nhận
-        double appliedDeltaA = newEloA - eloA;
-        double appliedDeltaB = newEloB - eloB;
-        elo.put("deltaA", appliedDeltaA);
-        elo.put("deltaB", appliedDeltaB);
-        for (TournamentTeamEntry t : tournament.getTeams()) {
-            if (nameA.equals(t.getTeamName())) t.setEloRating(newEloA);
-            if (nameB.equals(t.getTeamName())) t.setEloRating(newEloB);
-        }
-        // 4. Lưu lịch sử + nhánh đấu + cầu thủ ghi bàn
+        // Lưu lịch sử + nhánh đấu + cầu thủ ghi bàn. KHÔNG còn điểm Elo:
+        // phong độ luôn được tính live từ các bản ghi này nên không cần cộng dồn.
         matchResultRepository.save(MatchResult.builder()
                 .tournamentId(tournament.getId())
                 .matchId(matchId)
@@ -611,10 +634,6 @@ public class TournamentController {
                 .scoreA(scoreA)
                 .scoreB(scoreB)
                 .winner(winner)
-                .eloDeltaA(elo.get("deltaA"))
-                .eloDeltaB(elo.get("deltaB"))
-                .eloBeforeA(eloA)
-                .eloBeforeB(eloB)
                 .build());
         if (!goalEvents.isEmpty()) {
             goalEventRepository.saveAll(goalEvents);
@@ -626,28 +645,31 @@ public class TournamentController {
         }
         tournamentRepository.save(tournament);
 
-        List<Map<String, Object>> eloChanges = List.of(
-                Map.of("team", (Object) nameA, "oldElo", (Object) eloA, "newElo", (Object) newEloA, "delta", elo.get("deltaA")),
-                Map.of("team", (Object) nameB, "oldElo", (Object) eloB, "newElo", (Object) newEloB, "delta", elo.get("deltaB")));
+        // Phong độ SAU trận (vừa lưu xong nên đã tính trận này vào)
+        TeamFormService.FormRecord afterA = teamFormService.formOf(nameA);
+        TeamFormService.FormRecord afterB = teamFormService.formOf(nameB);
+        List<Map<String, Object>> formChanges = List.of(
+                Map.of("team", (Object) nameA, "before", (Object) beforeA.toMap(), "after", (Object) afterA.toMap()),
+                Map.of("team", (Object) nameB, "before", (Object) beforeB.toMap(), "after", (Object) afterB.toMap()));
         String resultTitle = winner != null
                 ? "Kết quả " + matchId + ": " + winner + " thắng " + scoreA + "-" + scoreB
                 : "Kết quả " + matchId + ": hòa " + scoreA + "-" + scoreB;
         notificationService.notify("ALL",
                 resultTitle,
-                nameA + " " + scoreA + "-" + scoreB + " " + nameB + " (" + tournament.getTitle() + "). Elo đã cập nhật!",
+                nameA + " " + scoreA + "-" + scoreB + " " + nameB + " (" + tournament.getTitle() + "). Lịch sử thi đấu đã cập nhật!",
                 "MATCH", "/?tab=tournaments");
         Map<String, Object> resp = new LinkedHashMap<>();
         resp.put("message", "Đã lưu kết quả " + nameA + " " + scoreA + "-" + scoreB + " " + nameB + "!");
         resp.put("winner", winner);
-        resp.put("aiOnline", elo.get("aiOnline").intValue() == 1);
-        resp.put("eloChanges", eloChanges);
+        resp.put("formChanges", formChanges);
         resp.put("bracket", bracket);
         return ResponseEntity.ok(resp);
     }
 
     /**
-     * Huỷ kết quả một trận đã đánh: hoàn lại Elo về đúng giá trị trước trận,
-     * xoá danh sách cầu thủ ghi bàn, đưa trận về trạng thái SCHEDULED để BTC nhập lại.
+     * Huỷ kết quả một trận đã đánh: xoá bản ghi kết quả và cầu thủ ghi bàn,
+     * đưa trận về trạng thái SCHEDULED để BTC nhập lại. Phong độ tính live từ
+     * các trận còn lại nên tự đúng, không cần hoàn điểm.
      * Chỉ cho phép khi các trận vòng sau chưa có kết quả (để không phá nhánh đấu).
      */
     @DeleteMapping("/{id}/matches/{matchId}")
@@ -712,38 +734,10 @@ public class TournamentController {
         String nameB = teamB != null ? String.valueOf(teamB.get("name")) : "?";
         String oldScore = target.get("scoreA") + "-" + target.get("scoreB");
 
-        // 1. Hoàn Elo: ưu tiên snapshot eloBefore (chính xác tuyệt đối),
-        //    dữ liệu cũ chưa có thì trừ lại delta.
-        List<Map<String, Object>> eloChanges = new ArrayList<>();
-        Optional<MatchResult> latest = matchResultRepository
-                .findFirstByTournamentIdAndMatchIdOrderByPlayedAtDesc(tournament.getId(), matchId);
-        if (latest.isPresent()) {
-            MatchResult r = latest.get();
-            double dA = r.getEloDeltaA() != null ? r.getEloDeltaA() : 0.0;
-            double dB = r.getEloDeltaB() != null ? r.getEloDeltaB() : 0.0;
-            Integer backA = r.getEloBeforeA() != null ? r.getEloBeforeA() : null;
-            Integer backB = r.getEloBeforeB() != null ? r.getEloBeforeB() : null;
-            for (TournamentTeamEntry t : tournament.getTeams()) {
-                boolean isA = nameA.equals(t.getTeamName());
-                boolean isB = nameB.equals(t.getTeamName());
-                if ((!isA && !isB) || t.getEloRating() == null) continue;
-                int old = t.getEloRating();
-                int restored;
-                if (isA && backA != null) restored = backA;
-                else if (isB && backB != null) restored = backB;
-                else restored = (int) Math.max(100, Math.round(old - (isA ? dA : dB)));
-                eloChanges.add(Map.of("team", (Object) t.getTeamName(),
-                        "rolledBackFrom", (Object) old, "restoredElo", (Object) restored));
-                t.setEloRating(restored);
-            }
-            matchResultRepository.delete(r);
-        } else {
-            // Dữ liệu cũ chưa có delta -> đưa về Elo hiện tại của đội trong giải.
-            for (TournamentTeamEntry t : tournament.getTeams()) {
-                if (nameA.equals(t.getTeamName())) t.setEloRating(currentElo(tournament, nameA, teamA));
-                if (nameB.equals(t.getTeamName())) t.setEloRating(currentElo(tournament, nameB, teamB));
-            }
-        }
+        // 1. Xoá bản ghi kết quả trận này (nếu có). Phong độ tính live nên tự đúng.
+        matchResultRepository
+                .findFirstByTournamentIdAndMatchIdOrderByPlayedAtDesc(tournament.getId(), matchId)
+                .ifPresent(matchResultRepository::delete);
 
         // 2. Xoá cầu thủ ghi bàn của trận này.
         int goalsRemoved = goalEventRepository.findByTournamentIdAndMatchId(tournament.getId(), matchId).size();
@@ -784,7 +778,6 @@ public class TournamentController {
         resp.put("message", "Đã huỷ kết quả " + nameA + " " + oldScore
                 + " " + nameB + ". Trận mở lại để nhập kết quả mới.");
         resp.put("matchId", matchId);
-        resp.put("eloChanges", eloChanges);
         resp.put("goalEventsRemoved", goalsRemoved);
         resp.put("bracket", bracket);
         return ResponseEntity.ok(resp);
@@ -935,20 +928,6 @@ public class TournamentController {
         }
     }
 
-    /**
-     * Elo hiện tại của một đội trong giải — nguồn chuẩn khi tính Elo trận mới,
-     * để Elo cộng dồn qua nhiều vòng. Fallback về Elo ghi trong nhánh đấu khi
-     * đội không có trong danh sách đăng ký (ví dụ đội đã bị xoá khỏi giải).
-     */
-    private static int currentElo(Tournament tournament, String teamName, Map<String, Object> bracketNode) {
-        for (TournamentTeamEntry t : tournament.getTeams()) {
-            if (teamName.equals(t.getTeamName()) && t.getEloRating() != null) {
-                return t.getEloRating();
-            }
-        }
-        return bracketNode != null && bracketNode.get("elo") instanceof Number n ? n.intValue() : 1200;
-    }
-
     /** Lấy nhánh đấu đã bốc thăm (public — FE render cây nhánh từ đây). */
     @GetMapping("/{id}/bracket")
     public ResponseEntity<?> getBracket(@PathVariable Long id) {
@@ -984,7 +963,6 @@ public class TournamentController {
         String captainPhone = (String) req.getOrDefault("captainPhone", "");
         String subCaptainPhone = (String) req.getOrDefault("subCaptainPhone", "");
         Integer memberCount = req.get("memberCount") != null ? Integer.parseInt(req.get("memberCount").toString()) : 12;
-        Integer eloRating = req.get("eloRating") != null ? Integer.parseInt(req.get("eloRating").toString()) : 1200;
 
         TournamentTeamEntry entry = TournamentTeamEntry.builder()
                 .teamName(teamName)
@@ -992,7 +970,6 @@ public class TournamentController {
                 .captainPhone(captainPhone)
                 .subCaptainPhone(subCaptainPhone)
                 .memberCount(memberCount)
-                .eloRating(eloRating)
                 .registrationStatus("PENDING_PAYMENT")
                 .registeredAt(LocalDateTime.now())
                 .build();

@@ -215,7 +215,6 @@ export default function PitchSearch({ user }: PitchSearchProps) {
   // KHUYẾN NGHỊ: mọi useState/useEffect/useMemo đều phải nằm TRƯỚC các nhánh
   // return sớm bên dưới, nếu không sẽ vi phạm rules-of-hooks khi mở chi tiết sân.
   const userName = user?.fullName || user?.name || "Khách";
-  const userElo = user?.eloRating ?? 0;
   const userPhone = (user?.phone ?? "").toString().replace(/\s/g, "");
   const hasUser = Boolean(user);
 
@@ -228,6 +227,22 @@ export default function PitchSearch({ user }: PitchSearchProps) {
       .catch(() => { if (alive) setTournaments([]); });
     return () => { alive = false; };
   }, []);
+
+  // Đội của user (khớp SĐT đội trưởng trong các giải) — tournaments đã kèm
+  // phong độ live từng đội nên suy ra form/record/tỷ lệ thắng, không cần điểm Elo.
+  const myTeamEntry: any | null = React.useMemo(() => {
+    if (!userPhone) return null;
+    for (const t of tournaments) {
+      const found = (t.teams ?? []).find(
+        (z: any) => String(z.captainPhone ?? "").replace(/\s/g, "") === userPhone
+      );
+      if (found) return found;
+    }
+    return null;
+  }, [tournaments, userPhone]);
+  const myForm: string = myTeamEntry?.form ?? "";
+  const myRecord: string = myTeamEntry?.record ?? "0-0-0";
+  const myWinRate: number = myTeamEntry?.winRate ?? 0;
 
   // Kèo đang mở thật từ bảng matchmaking_posts trong CSDL
   const [openPosts, setOpenPosts] = useState<any[]>([]);
@@ -259,8 +274,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
   /**
    * Số trận đã đá của cầu thủ: quét các giải trong CSDL, tìm đội do chính
    * người dùng làm trọng tài/đội trưởng rồi đếm các trận đã có kết quả.
-   */
-  const userMatchesPlayed = React.useMemo(() => {
+   */  const userMatchesPlayed = React.useMemo(() => {
     if (!userPhone) return 0;
     let played = 0;
     for (const t of tournaments) {
@@ -312,12 +326,11 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
   const featuredPitch = realPitches.length > 0 ? realPitches[0] : null;
 
-  // 3 đội có Elo cao nhất đang tham gia các giải của hệ thống
-  // (nguồn: cột elo_rating của bảng tournament_team_entries qua tournaments.bracketJson/teams)
-  const topTeamsByElo = tournaments
+  // 3 đội phong độ cao nhất (tỷ lệ thắng từ lịch sử thật, đã kèm trong teams)
+  const topTeamsByForm = tournaments
     .flatMap((t: any) => t.teams ?? [])
-    .filter((tm: any) => tm.teamName && typeof tm.eloRating === "number")
-    .sort((a: any, b: any) => (b.eloRating ?? 0) - (a.eloRating ?? 0))
+    .filter((tm: any) => tm.teamName && typeof tm.winRate === "number")
+    .sort((a: any, b: any) => (b.winRate ?? 0) - (a.winRate ?? 0) || (b.played ?? 0) - (a.played ?? 0))
     .slice(0, 3);
 
   // AI gợi ý sân (FastAPI :8000) — ẩn lặng nếu AI offline
@@ -352,7 +365,6 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             opponentTeamName: user?.teamName || `FC ${userName}`,
             opponentCaptainName: userName,
             opponentCaptainPhone: user?.phone || "",
-            opponentElo: userElo,
           }),
         }
       );
@@ -390,7 +402,6 @@ export default function PitchSearch({ user }: PitchSearchProps) {
           teamName: newMatchTitle.trim(),
           captainName: userName,
           captainPhone: user?.phone || "",
-          eloRating: userElo,
           pitchName: picked?.name || "Chưa chọn sân",
           address: picked?.address || picked?.area || "",
           matchTime: newMatchSlot,
@@ -567,20 +578,20 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             </div>
           </div>
 
-          {/* Cột phải: Thống kê chỉ số Elo & Phong độ thực tế */}
+          {/* Cột phải: Thống kê phong độ thực tế */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:flex xl:flex-col gap-3 w-full xl:w-auto shrink-0">
             <div className="flex items-center space-x-3.5 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full xl:min-w-[260px]">
               <div className="w-11 h-11 rounded-xl bg-amber-500/10 dark:bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl font-bold border border-amber-500/20 shrink-0">
                 🏆
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-extrabold">Chỉ Số Elo Cầu Thủ</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-extrabold">Phong Độ Đội Bạn</span>
                 <div className="flex items-baseline space-x-2">
                   <span className="text-xl sm:text-2xl font-black text-[#0b4f6c] dark:text-sky-400 font-mono">
-                    {hasUser ? userElo : "—"}
+                    {hasUser ? (myTeamEntry ? myRecord : "—") : "—"}
                   </span>
                   <span className="text-xs text-slate-700 dark:text-slate-300 font-bold truncate">
-                    {user?.level ?? "Chưa xếp bậc"}
+                    {myTeamEntry ? `${myTeamEntry.teamName} • Thắng ${myWinRate}%` : (user?.level ?? "Chưa xếp bậc")}
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
@@ -778,7 +789,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                     </span>
                     <span className="font-mono text-xs font-extrabold text-sky-700 dark:text-sky-400 flex items-center">
                       <Zap className="w-3.5 h-3.5 mr-0.5" />
-                      Elo của bạn: {hasUser ? userElo : "chưa đăng nhập"}
+                      Phong độ: {hasUser ? (myTeamEntry ? `${myRecord} • Thắng ${myWinRate}%` : "tân binh") : "chưa đăng nhập"}
                     </span>
                   </div>
                 </div>
@@ -793,16 +804,16 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                   <strong className="text-slate-900 dark:text-white">
                     {featuredPitch.address ?? featuredPitch.area ?? "khu vực của bạn"}
                   </strong>{" "}
-                  và chỉ số Elo hiện tại của bạn (
+                  và lịch sử phong độ của đội bạn (
                   {hasUser ? (
                     <>
-                      {userElo}
+                      {myTeamEntry ? `${myRecord} • Thắng ${myWinRate}%` : "tân binh"}
                       {userMatchesPlayed > 0
                         ? `, đã đá ${userMatchesPlayed} trận trong hệ thống`
                         : ", chưa thi đấu trong giải nào"}
                     </>
                   ) : (
-                    "đăng nhập để hệ thống tính Elo và lịch sử thi đấu của bạn"
+                    "đăng nhập để hệ thống lưu lịch sử thi đấu của bạn"
                   )}
                   ).
                 </p>
@@ -1180,9 +1191,9 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
               Danh sách kèo do đội khác đăng lên hệ thống, sắp theo thời điểm đăng
-              {hasUser ? (
+              {hasUser && myTeamEntry ? (
                 <>
-                  {" "}• <strong className="text-slate-900 dark:text-white">Elo của bạn: {userElo}</strong>
+                  {" "}• <strong className="text-slate-900 dark:text-white">Phong độ đội bạn: {myRecord}</strong>
                 </>
               ) : null}
               .
@@ -1226,9 +1237,9 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                     </h4>
                     <div className="flex items-center justify-between text-xs text-slate-500">
                       <span>
-                        Trình độ:{" "}
+                        Phong độ:{" "}
                         <strong className="text-slate-900 dark:text-white">
-                          Elo {p.eloRating ?? "—"}
+                          {p.record && p.record !== "0-0-0" ? `${p.record} • Thắng ${p.winRate ?? 0}%` : "Tân binh"}
                         </strong>
                       </span>
                       {p.estimatedFee ? (
@@ -1282,7 +1293,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 <div className="flex items-center space-x-2 text-[10px] font-mono text-sky-800 dark:text-sky-400 font-bold">
                   <span>{user?.level ?? "Chưa xếp bậc"}</span>
                   <span>•</span>
-                  <span>{hasUser ? `Elo ${userElo}` : "Chưa đăng nhập"}</span>
+                  <span>{hasUser ? (myTeamEntry ? `Thành tích ${myRecord}` : "Tân binh") : "Chưa đăng nhập"}</span>
                 </div>
               </div>
             </div>
@@ -1297,13 +1308,13 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             </button>
           </section>
 
-          {/* WIDGET 3: ĐỘI CÓ ELO CAO NHẤT (lấy từ danh sách đội trong các giải của CSDL) */}
+          {/* WIDGET 3: ĐỘI PHONG ĐỘ CAO NHẤT (tỷ lệ thắng từ lịch sử thật trong CSDL) */}
           <section className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Trophy className="w-4 h-4 text-amber-500" />
                 <h3 className="font-black text-slate-900 dark:text-white text-xs uppercase tracking-wider">
-                  Đội Đang Dẫn Đầu Elo
+                  Đội Phong Độ Cao Nhất
                 </h3>
               </div>
               <span className="text-[10px] font-bold text-slate-400">
@@ -1312,13 +1323,13 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             </div>
 
             <div className="space-y-2">
-              {topTeamsByElo.length === 0 ? (
+              {topTeamsByForm.length === 0 ? (
                 <p className="text-[11px] text-slate-500 leading-relaxed">
                   Chưa có đội nào trong danh sách đội của các giải. Đăng ký một giải để
                   đội bạn xuất hiện ở đây.
                 </p>
               ) : (
-                topTeamsByElo.map((tm: any, idx: number) => (
+                topTeamsByForm.map((tm: any, idx: number) => (
                   <div
                     key={`${tm.teamName}-${idx}`}
                     className={`flex items-center justify-between p-2 rounded-xl text-xs ${
@@ -1346,7 +1357,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                           : "text-slate-500"
                       }`}
                     >
-                      {Number(tm.eloRating).toLocaleString("vi-VN")} Elo
+                      {tm.record && tm.record !== "0-0-0" ? `${tm.record} • ` : ""}Thắng {tm.winRate ?? 0}%
                     </span>
                   </div>
                 ))

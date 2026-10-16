@@ -101,7 +101,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                     <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-700 fill-sky-700" />
                   </div>
                   <span className="font-extrabold text-xs sm:text-sm text-slate-800 leading-snug">
-                    Sân 5 · 7 · 11 &amp; Futsal • Giải đấu theo Elo
+                    Sân 5 · 7 · 11 &amp; Futsal • Giải đấu theo phong độ
                   </span>
                 </div>
               </div>
@@ -110,7 +110,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               <p className="text-[13px] sm:text-base text-slate-600 font-medium leading-relaxed max-w-2xl pt-1">
                 Nền tảng kết nối <strong>Cầu Thủ</strong>, <strong>Chủ Cụm Sân</strong> và <strong>Ban Tổ Chức Giải Đấu</strong>.
                 <span className="hidden sm:inline">
-                  {" "}Đặt sân online với thanh toán cọc qua <strong>VietQR</strong>, quản lý ca sân và giải đấu loại trực tiếp, cộng điểm <strong>Elo Rating</strong> cho từng trận.
+                  {" "}Đặt sân online với thanh toán cọc qua <strong>VietQR</strong>, quản lý ca sân và giải đấu loại trực tiếp, lưu <strong>lịch sử thi đấu</strong> và chuỗi phong độ cho từng trận.
                 </span>
               </p>
 

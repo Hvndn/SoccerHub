@@ -549,12 +549,12 @@ export default function Navbar({
             <div className="hidden 2xl:flex items-center space-x-3 bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 text-xs font-bold font-mono">
               <div className="flex items-center space-x-1.5 text-slate-800 dark:text-slate-200">
                 <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                <span>Elo {user?.eloRating ?? "—"}</span>
+                <span>{user?.level || "Phong trào"}</span>
               </div>
               <div className="w-px h-4 bg-slate-300 dark:bg-slate-700" />
               <div className="flex items-center space-x-1.5 text-slate-800 dark:text-slate-200">
                 <Award className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
-                <span>{user?.level || "Chưa xếp bậc"}</span>
+                <span>{user?.area || "Toàn quốc"}</span>
               </div>
             </div>
           )}
@@ -710,7 +710,7 @@ export default function Navbar({
                     {user.role === 'OWNER' ? (
                       <span className="shrink-0 text-emerald-500 font-bold">• {user.area || "Chưa cập nhật khu vực"}</span>
                     ) : (
-                      <span className="shrink-0">• Elo {user.eloRating ?? "—"}</span>
+                      <span className="shrink-0">• {user.level || "Phong trào"}</span>
                     )}
                     <ChevronDown className={`w-3 h-3 text-slate-400 shrink-0 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`} />
                   </div>
@@ -959,9 +959,9 @@ export default function Navbar({
                     {(user.role === "PLAYER" || user.role === "ORGANIZER") && (
                       <div className="flex items-center justify-between text-xs font-mono font-bold pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
                         <span className="text-slate-500">
-                          Elo:{" "}
+                          Trình độ:{" "}
                           <strong className="text-[#0b4f6c] dark:text-sky-400">
-                            {user.eloRating ?? "—"}
+                            {user.level ?? "Phong trào"}
                           </strong>
                         </span>
                       </div>
@@ -973,7 +973,7 @@ export default function Navbar({
                       Gia nhập cộng đồng SoccerHub
                     </p>
                     <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                      Đăng nhập để theo dõi lịch trình, giải đấu và xếp hạng Elo của bạn.
+                      Đăng nhập để theo dõi lịch trình, giải đấu và phong độ thi đấu của bạn.
                     </p>
                     <div className="flex items-center space-x-2 pt-1">
                       <button
@@ -1102,7 +1102,7 @@ export default function Navbar({
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
                           <div className={`text-[10px] ${activeTab === "tournaments" ? "text-white/80" : "text-slate-400"}`}>
-                            Theo dõi nhánh đấu & xếp hạng Elo
+                            Theo dõi nhánh đấu & phong độ thi đấu
                           </div>
                         </div>
                       </button>
@@ -1193,7 +1193,7 @@ export default function Navbar({
                         <div>
                           <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
                           <div className={`text-[10px] ${activeTab === "tournaments" || activeTab === "organizer" ? "text-white/80" : "text-slate-400"}`}>
-                            Đăng ký giải, nhánh đấu & xếp hạng Elo
+                            Đăng ký giải, nhánh đấu & lịch sử thi đấu
                           </div>
                         </div>
                       </button>
@@ -1247,7 +1247,7 @@ export default function Navbar({
                             }`}
                           >
                             <User className="w-4 h-4 text-sky-500 shrink-0" />
-                            <span className="text-xs font-bold">Hồ Sơ VĐV & Thống Kê Elo</span>
+                            <span className="text-xs font-bold">Hồ Sơ VĐV & Lịch Sử Thi Đấu</span>
                           </button>
 
                           <button

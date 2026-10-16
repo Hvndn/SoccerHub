@@ -3,12 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from recommendation import recommend_pitches
-from elo_matchmaking import update_elo_ratings, find_matchmaking_opponents
+from form_matchmaking import find_matchmaking_opponents
 
 app = FastAPI(
-    title="SoccerHub AI Recommendation & Elo Matchmaking API",
-    description="Microservice AI gợi ý sân bóng và ghép đội theo Elo cho hệ thống SoccerHub",
-    version="1.0.0"
+    title="SoccerHub AI Recommendation & Form Matchmaking API",
+    description="Microservice AI gợi ý sân bóng và ghép đội theo phong độ thi đấu cho hệ thống SoccerHub",
+    version="2.0.0"
 )
 
 # Cho phép frontend gọi trực tiếp từ trình duyệt
@@ -47,16 +47,11 @@ class PitchRecommendationRequest(BaseModel):
     user_preference: UserPreferenceRequest
     clusters: List[PitchClusterItem]
 
-class EloUpdateRequest(BaseModel):
-    rating_a: float
-    rating_b: float
-    score_a: int
-    score_b: int
-
 class TeamItem(BaseModel):
     id: str
     name: str
-    elo_rating: float
+    win_rate: float = 50.0
+    recent_form: str = ""
     reputation_score: float = 95.0
     preferred_pitch_type: str = "PITCH_7"
     contact_phone: Optional[str] = None
@@ -64,7 +59,7 @@ class TeamItem(BaseModel):
 class MatchmakingRequest(BaseModel):
     my_team: TeamItem
     candidate_teams: List[TeamItem]
-    max_elo_diff: float = 250.0
+    max_win_rate_diff: float = 15.0
 
 # --- API Endpoints ---
 @app.get("/")
@@ -72,7 +67,7 @@ def root():
     return {
         "service": "SoccerHub AI Engine",
         "status": "ONLINE",
-        "endpoints": ["/api/v1/ai/recommend-pitches", "/api/v1/ai/calculate-elo", "/api/v1/ai/matchmaking"]
+        "endpoints": ["/api/v1/ai/recommend-pitches", "/api/v1/ai/matchmaking"]
     }
 
 @app.post("/api/v1/ai/recommend-pitches")
@@ -86,22 +81,14 @@ def api_recommend_pitches(req: PitchRecommendationRequest):
         "recommendations": recommended
     }
 
-@app.post("/api/v1/ai/calculate-elo")
-def api_calculate_elo(req: EloUpdateRequest):
-    result = update_elo_ratings(req.rating_a, req.rating_b, req.score_a, req.score_b)
-    return {
-        "status": "SUCCESS",
-        "elo_result": result
-    }
-
 @app.post("/api/v1/ai/matchmaking")
 def api_matchmaking(req: MatchmakingRequest):
     my_team_dict = req.my_team.model_dump()
     candidates_dict = [c.model_dump() for c in req.candidate_teams]
-    opponents = find_matchmaking_opponents(my_team_dict, candidates_dict, max_elo_diff=req.max_elo_diff)
+    opponents = find_matchmaking_opponents(my_team_dict, candidates_dict, max_win_rate_diff=req.max_win_rate_diff)
     return {
         "status": "SUCCESS",
-        "my_team_elo": req.my_team.elo_rating,
+        "my_team_win_rate": req.my_team.win_rate,
         "matched_opponents": opponents
     }
 

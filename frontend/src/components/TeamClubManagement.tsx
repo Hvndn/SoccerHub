@@ -22,7 +22,7 @@ interface TeamClubManagementProps {
 /**
  * Quản lý đội bóng — toàn bộ dữ liệu lấy từ CSDL:
  * - Danh sách đội = các đội bạn làm đội trưởng (đăng ký vào giải, bảng tournament_teams embed trong tournament).
- * - Thành viên = các tài khoản cộng đồng có số điện thoại khớp (hệ thống không lưu danh sách cầu thủ theo đội nên hiển thị theo Elo/địa bàn).
+ * - Thành viên = các tài khoản cộng đồng có số điện thoại khớp (hệ thống không lưu danh sách cầu thủ theo đội nên hiển thị theo phong độ/địa bàn).
  * - Lịch đấu = các trận có đội của bạn trong bracketJson của giải.
  * Không có sổ quỹ trong hệ thống nên tab "Quỹ Đội" bị gỡ, không bịa số liệu.
  */
@@ -144,9 +144,9 @@ export default function TeamClubManagement({
             <div className="grid grid-cols-3 gap-3 sm:gap-6 text-center">
               <div>
                 <p className="text-lg sm:text-xl font-black text-emerald-500 font-mono">
-                  {primaryTeam.eloRating ?? "—"}
+                  {primaryTeam.record ?? "0-0-0"}
                 </p>
-                <p className="text-[10px] text-slate-500 uppercase font-bold">Elo Đội</p>
+                <p className="text-[10px] text-slate-500 uppercase font-bold">Thành Tích (T-H-B)</p>
               </div>
               <div>
                 <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono">
@@ -224,7 +224,7 @@ export default function TeamClubManagement({
                     <th className="p-3 font-bold">Tên Đội</th>
                     <th className="p-3 font-bold">Giải</th>
                     <th className="p-3 font-bold">Số Người</th>
-                    <th className="p-3 font-bold">Elo</th>
+                    <th className="p-3 font-bold">Phong Độ</th>
                     <th className="p-3 font-bold">Trạng Thái</th>
                   </tr>
                 </thead>
@@ -250,7 +250,9 @@ export default function TeamClubManagement({
                         </td>
                         <td className="p-3 text-slate-500">{z.tournament?.title || "—"}</td>
                         <td className="p-3 font-mono">{z.memberCount ?? "—"}</td>
-                        <td className="p-3 font-mono text-emerald-500">{z.eloRating ?? "—"}</td>
+                        <td className="p-3 font-mono text-emerald-500">
+                          {z.record && z.record !== "0-0-0" ? `${z.record} • ${z.winRate ?? 0}%` : "Tân binh"}
+                        </td>
                         <td className="p-3">
                           <span className="px-2 py-1 rounded-full bg-[#247BA0]/10 text-emerald-500 font-bold text-[10px]">
                             {z.registrationStatus === "CONFIRMED"

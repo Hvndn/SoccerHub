@@ -40,6 +40,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { UserProfile } from "@/lib/authService";
 import { fetchTournaments, sportLabel } from "@/lib/tournamentService";
+import FormDots from "./FormDots";
 
 interface PlayerProfileConsoleProps {
   user?: UserProfile | null;
@@ -158,7 +159,6 @@ export default function PlayerProfileConsole({
   const displayEmail = editForm.email || activeUser?.email || "—";
   const displayPhone = editForm.phone || activeUser?.phone || "Chưa khai báo SĐT";
   const displayRole = activeUser?.role === "OWNER" ? "Chủ Sân" : activeUser?.role === "ORGANIZER" ? "Ban Tổ Chức" : activeUser?.role === "ADMIN" ? "Quản Trị" : "Cầu Thủ";
-  const displayElo = activeUser?.eloRating ?? "—";
   const displayPosition = editForm.position || "Chưa khai báo vị trí";
   const displayArea = editForm.area || "Chưa khai báo khu vực";
   const displayLevel = editForm.level || "Chưa xếp bậc";
@@ -222,7 +222,7 @@ export default function PlayerProfileConsole({
               score: `${m.scoreA ?? 0} - ${m.scoreB ?? 0}`,
               myTeam: m.teamA.name,
               opponent: m.teamB.name,
-              eloChange: "-",
+              scoreDiff: "-",
               mvp: false,
               stats: "Chưa có kết quả",
               hasAiVideo: false,
@@ -252,7 +252,7 @@ export default function PlayerProfileConsole({
             score: `${sa} - ${sb}`,
             myTeam: m.teamA.name,
             opponent: m.teamB.name,
-            eloChange: `${myScore > oppScore ? "+" : ""}${myScore - oppScore} bàn`,
+            scoreDiff: `${myScore > oppScore ? "+" : ""}${myScore - oppScore} bàn`,
             mvp: false,
             stats: `Ghi ${myScore} • Thủng ${oppScore}`,
             hasAiVideo: false,
@@ -285,6 +285,11 @@ export default function PlayerProfileConsole({
   const recentForm = perf.history
     .filter((h: any) => h.result !== "upcoming")
     .slice(0, 5);
+  // Chuỗi phong độ 5 trận gần nhất (ký tự đầu = mới nhất) + thành tích T-H-B từ lịch sử thật
+  const formStr = recentForm
+    .map((h: any) => (h.result === "win" ? "W" : h.result === "loss" ? "L" : "D"))
+    .join("");
+  const recordStr = `${perf.wins}-${perf.draws}-${perf.losses}`;
 
   /** Bảng chỉ số dùng chung cho cả 4 môn — hệ thống chưa tách chỉ số theo môn. */
   const formatStats = {
@@ -297,7 +302,8 @@ export default function PlayerProfileConsole({
   function buildStat(title: string) {
     return {
       title,
-      elo: displayElo,
+      formStr,
+      recordStr,
       // Hệ thống chưa có bảng tier / xếp hạng phần trăm -> hiển thị trạng thái
       tier: displayLevel || "Chưa xếp bậc",
       badge: activeUser?.area || "Chưa cập nhật khu vực",
@@ -354,7 +360,7 @@ export default function PlayerProfileConsole({
           <div className="hidden md:flex items-center gap-3 text-xs text-slate-500 dark:text-emerald-200/70 font-mono shrink-0">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Nguồn điểm: Elo SoccerHub
+              Nguồn: Lịch sử thi đấu SoccerHub
             </span>
           </div>
         </div>
@@ -393,7 +399,7 @@ export default function PlayerProfileConsole({
                     {displayRole}
                   </span>
                   <span className="px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                    Elo {displayElo}
+                    Thành tích {recordStr} (T-H-B)
                   </span>
                 </div>
 
@@ -988,26 +994,27 @@ export default function PlayerProfileConsole({
                 </div>
               </div>
 
-              {/* Thông số Elo chính của thể thức đang chọn */}
+              {/* Thông số phong độ của thể thức đang chọn */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 pt-4 sm:pt-6">
                 
-                {/* Box ELO & Ranking */}
+                {/* Box Phong độ 5 trận & Thành tích */}
                 <div className="bg-slate-50 dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      ĐIỂM ELO SOCCERHUB CHÍNH THỨC
+                      PHONG ĐỘ 5 TRẬN GẦN NHẤT
                     </span>
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-800">
                       {currentStat.percentile}
                     </span>
                   </div>
-                  
-                  <div className="flex items-baseline gap-3 mt-3">
-                    <span className="text-4xl font-black text-slate-900 dark:text-white">
-                      {currentStat.elo}
+
+                  <div className="flex items-center gap-3 mt-3">
+                    <FormDots form={currentStat.formStr} />
+                    <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">
+                      {currentStat.recordStr}
                     </span>
                     <span className="text-xs font-semibold text-sky-700 dark:text-sky-400">
-                      {activeUser?.eloRating != null ? "Theo kết quả các giải trong hệ thống" : "Chưa có điểm Elo"}
+                      {totalDecided ? "Thắng-Hòa-Bại (mới → cũ)" : "Chưa có lịch sử thi đấu"}
                     </span>
                   </div>
                   
@@ -1087,7 +1094,7 @@ export default function PlayerProfileConsole({
                             { k: "Bàn thua", v: perf.goalsAgainst, src: "tournaments.bracket_json" },
                             { k: "Hiệu số", v: goalDiff > 0 ? `+${goalDiff}` : goalDiff, src: "tính từ CSDL" },
                             { k: "Trận không thủng lưới", v: perf.cleanSheets, src: "tính từ CSDL" },
-                            { k: "Elo hiện tại", v: displayElo, src: "users.elo_rating" },
+                            { k: "Thành tích (T-H-B)", v: recordStr, src: "match_results" },
                           ].map((row) => (
                             <tr key={row.k}>
                               <td className="py-2.5 px-3 font-semibold text-slate-700 dark:text-slate-300">{row.k}</td>
@@ -1122,7 +1129,7 @@ export default function PlayerProfileConsole({
                     Lịch Sử Thi Đấu Gần Đây
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    Ghi chép kết quả trận đấu, biến động Elo và video AI tự động quay bàn thắng đẹp.
+                    Ghi chép kết quả trận đấu, chuỗi phong độ và video AI tự động quay bàn thắng đẹp.
                   </p>
                 </div>
 
@@ -1226,7 +1233,7 @@ export default function PlayerProfileConsole({
                           </div>
                         </div>
 
-                        {/* Thay đổi Elo & MVP */}
+                        {/* Kết quả trận & MVP */}
                         <div className="flex items-center gap-3 self-end sm:self-center">
                           {m.mvp && (
                             <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 flex items-center gap-1">
@@ -1235,13 +1242,17 @@ export default function PlayerProfileConsole({
                             </span>
                           )}
                           <span
-                            className={`text-sm font-bold ${
+                            className={`text-xs font-black px-2.5 py-1 rounded-lg ${
                               m.result === "win"
-                                ? "text-sky-700 dark:text-sky-400"
-                                : "text-rose-500"
+                                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                                : m.result === "draw"
+                                  ? "bg-slate-500/15 text-slate-600 dark:text-slate-300"
+                                  : m.result === "loss"
+                                    ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+                                    : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                             }`}
                           >
-                            {m.eloChange} Elo
+                            {m.result === "win" ? "Thắng" : m.result === "draw" ? "Hòa" : m.result === "loss" ? "Thua" : "Sắp đá"} {m.scoreDiff !== "-" ? `(${m.scoreDiff})` : ""}
                           </span>
                         </div>
                       </div>

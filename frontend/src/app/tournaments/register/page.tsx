@@ -139,7 +139,6 @@ function RegisterTeamWizard() {
         captainPhone: captainPhone.trim(),
         subCaptainPhone: subCaptainPhone.trim(),
         memberCount,
-        eloRating: 1200,
       });
       setDone(true);
       window.scrollTo({ top: 0, behavior: "smooth" });

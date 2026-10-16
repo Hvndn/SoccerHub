@@ -109,11 +109,11 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
       ),
     },
     {
-      key: "elo",
-      header: "Elo",
+      key: "level",
+      header: "Trình độ",
       sortable: true,
-      sortValue: (r) => r.eloRating ?? 0,
-      render: (r) => <span className="font-mono font-bold">{(r.eloRating ?? 0).toLocaleString("vi-VN")}</span>,
+      sortValue: (r) => r.level ?? "",
+      render: (r) => <span className="font-bold text-slate-700 dark:text-slate-300">{r.level || "—"}</span>,
     },
     {
       key: "enabled",

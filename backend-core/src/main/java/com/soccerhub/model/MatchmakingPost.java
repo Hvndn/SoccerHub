@@ -51,6 +51,14 @@ public class MatchmakingPost {
     @Builder.Default
     private String status = "OPEN"; // OPEN, MATCHED, CANCELLED
 
+    // --- Phong độ live của đội đăng kèo (tính từ match_results, KHÔNG lưu DB) ---
+    @Transient
+    private String form;
+    @Transient
+    private String record;
+    @Transient
+    private Integer winRate;
+
     // Thông tin đối thủ nhận kèo
     private String opponentTeamName;
     private String opponentCaptainName;

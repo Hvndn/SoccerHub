@@ -10,6 +10,13 @@ export interface TournamentTeamEntry {
   eloRating?: number;
   registrationStatus?: string;
   simulated?: boolean;
+  form?: string | null;
+  record?: string | null;
+  winRate?: number | null;
+  played?: number | null;
+  won?: number | null;
+  drawn?: number | null;
+  lost?: number | null;
 }
 
 export interface Tournament {
@@ -102,7 +109,7 @@ export const fillPercent = (t: Tournament): number => {
 };
 
 // ---------------------------------------------------------------------------
-// Shared cache: CommunityElo (badge count) and TournamentLeaderboard (list)
+// Shared cache: CommunityForm (badge count) and TournamentLeaderboard (list)
 // both read the same in-flight request instead of hitting the API twice.
 // ---------------------------------------------------------------------------
 let cache: Tournament[] | null = null;
@@ -174,6 +181,9 @@ export async function registerTeam(
 export interface BracketTeam {
   name: string;
   elo?: number;
+  form?: string | null;
+  record?: string | null;
+  winRate?: number | null;
   seed?: number;
   tbd?: boolean;
 }
@@ -350,31 +360,32 @@ export function buildVietQrUrl(t: {
   return `https://api.vietqr.io/image/${t.bankCode}-${t.bankAccount}-compact2.png?${params.toString()}`;
 }
 
-export interface EloChange {
+export interface TeamFormSnapshot {
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  winRate: number;
+  form: string;
+  record: string;
+}
+
+export interface FormChange {
   team: string;
-  oldElo: number;
-  newElo: number;
-  delta: number;
+  before: TeamFormSnapshot;
+  after: TeamFormSnapshot;
 }
 
 export interface MatchSaveResult {
   message: string;
   winner: string | null;
-  aiOnline: boolean;
-  eloChanges: EloChange[];
+  formChanges: FormChange[];
   bracket: TournamentBracketData;
-}
-
-export interface EloRollback {
-  team: string;
-  rolledBackFrom: number;
-  restoredElo: number;
 }
 
 export interface MatchUndoResult {
   message: string;
   matchId: string;
-  eloChanges: EloRollback[];
   goalEventsRemoved: number;
   bracket: TournamentBracketData;
 }
@@ -402,8 +413,9 @@ export async function saveMatchResult(
 }
 
 /**
- * Huỷ kết quả một trận đã đánh: hoàn lại Elo, xoá cầu thủ ghi bàn,
+ * Huỷ kết quả một trận đã đánh: xoá bản ghi + cầu thủ ghi bàn,
  * mở lại trận để BTC nhập kết quả mới — cần ORGANIZER/ADMIN.
+ * Phong độ tính live nên tự đúng, không cần hoàn điểm.
  */
 export async function undoMatchResult(
   tournamentId: number,

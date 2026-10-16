@@ -27,7 +27,7 @@ interface AuthModalProps {
 type Role = "PLAYER" | "OWNER" | "ORGANIZER";
 
 const ROLES: { id: Role; label: string; desc: string; icon: React.ReactNode }[] = [
-  { id: "PLAYER", label: "Cầu Thủ", desc: "Đặt sân, ghép kèo & leo hạng Elo", icon: <User className="w-5 h-5" /> },
+  { id: "PLAYER", label: "Cầu Thủ", desc: "Đặt sân, ghép kèo & leo hạng phong độ", icon: <User className="w-5 h-5" /> },
   { id: "OWNER", label: "Chủ Sân", desc: "Quản lý cụm sân & doanh thu", icon: <Building2 className="w-5 h-5" /> },
   { id: "ORGANIZER", label: "Ban Tổ Chức", desc: "Tạo & điều hành giải đấu", icon: <Trophy className="w-5 h-5" /> },
 ];
@@ -161,7 +161,9 @@ export default function AuthModal({
         email: demoEmail,
         role: demoRole,
         position: demoRole === "PLAYER" ? "Tiền Vệ (CM)" : demoRole === "OWNER" ? "Chủ Cụm Sân ProHub" : "Ban Tổ Chức Giải Đấu",
-        eloRating: demoRole === "PLAYER" ? 1450 : 1500,
+        eloRating: 1200,
+        form: "",
+        record: "0-0-0",
         area: "Đà Nẵng / TP.HCM",
         avatar: demoRole === "PLAYER" ? "TL" : demoRole === "OWNER" ? "NS" : "LG",
         isNewOwner: false
@@ -302,7 +304,7 @@ export default function AuthModal({
               <span className="text-emerald-400">Turf</span>Zone
             </p>
             <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-emerald-200/80">
-              Sân phủi • Giải đấu • Elo
+              Sân phủi • Giải đấu • Phong độ
             </p>
           </div>
           <div className="relative space-y-4">

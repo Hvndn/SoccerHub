@@ -109,8 +109,8 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       metricValue: "Vài Phút Trên Web"
     },
     {
-      id: "ai-elo",
-      title: "Chợ Kèo & Xếp Hạng Elo",
+      id: "ai-form",
+      title: "Chợ Kèo & Phong Độ Thi Đấu",
       subtitle: "Ghép Đối Thủ Theo Trình Độ",
       badge: "Cộng Đồng Bóng Đá",
       icon: BrainCircuit,
@@ -118,8 +118,8 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       accentColor: "text-purple-400",
       points: [
         {
-          title: "Chỉ Số Elo Rating Theo Từng Trận",
-          desc: "Elo cập nhật từ kết quả các giải trong hệ thống, hiển thị công khai trên hồ sơ cầu thủ và thứ hạng đội."
+          title: "Lịch Sử Thi Đấu Theo Từng Trận",
+          desc: "Kết quả các giải trong hệ thống tự tổng hợp thành chuỗi phong độ 5 trận, hiển thị công khai trên hồ sơ cầu thủ và thứ hạng đội."
         },
         {
           title: "Chợ Kèo Đăng & Nhận Đối Thủ",
@@ -127,10 +127,10 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
         },
         {
           title: "Hồ Sơ & Thống Kê Cầu Thủ",
-          desc: "Theo dõi Elo, bậc, số trận đã đá và lịch sử thi đấu của bạn ngay trên trang hồ sơ."
+          desc: "Theo dõi phong độ, bậc, số trận đã đá và lịch sử thi đấu của bạn ngay trên trang hồ sơ."
         }
       ],
-      metricLabel: "Nguồn điểm Elo:",
+      metricLabel: "Nguồn phong độ:",
       metricValue: "Kết Quả Giải Đấu"
     }
   ];
@@ -169,7 +169,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       desc: "Quản lý sân con, ca sân, giá thuê, tiện ích và danh sách cọc cần đối soát ngay trên một màn hình duy nhất."
     },
     {
-      title: "Chợ kèo ghép đội theo Elo",
+      title: "Chợ kèo ghép đội theo phong độ",
       desc: "Đăng kèo khi thiếu người, đội nhận kèo được ghi thẳng vào bảng matchmaking_posts và chuyển trạng thái MATCHED."
     }
   ];

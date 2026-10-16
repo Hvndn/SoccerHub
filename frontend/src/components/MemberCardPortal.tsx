@@ -18,7 +18,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
   const [copiedCode, setCopiedCode] = useState(false);
 
   const userName = user?.fullName || user?.name || "Khách chưa đăng nhập";
-  const userElo = user?.eloRating ?? "—";
+  const userLevel = user?.level ?? "Chưa xếp bậc";
   const memberId = user?.id ? `#SH-${user.id}` : "#SH-—";
 
   const handleCopyCode = () => {
@@ -82,8 +82,8 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                     <Ticket className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-white">Elo {userElo} • {user?.level || "Chưa xếp bậc"}</p>
-                    <p className="hidden sm:block text-[11px] text-slate-300">Điểm cập nhật từ kết quả các giải trong hệ thống</p>
+                    <p className="text-xs font-bold text-white">Hạng {userLevel} • Sẵn sàng nhận kèo</p>
+                    <p className="hidden sm:block text-[11px] text-slate-300">Hồ sơ lưu từ kết quả các giải trong hệ thống</p>
                   </div>
                 </div>
 
@@ -102,8 +102,8 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                     <Activity className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-white">Điểm Elo từ kết quả thi đấu</p>
-                    <p className="hidden sm:block text-[11px] text-slate-300">Elo {userElo} — cập nhật khi các giải trong hệ thống kết thúc</p>
+                    <p className="text-xs font-bold text-white">Lịch sử thi đấu theo giải</p>
+                    <p className="hidden sm:block text-[11px] text-slate-300">Kết quả tự cập nhật khi các giải trong hệ thống kết thúc</p>
                   </div>
                 </div>
               </div>
@@ -211,7 +211,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                         <div className="flex items-center gap-1.5 font-mono text-xs font-bold">
                           <span className="text-sky-800 dark:text-sky-400">{user?.level || "Chưa xếp bậc"}</span>
                           <span className="text-slate-400 dark:text-slate-600">|</span>
-                          <span className="text-slate-900 dark:text-white">Elo {userElo}</span>
+                          <span className="text-slate-900 dark:text-white">{userLevel}</span>
                         </div>
                       </div>
                     </div>

@@ -31,10 +31,13 @@ export interface AiRecommendResult {
 export interface AiTeam {
   id: string;
   name: string;
-  elo_rating: number;
+  win_rate: number;
+  recent_form?: string;
   reputation_score?: number;
   preferred_pitch_type?: string;
   contact_phone?: string | null;
+  win_rate_diff?: number;
+  form_score?: number;
 }
 
 // Mobile-friendly timeout (Render cold start can take 30-60s)
@@ -126,12 +129,12 @@ export async function recommendPitches(
 export async function matchmakingAi(
   myTeam: AiTeam,
   candidates: AiTeam[],
-  maxEloDiff = 250
+  maxWinRateDiff = 15
 ): Promise<{ matched_opponents: AiTeam[] } | null> {
   if (!candidates.length) return null;
   return postAi("/matchmaking", {
     my_team: myTeam,
     candidate_teams: candidates,
-    max_elo_diff: maxEloDiff,
+    max_win_rate_diff: maxWinRateDiff,
   });
 }

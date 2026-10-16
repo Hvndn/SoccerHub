@@ -131,7 +131,7 @@ public class DataInitializer implements CommandLineRunner {
         if (tournamentRepository.count() == 0) {
             Tournament t1 = Tournament.builder()
                     .title("SoccerHub Championship Cup 2026 - Cúp Bóng Đá Phủi Mở Rộng")
-                    .description("Giải bóng đá sân 7 phủi uy tín nhất khu vực TP.HCM tranh Cúp Vàng và tính điểm hệ thống Elo VFF.")
+                    .description("Giải bóng đá sân 7 phủi uy tín nhất khu vực TP.HCM tranh Cúp Vàng, lưu lịch sử thi đấu và chuỗi phong độ.")
                     .sportType("SAN_7")
                     .format("KNOCKOUT")
                     .pitchName("Cụm Sân Nam Sài Gòn, Q.7")
@@ -146,9 +146,9 @@ public class DataInitializer implements CommandLineRunner {
                     .status("OPEN")
                     .bannerUrl("https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80")
                     .teams(new ArrayList<>(List.of(
-                            TournamentTeamEntry.builder().teamName("FC Saigon Warriors").captainName("Nguyễn Văn Hùng").captainPhone("0909111222").memberCount(14).eloRating(1580).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(3)).build(),
-                            TournamentTeamEntry.builder().teamName("FC Hoàng Nam Q7").captainName("Trần Tuấn Anh").captainPhone("0909333444").memberCount(12).eloRating(1490).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
-                            TournamentTeamEntry.builder().teamName("FC Lộc Phát").captainName("Phạm Đăng Khoa").captainPhone("0908555666").memberCount(13).eloRating(1520).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(1)).build()
+                            TournamentTeamEntry.builder().teamName("FC Saigon Warriors").captainName("Nguyễn Văn Hùng").captainPhone("0909111222").memberCount(14).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(3)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Hoàng Nam Q7").captainName("Trần Tuấn Anh").captainPhone("0909333444").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Lộc Phát").captainName("Phạm Đăng Khoa").captainPhone("0908555666").memberCount(13).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(1)).build()
                     )))
                     .build();
 
@@ -169,8 +169,8 @@ public class DataInitializer implements CommandLineRunner {
                     .status("ONGOING")
                     .bannerUrl("https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80")
                     .teams(new ArrayList<>(List.of(
-                            TournamentTeamEntry.builder().teamName("FC Bách Khoa").captainName("Lê Hoàng Minh").captainPhone("0912111333").memberCount(10).eloRating(1380).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(5)).build(),
-                            TournamentTeamEntry.builder().teamName("FC Kinh Tế").captainName("Nguyễn Quốc Bảo").captainPhone("0913222444").memberCount(10).eloRating(1350).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(4)).build()
+                            TournamentTeamEntry.builder().teamName("FC Bách Khoa").captainName("Lê Hoàng Minh").captainPhone("0912111333").memberCount(10).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(5)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Kinh Tế").captainName("Nguyễn Quốc Bảo").captainPhone("0913222444").memberCount(10).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(4)).build()
                     )))
                     .build();
 
@@ -191,7 +191,7 @@ public class DataInitializer implements CommandLineRunner {
                     .status("OPEN")
                     .bannerUrl("https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=1200&q=80")
                     .teams(new ArrayList<>(List.of(
-                            TournamentTeamEntry.builder().teamName("FC Tech Titans").captainName("Đặng Ngọc Long").captainPhone("0977888999").memberCount(18).eloRating(1450).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(1)).build()
+                            TournamentTeamEntry.builder().teamName("FC Tech Titans").captainName("Đặng Ngọc Long").captainPhone("0977888999").memberCount(18).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(1)).build()
                     )))
                     .build();
 
@@ -212,15 +212,15 @@ public class DataInitializer implements CommandLineRunner {
                     .status("OPEN")
                     .bannerUrl("https://images.unsplash.com/photo-1553778263-73a83bab9b0c?auto=format&fit=crop&w=1200&q=80")
                     .teams(new ArrayList<>(List.of(
-                            TournamentTeamEntry.builder().teamName("FC FPT Software").captainName("Phan Quang Huy").captainPhone("0981222333").memberCount(9).eloRating(1320).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
-                            TournamentTeamEntry.builder().teamName("FC Viettel Pay").captainName("Đỗ Minh Châu").captainPhone("0982333444").memberCount(9).eloRating(1290).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
-                            TournamentTeamEntry.builder().teamName("FC Vinamilk").captainName("Lý Gia Hân").captainPhone("0983444555").memberCount(9).eloRating(1410).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(1)).build()
+                            TournamentTeamEntry.builder().teamName("FC FPT Software").captainName("Phan Quang Huy").captainPhone("0981222333").memberCount(9).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Viettel Pay").captainName("Đỗ Minh Châu").captainPhone("0982333444").memberCount(9).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Vinamilk").captainName("Lý Gia Hân").captainPhone("0983444555").memberCount(9).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(1)).build()
                     )))
                     .build();
 
             Tournament t5 = Tournament.builder()
                     .title("Giải Phủi Khu Vực Quận 7 - Mùa 2 (Đã Kết Thúc)")
-                    .description("Giải phủi khu vực Q.7 đã kết thúc, dùng để minh chứng tính năng lưu kết quả, BXH và cập nhật Elo tự động.")
+                    .description("Giải phủi khu vực Q.7 đã kết thúc, dùng để minh chứng tính năng lưu kết quả, BXH và chuỗi phong độ tự động.")
                     .sportType("SAN_7")
                     .format("KNOCKOUT")
                     .pitchName("Cụm Sân Bóng Đá Đại Nắng")
@@ -235,8 +235,8 @@ public class DataInitializer implements CommandLineRunner {
                     .status("COMPLETED")
                     .bannerUrl("https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1200&q=80")
                     .teams(new ArrayList<>(List.of(
-                            TournamentTeamEntry.builder().teamName("FC Phù Đổng Q7").captainName("Nguyễn Văn An").captainPhone("0908123456").memberCount(12).eloRating(1450).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(90)).build(),
-                            TournamentTeamEntry.builder().teamName("FC Đại Nắng").captainName("Võ Thanh Tâm").captainPhone("0908777888").memberCount(12).eloRating(1380).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(88)).build()
+                            TournamentTeamEntry.builder().teamName("FC Phù Đổng Q7").captainName("Nguyễn Văn An").captainPhone("0908123456").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(90)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Đại Nắng").captainName("Võ Thanh Tâm").captainPhone("0908777888").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(88)).build()
                     )))
                     .build();
 
@@ -395,7 +395,6 @@ public class DataInitializer implements CommandLineRunner {
                     .teamName("FC Phù Đổng Q7")
                     .captainName("Nguyễn Văn An")
                     .captainPhone("0908 123 456")
-                    .eloRating(1350)
                     .reputationScore(98)
                     .pitchName("Cụm Sân Bóng Đá Đại Nắng (Sân 7A)")
                     .address("Số 154 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7")
@@ -412,7 +411,6 @@ public class DataInitializer implements CommandLineRunner {
                     .teamName("FC Bách Khoa Nam")
                     .captainName("Trần Tuấn Anh")
                     .captainPhone("0912 345 678")
-                    .eloRating(1210)
                     .reputationScore(95)
                     .pitchName("Sân Mini Phú Nhuận Arena")
                     .address("Quận Phú Nhuận, TP.HCM")
@@ -420,7 +418,7 @@ public class DataInitializer implements CommandLineRunner {
                     .pitchType("SAN_5")
                     .paymentModel("SPLIT_EQUAL")
                     .estimatedFee(50000L)
-                    .note("Tìm kèo cọ xát nâng trình Elo Serie C, anh em văn phòng đá dưỡng sinh.")
+                    .note("Tìm kèo cọ xát cho đội phong độ tương đương, anh em văn phòng đá dưỡng sinh.")
                     .status("OPEN")
                     .createdAt(LocalDateTime.now().minusHours(2))
                     .build();
@@ -429,7 +427,6 @@ public class DataInitializer implements CommandLineRunner {
                     .teamName("FC Saigon Warriors")
                     .captainName("Vũ Minh Tuấn")
                     .captainPhone("0933 888 999")
-                    .eloRating(1520)
                     .reputationScore(99)
                     .pitchName("Cụm Sân Nam Sài Gòn (Sân 7 FIFA)")
                     .address("Huyện Nhà Bè, TP.HCM")
@@ -437,7 +434,7 @@ public class DataInitializer implements CommandLineRunner {
                     .pitchType("SAN_7")
                     .paymentModel("LOSER_PAYS")
                     .estimatedFee(60000L)
-                    .note("Kèo căng cọ xát chuẩn bị giải Cup, đội thua chịu tiền sân, mời giao lưu các đội Elo 1450+.")
+                    .note("Kèo căng cọ xát chuẩn bị giải Cup, đội thua chịu tiền sân, mời giao lưu các đội phong độ cao.")
                     .status("OPEN")
                     .createdAt(LocalDateTime.now().minusHours(5))
                     .build();
@@ -446,7 +443,6 @@ public class DataInitializer implements CommandLineRunner {
                     .teamName("FC Quận 2 Brothers")
                     .captainName("Bùi Trọng Nhân")
                     .captainPhone("0901 222 333")
-                    .eloRating(1180)
                     .reputationScore(92)
                     .pitchName("Sân Bóng Thảo Điền Mini")
                     .address("Quận 2 (TP. Thủ Đức), TP.HCM")
@@ -463,7 +459,6 @@ public class DataInitializer implements CommandLineRunner {
                     .teamName("FC Cầu Giấy Phủi")
                     .captainName("Ngô Thành Đạt")
                     .captainPhone("0902 333 444")
-                    .eloRating(1290)
                     .reputationScore(96)
                     .pitchName("Sân Mỹ Đình Futsal Center")
                     .address("Nam Từ Liêm, Hà Nội")
@@ -480,7 +475,6 @@ public class DataInitializer implements CommandLineRunner {
                     .teamName("FC Ninh Thuận Bình Minh")
                     .captainName("Hoàng Minh Tuấn")
                     .captainPhone("0903 444 555")
-                    .eloRating(1355)
                     .reputationScore(94)
                     .pitchName("Sân Thanh Niên Bình Minh")
                     .address("TP. Phan Rang - Tháp Chàm, Ninh Thuận")

@@ -67,7 +67,6 @@ public class AdminController {
             m.put("email", u.getEmail());
             m.put("phone", u.getPhone());
             m.put("role", u.getRole() != null ? u.getRole().name() : null);
-            m.put("eloRating", u.getEloRating());
             m.put("area", u.getArea());
             m.put("level", u.getLevel());
             m.put("enabled", u.getEnabled() == null || u.getEnabled());

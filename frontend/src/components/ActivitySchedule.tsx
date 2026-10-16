@@ -25,8 +25,10 @@ type MatchRow = {
   tournamentTitle: string;
   teamA: string;
   teamB: string;
-  eloA?: number;
-  eloB?: number;
+  formA?: string;
+  recordA?: string;
+  formB?: string;
+  recordB?: string;
   scoreA?: number;
   scoreB?: number;
   status: string;
@@ -137,8 +139,10 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
             tournamentTitle: t.title,
             teamA: m.teamA.name,
             teamB: m.teamB.name,
-            eloA: m.teamA.elo,
-            eloB: m.teamB.elo,
+            formA: m.teamA.form ?? "",
+            recordA: m.teamA.record ?? "0-0-0",
+            formB: m.teamB.form ?? "",
+            recordB: m.teamB.record ?? "0-0-0",
             scoreA: m.scoreA,
             scoreB: m.scoreB,
             status: m.status ?? "SCHEDULED",
@@ -350,7 +354,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                                 {i === 0 ? "ĐỘI A" : "ĐỘI B"}
                               </span>
                               <span className={`font-mono ${i === 0 ? "text-sky-800 dark:text-sky-400" : ""}`}>
-                                Elo {i === 0 ? (hero.eloA ?? entry?.eloRating ?? "—") : (hero.eloB ?? entry?.eloRating ?? "—")}
+                                Phong độ {i === 0 ? (hero.recordA ?? entry?.record ?? "0-0-0") : (hero.recordB ?? entry?.record ?? "0-0-0")}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
@@ -542,7 +546,9 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                       <div key={p.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{p.teamName}</span>
-                          <span className="font-mono text-[10px] font-bold text-amber-600 shrink-0">Elo {p.eloRating}</span>
+                          <span className="font-mono text-[10px] font-bold text-amber-600 shrink-0">
+                            {p.record && p.record !== "0-0-0" ? `${p.record}` : "Tân binh"}
+                          </span>
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                           {p.pitchName} · {p.matchTime}
@@ -626,9 +632,9 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                 <div className="font-bold text-slate-900 dark:text-white">{selectedMatch.pitchName ?? "Chưa xếp"}</div>
               </div>
               <div>
-                <span className="text-slate-500">Elo hạt giống:</span>
+                <span className="text-slate-500">Phong độ (T-H-B):</span>
                 <div className="font-mono font-bold text-slate-900 dark:text-white">
-                  {selectedMatch.eloA ?? "—"} / {selectedMatch.eloB ?? "—"}
+                  {selectedMatch.recordA ?? "0-0-0"} / {selectedMatch.recordB ?? "0-0-0"}
                 </div>
               </div>
             </div>

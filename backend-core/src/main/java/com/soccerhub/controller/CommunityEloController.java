@@ -2,6 +2,8 @@ package com.soccerhub.controller;
 
 import com.soccerhub.model.MatchmakingPost;
 import com.soccerhub.repository.MatchmakingPostRepository;
+import com.soccerhub.repository.TournamentRepository;
+import com.soccerhub.service.TeamFormService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,12 +16,23 @@ import java.util.*;
 public class CommunityEloController {
 
     private final MatchmakingPostRepository matchmakingPostRepository;
-    private final com.soccerhub.repository.UserRepository userRepository;
+    private final TournamentRepository tournamentRepository;
+    private final TeamFormService teamFormService;
 
     @GetMapping("/matchmaking-posts")
     public ResponseEntity<List<MatchmakingPost>> getMatchmakingPosts() {
         List<MatchmakingPost> posts = matchmakingPostRepository.findAllByOrderByCreatedAtDesc();
+        posts.forEach(this::attachForm);
         return ResponseEntity.ok(posts);
+    }
+
+    /** Gắn phong độ live của đội đăng kèo — không lưu DB. */
+    private void attachForm(MatchmakingPost p) {
+        if (p == null || p.getTeamName() == null) return;
+        TeamFormService.FormRecord f = teamFormService.formOf(p.getTeamName());
+        p.setForm(f.form());
+        p.setRecord(f.record());
+        p.setWinRate(f.winRate());
     }
 
     @PostMapping("/matchmaking-posts")
@@ -47,6 +60,8 @@ public class CommunityEloController {
                 .teamName(teamName)
                 .captainName(captainName != null ? captainName : captainPhone)
                 .captainPhone(captainPhone)
+                // eloRating client gửi lên (nếu có) được giữ nguyên để tương thích ngược,
+                // nhưng hệ thống không còn dùng để gợi ý/xếp hạng — phong độ tính từ lịch sử.
                 .eloRating(eloRating)
                 .pitchName(pitchName)
                 .address(address)
@@ -60,6 +75,7 @@ public class CommunityEloController {
                 .build();
 
         MatchmakingPost saved = matchmakingPostRepository.save(post);
+        attachForm(saved);
         return ResponseEntity.ok(saved);
     }
 
@@ -77,7 +93,7 @@ public class CommunityEloController {
         String opponentTeamName = str(req.get("opponentTeamName"));
         String opponentCaptainName = str(req.get("opponentCaptainName"));
         String opponentCaptainPhone = str(req.get("opponentCaptainPhone"));
-        Integer opponentElo = req.get("opponentElo") != null ? Integer.parseInt(req.get("opponentElo").toString()) : null;
+        // opponentElo (nếu client cũ gửi) được bỏ qua: nhận kèo không còn xét điểm số.
 
         if (opponentTeamName == null || opponentCaptainPhone == null) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -88,7 +104,6 @@ public class CommunityEloController {
         post.setOpponentTeamName(opponentTeamName);
         post.setOpponentCaptainName(opponentCaptainName != null ? opponentCaptainName : opponentCaptainPhone);
         post.setOpponentCaptainPhone(opponentCaptainPhone);
-        post.setOpponentEloRating(opponentElo);
         post.setMatchedAt(LocalDateTime.now());
 
         matchmakingPostRepository.save(post);
@@ -119,7 +134,10 @@ public class CommunityEloController {
             item.put("captainName", p.getCaptainName());
             item.put("time", p.getMatchTime());
             item.put("location", p.getPitchName() + (p.getAddress() != null ? " — " + p.getAddress() : ""));
-            item.put("eloRequired", p.getEloRating());
+            TeamFormService.FormRecord f = teamFormService.formOf(p.getTeamName());
+            item.put("form", f.form());
+            item.put("record", f.record());
+            item.put("winRate", f.winRate());
             item.put("fee", p.getEstimatedFee());
             item.put("note", p.getNote());
             item.put("createdAt", p.getCreatedAt());
@@ -128,26 +146,46 @@ public class CommunityEloController {
         return ResponseEntity.ok(market);
     }
 
-    /** Bảng xếp hạng Elo: lấy thật từ cột elo_rating của bảng users. */
+    /**
+     * Bảng phong độ đội bóng: gom mọi tên đội từng đăng ký giải, tính thành tích
+     * + chuỗi 5 trận gần nhất từ lịch sử thi đấu thật, xếp theo tỷ lệ thắng.
+     * Thay thế BXH Elo cũ — không còn điểm số, chỉ lịch sử trực quan.
+     */
     @GetMapping("/players/leaderboard")
-    public ResponseEntity<List<Map<String, Object>>> getEloLeaderboard() {
-        List<com.soccerhub.model.User> users = new ArrayList<>(userRepository.findAll());
-        users.removeIf(u -> u.getEloRating() == null);
-        users.sort((a, b) -> Integer.compare(b.getEloRating(), a.getEloRating()));
-
-        List<Map<String, Object>> leaderboard = new ArrayList<>();
-        int rank = 1;
-        for (com.soccerhub.model.User u : users) {
-            if (rank > 10) break;
-            Map<String, Object> row = new LinkedHashMap<>();
-            row.put("rank", rank++);
-            row.put("id", u.getId());
-            row.put("name", u.getFullName());
-            row.put("team", u.getArea());
-            row.put("elo", u.getEloRating());
-            row.put("level", u.getLevel());
-            leaderboard.add(row);
+    public ResponseEntity<List<Map<String, Object>>> getFormLeaderboard() {
+        Set<String> teamNames = new LinkedHashSet<>();
+        for (com.soccerhub.model.Tournament t : tournamentRepository.findAll()) {
+            if (t.getTeams() == null) continue;
+            for (com.soccerhub.model.TournamentTeamEntry e : t.getTeams()) {
+                if (e.getTeamName() != null && !e.getTeamName().isBlank()) {
+                    teamNames.add(e.getTeamName());
+                }
+            }
         }
-        return ResponseEntity.ok(leaderboard);
+
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (String name : teamNames) {
+            TeamFormService.FormRecord f = teamFormService.formOf(name);
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("teamName", name);
+            row.putAll(f.toMap());
+            rows.add(row);
+        }
+        rows.sort((a, b) -> {
+            int c = Integer.compare((int) b.get("winRate"), (int) a.get("winRate"));
+            if (c != 0) return c;
+            c = Integer.compare((int) b.get("played"), (int) a.get("played"));
+            if (c != 0) return c;
+            return String.valueOf(a.get("teamName")).compareTo(String.valueOf(b.get("teamName")));
+        });
+
+        List<Map<String, Object>> board = new ArrayList<>();
+        int rank = 1;
+        for (Map<String, Object> r : rows) {
+            if (rank > 10) break;
+            r.put("rank", rank++);
+            board.add(r);
+        }
+        return ResponseEntity.ok(board);
     }
 }

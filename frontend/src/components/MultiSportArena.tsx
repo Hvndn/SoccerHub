@@ -42,13 +42,13 @@ interface MatchQueue {
   title: string;
   time: string;
   court: string;
-  eloRequired: string;
+  formInfo: string;
   currentPlayers: number;
   maxPlayers: number;
   costPerPerson: number;
   hostName: string;
   hostAvatar: string;
-  hostElo: string;
+  hostForm: string;
   category: string;
 }
 
@@ -130,13 +130,13 @@ export default function MultiSportArena({
             title: p.note ? `${p.teamName} • ${p.note}` : `${p.teamName} đang tìm đối`,
             time: p.matchTime || 'Chưa chọn khung giờ',
             court: p.pitchName || 'Chưa chọn sân',
-            eloRequired: `Elo ${p.eloRating ?? '—'}`,
+            formInfo: p.record && p.record !== "0-0-0" ? `Thành tích ${p.record}` : 'Tân binh chưa có lịch sử',
             currentPlayers: 0,
             maxPlayers: 0,
             costPerPerson: p.estimatedFee ?? 0,
             hostName: p.captainName || p.teamName || 'Chưa cập nhật',
             hostAvatar: '',
-            hostElo: `Elo ${p.eloRating ?? '—'}`,
+            hostForm: p.form ?? '',
             category:
               p.pitchType === 'FUTSAL'
                 ? 'Futsal'
@@ -233,7 +233,7 @@ export default function MultiSportArena({
                 Ma Trận Sơ Đồ Cụm Sân Bóng Đá Real-Time
               </h1>
               <p className="mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base max-w-2xl hidden sm:block">
-                Đặt ca sân 5, sân 7, sân 11 và Futsal trong nhà tự động 24/7. Tìm đối thủ ghép trận theo chỉ số Elo, giữ chỗ tức thì qua mã đặt chỗ.
+                Đặt ca sân 5, sân 7, sân 11 và Futsal trong nhà tự động 24/7. Tìm đối thủ ghép trận theo phong độ, giữ chỗ tức thì qua mã đặt chỗ.
               </p>
             </div>
 
@@ -500,7 +500,7 @@ export default function MultiSportArena({
                             {match.category}
                           </span>
                           <span className="text-xs text-slate-500 dark:text-slate-400">
-                            Đội Trưởng: <span className="font-semibold text-slate-800 dark:text-slate-200">{match.hostName}</span> ({match.hostElo})
+                            Đội Trưởng: <span className="font-semibold text-slate-800 dark:text-slate-200">{match.hostName}</span> ({match.hostForm ? `phong độ ${match.hostForm}` : "tân binh"})
                           </span>
                         </div>
 
@@ -511,7 +511,7 @@ export default function MultiSportArena({
                         <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
                           <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1 text-emerald-500" /> {match.time}</span>
                           <span className="flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1 text-cyan-500" /> {match.court}</span>
-                          <span className="flex items-center"><Trophy className="w-3.5 h-3.5 mr-1 text-amber-500" /> Yêu cầu: {match.eloRequired}</span>
+                          <span className="flex items-center"><Trophy className="w-3.5 h-3.5 mr-1 text-amber-500" /> Yêu cầu: {match.formInfo}</span>
                         </div>
                       </div>
                     </div>
@@ -670,8 +670,8 @@ export default function MultiSportArena({
                 <span className="font-medium text-emerald-500">{joiningMatch.time} ({joiningMatch.court})</span>
               </div>
               <div className="flex justify-between">
-                <span>Trình độ Elo yêu cầu:</span>
-                <span className="font-bold">{joiningMatch.eloRequired}</span>
+                <span>Phong độ đội chủ kèo:</span>
+                <span className="font-bold">{joiningMatch.formInfo}</span>
               </div>
               <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-2 text-base font-extrabold text-slate-900 dark:text-white">
                 <span>Mức chia tiền sân:</span>
@@ -700,3 +700,4 @@ export default function MultiSportArena({
     </div>
   );
 }
+

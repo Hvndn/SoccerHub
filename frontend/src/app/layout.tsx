@@ -28,7 +28,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "SoccerHub - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh",
-  description: "Nền tảng quản lý sân bóng, giải đấu và AI gợi ý sân thông minh tích hợp Elo matchmaking",
+  description: "Nền tảng quản lý sân bóng, giải đấu và AI gợi ý sân thông minh tích hợp lịch sử thi đấu",
 };
 
 export const viewport: Viewport = {

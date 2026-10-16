@@ -8,7 +8,7 @@ import PitchSearch from "@/components/PitchSearch";
 import TournamentBracket from "@/components/TournamentBracket";
 import TournamentLeaderboard from "@/components/TournamentLeaderboard";
 import RefereePanel from "@/components/RefereePanel";
-import CommunityElo from "@/components/CommunityElo";
+import CommunityForm from "@/components/CommunityForm";
 import AdminDashboard from "@/components/AdminDashboard";
 import ActivitySchedule from "@/components/ActivitySchedule";
 import MemberCardPortal from "@/components/MemberCardPortal";
@@ -352,7 +352,7 @@ export default function Home() {
           )}
 
           {activeTab === "tournaments" && (
-            <CommunityElo 
+            <CommunityForm 
               user={currentUser} 
               defaultSubTab="tournaments"
               onOpenAuth={handleOpenAuth}
@@ -363,18 +363,18 @@ export default function Home() {
             <>
               {!currentUser && (
                 <GuestFeatureBanner
-                  title="Cộng Đồng Cầu Thủ & Hệ Thống Rating Elo"
-                  description="Tham gia cộng đồng SoccerHub. Ghép trận ngẫu nhiên (Matchmaking) tìm đối thủ phù hợp trình độ và theo dõi chỉ số Elo thăng hạng của bản thân."
+                  title="Cộng Đồng Cầu Thủ & Phong Độ Thi Đấu"
+                  description="Tham gia cộng đồng SoccerHub. Ghép trận (Matchmaking) tìm đối thủ tương đương phong độ và theo dõi lịch sử thi đấu của bản thân."
                   features={[
-                    "Tính điểm Elo chuẩn thể thao",
+                    "Lịch sử thi đấu & chuỗi phong độ 5 trận",
                     "Ghép trận tìm đối thủ theo trình độ",
-                    "Bảng xếp hạng cá nhân & CLB",
+                    "Bảng xếp hạng phong độ & CLB",
                   ]}
                   icon={Users}
                   onOpenAuth={handleOpenAuth}
                 />
               )}
-              <CommunityElo user={currentUser} onOpenAuth={handleOpenAuth} />
+              <CommunityForm user={currentUser} onOpenAuth={handleOpenAuth} />
             </>
           )}
 
@@ -493,7 +493,7 @@ export default function Home() {
                 <div className="space-y-2">
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
                   <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                    Đăng nhập để xem và quản lý hồ sơ cầu thủ, chỉ số Elo và thành tích thi đấu.
+                    Đăng nhập để xem và quản lý hồ sơ cầu thủ, phong độ và thành tích thi đấu.
                   </p>
                 </div>
                 <button
@@ -509,7 +509,7 @@ export default function Home() {
 
           {activeTab === "organizer" && (
             (currentUser?.role === "ORGANIZER" || currentUser?.role === "OWNER") ? (
-              <CommunityElo 
+              <CommunityForm 
                 user={currentUser} 
                 defaultSubTab="organizer"
                 onOpenAuth={handleOpenAuth}
@@ -603,7 +603,7 @@ export default function Home() {
             © 2026 <strong>SoccerHub</strong>
             <span className="hidden sm:inline"> — Nền Tảng Đặt Sân &amp; Quản Lý Bóng Đá Thông Minh. Đồ Án Tốt Nghiệp: Hệ thống quản lý cụm sân bóng đá mini cỏ nhân tạo (Sân 5, Sân 7, Sân 11), giải đấu phủi và kết nối đối thủ AI.</span>
           </p>
-          <p className="hidden sm:block text-[#0b4f6c] dark:text-sky-400 font-semibold">Công nghệ: Spring Boot, MySQL, Next.js 14, Python FastAPI (tính điểm Elo), QR VietQR sinh từ STK báo cáo giải.</p>
+          <p className="hidden sm:block text-[#0b4f6c] dark:text-sky-400 font-semibold">Công nghệ: Spring Boot, MySQL, Next.js 14, Python FastAPI (lịch sử & phong độ thi đấu), QR VietQR sinh từ STK báo cáo giải.</p>
         </div>
       </footer>
     </div>

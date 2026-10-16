@@ -26,6 +26,7 @@ import {
   Calendar
 } from "lucide-react";
 import DrawLotteryOverlay from "./DrawLotteryOverlay";
+import FormDots from "./FormDots";
 import { ConfirmModal } from "./admin/AdminUI";
 import {
   Tournament,
@@ -295,14 +296,15 @@ export default function TournamentBracket() {
   };
 
   // BXH thật: thắng/hòa/thua/điểm/hiệu số tính từ các trận DONE trong nhánh đấu.
-  // Thắng = 3đ, Hòa = 1đ. Xếp: điểm → hiệu số → Elo.
+  // Thắng = 3đ, Hòa = 1đ. Xếp: điểm → hiệu số → tỷ lệ thắng.
   const tableRows = useMemo(() => {
-    const base = new Map<string, { team: string; captain: string; elo: number; simulated: boolean; played: number; won: number; drawn: number; lost: number; gf: number; ga: number }>();
+    const base = new Map<string, { team: string; captain: string; winRate: number; form: string; simulated: boolean; played: number; won: number; drawn: number; lost: number; gf: number; ga: number }>();
     (selected?.teams ?? []).forEach((t) =>
       base.set(t.teamName, {
         team: t.teamName,
         captain: t.captainName ?? "—",
-        elo: t.eloRating ?? 1200,
+        winRate: t.winRate ?? 0,
+        form: t.form ?? "",
         simulated: !!t.simulated,
         played: 0,
         won: 0,
@@ -343,20 +345,17 @@ export default function TournamentBracket() {
     );
     return Array.from(base.values())
       .map((r) => ({ ...r, points: r.won * 3 + r.drawn, diff: r.gf - r.ga }))
-      .sort((x, y) => y.points - x.points || y.diff - x.diff || y.elo - x.elo);
+      .sort((x, y) => y.points - x.points || y.diff - x.diff || (y.winRate ?? 0) - (x.winRate ?? 0));
   }, [selected, bracket]);
 
-  /** Huỷ kết quả để nhập lại — backend hoàn lại Elo và xoá cầu thủ ghi bàn. */
+  /** Huỷ kết quả để nhập lại — backend xoá bản ghi và cầu thủ ghi bàn, phong độ tự tính lại. */
   const handleUndoScore = async (m: BracketMatch) => {
     if (!selected) return;
     try {
       setSavingMatch(m.matchId);
       const res = await undoMatchResult(selected.id, m.matchId);
-      const rolled = res.eloChanges
-        .map((c) => `${c.team} ${c.rolledBackFrom}→${c.restoredElo}`)
-        .join(" • ");
       triggerToast(
-        `${res.message}${rolled ? ` Elo hoàn lại: ${rolled}` : ""}` +
+        `${res.message}` +
         (res.goalEventsRemoved ? ` • Đã xoá ${res.goalEventsRemoved} dòng cầu thủ ghi bàn.` : "")
       );
       setScorerOpen((o) => {
@@ -406,10 +405,10 @@ export default function TournamentBracket() {
         scoreB,
         scorers: rows,
       });
-      const deltas = res.eloChanges
-        .map((c) => `${c.team} ${c.delta >= 0 ? "+" : ""}${Math.round(c.delta)}`)
+      const forms = (res.formChanges ?? [])
+        .map((c: any) => `${c.team} ${c.after?.record ?? ""}`)
         .join(" • ");
-      triggerToast(`${res.message} Elo: ${deltas}${res.aiOnline ? "" : " (AI offline, tính local)"}`);
+      triggerToast(`${res.message}${forms ? ` | Phong độ: ${forms}` : ""}`);
       setScorerRows((prev) => {
         const next = { ...prev };
         delete next[m.matchId];
@@ -450,7 +449,7 @@ export default function TournamentBracket() {
     triggerToast(`Đã ghi nhận VAR Replay: "${decision}"!`);
   };
 
-  /** Lưu tỷ số từ Tòa VAR xuống CSDL — cùng endpoint nhập kết quả, cập nhật Elo thật. */
+  /** Lưu tỷ số từ Tòa VAR xuống CSDL — cùng endpoint nhập kết quả, lịch sử tự cập nhật. */
   const saveVarScore = async () => {
     if (!selected || !varMatch) return;
     const isLeague = selected.format === "ROUND_ROBIN";
@@ -469,14 +468,14 @@ export default function TournamentBracket() {
         scoreA: varScoreA,
         scoreB: varScoreB,
       });
-      const deltas = res.eloChanges
-        .map((c) => `${c.team} ${c.delta >= 0 ? "+" : ""}${Math.round(c.delta)}`)
+      const forms = (res.formChanges ?? [])
+        .map((c: any) => `${c.team} ${c.after?.record ?? ""}`)
         .join(" • ");
       pushVarLog(
-        `Kết quả ${varMatch.teamA?.name} ${varScoreA}-${varScoreB} ${varMatch.teamB?.name} — Elo: ${deltas}`,
+        `Kết quả ${varMatch.teamA?.name} ${varScoreA}-${varScoreB} ${varMatch.teamB?.name} — Phong độ: ${forms}`,
         "ok"
       );
-      triggerToast(`${res.message} Elo: ${deltas}`);
+      triggerToast(`${res.message}${forms ? ` | Phong độ: ${forms}` : ""}`);
     } catch (err: any) {
       triggerToast(err?.message || "Lưu kết quả thất bại.");
     } finally {
@@ -492,8 +491,8 @@ export default function TournamentBracket() {
             <span className="font-bold text-amber-900 dark:text-amber-200 truncate">{match.bye.name}</span>
             <span className="px-2 py-0.5 rounded bg-amber-500 text-white text-[10px] font-black shrink-0">MIỄN VÒNG</span>
           </div>
-          {match.bye.elo != null && (
-            <div className="px-3 pb-2 text-[10px] font-mono text-amber-700 dark:text-amber-400">Elo {match.bye.elo} • Hạt giống #{match.bye.seed ?? "—"}</div>
+          {match.bye.record && (
+            <div className="px-3 pb-2 text-[10px] font-mono text-amber-700 dark:text-amber-400">Thành tích {match.bye.record} • Hạt giống #{match.bye.seed ?? "—"}</div>
           )}
         </div>
       );
@@ -513,7 +512,7 @@ export default function TournamentBracket() {
             {done && (
               <button
                 type="button"
-                title="Huỷ kết quả: hoàn lại Elo và mở lại trận để nhập tỷ số mới"
+                title="Huỷ kết quả: mở lại trận để nhập tỷ số mới (phong độ tự tính lại)"
                 aria-label={`Huỷ kết quả trận ${match.matchId}`}
                 disabled={savingMatch === match.matchId}
                 onClick={() => setConfirmUndo(match)}
@@ -551,8 +550,8 @@ export default function TournamentBracket() {
               {i === 1 && <div className="border-t border-slate-200 dark:border-slate-800" />}
               <div className={`p-3 flex justify-between items-center gap-2 ${t?.tbd ? "text-slate-400 dark:text-slate-500 italic" : isWinner ? "text-sky-900 dark:text-emerald-200 font-black" : "text-slate-700 dark:text-slate-200 font-bold"}`}>
                 <span className="truncate">{t?.name ?? "?"}{isWinner ? " 👑" : ""}</span>
-                {t && !t.tbd && t.elo != null && (
-                  <span className="font-mono text-[10px] text-slate-400 shrink-0">{t.elo}</span>
+                {t && !t.tbd && (t.record || t.form) && (
+                  <span className="font-mono text-[10px] text-slate-400 shrink-0">{t.record ?? t.form}</span>
                 )}
               </div>
             </div>
@@ -749,7 +748,7 @@ export default function TournamentBracket() {
               <button
                 onClick={() => (bracket ? setConfirmDraw(true) : startDraw())}
                 disabled={!selected || teamCount < 2 || drawBusy}
-                title="Bốc thăm hạt giống theo Elo, lưu nhánh đấu vào CSDL"
+                title="Bốc thăm hạt giống theo thứ tự đăng ký, lưu nhánh đấu vào CSDL"
                 className="px-3.5 py-2.5 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {drawBusy ? (
@@ -930,7 +929,7 @@ export default function TournamentBracket() {
             }`}
           >
             <ListOrdered className="w-4 h-4" />
-            <span>Bảng Xếp Hạng & Chỉ Số Elo VFF</span>
+            <span>Bảng Xếp Hạng & Phong Độ Thi Đấu</span>
           </button>
 
           <button
@@ -956,7 +955,7 @@ export default function TournamentBracket() {
               <span>Cây Nhánh Đấu {bracket ? `— ${bracket.rounds.length} vòng` : ""}</span>
             </h2>
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              {bracket ? `Bốc thăm lúc ${bracket.drawnAt?.slice(0, 16).replace("T", " ")} • Xếp hạt giống theo Elo` : "Chưa có nhánh đấu"}
+              {bracket ? `Bốc thăm lúc ${bracket.drawnAt?.slice(0, 16).replace("T", " ")} • Hạt giống theo thứ tự đăng ký` : "Chưa có nhánh đấu"}
             </span>
           </div>
 
@@ -990,7 +989,7 @@ export default function TournamentBracket() {
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {teamCount < 2
                   ? `Mới có ${teamCount} đội — cần ít nhất 2 đội. Dùng nút “Giả lập đủ đội (Test)” nếu thiếu.`
-                  : `Đã có ${teamCount} đội. Bấm “Bốc thăm chia cặp” để xếp hạt giống theo Elo.`}
+                  : `Đã có ${teamCount} đội. Bấm “Bốc thăm chia cặp” (hạt giống theo thứ tự đăng ký).`}
               </p>
             </div>
           ) : (
@@ -1046,7 +1045,7 @@ export default function TournamentBracket() {
                 {varMatch.status === "DONE" && (
                   <p className="rounded-xl bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-[11px] font-bold text-amber-700 dark:text-amber-300">
                     Trận này đã có kết quả {varMatch.scoreA}-{varMatch.scoreB}. Muốn sửa thì bấm “Huỷ KQ”
-                    trên thẻ trận ở tab Cây Nhánh Đấu — hệ thống sẽ hoàn lại Elo.
+                    trên thẻ trận ở tab Cây Nhánh Đấu — hệ thống sẽ mở lại trận và tính lại phong độ.
                   </p>
                 )}
 
@@ -1063,7 +1062,7 @@ export default function TournamentBracket() {
                       <div className="text-base sm:text-lg font-black text-sky-800 dark:text-sky-400 truncate">
                         {varMatch.teamA?.name}
                       </div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Elo {varMatch.teamA?.elo ?? "—"}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Thành tích {varMatch.teamA?.record ?? varMatch.teamA?.form ?? "—"}</div>
                       <div className="text-2xl sm:text-6xl font-mono font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-900 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
                         {varScoreA}
                       </div>
@@ -1099,7 +1098,7 @@ export default function TournamentBracket() {
                       <div className="text-base sm:text-lg font-black text-cyan-700 dark:text-cyan-400 truncate">
                         {varMatch.teamB?.name}
                       </div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Elo {varMatch.teamB?.elo ?? "—"}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Thành tích {varMatch.teamB?.record ?? varMatch.teamB?.form ?? "—"}</div>
                       <div className="text-2xl sm:text-6xl font-mono font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-900 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
                         {varScoreB}
                       </div>
@@ -1130,7 +1129,7 @@ export default function TournamentBracket() {
                     >
                       {savingMatch === varMatch.matchId
                         ? "Đang lưu…"
-                        : `Lưu kết quả ${varScoreA}-${varScoreB} & cập nhật Elo`}
+                        : `Lưu kết quả ${varScoreA}-${varScoreB} & lưu lịch sử thi đấu`}
                     </button>
                   )}
                 </div>
@@ -1273,7 +1272,7 @@ export default function TournamentBracket() {
         </div>
       )}
 
-      {/* TAB 3: BXH TỪ ĐỘI ĐĂNG KÝ THẬT (xếp theo Elo) */}
+      {/* TAB 3: BXH TỪ ĐỘI ĐĂNG KÝ THẬT (xếp theo điểm, hiệu số, phong độ) */}
       {activeTab === "standings" && (
         <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4 shadow-md">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1282,7 +1281,7 @@ export default function TournamentBracket() {
               <span>Bảng Xếp Hạng {selected ? `— ${selected.title}` : ""}</span>
             </h2>
             <span className="text-xs text-slate-500 dark:text-slate-400">
-              Thắng = 3 điểm • Elo cập nhật tự động sau mỗi trận
+              Thắng = 3 điểm • Phong độ cập nhật tự động từ lịch sử sau mỗi trận
             </span>
           </div>
 
@@ -1306,7 +1305,7 @@ export default function TournamentBracket() {
                     <th className="py-3 px-2 sm:px-4 text-center">Thua</th>
                     <th className="py-3 px-2 sm:px-4 text-center">HS</th>
                     <th className="py-3 px-2 sm:px-4 text-center">Điểm</th>
-                    <th className="py-3 px-2 sm:px-4 text-center">Elo Hiện Tại</th>
+                    <th className="py-3 px-2 sm:px-4 text-center">Phong Độ 5 Trận</th>
                     <th className="py-3 px-2 sm:px-4 text-right">Nguồn</th>
                   </tr>
                 </thead>
@@ -1324,9 +1323,7 @@ export default function TournamentBracket() {
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono">{row.diff > 0 ? `+${row.diff}` : row.diff}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-black">{row.points}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center">
-                        <span className="bg-amber-400/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded font-bold font-mono">
-                          {row.elo.toLocaleString("vi-VN")}
-                        </span>
+                        <FormDots form={row.form} size="sm" />
                       </td>
                       <td className="py-3.5 px-2 sm:px-4 text-right">
                         {row.simulated ? (
@@ -1447,7 +1444,7 @@ export default function TournamentBracket() {
                     <tr className="bg-slate-100 dark:bg-slate-800 text-[11px] uppercase text-slate-600 dark:text-slate-300">
                       <th className="py-2 px-3 font-black">Đội</th>
                       <th className="py-2 px-3 font-black">Trọng tài</th>
-                      <th className="py-2 px-3 font-black text-center">Elo hạt giống</th>
+                      <th className="py-2 px-3 font-black text-center">Phong độ (T-H-B)</th>
                       <th className="py-2 px-3 font-black text-center">Bàn thắng</th>
                       <th className="py-2 px-3 font-black text-center">Kết quả</th>
                     </tr>
@@ -1459,7 +1456,7 @@ export default function TournamentBracket() {
                           {team?.name}
                         </td>
                         <td className="py-2.5 px-3 text-slate-500">—</td>
-                        <td className="py-2.5 px-3 text-center">{team?.elo ?? "—"}</td>
+                        <td className="py-2.5 px-3 text-center">{team?.record ?? team?.form ?? "—"}</td>
                         <td className="py-2.5 px-3 text-center font-black text-base">
                           {i === 0 ? (varMatch.scoreA ?? 0) : (varMatch.scoreB ?? 0)}
                         </td>
@@ -1486,7 +1483,7 @@ export default function TournamentBracket() {
                   />
                   <span className="font-bold text-slate-900 dark:text-white">
                     {varMatch.status === "DONE"
-                      ? "Kết quả đã được BTC nhập và cập nhật Elo trong CSDL."
+                      ? "Kết quả đã được BTC nhập và lưu lịch sử trong CSDL."
                       : "Chưa có kết quả — biên bản chỉ mang tính dự thảo."}
                   </span>
                 </div>
@@ -1530,7 +1527,7 @@ export default function TournamentBracket() {
         onConfirm={startDraw}
       />
 
-      {/* Xác nhận huỷ kết quả (hoàn Elo + xoá cầu thủ ghi bàn) */}
+      {/* Xác nhận huỷ kết quả (xoá bản ghi + cầu thủ ghi bàn, phong độ tự tính lại) */}
       <ConfirmModal
         open={confirmUndo !== null}
         title="Huỷ kết quả trận đấu?"
@@ -1542,8 +1539,8 @@ export default function TournamentBracket() {
                 {confirmUndo.teamA?.name} {confirmUndo.scoreA ?? 0}-{confirmUndo.scoreB ?? 0}{" "}
                 {confirmUndo.teamB?.name}
               </strong>
-              ) sẽ được mở lại. Hệ thống sẽ <strong>hoàn lại Elo</strong> về giá trị trước trận và{" "}
-              <strong>xoá danh sách cầu thủ ghi bàn</strong> của trận này.
+              ) sẽ được mở lại. Hệ thống sẽ <strong>mở lại trận</strong> và{" "}
+              <strong>xoá danh sách cầu thủ ghi bàn</strong> của trận này (phong độ tính lại từ các trận còn lại).
             </>
           ) : null
         }

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
-/** Kết quả một trận đấu trong giải — nguồn thật để tính BXH và cập nhật Elo. */
+/** Kết quả một trận đấu trong giải — nguồn thật để tính BXH và phong độ (lịch sử W/D/L). */
 @Entity
 @Table(name = "match_results")
 @Data
@@ -42,7 +42,7 @@ public class MatchResult {
     private Double eloDeltaA;
     private Double eloDeltaB;
 
-    /** Elo của hai đội TRƯỚC trận — nguồn chuẩn để hoàn lại khi BTC huỷ kết quả. */
+    /** Cột Elo cũ giữ lại để tương thích dữ liệu đã lưu; hệ thống không còn đọc/ghi điểm số. */
     private Integer eloBeforeA;
     private Integer eloBeforeB;
 

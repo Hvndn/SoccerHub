@@ -94,11 +94,15 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
       ),
     },
     {
-      key: "elo",
-      header: "Elo",
+      key: "form",
+      header: "Phong độ",
       sortable: true,
-      sortValue: (r) => r.eloRating ?? 0,
-      render: (r) => <span className="font-mono font-bold">{(r.eloRating ?? 0).toLocaleString("vi-VN")}</span>,
+      sortValue: (r) => r.winRate ?? 0,
+      render: (r) => (
+        <span className="font-mono font-bold">
+          {r.record && r.record !== "0-0-0" ? `${r.record} • ${r.winRate ?? 0}%` : "Tân binh"}
+        </span>
+      ),
     },
     {
       key: "fee",

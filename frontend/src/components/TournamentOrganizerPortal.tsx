@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api";
 import { sportLabel, formatLabel, formatMoney } from "@/lib/tournamentService";
+import FormDots from "./FormDots";
 import {
   Trophy,
   ShieldCheck,
@@ -157,14 +158,16 @@ export default function TournamentOrganizerPortal({
       .sort((a: any, b: any) => (a.matchDate ?? "").localeCompare(b.matchDate ?? ""));
   }, [activeBracket]);
 
-  // BXH tính từ các trận DONE (thắng 3đ, hòa 1đ; xếp điểm → hiệu số → Elo)
+  // BXH tính từ các trận DONE (thắng 3đ, hòa 1đ; xếp điểm → hiệu số → tỷ lệ thắng)
   const standings = useMemo(() => {
     if (!activeTournament) return [];
     const base = new Map<string, any>();
     for (const t of activeTournament.teams ?? []) {
       base.set(t.teamName, {
         team: t.teamName,
-        elo: t.eloRating ?? 1200,
+        winRate: t.winRate ?? 0,
+        form: t.form ?? "",
+        record: t.record ?? "0-0-0",
         played: 0,
         won: 0,
         drawn: 0,
@@ -191,7 +194,7 @@ export default function TournamentOrganizerPortal({
     }
     return Array.from(base.values())
       .map((r: any) => ({ ...r, points: r.won * 3 + r.drawn, diff: r.gf - r.ga }))
-      .sort((x: any, y: any) => y.points - x.points || y.diff - x.diff || y.elo - x.elo);
+      .sort((x: any, y: any) => y.points - x.points || y.diff - x.diff || (y.winRate ?? 0) - (x.winRate ?? 0));
   }, [activeTournament, doneMatches]);
 
   // Vua phá lưới đọc từ bảng goal_events của giải
@@ -265,8 +268,8 @@ export default function TournamentOrganizerPortal({
         setUmpireMsg(body?.message || "Lưu kết quả thất bại.");
         return;
       }
-      const deltas = (body.eloChanges ?? []).map((c: any) => `${c.team} ${c.delta >= 0 ? "+" : ""}${Math.round(c.delta)}`).join(" • ");
-      setUmpireMsg(`${body.message}${deltas ? ` Elo: ${deltas}` : ""}`);
+      const formNote = (body.formChanges ?? []).map((c: any) => `${c.team} ${c.after?.record ?? ""}`).join(" • ");
+      setUmpireMsg(`${body.message}${formNote ? ` | Phong độ: ${formNote}` : ""}`);
       await fetchDbTournaments();
     } catch {
       setUmpireMsg("Không gọi được máy chủ. Kiểm tra kết nối rồi thử lại.");
@@ -516,7 +519,7 @@ export default function TournamentOrganizerPortal({
             {umpireMatch && umpireMatch.status === "DONE" && (
               <p className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
                 Trận này đã có kết quả {umpireMatch.scoreA}-{umpireMatch.scoreB}. Muốn sửa thì vào tab
-                Bracket bấm “Huỷ KQ” — hệ thống sẽ hoàn lại Elo.
+                Bracket bấm “Huỷ KQ” — hệ thống sẽ mở lại trận để nhập tỷ số mới.
               </p>
             )}
 
@@ -535,7 +538,7 @@ export default function TournamentOrganizerPortal({
                 </div>
                 <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between">
                   <span>{umpireMatch?.matchDate ?? "Chưa xếp lịch"}</span>
-                  <span className="text-sky-800 font-bold">Elo: {umpireMatch?.teamA?.elo ?? "—"}</span>
+                  <span className="text-sky-800 font-bold">Phong độ: {umpireMatch?.teamA?.record ?? umpireMatch?.teamA?.form ?? "—"}</span>
                 </div>
               </div>
 
@@ -552,7 +555,7 @@ export default function TournamentOrganizerPortal({
                 </div>
                 <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between">
                   <span>{umpireMatch?.timeSlot ?? "Chưa xếp giờ"}</span>
-                  <span className="text-sky-700 font-bold">Elo: {umpireMatch?.teamB?.elo ?? "—"}</span>
+                  <span className="text-sky-700 font-bold">Phong độ: {umpireMatch?.teamB?.record ?? umpireMatch?.teamB?.form ?? "—"}</span>
                 </div>
               </div>
             </div>
@@ -591,7 +594,7 @@ export default function TournamentOrganizerPortal({
                     className="py-3 px-4 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50"
                   >
                     <CheckCircle2 className="w-4 h-4 text-purple-200" />
-                    <span>{umpireBusy ? "Đang lưu…" : "Lưu KQ & Elo"}</span>
+                    <span>{umpireBusy ? "Đang lưu…" : "Lưu KQ & Lịch Sử"}</span>
                   </button>
                 </div>
               </div>
@@ -704,7 +707,7 @@ export default function TournamentOrganizerPortal({
                                 }`}
                               >
                                 <span className="truncate">{t?.tbd ? t?.name : t?.name ?? "?"}</span>
-                                <span className="font-mono shrink-0">{m.status === "DONE" ? (i === 0 ? m.scoreA : m.scoreB) : t?.elo ?? "-"}</span>
+                                <span className="font-mono shrink-0">{m.status === "DONE" ? (i === 0 ? m.scoreA : m.scoreB) : t?.record ?? t?.form ?? "-"}</span>
                               </div>
                             ))}
                             {m.status !== "DONE" && m.pitchName && (
@@ -782,7 +785,7 @@ export default function TournamentOrganizerPortal({
                         <th className="py-3 px-3 text-center">B</th>
                         <th className="py-3 px-3 text-center">HS</th>
                         <th className="py-3 px-3 text-center">Điểm</th>
-                        <th className="py-3 px-3 text-right">Elo</th>
+                        <th className="py-3 px-3 text-right">Phong độ</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-medium">
@@ -809,7 +812,7 @@ export default function TournamentOrganizerPortal({
                           </td>
                           <td className="py-3 px-3 text-center font-mono font-black text-slate-900 dark:text-white">{row.points}</td>
                           <td className="py-3 px-3 text-right">
-                            <span className="font-mono font-bold text-amber-500">{row.elo.toLocaleString("vi-VN")}</span>
+                            <FormDots form={row.form} size="sm" />
                           </td>
                         </tr>
                       ))}

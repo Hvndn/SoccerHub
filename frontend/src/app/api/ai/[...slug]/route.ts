@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * Proxy API route cho AI Service (FastAPI) để tránh lỗi CORS trên mobile.
- * Dùng: POST /api/ai/recommend-pitches | /api/ai/calculate-elo | /api/ai/matchmaking
+ * Dùng: POST /api/ai/recommend-pitches | /api/ai/matchmaking
  *
  * URL AI được chọn theo thứ tự:
  *   1. NEXT_PUBLIC_AI_BASE_URL hoặc AI_BASE_URL (nếu được cấu hình)

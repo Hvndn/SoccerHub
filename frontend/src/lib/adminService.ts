@@ -58,6 +58,9 @@ export interface MatchmakingPost {
   captainName?: string | null;
   captainPhone?: string | null;
   eloRating?: number | null;
+  form?: string | null;
+  record?: string | null;
+  winRate?: number | null;
   pitchName: string;
   matchTime: string;
   status?: string | null;
