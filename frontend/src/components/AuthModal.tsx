@@ -278,7 +278,7 @@ export default function AuthModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-title"
-        className="animate-modal-pop relative w-full max-w-[880px] my-auto grid md:grid-cols-[2fr,3fr] rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-2xl max-h-[94vh]"
+        className="animate-modal-pop relative w-full max-w-[880px] my-auto grid md:grid-cols-[2fr,3fr] rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-slate-900 shadow-2xl max-h-[94vh] transition-colors"
       >
         {/* Nút đóng */}
         <button

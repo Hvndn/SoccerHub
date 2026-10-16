@@ -355,7 +355,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               onClick={() => onExplore("OWNER")}
               className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
-              <Store className="w-4 h-4 text-[#0b4f6c]" />
+              <Store className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
               <span>Dành Cho Chủ Sân (Quản Lý Cụm Sân)</span>
             </button>
 

@@ -51,9 +51,9 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
       {/* ========================================================= */}
       {/* HEADER COCKPIT BANNER: CỘNG ĐỒNG CẦU THỦ & GIẢI ĐẤU PRO     */}
       {/* ========================================================= */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-7 border border-slate-200/90 shadow-sm relative isolate overflow-hidden">
-        <div className="hidden sm:block absolute -z-10 top-0 right-0 w-80 h-80 bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
-        <div className="hidden sm:block absolute -z-10 -bottom-10 left-1/3 w-72 h-72 bg-sky-50/50 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-3 sm:p-7 border border-slate-200/90 dark:border-slate-800 shadow-sm relative isolate overflow-hidden transition-colors">
+        <div className="hidden sm:block absolute -z-10 top-0 right-0 w-80 h-80 bg-sky-50/60 dark:bg-sky-950/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden sm:block absolute -z-10 -bottom-10 left-1/3 w-72 h-72 bg-sky-50/50 dark:bg-sky-950/30 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="space-y-2">
@@ -64,12 +64,12 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
               </span>
             </div>
 
-            <h1 className="text-lg sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-2.5">
+            <h1 className="text-lg sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
               <span>Cộng Đồng Kèo Cáp &amp; Giải Đấu Bóng Đá</span>
               <Trophy className="w-7 h-7 text-amber-700 hidden sm:inline-block shrink-0" />
             </h1>
 
-            <p className="hidden sm:block text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed font-medium">
+            <p className="hidden sm:block text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed font-medium">
               Không gian thi đấu toàn diện cho Cầu thủ, Đội bóng & Ban tổ chức: Ghép kèo cáp theo phong độ 5 trận gần nhất, tham gia các giải đấu phong trào quy mô lớn và điều hành nhánh đấu Knockout với Tòa Trọng Tài VAR.
             </p>
           </div>
@@ -81,13 +81,13 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
                 {user.fullName ? user.fullName.charAt(0) : "U"}
               </div>
               <div className="text-xs">
-                <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <span>{user.fullName || user.name || "Cầu Thủ"}</span>
                   <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-100 text-amber-800 font-extrabold border border-amber-200">
                     {user?.level ?? "Cầu thủ"}
                   </span>
                 </div>
-                <div className="text-slate-500 text-[11px] mt-0.5">
+                <div className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
                   {user.role === "OWNER" ? "Chủ Sân" : "Cầu Thủ Phủi Tự Do"} • Sẵn sàng nhận kèo
                 </div>
               </div>

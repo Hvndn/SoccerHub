@@ -1101,7 +1101,7 @@ export default function PitchDetail({
                   </div>
                   <div className="text-center mt-2 text-xs text-slate-600">
                     <span>Mã giữ chỗ: </span>
-                    <strong className="text-[#0b4f6c] font-mono text-sm">{bookingConfirmed?.code || "—"}</strong>
+                    <strong className="text-[#0b4f6c] dark:text-sky-400 font-mono text-sm">{bookingConfirmed?.code || "—"}</strong>
                   </div>
                   <p className="text-[11px] text-slate-500 mt-1">Liên hệ chủ sân để hoàn tất cọc và xác nhận ca.</p>
                 </div>

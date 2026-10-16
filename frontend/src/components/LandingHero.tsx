@@ -69,10 +69,10 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
       {/* ========================================================
           FULL-WIDTH EDGE-TO-EDGE BANNER (GIAO DIỆN SÁNG TINH TẾ)
          ======================================================== */}
-      <div className="w-screen relative isolate left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden shadow-xs border-y border-slate-200/80 bg-white">
+      <div className="w-screen relative isolate left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden shadow-xs border-y border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 transition-colors">
         {/* Soft Ambient Accents (ẩn trên mobile để tối giản) */}
-        <div className="hidden sm:block absolute -z-10 top-0 right-1/4 w-[500px] h-[500px] bg-sky-50/70 rounded-full blur-3xl pointer-events-none" />
-        <div className="hidden sm:block absolute -z-10 -bottom-20 left-10 w-[450px] h-[450px] bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden sm:block absolute -z-10 top-0 right-1/4 w-[500px] h-[500px] bg-sky-50/70 dark:bg-sky-950/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden sm:block absolute -z-10 -bottom-20 left-10 w-[450px] h-[450px] bg-sky-50/60 dark:bg-sky-950/40 rounded-full blur-3xl pointer-events-none" />
 
         {/* Inner Content Container Aligned with Site Container (max-w-[1720px]) */}
         <div className="relative z-10 max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-6 xl:px-[50px] py-6 sm:py-16 lg:py-20">
@@ -81,9 +81,9 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
             {/* LEFT COLUMN: HERO CONTENT (7 COLS) */}
             <div className="lg:col-span-7 space-y-4 sm:space-y-6">
               {/* Main Headline: Đề tài quản lý sân bóng và giải đấu thể thao thông minh */}
-              <h1 className="text-[1.7rem] leading-[1.22] sm:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-black text-slate-900 tracking-tight sm:uppercase font-display">
+              <h1 className="text-[1.7rem] leading-[1.22] sm:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-black text-slate-900 dark:text-white tracking-tight sm:uppercase font-display">
                 Quản Lý Sân Bóng &amp;{" "}
-                <span className="text-[#0b4f6c]">Giải Đấu Thể Thao Thông Minh</span>
+                <span className="text-[#0b4f6c] dark:text-sky-400">Giải Đấu Thể Thao Thông Minh</span>
               </h1>
 
               {/* Feature chips — chỉ hiện từ tablet trở lên để tối giản mobile */}

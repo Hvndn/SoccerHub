@@ -292,11 +292,11 @@ export default function MatchmakingMarketplace({
           {/* Breadcrumb + AI Matchmaking Indicator */}
           <div className="space-y-1.5">
             <div className="hidden sm:flex items-center space-x-1.5 text-xs text-slate-500">
-              <span className="hover:text-[#0b4f6c] cursor-pointer">Trang chủ</span>
+              <span className="hover:text-[#0b4f6c] dark:text-sky-400 cursor-pointer">Trang chủ</span>
               <span>/</span>
               <span>Chợ Kèo Ghép Đội</span>
               <span>/</span>
-              <span className="text-[#0b4f6c] font-bold">Sàn Ghép Cặp Tức Thì</span>
+              <span className="text-[#0b4f6c] dark:text-sky-400 font-bold">Sàn Ghép Cặp Tức Thì</span>
             </div>
             <div className="flex items-center space-x-2 pt-0.5">
               <span className="relative flex h-3 w-3">
@@ -307,7 +307,7 @@ export default function MatchmakingMarketplace({
                 Ghép kèo theo phong độ thi đấu
               </span>
               <span className="text-slate-500">•</span>
-              <span className="px-3 py-0.5 rounded-full bg-[#0ea5e9]/10 text-[#0b4f6c] font-bold text-xs">
+              <span className="px-3 py-0.5 rounded-full bg-[#0ea5e9]/10 text-[#0b4f6c] dark:text-sky-400 font-bold text-xs">
                 {onlineCaptains > 0
                   ? `${onlineCaptains} đội đang mở kèo trên sàn`
                   : "Chưa có kèo nào đang mở"}
@@ -318,7 +318,7 @@ export default function MatchmakingMarketplace({
           {/* Action Bar Right */}
             <div className="flex items-center gap-2.5">
               <button className="hidden sm:flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs transition-colors shadow-xs">
-                <Filter className="w-4 h-4 shrink-0 text-[#0b4f6c]" />
+                <Filter className="w-4 h-4 shrink-0 text-[#0b4f6c] dark:text-sky-400" />
                 <span className="whitespace-nowrap">Bộ Lọc Kèo Quanh Tôi</span>
               </button>
 
@@ -403,7 +403,7 @@ export default function MatchmakingMarketplace({
           className="md:hidden w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left"
         >
           <span className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-100">
-            <Filter className="w-4 h-4 text-[#0b4f6c]" />
+            <Filter className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
             Bộ lọc kèo nâng cao
           </span>
           <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
@@ -418,7 +418,7 @@ export default function MatchmakingMarketplace({
           <div className="space-y-1">
             <div className="flex justify-between items-center text-xs">
               <span className="text-slate-500 uppercase font-extrabold text-[10px]">Lọc theo phong độ</span>
-              <span className="text-[#0b4f6c] font-bold text-[11px]">
+              <span className="text-[#0b4f6c] dark:text-sky-400 font-bold text-[11px]">
                 {selectedLevel === "Tất cả" ? "Mọi trình độ" : selectedLevel}
               </span>
             </div>
@@ -535,7 +535,7 @@ export default function MatchmakingMarketplace({
                 onClick={sortByAi}
                 disabled={aiSorting || posts.length === 0}
                 title="Nhờ AI xếp kèo cùng tầm phong độ nhất lên đầu"
-                className="text-[#0b4f6c] font-bold hover:underline disabled:opacity-50 flex items-center gap-1"
+                className="text-[#0b4f6c] dark:text-sky-400 font-bold hover:underline disabled:opacity-50 flex items-center gap-1"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>{aiSorting ? "AI đang xếp…" : aiOrder ? (aiOffline ? "Theo phong độ (AI offline) ↻" : "AI đã xếp kèo ✓ xếp lại") : "AI xếp kèo cùng tầm ▼"}</span>
@@ -552,7 +552,7 @@ export default function MatchmakingMarketplace({
           <div className="space-y-4">
             {loadingPosts ? (
               <div className="p-5 sm:p-8 text-center bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800">
-                <RefreshCw className="w-6 h-6 animate-spin text-[#0b4f6c] mx-auto mb-2" />
+                <RefreshCw className="w-6 h-6 animate-spin text-[#0b4f6c] dark:text-sky-400 mx-auto mb-2" />
                 <p className="text-xs text-slate-500 font-bold">Đang tải danh sách các kèo giao lưu thật từ hệ thống...</p>
               </div>
             ) : posts.length === 0 ? (
@@ -596,8 +596,8 @@ export default function MatchmakingMarketplace({
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center space-x-1.5 text-[#0b4f6c] font-mono font-bold text-xs">
-                        <ShieldCheck className="w-4 h-4 text-[#0b4f6c]" />
+                      <div className="flex items-center space-x-1.5 text-[#0b4f6c] dark:text-sky-400 font-mono font-bold text-xs">
+                        <ShieldCheck className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
                         <FormDots form={post.form} size="sm" />
                         <span className="text-slate-500 font-sans font-bold">
                           {post.record && post.record !== "0-0-0" ? `${post.record} • ` : ""}Thắng {post.winRate ?? 50}%
@@ -615,7 +615,7 @@ export default function MatchmakingMarketplace({
                         </h3>
                         <div className="flex items-center space-x-2 text-xs text-slate-500">
                           <span className="flex items-center space-x-1 text-slate-900 dark:text-white font-bold">
-                            <MapPin className="w-4 h-4 text-[#0b4f6c]" />
+                            <MapPin className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
                             <span>{post.pitchName}</span>
                           </span>
                           {post.address && (
@@ -631,7 +631,7 @@ export default function MatchmakingMarketplace({
                         <div className="text-xl font-black text-slate-900 dark:text-white font-mono">
                           {(post.estimatedFee || 50000).toLocaleString('vi-VN')}đ <span className="text-xs font-normal text-slate-500">/người</span>
                         </div>
-                        <span className="text-[11px] font-bold text-[#0b4f6c]">
+                        <span className="text-[11px] font-bold text-[#0b4f6c] dark:text-sky-400">
                           {post.paymentModel === "SPLIT_EQUAL" ? "Chia đôi tiền sân (50/50)" : post.paymentModel === "LOSER_PAYS" ? "Đội thua trả tiền sân" : "Chủ kèo bao trọn"}
                         </span>
                       </div>
@@ -659,7 +659,7 @@ export default function MatchmakingMarketplace({
                     {/* Action Bottom */}
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
                       <div className="flex items-center space-x-2 text-slate-900 dark:text-white font-mono text-sm font-bold">
-                        <Clock className="w-4 h-4 text-[#0b4f6c]" />
+                        <Clock className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
                         <span>{post.matchTime}</span>
                       </div>
 
@@ -711,7 +711,7 @@ export default function MatchmakingMarketplace({
                 <span className="font-bold text-sm text-slate-900 dark:text-white">{userName}</span>
               </div>
               <div className="text-right font-mono text-xs">
-                <div className="font-extrabold text-[#0b4f6c]">{userTier}</div>
+                <div className="font-extrabold text-[#0b4f6c] dark:text-sky-400">{userTier}</div>
                 <div className="text-slate-500 text-[10px]">
                   {myTeamPost ? `Phong độ: ${myTeamPost.record ?? myTeamPost.form ?? "—"}` : "Chưa đăng kèo"}
                 </div>
@@ -731,7 +731,7 @@ export default function MatchmakingMarketplace({
                   Chưa có kèo nào đang mở. Bấm “+ Tạo Kèo” để đăng ký đội của bạn lên sàn.
                 </p>
               ) : (
-                <div className="p-3.5 rounded-2xl bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 space-y-1 text-[#0b4f6c]">
+                <div className="p-3.5 rounded-2xl bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 space-y-1 text-[#0b4f6c] dark:text-sky-400">
                   <div className="flex items-center justify-between font-bold">
                     <span className="truncate pr-2">{recommendedPost.pitchName ?? "Chưa chọn sân"}</span>
                     <span className="font-mono shrink-0">{recommendedPost.matchTime ?? "—"}</span>
@@ -764,7 +764,7 @@ export default function MatchmakingMarketplace({
           <section className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-md space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <ShieldCheck className="w-5 h-5 text-[#0b4f6c]" />
+                <ShieldCheck className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
                 <h3 className="font-black text-sm text-slate-900 dark:text-white">Hồ Sơ Cầu Thủ</h3>
               </div>
               <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold">
@@ -790,7 +790,7 @@ export default function MatchmakingMarketplace({
             <div className="space-y-2 text-xs">
               <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
                 <span>Kèo đang mở trên sàn:</span>
-                <span className="font-bold text-[#0b4f6c] font-mono">{openKèoCount} kèo</span>
+                <span className="font-bold text-[#0b4f6c] dark:text-sky-400 font-mono">{openKèoCount} kèo</span>
               </div>
               <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
                 <span>Số đội đang chờ ghép:</span>
@@ -803,7 +803,7 @@ export default function MatchmakingMarketplace({
                 </span>
               </div>
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-[11px] flex items-start space-x-2">
-                <Info className="w-4 h-4 text-[#0b4f6c] shrink-0 mt-0.5" />
+                <Info className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400 shrink-0 mt-0.5" />
                 <span>
                   Tên đội, trình độ và số liệu trên đều đọc trực tiếp từ CSDL — có kèo mới là danh sách tự cập nhật.
                 </span>
@@ -853,7 +853,7 @@ export default function MatchmakingMarketplace({
                         </span>
                       </div>
                     </div>
-                    <span className="font-mono font-bold text-[#0b4f6c] shrink-0">Thắng {t.winRate}%</span>
+                    <span className="font-mono font-bold text-[#0b4f6c] dark:text-sky-400 shrink-0">Thắng {t.winRate}%</span>
                   </div>
                 ))}
               </div>
@@ -868,7 +868,7 @@ export default function MatchmakingMarketplace({
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 dark:text-white my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 dark:text-white">
-                <PlusCircle className="w-5 h-5 text-[#0b4f6c]" />
+                <PlusCircle className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
                 Đăng Tin Tạo Kèo Giao Lưu Bóng Đá
               </h3>
               <button 
@@ -996,7 +996,7 @@ export default function MatchmakingMarketplace({
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-md w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 dark:text-white my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 dark:text-white">
-                <Zap className="w-5 h-5 text-[#0b4f6c]" />
+                <Zap className="w-5 h-5 text-[#0b4f6c] dark:text-sky-400" />
                 Xác Nhận Bắt Kèo Giao Lưu
               </h3>
               <button 
@@ -1045,7 +1045,7 @@ export default function MatchmakingMarketplace({
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-500 space-y-1">
                 <div className="flex justify-between">
                   <span>Phong độ đội bạn:</span>
-                  <strong className="text-[#0b4f6c] font-mono font-bold">
+                  <strong className="text-[#0b4f6c] dark:text-sky-400 font-mono font-bold">
                     {myTeamPost ? `${myTeamPost.record ?? "0-0-0"} • Thắng ${myWinRate}%` : "Tân binh"}
                   </strong>
                 </div>
