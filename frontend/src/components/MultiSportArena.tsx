@@ -263,21 +263,21 @@ export default function MultiSportArena({
 
           {/* Quick Stats Strip — số liệu đếm trực tiếp từ CSDL */}
           <div className="mt-6 pt-6 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
-            <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
+            <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
               <div className="text-lg sm:text-2xl font-bold text-emerald-400">{courts.length} Sân</div>
-              <div className="text-xs text-slate-400 mt-0.5">Trong bảng pitches</div>
+              <div className="text-xs text-slate-400 mt-0.5 break-words">Trong bảng pitches</div>
             </div>
-            <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
+            <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
               <div className="text-lg sm:text-2xl font-bold text-sky-400">{matchQueues.length} Kèo Mở</div>
-              <div className="text-xs text-slate-400 mt-0.5">Bảng matchmaking_posts</div>
+              <div className="text-xs text-slate-400 mt-0.5 break-words">Bảng matchmaking_posts</div>
             </div>
-            <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
+            <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
               <div className="text-lg sm:text-2xl font-bold text-cyan-400">Sân 5 · 7 · 11</div>
-              <div className="text-xs text-slate-400 mt-0.5">Loại mặt sân đang khai thác</div>
+              <div className="text-xs text-slate-400 mt-0.5 break-words">Loại mặt sân đang khai thác</div>
             </div>
-            <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
+            <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
               <div className="text-lg sm:text-2xl font-bold text-amber-400">Cọc 50%</div>
-              <div className="text-xs text-slate-400 mt-0.5">Thanh toán qua VietQR khi đặt</div>
+              <div className="text-xs text-slate-400 mt-0.5 break-words">Thanh toán qua VietQR khi đặt</div>
             </div>
           </div>
         </div>

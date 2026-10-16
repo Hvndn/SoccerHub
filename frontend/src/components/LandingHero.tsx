@@ -275,26 +275,26 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           SECTION 3: 4 CHỈ SỐ LẤY TRỰC TIẾP TỪ CSDL
          ======================================================== */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1 min-w-0">
           <div className="text-xl sm:text-3xl font-mono font-black text-[#0b4f6c] dark:text-sky-400">
             {stats.loading ? "—" : stats.pitches}
           </div>
           <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cụm sân trong CSDL</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1 min-w-0">
           <div className="text-xl sm:text-3xl font-mono font-black text-emerald-600 dark:text-emerald-400">
             {stats.loading ? "—" : stats.tournaments}
           </div>
           <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Giải đấu đã đăng</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1 min-w-0">
           <div className="text-xl sm:text-3xl font-mono font-black text-amber-500">{stats.loading ? "—" : stats.matchesPlayed}</div>
           <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Trận đã có kết quả</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1 min-w-0">
           <div className="text-xl sm:text-3xl font-mono font-black text-sky-500">{stats.loading ? "—" : stats.posts}</div>
           <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kèo đang mở</div>
         </div>

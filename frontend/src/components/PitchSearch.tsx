@@ -904,16 +904,16 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                             : "bg-sky-50 dark:bg-[#0b4f6c]/30 border-sky-200 dark:border-[#0b4f6c]/60"
                         }`}
                       >
-                        <div className="flex items-center space-x-2 min-w-0">
+                        <div className="flex items-center space-x-2 min-w-0 flex-1">
                           <span className={`font-bold shrink-0 ${ls.status === 'BOOKED' ? "text-slate-600 dark:text-slate-400" : "text-[#0b4f6c] dark:text-sky-300"}`}>
                             {ls.time}
                           </span>
-                          <span className="text-[11px] text-slate-500 dark:text-slate-300 font-sans truncate max-w-[100px] sm:max-w-[130px]">
+                          <span className="text-[11px] text-slate-500 dark:text-slate-300 font-sans truncate min-w-0 max-w-[100px] sm:max-w-[130px]">
                             {ls.courtName}
                           </span>
                         </div>
                         {ls.status === 'BOOKED' || ls.status === 'PLAYING' ? (
-                          <span className="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded font-sans shrink-0">
+                          <span className="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded font-sans min-w-0 break-words text-right">
                             Đã Đặt ({ls.customer})
                           </span>
                         ) : (
