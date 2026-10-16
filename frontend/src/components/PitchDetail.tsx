@@ -719,14 +719,14 @@ export default function PitchDetail({
                             <button
                               key={sIdx}
                               type="button"
-                              className="h-20 rounded-2xl bg-[#0ea5e9] text-white shadow-lg shadow-sky-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-emerald-400 btn-shimmer cursor-pointer"
+                              className="h-20 rounded-2xl bg-[#0ea5e9] text-white shadow-lg shadow-sky-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-white/70 btn-shimmer cursor-pointer"
                             >
-                              <div className="absolute top-0 right-0 bg-emerald-300 text-slate-950 text-[9px] px-2 py-0.5 font-black rounded-bl uppercase shadow-xs">
+                              <div className="absolute top-0 right-0 bg-white text-[#0b4f6c] text-[9px] px-2 py-0.5 font-black rounded-bl uppercase shadow-xs">
                                 ĐANG CHỌN ⚽
                               </div>
                               <span className="font-extrabold text-sm">{slot.time}</span>
                               <span className="font-black text-base font-mono mt-0.5">{slot.price}</span>
-                              <span className="text-[10px] text-emerald-100 font-semibold">{slot.durationMinutes || fixedSlotDuration || 120} phút (2 tiếng)</span>
+                              <span className="text-[10px] text-cyan-50 font-semibold">{slot.durationMinutes || fixedSlotDuration || 120} phút (2 tiếng)</span>
                             </button>
                           );
                         }

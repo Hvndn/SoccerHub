@@ -145,7 +145,7 @@ function AdminConsole() {
                     <span className={active ? "text-white" : "text-sky-700 dark:text-sky-400"}>{s.icon}</span>
                     <span className="min-w-0">
                       <span className="block text-xs font-black whitespace-nowrap">{s.label}</span>
-                      <span className={`hidden lg:block text-[10px] ${active ? "text-emerald-100" : "text-slate-400"}`}>
+                      <span className={`hidden lg:block text-[10px] ${active ? "text-cyan-50" : "text-slate-400"}`}>
                         {s.desc}
                       </span>
                     </span>

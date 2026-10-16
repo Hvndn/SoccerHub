@@ -1807,7 +1807,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       }`}
                     >
                       <span className="block font-black">{item.label}</span>
-                      <span className={`text-[10px] ${offlineDuration === item.dur ? "text-emerald-100" : "text-slate-400"}`}>({item.sub})</span>
+                      <span className={`text-[10px] ${offlineDuration === item.dur ? "text-cyan-50" : "text-slate-400"}`}>({item.sub})</span>
                     </button>
                   ))}
                 </div>

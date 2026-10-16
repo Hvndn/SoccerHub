@@ -995,7 +995,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="radar-ping w-2.5 h-2.5 rounded-full bg-[#0ea5e9] text-emerald-500"></span>
+                    <span className="radar-ping w-2.5 h-2.5 rounded-full bg-[#0ea5e9]"></span>
                     <h3 className="font-extrabold text-sm uppercase tracking-wide text-slate-900 dark:text-white">
                       {listTitle} ({visibleTournaments.length} Giải)
                     </h3>
