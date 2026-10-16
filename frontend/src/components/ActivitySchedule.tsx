@@ -234,7 +234,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                 <h1 className="text-lg sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   Lịch Trình & Vé Thi Đấu
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#0ea5e9] text-slate-950 font-black text-xs uppercase tracking-wide">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#0ea5e9] text-white font-black text-xs uppercase tracking-wide">
                   {tournaments.length} giải trong CSDL
                 </span>
               </div>

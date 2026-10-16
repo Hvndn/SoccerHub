@@ -466,7 +466,7 @@ export default function PitchDetail({
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
             <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
               <div>
-                <span className="font-black text-xs bg-[#0ea5e9]/90 backdrop-blur-md px-2.5 py-1 rounded text-slate-950 uppercase tracking-wider">
+                <span className="font-black text-xs bg-[#0ea5e9]/90 backdrop-blur-md px-2.5 py-1 rounded text-white uppercase tracking-wider">
                   {pitchDetails?.pitchTypes?.[0] || pitch?.sportBadge || "Sân bóng đá"}
                 </span>
                 <p className="font-black text-base sm:text-lg mt-1 text-white">

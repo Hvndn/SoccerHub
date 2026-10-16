@@ -135,7 +135,7 @@ export default function NotificationsModal({
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-[#0ea5e9]/10 text-[#247BA0] dark:text-sky-400 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#0ea5e9]/10 text-[#0b4f6c] dark:text-sky-400 flex items-center justify-center shrink-0">
               <Bell className="w-5 h-5" />
             </div>
             <div className="min-w-0">
@@ -144,7 +144,7 @@ export default function NotificationsModal({
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 {notifications.length} thông báo
-                {unread > 0 && <span className="font-bold text-[#247BA0] dark:text-sky-400"> • {unread} chưa đọc</span>}
+                {unread > 0 && <span className="font-bold text-[#0b4f6c] dark:text-sky-400"> • {unread} chưa đọc</span>}
               </p>
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function NotificationsModal({
               <button
                 type="button"
                 onClick={onMarkAllRead}
-                className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-[#247BA0] dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 transition-colors"
+                className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-[#0b4f6c] dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 transition-colors"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 Đã đọc hết
@@ -193,7 +193,7 @@ export default function NotificationsModal({
             <button
               type="button"
               onClick={onMarkAllRead}
-              className="sm:hidden px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap text-[#247BA0] dark:text-sky-400 border border-[#0ea5e9]/30"
+              className="sm:hidden px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap text-[#0b4f6c] dark:text-sky-400 border border-[#0ea5e9]/30"
             >
               Đã đọc hết
             </button>
@@ -242,7 +242,7 @@ export default function NotificationsModal({
                         {n.link && (
                           <a
                             href={n.link}
-                            className="text-[11px] font-bold text-[#247BA0] dark:text-sky-400 hover:underline"
+                            className="text-[11px] font-bold text-[#0b4f6c] dark:text-sky-400 hover:underline"
                           >
                             Xem chi tiết →
                           </a>

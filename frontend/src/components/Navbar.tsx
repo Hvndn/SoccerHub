@@ -690,7 +690,7 @@ export default function Navbar({
                         setShowNotifications(false);
                         setShowAllNotifications(true);
                       }}
-                      className="text-xs font-black text-[#247BA0] dark:text-sky-400 hover:underline"
+                      className="text-xs font-black text-[#0b4f6c] dark:text-sky-400 hover:underline"
                     >
                       Xem tất cả →
                     </button>

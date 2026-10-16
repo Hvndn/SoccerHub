@@ -60,7 +60,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                     <Trophy className="w-10 h-10 text-lime-400" />
                   </div>
                 </div>
-                <span className="absolute -bottom-2 -right-2 bg-[#0ea5e9] text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-slate-900">
+                <span className="absolute -bottom-2 -right-2 bg-[#0ea5e9] text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-slate-900">
                   <ShieldCheck className="w-3 h-3" /> READY
                 </span>
               </div>

@@ -263,7 +263,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           <button
             type="button"
             onClick={() => onOpenAuth("login", "PLAYER")}
-            className="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-[#0ea5e9] to-sky-600 hover:from-[#083a50] hover:to-sky-500 text-white font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-[#0ea5e9] to-sky-600 hover:from-[#0284c7] hover:to-sky-500 text-white font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
           >
             <Search className="w-4 h-4" />
             <span>Quét Ca Sân Trống Ngay</span>
