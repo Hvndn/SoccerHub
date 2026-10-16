@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { subscribeToBookingEvents, playNotificationChime, type RealtimeBookingEvent } from "@/lib/realtimeService";
 import { listMyNotifications, markNotificationRead } from "@/lib/adminService";
+import NotificationsModal from "./NotificationsModal";
 
 // Notification item type
 interface AppNotification {
@@ -59,12 +60,18 @@ export default function Navbar({
   onLogout
 }: NavbarProps) {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAllNotifications, setShowAllNotifications] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showMobileDrawer, setShowMobileDrawer] = useState(false);
   const [mobilePitchOpen, setMobilePitchOpen] = useState(true);
   const [mobileTournamentOpen, setMobileTournamentOpen] = useState(false);
 
-  const NOTIFS_STORAGE_KEY = "soccerhub_user_notifications";
+  // Cache thông báo tách riêng theo từng tài khoản (tránh lẫn thông báo khi đổi user chung máy)
+  const NOTIFS_KEY_BASE = "soccerhub_user_notifications";
+  const userEmailRef = useRef<string | null>(null);
+  userEmailRef.current = user?.email ?? null;
+  const notifKey = () =>
+    NOTIFS_KEY_BASE + (userEmailRef.current ? "_" + userEmailRef.current : "_guest");
 
   // Notification Center State — chỉ lấy thông báo thật từ server, không có mẫu giả
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -74,10 +81,12 @@ export default function Navbar({
     notificationsRef.current = notifications;
   }, [notifications]);
 
-  // Load saved notifications from localStorage on mount
+  // Load cache của đúng tài khoản đang đăng nhập (đổi user -> nạp lại, logout -> rỗng)
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(NOTIFS_STORAGE_KEY);
+      const saved = localStorage.getItem(
+        NOTIFS_KEY_BASE + (user?.email ? "_" + user.email : "_guest")
+      );
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -86,12 +95,14 @@ export default function Navbar({
             time: new Date(item.time)
           }));
           setNotifications(formatted);
+          return;
         }
       }
+      setNotifications([]);
     } catch (e) {
       // ignore parse error
     }
-  }, []);
+  }, [user?.email]);
 
   // Thông báo thật từ server khi đã đăng nhập (poll mỗi 60s). Khách: giữ local.
   useEffect(() => {
@@ -129,10 +140,10 @@ export default function Navbar({
     };
   }, [user]);
 
-  // Save to localStorage helper
+  // Save to localStorage helper (đúng tài khoản đang dùng)
   const saveNotifications = (items: AppNotification[]) => {
     try {
-      localStorage.setItem(NOTIFS_STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(notifKey(), JSON.stringify(items));
     } catch (e) {}
   };
 
@@ -672,21 +683,41 @@ export default function Navbar({
 
                 {/* Footer To Rõ */}
                 {notifications.length > 0 && (
-                  <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-800/60 flex items-center justify-between">
+                  <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-800/60 flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNotifications(false);
+                        setShowAllNotifications(true);
+                      }}
+                      className="text-xs font-black text-[#247BA0] dark:text-sky-400 hover:underline"
+                    >
+                      Xem tất cả →
+                    </button>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{notifications.length} thông báo</span>
                     <button
                       type="button"
                       onClick={() => clearAllNotifications()}
                       className="text-xs font-bold text-slate-500 hover:text-rose-600 transition-colors"
                     >
-                      Xóa tất cả thông báo
+                      Xóa tất cả
                     </button>
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{notifications.length} thông báo</span>
                   </div>
                 )}
               </div>
             )}
           </div>
           )}
+
+          {/* Modal xem tất cả thông báo (lọc theo loại + đánh dấu đã đọc) */}
+          <NotificationsModal
+            open={showAllNotifications}
+            onClose={() => setShowAllNotifications(false)}
+            notifications={notifications}
+            onDelete={removeNotification}
+            onClearAll={clearAllNotifications}
+            onMarkAllRead={markAllRead}
+          />
 
           {user ? (
             <div className="relative" ref={userMenuRef}>
