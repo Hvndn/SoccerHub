@@ -3,6 +3,7 @@ import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/context/AuthContext";
+import BootSplash from "@/components/BootSplash";
 
 /**
  * Be Vietnam Pro: font thiết kế cho tiếng Việt, hỗ trợ đầy đủ dấu và toàn bộ
@@ -56,6 +57,8 @@ export default function RootLayout({
       <body className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden antialiased">
         <AuthProvider>
           <ThemeProvider>
+            {/* Vòng xoay hiện ngay khi F5, tự ẩn sau khi React mount */}
+            <BootSplash />
             {children}
           </ThemeProvider>
         </AuthProvider>
