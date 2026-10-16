@@ -13,7 +13,6 @@ import {
   Trophy,
   Building2,
   User,
-  Info,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -67,7 +66,6 @@ export default function AuthModal({
   const [role, setRole] = useState<Role>(initialRole);
   const [showPassword, setShowPassword] = useState(false);
   const [capsOn, setCapsOn] = useState(false);
-  const [showForgot, setShowForgot] = useState(false);
 
   // Form inputs
   const [fullName, setFullName] = useState("");
@@ -90,7 +88,6 @@ export default function AuthModal({
       if (initialMode) setMode(initialMode);
       if (initialRole) setRole(initialRole);
       setErrorMsg(null);
-      setShowForgot(false);
       setRegStep(1);
     }
   }, [isOpen, initialMode, initialRole]);
@@ -142,12 +139,19 @@ export default function AuthModal({
   if (!isOpen) return null;
 
   // Quick Demo Login Handler
+  // Mật khẩu tài khoản demo đã seed ở backend (DataInitializer)
+  const DEMO_PASSWORD: Record<Role, string> = {
+    PLAYER: "player123",
+    OWNER: "owner123",
+    ORGANIZER: "organizer123",
+  };
+
   const handleQuickDemoLogin = async (demoEmail: string, demoRole: Role) => {
     setIsSubmitting(true);
     setErrorMsg(null);
     setRole(demoRole);
     try {
-      const user = await login({ email: demoEmail, password: "123456" });
+      const user = await login({ email: demoEmail, password: DEMO_PASSWORD[demoRole] });
       onLoginSuccess({ ...user, role: demoRole, isNewOwner: false });
       onClose();
     } catch {
@@ -255,7 +259,6 @@ export default function AuthModal({
     setMode(m);
     setRegStep(1);
     setErrorMsg(null);
-    setShowForgot(false);
   };
 
   const strength = passwordScore(password);
@@ -361,7 +364,7 @@ export default function AuthModal({
             <div className="mt-3 flex items-center gap-2 text-[11px] font-bold text-slate-500" aria-hidden>
               <span className={`flex items-center gap-1 ${regStep >= 1 ? "text-emerald-700" : ""}`}>
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 1 ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-500"}`}>1</span>
-                Tài khoản
+                Tài khoản & vai trò
               </span>
               <span className="text-slate-300">›</span>
               <span className={`flex items-center gap-1 ${regStep >= 2 ? "text-emerald-700" : ""}`}>
@@ -441,26 +444,6 @@ export default function AuthModal({
                   <span>Đăng nhập</span>
                 )}
               </button>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => setShowForgot((v) => !v)}
-                  aria-expanded={showForgot}
-                  className="text-xs font-bold text-emerald-700 hover:underline"
-                >
-                  Quên mật khẩu?
-                </button>
-                {showForgot && (
-                  <p className="mt-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex items-start gap-1.5 text-left">
-                    <Info className="w-3.5 h-3.5 shrink-0 mt-px text-emerald-600" />
-                    <span>
-                      Chức năng đặt lại mật khẩu qua email đang phát triển. Cần vào gấp? Dùng tài
-                      khoản Demo 1-chạm bên dưới, hoặc liên hệ BTC qua hotline hiển thị ở chân trang.
-                    </span>
-                  </p>
-                )}
-              </div>
             </form>
           ) : (
             <form onSubmit={handleRegister} className="mt-3 space-y-3 sm:mt-4 sm:space-y-4">
@@ -530,9 +513,6 @@ export default function AuthModal({
                       </div>
                     )}
                   </div>
-                </>
-              ) : (
-                <>
                   <div>
                     <span className={labelCls} id="reg-role-label">Bạn là ai trên sân? *</span>
                     <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-labelledby="reg-role-label">
@@ -556,7 +536,9 @@ export default function AuthModal({
                       {ROLES.find((r) => r.id === role)?.desc}
                     </p>
                   </div>
-
+                </>
+              ) : (
+                <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {role === "PLAYER" && (
                       <div>
