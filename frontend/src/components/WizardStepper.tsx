@@ -36,7 +36,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
         aria-valuenow={current + 1}
       >
         <div
-          className="h-full rounded-full bg-emerald-600 transition-all duration-300"
+          className="h-full rounded-full bg-sky-500 transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -57,18 +57,18 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
                 aria-current={active ? "step" : undefined}
                 className={`flex min-w-0 flex-1 items-center gap-2 rounded-xl border px-2 py-2 text-left transition-all sm:px-3 ${
                   active
-                    ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 shadow-xs"
+                    ? "border-emerald-600 bg-sky-50 dark:bg-sky-950/40 shadow-xs"
                     : done
-                    ? "border-emerald-200 dark:border-emerald-900 bg-white dark:bg-slate-900 hover:border-emerald-400"
+                    ? "border-sky-200 dark:border-emerald-900 bg-white dark:bg-slate-900 hover:border-sky-400"
                     : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 opacity-70"
                 } ${clickable ? "cursor-pointer" : "cursor-default"}`}
               >
                 <span
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ${
                     active
-                      ? "bg-emerald-700 text-white"
+                      ? "bg-sky-500 text-slate-950"
                       : done
-                      ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                      ? "bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300"
                       : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}
                 >
@@ -78,7 +78,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
                   <span
                     className={`block truncate text-[11px] font-black sm:text-xs ${
                       active
-                        ? "text-emerald-800 dark:text-emerald-300"
+                        ? "text-sky-900 dark:text-sky-300"
                         : "text-slate-700 dark:text-slate-200"
                     }`}
                   >

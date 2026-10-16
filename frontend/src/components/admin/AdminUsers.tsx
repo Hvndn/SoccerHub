@@ -141,7 +141,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
             className={`p-1.5 rounded-lg border transition-all disabled:opacity-50 ${
               r.enabled
                 ? "border-rose-200 dark:border-rose-900 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                : "border-emerald-200 dark:border-emerald-900 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                : "border-sky-200 dark:border-emerald-900 text-sky-700 hover:bg-sky-50 dark:hover:bg-emerald-950/40"
             }`}
           >
             {r.enabled ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
@@ -156,7 +156,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
                   setConfirm({ kind: "role", user: r, role: e.target.value });
                 }
               }}
-              className="pl-2 pr-6 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 cursor-pointer"
+              className="pl-2 pr-6 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-50 cursor-pointer"
             >
               {ALL_ROLES.map((role) => (
                 <option key={role} value={role}>

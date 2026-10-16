@@ -22,7 +22,7 @@ const STEPS = [
 
 const SPORT_OPTIONS = ["SAN_7", "SAN_5", "SAN_11", "FUTSAL"] as const;
 const inputCls =
-  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
+  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-emerald-500";
 const labelCls = "block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5";
 const errCls = "mt-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400";
 
@@ -173,8 +173,8 @@ function NewTournamentWizard() {
 
       {/* Success state */}
       {createdId !== null ? (
-        <div className="p-4 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900 text-center space-y-3">
-          <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
+        <div className="p-4 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-emerald-900 text-center space-y-3">
+          <CheckCircle2 className="w-12 h-12 text-sky-700 mx-auto" />
           <h2 className="text-lg font-black text-slate-900 dark:text-white">
             Công bố giải đấu thành công!
           </h2>
@@ -185,7 +185,7 @@ function NewTournamentWizard() {
           <div className="flex flex-wrap justify-center gap-2.5 pt-2">
             <a
               href="/?tab=tournaments"
-              className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black transition-all active:scale-95"
+              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black transition-all active:scale-95"
             >
               Xem danh sách giải đấu
             </a>
@@ -263,7 +263,7 @@ function NewTournamentWizard() {
                       aria-pressed={form.format === f}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
                         form.format === f
-                          ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40"
+                          ? "border-emerald-600 bg-sky-50 dark:bg-sky-950/40"
                           : "border-slate-200 dark:border-slate-700 hover:border-slate-300"
                       }`}
                     >
@@ -454,7 +454,7 @@ function NewTournamentWizard() {
               {/* Review */}
               <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 space-y-2 text-xs">
                 <p className="flex items-center gap-2 font-black text-slate-900 dark:text-white text-sm">
-                  <Trophy className="w-4 h-4 text-emerald-600" />
+                  <Trophy className="w-4 h-4 text-sky-700" />
                   {form.title || "(Chưa đặt tên giải)"}
                 </p>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-slate-600 dark:text-slate-300">
@@ -462,7 +462,7 @@ function NewTournamentWizard() {
                   <div><dt className="inline text-slate-500">Quy mô: </dt><dd className="inline font-bold">{form.totalTeams} đội</dd></div>
                   <div><dt className="inline text-slate-500">Địa điểm: </dt><dd className="inline font-bold">{form.pitchName || "—"} — {form.location || "—"}</dd></div>
                   <div><dt className="inline text-slate-500">Thời gian: </dt><dd className="inline font-bold">{form.startDate || "—"} → {form.endDate || form.startDate || "—"}</dd></div>
-                  <div><dt className="inline text-slate-500">Quỹ thưởng: </dt><dd className="inline font-mono font-bold text-emerald-700 dark:text-emerald-400">{Number(form.prizePool).toLocaleString("vi-VN")}đ</dd></div>
+                  <div><dt className="inline text-slate-500">Quỹ thưởng: </dt><dd className="inline font-mono font-bold text-sky-800 dark:text-sky-400">{Number(form.prizePool).toLocaleString("vi-VN")}đ</dd></div>
                   <div><dt className="inline text-slate-500">Lệ phí: </dt><dd className="inline font-mono font-bold">{Number(form.entryFee).toLocaleString("vi-VN")}đ/đội</dd></div>
                 </dl>
               </div>
@@ -493,7 +493,7 @@ function NewTournamentWizard() {
               <button
                 type="button"
                 onClick={goNext}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black transition-all active:scale-95"
               >
                 <span>Tiếp tục</span>
                 <ArrowRight className="w-4 h-4" />
@@ -503,7 +503,7 @@ function NewTournamentWizard() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black transition-all active:scale-95 disabled:opacity-50"
               >
                 {submitting && <RefreshCw className="w-4 h-4 animate-spin" />}
                 <span>{submitting ? "Đang công bố…" : "Xác nhận & Công bố giải"}</span>

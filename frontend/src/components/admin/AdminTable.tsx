@@ -88,7 +88,7 @@ export default function AdminTable<T>({
               setPage(0);
             }}
             placeholder={searchPlaceholder}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
         </div>
         <span className="text-[11px] font-mono text-slate-400 whitespace-nowrap">
@@ -107,15 +107,15 @@ export default function AdminTable<T>({
                       type="button"
                       onClick={() => toggleSort(col)}
                       aria-label={`Sắp xếp theo ${col.header}`}
-                      className="inline-flex items-center gap-1 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
+                      className="inline-flex items-center gap-1 hover:text-sky-800 dark:hover:text-emerald-400 transition-colors"
                     >
                       <span>{col.header}</span>
                       {sortKey !== col.key ? (
                         <ArrowUpDown className="w-3 h-3 opacity-50" />
                       ) : sortDir === 1 ? (
-                        <ArrowUp className="w-3 h-3 text-emerald-600" />
+                        <ArrowUp className="w-3 h-3 text-sky-700" />
                       ) : (
-                        <ArrowDown className="w-3 h-3 text-emerald-600" />
+                        <ArrowDown className="w-3 h-3 text-sky-700" />
                       )}
                     </button>
                   ) : (

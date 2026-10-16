@@ -43,7 +43,7 @@ interface TournamentLeaderboardProps {
 /** Sport ribbon tabs — keys are the real `sportType` values stored in MySQL. */
 const SPORT_TABS: { key: SportType | 'all'; label: string; emoji: string; badgeClass: string }[] = [
   { key: 'all', label: 'Tất cả Thể Thức', emoji: '✨', badgeClass: 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300' },
-  { key: 'SAN_7', label: 'Sân 7 Phủi', emoji: '⚽', badgeClass: 'bg-emerald-500 text-slate-950' },
+  { key: 'SAN_7', label: 'Sân 7 Phủi', emoji: '⚽', badgeClass: 'bg-sky-500 text-slate-950' },
   { key: 'SAN_5', label: 'Sân 5 Mini', emoji: '🥅', badgeClass: 'bg-lime-500 text-slate-950' },
   { key: 'SAN_11', label: 'Sân 11 Người', emoji: '🏟️', badgeClass: 'bg-amber-500 text-slate-950' },
   { key: 'FUTSAL', label: 'Futsal Sài Gòn', emoji: '👟', badgeClass: 'bg-sky-500 text-slate-950' },
@@ -312,14 +312,14 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
           {/* 1. BREADCRUMBS & LIVE TICKER BAR */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              <button onClick={onBackToHome} className="hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
+              <button onClick={onBackToHome} className="hover:text-sky-800 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
                 <Home className="w-3.5 h-3.5" />
                 <span>Trang chủ</span>
               </button>
               <ChevronRight className="w-3.5 h-3.5" />
               <span className="text-slate-900 dark:text-white font-bold">Giải Đấu Bóng Đá &amp; BXH Elo</span>
               <ChevronRight className="w-3.5 h-3.5" />
-              <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold">
+              <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-900 dark:text-sky-400 font-bold">
                 {featured ? featured.title : `${tournaments.length} giải trong CSDL`}
               </span>
             </div>
@@ -327,7 +327,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             <div className="hidden md:flex items-center gap-2 self-start md:self-auto bg-white dark:bg-slate-900 px-3 py-1.5 rounded-full shadow-xs border border-slate-200 dark:border-slate-800">
               <span className="relative flex h-2.5 w-2.5">
                 <span className={`absolute inline-flex h-full w-full rounded-full ${latestResult ? 'animate-ping bg-emerald-400 opacity-75' : 'bg-slate-300 opacity-60'}`}></span>
-                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${latestResult ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${latestResult ? 'bg-sky-500' : 'bg-slate-400'}`}></span>
               </span>
               {latestResult ? (
                 <>
@@ -364,7 +364,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                     role="tab"
                     aria-selected={isActive}
                     onClick={() => setActiveSport(tab.key)}
-                    className={`group flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 ${
+                    className={`group flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 ${
                       isActive
                         ? 'bg-emerald-700 text-white shadow-sm'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -389,13 +389,13 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 }}
                 className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all"
               >
-                <Search className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <Search className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                 <span>Tra cứu BXH Cá Nhân</span>
               </button>
 
               <Link
                 href="/tournaments/register"
-                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold shadow-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 bg-emerald-700 hover:bg-emerald-800 text-white"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold shadow-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 bg-sky-500 hover:bg-sky-600 text-slate-950"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>+ Đăng Ký Đội Thi Đấu</span>
@@ -418,7 +418,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 <Filter className="w-3.5 h-3.5" />
                 Lọc nhanh
                 {hasActiveFilters && (
-                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-emerald-700 text-white normal-case">
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-sky-500 text-slate-950 normal-case">
                     {visibleTournaments.length} giải
                   </span>
                 )}
@@ -435,13 +435,13 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               Lọc nhanh:
             </span>
 
-            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs transition-colors focus-within:ring-2 focus-within:ring-emerald-500">
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs transition-colors focus-within:ring-2 focus-within:ring-sky-500">
               <span className="text-slate-500 dark:text-slate-400">Thể thức:</span>
               <select
                 aria-label="Lọc theo thể thức thi đấu"
                 value={selectedFormat}
                 onChange={(e) => setSelectedFormat(e.target.value as typeof selectedFormat)}
-                className="bg-transparent font-bold text-emerald-700 dark:text-emerald-400 focus:outline-none cursor-pointer"
+                className="bg-transparent font-bold text-sky-800 dark:text-sky-400 focus:outline-none cursor-pointer"
               >
                 <option value="ALL">Tất cả thể thức</option>
                 <option value="KNOCKOUT">Loại trực tiếp</option>
@@ -449,7 +449,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               </select>
             </label>
 
-            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs transition-colors focus-within:ring-2 focus-within:ring-emerald-500">
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs transition-colors focus-within:ring-2 focus-within:ring-sky-500">
               <span className="text-slate-500 dark:text-slate-400">Trạng thái:</span>
               <select
                 aria-label="Lọc theo trạng thái giải đấu"
@@ -464,8 +464,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               </select>
             </label>
 
-            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs transition-colors focus-within:ring-2 focus-within:ring-emerald-500">
-              <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs shadow-xs transition-colors focus-within:ring-2 focus-within:ring-sky-500">
+              <MapPin className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400 shrink-0" />
               <span className="text-slate-500 dark:text-slate-400">Địa điểm:</span>
               <select
                 aria-label="Lọc theo địa điểm"
@@ -482,12 +482,12 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
             <div className="ml-auto flex items-center gap-3">
               <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                <strong className="text-emerald-700 dark:text-emerald-400 font-mono">{visibleTournaments.length}</strong> giải khớp
+                <strong className="text-sky-800 dark:text-sky-400 font-mono">{visibleTournaments.length}</strong> giải khớp
               </span>
               <button 
                 onClick={resetFilters}
                 disabled={!hasActiveFilters}
-                className="text-emerald-700 dark:text-emerald-400 text-xs font-bold hover:underline flex items-center gap-0.5 disabled:opacity-40 disabled:no-underline"
+                className="text-sky-800 dark:text-sky-400 text-xs font-bold hover:underline flex items-center gap-0.5 disabled:opacity-40 disabled:no-underline"
               >
                 <span>Thiết lập lại bộ lọc</span>
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -529,15 +529,15 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
           ) : featured ? (
           <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm p-3 sm:p-8 border border-slate-200/90 dark:border-slate-800 hover-card-elevate transition-colors">
             {/* Ambient Soft Glow */}
-            <div className="hidden sm:block absolute -top-20 -right-20 w-96 h-96 rounded-full bg-emerald-50/60 dark:bg-emerald-950/40 blur-3xl pointer-events-none"></div>
+            <div className="hidden sm:block absolute -top-20 -right-20 w-96 h-96 rounded-full bg-sky-50/60 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
             <div className="hidden sm:block absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-sky-50/50 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 items-center">
               {/* Left Content */}
               <div className="lg:col-span-8 flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 text-[11px] uppercase tracking-wider font-black flex items-center gap-1 border border-emerald-200 dark:border-emerald-800">
-                    <Award className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                  <span className="px-2.5 py-1 rounded-md bg-sky-100 dark:bg-sky-950 text-emerald-900 dark:text-sky-300 text-[11px] uppercase tracking-wider font-black flex items-center gap-1 border border-sky-200 dark:border-sky-800">
+                    <Award className="w-3.5 h-3.5 text-sky-800 dark:text-sky-400" />
                     Giải đấu tiêu điểm trong tháng
                   </span>
                   <span className="px-2.5 py-1 rounded-md bg-sky-50 dark:bg-sky-950 text-sky-800 dark:text-sky-300 text-[11px] font-bold flex items-center gap-1 border border-sky-200 dark:border-sky-800">
@@ -562,7 +562,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                     {featured.title}
                   </h1>
                   {featured.description && (
-                    <p className="text-sm sm:text-lg text-emerald-700 dark:text-emerald-400 font-bold mt-1">
+                    <p className="text-sm sm:text-lg text-sky-800 dark:text-sky-400 font-bold mt-1">
                       {featured.description}
                     </p>
                   )}
@@ -572,7 +572,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
                   <div className="flex flex-col p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs">
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Tổng Giải Thưởng</span>
-                    <span className="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono mt-0.5"><CountUp value={featured.prizePool ?? 0} format={(n) => `${Math.round(n).toLocaleString('vi-VN')}đ`} /></span>
+                    <span className="text-lg sm:text-xl font-black text-sky-800 dark:text-sky-400 font-mono mt-0.5"><CountUp value={featured.prizePool ?? 0} format={(n) => `${Math.round(n).toLocaleString('vi-VN')}đ`} /></span>
                   </div>
                   <div className="flex flex-col p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs">
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Thời Gian Diễn Ra</span>
@@ -595,7 +595,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-slate-600 dark:text-slate-400">Tiến độ ghi danh:</span>
-                      <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                      <span className="font-mono font-bold text-sky-800 dark:text-sky-400">
                         <CountUp value={featuredRegistered} /> / {featuredCapacity} đội (<CountUp value={featuredPct} format={(n) => `${Math.round(n)}%`} />)
                       </span>
                     </div>
@@ -611,7 +611,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                     )}
                   </div>
                   <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
-                    <div className="h-full bg-emerald-600 rounded-full transition-all duration-500" style={{ width: `${featuredPct}%` }}></div>
+                    <div className="h-full bg-sky-500 rounded-full transition-all duration-500" style={{ width: `${featuredPct}%` }}></div>
                   </div>
                 </div>
 
@@ -624,7 +624,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   ) : (
                     <Link
                       href={`/tournaments/register?tournamentId=${featured.id}`}
-                      className="px-5 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                      className="px-5 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                     >
                       <span>⚽ Đăng Ký Tham Gia Ngay (4 bước)</span>
                     </Link>
@@ -632,7 +632,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                   <button 
                     type="button"
                     onClick={() => onSelectTournament ? onSelectTournament(String(featured.id)) : changeTab('bracket')}
-                    className="px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                    className="px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
                   >
                     <span>📜 Xem Nhánh Bracket & Điều Lệ</span>
                   </button>
@@ -651,17 +651,17 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
                     <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2">
-                      <span className="px-2 py-0.5 rounded bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-emerald-800 dark:text-emerald-300 font-bold text-[11px] flex items-center gap-1 shadow-xs truncate">
+                      <span className="px-2 py-0.5 rounded bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-sky-900 dark:text-sky-300 font-bold text-[11px] flex items-center gap-1 shadow-xs truncate">
                         🏆 {featured.pitchName || featured.location || 'Sân chuẩn VFF'}
                       </span>
-                      <span className="px-2 py-0.5 rounded bg-emerald-700 text-white font-mono text-[11px] font-bold shrink-0">
+                      <span className="px-2 py-0.5 rounded bg-sky-500 text-slate-950 font-mono text-[11px] font-bold shrink-0">
                         {formatShort(featured.format)}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 pt-1 font-medium gap-2">
                     <span className="flex items-center gap-1">
-                      Lệ phí: <strong className="font-mono text-emerald-700 dark:text-emerald-400">{formatMoney(featured.entryFee)}/đội</strong>
+                      Lệ phí: <strong className="font-mono text-sky-800 dark:text-sky-400">{formatMoney(featured.entryFee)}/đội</strong>
                     </span>
                   </div>
                 </div>
@@ -686,7 +686,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               role="tab"
               aria-selected={activeTab === 'open'}
               onClick={() => changeTab('open')}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
                 activeTab === 'open' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -702,7 +702,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               role="tab"
               aria-selected={activeTab === 'live'}
               onClick={() => changeTab('live')}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
                 activeTab === 'live' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -718,7 +718,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               role="tab"
               aria-selected={activeTab === 'bracket'}
               onClick={() => changeTab('bracket')}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
                 activeTab === 'bracket' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -734,7 +734,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               role="tab"
               aria-selected={activeTab === 'rankings'}
               onClick={() => changeTab('rankings')}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
                 activeTab === 'rankings' 
                   ? 'bg-emerald-700 text-white shadow-md' 
                   : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -822,7 +822,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                             <td className="py-2.5 pr-3 text-right font-mono text-slate-600 dark:text-slate-400">
                               {row.memberCount ?? '—'}
                             </td>
-                            <td className="py-2.5 text-right font-mono font-black text-emerald-700 dark:text-emerald-400">
+                            <td className="py-2.5 text-right font-mono font-black text-sky-800 dark:text-sky-400">
                               {(row.eloRating ?? 0).toLocaleString('vi-VN')}
                             </td>
                           </tr>
@@ -879,7 +879,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                           <span
                             className={`shrink-0 ${
                               m.status === 'DONE'
-                                ? 'text-emerald-700 dark:text-emerald-400'
+                                ? 'text-sky-800 dark:text-sky-400'
                                 : 'text-slate-400'
                             }`}
                           >
@@ -898,7 +898,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                               key={i}
                               className={`flex items-center justify-between gap-2 p-2 rounded-lg shadow-xs ${
                                 isWinner
-                                  ? 'bg-white dark:bg-slate-900 border border-emerald-500/30'
+                                  ? 'bg-white dark:bg-slate-900 border border-sky-500/30'
                                   : isLoser
                                   ? 'bg-slate-100/60 dark:bg-slate-900/40'
                                   : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800'
@@ -943,13 +943,13 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="radar-ping w-2.5 h-2.5 rounded-full bg-emerald-500 text-emerald-500"></span>
+                    <span className="radar-ping w-2.5 h-2.5 rounded-full bg-sky-500 text-emerald-500"></span>
                     <h3 className="font-extrabold text-sm uppercase tracking-wide text-slate-900 dark:text-white">
                       {listTitle} ({visibleTournaments.length} Giải)
                     </h3>
                   </div>
                   {loadingTournaments && (
-                    <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                    <span className="text-xs text-sky-700 font-bold flex items-center gap-1">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Đang cập nhật dữ liệu...
                     </span>
                   )}
@@ -983,7 +983,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                       <button
                         type="button"
                         onClick={resetFilters}
-                        className="mt-3 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+                        className="mt-3 text-xs font-bold text-sky-800 dark:text-sky-400 hover:underline"
                       >
                         Xóa bộ lọc để xem tất cả
                       </button>
@@ -1010,7 +1010,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                       >
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                           <div className="flex items-start gap-3.5">
-                            <div className="w-14 h-14 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center shrink-0 border border-emerald-500/20 text-2xl">
+                            <div className="w-14 h-14 rounded-xl bg-sky-50 dark:bg-sky-950/60 flex items-center justify-center shrink-0 border border-sky-500/20 text-2xl">
                               ⚽
                             </div>
                             <div className="flex flex-col gap-1">
@@ -1018,7 +1018,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                                 <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]">
                                   {sportLabel(t.sportType)}
                                 </span>
-                                <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold text-[11px]">
+                                <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-900 dark:text-sky-400 font-bold text-[11px]">
                                   {formatLabel(t.format)}
                                 </span>
                                 <span className={`px-2 py-0.5 rounded font-bold text-[11px] ${
@@ -1028,7 +1028,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                                     ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                                     : full 
                                     ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-400' 
-                                    : 'bg-lime-100 dark:bg-lime-950 text-lime-900 dark:text-lime-400'
+                                    : 'bg-sky-100 dark:bg-sky-950 text-sky-900 dark:text-sky-400'
                                 }`}>
                                   {statusLabel}
                                 </span>
@@ -1038,7 +1038,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                               </h3>
                               <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                                 <span className="flex items-center gap-1">
-                                  <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                                  <MapPin className="w-3.5 h-3.5 text-sky-700" />
                                   {t.pitchName || t.location || "TP. Hồ Chí Minh"}
                                 </span>
                                 <span className="flex items-center gap-1">
@@ -1052,7 +1052,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
                           <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-start shrink-0">
                             <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Tổng Giải Thưởng</span>
-                            <span className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+                            <span className="text-xl font-black font-mono text-sky-700 dark:text-sky-400">
                               {formatMoney(t.prizePool)}
                             </span>
                           </div>
@@ -1060,18 +1060,18 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-xs border border-slate-200/60 dark:border-slate-800">
                           <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-emerald-600" />
+                            <Users className="w-4 h-4 text-sky-700" />
                             <span>
                               Số đội: <strong className="text-slate-900 dark:text-white">{reg} / {cap || '—'} Đội</strong>
-                              {!full && cap > 0 && <span className="text-emerald-600 dark:text-emerald-400 font-bold ml-1">(Còn {cap - reg} slot)</span>}
+                              {!full && cap > 0 && <span className="text-sky-700 dark:text-sky-400 font-bold ml-1">(Còn {cap - reg} slot)</span>}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                            <ShieldCheck className="w-4 h-4 text-sky-700" />
                             <span>Lệ phí: <strong className="text-slate-900 dark:text-white">{formatMoney(t.entryFee)} / Đội</strong></span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Video className="w-4 h-4 text-emerald-600" />
+                            <Video className="w-4 h-4 text-sky-700" />
                             <span>Công nghệ: <strong className="text-slate-900 dark:text-white">Camera AI & VAR Trực Tiếp</strong></span>
                           </div>
                         </div>
@@ -1094,7 +1094,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
                           <div className="flex items-center gap-2 w-full sm:w-auto">
                             <div className="w-36 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                              <div className="h-full bg-emerald-600 rounded-full transition-all duration-300" style={{ width: `${Math.min(percentage, 100)}%` }}></div>
+                              <div className="h-full bg-sky-500 rounded-full transition-all duration-300" style={{ width: `${Math.min(percentage, 100)}%` }}></div>
                             </div>
                             <span className="text-[11px] text-slate-500 font-medium">{percentage}% Slot đã nộp</span>
                           </div>
@@ -1110,7 +1110,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                             ) : (
                               <Link
                                 href={`/tournaments/register?tournamentId=${t.id}`}
-                                className="px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 bg-emerald-700 hover:bg-emerald-800 text-white active:scale-95"
+                                className="px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 bg-sky-500 hover:bg-sky-600 text-slate-950 active:scale-95"
                               >
                                 + Nộp Danh Sách Đội Tham Gia
                               </Link>
@@ -1132,11 +1132,11 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               <div id="search-elo-section" className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-extrabold flex items-center gap-1">
-                    <UserCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <UserCheck className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                     Vị Trí Của Bạn Trên Hệ Thống
                   </span>
                   {user ? (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 text-[11px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-900 dark:text-sky-400 text-[11px] font-bold">
                       {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'Ban Tổ Chức' : 'Xác Thực Thẻ Cầu Thủ'}
                     </span>
                   ) : (
@@ -1175,7 +1175,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                       <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex flex-col">
                         <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold">Điểm Elo Phủi</span>
                         <div className="flex items-baseline gap-1.5 mt-1">
-                          <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
+                          <span className="text-2xl font-black text-sky-800 dark:text-sky-400 font-mono">
                             {(athleteElo ?? 1200).toLocaleString('vi-VN')}
                           </span>
                         </div>
@@ -1204,7 +1204,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                         {(user.position || user.area || user.favoriteSport || user.level) ? (
                           <>
                             {user.position && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-semibold">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-sky-100 dark:bg-sky-950/60 text-emerald-900 dark:text-sky-300 text-xs font-semibold">
                                 ⚽ {user.position}
                               </span>
                             )}
@@ -1230,7 +1230,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                     <button
                       type="button"
                       onClick={() => changeTab('bracket')}
-                      className="w-full py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                      className="w-full py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
                     >
                       <span>Nộp Biên Bản Trận Đấu Mới</span>
                     </button>
@@ -1247,7 +1247,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                     <button
                       type="button"
                       onClick={() => onRequestLogin?.()}
-                      className="w-full py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                      className="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                     >
                       <LogIn className="w-4 h-4" />
                       <span>Đăng Nhập Để Xem Elo</span>
@@ -1297,7 +1297,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                             <span className="text-[11px] text-slate-500 font-medium truncate">{p.teamName}</span>
                           </div>
                         </div>
-                        <span className="font-mono font-black text-emerald-700 dark:text-emerald-400 text-xs whitespace-nowrap">
+                        <span className="font-mono font-black text-sky-800 dark:text-sky-400 text-xs whitespace-nowrap">
                           {p.goals} bàn ({p.assists} kiến tạo)
                         </span>
                       </div>
@@ -1308,7 +1308,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 <button
                   type="button"
                   onClick={() => changeTab('rankings')}
-                  className="pt-2 text-center text-xs text-emerald-700 dark:text-emerald-400 font-bold hover:underline flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded"
+                  className="pt-2 text-center text-xs text-sky-800 dark:text-sky-400 font-bold hover:underline flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 rounded"
                 >
                   <span>Xem Bảng Xếp Hạng Elo Các Đội</span>
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -1318,25 +1318,25 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               {/* WIDGET 3: GUARANTEE & FAIRPLAY TRUST BADGES */}
               <div className="p-5 rounded-2xl bg-slate-100/80 dark:bg-slate-900/60 shadow-xs border border-slate-200 dark:border-slate-800 flex flex-col gap-3">
                 <div className="flex items-center gap-2 text-slate-900 dark:text-white text-sm font-bold">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                  <ShieldCheck className="w-5 h-5 text-sky-700" />
                   <span>Bảo Chứng Giải Đấu SoccerHub</span>
                 </div>
                 <div className="flex flex-col gap-2.5 text-xs text-slate-600 dark:text-slate-300">
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
                     <span><strong>100% Trọng tài</strong> có chứng chỉ liên đoàn và kiểm duyệt độc lập trước trận.</span>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
                     <span><strong>Smart Bracket Algorithm:</strong> Bốc thăm minh bạch tự động, chống ghép cặp ưu tiên hạt giống.</span>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
                     <span><strong>Ký quỹ giải thưởng an toàn:</strong> Tiền thưởng được ký gửi ký quỹ ngân hàng, giải ngân trong 24h.</span>
                   </div>
                 </div>
                 <div className="pt-2">
-                  <a href="#" className="text-xs text-slate-900 dark:text-white hover:text-emerald-600 font-bold flex items-center gap-1">
+                  <a href="#" className="text-xs text-slate-900 dark:text-white hover:text-sky-700 font-bold flex items-center gap-1">
                     <span>Đọc chi tiết Chính Sách FairPlay & Trọng Tài</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </a>

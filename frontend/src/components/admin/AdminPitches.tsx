@@ -66,7 +66,7 @@ export default function AdminPitches({ notify }: { notify: (type: "ok" | "err", 
       sortable: true,
       sortValue: (r) => r.avgPricePerHour ?? 0,
       render: (r) => (
-        <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+        <span className="font-mono font-bold text-sky-800 dark:text-sky-400">
           {(r.avgPricePerHour ?? 0).toLocaleString("vi-VN")}đ
         </span>
       ),

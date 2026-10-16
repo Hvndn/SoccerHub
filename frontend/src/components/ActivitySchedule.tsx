@@ -194,7 +194,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
   const visibleMatches = listFor(activeFilter);
 
   const filterTabs: { id: typeof activeFilter; label: string; count: number; tone: string }[] = [
-    { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-emerald-700 text-white" },
+    { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-sky-500 text-slate-950" },
     { id: "tournaments", label: "Lịch đấu giải", count: allMatches.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
     { id: "matchmaking", label: "Kèo đã ghép", count: matchedPosts.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
     { id: "history", label: "Đã đá", count: doneMatches.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
@@ -216,21 +216,21 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
             <div className="flex flex-col gap-1.5">
               <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                <button onClick={onBackToHome} className="hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
+                <button onClick={onBackToHome} className="hover:text-sky-800 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
                   <Home className="w-3.5 h-3.5" />
                   <span>Trang chủ</span>
                 </button>
                 <ChevronRight className="w-3.5 h-3.5" />
                 <span className="text-slate-900 dark:text-white font-bold">Lịch Hoạt Động & Đặt Chỗ</span>
                 <ChevronRight className="w-3.5 h-3.5" />
-                <span className="text-emerald-700 dark:text-emerald-400 font-mono font-bold">Tất cả lịch trình</span>
+                <span className="text-sky-800 dark:text-sky-400 font-mono font-bold">Tất cả lịch trình</span>
               </nav>
 
               <div className="flex items-center gap-3">
                 <h1 className="text-lg sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   Lịch Trình & Vé Thi Đấu
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-lime-400 text-slate-950 font-black text-xs uppercase tracking-wide">
+                <span className="px-2.5 py-0.5 rounded-full bg-sky-400 text-slate-950 font-black text-xs uppercase tracking-wide">
                   {tournaments.length} giải trong CSDL
                 </span>
               </div>
@@ -242,13 +242,13 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-bold shadow-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border border-slate-200 dark:border-slate-800 disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 text-emerald-600 dark:text-emerald-400 ${loading ? "animate-spin" : ""}`} />
+                <RefreshCw className={`w-4 h-4 text-sky-700 dark:text-sky-400 ${loading ? "animate-spin" : ""}`} />
                 <span>{loading ? "Đang tải…" : "Tải lại từ CSDL"}</span>
               </button>
 
               <button
                 onClick={() => onNavigateTab && onNavigateTab("booking")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-md transition-all active:scale-95"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold shadow-md transition-all active:scale-95"
               >
                 <Calendar className="w-4 h-4" />
                 <span>+ Đặt Sân Mới</span>
@@ -282,7 +282,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
             </div>
 
             <div className="hidden lg:flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-medium shrink-0">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
               Lịch lấy trực tiếp từ bảng <span className="font-mono">tournaments</span> &amp;{" "}
               <span className="font-mono">matchmaking_posts</span>
             </div>
@@ -300,7 +300,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                     <div className="flex items-center gap-2.5">
                       <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white font-mono text-xs font-bold">
-                        <span className="w-2 h-2 rounded-full bg-lime-400 animate-ping"></span>
+                        <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
                         {running.length ? "ĐANG DIỄN RA" : "TRẬN TIẾP THEO"}
                       </span>
                       {hero.startAt && !running.length && (
@@ -312,7 +312,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-400 font-bold text-xs">
+                      <span className="px-2.5 py-1 rounded bg-sky-100 dark:bg-sky-950/80 text-sky-900 dark:text-sky-400 font-bold text-xs">
                         {sportLabel(tournaments.find((t) => t.id === hero.tournamentId)?.sportType)}
                       </span>
                       <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-xs font-bold">
@@ -328,12 +328,12 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
                     <div className="flex flex-wrap items-center gap-y-1.5 gap-x-4 text-xs">
                       <span className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
-                        <Clock className="w-4 h-4 text-emerald-600" />
+                        <Clock className="w-4 h-4 text-sky-700" />
                         {hero.timeSlot ?? "Chưa xếp giờ"}
                         {hero.matchDate ? ` (${prettyDate(hero.matchDate)})` : ""}
                       </span>
                       <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-                        <MapPin className="w-4 h-4 text-emerald-600" />
+                        <MapPin className="w-4 h-4 text-sky-700" />
                         {hero.pitchName ?? "Chưa xếp sân"}
                       </span>
                     </div>
@@ -349,13 +349,13 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                               <span className="uppercase tracking-wider">
                                 {i === 0 ? "ĐỘI A" : "ĐỘI B"}
                               </span>
-                              <span className={`font-mono ${i === 0 ? "text-emerald-700 dark:text-emerald-400" : ""}`}>
+                              <span className={`font-mono ${i === 0 ? "text-sky-800 dark:text-sky-400" : ""}`}>
                                 Elo {i === 0 ? (hero.eloA ?? entry?.eloRating ?? "—") : (hero.eloB ?? entry?.eloRating ?? "—")}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                               <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
-                                i === 0 ? "bg-emerald-700 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                i === 0 ? "bg-sky-500 text-slate-950" : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                               }`}>
                                 {initials || "?"}
                               </span>
@@ -376,7 +376,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                     <div className="flex flex-wrap items-center gap-3">
                       <button
                         onClick={() => setSelectedMatch(hero)}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold shadow-sm transition-all active:scale-95"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-extrabold shadow-sm transition-all active:scale-95"
                       >
                         <FileText className="w-4 h-4" />
                         Xem Vé & Thông Tin Trận
@@ -385,7 +385,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                         onClick={() => onNavigateTab && onNavigateTab("tournaments")}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                       >
-                        <Trophy className="w-4 h-4 text-emerald-600" />
+                        <Trophy className="w-4 h-4 text-sky-700" />
                         Mở Nhánh Đấu
                       </button>
                     </div>
@@ -438,14 +438,14 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                         <div className="flex items-start gap-3 sm:gap-4">
                           <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center shrink-0 text-center border border-slate-200 dark:border-slate-700">
                             <span className="text-[10px] uppercase font-bold text-slate-500">{db.top}</span>
-                            <span className="text-lg leading-none text-emerald-700 dark:text-emerald-400 font-black">{db.num}</span>
+                            <span className="text-lg leading-none text-sky-800 dark:text-sky-400 font-black">{db.num}</span>
                             <span className="text-[9px] text-slate-400 font-bold">{db.bot}</span>
                           </div>
                           <div className="flex flex-col gap-1 min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
                                 m.status === "DONE"
-                                  ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400"
+                                  ? "bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-400"
                                   : "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400"
                               }`}>
                                 {m.status === "DONE" ? "ĐÃ ĐÁ" : m.roundName.toUpperCase()}
@@ -454,7 +454,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                             </div>
                             <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-xs flex-wrap">
                               <span className="flex items-center gap-1 text-slate-900 dark:text-white font-semibold">
-                                <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                                <Clock className="w-3.5 h-3.5 text-sky-700" />
                                 {m.timeSlot ?? "Chưa xếp giờ"}
                               </span>
                               <span>•</span>
@@ -465,7 +465,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                             <p className="text-xs text-slate-600 dark:text-slate-300">
                               <strong className="text-slate-900 dark:text-white">{m.teamA}</strong>
                               {m.status === "DONE" && (
-                                <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                                <span className="font-mono text-sky-700 dark:text-sky-400">
                                   {" "}{m.scoreA}-{m.scoreB}{" "}
                                 </span>
                               )}
@@ -476,7 +476,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
                         <div className="flex flex-row md:flex-col items-end gap-2 shrink-0">
                           <span className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold flex items-center gap-1.5">
-                            <QrCode className="w-3.5 h-3.5 text-emerald-600" />
+                            <QrCode className="w-3.5 h-3.5 text-sky-700" />
                             Chi tiết
                           </span>
                         </div>
@@ -514,7 +514,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                           ? "bg-rose-100 text-rose-700"
                           : b.status === "RESALE"
                           ? "bg-amber-100 text-amber-700"
-                          : "bg-emerald-100 text-emerald-700"
+                          : "bg-sky-100 text-sky-800"
                       }`}>
                         {b.status}
                       </span>
@@ -557,7 +557,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
                 <button
                   onClick={() => onNavigateTab && onNavigateTab("matchmaking")}
-                  className="w-full px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all active:scale-95"
+                  className="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold transition-all active:scale-95"
                 >
                   Mở Chợ Kèo
                 </button>
@@ -565,7 +565,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs p-3 sm:p-5 space-y-2">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <ShieldCheck className="w-4 h-4 text-sky-700" />
                   Thống Kê Nhanh
                 </h3>
                 {[
@@ -592,7 +592,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-3 sm:space-y-4 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 dark:text-white">
-                <Trophy className="w-5 h-5 text-emerald-600" />
+                <Trophy className="w-5 h-5 text-sky-700" />
                 {selectedMatch.matchId} · {selectedMatch.roundName}
               </h3>
               <button onClick={() => setSelectedMatch(null)} className="text-slate-400 hover:text-slate-700 dark:hover:text-white">
@@ -603,7 +603,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
             <p className="text-sm font-bold text-slate-900 dark:text-white">
               {selectedMatch.teamA}
               {selectedMatch.status === "DONE" && (
-                <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                <span className="font-mono text-sky-700 dark:text-sky-400">
                   {" "}{selectedMatch.scoreA}-{selectedMatch.scoreB}{" "}
                 </span>
               )}
@@ -641,7 +641,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
             <div className="flex gap-2">
               <button
                 onClick={() => { setSelectedMatch(null); onNavigateTab && onNavigateTab("tournaments"); }}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold"
               >
                 Mở nhánh đấu
               </button>

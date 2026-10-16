@@ -104,7 +104,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
       sortable: true,
       sortValue: (r) => r.depositPaid ?? 0,
       render: (r) => (
-        <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+        <span className="font-mono font-bold text-sky-800 dark:text-sky-400">
           {(r.depositPaid ?? 0).toLocaleString("vi-VN")}đ
         </span>
       ),
@@ -145,13 +145,13 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Mã vé / SĐT…"
-              className="pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 w-48 sm:w-56"
+              className="pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 w-48 sm:w-56"
             />
           </div>
           <button
             type="submit"
             disabled={searching}
-            className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+            className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
           >
             {searching ? "Đang tìm…" : "Tra cứu"}
           </button>

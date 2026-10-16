@@ -239,7 +239,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                 {/* Bottom Metric Strip */}
                 <div className="pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold">
                   <span className="text-slate-500 dark:text-slate-400">{pillar.metricLabel}</span>
-                  <span className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-sm">
+                  <span className="font-mono text-sky-700 dark:text-sky-400 font-black text-sm">
                     {pillar.metricValue}
                   </span>
                 </div>
@@ -304,7 +304,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                   <p className="text-xs text-[#0b4f6c] dark:text-sky-400 font-bold">Tự động hóa 100% bằng công nghệ thể thao số</p>
                 </div>
               </div>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-extrabold text-[10px] uppercase border border-emerald-200 dark:border-emerald-800">
+              <span className="px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-extrabold text-[10px] uppercase border border-sky-200 dark:border-sky-800">
                 Chuẩn xác 99.9%
               </span>
             </div>
@@ -344,7 +344,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             <button
               type="button"
               onClick={() => onExplore("PLAYER")}
-              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
               <Users className="w-4 h-4" />
               <span>Khám Phá Cổng Cầu Thủ</span>
@@ -362,7 +362,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             <button
               type="button"
               onClick={() => onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER")}
-              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-white dark:bg-transparent hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-black text-xs sm:text-sm border border-emerald-600/40 transition-all transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-white dark:bg-transparent hover:bg-sky-50 dark:hover:bg-emerald-950/40 text-sky-800 dark:text-sky-300 font-black text-xs sm:text-sm border border-emerald-600/40 transition-all transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
               <Trophy className="w-4 h-4 text-amber-400" />
               <span>Xem Giải Đấu &amp; Cây Nhánh</span>

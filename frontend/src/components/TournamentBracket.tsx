@@ -505,11 +505,11 @@ export default function TournamentBracket() {
     const setScore = (side: "a" | "b", v: string) =>
       setScores((s) => ({ ...s, [match.matchId]: { a: side === "a" ? v : (s[match.matchId]?.a ?? String(match.scoreA ?? 0)), b: side === "b" ? v : (s[match.matchId]?.b ?? String(match.scoreB ?? 0)) } }));
     return (
-      <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className={`animate-fade-in-up rounded-2xl border overflow-hidden text-xs shadow-xs ${done ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800" : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-800"}`}>
+      <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className={`animate-fade-in-up rounded-2xl border overflow-hidden text-xs shadow-xs ${done ? "bg-sky-50 dark:bg-sky-950/30 border-sky-300 dark:border-sky-800" : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-800"}`}>
         <div className="px-2.5 pt-2 font-mono text-[10px] font-black text-slate-400 flex items-center justify-between gap-1">
           <span>{match.matchId}</span>
           <div className="flex items-center gap-1">
-            {done && <span className="text-emerald-600 dark:text-emerald-400">{match.winner ? "✓ ĐÃ ĐÁ" : "= HÒA"}</span>}
+            {done && <span className="text-sky-700 dark:text-sky-400">{match.winner ? "✓ ĐÃ ĐÁ" : "= HÒA"}</span>}
             {done && (
               <button
                 type="button"
@@ -538,7 +538,7 @@ export default function TournamentBracket() {
               </span>
             )}
             {match.pitchName && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold truncate max-w-full">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 text-[10px] font-bold truncate max-w-full">
                 {match.pitchName}
               </span>
             )}
@@ -549,7 +549,7 @@ export default function TournamentBracket() {
           return (
             <div key={i}>
               {i === 1 && <div className="border-t border-slate-200 dark:border-slate-800" />}
-              <div className={`p-3 flex justify-between items-center gap-2 ${t?.tbd ? "text-slate-400 dark:text-slate-500 italic" : isWinner ? "text-emerald-800 dark:text-emerald-200 font-black" : "text-slate-700 dark:text-slate-200 font-bold"}`}>
+              <div className={`p-3 flex justify-between items-center gap-2 ${t?.tbd ? "text-slate-400 dark:text-slate-500 italic" : isWinner ? "text-sky-900 dark:text-emerald-200 font-black" : "text-slate-700 dark:text-slate-200 font-bold"}`}>
                 <span className="truncate">{t?.name ?? "?"}{isWinner ? " 👑" : ""}</span>
                 {t && !t.tbd && t.elo != null && (
                   <span className="font-mono text-[10px] text-slate-400 shrink-0">{t.elo}</span>
@@ -567,7 +567,7 @@ export default function TournamentBracket() {
               aria-label={`Bàn thắng ${match.teamA?.name}`}
               value={cur.a}
               onChange={(e) => setScore("a", e.target.value)}
-              className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-center font-mono font-black text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-center font-mono font-black text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
             <span className="font-mono font-black text-slate-400">–</span>
             <input
@@ -576,13 +576,13 @@ export default function TournamentBracket() {
               aria-label={`Bàn thắng ${match.teamB?.name}`}
               value={cur.b}
               onChange={(e) => setScore("b", e.target.value)}
-              className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-center font-mono font-black text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-center font-mono font-black text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
             <button
               type="button"
               onClick={() => handleSaveScore(match)}
               disabled={savingMatch === match.matchId}
-              className="flex-1 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-black transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1"
+              className="flex-1 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-slate-950 text-[11px] font-black transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1"
             >
               {savingMatch === match.matchId ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -597,7 +597,7 @@ export default function TournamentBracket() {
               type="button"
               onClick={() => setScorerOpen((o) => ({ ...o, [match.matchId]: !o[match.matchId] }))}
               aria-expanded={!!scorerOpen[match.matchId]}
-              className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+              className="text-[11px] font-bold text-sky-800 dark:text-sky-400 hover:underline"
             >
               {scorerOpen[match.matchId] ? "▾ Ẩn ghi bàn/kiến tạo" : "＋ Ghi bàn/kiến tạo (tùy chọn)"}
             </button>
@@ -611,13 +611,13 @@ export default function TournamentBracket() {
                       placeholder="Tên cầu thủ"
                       value={row.player}
                       onChange={(e) => setScorerRow(match.matchId, ri, { player: e.target.value })}
-                      className="px-1.5 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] min-w-0 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="px-1.5 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] min-w-0 focus:outline-none focus:ring-1 focus:ring-sky-500"
                     />
                     <select
                       aria-label="Đội của cầu thủ"
                       value={row.team}
                       onChange={(e) => setScorerRow(match.matchId, ri, { team: e.target.value })}
-                      className="px-1 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[10px] font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500 truncate"
+                      className="px-1 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[10px] font-bold focus:outline-none focus:ring-1 focus:ring-sky-500 truncate"
                     >
                       <option value={match.teamA?.name}>{match.teamA?.name}</option>
                       <option value={match.teamB?.name}>{match.teamB?.name}</option>
@@ -626,13 +626,13 @@ export default function TournamentBracket() {
                       type="number" min={0} aria-label="Số bàn" title="Bàn"
                       value={row.goals}
                       onChange={(e) => setScorerRow(match.matchId, ri, { goals: e.target.value })}
-                      className="px-1 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] font-mono text-center focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="px-1 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] font-mono text-center focus:outline-none focus:ring-1 focus:ring-sky-500"
                     />
                     <input
                       type="number" min={0} aria-label="Kiến tạo" title="Kiến tạo"
                       value={row.assists}
                       onChange={(e) => setScorerRow(match.matchId, ri, { assists: e.target.value })}
-                      className="px-1 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] font-mono text-center focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="px-1 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-[11px] font-mono text-center focus:outline-none focus:ring-1 focus:ring-sky-500"
                     />
                     <button
                       type="button"
@@ -660,7 +660,7 @@ export default function TournamentBracket() {
           </div>
         )}
         {done && (
-          <div className="px-2.5 pb-2.5 font-mono text-center text-sm font-black text-emerald-700 dark:text-emerald-300">
+          <div className="px-2.5 pb-2.5 font-mono text-center text-sm font-black text-sky-800 dark:text-sky-300">
             {match.scoreA} – {match.scoreB}
           </div>
         )}
@@ -672,7 +672,7 @@ export default function TournamentBracket() {
     <div className="space-y-4 sm:space-y-8 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-slate-900 dark:bg-emerald-700 text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-emerald-400 animate-fade-in-up sm:max-w-sm">
+        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-sky-400 animate-fade-in-up sm:max-w-sm">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 dark:text-white shrink-0" />
           <span className="font-semibold text-xs sm:text-sm">{toastMessage}</span>
         </div>
@@ -682,8 +682,8 @@ export default function TournamentBracket() {
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-slate-900 dark:text-white shadow-xl relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
           <div className="min-w-0">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold mb-3">
-              <Trophy className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 dark:border-sky-500/40 text-sky-800 dark:text-sky-300 text-xs font-bold mb-3">
+              <Trophy className="w-4 h-4 text-sky-700 dark:text-sky-400" />
               <span>{selected ? `${selected.title} • Nhánh đấu & VAR` : "Nhánh đấu & Bàn trọng tài Live VAR"}</span>
             </div>
             <h1 className="text-lg sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
@@ -705,7 +705,7 @@ export default function TournamentBracket() {
               id="bracket-tournament"
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-extrabold text-slate-900 dark:text-white rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-full"
+              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-extrabold text-slate-900 dark:text-white rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 max-w-full"
             >
               {tournaments.length === 0 && <option value="">Chưa có giải đấu</option>}
               {tournaments.map((t) => (
@@ -720,7 +720,7 @@ export default function TournamentBracket() {
                 onClick={handleFill}
                 disabled={!selected || full || fillBusy}
                 title="Sinh đội Test cho đủ sức chứa (chỉ dùng demo)"
-                className="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3.5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {fillBusy ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -750,7 +750,7 @@ export default function TournamentBracket() {
                 onClick={() => (bracket ? setConfirmDraw(true) : startDraw())}
                 disabled={!selected || teamCount < 2 || drawBusy}
                 title="Bốc thăm hạt giống theo Elo, lưu nhánh đấu vào CSDL"
-                className="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3.5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {drawBusy ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -882,7 +882,7 @@ export default function TournamentBracket() {
                         type="button"
                         onClick={() => handleConfirmPayment(t.teamName)}
                         disabled={confirmingTeam === t.teamName}
-                        className="shrink-0 px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-black transition-all active:scale-95 disabled:opacity-50"
+                        className="shrink-0 px-2.5 py-1 rounded-lg bg-sky-500 hover:bg-sky-600 text-slate-950 text-[11px] font-black transition-all active:scale-95 disabled:opacity-50"
                       >
                         {confirmingTeam === t.teamName ? "…" : "Đã thu ✓"}
                       </button>
@@ -900,7 +900,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("bracket")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "bracket"
-                ? "bg-emerald-700 text-white shadow-md"
+                ? "bg-sky-500 text-slate-950 shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -912,7 +912,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("var_referee")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "var_referee"
-                ? "bg-emerald-700 text-white shadow-md"
+                ? "bg-sky-500 text-slate-950 shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -925,7 +925,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("standings")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "standings"
-                ? "bg-emerald-700 text-white shadow-md"
+                ? "bg-sky-500 text-slate-950 shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -937,7 +937,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("esheet")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "esheet"
-                ? "bg-emerald-700 text-white shadow-md"
+                ? "bg-sky-500 text-slate-950 shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -970,7 +970,7 @@ export default function TournamentBracket() {
             </div>
           )}
           {bracket && scheduledCount > 0 && (
-            <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+            <p className="text-[11px] font-bold text-sky-800 dark:text-sky-400">
               <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
               Đã xếp lịch {scheduledCount} trận — ngày, khung giờ và sân lấy trực tiếp từ CSDL.
             </p>
@@ -1000,7 +1000,7 @@ export default function TournamentBracket() {
                   <div className={`text-center text-xs font-extrabold uppercase tracking-wider py-2 rounded-xl border ${
                     ri === bracket.rounds.length - 1
                       ? "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/30"
-                      : "text-emerald-600 dark:text-emerald-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                      : "text-sky-700 dark:text-sky-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                   }`}>
                     {round.name} ({round.matches.length} trận)
                   </div>
@@ -1052,7 +1052,7 @@ export default function TournamentBracket() {
 
                 <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-center shadow-2xl space-y-3 sm:space-y-4">
                   <div className="flex items-center justify-center space-x-3 text-xs text-slate-500 dark:text-slate-400 uppercase font-mono tracking-widest font-bold">
-                    <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <Clock className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                     <span>
                       {varMatch.status === "DONE" ? "ĐÃ KẾT THÚC" : "ĐANG ĐIỀU KHIỂN"} • TỶ SỐ THỜI GIAN THỰC
                     </span>
@@ -1060,7 +1060,7 @@ export default function TournamentBracket() {
 
                   <div className="grid grid-cols-3 items-center gap-3 sm:gap-4 py-2">
                     <div className="space-y-2 min-w-0">
-                      <div className="text-base sm:text-lg font-black text-emerald-700 dark:text-emerald-400 truncate">
+                      <div className="text-base sm:text-lg font-black text-sky-800 dark:text-sky-400 truncate">
                         {varMatch.teamA?.name}
                       </div>
                       <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Elo {varMatch.teamA?.elo ?? "—"}</div>
@@ -1071,7 +1071,7 @@ export default function TournamentBracket() {
                         <div className="flex justify-center space-x-2 pt-2">
                           <button
                             onClick={() => setVarScoreA(varScoreA + 1)}
-                            className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
+                            className="bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
                           >
                             +1 Bàn
                           </button>
@@ -1107,7 +1107,7 @@ export default function TournamentBracket() {
                         <div className="flex justify-center space-x-2 pt-2">
                           <button
                             onClick={() => setVarScoreB(varScoreB + 1)}
-                            className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
+                            className="bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
                           >
                             +1 Bàn
                           </button>
@@ -1126,7 +1126,7 @@ export default function TournamentBracket() {
                     <button
                       onClick={saveVarScore}
                       disabled={savingMatch === varMatch.matchId}
-                      className="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-50"
+                      className="w-full bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-50"
                     >
                       {savingMatch === varMatch.matchId
                         ? "Đang lưu…"
@@ -1143,7 +1143,7 @@ export default function TournamentBracket() {
                   <select
                     value={varMatchId}
                     onChange={(e) => setVarMatchId(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
                   >
                     {playableMatches.map((p) => (
                       <option key={p.match.matchId} value={p.match.matchId}>
@@ -1184,7 +1184,7 @@ export default function TournamentBracket() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => handleVarCheck("Bóng trong sân (In-Bounds)", "ok")}
-                        className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
+                        className="bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg transition"
                       >
                         ✅ Bóng Trong Sân
                       </button>
@@ -1196,7 +1196,7 @@ export default function TournamentBracket() {
                       </button>
                       <button
                         onClick={() => handleVarCheck("Lỗi chân vạch Kitchen", "warn")}
-                        className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
+                        className="bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg transition"
                       >
                         ⚠️ Lỗi Kitchen
                       </button>
@@ -1250,7 +1250,7 @@ export default function TournamentBracket() {
 
             <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-lg space-y-3 sm:space-y-4">
               <div className="flex items-center space-x-3">
-                <QrCode className="w-8 h-8 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                <QrCode className="w-8 h-8 text-sky-700 dark:text-sky-400 flex-shrink-0" />
                 <div>
                   <h4 className="font-bold text-sm">Biên Bản Trận Đấu</h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
@@ -1264,7 +1264,7 @@ export default function TournamentBracket() {
               <button
                 onClick={() => setActiveTab("esheet")}
                 disabled={!varMatch}
-                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-40"
+                className="w-full bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-40"
               >
                 Mở Biên Bản Điện Tử
               </button>
@@ -1312,13 +1312,13 @@ export default function TournamentBracket() {
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 font-medium">
                   {tableRows.map((row, idx) => (
-                    <tr key={row.team} className={`hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors ${idx === 0 ? "bg-emerald-50 dark:bg-emerald-950/20 text-slate-900 dark:text-white font-bold" : "text-slate-700 dark:text-slate-300"}`}>
-                      <td className="py-3.5 px-2 sm:px-4 font-bold text-emerald-600 dark:text-emerald-400 sticky left-0 bg-white dark:bg-slate-900 z-10">#{idx + 1}</td>
+                    <tr key={row.team} className={`hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors ${idx === 0 ? "bg-sky-50 dark:bg-sky-950/20 text-slate-900 dark:text-slate-950 font-bold" : "text-slate-700 dark:text-slate-300"}`}>
+                      <td className="py-3.5 px-2 sm:px-4 font-bold text-sky-700 dark:text-sky-400 sticky left-0 bg-white dark:bg-slate-900 z-10">#{idx + 1}</td>
                       <td className="py-3.5 px-2 sm:px-4 font-bold text-slate-900 dark:text-white">
                         {idx === 0 && "👑 "}{row.team}
                       </td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono">{row.played}</td>
-                      <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{row.won}</td>
+                      <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-bold text-sky-700 dark:text-sky-400">{row.won}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-amber-600 dark:text-amber-400">{row.drawn}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-rose-500">{row.lost}</td>
                       <td className="py-3.5 px-2 sm:px-4 text-center font-mono">{row.diff > 0 ? `+${row.diff}` : row.diff}</td>
@@ -1332,7 +1332,7 @@ export default function TournamentBracket() {
                         {row.simulated ? (
                           <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 text-[10px] font-black">TEST</span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-black">CHÍNH THỨC</span>
+                          <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-900 dark:text-sky-300 text-[10px] font-black">CHÍNH THỨC</span>
                         )}
                       </td>
                     </tr>
@@ -1363,7 +1363,7 @@ export default function TournamentBracket() {
                 value={varMatchId}
                 onChange={(e) => setVarMatchId(e.target.value)}
                 aria-label="Chọn trận cho biên bản"
-                className="px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[240px]"
+                className="px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 max-w-[240px]"
               >
                 {playableMatches.map((p) => (
                   <option key={p.match.matchId} value={p.match.matchId}>
@@ -1374,7 +1374,7 @@ export default function TournamentBracket() {
               <button
                 onClick={() => window.print()}
                 disabled={!varMatch}
-                className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition active:scale-95 disabled:opacity-40 print:hidden"
+                className="bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold px-4 py-2.5 rounded-xl shadow transition active:scale-95 disabled:opacity-40 print:hidden"
               >
                 In / Lưu PDF
               </button>

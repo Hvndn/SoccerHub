@@ -70,7 +70,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
          ======================================================== */}
       <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden shadow-xs border-y border-slate-200/80 bg-white">
         {/* Soft Ambient Accents (ẩn trên mobile để tối giản) */}
-        <div className="hidden sm:block absolute top-0 right-1/4 w-[500px] h-[500px] bg-emerald-50/70 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden sm:block absolute top-0 right-1/4 w-[500px] h-[500px] bg-sky-50/70 rounded-full blur-3xl pointer-events-none" />
         <div className="hidden sm:block absolute -bottom-20 left-10 w-[450px] h-[450px] bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
 
         {/* Inner Content Container Aligned with Site Container (max-w-[1720px]) */}
@@ -119,7 +119,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                 <button
                   type="button"
                   onClick={() => onOpenAuth("login", "PLAYER")}
-                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-2.5 cursor-pointer"
+                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-2.5 cursor-pointer"
                 >
                   <Users className="w-4 h-4 text-white" />
                   <span>Đặt Sân Ngay →</span>
@@ -173,7 +173,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               </span>
             </div>
           </div>
-          <span className="hidden sm:inline-block text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800">
+          <span className="hidden sm:inline-block text-[10px] font-mono font-bold text-sky-800 dark:text-sky-300 bg-sky-100/70 dark:bg-sky-950/60 px-2.5 py-1 rounded-lg border border-sky-300 dark:border-sky-800">
             Dữ liệu trực tiếp từ CSDL
           </span>
         </div>
@@ -283,7 +283,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1 min-w-0">
-          <div className="text-xl sm:text-3xl font-mono font-black text-emerald-600 dark:text-emerald-400">
+          <div className="text-xl sm:text-3xl font-mono font-black text-sky-700 dark:text-sky-400">
             {stats.loading ? "—" : stats.tournaments}
           </div>
           <div className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Giải đấu đã đăng</div>

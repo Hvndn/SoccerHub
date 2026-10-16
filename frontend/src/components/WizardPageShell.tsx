@@ -34,7 +34,7 @@ export default function WizardPageShell({
             href="/"
             className="flex items-center gap-2 font-black text-lg tracking-tight text-slate-900 dark:text-white"
           >
-            <span className="text-emerald-700 dark:text-emerald-400">Turf</span>Zone
+            <span className="text-sky-800 dark:text-sky-400">Turf</span>Zone
           </Link>
           <Link
             href={backHref}
@@ -56,7 +56,7 @@ export default function WizardPageShell({
             <span aria-hidden>›</span>
             <Link href={backHref} className="hover:underline font-semibold">{backLabel.replace(/^←\s*/, "").replace(/^Quay lại\s*/i, "") || "Danh sách"}</Link>
             <span aria-hidden>›</span>
-            <span className="font-bold text-emerald-700 dark:text-emerald-400">{crumb}</span>
+            <span className="font-bold text-sky-800 dark:text-sky-400">{crumb}</span>
           </nav>
 
           <div>

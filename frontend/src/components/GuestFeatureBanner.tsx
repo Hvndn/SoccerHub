@@ -59,7 +59,7 @@ export default function GuestFeatureBanner({
           </button>
           <button
             onClick={() => onOpenAuth("register")}
-            className="px-5 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
+            className="px-5 py-3 rounded-2xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
           >
             <UserPlus className="w-4 h-4 text-white" />
             <span>Đăng Ký Tài Khoản</span>

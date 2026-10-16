@@ -352,7 +352,7 @@ export default function PitchDetail({
         <div className="flex items-center space-x-3">
           <button
             onClick={onBack}
-            className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm transition-all flex items-center space-x-1.5 active:scale-95 shadow-xs"
+            className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-sm transition-all flex items-center space-x-1.5 active:scale-95 shadow-xs"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Quay Lại Tìm Sân</span>
@@ -373,8 +373,8 @@ export default function PitchDetail({
           </ol>
         </div>
 
-        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-700 dark:text-sky-400 text-xs font-bold">
+          <span className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse" />
           <span>Thông tin ca sân cập nhật theo thời gian thực</span>
         </div>
       </nav>
@@ -389,7 +389,7 @@ export default function PitchDetail({
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>{pitchDetails?.pitchTypes?.[0] || "Sân cỏ nhân tạo"}</span>
               </span>
-              <span className="bg-emerald-700 text-white text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
+              <span className="bg-sky-500 text-slate-950 text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
                 <Zap className="w-3.5 h-3.5" />
                 <span>Đèn LED chiếu sáng sân</span>
               </span>
@@ -415,12 +415,12 @@ export default function PitchDetail({
                 <strong className="text-slate-800 dark:text-slate-200">{venueData.address}</strong>
               </span>
               <span className="text-slate-400">•</span>
-              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
+              <span className="flex items-center gap-1 text-sky-700 dark:text-sky-400 font-bold">
                 <PhoneCall className="w-4 h-4 shrink-0" />
                 <span>Hotline: {venueData.phone}</span>
               </span>
               <span className="text-slate-400">•</span>
-              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-lg text-xs font-bold font-mono">
+              <span className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20 px-2.5 py-0.5 rounded-lg text-xs font-bold font-mono">
                 Mở cửa: {venueData.openTime} - {venueData.closeTime} (Linh hoạt 1h - 2h)
               </span>
             </div>
@@ -466,7 +466,7 @@ export default function PitchDetail({
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
             <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
               <div>
-                <span className="font-black text-xs bg-emerald-700/90 backdrop-blur-md px-2.5 py-1 rounded text-white uppercase tracking-wider">
+                <span className="font-black text-xs bg-sky-500/90 backdrop-blur-md px-2.5 py-1 rounded text-slate-950 uppercase tracking-wider">
                   {pitchDetails?.pitchTypes?.[0] || pitch?.sportBadge || "Sân bóng đá"}
                 </span>
                 <p className="font-black text-base sm:text-lg mt-1 text-white">
@@ -522,7 +522,7 @@ export default function PitchDetail({
 
             <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex flex-col">
               <span className="text-xs text-slate-400">Giá ca sân từ:</span>
-              <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+              <span className="text-xl font-black text-sky-700 dark:text-sky-400 font-mono">
                 {pitchDetails?.avgPricePerHour
                   ? pitchDetails.avgPricePerHour.toLocaleString("vi-VN")
                   : "—"}
@@ -551,8 +551,8 @@ export default function PitchDetail({
 
             {/* Chú thích màu sắc */}
             <div className="flex items-center space-x-3 text-xs font-bold flex-wrap">
-              <div className="flex items-center space-x-1.5 text-emerald-600 dark:text-emerald-400">
-                <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-xs" />
+              <div className="flex items-center space-x-1.5 text-sky-700 dark:text-sky-400">
+                <span className="w-3 h-3 rounded-full bg-sky-500 shadow-xs" />
                 <span>Đang chọn</span>
               </div>
               <div className="flex items-center space-x-1.5 text-slate-600 dark:text-slate-300">
@@ -578,11 +578,11 @@ export default function PitchDetail({
                 onClick={() => setSelectedDate(d.iso)}
                 className={`flex-1 min-w-[130px] p-3 rounded-2xl flex flex-col items-center gap-0.5 shadow-xs text-center transition-all cursor-pointer border ${
                   selectedDate === d.iso
-                    ? "bg-emerald-700 text-white border-emerald-700 shadow-md font-black"
+                    ? "bg-sky-500 text-slate-950 border-sky-500 shadow-md font-black"
                     : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                 }`}
               >
-                <span className={`text-[10px] uppercase tracking-wider font-extrabold ${selectedDate === d.iso ? "text-sky-200 dark:text-slate-950 font-black" : "text-slate-400"}`}>
+                <span className={`text-[10px] uppercase tracking-wider font-extrabold ${selectedDate === d.iso ? "text-slate-950 font-black" : "text-slate-400"}`}>
                   {d.label}
                 </span>
                 <span className="text-sm font-black font-mono">{d.dateFormatted}</span>
@@ -606,7 +606,7 @@ export default function PitchDetail({
               <div>
                 <span className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
                   <span>Khung Giờ Thi Đấu Cố Định</span>
-                  <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold font-mono border border-emerald-500/30">
+                  <span className="px-2 py-0.5 rounded-md bg-sky-500/10 dark:bg-sky-500/20 text-sky-700 dark:text-sky-400 text-xs font-bold font-mono border border-sky-500/30">
                     {fixedSlotDuration} phút/ca
                   </span>
                 </span>
@@ -693,7 +693,7 @@ export default function PitchDetail({
                     {/* Court Info Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200 dark:border-slate-800/80">
                       <div className="flex items-center space-x-2.5">
-                        <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-xs" />
+                        <span className="w-3 h-3 rounded-full bg-sky-500 shadow-xs" />
                         <span className="font-black text-base text-slate-900 dark:text-white">
                           {court.pitchName}
                         </span>
@@ -719,7 +719,7 @@ export default function PitchDetail({
                             <button
                               key={sIdx}
                               type="button"
-                              className="h-20 rounded-2xl bg-emerald-700 text-white shadow-lg shadow-emerald-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-emerald-400 btn-shimmer cursor-pointer"
+                              className="h-20 rounded-2xl bg-sky-500 text-slate-950 shadow-lg shadow-sky-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-emerald-400 btn-shimmer cursor-pointer"
                             >
                               <div className="absolute top-0 right-0 bg-emerald-300 text-slate-950 text-[9px] px-2 py-0.5 font-black rounded-bl uppercase shadow-xs">
                                 ĐANG CHỌN ⚽
@@ -765,7 +765,7 @@ export default function PitchDetail({
                             className={`h-20 rounded-2xl shadow-xs flex flex-col items-center justify-center p-2 transition-all cursor-pointer border group relative ${
                               slot.isGapSlot
                                 ? "bg-amber-500/10 hover:bg-amber-500/20 border-amber-400/80 text-amber-950 dark:text-amber-100 ring-1 ring-amber-400/40"
-                                : "bg-white dark:bg-slate-900 hover:border-emerald-500 hover:bg-emerald-50/20 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700"
+                                : "bg-white dark:bg-slate-900 hover:border-sky-500 hover:bg-sky-50/20 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700"
                             }`}
                           >
                             {slot.isGapSlot ? (
@@ -781,10 +781,10 @@ export default function PitchDetail({
                                 Pass -40%
                               </div>
                             ) : null}
-                            <span className={`font-bold text-xs ${slot.isGapSlot ? "text-amber-700 dark:text-amber-300 font-extrabold" : "text-slate-700 dark:text-slate-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400"}`}>
+                            <span className={`font-bold text-xs ${slot.isGapSlot ? "text-amber-700 dark:text-amber-300 font-extrabold" : "text-slate-700 dark:text-slate-300 group-hover:text-sky-700 dark:group-hover:text-emerald-400"}`}>
                               {slot.time}
                             </span>
-                            <span className={`font-black text-sm font-mono mt-0.5 ${slot.isGapSlot ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                            <span className={`font-black text-sm font-mono mt-0.5 ${slot.isGapSlot ? "text-amber-600 dark:text-amber-400" : "text-sky-700 dark:text-sky-400"}`}>
                               {slot.price}
                             </span>
                             <span className={`text-[10px] font-medium ${slot.isGapSlot ? "text-amber-600/80 dark:text-amber-300/80 font-bold" : "text-slate-400"}`}>
@@ -803,7 +803,7 @@ export default function PitchDetail({
           {/* Quy trình nhận sân & chính sách cọc (mô tả đúng luồng đang chạy) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 font-bold">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 font-bold">
                 <QrCode className="w-5 h-5 text-emerald-500" />
               </div>
               <div className="space-y-1">
@@ -877,7 +877,7 @@ export default function PitchDetail({
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-bold">Khung giờ:</span>
-                  <p className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">{selectedSlot.time}</p>
+                  <p className="font-bold text-sky-700 dark:text-sky-400 font-mono">{selectedSlot.time}</p>
                 </div>
               </div>
             </div>
@@ -893,7 +893,7 @@ export default function PitchDetail({
               <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-baseline justify-between">
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-extrabold block">TỔNG TIỀN CA SÂN:</span>
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">Theo giá niêm yết của sân</span>
+                  <span className="text-xs text-sky-700 dark:text-sky-400 font-bold">Theo giá niêm yết của sân</span>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">
@@ -913,7 +913,7 @@ export default function PitchDetail({
                   onClick={() => setDepositOption("50%")}
                   className={`p-3 rounded-2xl cursor-pointer flex flex-col justify-between border-2 transition-all ${
                     depositOption === "50%"
-                      ? "bg-emerald-500/10 border-emerald-500 shadow-xs"
+                      ? "bg-sky-500/10 border-sky-500 shadow-xs"
                       : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                   }`}
                 >
@@ -921,7 +921,7 @@ export default function PitchDetail({
                     <span className="font-bold text-xs text-slate-900 dark:text-white">Cọc 50%</span>
                     {depositOption === "50%" && <span className="text-emerald-500 font-black text-xs">✓</span>}
                   </div>
-                  <span className="font-mono text-base font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                  <span className="font-mono text-base font-black text-sky-700 dark:text-sky-400 mt-1">
                     {Math.round(totalPrice * 0.5).toLocaleString("vi-VN")}đ
                   </span>
                   <span className="text-[10px] text-slate-500">Trả phần còn lại ở quầy</span>
@@ -931,7 +931,7 @@ export default function PitchDetail({
                   onClick={() => setDepositOption("100%")}
                   className={`p-3 rounded-2xl cursor-pointer flex flex-col justify-between border-2 transition-all ${
                     depositOption === "100%"
-                      ? "bg-emerald-500/10 border-emerald-500 shadow-xs"
+                      ? "bg-sky-500/10 border-sky-500 shadow-xs"
                       : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                   }`}
                 >
@@ -965,12 +965,12 @@ export default function PitchDetail({
               </div>
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[11px] text-slate-500">
-                  Mỗi người ~ <strong className="text-emerald-600 dark:text-emerald-400 font-mono font-bold text-xs">{splitPerPlayer.toLocaleString("vi-VN")}đ</strong>
+                  Mỗi người ~ <strong className="text-sky-700 dark:text-sky-400 font-mono font-bold text-xs">{splitPerPlayer.toLocaleString("vi-VN")}đ</strong>
                 </span>
                 <button
                   type="button"
                   onClick={() => showToast(`💸 Đã sao chép mức chia ${splitPerPlayer.toLocaleString("vi-VN")}đ/người (${splitCount} người)!`)}
-                  className="px-2.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-colors shrink-0 shadow-xs"
+                  className="px-2.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs transition-colors shrink-0 shadow-xs"
                 >
                   Chia Tiền
                 </button>
@@ -983,7 +983,7 @@ export default function PitchDetail({
                 type="button"
                 onClick={handleStartBooking}
                 disabled={isBooking}
-                className="w-full py-3.5 px-4 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm sm:text-base shadow-lg shadow-emerald-500/30 flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 px-4 rounded-2xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-sm sm:text-base shadow-lg shadow-sky-500/30 flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
               >
                 {isBooking ? (
                   <>
@@ -1017,8 +1017,8 @@ export default function PitchDetail({
                   Vui lòng bấm vào một khung giờ <strong>Còn trống</strong> trên sơ đồ bên trái để xem chi tiết giá và mở phiếu đặt chỗ.
                 </p>
               </div>
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-sky-500 animate-ping inline-block" />
                 <span>Sẵn sàng giữ chỗ thời gian thực</span>
               </div>
             </div>
@@ -1037,7 +1037,7 @@ export default function PitchDetail({
             </div>
             <a
               href={`tel:${venueData.phone}`}
-              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-colors flex items-center space-x-1"
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-sky-700 dark:text-sky-400 font-bold text-xs transition-colors flex items-center space-x-1"
             >
               <PhoneCall className="w-3.5 h-3.5" />
               <span>Gọi Sân</span>
@@ -1076,7 +1076,7 @@ export default function PitchDetail({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Mặt sân & Khung giờ:</span>
-                    <strong className="text-emerald-600 dark:text-emerald-400">{selectedSlot.courtName} • {selectedSlot.time}</strong>
+                    <strong className="text-sky-700 dark:text-sky-400">{selectedSlot.courtName} • {selectedSlot.time}</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Mã vé đặt:</span>
@@ -1084,7 +1084,7 @@ export default function PitchDetail({
                   </div>
                   <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700 text-sm">
                     <span className="font-bold text-slate-800 dark:text-slate-200">Mức cọc dự kiến ({depositOption}):</span>
-                    <strong className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-base">
+                    <strong className="font-mono text-sky-700 dark:text-sky-400 font-black text-base">
                       {depositAmount.toLocaleString("vi-VN")} đ
                     </strong>
                   </div>
@@ -1105,7 +1105,7 @@ export default function PitchDetail({
                 <button
                   type="button"
                   onClick={handleCompletePayment}
-                  className="w-full py-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                  className="w-full py-3.5 rounded-2xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
                 >
                   <CheckCircle2 className="w-5 h-5 text-white" />
                   <span>Đã Đặt Giữ Chỗ Thành Công</span>
@@ -1114,12 +1114,12 @@ export default function PitchDetail({
             ) : (
               /* Vé điện tử đã lưu trong CSDL */
               <div className="text-center space-y-5 py-2">
-                <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 border-2 border-emerald-500 mx-auto flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-700 border-2 border-sky-500 mx-auto flex items-center justify-center">
                   <CheckCircle2 className="w-8 h-8 text-emerald-500" />
                 </div>
 
                 <div>
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
+                  <span className="px-3 py-1 rounded-full bg-sky-500/10 text-sky-700 text-xs font-bold uppercase tracking-wider border border-sky-500/30">
                     ĐƠN GIỮ CHỖ ĐÃ LƯU VÀO CSDL
                   </span>
                   <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-2">Thẻ Vé Vào Sân Điện Tử</h3>
@@ -1131,7 +1131,7 @@ export default function PitchDetail({
                     <QrCode className="w-32 h-32 text-slate-900" />
                   </div>
                   <div className="text-xs space-y-1 text-slate-600 dark:text-slate-300 font-medium">
-                    <p className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-sm">
+                    <p className="font-mono text-sky-700 dark:text-sky-400 font-black text-sm">
                       MÃ VÉ: {bookingConfirmed?.code || "—"}
                     </p>
                     <p className="font-bold text-slate-900 dark:text-white">{venueData.name}</p>

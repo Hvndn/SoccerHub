@@ -38,7 +38,7 @@ const LEVELS = ["Mới chơi", "Phong trào", "Bán chuyên", "Chuyên nghiệp"
 const SPORTS = ["Bóng Đá Sân 5", "Bóng Đá Sân 7", "Bóng Đá Sân 11", "Futsal"];
 
 const inputCls =
-  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 placeholder:text-slate-400 transition-shadow";
+  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-emerald-500 placeholder:text-slate-400 transition-shadow";
 const labelCls = "block text-xs font-bold text-slate-700 mb-1.5";
 
 function passwordScore(pw: string): number {
@@ -51,7 +51,7 @@ function passwordScore(pw: string): number {
 }
 
 const STRENGTH_LABEL = ["Quá yếu", "Yếu", "Trung bình", "Khá", "Mạnh"];
-const STRENGTH_COLOR = ["bg-slate-200", "bg-rose-500", "bg-amber-500", "bg-sky-500", "bg-emerald-500"];
+const STRENGTH_COLOR = ["bg-slate-200", "bg-rose-500", "bg-amber-500", "bg-sky-500", "bg-sky-500"];
 
 export default function AuthModal({
   isOpen,
@@ -362,13 +362,13 @@ export default function AuthModal({
           {/* Bước đăng ký 1/2 */}
           {mode === "register" && (
             <div className="mt-3 flex items-center gap-2 text-[11px] font-bold text-slate-500" aria-hidden>
-              <span className={`flex items-center gap-1 ${regStep >= 1 ? "text-emerald-700" : ""}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 1 ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-500"}`}>1</span>
+              <span className={`flex items-center gap-1 ${regStep >= 1 ? "text-sky-800" : ""}`}>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 1 ? "bg-sky-500 text-slate-950" : "bg-slate-200 text-slate-500"}`}>1</span>
                 Tài khoản & vai trò
               </span>
               <span className="text-slate-300">›</span>
-              <span className={`flex items-center gap-1 ${regStep >= 2 ? "text-emerald-700" : ""}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 2 ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-500"}`}>2</span>
+              <span className={`flex items-center gap-1 ${regStep >= 2 ? "text-sky-800" : ""}`}>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 2 ? "bg-sky-500 text-slate-950" : "bg-slate-200 text-slate-500"}`}>2</span>
                 Hồ sơ thi đấu
               </span>
             </div>
@@ -433,7 +433,7 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-shimmer w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
+                className="btn-shimmer w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -618,7 +618,7 @@ export default function AuthModal({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-shimmer flex-1 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="btn-shimmer flex-1 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-sm shadow-md transition-all active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -651,7 +651,7 @@ export default function AuthModal({
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleQuickDemoLogin("player@soccerhub.vn", "PLAYER")}
-                className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 border border-slate-200 transition-all disabled:opacity-50"
+                className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
               >
                 ⚽ Cầu Thủ
               </button>
@@ -659,7 +659,7 @@ export default function AuthModal({
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleQuickDemoLogin("owner@soccerhub.vn", "OWNER")}
-                className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 border border-slate-200 transition-all disabled:opacity-50"
+                className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
               >
                 🏟️ Chủ Sân
               </button>
@@ -667,7 +667,7 @@ export default function AuthModal({
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleQuickDemoLogin("organizer@soccerhub.vn", "ORGANIZER")}
-                className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 border border-slate-200 transition-all disabled:opacity-50"
+                className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
               >
                 🏆 Ban Tổ Chức
               </button>
@@ -675,13 +675,13 @@ export default function AuthModal({
             <p className="mt-3 text-center text-[11px] text-slate-400">
               {mode === "login" ? (
                 <>Chưa có tài khoản?{" "}
-                  <button type="button" onClick={() => switchMode("register")} className="font-bold text-emerald-700 hover:underline">
+                  <button type="button" onClick={() => switchMode("register")} className="font-bold text-sky-800 hover:underline">
                     Đăng ký miễn phí
                   </button>
                 </>
               ) : (
                 <>Đã có tài khoản?{" "}
-                  <button type="button" onClick={() => switchMode("login")} className="font-bold text-emerald-700 hover:underline">
+                  <button type="button" onClick={() => switchMode("login")} className="font-bold text-sky-800 hover:underline">
                     Đăng nhập
                   </button>
                 </>

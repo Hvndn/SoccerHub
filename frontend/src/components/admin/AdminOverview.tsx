@@ -45,11 +45,11 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
   const kpis = data
     ? [
         { label: "Người dùng", value: data.totalUsers, icon: <Users className="w-5 h-5" />, tone: "bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300" },
-        { label: "Cụm sân", value: data.totalPitches, icon: <MapPin className="w-5 h-5" />, tone: "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300" },
+        { label: "Cụm sân", value: data.totalPitches, icon: <MapPin className="w-5 h-5" />, tone: "bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300" },
         { label: "Giải đấu (mở)", value: data.openTournaments, suffix: `/${data.totalTournaments}`, icon: <Trophy className="w-5 h-5" />, tone: "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300" },
         { label: "Đơn đặt sân", value: data.totalBookings, icon: <Ticket className="w-5 h-5" />, tone: "bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300" },
         { label: "Tin chợ kèo", value: data.totalMatchmakingPosts, icon: <MessagesSquare className="w-5 h-5" />, tone: "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300" },
-        { label: "Cọc thu (đ)", value: data.totalRevenue, money: true, icon: <Wallet className="w-5 h-5" />, tone: "bg-lime-100 dark:bg-lime-950 text-lime-700 dark:text-lime-300" },
+        { label: "Cọc thu (đ)", value: data.totalRevenue, money: true, icon: <Wallet className="w-5 h-5" />, tone: "bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-lime-300" },
       ]
     : [];
 
@@ -134,7 +134,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
           <div className="flex items-end gap-2 h-44" role="img" aria-label="Biểu đồ doanh thu theo tháng">
             {monthly.map((m, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1.5 min-w-0 h-full justify-end">
-                <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
+                <span className="text-[10px] font-mono font-bold text-sky-800 dark:text-sky-400 whitespace-nowrap">
                   {(Number(m.revenue) / 1000000).toFixed(0)}tr
                 </span>
                 <div

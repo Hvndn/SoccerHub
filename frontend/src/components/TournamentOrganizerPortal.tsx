@@ -289,8 +289,8 @@ export default function TournamentOrganizerPortal({
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6">
           <div className="space-y-3">
             <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-2 text-xs font-mono text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <div className="flex items-center space-x-2 text-xs font-mono text-sky-900 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
+                <span className="w-2 h-2 rounded-full bg-sky-500 animate-ping" />
                 <span>
                   {loadingDb ? "Đang đồng bộ CSDL…" : `CSDL: ${dbTournaments.length} giải đấu`}
                 </span>
@@ -333,7 +333,7 @@ export default function TournamentOrganizerPortal({
 
             <Link
               href="/tournaments/new"
-              className="px-4 py-2.5 sm:px-5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-emerald-700 hover:bg-emerald-800 text-white"
+              className="px-4 py-2.5 sm:px-5 rounded-xl text-xs font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-sky-500 hover:bg-sky-600 text-slate-950"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span className="sm:hidden">+ Tạo Giải Mới</span>
@@ -356,7 +356,7 @@ export default function TournamentOrganizerPortal({
                 onClick={() => setSelectedSport(item.id)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
                   selectedSport === item.id
-                    ? "bg-emerald-700 text-white shadow-xs"
+                    ? "bg-sky-500 text-slate-950 shadow-xs"
                     : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
                 }`}
               >
@@ -366,7 +366,7 @@ export default function TournamentOrganizerPortal({
           </div>
 
           <div className="text-xs font-mono text-slate-500 shrink-0 hidden md:block">
-            Giải đang mở: <span className="text-emerald-700 font-bold">{countBySportFilter("all")} giải trong CSDL</span>
+            Giải đang mở: <span className="text-sky-800 font-bold">{countBySportFilter("all")} giải trong CSDL</span>
           </div>
         </div>
       </div>
@@ -395,7 +395,7 @@ export default function TournamentOrganizerPortal({
             key={t.id}
             className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-xs ${
               t.status === "live"
-                ? "bg-emerald-50/40 border-emerald-300 text-slate-900"
+                ? "bg-sky-50/40 border-sky-300 text-slate-900"
                 : "bg-white border-slate-200/90 text-slate-900"
             }`}
           >
@@ -522,20 +522,20 @@ export default function TournamentOrganizerPortal({
 
             {/* Bảng điểm */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 items-center bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200">
-              <div className="p-4 sm:p-6 rounded-2xl border border-emerald-300 bg-white">
+              <div className="p-4 sm:p-6 rounded-2xl border border-sky-300 bg-white">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
-                    <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                    <span className="w-3 h-3 rounded-full bg-sky-500" />
                     <span className="text-xs font-black tracking-wide text-slate-700">ĐỘI A</span>
                   </div>
                 </div>
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="text-sm font-bold text-slate-900 truncate">{umpireMatch?.teamA?.name}</span>
-                  <span className="text-5xl font-black font-mono text-emerald-600 tracking-tighter">{umpireScoreA}</span>
+                  <span className="text-5xl font-black font-mono text-sky-700 tracking-tighter">{umpireScoreA}</span>
                 </div>
                 <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between">
                   <span>{umpireMatch?.matchDate ?? "Chưa xếp lịch"}</span>
-                  <span className="text-emerald-700 font-bold">Elo: {umpireMatch?.teamA?.elo ?? "—"}</span>
+                  <span className="text-sky-800 font-bold">Elo: {umpireMatch?.teamA?.elo ?? "—"}</span>
                 </div>
               </div>
 
@@ -566,14 +566,14 @@ export default function TournamentOrganizerPortal({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <button
                     onClick={() => setUmpireScoreA(umpireScoreA + 1)}
-                    className="py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                    className="py-3 px-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                   >
                     <Plus className="w-4 h-4 stroke-[3]" />
                     <span>+1 Bàn (Đội A)</span>
                   </button>
                   <button
                     onClick={() => setUmpireScoreB(umpireScoreB + 1)}
-                    className="py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+                    className="py-3 px-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
                   >
                     <Plus className="w-4 h-4 stroke-[3]" />
                     <span>+1 Bàn (Đội B)</span>
@@ -588,7 +588,7 @@ export default function TournamentOrganizerPortal({
                   <button
                     onClick={saveUmpireScore}
                     disabled={umpireBusy}
-                    className="py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                    className="py-3 px-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50"
                   >
                     <CheckCircle2 className="w-4 h-4 text-purple-200" />
                     <span>{umpireBusy ? "Đang lưu…" : "Lưu KQ & Elo"}</span>
@@ -678,7 +678,7 @@ export default function TournamentOrganizerPortal({
                             key={m.matchId}
                             className={`bg-white dark:bg-slate-900 p-3 rounded-xl border text-xs space-y-1.5 shadow-xs ${
                               m.status === "DONE"
-                                ? "border-emerald-300 dark:border-emerald-800"
+                                ? "border-sky-300 dark:border-sky-800"
                                 : "border-slate-200 dark:border-slate-800"
                             }`}
                           >
@@ -695,7 +695,7 @@ export default function TournamentOrganizerPortal({
                                 key={i}
                                 className={`flex items-center justify-between gap-2 ${
                                   winner === t?.name
-                                    ? "font-black text-emerald-700 dark:text-emerald-400"
+                                    ? "font-black text-sky-800 dark:text-sky-400"
                                     : winner && winner !== t?.name
                                     ? "text-slate-400"
                                     : t?.tbd
@@ -735,7 +735,7 @@ export default function TournamentOrganizerPortal({
                     onClick={() => setBottomTab(tab.id as any)}
                     className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
                       bottomTab === tab.id
-                        ? "bg-emerald-700 text-white shadow-md"
+                        ? "bg-sky-500 text-slate-950 shadow-md"
                         : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                     }`}
                   >
@@ -790,7 +790,7 @@ export default function TournamentOrganizerPortal({
                         <tr
                           key={row.team}
                           className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${
-                            idx === 0 ? "bg-emerald-50 dark:bg-emerald-950/20" : ""
+                            idx === 0 ? "bg-sky-50 dark:bg-sky-950/20" : ""
                           }`}
                         >
                           <td className="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white sticky left-0 bg-white dark:bg-slate-900">
@@ -801,7 +801,7 @@ export default function TournamentOrganizerPortal({
                             {row.team}
                           </td>
                           <td className="py-3 px-3 text-center font-mono text-slate-600 dark:text-slate-300">{row.played}</td>
-                          <td className="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{row.won}</td>
+                          <td className="py-3 px-3 text-center font-mono font-bold text-sky-700 dark:text-sky-400">{row.won}</td>
                           <td className="py-3 px-3 text-center font-mono font-bold text-amber-600 dark:text-amber-400">{row.drawn}</td>
                           <td className="py-3 px-3 text-center font-mono font-bold text-rose-500">{row.lost}</td>
                           <td className="py-3 px-3 text-center font-mono font-bold text-sky-600 dark:text-sky-400">
@@ -837,7 +837,7 @@ export default function TournamentOrganizerPortal({
                         >
                           <span className="font-mono text-slate-400 shrink-0">{m.matchId}</span>
                           <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
-                            {m.teamA} <span className="font-mono text-emerald-600 dark:text-emerald-400">{m.scoreA}-{m.scoreB}</span> {m.teamB}
+                            {m.teamA} <span className="font-mono text-sky-700 dark:text-sky-400">{m.scoreA}-{m.scoreB}</span> {m.teamB}
                           </span>
                           <span className="font-mono text-slate-400 shrink-0">
                             {m.matchDate ? m.matchDate.split("-").reverse().join("/") : "—"}
@@ -874,7 +874,7 @@ export default function TournamentOrganizerPortal({
                             </div>
                           </div>
                           <div className="flex items-center gap-2 font-mono shrink-0">
-                            <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+                            <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 font-bold">
                               {s.goals}⚽
                             </span>
                             {s.assists > 0 && (
@@ -917,7 +917,7 @@ export default function TournamentOrganizerPortal({
                           </span>
                         )}
                         {m.timeSlot && <span className="font-bold text-slate-700 dark:text-slate-300">{m.timeSlot}</span>}
-                        {m.pitchName && <span className="text-emerald-700 dark:text-emerald-400 truncate max-w-[200px]">{m.pitchName}</span>}
+                        {m.pitchName && <span className="text-sky-800 dark:text-sky-400 truncate max-w-[200px]">{m.pitchName}</span>}
                       </div>
                     </div>
                   ))}
@@ -951,7 +951,7 @@ export default function TournamentOrganizerPortal({
                 <>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-500 dark:text-slate-400 font-bold">Đội đã đăng ký:</span>
-                    <span className="text-emerald-700 dark:text-emerald-400 font-mono font-black">
+                    <span className="text-sky-800 dark:text-sky-400 font-mono font-black">
                       {(activeTournament.teams?.length ?? 0)}/{activeTournament.totalTeams ?? 0}
                     </span>
                   </div>
@@ -990,7 +990,7 @@ export default function TournamentOrganizerPortal({
 
             <button
               onClick={() => onNavigateTab?.("tournaments")}
-              className="w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
+              className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
             >
               <Sparkles className="w-4 h-4" />
               <span>Mở Bảng Điều Hành Bốc Thăm</span>
@@ -1001,11 +1001,11 @@ export default function TournamentOrganizerPortal({
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center space-x-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-700 dark:text-sky-400 shrink-0">
                   <Lock className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
+                  <span className="text-[10px] font-black uppercase text-sky-700 dark:text-sky-400 tracking-wider">
                     QUỸ GIẢI THƯỞNG
                   </span>
                   <h4 className="text-sm font-black text-slate-900 dark:text-white">
@@ -1025,7 +1025,7 @@ export default function TournamentOrganizerPortal({
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                     TỔNG GIẢI THƯỞNG
                   </span>
-                  <span className="text-xl sm:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
+                  <span className="text-xl sm:text-3xl font-black font-mono text-sky-700 dark:text-sky-400 tracking-tight">
                     {formatMoney(activeTournament.prizePool)}
                   </span>
                   <span className="text-[10px] text-slate-400 font-bold block pt-1">

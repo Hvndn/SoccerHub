@@ -49,7 +49,7 @@ export function ConfirmModal({
         <div className="flex items-start gap-3">
           <div
             className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-              danger ? "bg-rose-100 dark:bg-rose-950 text-rose-600" : "bg-emerald-100 dark:bg-emerald-950 text-emerald-600"
+              danger ? "bg-rose-100 dark:bg-rose-950 text-rose-600" : "bg-sky-100 dark:bg-sky-950 text-sky-700"
             }`}
           >
             {danger ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
@@ -73,7 +73,7 @@ export function ConfirmModal({
             onClick={onConfirm}
             disabled={busy}
             className={`px-4 py-2 rounded-xl text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50 ${
-              danger ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700"
+              danger ? "bg-rose-600 hover:bg-rose-700" : "bg-sky-500 hover:bg-sky-600"
             }`}
           >
             {busy ? "Đang xử lý…" : confirmLabel}
@@ -116,7 +116,7 @@ export function SectionCard({ children, className = "" }: { children: React.Reac
 /* ---------- Badge trạng thái ---------- */
 export function StatusBadge({ tone, children }: { tone: "green" | "amber" | "rose" | "sky" | "slate"; children: React.ReactNode }) {
   const map: Record<string, string> = {
-    green: "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400",
+    green: "bg-sky-100 dark:bg-sky-950 text-sky-900 dark:text-sky-400",
     amber: "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-400",
     rose: "bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-400",
     sky: "bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-400",

@@ -285,7 +285,7 @@ export default function MatchmakingMarketplace({
                 Ghép kèo theo chỉ số Elo
               </span>
               <span className="text-slate-400">•</span>
-              <span className="px-3 py-0.5 rounded-full bg-emerald-500/10 text-[#006c49] font-bold text-xs">
+              <span className="px-3 py-0.5 rounded-full bg-sky-500/10 text-[#006c49] font-bold text-xs">
                 {onlineCaptains > 0
                   ? `${onlineCaptains} đội đang mở kèo trên sàn`
                   : "Chưa có kèo nào đang mở"}
@@ -582,7 +582,7 @@ export default function MatchmakingMarketplace({
                       <div className="space-y-1">
                         <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                           <span>{post.teamName}</span>
-                          <span className="text-xs px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold">
+                          <span className="text-xs px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-900 dark:text-sky-400 font-bold">
                             Cap: {post.captainName}
                           </span>
                         </h3>
@@ -620,12 +620,12 @@ export default function MatchmakingMarketplace({
 
                     {/* Opponent matched info if any */}
                     {isMatched && (
-                      <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 rounded-xl text-xs flex items-center justify-between">
+                      <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-500/30 rounded-xl text-xs flex items-center justify-between">
                         <div>
-                          <span className="font-bold text-emerald-800 dark:text-emerald-400">Đối thủ đã nhận: </span>
+                          <span className="font-bold text-sky-900 dark:text-sky-400">Đối thủ đã nhận: </span>
                           <strong className="text-slate-900 dark:text-white">{post.opponentTeamName}</strong> (Cap: {post.opponentCaptainName})
                         </div>
-                        <span className="text-emerald-600 font-mono font-bold text-[11px]">Đã chốt kèo</span>
+                        <span className="text-sky-700 font-mono font-bold text-[11px]">Đã chốt kèo</span>
                       </div>
                     )}
 
@@ -702,7 +702,7 @@ export default function MatchmakingMarketplace({
                   Chưa có kèo nào đang mở. Bấm “+ Tạo Kèo” để đăng ký đội của bạn lên sàn.
                 </p>
               ) : (
-                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1 text-[#006c49]">
+                <div className="p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/20 space-y-1 text-[#006c49]">
                   <div className="flex items-center justify-between font-bold">
                     <span className="truncate pr-2">{recommendedPost.pitchName ?? "Chưa chọn sân"}</span>
                     <span className="font-mono shrink-0">{recommendedPost.matchTime ?? "—"}</span>
@@ -973,8 +973,8 @@ export default function MatchmakingMarketplace({
               </button>
             </div>
 
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 rounded-2xl text-xs space-y-1">
-              <span className="font-extrabold text-emerald-800 dark:text-emerald-300 block">
+            <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-500/30 rounded-2xl text-xs space-y-1">
+              <span className="font-extrabold text-sky-900 dark:text-sky-300 block">
                 Đối đầu: {acceptingPost.teamName} (Cap: {acceptingPost.captainName})
               </span>
               <div className="text-slate-600 dark:text-slate-400 flex justify-between">

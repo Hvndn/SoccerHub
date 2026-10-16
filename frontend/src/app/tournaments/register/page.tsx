@@ -32,7 +32,7 @@ const STEPS = [
 ];
 
 const inputCls =
-  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
+  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-emerald-500";
 const labelCls = "block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5";
 const errCls = "mt-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400";
 const PHONE_RE = /^0\d{9}$/;
@@ -212,7 +212,7 @@ function RegisterTeamWizard() {
                     aria-pressed={tournamentId === String(t.id)}
                     className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                       tournamentId === String(t.id)
-                        ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40"
+                        ? "border-emerald-600 bg-sky-50 dark:bg-sky-950/40"
                         : "border-slate-200 dark:border-slate-700 hover:border-slate-300"
                     }`}
                   >
@@ -226,7 +226,7 @@ function RegisterTeamWizard() {
                           {t.registeredTeams ?? 0}/{t.totalTeams ?? "—"} đội
                         </span>
                       </span>
-                      <span className="shrink-0 font-mono text-sm font-black text-emerald-700 dark:text-emerald-400">
+                      <span className="shrink-0 font-mono text-sm font-black text-sky-800 dark:text-sky-400">
                         {formatMoney(t.entryFee)}
                       </span>
                     </span>
@@ -317,7 +317,7 @@ function RegisterTeamWizard() {
             <div className="space-y-4">
               <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 space-y-2 text-xs">
                 <p className="flex items-center gap-2 font-black text-slate-900 dark:text-white text-sm">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <ShieldCheck className="w-4 h-4 text-sky-700" />
                   Duyệt lại hồ sơ trước khi nộp
                 </p>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-slate-600 dark:text-slate-300">
@@ -327,14 +327,14 @@ function RegisterTeamWizard() {
                   <div><dt className="inline text-slate-500">Đội trưởng: </dt><dd className="inline font-bold">{captainName || "—"} ({captainPhone || "—"})</dd></div>
                   <div className="sm:col-span-2">
                     <dt className="inline text-slate-500">Lệ phí dự kiến: </dt>
-                    <dd className="inline font-mono font-black text-emerald-700 dark:text-emerald-400">
+                    <dd className="inline font-mono font-black text-sky-800 dark:text-sky-400">
                       {formatMoney(selected?.entryFee)}
                     </dd>
                   </div>
                 </dl>
               </div>
               <p className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                <Trophy className="w-3.5 h-3.5 text-emerald-600" />
+                <Trophy className="w-3.5 h-3.5 text-sky-700" />
                 Hồ sơ được lưu vào CSDL & giữ chỗ tự động cho đội của bạn.
               </p>
               {submitError && (
@@ -363,7 +363,7 @@ function RegisterTeamWizard() {
               <button
                 type="button"
                 onClick={goNext}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black transition-all active:scale-95"
               >
                 <span>Tiếp tục</span>
                 <ArrowRight className="w-4 h-4" />
@@ -373,7 +373,7 @@ function RegisterTeamWizard() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black transition-all active:scale-95 disabled:opacity-50"
               >
                 {submitting && <RefreshCw className="w-4 h-4 animate-spin" />}
                 <span>{submitting ? "Đang nộp…" : "Xác nhận & Nộp đơn"}</span>
@@ -407,8 +407,8 @@ function PaymentSuccess({
   });
 
   return (
-    <div className="p-4 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900 text-center space-y-4">
-      <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
+    <div className="p-4 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-sky-200 dark:border-emerald-900 text-center space-y-4">
+      <CheckCircle2 className="w-12 h-12 text-sky-700 mx-auto" />
       <h2 className="text-lg font-black text-slate-900 dark:text-white">Nộp đơn thành công!</h2>
       <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
         Đội <strong className="text-slate-900 dark:text-white">“{teamName}”</strong> đã được ghi
@@ -418,8 +418,8 @@ function PaymentSuccess({
 
       <div className="rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 space-y-3 text-left">
         <p className="flex items-center gap-2 text-sm font-black text-slate-900 dark:text-white">
-          <QrCode className="w-4 h-4 text-emerald-600" />
-          Thanh toán lệ phí: <span className="font-mono text-emerald-700 dark:text-emerald-400">{formatMoney(selected.entryFee)}</span>
+          <QrCode className="w-4 h-4 text-sky-700" />
+          Thanh toán lệ phí: <span className="font-mono text-sky-800 dark:text-sky-400">{formatMoney(selected.entryFee)}</span>
         </p>
         {qrUrl ? (
           <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -443,7 +443,7 @@ function PaymentSuccess({
           </p>
         )}
         {paidAck ? (
-          <p className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+          <p className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-emerald-900 text-xs font-bold text-sky-800 dark:text-sky-300">
             ✓ Đã ghi nhận chuyển khoản. BTC sẽ xác nhận trong 24h — đội được bốc thăm sau khi xác nhận.
           </p>
         ) : (
@@ -451,7 +451,7 @@ function PaymentSuccess({
             <button
               type="button"
               onClick={onPaidAck}
-              className="w-full py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black transition-all active:scale-95"
+              className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black transition-all active:scale-95"
             >
               Tôi đã chuyển khoản
             </button>

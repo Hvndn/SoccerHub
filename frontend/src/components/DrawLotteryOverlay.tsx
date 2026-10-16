@@ -89,7 +89,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
         className="animate-modal-pop w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 my-auto"
       >
         <div className="text-center space-y-1">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
+          <div className="mx-auto w-12 h-12 rounded-2xl bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 flex items-center justify-center">
             <Shuffle className={`w-6 h-6 ${shuffling ? "animate-spin" : ""}`} />
           </div>
           <h2 className="text-lg font-black text-slate-900 dark:text-white">
@@ -110,7 +110,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
                 key={p.matchId}
                 className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-300 ${
                   isLocked
-                    ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 scale-[1.01]"
+                    ? "border-sky-500 bg-sky-50 dark:bg-sky-950/40 scale-[1.01]"
                     : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950"
                 }`}
               >
@@ -146,7 +146,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
           type="button"
           onClick={onDone}
           disabled={!done}
-          className="w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-black transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-wait"
+          className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-sm font-black transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-wait"
         >
           {done ? "Xem nhánh đấu chính thức" : `Đang bốc thăm… ${locked}/${pairs.length} cặp`}
         </button>
