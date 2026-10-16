@@ -129,16 +129,6 @@ body.dark-theme .glass-panel {
   }
 }
 
-.glass-panel-emerald {
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-}
-html.dark .glass-panel-emerald,
-body.dark-theme .glass-panel-emerald {
-  background-color: #064e3b !important;
-  border: 1px solid #065f46 !important;
-}
-
 .stadium-shadow {
   box-shadow: 0 4px 14px -2px rgba(14, 165, 233, 0.25);
 }
