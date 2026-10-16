@@ -198,13 +198,12 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 setFeaturedLiveSlots(liveItems);
               }
             }
-          } catch (mErr) {
-            console.log("Ma trận load ngầm");
+          } catch {
+            // Widget trạng thái ca sân là phần trang trí — lỗi ở đây không được làm hỏng danh sách sân
           }
         }
       }
     } catch (e) {
-      console.warn("Lỗi tải danh sách sân từ database:", e);
       setPitchLoadError(
         "Không kết nối được máy chủ dữ liệu sân. Vui lòng kiểm tra mạng và thử lại."
       );

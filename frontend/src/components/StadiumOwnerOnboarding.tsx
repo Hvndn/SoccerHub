@@ -152,7 +152,6 @@ export default function StadiumOwnerOnboarding({
       ok = true;
       // Nạp lại danh sách sân thật sau khi tạo
       await fetchMyPitches();
-      console.log("Đã tạo cụm sân id =", created?.id);
     } catch (err: any) {
       alert("Không lưu được cụm sân vào CSDL: " + (err?.message || "lỗi máy chủ"));
     } finally {
