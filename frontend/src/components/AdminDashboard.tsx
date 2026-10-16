@@ -751,8 +751,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* HEADER BANNER WITH REAL BACKEND DATA */}
       <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4 shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
-          <div>
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
+          <div className="min-w-0 flex-1">
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0b4f6c]/10 dark:bg-sky-500/10 border border-[#0b4f6c]/20 dark:border-sky-400/20 text-[#0b4f6c] dark:text-sky-400 text-sm font-bold mb-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>
@@ -782,7 +782,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 min-w-0">
             {realPitches.length > 1 && (
               <select
                 value={activePitch?.id || ""}
