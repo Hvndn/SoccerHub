@@ -51,9 +51,9 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
       {/* ========================================================= */}
       {/* HEADER COCKPIT BANNER: CỘNG ĐỒNG CẦU THỦ & GIẢI ĐẤU PRO     */}
       {/* ========================================================= */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-7 border border-slate-200/90 shadow-sm relative overflow-hidden">
-        <div className="hidden sm:block absolute top-0 right-0 w-80 h-80 bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
-        <div className="hidden sm:block absolute -bottom-10 left-1/3 w-72 h-72 bg-sky-50/50 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-7 border border-slate-200/90 shadow-sm relative isolate overflow-hidden">
+        <div className="hidden sm:block absolute -z-10 top-0 right-0 w-80 h-80 bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden sm:block absolute -z-10 -bottom-10 left-1/3 w-72 h-72 bg-sky-50/50 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="space-y-2">

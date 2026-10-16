@@ -533,10 +533,10 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               </button>
             </div>
           ) : featured ? (
-          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm p-3 sm:p-8 border border-slate-200/90 dark:border-slate-800 hover-card-elevate transition-colors">
+          <div className="relative isolate overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm p-3 sm:p-8 border border-slate-200/90 dark:border-slate-800 hover-card-elevate transition-colors">
             {/* Ambient Soft Glow */}
-            <div className="hidden sm:block absolute -top-20 -right-20 w-96 h-96 rounded-full bg-sky-50/60 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
-            <div className="hidden sm:block absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-sky-50/50 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
+            <div className="hidden sm:block absolute -z-10 -top-20 -right-20 w-96 h-96 rounded-full bg-sky-50/60 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
+            <div className="hidden sm:block absolute -z-10 -bottom-24 left-1/3 w-80 h-80 rounded-full bg-sky-50/50 dark:bg-sky-950/40 blur-3xl pointer-events-none"></div>
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 items-center">
               {/* Left Content */}

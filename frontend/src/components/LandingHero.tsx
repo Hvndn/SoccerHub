@@ -68,10 +68,10 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
       {/* ========================================================
           FULL-WIDTH EDGE-TO-EDGE BANNER (GIAO DIỆN SÁNG TINH TẾ)
          ======================================================== */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden shadow-xs border-y border-slate-200/80 bg-white">
+      <div className="w-screen relative isolate left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden shadow-xs border-y border-slate-200/80 bg-white">
         {/* Soft Ambient Accents (ẩn trên mobile để tối giản) */}
-        <div className="hidden sm:block absolute top-0 right-1/4 w-[500px] h-[500px] bg-sky-50/70 rounded-full blur-3xl pointer-events-none" />
-        <div className="hidden sm:block absolute -bottom-20 left-10 w-[450px] h-[450px] bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden sm:block absolute -z-10 top-0 right-1/4 w-[500px] h-[500px] bg-sky-50/70 rounded-full blur-3xl pointer-events-none" />
+        <div className="hidden sm:block absolute -z-10 -bottom-20 left-10 w-[450px] h-[450px] bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
 
         {/* Inner Content Container Aligned with Site Container (max-w-[1720px]) */}
         <div className="relative z-10 max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-6 xl:px-[50px] py-6 sm:py-16 lg:py-20">
