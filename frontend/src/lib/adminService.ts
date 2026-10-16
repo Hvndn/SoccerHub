@@ -103,6 +103,26 @@ export async function listAdminBookings(limit = 100): Promise<AdminBooking[]> {
   return Array.isArray(data) ? data : [];
 }
 
+/** Sinh đơn đặt sân giả lập (mã bắt đầu bằng "SIM-") để demo có doanh thu. */
+export async function simulateBookings(opts?: {
+  pitchId?: number;
+  pastDays?: number;
+  futureDays?: number;
+  perDay?: number;
+}): Promise<{ created: number; message: string; settledRevenue?: number }> {
+  const qs = new URLSearchParams();
+  if (opts?.pitchId) qs.set('pitchId', String(opts.pitchId));
+  if (opts?.pastDays != null) qs.set('pastDays', String(opts.pastDays));
+  if (opts?.futureDays != null) qs.set('futureDays', String(opts.futureDays));
+  if (opts?.perDay != null) qs.set('perDay', String(opts.perDay));
+  return apiRequest('/api/v1/pitches/simulate-bookings?' + qs.toString(), { method: 'POST' });
+}
+
+/** Xoá toàn bộ đơn giả lập — đơn thật của khách giữ nguyên. */
+export async function clearSimulatedBookings(): Promise<{ deleted: number; message: string }> {
+  return apiRequest('/api/v1/pitches/simulate-bookings', { method: 'DELETE' });
+}
+
 export async function listAdminPitches(): Promise<AdminPitch[]> {
   const data = await apiRequest<AdminPitch[]>('/api/v1/pitches');
   return Array.isArray(data) ? data : [];

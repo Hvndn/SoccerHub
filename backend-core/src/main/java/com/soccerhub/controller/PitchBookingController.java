@@ -700,4 +700,188 @@ public class PitchBookingController {
         List<Booking> byPhone = bookingRepository.findByCustomerPhoneContaining(clean);
         return ResponseEntity.ok(byPhone);
     }
+
+    // =========================================================================
+    //  KHU VỰC GIẢ LẬP DỮ LIỆU (DEMO) — chỉ ADMIN / OWNER
+    //  Mã đơn sinh ra luôn bắt đầu bằng "SIM-" để tiện dọn dẹp, không lẫn
+    //  với đơn thật của khách.
+    // =========================================================================
+
+    private static final String SIM_PREFIX = "SIM-";
+
+    private static final String[] SIM_FAMILY = {
+            "Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Vũ", "Đặng", "Bùi",
+            "Đỗ", "Hồ", "Ngô", "Dương", "Lý", "Phan", "Võ", "Đinh"
+    };
+    private static final String[] SIM_GIVEN = {
+            "Văn Hùng", "Thị Mai", "Quốc Bảo", "Thu Trang", "Minh Tuấn", "Ngọc Ánh",
+            "Đức Thành", "Thanh Hà", "Gia Huy", "Phương Linh", "Trọng Nghĩa", "Bích Ngọc",
+            "Xuân Sơn", "Hải Đăng", "Khánh Vy", "Tuấn Kiệt", "Mỹ Duyên", "Anh Khoa",
+            "Yến Nhi", "Đình Trọng", "Kim Ngân", "Quang Huy", "Thùy Dung", "Hữu Phước"
+    };
+    private static final String[] SIM_TEAMS = {
+            "FC Saigon Warriors", "FC Hoàng Nom Q7", "FC Lộc Phát", "Đội bóng Hải Phòng",
+            "Team Cầu Giấy", "Sài Gòn United", "Bình Dương FC", "Hà Nội Đông A",
+            "Đại Việt Youth", "Phú Nhuận Football", "Thanh Trì FC", "Quận 8 All Stars"
+    };
+
+    /**
+     * Sinh đơn đặt sân giả lập để demo dashboard chủ sân có doanh thu, tỉ lệ lấp đầy.
+     * - Quá khứ: chủ yếu COMPLETED (đã thu tiền mặt) → doanh thu về đúng thực tế
+     * - Hôm nay: trộn PLAYING / COMPLETED / BOOKED
+     * - Tương lai: chủ yếu BOOKED (đã cọc) → lịch sân đầy đặn
+     */
+    @PostMapping("/simulate-bookings")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    public ResponseEntity<?> simulateBookings(
+            @RequestParam(required = false) Long pitchId,
+            @RequestParam(required = false, defaultValue = "14") int pastDays,
+            @RequestParam(required = false, defaultValue = "7") int futureDays,
+            @RequestParam(required = false, defaultValue = "5") int perDay
+    ) {
+        int past = Math.max(0, Math.min(60, pastDays));
+        int future = Math.max(0, Math.min(60, futureDays));
+        int per = Math.max(1, Math.min(30, perDay));
+
+        List<Pitch> pitches = (pitchId != null)
+                ? List.of(pitchService.getPitchById(pitchId))
+                : pitchRepository.findAll();
+
+        if (pitches.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Hệ thống chưa có cụm sân nào để sinh đơn."));
+        }
+
+        Random rnd = new Random();
+        LocalDate today = LocalDate.now();
+        List<Booking> created = new ArrayList<>();
+
+        for (Pitch pitch : pitches) {
+            List<String> courts = (pitch.getPitchTypes() != null && !pitch.getPitchTypes().isEmpty())
+                    ? pitch.getPitchTypes()
+                    : new ArrayList<>(List.of("Sân 1", "Sân 2"));
+
+            int duration = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0)
+                    ? pitch.getSlotDurationMinutes() : 120;
+            List<String> slots = generateTimeSlots(pitch.getOpenTime(), pitch.getCloseTime(), duration);
+            if (slots.isEmpty()) {
+                continue;
+            }
+
+            int basePrice = (pitch.getAvgPricePerHour() != null && pitch.getAvgPricePerHour() > 0)
+                    ? pitch.getAvgPricePerHour() : 180000;
+
+            for (int offset = -past; offset <= future; offset++) {
+                LocalDate day = today.plusDays(offset);
+                String dateStr = day.format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+                // Ca đã khai trong ngày này (để không trùng sân/giờ)
+                List<Booking> sameDay = new ArrayList<>(bookingRepository.findByPitchIdAndBookingDate(pitch.getId(), dateStr));
+
+                int wanted = per + rnd.nextInt(Math.max(1, per / 2 + 1)); // biến thiên nhẹ cho tự nhiên
+                for (int i = 0; i < wanted; i++) {
+                    String court = courts.get(rnd.nextInt(courts.size()));
+                    String slot = slots.get(rnd.nextInt(slots.size()));
+
+                    boolean conflict = sameDay.stream()
+                            .anyMatch(b -> b.getCourtName().equalsIgnoreCase(court) && isTimeOverlapping(slot, b.getTimeSlot()));
+                    if (conflict) {
+                        continue;
+                    }
+
+                    // Ca chiều tối (sau 17:00) đắt hơn — phản ánh thực tế giờ vàng
+                    boolean peak = slot.startsWith("17") || slot.startsWith("18")
+                            || slot.startsWith("19") || slot.startsWith("20");
+                    int hourPrice = peak && pitch.getPeakPricePerHour() != null && pitch.getPeakPricePerHour() > 0
+                            ? pitch.getPeakPricePerHour() : basePrice;
+                    int total = hourPrice * (duration / 60 > 0 ? duration / 60 : 2);
+                    int deposit = (int) Math.round(total * 0.5 / 1000.0) * 1000;
+                    int cash = total - deposit;
+
+                    String status;
+                    if (day.isBefore(today)) {
+                        int roll = rnd.nextInt(100);
+                        status = roll < 82 ? "COMPLETED" : (roll < 92 ? "BOOKED" : "CANCELLED");
+                    } else if (day.isEqual(today)) {
+                        int roll = rnd.nextInt(100);
+                        status = roll < 30 ? "COMPLETED" : (roll < 55 ? "PLAYING" : (roll < 95 ? "BOOKED" : "CANCELLED"));
+                    } else {
+                        status = rnd.nextInt(100) < 82 ? "BOOKED" : "CANCELLED";
+                    }
+
+                    boolean settled = "COMPLETED".equals(status) || "PLAYING".equals(status);
+
+                    Booking booking = Booking.builder()
+                            .pitchId(pitch.getId())
+                            .courtName(court)
+                            .courtType(court)
+                            .bookingDate(dateStr)
+                            .timeSlot(slot)
+                            .customerName(SIM_FAMILY[rnd.nextInt(SIM_FAMILY.length)] + " "
+                                    + SIM_GIVEN[rnd.nextInt(SIM_GIVEN.length)])
+                            .customerPhone("09" + String.format("%08d", rnd.nextInt(100000000)))
+                            .totalPrice(total)
+                            .depositPaid(deposit)
+                            .cashDue(cash)
+                            .status(status)
+                            .via(simulateVia(rnd))
+                            .code(generateSimCode(pitch.getId()))
+                            .build();
+
+                    if ("CANCELLED".equals(status)) {
+                        booking.setCancelledBy(rnd.nextBoolean() ? "CUSTOMER" : "OWNER");
+                        booking.setCancelReason("Khách đổi lịch / hủy tự do");
+                    }
+
+                    Booking saved = bookingRepository.save(booking);
+                    sameDay.add(saved);
+                    created.add(saved);
+                }
+            }
+        }
+
+        long revenue = created.stream()
+                .filter(b -> "COMPLETED".equals(b.getStatus()) || "PLAYING".equals(b.getStatus()))
+                .mapToLong(b -> (b.getDepositPaid() == null ? 0 : b.getDepositPaid())
+                        + (b.getCashDue() == null ? 0 : b.getCashDue()))
+                .sum();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("created", created.size());
+        result.put("pitches", pitches.size());
+        result.put("pastDays", past);
+        result.put("futureDays", future);
+        result.put("perDay", per);
+        result.put("settledRevenue", revenue);
+        result.put("message", "Đã tạo " + created.size() + " đơn giả lập (mã bắt đầu bằng \"SIM-\").");
+        return ResponseEntity.ok(result);
+    }
+
+    /** Xoá toàn bộ đơn giả lập (mã bắt đầu bằng "SIM-") — đơn thật của khách giữ nguyên. */
+    @DeleteMapping("/simulate-bookings")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    public ResponseEntity<?> clearSimulatedBookings() {
+        List<Booking> sims = bookingRepository.findByCodeStartingWith(SIM_PREFIX);
+        bookingRepository.deleteAll(sims);
+        return ResponseEntity.ok(Map.of(
+                "deleted", sims.size(),
+                "message", "Đã xoá " + sims.size() + " đơn giả lập."));
+    }
+
+    private String simulateVia(Random rnd) {
+        int roll = rnd.nextInt(100);
+        if (roll < 50) return "Đặt qua Website";
+        if (roll < 85) return "Tạo Tại Quầy";
+        return "VietQR";
+    }
+
+    /** Mã đơn giả lập: SIM-{pitchId}-{5 chữ số}, đảm bảo không trùng cột unique */
+    private String generateSimCode(Long pitchId) {
+        for (int attempt = 0; attempt < 40; attempt++) {
+            String code = SIM_PREFIX + pitchId + "-" + String.format("%05d", (int) (Math.random() * 100000));
+            if (bookingRepository.findByCode(code).isEmpty()) {
+                return code;
+            }
+        }
+        return SIM_PREFIX + pitchId + "-" + System.nanoTime();
+    }
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Sparkles, Eraser } from "lucide-react";
 import AdminTable, { type AdminColumn } from "./AdminTable";
 import { SectionCard, StatusBadge } from "./AdminUI";
-import { listAdminBookings, type AdminBooking } from "@/lib/adminService";
+import { listAdminBookings, simulateBookings, clearSimulatedBookings, type AdminBooking } from "@/lib/adminService";
 import { apiRequest } from "@/lib/api";
 
 const STATUS_TONE: Record<string, "green" | "amber" | "rose" | "sky" | "slate"> = {
@@ -12,12 +12,14 @@ const STATUS_TONE: Record<string, "green" | "amber" | "rose" | "sky" | "slate"> 
   PLAYING: "sky",
   RESALE: "amber",
   CANCELLED: "rose",
+  COMPLETED: "slate",
 };
 const STATUS_LABEL: Record<string, string> = {
   BOOKED: "Đã cọc",
   PLAYING: "Đang đá",
   RESALE: "Nhượng",
   CANCELLED: "Đã hủy",
+  COMPLETED: "Hoàn tất",
 };
 
 export default function AdminBookings({ notify }: { notify: (type: "ok" | "err", text: string) => void }) {
@@ -25,6 +27,8 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
+  const [simBusy, setSimBusy] = useState<"gen" | "clear" | null>(null);
+  const [perDay, setPerDay] = useState(6);
 
   const loadRecent = useCallback(async () => {
     try {
@@ -56,6 +60,33 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
       notify("err", err?.message || "Tra cứu thất bại.");
     } finally {
       setSearching(false);
+    }
+  };
+
+  /** Sinh dữ liệu demo: 21 ngày (14 quá khứ + 7 tương lai) x N đơn/ngày trên toàn bộ cụm sân. */
+  const runSimulate = async () => {
+    try {
+      setSimBusy("gen");
+      const res = await simulateBookings({ pastDays: 14, futureDays: 7, perDay });
+      notify("ok", `${res.message} Doanh thu đã thu: ${(res.settledRevenue ?? 0).toLocaleString("vi-VN")}đ`);
+      await loadRecent();
+    } catch (err: any) {
+      notify("err", err?.message || "Không sinh được dữ liệu giả lập.");
+    } finally {
+      setSimBusy(null);
+    }
+  };
+
+  const runClearSim = async () => {
+    try {
+      setSimBusy("clear");
+      const res = await clearSimulatedBookings();
+      notify("ok", res?.message || "Đã dọn đơn giả lập.");
+      await loadRecent();
+    } catch (err: any) {
+      notify("err", err?.message || "Không dọn được đơn giả lập.");
+    } finally {
+      setSimBusy(null);
     }
   };
 
@@ -156,6 +187,51 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
             {searching ? "Đang tìm…" : "Tra cứu"}
           </button>
         </form>
+      </div>
+
+      {/* Bộ công cụ dữ liệu demo — mọi đơn sinh ra đều có mã bắt đầu bằng "SIM-" nên xoá sạch được */}
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2.5 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-black text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
+            Dữ liệu demo
+          </p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            Sinh đơn giả lập 21 ngày (14 ngày trước · 7 ngày sau) để dashboard chủ sân có doanh thu &amp; lịch đầy đủ.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+            <span className="hidden sm:inline">Đơn/ngày</span>
+            <input
+              type="number"
+              min={1}
+              max={30}
+              value={perDay}
+              onChange={(e) => setPerDay(Math.max(1, Math.min(30, Number(e.target.value) || 1)))}
+              aria-label="Số đơn giả lập mỗi ngày"
+              className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#0284c7]"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={runSimulate}
+            disabled={simBusy !== null}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            {simBusy === "gen" ? "Đang tạo…" : "Tạo đơn giả lập"}
+          </button>
+          <button
+            type="button"
+            onClick={runClearSim}
+            disabled={simBusy !== null}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+          >
+            <Eraser className="w-3.5 h-3.5" />
+            {simBusy === "clear" ? "Đang xoá…" : "Dọn dữ liệu demo"}
+          </button>
+        </div>
       </div>
 
       <AdminTable
