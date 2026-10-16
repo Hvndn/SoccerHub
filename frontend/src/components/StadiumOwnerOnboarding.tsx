@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toastErr } from "@/lib/toast";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -116,7 +117,7 @@ export default function StadiumOwnerOnboarding({
       setNewPitchName("");
       setShowAddModal(false);
     } catch (err: any) {
-      alert(
+      toastErr(
         "Không thêm được sân vào CSDL: " +
           (err?.message || "kiểm tra lại đăng nhập chủ sân và kết nối máy chủ")
       );
@@ -129,7 +130,7 @@ export default function StadiumOwnerOnboarding({
 
   const handleFinalSubmit = async () => {
     if (!stadiumProfile.name.trim()) {
-      alert("Bạn chưa nhập tên cụm sân ở Bước 1.");
+      toastErr("Bạn chưa nhập tên cụm sân ở Bước 1.");
       setCurrentStep(1);
       return;
     }
@@ -153,7 +154,7 @@ export default function StadiumOwnerOnboarding({
       // Nạp lại danh sách sân thật sau khi tạo
       await fetchMyPitches();
     } catch (err: any) {
-      alert("Không lưu được cụm sân vào CSDL: " + (err?.message || "lỗi máy chủ"));
+      toastErr("Không lưu được cụm sân vào CSDL: " + (err?.message || "lỗi máy chủ"));
     } finally {
       setIsFinalSubmitting(false);
       if (ok && onComplete) onComplete();

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/context/AuthContext";
 import BootSplash from "@/components/BootSplash";
+import Toaster from "@/components/Toaster";
 
 /**
  * Be Vietnam Pro: font thiết kế cho tiếng Việt, hỗ trợ đầy đủ dấu và toàn bộ
@@ -59,6 +60,8 @@ export default function RootLayout({
           <ThemeProvider>
             {/* Vòng xoay hiện ngay khi F5, tự ẩn sau khi React mount */}
             <BootSplash />
+            {/* Thông báo nhỏ góc phải, thay cho window.alert */}
+            <Toaster />
             {children}
           </ThemeProvider>
         </AuthProvider>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
+import { toastOk, toastInfo } from "@/lib/toast";
 import SafeImage from "@/components/SafeImage";
 import {
   User,
@@ -127,7 +128,7 @@ export default function PlayerProfileConsole({
       if (onOpenAuth) {
         onOpenAuth("login");
       } else {
-        alert("Vui lòng đăng nhập để cập nhật hồ sơ cầu thủ!");
+        toastInfo("Vui lòng đăng nhập để cập nhật hồ sơ cầu thủ!");
       }
       return;
     }
@@ -451,7 +452,7 @@ export default function PlayerProfileConsole({
                   type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href);
-                    alert("Đã sao chép liên kết hồ sơ cầu thủ SoccerHub!");
+                    toastOk("Đã sao chép liên kết hồ sơ cầu thủ SoccerHub!");
                   }}
                   className="p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-semibold transition-all shadow-sm shrink-0 min-h-[42px] min-w-[42px] flex items-center justify-center"
                   title="Chia sẻ hồ sơ"
@@ -1265,7 +1266,7 @@ export default function PlayerProfileConsole({
                         </span>
                         {m.hasAiVideo ? (
                           <button
-                            onClick={() => alert(`Đang tải video highlights AI của trận đấu ${m.id}...`)}
+                            onClick={() => toastInfo(`Đang tải video highlights AI của trận đấu ${m.id}...`)}
                             className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                           >
                             <Video className="w-3.5 h-3.5" />

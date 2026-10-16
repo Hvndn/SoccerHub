@@ -31,6 +31,7 @@ import {
   X
 } from "lucide-react";
 import { API_BASE_URL, apiRequest, ensureLoggedIn } from "@/lib/api";
+import { toastOk, toastErr } from "@/lib/toast";
 import FormDots from "./FormDots";
 
 interface MatchmakingMarketplaceProps {
@@ -244,9 +245,9 @@ export default function MatchmakingMarketplace({
       setCreateTeamName("");
       setCreateNote("");
       fetchPosts();
-      alert("Đã đăng kèo thành công! Các đội khác sẽ thấy kèo của bạn ngay.");
+      toastOk("Đã đăng kèo thành công! Các đội khác sẽ thấy kèo của bạn ngay.");
     } catch (err: any) {
-      alert(err?.message || "Lỗi kết nối máy chủ khi tạo kèo.");
+      toastErr(err?.message || "Lỗi kết nối máy chủ khi tạo kèo.");
     } finally {
       setCreating(false);
     }
@@ -271,13 +272,13 @@ export default function MatchmakingMarketplace({
         }
       );
 
-      alert(data?.message || "Ghép kèo thành công!");
+      toastOk(data?.message || "Ghép kèo thành công!");
       setJoinedMatches([...joinedMatches, String(acceptingPost.id)]);
       setAcceptingPost(null);
       setAcceptOpponentTeam("");
       fetchPosts();
     } catch (err: any) {
-      alert(err?.message || "Lỗi kết nối máy chủ khi nhận kèo.");
+      toastErr(err?.message || "Lỗi kết nối máy chủ khi nhận kèo.");
     } finally {
       setAccepting(false);
     }

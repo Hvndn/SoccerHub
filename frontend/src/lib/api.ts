@@ -3,6 +3,7 @@
  * (production -> service thật, dev -> localhost) để không bao giờ rơi vào localhost
  * trên bản đã deploy — tránh lỗi "failed to fetch".
  */
+import { toastInfo } from '@/lib/toast';
 const PROD_API_BASE_URL = 'https://soccerhub-backend-core-production.up.railway.app';
 
 export const API_BASE_URL =
@@ -43,12 +44,7 @@ export function removeAuthToken() {
  */
 export function ensureLoggedIn(action = 'thực hiện thao tác này'): boolean {
   if (getAuthToken()) return true;
-  if (typeof window !== 'undefined') {
-    alert(
-      `Bạn cần đăng nhập để ${action}.\n\n` +
-        `Vui lòng bấm nút "Đăng Nhập" ở góc trên bên phải, hoặc đăng nhập nhanh bằng tài khoản demo.`
-    );
-  }
+  toastInfo(`Bạn cần đăng nhập để ${action}. Bấm nút "Đăng Nhập" ở góc trên bên phải nhé.`);
   return false;
 }
 
