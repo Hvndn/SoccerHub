@@ -251,7 +251,7 @@ export default function MultiSportArena({
                   onClick={() => setActiveFilter(tab.id as any)}
                   className={`px-3.5 py-2 rounded-lg text-xs font-extrabold transition-all ${
                     activeFilter === tab.id
-                      ? 'bg-emerald-500 text-slate-950 shadow-lg'
+                      ? 'bg-emerald-700 text-white shadow-lg'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'
                   }`}
                 >
@@ -426,7 +426,7 @@ export default function MultiSportArena({
                   {court.status === 'matching' && (
                     <button
                       onClick={() => handleActionToast(`Bạn đã gửi yêu cầu tham gia ghép đội tại ${court.id}!`)}
-                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg shadow transition"
+                      className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition"
                     >
                       Vào Kèo Ngay
                     </button>
@@ -435,7 +435,7 @@ export default function MultiSportArena({
                   {court.status === 'live' && (
                     <button
                       onClick={() => handleActionToast(`Đang kết nối camera AI VAR live stream ${court.id}...`)}
-                      className="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1"
+                      className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1"
                     >
                       <Video className="w-3 h-3" /> Xem VAR Live
                     </button>
@@ -526,7 +526,7 @@ export default function MultiSportArena({
 
                       <button
                         onClick={() => setJoiningMatch(match)}
-                        className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center space-x-1"
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center space-x-1"
                       >
                         <span>Gia Nhập Đội</span>
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -689,7 +689,7 @@ export default function MultiSportArena({
               <button
                 onClick={handleAcceptMatch}
                 disabled={accepting}
-                className="w-1/2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg transition disabled:opacity-60"
+                className="w-1/2 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-lg transition disabled:opacity-60"
               >
                 {accepting ? "Đang chốt..." : "Xác Nhận Tham Gia"}
               </button>

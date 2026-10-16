@@ -308,7 +308,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleTabChange("admin")}
-                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] dark:bg-sky-500 hover:opacity-90 text-white dark:text-slate-950 font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Chuyển Sang Bảng Điều Hành Cụm Sân →
                 </button>
@@ -399,7 +399,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleOpenAuth("login", "PLAYER")}
-                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Đăng Nhập Ngay
                 </button>
@@ -469,7 +469,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleOpenAuth("login", "PLAYER")}
-                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Đăng Nhập Ngay
                 </button>
@@ -499,7 +499,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleOpenAuth("login", "PLAYER")}
-                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Đăng Nhập Ngay
                 </button>
@@ -528,7 +528,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleTabChange("tournaments")}
-                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Xem Trang Giải Đấu Cộng Đồng
                 </button>
@@ -547,7 +547,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleOpenAuth("login", "ORGANIZER")}
-                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Đăng Nhập Ban Tổ Chức
                 </button>
@@ -576,7 +576,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleOpenAuth("login", "PLAYER")}
-                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:opacity-90 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Đăng Nhập Ngay
                 </button>

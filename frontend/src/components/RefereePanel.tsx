@@ -52,7 +52,7 @@ export default function RefereePanel() {
             <button
               onClick={() => setIsLive(!isLive)}
               className={`px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center space-x-2 ${
-                isLive ? "bg-rose-500 text-white shadow-lg shadow-rose-500/40" : "bg-slate-800 text-slate-400"
+                isLive ? "bg-rose-600 text-white shadow-lg shadow-rose-600/40" : "bg-slate-800 text-slate-400"
               }`}
             >
               {isLive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}

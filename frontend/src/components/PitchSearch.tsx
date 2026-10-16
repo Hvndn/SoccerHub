@@ -474,7 +474,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             type="button"
             onClick={askAiRecommend}
             disabled={aiLoading || realPitches.length === 0}
-            className="shrink-0 px-4 py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083b52] text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
+            className="shrink-0 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
           >
             {aiLoading ? (
               <>Đang hỏi AI…</>
@@ -645,7 +645,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 onClick={() => setSelectedSport(tab.id)}
                 className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
                   selectedSport === tab.id
-                    ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-sm"
+                    ? "bg-emerald-700 text-white shadow-sm"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
               >
@@ -967,7 +967,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
               type="button"
               onClick={fetchPitches}
               disabled={loadingRealPitches}
-              className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white text-xs font-bold transition-colors"
+              className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white text-xs font-bold transition-colors"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loadingRealPitches ? "animate-spin" : ""}`} />
               <span>Thử lại</span>
@@ -1245,7 +1245,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                       <button
                         type="button"
                         onClick={() => handleAcceptFromWidget(p)}
-                        className="px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer bg-[#0b4f6c] dark:bg-sky-500 hover:opacity-90 text-white dark:text-slate-950 active:scale-95 shrink-0"
+                        className="px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer bg-emerald-700 hover:bg-emerald-800 text-white active:scale-95 shrink-0"
                       >
                         Bắt Kèo Ngay
                       </button>
@@ -1290,7 +1290,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             <button
               type="button"
               onClick={() => setShowQrModal(true)}
-              className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-1.5"
+              className="w-full py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-1.5"
             >
               <span>Mở Thẻ Hội Viên QR</span>
               <ArrowRight className="w-4 h-4" />
@@ -1504,7 +1504,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 setShowQrModal(false);
                 showToast("✓ Đã lưu mã QR vào thư viện ảnh thiết bị!");
               }}
-              className="w-full py-2.5 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 hover:opacity-90 text-white dark:text-slate-950 font-bold text-xs shadow-md"
+              className="w-full py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md"
             >
               Lưu Mã Về Điện Thoại
             </button>

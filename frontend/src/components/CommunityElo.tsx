@@ -85,7 +85,7 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
             onClick={() => setSubTab("matchmaking")}
             className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
               subTab === "matchmaking"
-                ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                ? "bg-emerald-700 text-white shadow-sm font-black"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
             }`}
           >
@@ -100,7 +100,7 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
             onClick={() => setSubTab("tournaments")}
             className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
               subTab === "tournaments"
-                ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                ? "bg-emerald-700 text-white shadow-sm font-black"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
             }`}
           >
@@ -117,7 +117,7 @@ export default function CommunityElo({ user, onSelectSlot, defaultSubTab = "matc
             onClick={() => setSubTab("organizer")}
             className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
               subTab === "organizer"
-                ? "bg-[#0b4f6c] text-white shadow-sm font-black"
+                ? "bg-emerald-700 text-white shadow-sm font-black"
                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
             }`}
           >

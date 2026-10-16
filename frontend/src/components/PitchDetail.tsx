@@ -352,7 +352,7 @@ export default function PitchDetail({
         <div className="flex items-center space-x-3">
           <button
             onClick={onBack}
-            className="px-4 py-2 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 hover:opacity-90 text-white dark:text-slate-950 font-bold text-sm transition-all flex items-center space-x-1.5 active:scale-95 shadow-xs"
+            className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm transition-all flex items-center space-x-1.5 active:scale-95 shadow-xs"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Quay Lại Tìm Sân</span>
@@ -578,7 +578,7 @@ export default function PitchDetail({
                 onClick={() => setSelectedDate(d.iso)}
                 className={`flex-1 min-w-[130px] p-3 rounded-2xl flex flex-col items-center gap-0.5 shadow-xs text-center transition-all cursor-pointer border ${
                   selectedDate === d.iso
-                    ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 border-[#0b4f6c] dark:border-sky-400 shadow-md font-black"
+                    ? "bg-emerald-700 text-white border-emerald-700 shadow-md font-black"
                     : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                 }`}
               >
@@ -970,7 +970,7 @@ export default function PitchDetail({
                 <button
                   type="button"
                   onClick={() => showToast(`💸 Đã sao chép mức chia ${splitPerPlayer.toLocaleString("vi-VN")}đ/người (${splitCount} người)!`)}
-                  className="px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition-colors shrink-0 shadow-xs"
+                  className="px-2.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-colors shrink-0 shadow-xs"
                 >
                   Chia Tiền
                 </button>

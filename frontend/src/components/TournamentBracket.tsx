@@ -517,7 +517,7 @@ export default function TournamentBracket() {
                 aria-label={`Huỷ kết quả trận ${match.matchId}`}
                 disabled={savingMatch === match.matchId}
                 onClick={() => setConfirmUndo(match)}
-                className="px-1.5 py-0.5 rounded-md border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all text-[9px] font-black uppercase tracking-wide disabled:opacity-40 active:scale-95"
+                className="px-1.5 py-0.5 rounded-md border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all text-[9px] font-black uppercase tracking-wide disabled:opacity-40 active:scale-95"
               >
                 {savingMatch === match.matchId ? "…" : "Huỷ KQ"}
               </button>
@@ -720,7 +720,7 @@ export default function TournamentBracket() {
                 onClick={handleFill}
                 disabled={!selected || full || fillBusy}
                 title="Sinh đội Test cho đủ sức chứa (chỉ dùng demo)"
-                className="px-3.5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {fillBusy ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -750,7 +750,7 @@ export default function TournamentBracket() {
                 onClick={() => (bracket ? setConfirmDraw(true) : startDraw())}
                 disabled={!selected || teamCount < 2 || drawBusy}
                 title="Bốc thăm hạt giống theo Elo, lưu nhánh đấu vào CSDL"
-                className="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {drawBusy ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -900,7 +900,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("bracket")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "bracket"
-                ? "bg-emerald-500 text-slate-950 shadow-md"
+                ? "bg-emerald-700 text-white shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -912,7 +912,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("var_referee")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "var_referee"
-                ? "bg-emerald-500 text-slate-950 shadow-md"
+                ? "bg-emerald-700 text-white shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -925,7 +925,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("standings")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "standings"
-                ? "bg-emerald-500 text-slate-950 shadow-md"
+                ? "bg-emerald-700 text-white shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -937,7 +937,7 @@ export default function TournamentBracket() {
             onClick={() => setActiveTab("esheet")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
               activeTab === "esheet"
-                ? "bg-emerald-500 text-slate-950 shadow-md"
+                ? "bg-emerald-700 text-white shadow-md"
                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
             }`}
           >
@@ -1107,7 +1107,7 @@ export default function TournamentBracket() {
                         <div className="flex justify-center space-x-2 pt-2">
                           <button
                             onClick={() => setVarScoreB(varScoreB + 1)}
-                            className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
+                            className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
                           >
                             +1 Bàn
                           </button>
@@ -1126,7 +1126,7 @@ export default function TournamentBracket() {
                     <button
                       onClick={saveVarScore}
                       disabled={savingMatch === varMatch.matchId}
-                      className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-50"
+                      className="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-50"
                     >
                       {savingMatch === varMatch.matchId
                         ? "Đang lưu…"
@@ -1168,7 +1168,7 @@ export default function TournamentBracket() {
                         onClick={() => setSelectedCameraAngle(cam)}
                         className={`p-2.5 rounded-xl text-xs font-bold transition border ${
                           selectedCameraAngle === cam
-                            ? "bg-red-500 text-white border-red-500 shadow-md"
+                            ? "bg-rose-600 text-white border-rose-600 shadow-md"
                             : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                         }`}
                       >
@@ -1190,13 +1190,13 @@ export default function TournamentBracket() {
                       </button>
                       <button
                         onClick={() => handleVarCheck("Bóng ngoài sân (Out-of-Bounds)", "bad")}
-                        className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
+                        className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
                       >
                         ❌ Bóng Out
                       </button>
                       <button
                         onClick={() => handleVarCheck("Lỗi chân vạch Kitchen", "warn")}
-                        className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg transition"
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
                       >
                         ⚠️ Lỗi Kitchen
                       </button>
@@ -1264,7 +1264,7 @@ export default function TournamentBracket() {
               <button
                 onClick={() => setActiveTab("esheet")}
                 disabled={!varMatch}
-                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-40"
+                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-40"
               >
                 Mở Biên Bản Điện Tử
               </button>

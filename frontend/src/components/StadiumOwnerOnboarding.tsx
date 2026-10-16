@@ -224,7 +224,7 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(1)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 1
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 border-[#0b4f6c] shadow-md"
+                ? "bg-emerald-700 text-white border-emerald-700 shadow-md"
                 : currentStep > 1
                 ? "bg-emerald-500/10 border-emerald-400 text-emerald-600 dark:text-emerald-400"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
@@ -246,7 +246,7 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(2)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 2
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 border-[#0b4f6c] shadow-md"
+                ? "bg-emerald-700 text-white border-emerald-700 shadow-md"
                 : currentStep > 2
                 ? "bg-emerald-500/10 border-emerald-400 text-emerald-600 dark:text-emerald-400"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
@@ -268,7 +268,7 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(3)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 3
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 border-[#0b4f6c] shadow-md"
+                ? "bg-emerald-700 text-white border-emerald-700 shadow-md"
                 : currentStep > 3
                 ? "bg-emerald-500/10 border-emerald-400 text-emerald-600 dark:text-emerald-400"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
@@ -290,7 +290,7 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(4)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 4
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 border-[#0b4f6c] shadow-md"
+                ? "bg-emerald-700 text-white border-emerald-700 shadow-md"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
             }`}
           >

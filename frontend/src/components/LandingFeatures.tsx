@@ -362,7 +362,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             <button
               type="button"
               onClick={() => onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER")}
-              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-amber-700 dark:text-amber-300 font-black text-xs sm:text-sm border border-amber-300 dark:border-amber-400/30 transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-white dark:bg-transparent hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-black text-xs sm:text-sm border border-emerald-600/40 transition-all transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
               <Trophy className="w-4 h-4 text-amber-400" />
               <span>Xem Giải Đấu &amp; Cây Nhánh</span>

@@ -821,7 +821,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => onNavigateTab("owner-onboarding")}
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
                 title="Khởi tạo hoặc thiết lập cụm sân mới qua Wizard 4 bước"
               >
                 <Building className="w-4 h-4 shrink-0" />
@@ -832,7 +832,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <button
               type="button"
               onClick={() => setShowAddPitchModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 hover:bg-[#07384d] dark:hover:bg-sky-400 text-white dark:text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
+              className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
             >
               <Plus className="w-4 h-4 shrink-0" />
               <span>Thêm Sân Con</span>
@@ -856,7 +856,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             onClick={() => setActiveSubTab("matrix")}
             className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "matrix"
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
+                ? "bg-emerald-700 text-white shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -869,7 +869,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             onClick={() => setActiveSubTab("pitches")}
             className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "pitches"
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
+                ? "bg-emerald-700 text-white shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -882,7 +882,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             onClick={() => setActiveSubTab("pricing")}
             className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "pricing"
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
+                ? "bg-emerald-700 text-white shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -895,7 +895,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             onClick={() => setActiveSubTab("canteen")}
             className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "canteen"
-                ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md"
+                ? "bg-emerald-700 text-white shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -972,7 +972,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           </div>
           <button
             onClick={handleSearchBooking}
-            className="px-6 py-2.5 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 text-sm sm:text-base font-black shadow-sm shrink-0 hover:opacity-90 active:scale-95 transition-all"
+            className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm sm:text-base font-black shadow-sm shrink-0 active:scale-95 transition-all"
           >
             Tra Cứu
           </button>
@@ -1010,7 +1010,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     }}
                     className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       matrixDuration === 60
-                        ? "bg-[#0b4f6c] dark:bg-sky-600 text-white shadow-xs"
+                        ? "bg-emerald-700 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
@@ -1025,7 +1025,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     }}
                     className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       matrixDuration === 90
-                        ? "bg-[#0b4f6c] dark:bg-sky-600 text-white shadow-xs"
+                        ? "bg-emerald-700 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
@@ -1040,7 +1040,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     }}
                     className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       matrixDuration === 120
-                        ? "bg-[#0b4f6c] dark:bg-sky-600 text-white shadow-xs"
+                        ? "bg-emerald-700 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
@@ -1204,7 +1204,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       onClick={() => handleSelectDate(day.iso)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer ${
                         isSelected
-                          ? "bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 shadow-md scale-102 ring-2 ring-sky-400/50"
+                          ? "bg-emerald-700 text-white shadow-md scale-102 ring-2 ring-emerald-400/50"
                           : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-sky-300 hover:bg-sky-50/50 dark:hover:bg-slate-800"
                       }`}
                     >
@@ -1685,7 +1685,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     setShowAddPitchModal(false);
                     setShowHoursModal(true);
                   }}
-                  className="px-3.5 py-2 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 transition-colors shrink-0 shadow-xs"
+                  className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm transition-colors shrink-0 shadow-xs"
                 >
                   Đổi Giờ
                 </button>
@@ -1701,7 +1701,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 hover:bg-[#083a50] text-white dark:text-slate-950 font-black text-sm shadow-md transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow-md transition-colors"
                 >
                   Tạo Sân Mới
                 </button>
@@ -2066,7 +2066,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <button
                   type="submit"
                   disabled={isUpdatingHours}
-                  className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm shadow-md transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-sm shadow-md transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer"
                 >
                   {isUpdatingHours && <RefreshCw className="w-4 h-4 animate-spin mr-1" />}
                   <span>Lưu Giờ Hoạt Động Sân</span>
@@ -2140,7 +2140,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       onClick={() => setCancelReasonInput(reason)}
                       className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
                         cancelReasonInput === reason
-                          ? "bg-rose-500 text-white border-rose-500 shadow-sm"
+                          ? "bg-rose-600 text-white border-rose-600 shadow-sm"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-rose-300 hover:text-rose-600"
                       }`}
                     >
@@ -2186,7 +2186,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 type="button"
                 onClick={handleConfirmCancel}
                 disabled={!cancelReasonInput.trim()}
-                className="flex-1 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center space-x-1.5"
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center space-x-1.5"
               >
                 <Trash2 className="w-4 h-4" />
                 <span>Xác Nhận Hủy Ca</span>
