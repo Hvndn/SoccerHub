@@ -9,8 +9,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        /** Màu thương hiệu. Dùng class `bg-brand` / `text-brand` thay cho ghi hex tay. */
+        brand: {
+          DEFAULT: "#0ea5e9", // Màu chính cho nút / trạng thái đang chọn
+          dark: "#0284c7",    // Hover & focus (đậm hơn 1 bậc để nhìn rõ)
+          ink: "#0b4f6c",     // Màu chữ thương hiệu — đạt WCAG AA trên nền trắng
+        },
         pitch: {
-          emerald: "#0b4f6c", // Primary Brand Color (#0b4f6c)
+          emerald: "#0b4f6c", // Màu chữ thương hiệu (giữ tên cũ cho tương thích)
           darkEmerald: "#07384d", // Darker shade for hover state
           lime: "#84cc16", // Electric Lime (#84cc16) - Highlight Accent
           navy: "#0f172a", // Dark Slate Background
