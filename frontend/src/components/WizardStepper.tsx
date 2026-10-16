@@ -36,7 +36,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
         aria-valuenow={current + 1}
       >
         <div
-          className="h-full rounded-full bg-[#247BA0] transition-all duration-300"
+          className="h-full rounded-full bg-[#0b4f6c] transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -66,7 +66,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
                 <span
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ${
                     active
-                      ? "bg-[#247BA0] text-white"
+                      ? "bg-[#0b4f6c] text-white"
                       : done
                       ? "bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300"
                       : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"

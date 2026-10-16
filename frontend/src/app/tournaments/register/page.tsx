@@ -32,7 +32,7 @@ const STEPS = [
 ];
 
 const inputCls =
-  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-[#247BA0] focus:border-emerald-500";
+  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-[#0b4f6c] focus:border-emerald-500";
 const labelCls = "block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5";
 const errCls = "mt-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400";
 const PHONE_RE = /^0\d{9}$/;
@@ -362,7 +362,7 @@ function RegisterTeamWizard() {
               <button
                 type="button"
                 onClick={goNext}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white text-xs font-black transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-black transition-all active:scale-95"
               >
                 <span>Tiếp tục</span>
                 <ArrowRight className="w-4 h-4" />
@@ -372,7 +372,7 @@ function RegisterTeamWizard() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50"
               >
                 {submitting && <RefreshCw className="w-4 h-4 animate-spin" />}
                 <span>{submitting ? "Đang nộp…" : "Xác nhận & Nộp đơn"}</span>
@@ -450,7 +450,7 @@ function PaymentSuccess({
             <button
               type="button"
               onClick={onPaidAck}
-              className="w-full py-2.5 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white text-xs font-black transition-all active:scale-95"
+              className="w-full py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-xs font-black transition-all active:scale-95"
             >
               Tôi đã chuyển khoản
             </button>

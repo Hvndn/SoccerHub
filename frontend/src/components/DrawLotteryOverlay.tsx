@@ -110,7 +110,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
                 key={p.matchId}
                 className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-300 ${
                   isLocked
-                    ? "border-[#247BA0] bg-sky-50 dark:bg-sky-950/40 scale-[1.01]"
+                    ? "border-[#0b4f6c] bg-sky-50 dark:bg-sky-950/40 scale-[1.01]"
                     : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950"
                 }`}
               >
@@ -146,7 +146,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
           type="button"
           onClick={onDone}
           disabled={!done}
-          className="w-full py-3 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white text-sm font-black transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-wait"
+          className="w-full py-3 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white text-sm font-black transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-wait"
         >
           {done ? "Xem nhánh đấu chính thức" : `Đang bốc thăm… ${locked}/${pairs.length} cặp`}
         </button>

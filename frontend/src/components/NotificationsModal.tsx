@@ -135,7 +135,7 @@ export default function NotificationsModal({
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-[#247BA0]/10 text-[#247BA0] dark:text-sky-400 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#0b4f6c]/10 text-[#247BA0] dark:text-sky-400 flex items-center justify-center shrink-0">
               <Bell className="w-5 h-5" />
             </div>
             <div className="min-w-0">
@@ -179,7 +179,7 @@ export default function NotificationsModal({
               onClick={() => setFilter(f.id)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                 filter === f.id
-                  ? "bg-[#247BA0] text-white shadow-md"
+                  ? "bg-[#0b4f6c] text-white shadow-md"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
@@ -193,7 +193,7 @@ export default function NotificationsModal({
             <button
               type="button"
               onClick={onMarkAllRead}
-              className="sm:hidden px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap text-[#247BA0] dark:text-sky-400 border border-[#247BA0]/30"
+              className="sm:hidden px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap text-[#247BA0] dark:text-sky-400 border border-[#0b4f6c]/30"
             >
               Đã đọc hết
             </button>
@@ -226,7 +226,7 @@ export default function NotificationsModal({
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">{n.title}</p>
-                      {!n.read && <span className="w-2.5 h-2.5 rounded-full bg-[#247BA0] mt-1 shrink-0" />}
+                      {!n.read && <span className="w-2.5 h-2.5 rounded-full bg-[#0b4f6c] mt-1 shrink-0" />}
                     </div>
                     <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium">{n.message}</p>
                     {n.type === "BOOKING_CANCELLED" && (n as any).cancelReason && (

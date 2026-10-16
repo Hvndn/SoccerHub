@@ -175,7 +175,7 @@ export default function StadiumOwnerOnboarding({
       {/* TOP NAV BAR HEADER */}
       <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0b4f6c]/10 dark:bg-[#247BA0]/10 border border-[#0b4f6c]/20 dark:border-sky-400/20 text-[#0b4f6c] dark:text-sky-400 text-xs font-bold mb-2">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0b4f6c]/10 dark:bg-[#0b4f6c]/10 border border-[#0b4f6c]/20 dark:border-sky-400/20 text-[#0b4f6c] dark:text-sky-400 text-xs font-bold mb-2">
             <ShieldCheck className="w-4 h-4" />
             <span>SoccerHub • Quy Trình Onboarding Chủ Sân</span>
           </div>
@@ -212,7 +212,7 @@ export default function StadiumOwnerOnboarding({
         {/* Progress Bar Track */}
         <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
           <div
-            className="bg-[#247BA0] h-full rounded-full transition-all duration-500"
+            className="bg-[#0b4f6c] h-full rounded-full transition-all duration-500"
             style={{ width: `${currentStep * 25}%` }}
           />
         </div>
@@ -224,14 +224,14 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(1)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 1
-                ? "bg-[#247BA0] text-white border-[#247BA0] shadow-md"
+                ? "bg-[#0b4f6c] text-white border-[#0b4f6c] shadow-md"
                 : currentStep > 1
-                ? "bg-[#247BA0]/10 border-sky-400 text-sky-700 dark:text-sky-400"
+                ? "bg-[#0b4f6c]/10 border-sky-400 text-sky-700 dark:text-sky-400"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
             }`}
           >
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
-              currentStep > 1 ? "bg-[#247BA0] text-white" : "bg-slate-200 dark:bg-slate-800"
+              currentStep > 1 ? "bg-[#0b4f6c] text-white" : "bg-slate-200 dark:bg-slate-800"
             }`}>
               {currentStep > 1 ? <Check className="w-4 h-4 stroke-[3]" /> : "1"}
             </div>
@@ -246,14 +246,14 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(2)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 2
-                ? "bg-[#247BA0] text-white border-[#247BA0] shadow-md"
+                ? "bg-[#0b4f6c] text-white border-[#0b4f6c] shadow-md"
                 : currentStep > 2
-                ? "bg-[#247BA0]/10 border-sky-400 text-sky-700 dark:text-sky-400"
+                ? "bg-[#0b4f6c]/10 border-sky-400 text-sky-700 dark:text-sky-400"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
             }`}
           >
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
-              currentStep > 2 ? "bg-[#247BA0] text-white" : currentStep === 2 ? "bg-white text-slate-900" : "bg-slate-200 dark:bg-slate-800"
+              currentStep > 2 ? "bg-[#0b4f6c] text-white" : currentStep === 2 ? "bg-white text-slate-900" : "bg-slate-200 dark:bg-slate-800"
             }`}>
               {currentStep > 2 ? <Check className="w-4 h-4 stroke-[3]" /> : "2"}
             </div>
@@ -268,14 +268,14 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(3)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 3
-                ? "bg-[#247BA0] text-white border-[#247BA0] shadow-md"
+                ? "bg-[#0b4f6c] text-white border-[#0b4f6c] shadow-md"
                 : currentStep > 3
-                ? "bg-[#247BA0]/10 border-sky-400 text-sky-700 dark:text-sky-400"
+                ? "bg-[#0b4f6c]/10 border-sky-400 text-sky-700 dark:text-sky-400"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
             }`}
           >
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
-              currentStep > 3 ? "bg-[#247BA0] text-white" : currentStep === 3 ? "bg-white text-slate-900" : "bg-slate-200 dark:bg-slate-800"
+              currentStep > 3 ? "bg-[#0b4f6c] text-white" : currentStep === 3 ? "bg-white text-slate-900" : "bg-slate-200 dark:bg-slate-800"
             }`}>
               {currentStep > 3 ? <Check className="w-4 h-4 stroke-[3]" /> : "3"}
             </div>
@@ -290,7 +290,7 @@ export default function StadiumOwnerOnboarding({
             onClick={() => setCurrentStep(4)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${
               currentStep === 4
-                ? "bg-[#247BA0] text-white border-[#247BA0] shadow-md"
+                ? "bg-[#0b4f6c] text-white border-[#0b4f6c] shadow-md"
                 : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
             }`}
           >
@@ -386,7 +386,7 @@ export default function StadiumOwnerOnboarding({
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-extrabold text-xs shadow-md flex items-center space-x-1.5 transition-all shrink-0"
+              className="px-4 py-2 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-extrabold text-xs shadow-md flex items-center space-x-1.5 transition-all shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>+ Thêm Sân Mới</span>
@@ -432,7 +432,7 @@ export default function StadiumOwnerOnboarding({
                       <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">{p.normalPrice.toLocaleString()}đ</td>
                       <td className="p-3 font-mono font-extrabold text-emerald-500">{p.peakPrice.toLocaleString()}đ</td>
                       <td className="p-3">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#247BA0]/10 text-emerald-500 border border-sky-400/20">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0b4f6c]/10 text-emerald-500 border border-sky-400/20">
                           Sẵn Sàng
                         </span>
                       </td>
@@ -499,7 +499,7 @@ export default function StadiumOwnerOnboarding({
       {/* STEP 4 CONTENT: KIỂM TRA & MỞ CỬA NHẬN KHÁCH */}
       {currentStep === 4 && (
         <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-6 text-center">
-          <div className="w-16 h-16 rounded-2xl sm:rounded-3xl bg-[#247BA0]/10 text-emerald-500 flex items-center justify-center mx-auto text-3xl border border-sky-400/30">
+          <div className="w-16 h-16 rounded-2xl sm:rounded-3xl bg-[#0b4f6c]/10 text-emerald-500 flex items-center justify-center mx-auto text-3xl border border-sky-400/30">
             🏟️
           </div>
           <div className="space-y-2 max-w-xl mx-auto">
@@ -529,7 +529,7 @@ export default function StadiumOwnerOnboarding({
             type="button"
             onClick={handleFinalSubmit}
             disabled={isFinalSubmitting}
-            className="px-5 py-3 sm:px-8 sm:py-3.5 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm transition-all shadow-xl active:scale-95 flex items-center justify-center space-x-2 mx-auto disabled:opacity-50"
+            className="px-5 py-3 sm:px-8 sm:py-3.5 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm transition-all shadow-xl active:scale-95 flex items-center justify-center space-x-2 mx-auto disabled:opacity-50"
           >
             {isFinalSubmitting ? (
               <>
@@ -563,7 +563,7 @@ export default function StadiumOwnerOnboarding({
             else handleFinalSubmit();
           }}
           disabled={isFinalSubmitting}
-          className="px-4 py-2.5 sm:px-6 sm:py-2.5 rounded-xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-xs transition-all shadow-md active:scale-95 flex items-center space-x-1.5 disabled:opacity-50"
+          className="px-4 py-2.5 sm:px-6 sm:py-2.5 rounded-xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-xs transition-all shadow-md active:scale-95 flex items-center space-x-1.5 disabled:opacity-50"
         >
           {isFinalSubmitting ? (
             <>
@@ -646,7 +646,7 @@ export default function StadiumOwnerOnboarding({
                 type="button"
                 disabled={submittingPitch}
                 onClick={handleAddPitch}
-                className="flex-1 py-2.5 rounded-xl bg-[#247BA0] text-white font-extrabold text-xs shadow-md disabled:opacity-50 flex items-center justify-center space-x-1"
+                className="flex-1 py-2.5 rounded-xl bg-[#0b4f6c] text-white font-extrabold text-xs shadow-md disabled:opacity-50 flex items-center justify-center space-x-1"
               >
                 {submittingPitch && <Loader2 className="w-4 h-4 animate-spin" />}
                 <span>{submittingPitch ? "Đang Lưu..." : "Xác Nhận Thêm"}</span>

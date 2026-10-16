@@ -313,7 +313,7 @@ export default function MatchmakingMarketplace({
                 Ghép kèo theo phong độ thi đấu
               </span>
               <span className="text-slate-400">•</span>
-              <span className="px-3 py-0.5 rounded-full bg-[#247BA0]/10 text-[#006c49] font-bold text-xs">
+              <span className="px-3 py-0.5 rounded-full bg-[#0b4f6c]/10 text-[#006c49] font-bold text-xs">
                 {onlineCaptains > 0
                   ? `${onlineCaptains} đội đang mở kèo trên sàn`
                   : "Chưa có kèo nào đang mở"}
@@ -653,7 +653,7 @@ export default function MatchmakingMarketplace({
 
                     {/* Opponent matched info if any */}
                     {isMatched && (
-                      <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-[#247BA0]/30 rounded-xl text-xs flex items-center justify-between">
+                      <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-[#0b4f6c]/30 rounded-xl text-xs flex items-center justify-between">
                         <div>
                           <span className="font-bold text-sky-900 dark:text-sky-400">Đối thủ đã nhận: </span>
                           <strong className="text-slate-900 dark:text-white">{post.opponentTeamName}</strong> (Cap: {post.opponentCaptainName})
@@ -737,7 +737,7 @@ export default function MatchmakingMarketplace({
                   Chưa có kèo nào đang mở. Bấm “+ Tạo Kèo” để đăng ký đội của bạn lên sàn.
                 </p>
               ) : (
-                <div className="p-3.5 rounded-2xl bg-[#247BA0]/10 border border-[#247BA0]/20 space-y-1 text-[#006c49]">
+                <div className="p-3.5 rounded-2xl bg-[#0b4f6c]/10 border border-[#0b4f6c]/20 space-y-1 text-[#006c49]">
                   <div className="flex items-center justify-between font-bold">
                     <span className="truncate pr-2">{recommendedPost.pitchName ?? "Chưa chọn sân"}</span>
                     <span className="font-mono shrink-0">{recommendedPost.matchTime ?? "—"}</span>
@@ -1013,7 +1013,7 @@ export default function MatchmakingMarketplace({
               </button>
             </div>
 
-            <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-[#247BA0]/30 rounded-2xl text-xs space-y-1">
+            <div className="p-3 bg-sky-50 dark:bg-sky-950/40 border border-[#0b4f6c]/30 rounded-2xl text-xs space-y-1">
               <span className="font-extrabold text-sky-900 dark:text-sky-300 block">
                 Đối đầu: {acceptingPost.teamName} (Cap: {acceptingPost.captainName})
               </span>

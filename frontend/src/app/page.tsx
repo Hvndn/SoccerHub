@@ -250,10 +250,10 @@ export default function Home() {
   const showBottomNav = currentUser?.role !== "OWNER" && currentUser?.role !== "ADMIN";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-[#247BA0] selection:text-white relative transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-[#0b4f6c] selection:text-white relative transition-colors duration-300">
       {/* Top Page Progress Loading Bar */}
       {isTabChanging && (
-        <div className="fixed top-0 left-0 right-0 h-1 bg-[#0b4f6c] dark:bg-[#247BA0] z-50 animate-top-loader stadium-shadow" />
+        <div className="fixed top-0 left-0 right-0 h-1 bg-[#0b4f6c] dark:bg-[#0b4f6c] z-50 animate-top-loader stadium-shadow" />
       )}
 
       {/* Top Navbar */}
@@ -294,7 +294,7 @@ export default function Home() {
           {activeTab === "booking" && (
             currentUser?.role === "OWNER" ? (
               <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl animate-fade-in">
-                <div className="w-16 h-16 rounded-2xl bg-[#0b4f6c]/10 dark:bg-[#247BA0]/20 text-[#0b4f6c] dark:text-sky-400 mx-auto flex items-center justify-center">
+                <div className="w-16 h-16 rounded-2xl bg-[#0b4f6c]/10 dark:bg-[#0b4f6c]/20 text-[#0b4f6c] dark:text-sky-400 mx-auto flex items-center justify-center">
                   <ShieldCheck className="w-8 h-8 text-emerald-500" />
                 </div>
                 <div className="space-y-2">
@@ -308,7 +308,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleTabChange("admin")}
-                  className="px-6 py-3 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Chuyển Sang Bảng Điều Hành Cụm Sân →
                 </button>
@@ -399,7 +399,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleOpenAuth("login", "PLAYER")}
-                  className="px-6 py-3 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Đăng Nhập Ngay
                 </button>
@@ -430,7 +430,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => handleTabChange("booking")}
-                    className="px-6 py-3 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                    className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                   >
                     Quay Lại Trang Tìm Sân Bóng
                   </button>
@@ -469,7 +469,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleOpenAuth("login", "PLAYER")}
-                  className="px-6 py-3 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Đăng Nhập Ngay
                 </button>
@@ -499,7 +499,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleOpenAuth("login", "PLAYER")}
-                  className="px-6 py-3 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Đăng Nhập Ngay
                 </button>
@@ -528,7 +528,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleTabChange("tournaments")}
-                  className="px-6 py-3 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Xem Trang Giải Đấu Cộng Đồng
                 </button>
@@ -547,7 +547,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleOpenAuth("login", "ORGANIZER")}
-                  className="px-6 py-3 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Đăng Nhập Ban Tổ Chức
                 </button>
@@ -576,7 +576,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleOpenAuth("login", "PLAYER")}
-                  className="px-6 py-3 rounded-2xl bg-[#247BA0] hover:bg-[#1f6c8d] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="px-6 py-3 rounded-2xl bg-[#0b4f6c] hover:bg-[#083a50] text-white font-black text-sm shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
                   Đăng Nhập Ngay
                 </button>
