@@ -30,7 +30,7 @@ import {
   RefreshCw,
   X
 } from "lucide-react";
-import { API_BASE_URL, apiRequest } from "@/lib/api";
+import { API_BASE_URL, apiRequest, ensureLoggedIn } from "@/lib/api";
 import FormDots from "./FormDots";
 
 interface MatchmakingMarketplaceProps {
@@ -222,6 +222,7 @@ export default function MatchmakingMarketplace({
     e.preventDefault();
     try {
       setCreating(true);
+      if (!ensureLoggedIn('đăng kèo giao lưu')) return;
       // Dùng apiRequest để tự gắn Authorization — endpoint đăng kèo yêu cầu đăng nhập
       const res = await apiRequest<any>("/api/v1/community/matchmaking-posts", {
         method: "POST",
@@ -255,6 +256,7 @@ export default function MatchmakingMarketplace({
   const handleAcceptPost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!acceptingPost) return;
+    if (!ensureLoggedIn('nhận kèo')) return;
     try {
       setAccepting(true);
       const data = await apiRequest<any>(

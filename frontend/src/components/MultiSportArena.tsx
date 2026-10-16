@@ -21,7 +21,7 @@ import {
   QrCode
 } from 'lucide-react';
 
-import { API_BASE_URL, apiRequest } from "@/lib/api";
+import { API_BASE_URL, apiRequest, ensureLoggedIn } from "@/lib/api";
 
 interface Court {
   id: string;
@@ -177,6 +177,7 @@ export default function MultiSportArena({
     }
     setAccepting(true);
     try {
+      if (!ensureLoggedIn('nhận kèo')) return;
       // apiRequest tự gắn Authorization — endpoint nhận kèo yêu cầu đăng nhập
       await apiRequest(
         `/api/v1/community/matchmaking-posts/${joiningMatch.id}/accept`,

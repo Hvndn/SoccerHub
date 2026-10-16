@@ -43,7 +43,7 @@ import {
 
 import PitchDetail from "./PitchDetail";
 import { getAllPitchesApi } from "@/lib/pitchService";
-import { API_BASE_URL, apiRequest } from "@/lib/api";
+import { API_BASE_URL, apiRequest, ensureLoggedIn } from "@/lib/api";
 import { todayLocal } from "@/lib/dateUtils";
 import { fetchTournaments } from "@/lib/tournamentService";
 import { recommendPitches, type AiPitchCluster } from "@/lib/aiService";
@@ -356,6 +356,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
       return;
     }
     try {
+      if (!ensureLoggedIn('nhận kèo')) return;
       const data = await apiRequest<any>(
         `/api/v1/community/matchmaking-posts/${post.id}/accept`,
         {
@@ -389,6 +390,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
       realPitches.find((p: any) => String(p.id) === newMatchPitchId) ?? featuredPitch;
     setCreatingPost(true);
     try {
+      if (!ensureLoggedIn('đăng kèo')) return;
       // apiRequest tự gắn Authorization — endpoint đăng kèo yêu cầu đăng nhập
       await apiRequest("/api/v1/community/matchmaking-posts", {
         method: "POST",

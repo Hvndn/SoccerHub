@@ -36,6 +36,22 @@ export function removeAuthToken() {
   }
 }
 
+/**
+ * Chặn ngay ở phía giao diện trước khi gọi endpoint bắt buộc đăng nhập.
+ * Nếu không chặn, server trả 401 và người dùng chỉ thấy một thông báo lỗi kỹ thuật
+ * khó hiểu. Trả về true nghĩa là đã đăng nhập, được phép gọi tiếp.
+ */
+export function ensureLoggedIn(action = 'thực hiện thao tác này'): boolean {
+  if (getAuthToken()) return true;
+  if (typeof window !== 'undefined') {
+    alert(
+      `Bạn cần đăng nhập để ${action}.\n\n` +
+        `Vui lòng bấm nút "Đăng Nhập" ở góc trên bên phải, hoặc đăng nhập nhanh bằng tài khoản demo.`
+    );
+  }
+  return false;
+}
+
 export async function apiRequest<T = any>(
   endpoint: string,
   options: RequestInit = {}
