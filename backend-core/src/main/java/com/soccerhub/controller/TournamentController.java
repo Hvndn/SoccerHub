@@ -827,6 +827,198 @@ public class TournamentController {
     }
 
     /**
+     * Nút "Giả lập kết quả (Test)": tự random tỷ số cho mọi trận đang SCHEDULED
+     * (đi đúng thứ tự vòng để đội thắng đi tiếp), ghi MatchResult + cầu thủ ghi
+     * bàn ngẫu nhiên từ đội hình thật, lưu nhánh đấu. Demo BXH, phong độ, vua phá
+     * lưới mà không cần nhập tay. Trận đã DONE giữ nguyên. Vô địch → giải COMPLETED.
+     */
+    @PostMapping("/{id}/simulate-results")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    public ResponseEntity<?> simulateResults(@PathVariable Long id) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải chưa bốc thăm nên chưa có trận nào để giả lập."));
+        }
+        Map<String, Object> bracket;
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> parsed = objectMapper.readValue(tournament.getBracketJson(), Map.class);
+            bracket = parsed;
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Dữ liệu nhánh đấu bị lỗi."));
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> rounds = (List<Map<String, Object>>) bracket.get("rounds");
+        if (rounds == null || rounds.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Nhánh đấu chưa có vòng nào."));
+        }
+        boolean isLeague = "ROUND_ROBIN".equals(tournament.getFormat());
+
+        // Đội hình thật (nếu đội chưa khai) để ghi bàn ngẫu nhiên cho vua phá lưới
+        Map<String, List<String>> rosters = new HashMap<>();
+        if (tournament.getTeams() != null) {
+            for (TournamentTeamEntry t : tournament.getTeams()) {
+                if (t.getTeamName() == null) continue;
+                List<String> members = new ArrayList<>();
+                if (t.getMemberNames() != null) {
+                    for (String m : t.getMemberNames().split(",")) {
+                        String n = m.trim();
+                        if (!n.isEmpty()) members.add(n);
+                    }
+                }
+                rosters.put(t.getTeamName(), members);
+            }
+        }
+
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        int simulated = 0;
+        List<GoalEvent> goalEvents = new ArrayList<>();
+        for (Map<String, Object> round : rounds) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> matches = (List<Map<String, Object>>) round.get("matches");
+            if (matches == null) continue;
+            for (Map<String, Object> m : matches) {
+                // Trận chờ (TBD) nhưng đã đủ 2 đội (do vòng trước điền vào) vẫn đá được
+                if (!"SCHEDULED".equals(m.get("status")) && !"TBD".equals(m.get("status"))) continue;
+                @SuppressWarnings("unchecked")
+                Map<String, Object> teamA = (Map<String, Object>) m.get("teamA");
+                @SuppressWarnings("unchecked")
+                Map<String, Object> teamB = (Map<String, Object>) m.get("teamB");
+                if (teamA == null || teamB == null
+                        || Boolean.TRUE.equals(teamA.get("tbd")) || Boolean.TRUE.equals(teamB.get("tbd"))) {
+                    continue;
+                }
+                String nameA = String.valueOf(teamA.get("name"));
+                String nameB = String.valueOf(teamB.get("name"));
+                int scoreA = rnd.nextInt(5);
+                int scoreB = rnd.nextInt(5);
+                if (!isLeague) {
+                    int guard = 0;
+                    while (scoreA == scoreB && guard++ < 10) {
+                        scoreA = rnd.nextInt(5);
+                        scoreB = rnd.nextInt(5);
+                    }
+                    if (scoreA == scoreB) scoreA++;
+                }
+                String winner = scoreA > scoreB ? nameA : (scoreB > scoreA ? nameB : null);
+                String matchId = String.valueOf(m.get("matchId"));
+
+                m.put("scoreA", scoreA);
+                m.put("scoreB", scoreB);
+                m.put("winner", winner);
+                m.put("status", "DONE");
+
+                // Đẩy đội thắng vào vòng sau (khớp logic nhập tay)
+                if (winner != null) {
+                    String slot = "Thắng " + matchId;
+                    for (Map<String, Object> r2 : rounds) {
+                        @SuppressWarnings("unchecked")
+                        List<Map<String, Object>> ms2 = (List<Map<String, Object>>) r2.get("matches");
+                        if (ms2 == null) continue;
+                        for (Map<String, Object> mm : ms2) {
+                            for (String side : List.of("teamA", "teamB")) {
+                                @SuppressWarnings("unchecked")
+                                Map<String, Object> node = (Map<String, Object>) mm.get(side);
+                                if (node != null && Boolean.TRUE.equals(node.get("tbd"))
+                                        && slot.equals(node.get("name"))) {
+                                    node.put("name", winner);
+                                    TeamFormService.FormRecord wf = teamFormService.formOf(winner);
+                                    node.put("form", wf.form());
+                                    node.put("record", wf.record());
+                                    node.put("winRate", wf.winRate());
+                                    node.remove("tbd");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                matchResultRepository.save(MatchResult.builder()
+                        .tournamentId(tournament.getId())
+                        .matchId(matchId)
+                        .roundName(String.valueOf(round.getOrDefault("name", "")))
+                        .teamA(nameA)
+                        .teamB(nameB)
+                        .scoreA(scoreA)
+                        .scoreB(scoreB)
+                        .winner(winner)
+                        .build());
+
+                // Ghi bàn ngẫu nhiên từ đội hình để demo vua phá lưới
+                Map<String, Integer> scorersA = randomScorers(nameA, rosters.getOrDefault(nameA, List.of()), scoreA, rnd);
+                Map<String, Integer> scorersB = randomScorers(nameB, rosters.getOrDefault(nameB, List.of()), scoreB, rnd);
+                for (Map.Entry<String, Integer> e : scorersA.entrySet()) {
+                    goalEvents.add(GoalEvent.builder()
+                            .tournamentId(tournament.getId()).matchId(matchId)
+                            .teamName(nameA).playerName(e.getKey())
+                            .goals(e.getValue()).assists(0).build());
+                }
+                for (Map.Entry<String, Integer> e : scorersB.entrySet()) {
+                    goalEvents.add(GoalEvent.builder()
+                            .tournamentId(tournament.getId()).matchId(matchId)
+                            .teamName(nameB).playerName(e.getKey())
+                            .goals(e.getValue()).assists(0).build());
+                }
+                simulated++;
+            }
+        }
+        if (!goalEvents.isEmpty()) {
+            goalEventRepository.saveAll(goalEvents);
+        }
+        try {
+            tournament.setBracketJson(objectMapper.writeValueAsString(bracket));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi lưu nhánh đấu."));
+        }
+
+        // Vô địch: trận duy nhất vòng cuối đã xong và có đội thắng
+        String champion = null;
+        Map<String, Object> lastRound = rounds.get(rounds.size() - 1);
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> lastMatches = (List<Map<String, Object>>) lastRound.get("matches");
+        if (lastMatches != null && lastMatches.size() == 1) {
+            Map<String, Object> finalMatch = lastMatches.get(0);
+            if ("DONE".equals(finalMatch.get("status")) && finalMatch.get("winner") != null) {
+                champion = String.valueOf(finalMatch.get("winner"));
+                tournament.setStatus("COMPLETED");
+            }
+        }
+        tournamentRepository.save(tournament);
+
+        if (simulated == 0) {
+            return ResponseEntity.ok(Map.of(
+                    "message", "Không còn trận nào chờ đá (các trận đã DONE hoặc chưa xếp đội).",
+                    "simulated", 0,
+                    "bracket", bracket));
+        }
+        String msg = "Đã giả lập " + simulated + " trận."
+                + (champion != null ? " Vô địch: " + champion + "!" : "");
+        return ResponseEntity.ok(Map.of(
+                "message", msg,
+                "simulated", simulated,
+                "champion", champion != null ? champion : "",
+                "bracket", bracket));
+    }
+
+    /** Chia ngẫu nhiên số bàn cho các thành viên (không đội hình thì dùng số áo). */
+    private static Map<String, Integer> randomScorers(
+            String teamName, List<String> roster, int goals, ThreadLocalRandom rnd) {
+        Map<String, Integer> out = new LinkedHashMap<>();
+        int[] shirts = {7, 9, 10, 11, 8, 19, 20, 4};
+        for (int i = 0; i < goals; i++) {
+            String scorer = roster.isEmpty()
+                    ? teamName + " số " + shirts[rnd.nextInt(shirts.length)]
+                    : roster.get(rnd.nextInt(roster.size()));
+            out.put(scorer, out.getOrDefault(scorer, 0) + 1);
+        }
+        return out;
+    }
+
+    /**
      * BXH Vua phá lưới của một giải (gộp bàn + kiến tạo theo cầu thủ).
      */
     @GetMapping("/{id}/scorers")

@@ -15,6 +15,7 @@ import {
   Play,
   Pause,
   RotateCcw,
+  Dices,
   FileText,
   QrCode,
   Zap,
@@ -35,6 +36,7 @@ import {
   fillSimulatedTeams,
   clearSimulatedTeams,
   drawTournamentBracket,
+  simulateTournamentResults,
   generateTournamentSchedule,
   undoMatchResult,
   confirmTeamPayment,
@@ -71,6 +73,8 @@ export default function TournamentBracket() {
   const [scorerRows, setScorerRows] = useState<Record<string, { player: string; team: string; goals: string; assists: string }[]>>({});
   const [confirmDraw, setConfirmDraw] = useState(false);
   const [confirmUndo, setConfirmUndo] = useState<BracketMatch | null>(null);
+  const [confirmSimulate, setConfirmSimulate] = useState(false);
+  const [simulateBusy, setSimulateBusy] = useState(false);
   const [lottery, setLottery] = useState<{ pairs: { matchId: string; teamA: string; teamB: string }[]; byes: string[] } | null>(null);
   const [activeTab, setActiveTab] = useState<"bracket" | "var_referee" | "standings" | "esheet">("bracket");
 
@@ -247,6 +251,20 @@ export default function TournamentBracket() {
       triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để dọn đội Test.");
     } finally {
       setClearBusy(false);
+    }
+  };
+
+  const startSimulate = async () => {
+    if (!selected) return;
+    try {
+      setSimulateBusy(true);
+      const res = await simulateTournamentResults(selected.id);
+      triggerToast(res.message);
+      setConfirmSimulate(false);
+    } catch (err: any) {
+      triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để giả lập.");
+    } finally {
+      setSimulateBusy(false);
     }
   };
 
@@ -758,6 +776,22 @@ export default function TournamentBracket() {
                 )}
                 <span>{bracket ? "Bốc thăm lại" : selected?.format === "ROUND_ROBIN" ? "Xếp lịch vòng tròn" : "Bốc thăm chia cặp"}</span>
               </button>
+
+              {bracket && (
+                <button
+                  onClick={() => setConfirmSimulate(true)}
+                  disabled={!selected || simulateBusy}
+                  title="Tự random tỷ số + cầu thủ ghi bàn cho mọi trận chưa đá (chỉ dùng demo)"
+                  className="px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-md border border-slate-200 dark:border-slate-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {simulateBusy ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Dices className="w-4 h-4" />
+                  )}
+                  <span>Giả lập KQ cả giải</span>
+                </button>
+              )}
 
               {/* Xếp lịch thi đấu — chỉ có ý nghĩa sau khi đã bốc thăm tạo nhánh đấu */}
               {bracket && (
@@ -1525,6 +1559,24 @@ export default function TournamentBracket() {
         busy={drawBusy}
         onCancel={() => setConfirmDraw(false)}
         onConfirm={startDraw}
+      />
+
+      {/* Xác nhận giả lập kết quả toàn giải */}
+      <ConfirmModal
+        open={confirmSimulate}
+        title="Giả lập kết quả cả giải?"
+        message={
+          <>
+            Hệ thống sẽ <strong>tự random tỷ số</strong> cho mọi trận chưa đá của giải{" "}
+            <strong>“{selected?.title}”</strong> (kèm cầu thủ ghi bàn ngẫu nhiên), đội thắng đi
+            tiếp, giải có nhà vô địch. Trận đã có kết quả được giữ nguyên.
+          </>
+        }
+        confirmLabel="Giả lập ngay"
+        danger={false}
+        busy={simulateBusy}
+        onCancel={() => setConfirmSimulate(false)}
+        onConfirm={startSimulate}
       />
 
       {/* Xác nhận huỷ kết quả (xoá bản ghi + cầu thủ ghi bàn, phong độ tự tính lại) */}

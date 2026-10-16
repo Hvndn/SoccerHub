@@ -242,8 +242,21 @@ export async function fillSimulatedTeams(tournamentId: number, count?: number): 
   }
 };
 
-/** Bốc thăm chia cặp thật — cần đăng nhập ORGANIZER/ADMIN. */
-export async function drawTournamentBracket(tournamentId: number): Promise<{ message: string; bracket: TournamentBracketData }> {
+/** Giả lập kết quả toàn giải (random tỷ số + cầu thủ ghi bàn) — demo BXH/phong độ. Cần ORGANIZER/ADMIN. */
+export async function simulateTournamentResults(tournamentId: number): Promise<{ message: string; simulated: number; champion: string; bracket: TournamentBracketData }> {
+  try {
+    const body = await apiRequest<{ message: string; simulated: number; champion: string; bracket: TournamentBracketData }>(
+      `/api/v1/tournaments/${tournamentId}/simulate-results`,
+      { method: 'POST', body: JSON.stringify({}) }
+    );
+    await fetchTournaments(true);
+    return body;
+  } catch (err) {
+    throw new Error(friendlyAdminError(err, 'Giả lập kết quả thất bại.'));
+  }
+}
+
+/** Bốc thăm chia cặp thật — cần đăng nhập ORGANIZER/ADMIN. */export async function drawTournamentBracket(tournamentId: number): Promise<{ message: string; bracket: TournamentBracketData }> {
   try {
     const body = await apiRequest<{ message: string; bracket: TournamentBracketData }>(
       `/api/v1/tournaments/${tournamentId}/draw`,
