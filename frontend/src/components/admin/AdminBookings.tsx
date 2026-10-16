@@ -151,7 +151,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
           <button
             type="submit"
             disabled={searching}
-            className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+            className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
           >
             {searching ? "Đang tìm…" : "Tra cứu"}
           </button>

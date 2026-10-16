@@ -176,7 +176,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                 {/* Header Thẻ */}
                 <div className="flex items-center justify-between relative z-10 mb-4">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center text-slate-950 font-black">
+                    <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center text-white font-black">
                       <Sparkles className="w-4 h-4" />
                     </div>
                     <div>
@@ -282,7 +282,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               <div className="flex flex-col sm:flex-row items-center gap-3">
                 <button 
                   onClick={() => onNavigateTab ? onNavigateTab('booking') : onBackToHome && onBackToHome()}
-                  className="w-full sm:flex-1 h-12 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-extrabold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-95"
+                  className="w-full sm:flex-1 h-12 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-95"
                 >
                   <span className="sm:hidden">Khám Phá Sân Ngay</span><span className="hidden sm:inline">Vào Bảng Điều Khiển / Khám Phá Sân Ngay</span>
                   <ArrowRight className="w-4 h-4" />

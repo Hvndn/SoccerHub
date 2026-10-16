@@ -185,7 +185,7 @@ function NewTournamentWizard() {
           <div className="flex flex-wrap justify-center gap-2.5 pt-2">
             <a
               href="/?tab=tournaments"
-              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black transition-all active:scale-95"
+              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-black transition-all active:scale-95"
             >
               Xem danh sách giải đấu
             </a>
@@ -493,7 +493,7 @@ function NewTournamentWizard() {
               <button
                 type="button"
                 onClick={goNext}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-black transition-all active:scale-95"
               >
                 <span>Tiếp tục</span>
                 <ArrowRight className="w-4 h-4" />
@@ -503,7 +503,7 @@ function NewTournamentWizard() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-black transition-all active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50"
               >
                 {submitting && <RefreshCw className="w-4 h-4 animate-spin" />}
                 <span>{submitting ? "Đang công bố…" : "Xác nhận & Công bố giải"}</span>

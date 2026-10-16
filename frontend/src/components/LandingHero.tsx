@@ -119,7 +119,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                 <button
                   type="button"
                   onClick={() => onOpenAuth("login", "PLAYER")}
-                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-2.5 cursor-pointer"
+                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-2.5 cursor-pointer"
                 >
                   <Users className="w-4 h-4 text-white" />
                   <span>Đặt Sân Ngay →</span>
@@ -161,7 +161,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
       <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-3 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 sm:space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-white flex items-center justify-center">
               <Search className="w-4 h-4" />
             </div>
             <div>

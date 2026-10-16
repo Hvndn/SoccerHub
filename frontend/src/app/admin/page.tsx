@@ -99,7 +99,7 @@ function AdminConsole() {
             </p>
             <Link
               href="/"
-              className="inline-block px-6 py-3 rounded-2xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-sm transition-all active:scale-95"
+              className="inline-block px-6 py-3 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-black text-sm transition-all active:scale-95"
             >
               Về trang chủ để đăng nhập
             </Link>
@@ -138,7 +138,7 @@ function AdminConsole() {
                     aria-current={active ? "page" : undefined}
                     className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-left transition-all shrink-0 lg:shrink ${
                       active
-                        ? "bg-sky-500 text-slate-950 shadow-md"
+                        ? "bg-sky-500 text-white shadow-md"
                         : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                     }`}
                   >

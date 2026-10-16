@@ -194,7 +194,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
   const visibleMatches = listFor(activeFilter);
 
   const filterTabs: { id: typeof activeFilter; label: string; count: number; tone: string }[] = [
-    { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-sky-500 text-slate-950" },
+    { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-sky-500 text-white" },
     { id: "tournaments", label: "Lịch đấu giải", count: allMatches.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
     { id: "matchmaking", label: "Kèo đã ghép", count: matchedPosts.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
     { id: "history", label: "Đã đá", count: doneMatches.length, tone: "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200" },
@@ -248,7 +248,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
               <button
                 onClick={() => onNavigateTab && onNavigateTab("booking")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold shadow-md transition-all active:scale-95"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold shadow-md transition-all active:scale-95"
               >
                 <Calendar className="w-4 h-4" />
                 <span>+ Đặt Sân Mới</span>
@@ -355,7 +355,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                             </div>
                             <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
                               <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
-                                i === 0 ? "bg-sky-500 text-slate-950" : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                i === 0 ? "bg-sky-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                               }`}>
                                 {initials || "?"}
                               </span>
@@ -376,7 +376,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                     <div className="flex flex-wrap items-center gap-3">
                       <button
                         onClick={() => setSelectedMatch(hero)}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-extrabold shadow-sm transition-all active:scale-95"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white text-xs font-extrabold shadow-sm transition-all active:scale-95"
                       >
                         <FileText className="w-4 h-4" />
                         Xem Vé & Thông Tin Trận
@@ -557,7 +557,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
                 <button
                   onClick={() => onNavigateTab && onNavigateTab("matchmaking")}
-                  className="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold transition-all active:scale-95"
+                  className="w-full px-3 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold transition-all active:scale-95"
                 >
                   Mở Chợ Kèo
                 </button>
@@ -641,7 +641,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
             <div className="flex gap-2">
               <button
                 onClick={() => { setSelectedMatch(null); onNavigateTab && onNavigateTab("tournaments"); }}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold"
               >
                 Mở nhánh đấu
               </button>

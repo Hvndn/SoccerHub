@@ -378,7 +378,7 @@ export default function PlayerProfileConsole({
                     <span>{initials}</span>
                   )}
                 </div>
-                <div className="absolute -bottom-1 -right-1 bg-sky-500 text-slate-950 p-1 sm:p-1.5 rounded-xl shadow-md border-2 border-white dark:border-slate-900" title="Tài khoản đã xác minh căn cước & số điện thoại">
+                <div className="absolute -bottom-1 -right-1 bg-sky-500 text-white p-1 sm:p-1.5 rounded-xl shadow-md border-2 border-white dark:border-slate-900" title="Tài khoản đã xác minh căn cước & số điện thoại">
                   <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
@@ -761,7 +761,7 @@ export default function PlayerProfileConsole({
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs sm:text-sm font-bold shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs sm:text-sm font-bold shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
                   {isSaving ? "Đang lưu..." : "Lưu Thông Tin"}
@@ -1201,7 +1201,7 @@ export default function PlayerProfileConsole({
                           <span
                             className={`w-7 h-7 rounded-lg text-xs font-black flex items-center justify-center shrink-0 ${
                               m.result === "win"
-                                ? "bg-sky-500 text-slate-950"
+                                ? "bg-sky-500 text-white"
                                 : "bg-rose-500 text-white"
                             }`}
                           >

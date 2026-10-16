@@ -208,7 +208,7 @@ export default function MultiSportArena({
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 p-3 sm:p-6 lg:p-8">
       {/* Toast Notification */}
       {successToast && (
-        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-sky-500 text-slate-950 px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 border border-sky-400 animate-bounce">
+        <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-sky-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 border border-sky-400 animate-bounce">
           <CheckCircle2 className="w-6 h-6 flex-shrink-0" />
           <span className="font-semibold">{successToast}</span>
         </div>
@@ -417,7 +417,7 @@ export default function MultiSportArena({
                   {court.status === 'available' && (
                     <button
                       onClick={() => setBookingCourt(court)}
-                      className="bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg shadow transition"
+                      className="bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition"
                     >
                       Đặt Sân Ngay
                     </button>
@@ -426,7 +426,7 @@ export default function MultiSportArena({
                   {court.status === 'matching' && (
                     <button
                       onClick={() => handleActionToast(`Bạn đã gửi yêu cầu tham gia ghép đội tại ${court.id}!`)}
-                      className="bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg shadow transition"
+                      className="bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition"
                     >
                       Vào Kèo Ngay
                     </button>
@@ -491,7 +491,7 @@ export default function MultiSportArena({
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                     <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 rounded-full border-2 border-sky-500 bg-sky-500 text-slate-950 flex items-center justify-center font-black text-sm flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full border-2 border-sky-500 bg-sky-500 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
                         {(match.hostName || "?").trim().charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -526,7 +526,7 @@ export default function MultiSportArena({
 
                       <button
                         onClick={() => setJoiningMatch(match)}
-                        className="bg-sky-500 hover:bg-sky-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center space-x-1"
+                        className="bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center space-x-1"
                       >
                         <span>Gia Nhập Đội</span>
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -638,7 +638,7 @@ export default function MultiSportArena({
                   setBookingCourt(null);
                   onNavigateToBooking?.();
                 }}
-                className="w-1/2 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs shadow-lg transition"
+                className="w-1/2 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-lg transition"
               >
                 Chọn Khung Giờ
               </button>
@@ -689,7 +689,7 @@ export default function MultiSportArena({
               <button
                 onClick={handleAcceptMatch}
                 disabled={accepting}
-                className="w-1/2 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs shadow-lg transition disabled:opacity-60"
+                className="w-1/2 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-lg transition disabled:opacity-60"
               >
                 {accepting ? "Đang chốt..." : "Xác Nhận Tham Gia"}
               </button>

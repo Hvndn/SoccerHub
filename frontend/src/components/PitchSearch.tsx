@@ -474,7 +474,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             type="button"
             onClick={askAiRecommend}
             disabled={aiLoading || realPitches.length === 0}
-            className="shrink-0 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
+            className="shrink-0 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
           >
             {aiLoading ? (
               <>Đang hỏi AI…</>
@@ -538,7 +538,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             </div>
 
             <div className="flex items-center space-x-3.5 sm:space-x-4">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 flex items-center justify-center font-black text-xl sm:text-2xl shadow-md shrink-0">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-white flex items-center justify-center font-black text-xl sm:text-2xl shadow-md shrink-0">
                 {userName.charAt(0)}
               </div>
               <div className="min-w-0">
@@ -624,7 +624,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             <SlidersHorizontal className="w-4 h-4 text-[#0b4f6c] dark:text-sky-400" />
             Bộ lọc tìm sân
             {activeFilterCount > 0 && (
-              <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950">
+              <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-white">
                 {activeFilterCount}
               </span>
             )}
@@ -645,7 +645,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 onClick={() => setSelectedSport(tab.id)}
                 className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
                   selectedSport === tab.id
-                    ? "bg-sky-500 text-slate-950 shadow-sm"
+                    ? "bg-sky-500 text-white shadow-sm"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
               >
@@ -772,7 +772,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center space-x-2">
-                    <span className="px-2.5 py-1 bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 font-black text-[10px] rounded-lg flex items-center uppercase tracking-wider shadow-xs">
+                    <span className="px-2.5 py-1 bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-white font-black text-[10px] rounded-lg flex items-center uppercase tracking-wider shadow-xs">
                       <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-300 dark:text-slate-950" />
                       AI SMART RECOMMENDATION
                     </span>
@@ -855,7 +855,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 <button
                   type="button"
                   onClick={() => setSelectedPitchForSlot(featuredPitch)}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
                 >
                   <span>Chọn Khung Giờ Ngay</span>
                   <ArrowRight className="w-4 h-4 text-white" />
@@ -920,7 +920,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                           <button
                             type="button"
                             onClick={() => setSelectedPitchForSlot(featuredPitch)}
-                            className="px-2.5 sm:px-3 py-1 bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
+                            className="px-2.5 sm:px-3 py-1 bg-sky-500 hover:bg-sky-600 text-white font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
                           >
                             Chọn Ca
                           </button>
@@ -967,7 +967,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
               type="button"
               onClick={fetchPitches}
               disabled={loadingRealPitches}
-              className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-60 text-slate-950 text-xs font-bold transition-colors"
+              className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-60 text-white text-xs font-bold transition-colors"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loadingRealPitches ? "animate-spin" : ""}`} />
               <span>Thử lại</span>
@@ -1115,7 +1115,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                             onClick={() => setSelectedPitchForSlot(pitch)}
                             className={`px-3 py-1.5 rounded-xl font-mono text-xs font-bold shrink-0 transition-all cursor-pointer ${
                               ts.status === "ACTIVE"
-                                ? "bg-sky-500 text-slate-950 shadow-xs"
+                                ? "bg-sky-500 text-white shadow-xs"
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                             }`}
                           >
@@ -1144,7 +1144,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                       <button
                         type="button"
                         onClick={() => setSelectedPitchForSlot(pitch)}
-                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
                       >
                         <span>Xem Ca & Đặt</span>
                         <ChevronRight className="w-4 h-4" />
@@ -1245,7 +1245,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                       <button
                         type="button"
                         onClick={() => handleAcceptFromWidget(p)}
-                        className="px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer bg-sky-500 hover:bg-sky-600 text-slate-950 active:scale-95 shrink-0"
+                        className="px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer bg-sky-500 hover:bg-sky-600 text-white active:scale-95 shrink-0"
                       >
                         Bắt Kèo Ngay
                       </button>
@@ -1263,7 +1263,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 <QrCode className="w-5 h-5 text-amber-500" />
                 <h3 className="font-black text-sm text-slate-900 dark:text-white">SoccerHub QuickPass</h3>
               </div>
-              <span className="px-2.5 py-0.5 rounded bg-sky-500 text-slate-950 font-black text-[9px] uppercase">
+              <span className="px-2.5 py-0.5 rounded bg-sky-500 text-white font-black text-[9px] uppercase">
                 Check-in Không Chạm
               </span>
             </div>
@@ -1290,7 +1290,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             <button
               type="button"
               onClick={() => setShowQrModal(true)}
-              className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-1.5"
+              className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-1.5"
             >
               <span>Mở Thẻ Hội Viên QR</span>
               <ArrowRight className="w-4 h-4" />
@@ -1459,7 +1459,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 type="button"
                 disabled={creatingPost}
                 onClick={handleCreateFromWidget}
-                className="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
+                className="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
               >
                 {creatingPost && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 {creatingPost ? "Đang đăng…" : "Đăng Kèo Ngay"}
@@ -1504,7 +1504,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 setShowQrModal(false);
                 showToast("✓ Đã lưu mã QR vào thư viện ảnh thiết bị!");
               }}
-              className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs shadow-md"
+              className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-md"
             >
               Lưu Mã Về Điện Thoại
             </button>

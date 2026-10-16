@@ -684,7 +684,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-sky-500/10 rounded-full blur-2xl pointer-events-none" />
           
           <div className="flex items-start space-x-3.5 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-sky-500 text-slate-950 flex items-center justify-center shrink-0 shadow-lg animate-bell-wiggle">
+            <div className="w-12 h-12 rounded-2xl bg-sky-500 text-white flex items-center justify-center shrink-0 shadow-lg animate-bell-wiggle">
               <Bell className="w-6 h-6 fill-white text-white" />
             </div>
             <div className="space-y-1">
@@ -735,7 +735,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* Real-time Order Notification Banner */}
       {notification && (
-        <div className="bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl shadow-lg border border-sky-400/30 flex items-center justify-between animate-fade-in">
+        <div className="bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl shadow-lg border border-sky-400/30 flex items-center justify-between animate-fade-in">
           <div className="flex items-center space-x-3 text-xs font-bold">
             <Bell className="w-4 h-4 animate-bell-wiggle text-amber-300 shrink-0" />
             <span>{notification}</span>
@@ -821,7 +821,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => onNavigateTab("owner-onboarding")}
-                className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
                 title="Khởi tạo hoặc thiết lập cụm sân mới qua Wizard 4 bước"
               >
                 <Building className="w-4 h-4 shrink-0" />
@@ -832,7 +832,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <button
               type="button"
               onClick={() => setShowAddPitchModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
+              className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
             >
               <Plus className="w-4 h-4 shrink-0" />
               <span>Thêm Sân Con</span>
@@ -841,7 +841,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <button
               type="button"
               onClick={() => setShowOfflineModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
+              className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
             >
               <PhoneCall className="w-4 h-4 shrink-0" />
               <span>Đặt Ca Tại Quầy</span>
@@ -856,7 +856,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             onClick={() => setActiveSubTab("matrix")}
             className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "matrix"
-                ? "bg-sky-500 text-slate-950 shadow-md"
+                ? "bg-sky-500 text-white shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -869,7 +869,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             onClick={() => setActiveSubTab("pitches")}
             className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "pitches"
-                ? "bg-sky-500 text-slate-950 shadow-md"
+                ? "bg-sky-500 text-white shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -882,7 +882,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             onClick={() => setActiveSubTab("pricing")}
             className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "pricing"
-                ? "bg-sky-500 text-slate-950 shadow-md"
+                ? "bg-sky-500 text-white shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -895,7 +895,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             onClick={() => setActiveSubTab("canteen")}
             className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
               activeSubTab === "canteen"
-                ? "bg-sky-500 text-slate-950 shadow-md"
+                ? "bg-sky-500 text-white shadow-md"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
             }`}
           >
@@ -972,7 +972,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
           </div>
           <button
             onClick={handleSearchBooking}
-            className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 text-sm sm:text-base font-black shadow-sm shrink-0 active:scale-95 transition-all"
+            className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-sm sm:text-base font-black shadow-sm shrink-0 active:scale-95 transition-all"
           >
             Tra Cứu
           </button>
@@ -1010,7 +1010,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     }}
                     className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       matrixDuration === 60
-                        ? "bg-sky-500 text-slate-950 shadow-xs"
+                        ? "bg-sky-500 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
@@ -1025,7 +1025,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     }}
                     className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       matrixDuration === 90
-                        ? "bg-sky-500 text-slate-950 shadow-xs"
+                        ? "bg-sky-500 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
@@ -1040,7 +1040,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     }}
                     className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
                       matrixDuration === 120
-                        ? "bg-sky-500 text-slate-950 shadow-xs"
+                        ? "bg-sky-500 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
@@ -1150,7 +1150,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       <span className="text-xs font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider">
                         Lịch Đặt Ca Ngày:
                       </span>
-                      <span className="px-2.5 py-0.5 rounded-lg bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-slate-950 font-black text-xs font-mono shadow-xs">
+                      <span className="px-2.5 py-0.5 rounded-lg bg-[#0b4f6c] dark:bg-sky-500 text-white dark:text-white font-black text-xs font-mono shadow-xs">
                         {upcomingDays.find(d => d.iso === matrixDate)?.display || `Ngày ${matrixDate.split("-").reverse().join("/")}`}
                       </span>
                       {matrixDate === upcomingDays[0]?.iso ? (
@@ -1204,7 +1204,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       onClick={() => handleSelectDate(day.iso)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer ${
                         isSelected
-                          ? "bg-sky-500 text-slate-950 shadow-md scale-102 ring-2 ring-sky-400/50"
+                          ? "bg-sky-500 text-white shadow-md scale-102 ring-2 ring-sky-400/50"
                           : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-sky-300 hover:bg-sky-50/50 dark:hover:bg-slate-800"
                       }`}
                     >
@@ -1373,7 +1373,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
               <button
                 type="button"
                 onClick={() => setShowAddPitchModal(true)}
-                className="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-extrabold text-sm shadow-md transition-all flex items-center space-x-2 active:scale-95"
+                className="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-sm shadow-md transition-all flex items-center space-x-2 active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Thêm Sân Con Mới</span>
@@ -1509,7 +1509,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                         type="button"
                         disabled={saving}
                         onClick={() => savePitchPrice(p)}
-                        className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 flex items-center gap-1.5"
                       >
                         {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                         {saving ? "Đang lưu..." : "Lưu giá sân"}
@@ -1574,7 +1574,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
             <button
               onClick={() => showToast("🎉 Đã lưu tồn kho Canteen!")}
-              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-sm shadow-xs transition-all active:scale-95"
+              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-sm shadow-xs transition-all active:scale-95"
             >
               Lưu Kho Canteen
             </button>
@@ -1685,7 +1685,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     setShowAddPitchModal(false);
                     setShowHoursModal(true);
                   }}
-                  className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-sm transition-colors shrink-0 shadow-xs"
+                  className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-sm transition-colors shrink-0 shadow-xs"
                 >
                   Đổi Giờ
                 </button>
@@ -1701,7 +1701,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-sm shadow-md transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-sm shadow-md transition-colors"
                 >
                   Tạo Sân Mới
                 </button>
@@ -1802,7 +1802,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                       }}
                       className={`p-2 rounded-xl text-center font-bold text-xs border transition-all ${
                         offlineDuration === item.dur
-                          ? "bg-sky-500 text-slate-950 border-sky-500 shadow-xs"
+                          ? "bg-sky-500 text-white border-sky-500 shadow-xs"
                           : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300"
                       }`}
                     >
@@ -1860,7 +1860,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                     onClick={() => setOfflineDepositType("PAID_CASH")}
                     className={`p-3.5 rounded-xl font-bold border transition-all text-sm ${
                       offlineDepositType === "PAID_CASH"
-                        ? "bg-sky-500 text-slate-950 border-sky-500 shadow-xs"
+                        ? "bg-sky-500 text-white border-sky-500 shadow-xs"
                         : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
                     }`}
                   >
@@ -1890,7 +1890,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-extrabold text-sm shadow-md transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-sm shadow-md transition-colors"
                 >
                   Xác Nhận Khóa Slot
                 </button>
@@ -1964,7 +1964,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <button
                   type="button"
                   onClick={() => handleConfirmCheckin(selectedSlotForAction)}
-                  className="w-full py-3.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95"
+                  className="w-full py-3.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95"
                 >
                   <UserCheck className="w-5 h-5" />
                   <span>Xác Nhận Check-in Vào Sân & Mở Đèn</span>
@@ -2066,7 +2066,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 <button
                   type="submit"
                   disabled={isUpdatingHours}
-                  className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-extrabold text-sm shadow-md transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-sm shadow-md transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer"
                 >
                   {isUpdatingHours && <RefreshCw className="w-4 h-4 animate-spin mr-1" />}
                   <span>Lưu Giờ Hoạt Động Sân</span>
