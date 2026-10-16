@@ -20,6 +20,10 @@ spring:
       connection-timeout: 30000
       initialization-fail-timeout: -1
       maximum-pool-size: 5
+      minimum-idle: 2
+      # Gửi ping TCP giữ kết nối liên tục cứ mỗi 3 phút (180000ms), ngăn Railway MySQL đi vào trạng thái Sleeping
+      keepalive-time: 180000
+      connection-test-query: SELECT 1
   jpa:
     hibernate:
       # Mặc định: tự tạo/cập nhật bảng khi MySQL sẵn sàng (cần cho lần chạy đầu).
