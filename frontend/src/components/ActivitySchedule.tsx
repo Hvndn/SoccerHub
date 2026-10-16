@@ -324,7 +324,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
               {/* HERO: trận sắp tới / đang diễn ra */}
               {hero ? (
                 <div className="relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-md p-4 sm:p-6 lg:p-7 flex flex-col gap-3 sm:gap-5 border border-slate-200/80 dark:border-slate-800">
-                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-600 via-lime-400 to-teal-500"></div>
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0ea5e9] via-[#38bdf8] to-[#0284c7]"></div>
 
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                     <div className="flex items-center gap-2.5">

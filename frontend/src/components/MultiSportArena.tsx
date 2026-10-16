@@ -466,7 +466,7 @@ export default function MultiSportArena({
 
               <button
                 onClick={() => onNavigateToChokego?.()}
-                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg flex items-center space-x-2 transition"
+                className="bg-gradient-to-r from-[#0ea5e9] to-[#0284c7] hover:from-[#0284c7] hover:to-[#0369a1] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg flex items-center space-x-2 transition"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Tạo Kèo Mới</span>

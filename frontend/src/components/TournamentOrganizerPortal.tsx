@@ -435,7 +435,7 @@ export default function TournamentOrganizerPortal({
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-emerald-500 to-sky-500 transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-[#0ea5e9] to-[#0284c7] transition-all duration-500"
                     style={{ width: `${t.progress}%` }}
                   />
                 </div>

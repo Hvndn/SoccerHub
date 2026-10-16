@@ -136,7 +136,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
                   {(Number(m.revenue) / 1000000).toFixed(0)}tr
                 </span>
                 <div
-                  className="w-full rounded-t-lg bg-gradient-to-t from-emerald-600 to-sky-500 transition-all duration-700"
+                  className="w-full rounded-t-lg bg-gradient-to-t from-[#0ea5e9] to-[#0284c7] transition-all duration-700"
                   style={{ height: chartIn ? `${Math.max(4, Math.round((Number(m.revenue) / maxRev) * 100))}%` : "4%", transitionDelay: `${i * 60}ms` }}
                 />
                 <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 truncate w-full text-center">
