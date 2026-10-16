@@ -680,31 +680,31 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 
       {/* POPUP THÔNG BÁO ĐƠN ĐẶT SÂN REALTIME TỪ CẦU THỦ */}
       {realtimeAlert && (
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 text-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-emerald-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 animate-modal-pop relative overflow-hidden">
-          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-emerald-400 dark:border-emerald-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 animate-modal-pop relative overflow-hidden">
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
           
           <div className="flex items-start space-x-3.5 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-white text-emerald-600 flex items-center justify-center shrink-0 shadow-lg animate-bell-wiggle">
-              <Bell className="w-6 h-6 fill-emerald-600 text-emerald-600" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-lg animate-bell-wiggle">
+              <Bell className="w-6 h-6 fill-white text-white" />
             </div>
             <div className="space-y-1">
               <div className="flex items-center space-x-2">
                 <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider shadow-xs">
                   ⚡ ĐƠN ĐẶT SÂN MỚI TỨC THỜI
                 </span>
-                <span className="text-[11px] font-mono text-emerald-100 font-bold">Vừa đặt cọc xong</span>
+                <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-300 font-bold">Vừa đặt cọc xong</span>
               </div>
-              <h3 className="text-base sm:text-lg font-black text-white">
-                Khách hàng <span className="text-amber-300 underline underline-offset-2">{realtimeAlert.customerName}</span> ({realtimeAlert.customerPhone}) vừa cọc ca thi đấu!
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                Khách hàng <span className="text-amber-600 dark:text-amber-300 underline underline-offset-2">{realtimeAlert.customerName}</span> ({realtimeAlert.customerPhone}) vừa cọc ca thi đấu!
               </h3>
-              <p className="text-xs text-emerald-100 font-medium flex flex-wrap items-center gap-x-2">
+              <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium flex flex-wrap items-center gap-x-2">
                 <span>🏟️ {realtimeAlert.courtName}</span>
                 <span>•</span>
-                <span>⏰ Ca: <strong className="text-white font-mono">{realtimeAlert.timeSlot}</strong></span>
+                <span>⏰ Ca: <strong className="text-slate-900 dark:text-white font-mono">{realtimeAlert.timeSlot}</strong></span>
                 <span>•</span>
-                <span>💰 Đã cọc: <strong className="text-amber-300 font-mono font-bold">{(realtimeAlert.depositPaid || 0).toLocaleString('vi-VN')}đ</strong></span>
+                <span>💰 Đã cọc: <strong className="text-amber-600 dark:text-amber-300 font-mono font-bold">{(realtimeAlert.depositPaid || 0).toLocaleString('vi-VN')}đ</strong></span>
                 <span>•</span>
-                <span>💳 Qua: <strong className="text-white">{realtimeAlert.via || "Tại quầy"}</strong></span>
+                <span>💳 Qua: <strong className="text-slate-900 dark:text-white">{realtimeAlert.via || "Tại quầy"}</strong></span>
               </p>
             </div>
           </div>
@@ -713,7 +713,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             <button
               type="button"
               onClick={() => playNotificationChime()}
-              className="px-3 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center space-x-1 transition-all cursor-pointer"
+              className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/20 dark:hover:bg-white/30 text-slate-800 dark:text-white font-bold text-xs flex items-center space-x-1 transition-all cursor-pointer"
               title="Phát lại âm thanh chuông thông báo"
             >
               <Volume2 className="w-4 h-4" />
@@ -725,7 +725,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
                 setRealtimeAlert(null);
                 showToast("✓ Đã xác nhận đơn! Ma trận ca sân đã cập nhật trạng thái mới nhất.");
               }}
-              className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-950 font-black text-xs shadow-lg transition-all active:scale-95 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-black text-xs shadow-lg transition-all active:scale-95 cursor-pointer"
             >
               Đã Nhận Đơn ✓
             </button>
@@ -1139,7 +1139,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
             </div>
 
             {/* THANH CHỌN NGÀY THI ĐẤU (QUAN TRỌNG: CHỦ SÂN XEM ĐƯỢC CA ĐẶT CỦA MỌI NGÀY) */}
-            <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50/50 to-emerald-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 border border-sky-200/80 dark:border-slate-700/80 space-y-3 shadow-xs">
+            <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 space-y-3 shadow-xs">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="flex items-center space-x-2.5">
                   <div className="w-9 h-9 rounded-xl bg-sky-500/15 dark:bg-sky-400/20 text-[#0b4f6c] dark:text-sky-300 flex items-center justify-center shrink-0">

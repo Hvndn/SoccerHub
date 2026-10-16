@@ -343,15 +343,15 @@ export default function PlayerProfileConsole({
       {/* ========================================================= */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
         {/* Banner ngầm tinh tế */}
-        <div className="relative min-h-[5.5rem] sm:h-32 bg-gradient-to-r from-emerald-900 via-slate-900 to-teal-950 px-4 sm:px-8 py-3 flex items-center justify-between overflow-hidden">
+        <div className="relative min-h-[5.5rem] sm:h-32 bg-slate-100 dark:bg-slate-800 px-4 sm:px-8 py-3 flex items-center justify-between overflow-hidden">
           <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]" />
           <div className="relative z-10 max-w-full">
-            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 shrink-0" />
+            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span className="truncate">HỒ SƠ CẦU THỦ THUỘC HỆ THỐNG</span>
             </span>
           </div>
-          <div className="hidden md:flex items-center gap-3 text-xs text-emerald-200/70 font-mono shrink-0">
+          <div className="hidden md:flex items-center gap-3 text-xs text-slate-500 dark:text-emerald-200/70 font-mono shrink-0">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               Nguồn điểm: Elo SoccerHub

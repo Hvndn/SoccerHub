@@ -163,10 +163,10 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               </div>
 
               {/* DIGITAL ATHLETE PASS (Thẻ Member Card) */}
-              <div className="w-full bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 rounded-2xl p-3 sm:p-6 text-white shadow-xl relative overflow-hidden border border-slate-800">
+              <div className="w-full bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-6 text-slate-900 dark:text-white shadow-xl relative overflow-hidden border border-slate-200 dark:border-slate-800">
                 {/* Decorative Field Blueprint Lines */}
                 <div className="absolute right-0 bottom-0 w-48 h-48 opacity-10 pointer-events-none">
-                  <svg className="w-full h-full fill-none stroke-white" strokeWidth="2" viewBox="0 0 100 100">
+                  <svg className="w-full h-full fill-none stroke-slate-300 dark:stroke-white" strokeWidth="2" viewBox="0 0 100 100">
                     <rect x="10" y="10" width="80" height="80" rx="4"></rect>
                     <line x1="50" y1="10" x2="50" y2="90"></line>
                     <circle cx="50" cy="50" r="16"></circle>
@@ -180,11 +180,11 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                       <Sparkles className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-extrabold tracking-tight text-white">SoccerHub SPORTS PASS</p>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">Universal Athlete ID</p>
+                      <p className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white">SoccerHub SPORTS PASS</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono">Universal Athlete ID</p>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 rounded bg-lime-400/20 text-lime-400 font-mono text-xs font-black border border-lime-400/30">
+                  <span className="px-2.5 py-1 rounded bg-lime-500/15 dark:bg-lime-400/20 text-lime-700 dark:text-lime-400 font-mono text-xs font-black border border-lime-500/40 dark:border-lime-400/30">
                     TIER: PRO-AM
                   </span>
                 </div>
@@ -193,25 +193,25 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                 <div className="grid grid-cols-12 gap-3 items-center relative z-10 my-4">
                   <div className="col-span-8 space-y-2">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Họ và Tên Vận Động Viên</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Họ và Tên Vận Động Viên</span>
                       <div className="flex items-center gap-2">
-                        <p className="text-lg sm:text-xl font-extrabold text-white">{userName}</p>
-                        <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-bold">Phong Trào</span>
+                        <p className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">{userName}</p>
+                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">Phong Trào</span>
                       </div>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1">
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase block font-medium">Môn thi đấu</span>
-                        <span className="text-xs font-bold text-emerald-400">Bóng Đá Sân 5, 7, 11</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-medium">Môn thi đấu</span>
+                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Bóng Đá Sân 5, 7, 11</span>
                       </div>
-                      <div className="w-px h-6 bg-slate-800"></div>
+                      <div className="w-px h-6 bg-slate-200 dark:bg-slate-800"></div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase block font-medium">Chỉ số xếp hạng</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-medium">Chỉ số xếp hạng</span>
                         <div className="flex items-center gap-1.5 font-mono text-xs font-bold">
-                          <span className="text-lime-400">{user?.level || "Chưa xếp bậc"}</span>
-                          <span className="text-slate-600">|</span>
-                          <span className="text-white">Elo {userElo}</span>
+                          <span className="text-lime-700 dark:text-lime-400">{user?.level || "Chưa xếp bậc"}</span>
+                          <span className="text-slate-400 dark:text-slate-600">|</span>
+                          <span className="text-slate-900 dark:text-white">Elo {userElo}</span>
                         </div>
                       </div>
                     </div>
@@ -233,9 +233,9 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
                 </div>
 
                 {/* Footer Thẻ */}
-                <div className="pt-3 border-t border-slate-800 flex items-center justify-between relative z-10 text-[11px]">
-                  <span className="font-mono text-slate-400 tracking-wider">{memberId} • SOCCERHUB</span>
-                  <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between relative z-10 text-[11px]">
+                  <span className="font-mono text-slate-500 dark:text-slate-400 tracking-wider">{memberId} • SOCCERHUB</span>
+                  <span className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> ĐÃ KÍCH HOẠT THÀNH CÔNG
                   </span>
                 </div>

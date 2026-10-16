@@ -216,29 +216,29 @@ export default function MultiSportArena({
 
       {/* Top Header Banner */}
       <div className="w-full mb-8">
-        <div className="bg-gradient-to-r from-slate-900 via-[#0b4f6c] to-slate-900 border border-sky-500/30 rounded-2xl p-4 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-8 text-slate-900 dark:text-white shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
             <div>
               <div className="flex items-center space-x-3 mb-3">
-                <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+                <span className="bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 dark:border-emerald-500/40 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5" /> Danh sách đọc từ CSDL
                 </span>
-                <span className="bg-sky-400/20 text-sky-300 border border-sky-400/30 text-xs font-bold px-3 py-1 rounded-full">
+                <span className="bg-sky-500/10 dark:bg-sky-400/20 text-sky-700 dark:text-sky-300 border border-sky-500/30 text-xs font-bold px-3 py-1 rounded-full">
                   {courts[0]?.name || "Chưa có cụm sân nào"}
                 </span>
               </div>
-              <h1 className="text-xl sm:text-4xl font-extrabold tracking-tight">
+              <h1 className="text-xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Ma Trận Sơ Đồ Cụm Sân Bóng Đá Real-Time
               </h1>
-              <p className="mt-2 text-slate-300 text-sm sm:text-base max-w-2xl hidden sm:block">
+              <p className="mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base max-w-2xl hidden sm:block">
                 Đặt ca sân 5, sân 7, sân 11 và Futsal trong nhà tự động 24/7. Tìm đối thủ ghép trận theo chỉ số Elo, giữ chỗ tức thì qua mã đặt chỗ.
               </p>
             </div>
 
             {/* Field Type Selector Tabs */}
-            <div className="bg-slate-800/80 p-1.5 rounded-xl border border-slate-700/60 flex flex-wrap items-center gap-2 self-start lg:self-auto">
+            <div className="bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700/60 flex flex-wrap items-center gap-2 self-start lg:self-auto">
               {[
                 { id: 'all', label: 'Tất Cả Sân' },
                 { id: 'san5', label: '⚽ Sân 5 Người' },
@@ -252,7 +252,7 @@ export default function MultiSportArena({
                   className={`px-3.5 py-2 rounded-lg text-xs font-extrabold transition-all ${
                     activeFilter === tab.id
                       ? 'bg-emerald-500 text-slate-950 shadow-lg'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'
                   }`}
                 >
                   {tab.label}
@@ -595,7 +595,7 @@ export default function MultiSportArena({
               </h3>
               <button
                 onClick={() => setBookingCourt(null)}
-                className="text-slate-400 hover:text-white text-xl font-bold"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white text-xl font-bold"
               >
                 ✕
               </button>
@@ -657,7 +657,7 @@ export default function MultiSportArena({
               </h3>
               <button
                 onClick={() => setJoiningMatch(null)}
-                className="text-slate-400 hover:text-white text-xl font-bold"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white text-xl font-bold"
               >
                 ✕
               </button>

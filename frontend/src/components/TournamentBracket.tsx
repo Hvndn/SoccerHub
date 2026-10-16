@@ -679,17 +679,17 @@ export default function TournamentBracket() {
       )}
 
       {/* Main Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-slate-900 dark:text-white shadow-xl relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
           <div className="min-w-0">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold mb-3">
-              <Trophy className="w-4 h-4 text-emerald-400" />
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold mb-3">
+              <Trophy className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>{selected ? `${selected.title} • Nhánh đấu & VAR` : "Nhánh đấu & Bàn trọng tài Live VAR"}</span>
             </div>
-            <h1 className="text-lg sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-lg sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               Quản Lý Giải Đấu & Bốc Thăm Chia Cặp Thật
             </h1>
-            <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl">
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl">
               {selected
                 ? `${sportLabel(selected.sportType)} • ${formatLabel(selected.format)} • ${teamCount}/${teamCap || "—"} đội • Khởi tranh ${formatDate(selected.startDate)}`
                 : "Chọn một giải đấu để quản lý nhánh đấu."}
@@ -698,14 +698,14 @@ export default function TournamentBracket() {
 
           {/* Tournament selector + management actions */}
           <div className="flex flex-col gap-3 min-w-0 lg:min-w-[320px]">
-            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider" htmlFor="bracket-tournament">
+            <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider" htmlFor="bracket-tournament">
               Giải đấu đang quản lý
             </label>
             <select
               id="bracket-tournament"
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="bg-slate-800 border border-slate-700 text-xs font-extrabold text-white rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-full"
+              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-extrabold text-slate-900 dark:text-white rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-full"
             >
               {tournaments.length === 0 && <option value="">Chưa có giải đấu</option>}
               {tournaments.map((t) => (
@@ -1050,9 +1050,9 @@ export default function TournamentBracket() {
                   </p>
                 )}
 
-                <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 rounded-2xl border border-emerald-500/30 text-white text-center shadow-2xl space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-center space-x-3 text-xs text-slate-400 uppercase font-mono tracking-widest font-bold">
-                    <Clock className="w-4 h-4 text-emerald-400" />
+                <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-center shadow-2xl space-y-3 sm:space-y-4">
+                  <div className="flex items-center justify-center space-x-3 text-xs text-slate-500 dark:text-slate-400 uppercase font-mono tracking-widest font-bold">
+                    <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>
                       {varMatch.status === "DONE" ? "ĐÃ KẾT THÚC" : "ĐANG ĐIỀU KHIỂN"} • TỶ SỐ THỜI GIAN THỰC
                     </span>
@@ -1060,11 +1060,11 @@ export default function TournamentBracket() {
 
                   <div className="grid grid-cols-3 items-center gap-3 sm:gap-4 py-2">
                     <div className="space-y-2 min-w-0">
-                      <div className="text-base sm:text-lg font-black text-emerald-400 truncate">
+                      <div className="text-base sm:text-lg font-black text-emerald-700 dark:text-emerald-400 truncate">
                         {varMatch.teamA?.name}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono">Elo {varMatch.teamA?.elo ?? "—"}</div>
-                      <div className="text-2xl sm:text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Elo {varMatch.teamA?.elo ?? "—"}</div>
+                      <div className="text-2xl sm:text-6xl font-mono font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-900 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
                         {varScoreA}
                       </div>
                       {varMatch.status !== "DONE" && (
@@ -1077,7 +1077,7 @@ export default function TournamentBracket() {
                           </button>
                           <button
                             onClick={() => setVarScoreA(Math.max(0, varScoreA - 1))}
-                            className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-2 py-1.5 rounded-lg"
+                            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold px-2 py-1.5 rounded-lg"
                           >
                             -1
                           </button>
@@ -1086,21 +1086,21 @@ export default function TournamentBracket() {
                     </div>
 
                     <div className="space-y-1">
-                      <div className="text-xl font-extrabold text-amber-400 font-mono">VS</div>
-                      <div className="text-[10px] text-slate-400 font-mono">{varMatch.matchId}</div>
+                      <div className="text-xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">VS</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{varMatch.matchId}</div>
                       {varStatus && (
-                        <div className="bg-amber-400/20 text-amber-300 text-[10px] font-bold p-2 rounded-lg border border-amber-400/40">
+                        <div className="bg-amber-500/10 dark:bg-amber-400/20 text-amber-700 dark:text-amber-300 text-[10px] font-bold p-2 rounded-lg border border-amber-500/30 dark:border-amber-400/40">
                           VAR: {varStatus}
                         </div>
                       )}
                     </div>
 
                     <div className="space-y-2 min-w-0">
-                      <div className="text-base sm:text-lg font-black text-cyan-400 truncate">
+                      <div className="text-base sm:text-lg font-black text-cyan-700 dark:text-cyan-400 truncate">
                         {varMatch.teamB?.name}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono">Elo {varMatch.teamB?.elo ?? "—"}</div>
-                      <div className="text-2xl sm:text-6xl font-mono font-black text-white bg-slate-900 py-3 rounded-2xl border border-slate-800 shadow-inner">
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Elo {varMatch.teamB?.elo ?? "—"}</div>
+                      <div className="text-2xl sm:text-6xl font-mono font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-900 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
                         {varScoreB}
                       </div>
                       {varMatch.status !== "DONE" && (
@@ -1113,7 +1113,7 @@ export default function TournamentBracket() {
                           </button>
                           <button
                             onClick={() => setVarScoreB(Math.max(0, varScoreB - 1))}
-                            className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-2 py-1.5 rounded-lg"
+                            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold px-2 py-1.5 rounded-lg"
                           >
                             -1
                           </button>
@@ -1248,12 +1248,12 @@ export default function TournamentBracket() {
               )}
             </div>
 
-            <div className="bg-gradient-to-br from-slate-900 to-emerald-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-emerald-500/30 shadow-lg space-y-3 sm:space-y-4">
+            <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-lg space-y-3 sm:space-y-4">
               <div className="flex items-center space-x-3">
-                <QrCode className="w-8 h-8 text-emerald-400 flex-shrink-0" />
+                <QrCode className="w-8 h-8 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 <div>
                   <h4 className="font-bold text-sm">Biên Bản Trận Đấu</h4>
-                  <p className="text-xs text-slate-300">
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
                     {varMatch
                       ? `Mã biên bản: ${selected?.title ? selected.title.slice(0, 18) : "SH"}-${varMatch.matchId}-${(varMatch.matchDate ?? "").replace(/-/g, "") || "CHUALICH"}`
                       : "Chọn trận để tạo biên bản"}

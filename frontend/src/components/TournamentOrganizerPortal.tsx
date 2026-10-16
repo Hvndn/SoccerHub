@@ -933,29 +933,29 @@ export default function TournamentOrganizerPortal({
         <div className="lg:col-span-4 space-y-4 sm:space-y-8">
 
           {/* 1. THỐNG KÊ GIẢI ĐẤU (đếm từ CSDL) */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-3 sm:space-y-6">
-            <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
-              <div className="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 shrink-0">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-3 sm:space-y-6">
+            <div className="flex items-center space-x-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div className="w-9 h-9 rounded-xl bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 dark:border-sky-500/40 flex items-center justify-center text-sky-700 dark:text-sky-400 shrink-0">
                 <Cpu className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase text-sky-400 tracking-wider">
+                <span className="text-[10px] font-black uppercase text-sky-700 dark:text-sky-400 tracking-wider">
                   THỐNG KÊ GIẢI ĐẤU
                 </span>
-                <h4 className="text-base font-black text-white">Đăng Ký &amp; Nhánh Đấu</h4>
+                <h4 className="text-base font-black text-slate-900 dark:text-white">Đăng Ký &amp; Nhánh Đấu</h4>
               </div>
             </div>
 
-            <div className="bg-slate-950 p-3 sm:p-4 rounded-2xl border border-slate-800 space-y-3">
+            <div className="bg-slate-50 dark:bg-slate-950 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
               {activeTournament ? (
                 <>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400 font-bold">Đội đã đăng ký:</span>
-                    <span className="text-emerald-400 font-mono font-black">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">Đội đã đăng ký:</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-mono font-black">
                       {(activeTournament.teams?.length ?? 0)}/{activeTournament.totalTeams ?? 0}
                     </span>
                   </div>
-                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                     <div
                       className="h-full bg-emerald-400 transition-all"
                       style={{
@@ -973,18 +973,18 @@ export default function TournamentOrganizerPortal({
                     />
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400 font-bold">Lệ phí mỗi đội:</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">Lệ phí mỗi đội:</span>
                     <span className="font-mono font-black">{formatMoney(activeTournament.entryFee ?? 0)}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400 font-bold">Đội chờ xác nhận lệ phí:</span>
-                    <span className="font-mono font-black text-amber-400">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">Đội chờ xác nhận lệ phí:</span>
+                    <span className="font-mono font-black text-amber-600 dark:text-amber-400">
                       {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT").length}
                     </span>
                   </div>
                 </>
               ) : (
-                <p className="text-xs text-slate-400">Chưa chọn được giải nào từ CSDL.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Chưa chọn được giải nào từ CSDL.</p>
               )}
             </div>
 

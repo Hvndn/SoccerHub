@@ -325,18 +325,18 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       </section>
 
       {/* --- SECTION 3: FINAL CALL TO ACTION BANNER --- */}
-      <section className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-[#07384d] to-slate-950 text-white p-5 sm:p-14 border border-slate-800 shadow-2xl">
+      <section className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-5 sm:p-14 border border-slate-200 dark:border-slate-800 shadow-2xl">
         <div className="relative z-10 max-w-3xl mx-auto text-center space-y-4 sm:space-y-6">
-          <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 text-sky-300 text-xs font-extrabold uppercase">
+          <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 dark:border-sky-400/30 text-sky-700 dark:text-sky-300 text-xs font-extrabold uppercase">
             <Trophy className="w-3.5 h-3.5 text-amber-400" />
             <span>Đồ Án Tốt Nghiệp Xuất Sắc • Trải Nghiệm Thực Tế Ngay</span>
           </div>
 
-          <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+          <h2 className="text-2xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
             Sẵn Sàng Nâng Tầm Trải Nghiệm Thể Thao Của Bạn?
           </h2>
 
-          <p className="hidden sm:block text-xs sm:text-sm text-slate-300 font-medium leading-relaxed max-w-2xl mx-auto">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-2xl mx-auto">
             Hòa mình vào hệ sinh thái quản lý sân bóng và giải đấu SoccerHub. Đặt sân tức thì, theo dõi doanh thu và tổ chức giải đấu chuyên nghiệp.
           </p>
 
@@ -362,7 +362,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             <button
               type="button"
               onClick={() => onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER")}
-              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 text-amber-300 font-black text-xs sm:text-sm border border-amber-400/30 transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-amber-700 dark:text-amber-300 font-black text-xs sm:text-sm border border-amber-300 dark:border-amber-400/30 transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
             >
               <Trophy className="w-4 h-4 text-amber-400" />
               <span>Xem Giải Đấu &amp; Cây Nhánh</span>

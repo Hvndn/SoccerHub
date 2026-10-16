@@ -19,7 +19,7 @@ export default function GuestFeatureBanner({
   onOpenAuth,
 }: GuestFeatureBannerProps) {
   return (
-    <div className="bg-gradient-to-r from-[#0b4f6c]/10 via-[#0b4f6c]/5 to-transparent dark:from-[#0b4f6c]/30 dark:via-[#0b4f6c]/15 dark:to-slate-900 border border-[#0b4f6c]/25 dark:border-sky-500/30 rounded-2xl sm:rounded-3xl p-3 sm:p-8 mb-6 sm:mb-8 stadium-shadow relative overflow-hidden animate-fade-in-up">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3 sm:p-8 mb-6 sm:mb-8 stadium-shadow relative overflow-hidden animate-fade-in-up">
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
         <div className="space-y-3 max-w-2xl">
           <div className="hidden sm:inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0b4f6c]/15 text-[#0b4f6c] dark:bg-sky-400/20 dark:text-sky-300 text-xs font-bold uppercase tracking-wider">

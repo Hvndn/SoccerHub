@@ -1257,18 +1257,18 @@ export default function PitchSearch({ user }: PitchSearchProps) {
           </section>
 
           {/* WIDGET 2: THẺ VẬN ĐỘNG VIÊN SOCCERHUB QUICKPASS (QR SCAN BARRIER) */}
-          <section className="bg-gradient-to-br from-[#0b1c30] to-[#0b4f6c] text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-lg border border-sky-400/30 space-y-4 relative overflow-hidden">
+          <section className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200 dark:border-slate-800 space-y-4 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <QrCode className="w-5 h-5 text-amber-400" />
-                <h3 className="font-black text-sm text-white">SoccerHub QuickPass</h3>
+                <QrCode className="w-5 h-5 text-amber-500" />
+                <h3 className="font-black text-sm text-slate-900 dark:text-white">SoccerHub QuickPass</h3>
               </div>
               <span className="px-2.5 py-0.5 rounded bg-emerald-500 text-slate-950 font-black text-[9px] uppercase">
                 Check-in Không Chạm
               </span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-between space-x-3 border border-white/10">
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/10 backdrop-blur-md flex items-center justify-between space-x-3 border border-slate-200 dark:border-white/10">
               <div 
                 onClick={() => setShowQrModal(true)}
                 className="bg-white p-2 rounded-xl shrink-0 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
@@ -1277,9 +1277,9 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 <QrCode className="w-12 h-12 text-slate-950" />
               </div>
               <div className="flex-1 min-w-0 space-y-1">
-                <h4 className="font-black text-xs text-white truncate">{userName}</h4>
-                <p className="font-mono text-[11px] text-sky-300">ID: {user?.id ? `#SH-${user.id}` : "#SH-GH"}</p>
-                <div className="flex items-center space-x-2 text-[10px] font-mono text-emerald-400 font-bold">
+                <h4 className="font-black text-xs text-slate-900 dark:text-white truncate">{userName}</h4>
+                <p className="font-mono text-[11px] text-[#0b4f6c] dark:text-sky-300">ID: {user?.id ? `#SH-${user.id}` : "#SH-GH"}</p>
+                <div className="flex items-center space-x-2 text-[10px] font-mono text-emerald-700 dark:text-emerald-400 font-bold">
                   <span>{user?.level ?? "Chưa xếp bậc"}</span>
                   <span>•</span>
                   <span>{hasUser ? `Elo ${userElo}` : "Chưa đăng nhập"}</span>
