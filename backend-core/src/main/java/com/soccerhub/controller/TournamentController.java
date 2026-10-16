@@ -247,7 +247,8 @@ public class TournamentController {
         tournament.setBracketJson(null); // danh sách đổi -> cần bốc thăm lại
         tournamentRepository.save(tournament);
         return ResponseEntity.ok(Map.of(
-                "message", "Đã giả lập thêm " + added + " đội Test kèm danh sách thành viên, giải có " + teams.size() + "/" + cap + " đội.",
+                "message", "Đã giả lập thêm " + added + " đội ngẫu nhiên (giải có " + teams.size() + "/" + cap + " đội). "
+                        + "Các đội bạn đã nhập thủ công được giữ nguyên.",
                 "added", added,
                 "registeredTeams", tournament.getRegisteredTeams()));
     }
