@@ -14,7 +14,7 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:soccerhub_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=15000&socketTimeout=60000}
     username: ${SPRING_DATASOURCE_USERNAME:${MYSQLUSER:root}}
     password: ${SPRING_DATASOURCE_PASSWORD:${MYSQLPASSWORD:1234}}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:com.mysql.cj.jdbc.Driver}
     hikari:
       # DB cloud đôi lúc cần thêm vài giây để bật; chịu đợi thay vì crash
       connection-timeout: 30000
@@ -36,7 +36,7 @@ spring:
         temp:
           use_jdbc_metadata_defaults: false
         format_sql: ${JPA_SHOW_SQL:false}
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
   # Không dùng Redis — chỉ khởi động MySQL
 
 ai-service:
