@@ -1,41 +1,203 @@
 package com.soccerhub.controller;
 
+import com.soccerhub.model.Booking;
+import com.soccerhub.model.Pitch;
+import com.soccerhub.repository.BookingRepository;
+import com.soccerhub.repository.PitchRepository;
+import com.soccerhub.util.TimeSlotUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.YearMonth;
 import java.util.*;
 
+/**
+ * API báo cáo doanh thu & cấu hình giá linh hoạt (Chủ sân / Admin).
+ *
+ * Trước đây endpoint này trả số liệu cứng ghi trong code — không khớp với CSDL và
+ * không kiểm chứng được khi thầy đối chiếu. Nay toàn bộ số liệu được tính từ bảng
+ * `bookings` + `pitches` tại thời điểm gọi.
+ */
 @RestController
 @RequestMapping("/api/v1/admin")
+@RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
 public class OwnerAdminController {
+
+    private final BookingRepository bookingRepository;
+    private final PitchRepository pitchRepository;
+
+    /** Doanh thu = tiền cọc + tiền mặt còn lại, chỉ tính đơn đã thu (không tính đơn đã hủy). */
+    private static int settledRevenue(Booking b) {
+        String status = b.getStatus() == null ? "BOOKED" : b.getStatus();
+        if ("CANCELLED".equals(status)) return 0;
+        int deposit = b.getDepositPaid() != null ? b.getDepositPaid() : 0;
+        int cash = ("PLAYING".equals(status) || "COMPLETED".equals(status))
+                ? (b.getCashDue() != null ? b.getCashDue() : 0)
+                : 0;
+        return deposit + cash;
+    }
+
+    private static YearMonth parseMonth(String dateStr) {
+        try {
+            return YearMonth.parse(String.valueOf(dateStr).substring(0, 7));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Tổng số ca sân có thể bán được trong 1 tháng của toàn bộ cụm sân. */
+    private long totalCapacityOf(YearMonth month, List<Pitch> pitches) {
+        int days = month.lengthOfMonth();
+        long total = 0;
+        for (Pitch p : pitches) {
+            int courts = (p.getPitchTypes() != null && !p.getPitchTypes().isEmpty()) ? p.getPitchTypes().size() : 1;
+            int duration = (p.getSlotDurationMinutes() != null && p.getSlotDurationMinutes() > 0)
+                    ? p.getSlotDurationMinutes() : 120;
+            int slots = TimeSlotUtil.slotsPerDay(p.getOpenTime(), p.getCloseTime(), duration);
+            total += (long) courts * slots * days;
+        }
+        return total;
+    }
 
     @GetMapping("/revenue-report")
     public ResponseEntity<Map<String, Object>> getRevenueReport() {
-        List<Map<String, Object>> monthly = Arrays.asList(
-            Map.of("month", "Tháng 4", "revenue", 45000000, "occupancyRate", 72),
-            Map.of("month", "Tháng 5", "revenue", 52000000, "occupancyRate", 78),
-            Map.of("month", "Tháng 6", "revenue", 61000000, "occupancyRate", 85),
-            Map.of("month", "Tháng 7", "revenue", 58000000, "occupancyRate", 81),
-            Map.of("month", "Tháng 8", "revenue", 69000000, "occupancyRate", 91),
-            Map.of("month", "Tháng 9 (Dự kiến)", "revenue", 75000000, "occupancyRate", 94)
-        );
+        List<Pitch> pitches = pitchRepository.findAll();
+        List<Booking> bookings = bookingRepository.findAll();
 
-        Map<String, Object> report = Map.of(
-            "totalRevenueThisMonth", 69000000,
-            "avgOccupancyRate", "88%",
-            "totalBookings", 234,
-            "peakHoursRate", "96%",
-            "monthlyChart", monthly
-        );
+        YearMonth current = YearMonth.now();
+
+        Map<YearMonth, Integer> revenueByMonth = new LinkedHashMap<>();
+        Map<YearMonth, Integer> countByMonth = new LinkedHashMap<>();
+        List<Map<String, Object>> monthly = new ArrayList<>();
+
+        // 6 tháng gần nhất, tháng cũ nhất đứng đầu để vẽ biểu đồ cột
+        for (int i = 5; i >= 0; i--) {
+            YearMonth m = current.minusMonths(i);
+            revenueByMonth.put(m, 0);
+            countByMonth.put(m, 0);
+        }
+
+        for (Booking b : bookings) {
+            YearMonth m = parseMonth(b.getBookingDate());
+            if (m == null || !revenueByMonth.containsKey(m)) continue;
+            revenueByMonth.put(m, revenueByMonth.get(m) + settledRevenue(b));
+            if (!"CANCELLED".equals(b.getStatus())) {
+                countByMonth.put(m, countByMonth.get(m) + 1);
+            }
+        }
+
+        for (YearMonth m : revenueByMonth.keySet()) {
+            long capacity = totalCapacityOf(m, pitches);
+            int booked = countByMonth.getOrDefault(m, 0);
+            monthly.add(Map.of(
+                    "month", MONTH_LABELS[m.getMonthValue() - 1] + (m.getYear() == current.getYear() ? "" : " " + m.getYear()),
+                    "revenue", revenueByMonth.get(m),
+                    "bookings", booked,
+                    "occupancyRate", capacity > 0 ? (int) Math.round(booked * 100.0 / capacity) : 0
+            ));
+        }
+
+        int thisMonthRevenue = revenueByMonth.getOrDefault(current, 0);
+        int thisMonthBookings = countByMonth.getOrDefault(current, 0);
+        long thisMonthCapacity = totalCapacityOf(current, pitches);
+        int thisMonthOccupancy = thisMonthCapacity > 0
+                ? (int) Math.round(thisMonthBookings * 100.0 / thisMonthCapacity) : 0;
+
+        // Tỉ lệ lấp đầy trung bình của 6 tháng gần nhất
+        double occupancySum = 0;
+        int occupancyCount = 0;
+        for (Map<String, Object> row : monthly) {
+            occupancySum += ((Number) row.get("occupancyRate")).doubleValue();
+            occupancyCount++;
+        }
+        int avgOccupancy = occupancyCount > 0 ? (int) Math.round(occupancySum / occupancyCount) : 0;
+
+        // Tỉ lệ lấp đầy giờ vàng (17:00 - 21:00) trong tháng này
+        int peakBooked = 0;
+        for (Booking b : bookings) {
+            YearMonth m = parseMonth(b.getBookingDate());
+            if (m == null || !m.equals(current) || "CANCELLED".equals(b.getStatus())) continue;
+            String slot = b.getTimeSlot() == null ? "" : b.getTimeSlot();
+            if (slot.startsWith("17") || slot.startsWith("18") || slot.startsWith("19") || slot.startsWith("20")) {
+                peakBooked++;
+            }
+        }
+        long peakCapacity = totalCapacityOf(current, pitches) / 3 > 0 ? totalCapacityOf(current, pitches) / 3 : 1;
+        int peakRate = (int) Math.min(100, Math.round(peakBooked * 100.0 / peakCapacity));
+
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("totalRevenueThisMonth", thisMonthRevenue);
+        report.put("avgOccupancyRate", avgOccupancy + "%");
+        report.put("totalBookings", thisMonthBookings);
+        report.put("peakHoursRate", peakRate + "%");
+        report.put("monthlyChart", monthly);
+        report.put("generatedAt", java.time.LocalDateTime.now().toString());
 
         return ResponseEntity.ok(report);
     }
 
+    private static final String[] MONTH_LABELS = {
+            "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+            "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+    };
+
+    /**
+     * Cập nhật cấu hình giá linh hoạt (Dynamic Pricing) cho một cụm sân.
+     * Trước đây chỉ trả về thông báo chứ không lưu gì — nay ghi giá thật vào CSDL.
+     */
     @PostMapping("/dynamic-pricing")
-    public ResponseEntity<Map<String, Object>> configDynamicPricing(@RequestBody Map<String, Object> config) {
+    public ResponseEntity<?> configDynamicPricing(@RequestBody Map<String, Object> config) {
+        Object pitchIdRaw = config.get("pitchId");
+        if (pitchIdRaw == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "ERROR",
+                    "message", "Thiếu pitchId — không xác định được cụm sân cần áp dụng giá."
+            ));
+        }
+
+        long pitchId;
+        try {
+            pitchId = Long.parseLong(String.valueOf(pitchIdRaw));
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "ERROR",
+                    "message", "pitchId không hợp lệ."
+            ));
+        }
+
+        Pitch pitch = pitchRepository.findById(pitchId).orElse(null);
+        if (pitch == null) {
+            return ResponseEntity.status(404).body(Map.of(
+                    "status", "ERROR",
+                    "message", "Không tìm thấy cụm sân #" + pitchId + "."
+            ));
+        }
+
+        Object peakRaw = config.get("peakPricePerHour");
+        Object offPeakRaw = config.get("avgPricePerHour");
+        Object peakHours = config.get("peakHours");
+        if (peakRaw != null) {
+            pitch.setPeakPricePerHour((int) Math.round(Double.parseDouble(String.valueOf(peakRaw))));
+        }
+        if (offPeakRaw != null) {
+            pitch.setAvgPricePerHour((int) Math.round(Double.parseDouble(String.valueOf(offPeakRaw))));
+        }
+        pitchRepository.save(pitch);
+
+        Map<String, Object> applied = new LinkedHashMap<>();
+        applied.put("pitchId", pitchId);
+        applied.put("pitchName", pitch.getName());
+        applied.put("avgPricePerHour", pitch.getAvgPricePerHour());
+        applied.put("peakPricePerHour", pitch.getPeakPricePerHour());
+        if (peakHours != null) applied.put("peakHours", peakHours);
+
         return ResponseEntity.ok(Map.of(
-            "status", "SUCCESS",
-            "message", "Cập nhật bảng giá linh hoạt Dynamic Pricing thành công!",
-            "configApplied", config
+                "status", "SUCCESS",
+                "message", "Đã cập nhật bảng giá linh hoạt cho cụm sân \"" + pitch.getName() + "\".",
+                "configApplied", applied
         ));
     }
 }

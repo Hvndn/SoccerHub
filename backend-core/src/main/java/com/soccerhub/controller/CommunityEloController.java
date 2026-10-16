@@ -6,6 +6,7 @@ import com.soccerhub.repository.TournamentRepository;
 import com.soccerhub.service.TeamFormService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -36,6 +37,7 @@ public class CommunityEloController {
     }
 
     @PostMapping("/matchmaking-posts")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createMatchmakingPost(@RequestBody Map<String, Object> req) {
         String teamName = str(req.get("teamName"));
         String captainName = str(req.get("captainName"));
@@ -80,6 +82,7 @@ public class CommunityEloController {
     }
 
     @PostMapping("/matchmaking-posts/{id}/accept")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> acceptMatchmakingPost(@PathVariable Long id, @RequestBody Map<String, Object> req) {
         MatchmakingPost post = matchmakingPostRepository.findById(id).orElse(null);
         if (post == null) {
