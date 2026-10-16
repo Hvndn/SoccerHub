@@ -41,8 +41,14 @@ export interface AiTeam {
 }
 
 // Mobile-friendly timeout (Render cold start can take 30-60s)
-const MOBILE_TIMEOUT_MS = 60000; // 60s for cold start
-const DEFAULT_TIMEOUT_MS = 15000; // 15s normal
+const MOBILE_TIMEOUT_MS = 60000; // 60s cho cold start trên mobile (mạng di động chậm hơn)
+const DEFAULT_TIMEOUT_MS = 15000; // 15s bình thường trên desktop
+
+/**
+ * Tổng thời gian tối đa người dùng phải chờ cho một lần hỏi AI.
+ * Trước đây 3 lần thử x 15s + backoff = có thể hơn 45s im lặng, rất dễ bị tưởng là treo.
+ */
+const TOTAL_BUDGET_MS = 32000;
 
 function getTimeout(): number {
   if (typeof window === 'undefined') return DEFAULT_TIMEOUT_MS;
@@ -55,12 +61,18 @@ async function postAi<T>(path: string, body: unknown, retries = 2): Promise<T | 
   const timeoutMs = getTimeout();
   // Use proxy route on client side to avoid CORS
   const baseUrl = USE_PROXY ? '/api/ai' : AI_BASE_URL;
-  
+  const startedAt = Date.now();
+
   for (let attempt = 0; attempt <= retries; attempt++) {
+    // Không khởi động lượt thử mới nếu đã hết ngân sách thời gian
+    if (attempt > 0 && Date.now() - startedAt > TOTAL_BUDGET_MS) break;
+
     try {
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-      
+      // Mỗi lượt không được vượt quá phần ngân sách còn lại
+      const remaining = TOTAL_BUDGET_MS - (Date.now() - startedAt);
+      const timer = setTimeout(() => ctrl.abort(), Math.max(3000, Math.min(timeoutMs, remaining)));
+
       const res = await fetch(`${baseUrl}${path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,18 +82,17 @@ async function postAi<T>(path: string, body: unknown, retries = 2): Promise<T | 
         cache: 'no-store',
       });
       clearTimeout(timer);
-      
+
       if (!res.ok) {
         // Don't retry on client errors (4xx)
         if (res.status >= 400 && res.status < 500) return null;
         throw new Error(`HTTP ${res.status}`);
       }
-      
+
       return (await res.json()) as T;
     } catch (error) {
       const isLastAttempt = attempt === retries;
-      const isAbortError = error instanceof Error && error.name === 'AbortError';
-      
+
       if (isLastAttempt) {
         // Log error for debugging (only on last attempt)
         if (typeof window !== 'undefined') {
@@ -89,13 +100,13 @@ async function postAi<T>(path: string, body: unknown, retries = 2): Promise<T | 
         }
         return null;
       }
-      
+
       // Wait before retry (exponential backoff)
-      const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
+      const delay = Math.min(1000 * Math.pow(2, attempt), 3000);
       await new Promise(r => setTimeout(r, delay));
     }
   }
-  
+
   return null;
 }
 

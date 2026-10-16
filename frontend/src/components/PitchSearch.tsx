@@ -336,6 +336,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
   // AI gợi ý sân (FastAPI :8000) — ẩn lặng nếu AI offline
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResults, setAiResults] = useState<AiPitchCluster[] | null>(null);
+  const [aiSlow, setAiSlow] = useState(false);
 
   // ---- Điều hướng (đặt SAU toàn bộ hook để không vi phạm rules-of-hooks) ----
   // Điều hướng sang trang chi tiết sân thật
@@ -426,7 +427,12 @@ export default function PitchSearch({ user }: PitchSearchProps) {
     if (realPitches.length === 0) return;
     try {
       setAiLoading(true);
+      setAiSlow(false);
       setAiResults(null);
+      // AI service trên Render có thể cần 20-30s để khởi động lần đầu.
+      // Sau 3s chưa có kết quả thì hiện nhắc nhở để người dùng không tưởng bị treo.
+      const slowTimer = setTimeout(() => setAiSlow(true), 3000);
+      try {
       const clusters: AiPitchCluster[] = realPitches.map((p: any, idx: number) => ({
         id: String(p.numericId ?? idx + 1),
         name: p.name,
@@ -445,8 +451,12 @@ export default function PitchSearch({ user }: PitchSearchProps) {
         top_n: 3,
       });
       setAiResults(res ? res.recommendations : []);
+      } finally {
+        clearTimeout(slowTimer);
+      }
     } finally {
       setAiLoading(false);
+      setAiSlow(false);
     }
   };
 
@@ -479,17 +489,36 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             className="shrink-0 px-4 py-2.5 rounded-xl bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
           >
             {aiLoading ? (
-              <>Đang hỏi AI…</>
+              <><Loader2 className="w-4 h-4 animate-spin" /><span>Đang hỏi AI…</span></>
             ) : (
               <><Sparkles className="w-4 h-4" /><span>Hỏi AI chọn sân</span></>
             )}
           </button>
         </div>
 
+        {/* Skeleton + nhắc nhở trong lúc chờ AI: lần đầu service cần ~20-30s để dựng */}
+        {aiLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="status" aria-live="polite">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="rounded-2xl border border-slate-200 dark:border-slate-800 p-3.5 space-y-2">
+                <div className="skeleton-shimmer h-3 w-20 rounded" />
+                <div className="skeleton-shimmer h-3.5 w-full rounded" />
+                <div className="skeleton-shimmer h-3 w-2/3 rounded" />
+              </div>
+            ))}
+            <p className="sm:col-span-3 text-[11px] text-slate-500 dark:text-slate-400 text-center">
+              {aiSlow
+                ? "AI đang khởi động máy chủ lần đầy (có thể mất 20–30 giây). Bạn vẫn có thể đặt sân thủ công bên dưới."
+                : "Đang gửi yêu cầu tới AI…"}
+            </p>
+          </div>
+        )}
+
         {aiResults !== null && (
           aiResults.length === 0 ? (
             <p className="text-xs text-slate-500 dark:text-slate-400 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3.5">
-              AI service chưa phản hồi (kiểm tra ai-service cổng 8000). Bạn vẫn đặt sân thủ công bên dưới như bình thường.
+              AI gợi ý đang tạm không phản hồi. Bạn vẫn chọn và đặt sân thủ công bên dưới như bình thường — thử bấm lại sau
+              vài giây nếu muốn dùng gợi ý.
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
