@@ -6,6 +6,7 @@ import {
   QrCode, Video, MessageSquare, CheckCircle2, RefreshCw, XCircle, PlayCircle, FileText
 } from "lucide-react";
 import { API_BASE_URL, apiRequest } from "@/lib/api";
+import { todayLocal, isPastDay } from "@/lib/dateUtils";
 import {
   fetchTournaments, sportLabel, formatLabel,
   type Tournament, type TournamentBracketData,
@@ -528,11 +529,10 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                   </p>
                 ) : (
                   myBookings.map((b) => {
-                    const today = new Date().toISOString().slice(0, 10);
                     const started =
                       b.status === "PLAYING" ||
                       b.status === "COMPLETED" ||
-                      (b.bookingDate ? String(b.bookingDate) < today : false);
+                      isPastDay(b.bookingDate);
                     const canCancel = b.status === "BOOKED" || b.status === "RESALE";
                     return (
                       <div key={b.id} className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3">

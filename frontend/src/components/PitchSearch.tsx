@@ -44,6 +44,7 @@ import {
 import PitchDetail from "./PitchDetail";
 import { getAllPitchesApi } from "@/lib/pitchService";
 import { API_BASE_URL } from "@/lib/api";
+import { todayLocal } from "@/lib/dateUtils";
 import { fetchTournaments } from "@/lib/tournamentService";
 import { recommendPitches, type AiPitchCluster } from "@/lib/aiService";
 import { subscribeToBookingEvents } from "@/lib/realtimeService";
@@ -183,7 +184,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
         // Nạp dữ liệu ca thật của cụm sân đầu tiên từ API ma trận để phục vụ widget trạng thái ca sân
         if (mapped.length > 0) {
           try {
-            const todayStr = new Date().toISOString().split("T")[0];
+            const todayStr = todayLocal();
             const matrixRes = await fetch(`${API_BASE_URL}/api/v1/pitches/${mapped[0].numericId}/matrix?date=${todayStr}&duration=120`);
             if (matrixRes.ok) {
               const matrixData = await matrixRes.json();
