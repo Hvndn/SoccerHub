@@ -412,7 +412,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
                 </span>
               </div>
               <h3 className="text-base sm:text-lg font-black text-white leading-tight">Chat Giải Đấu</h3>
-              <p className="text-[11px] sm:text-xs text-white/90 mt-1 leading-relaxed">
+              <p className="text-[11px] sm:text-xs text-white/95 mt-1 leading-relaxed">
                 Thảo luận trực tiếp với BTC, đội bóng và cầu thủ trong giải đấu.
               </p>
             </div>
@@ -435,7 +435,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
                 <span className="text-[10px] font-black uppercase tracking-wider text-[#0369a1]/90">Matchmaking</span>
               </div>
               <h3 className="text-base sm:text-lg font-black text-white leading-tight">Bắt Đối Giao Hữu</h3>
-              <p className="text-[11px] sm:text-xs text-white/90 mt-1 leading-relaxed">
+              <p className="text-[11px] sm:text-xs text-white/95 mt-1 leading-relaxed">
                 Tìm đối thủ tương đương phong độ, ghép kèo nhanh chóng.
               </p>
             </div>
