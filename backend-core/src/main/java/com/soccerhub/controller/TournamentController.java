@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.soccerhub.model.User;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -1181,8 +1183,19 @@ public class TournamentController {
         }
     }
 
+    /**
+     * Đội đăng ký giải. Bắt buộc đăng nhập và tự lấy danh tính đội trưởng từ token,
+     * không tin tên/SĐT do client gửi lên - tránh việc khách vãng lai đăng ký hộ
+     * và đẩy dữ liệu rác vào giải.
+     */
     @PostMapping("/{id}/register")
-    public ResponseEntity<?> registerTeam(@PathVariable Long id, @RequestBody Map<String, Object> req) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> registerTeam(@PathVariable Long id,
+                                          @RequestBody Map<String, Object> req,
+                                          @AuthenticationPrincipal User me) {
+        if (me == null || me.getEmail() == null || me.getEmail().isBlank()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập để đăng ký đội."));
+        }
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Giải đấu không tồn tại"));
@@ -1192,15 +1205,55 @@ public class TournamentController {
             return ResponseEntity.badRequest().body(Map.of("error", "Giải đấu đã đủ số lượng đội đăng ký"));
         }
 
-        String teamName = (String) req.getOrDefault("teamName", "FC Tân Binh");
-        String captainName = (String) req.getOrDefault("captainName", "Cầu Thủ");
-        String captainPhone = (String) req.getOrDefault("captainPhone", "");
-        String subCaptainPhone = (String) req.getOrDefault("subCaptainPhone", "");
-        Integer memberCount = req.get("memberCount") != null ? Integer.parseInt(req.get("memberCount").toString()) : 12;
+        String teamName = req.get("teamName") != null ? req.get("teamName").toString().trim() : "";
+        if (teamName.length() < 3 || teamName.length() > 60) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Tên đội phải từ 3 đến 60 ký tự."));
+        }
 
+        // Chặn trùng tên đội trong cùng giải
+        for (TournamentTeamEntry existing : tournament.getTeams()) {
+            if (existing.getTeamName() != null
+                    && existing.getTeamName().trim().equalsIgnoreCase(teamName)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Tên đội đã tồn tại trong giải này."));
+            }
+        }
+
+        // Chặn một tài khoản đăng ký nhiều đội trong cùng giải
+        String captainPhone = me.getPhone() != null ? me.getPhone().trim() : "";
+        String myEmail = me.getEmail().toLowerCase();
+        for (TournamentTeamEntry existing : tournament.getTeams()) {
+            boolean sameCaptain = existing.getCaptainEmail() != null
+                    && existing.getCaptainEmail().toLowerCase().equals(myEmail);
+            boolean samePhone = !captainPhone.isEmpty()
+                    && captainPhone.equalsIgnoreCase(existing.getCaptainPhone());
+            if (sameCaptain || samePhone) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Bạn đã đăng ký đội trong giải này rồi."));
+            }
+        }
+
+        // Danh tính đội trưởng lấy từ tài khoản đang đăng nhập
+        String captainName = me.getFullName() != null && !me.getFullName().isBlank()
+                ? me.getFullName().trim()
+                : myEmail;
+        if (captainPhone.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Vui lòng cập nhật số điện thoại trong hồ sơ trước khi đăng ký."));
+        }
+        String subCaptainPhone = req.get("subCaptainPhone") != null
+                ? req.get("subCaptainPhone").toString().trim() : "";
+        int memberCount = 12;
+        if (req.get("memberCount") != null) {
+            try {
+                memberCount = Integer.parseInt(req.get("memberCount").toString());
+            } catch (NumberFormatException ignored) {
+                memberCount = 12;
+            }
+        }
+        memberCount = Math.max(1, Math.min(30, memberCount));
         TournamentTeamEntry entry = TournamentTeamEntry.builder()
                 .teamName(teamName)
                 .captainName(captainName)
+                .captainEmail(myEmail)
                 .captainPhone(captainPhone)
                 .subCaptainPhone(subCaptainPhone)
                 .memberCount(memberCount)

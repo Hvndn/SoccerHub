@@ -14,6 +14,11 @@ import java.time.LocalDateTime;
 public class TournamentTeamEntry {
     private String teamName;
     private String captainName;
+
+    /** Email tài khoản đội trưởng — dùng chống 1 tài khoản đăng ký nhiều đội trong 1 giải. */
+    @Column(length = 120)
+    private String captainEmail;
+
     private String captainPhone;
     private String subCaptainPhone;
     private Integer memberCount;

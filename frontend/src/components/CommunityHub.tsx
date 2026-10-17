@@ -37,15 +37,6 @@ import TeamClubManagement from "./TeamClubManagement";
  *     thời gian, badge số tin chưa đọc màu xanh neon
  * ========================================================= */
 
-interface ChatMessage {
-  id: number;
-  senderName: string;
-  senderEmail: string;
-  senderRole: string;
-  content: string;
-  createdAt: string;
-}
-
 interface Conversation {
   partnerEmail: string;
   partnerName: string;
@@ -128,7 +119,6 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
   const [filter, setFilter] = useState<Filter>("all");
   const [tick, setTick] = useState(0);
 
-  const [publicMsgs, setPublicMsgs] = useState<ChatMessage[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [channels, setChannels] = useState<ChannelInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -286,6 +276,8 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
       unread: number;
       icon: React.ComponentType<{ className?: string }>;
       isDm: boolean;
+      /** Người bạn đã từng nhắn tin (dùng cho chip "Bạn bè"). */
+      talkedToMe: boolean;
       onClick: () => void;
     }[] = [];
 
@@ -298,6 +290,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         unread: channelUnread[c.slug] ?? 0,
         icon: CHANNEL_ICON[c.slug] || Hash,
         isDm: false,
+        talkedToMe: false,
         onClick: () => openChannel(c),
       });
     });
@@ -311,6 +304,8 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         unread: c.unread,
         icon: MessageCircle,
         isDm: true,
+        // "Bạn bè" = người mà bạn đã chủ động nhắn tin trước
+        talkedToMe: !!c.isMine,
         onClick: () => openDm(c.partnerEmail, c.partnerName),
       });
     });
@@ -325,7 +320,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
       if (q && !(ch.name + " " + ch.preview).toLowerCase().includes(q)) return false;
       if (filter === "unread" && ch.unread <= 0) return false;
       if (filter === "private" && !ch.isDm) return false;
-      if (filter === "friends" && !ch.isDm) return false;
+      if (filter === "friends" && !ch.talkedToMe) return false;
       return true;
     });
   }, [channelRows, search, filter]);
