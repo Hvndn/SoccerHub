@@ -275,7 +275,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
       <div className="w-full space-y-4 pb-10 sm:pb-16">
         <div className="rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-2xl">
           {/* Header dark + neon */}
-          <div className="flex items-center gap-3 px-3.5 sm:px-5 py-3.5 border-b border-slate-800 bg-gradient-to-r from-white via-slate-50 to-white">
+          <div className="flex items-center gap-3 px-3.5 sm:px-5 py-3.5 border-b border-slate-200 bg-gradient-to-r from-white via-slate-50 to-white">
             <button
               type="button"
               onClick={back}
@@ -384,7 +384,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
               className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${
                 filter === f.key
                   ? "bg-[#0369a1] text-white border-green-400 shadow-[0_0_14px_rgba(74,222,128,0.4)]"
-                  : "bg-slate-900/60 text-slate-600 border-slate-200 hover:border-green-400/60 hover:text-green-300"
+                  : "bg-slate-900/60 text-slate-600 border-slate-200 hover:border-green-400/60 hover:text-[#075985]"
               }`}
             >
               {f.label}
@@ -399,7 +399,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         <button
           type="button"
           onClick={openPublic}
-          className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-green-400/25"
+          className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
           style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}
         >
           <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/20 rounded-full blur-3xl" />
@@ -412,7 +412,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
                 </span>
               </div>
               <h3 className="text-base sm:text-lg font-black text-white leading-tight">Chat Giải Đấu</h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-relaxed">
+              <p className="text-[11px] sm:text-xs text-white/90 mt-1 leading-relaxed">
                 Thảo luận trực tiếp với BTC, đội bóng và cầu thủ trong giải đấu.
               </p>
             </div>
@@ -424,7 +424,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         <button
           type="button"
           onClick={() => setView({ kind: "matchmaking" })}
-          className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-green-400/25"
+          className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
           style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 60%, #0b1220 100%)" }}
         >
           <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/20 rounded-full blur-3xl" />
@@ -435,7 +435,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
                 <span className="text-[10px] font-black uppercase tracking-wider text-[#0369a1]/90">Matchmaking</span>
               </div>
               <h3 className="text-base sm:text-lg font-black text-white leading-tight">Bắt Đối Giao Hữu</h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-relaxed">
+              <p className="text-[11px] sm:text-xs text-white/90 mt-1 leading-relaxed">
                 Tìm đối thủ tương đương phong độ, ghép kèo nhanh chóng.
               </p>
             </div>
@@ -447,7 +447,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
       {/* ===== CHANNEL CARD LIST ===== */}
       {mode === "chat" ? (
         <div className="rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-800">
+          <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-200">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-[#0369a1]" />
               Kênh trò chuyện
@@ -455,7 +455,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
             <button
               type="button"
               onClick={() => openDm()}
-              className="flex items-center gap-1.5 text-[11px] font-bold text-[#0369a1] hover:text-green-300 transition-colors"
+              className="flex items-center gap-1.5 text-[11px] font-bold text-[#0369a1] hover:text-[#075985] transition-colors"
             >
               <UserPlus className="w-3.5 h-3.5" />
               Tin nhắn mới
