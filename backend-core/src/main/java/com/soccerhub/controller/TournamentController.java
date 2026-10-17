@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.soccerhub.model.GoalEvent;
 import com.soccerhub.model.MatchResult;
 import com.soccerhub.model.Tournament;
+import com.soccerhub.model.TournamentReferee;
 import com.soccerhub.model.TournamentTeamEntry;
 import com.soccerhub.repository.GoalEventRepository;
 import com.soccerhub.repository.MatchResultRepository;
+import com.soccerhub.repository.TournamentRefereeRepository;
 import com.soccerhub.repository.TournamentRepository;
 import com.soccerhub.service.TeamFormService;
 import com.soccerhub.service.NotificationService;
@@ -32,6 +34,7 @@ public class TournamentController {
     private final TournamentRepository tournamentRepository;
     private final MatchResultRepository matchResultRepository;
     private final GoalEventRepository goalEventRepository;
+    private final TournamentRefereeRepository refereeRepository;
     private final TeamFormService teamFormService;
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
@@ -1316,4 +1319,135 @@ public class TournamentController {
     // Endpoint POST /generate-bracket cũ (trả bracket + bảng xếp hạng giả, không ghi CSDL)
     // đã bị gỡ: luồng thật dùng POST /{id}/draw (bốc thăm theo thứ tự đăng ký) và
     // POST /{id}/simulate-results. Giữ lại sẽ gây hiểu nhầm khi đối chiếu dữ liệu.
+    // ============================================================
+    // DUYỆT ĐỘI ĐĂNG KÝ (BTC / ADMIN)
+    // ============================================================
+
+    /** Danh sách đội chờ duyệt (PENDING_PAYMENT) của một giải. */
+    @GetMapping("/{id}/teams/pending")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    public ResponseEntity<?> pendingTeams(@PathVariable Long id) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (TournamentTeamEntry team : t.getTeams()) {
+            if (!"PENDING_PAYMENT".equals(team.getRegistrationStatus())) continue;
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("teamName", team.getTeamName());
+            row.put("captainName", team.getCaptainName());
+            row.put("captainPhone", team.getCaptainPhone());
+            row.put("captainEmail", team.getCaptainEmail());
+            row.put("memberCount", team.getMemberCount());
+            row.put("registeredAt", team.getRegisteredAt());
+            out.add(row);
+        }
+        return ResponseEntity.ok(out);
+    }
+
+    /** Duyệt đội vào giải (chuyển PENDING_PAYMENT → CONFIRMED). */
+    @PostMapping("/{id}/teams/{teamName}/approve")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    public ResponseEntity<?> approveTeam(@PathVariable Long id, @PathVariable String teamName) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+
+        for (TournamentTeamEntry team : t.getTeams()) {
+            if (team.getTeamName() != null && team.getTeamName().equals(teamName)
+                    && "PENDING_PAYMENT".equals(team.getRegistrationStatus())) {
+                team.setRegistrationStatus("CONFIRMED");
+                tournamentRepository.save(t);
+                return ResponseEntity.ok(Map.of("message", "Đã duyệt đội " + teamName + " vào giải."));
+            }
+        }
+        return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội chờ duyệt: " + teamName));
+    }
+
+    /** Từ chối đội (xoá khỏi danh sách đăng ký). */
+    @PostMapping("/{id}/teams/{teamName}/reject")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    public ResponseEntity<?> rejectTeam(@PathVariable Long id, @PathVariable String teamName) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+
+        boolean removed = t.getTeams().removeIf(team ->
+                team.getTeamName() != null && team.getTeamName().equals(teamName)
+                        && "PENDING_PAYMENT".equals(team.getRegistrationStatus()));
+        if (!removed) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội chờ duyệt: " + teamName));
+        }
+        t.setRegisteredTeams(t.getTeams().size());
+        tournamentRepository.save(t);
+        return ResponseEntity.ok(Map.of("message", "Đã từ chối đội " + teamName + "."));
+    }
+
+    // ============================================================
+    // TRỌNG TÀI (BTC / ADMIN)
+    // ============================================================
+
+    /** Danh sách trọng tài của một giải. */
+    @GetMapping("/{id}/referees")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    public ResponseEntity<?> listReferees(@PathVariable Long id) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (TournamentReferee r : refereeRepository.findByTournamentIdOrderByNameAsc(id)) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", r.getId());
+            row.put("name", r.getName());
+            row.put("email", r.getEmail());
+            row.put("phone", r.getPhone());
+            row.put("status", r.getStatus());
+            row.put("notes", r.getNotes());
+            row.put("assignedAt", r.getAssignedAt());
+            out.add(row);
+        }
+        return ResponseEntity.ok(out);
+    }
+
+    /** Thêm trọng tài vào giải. */
+    @PostMapping("/{id}/referees")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    public ResponseEntity<?> addReferee(@PathVariable Long id, @RequestBody Map<String, Object> req) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+
+        String name = req.get("name") != null ? req.get("name").toString().trim() : "";
+        if (name.length() < 2 || name.length() > 80) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Tên trọng tài phải từ 2 đến 80 ký tự."));
+        }
+        String email = req.get("email") != null ? req.get("email").toString().trim().toLowerCase() : "";
+        String phone = req.get("phone") != null ? req.get("phone").toString().trim() : "";
+        String notes = req.get("notes") != null ? req.get("notes").toString().trim() : null;
+
+        if (!email.isEmpty() && refereeRepository.existsByTournamentIdAndEmail(id, email)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Trọng tài này đã có trong giải."));
+        }
+        if (!phone.isEmpty() && refereeRepository.existsByTournamentIdAndPhone(id, phone)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Số điện thoại này đã được dùng."));
+        }
+
+        TournamentReferee saved = refereeRepository.save(TournamentReferee.builder()
+                .tournamentId(id)
+                .name(name)
+                .email(email.isEmpty() ? null : email)
+                .phone(phone.isEmpty() ? null : phone)
+                .notes(notes)
+                .build());
+
+        return ResponseEntity.ok(Map.of("message", "Đã thêm trọng tài " + name + ".", "id", saved.getId()));
+    }
+
+    /** Xoá trọng tài khỏi giải. */
+    @DeleteMapping("/{id}/referees/{refId}")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    public ResponseEntity<?> removeReferee(@PathVariable Long id, @PathVariable Long refId) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+
+        refereeRepository.deleteByIdAndTournamentId(refId, id);
+        return ResponseEntity.ok(Map.of("message", "Đã xoá trọng tài.", "id", refId));
+    }
 }
