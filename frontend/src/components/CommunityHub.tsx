@@ -332,7 +332,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-sm sm:text-base font-black text-white truncate leading-tight">{title}</h2>
+              <h2 className="text-sm sm:text-base font-black text-slate-900 truncate leading-tight">{title}</h2>
               <p className="text-[11px] text-slate-500 truncate flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 {subtitle}
@@ -389,7 +389,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all ${
             mode === "chat"
               ? "bg-[#0369a1] text-white shadow-md"
-              : "text-slate-500 hover:text-white"
+              : "text-slate-500 hover:text-slate-900"
           }`}
         >
           <MessageCircle className="w-4 h-4 shrink-0" />
@@ -401,7 +401,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all ${
             mode === "clan"
               ? "bg-[#0369a1] text-white shadow-md"
-              : "text-slate-500 hover:text-white"
+              : "text-slate-500 hover:text-slate-900"
           }`}
         >
           <Users className="w-4 h-4 shrink-0" />
@@ -430,7 +430,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
               className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${
                 filter === f.key
                   ? "bg-[#0369a1] text-white border-[#0369a1] shadow-md"
-                  : "bg-slate-900/60 text-slate-600 border-slate-200 hover:border-[#0369a1]/60 hover:text-[#075985]"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-[#0369a1]/60 hover:text-[#075985]"
               }`}
             >
               {f.label}
@@ -511,7 +511,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
           {!user ? (
             <div className="px-5 py-10 text-center space-y-3">
               <Lock className="w-10 h-10 text-slate-600 mx-auto" />
-              <p className="text-sm font-bold text-white">Đăng nhập để tham gia cộng đồng</p>
+              <p className="text-sm font-bold text-slate-900">Đăng nhập để tham gia cộng đồng</p>
               <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
                 Trò chuyện với cầu thủ, chủ sân và ban tổ chức giải đấu.
               </p>
@@ -539,7 +539,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-slate-800/80">
+            <ul className="divide-y divide-slate-100">
               {filteredChannels.map((ch) => {
                 const Icon = ch.icon;
                 return (
@@ -547,22 +547,24 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
                     <button
                       type="button"
                       onClick={ch.onClick}
-                      className="w-full flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-slate-100/40 transition-colors text-left group"
+                      className="w-full flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-slate-50 transition-colors text-left group"
                     >
-                      {/* Avatar icon tròn neon */}
+                      {/* Avatar icon tròn */}
                       <div className="relative shrink-0">
-                        <div className="w-11 h-11 rounded-full bg-slate-100 ring-2 ring-[#0369a1]/40 shadow-sm flex items-center justify-center group-hover:ring-green-400 transition-all">
+                        <div className="w-11 h-11 rounded-full bg-sky-50 ring-2 ring-[#0369a1]/25 group-hover:ring-[#0369a1]/60 transition-all flex items-center justify-center">
                           <Icon className="w-5 h-5 text-[#0369a1]" />
                         </div>
                         {ch.unread > 0 && (
-                          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white shadow-[0_0_8px_rgba(74,222,128,0.9)]" />
+                          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
                         )}
                       </div>
 
                       {/* Tên phòng + tin mới nhất */}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-black text-white truncate">{ch.name}</p>
+                          <p className={`text-sm truncate ${ch.unread > 0 ? "font-black text-slate-900" : "font-bold text-slate-700"}`}>
+                            {ch.name}
+                          </p>
                         </div>
                         <p className="text-[11px] text-slate-500 truncate mt-0.5">{ch.preview}</p>
                       </div>
@@ -571,11 +573,11 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         {ch.time && <span className="text-[10px] text-slate-500 font-semibold">{formatTime(ch.time)}</span>}
                         {ch.unread > 0 ? (
-                          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#0369a1] text-white text-[10px] font-black flex items-center justify-center shadow">
+                          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#0369a1] text-white text-[10px] font-black flex items-center justify-center">
                             {ch.unread > 9 ? "9+" : ch.unread}
                           </span>
                         ) : (
-                          <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-[#0369a1] group-hover:translate-x-0.5 transition-all" />
+                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#0369a1] group-hover:translate-x-0.5 transition-all" />
                         )}
                       </div>
                     </button>
@@ -596,7 +598,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
             <div className="w-14 h-14 rounded-2xl bg-[#0369a1]/10 ring-2 ring-[#0369a1]/40 flex items-center justify-center mx-auto">
               <Users className="w-7 h-7 text-[#0369a1]" />
             </div>
-            <h3 className="text-sm font-black text-white">Đội bóng (Clan)</h3>
+            <h3 className="text-sm font-black text-slate-900">Đội bóng (Clan)</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
               Đăng nhập để tạo đội, quản lý thành viên và theo dõi lịch sử thi đấu của đội bạn.
             </p>
