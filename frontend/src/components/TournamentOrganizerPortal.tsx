@@ -6,6 +6,11 @@ import { API_BASE_URL, apiRequest } from "@/lib/api";
 import { sportLabel, formatLabel, formatMoney } from "@/lib/tournamentService";
 import FormDots from "./FormDots";
 import {
+  getPendingTeams, approveTeam, rejectTeam,
+  getReferees, addReferee, removeReferee,
+  type PendingTeam, type RefereeInfo
+} from "@/lib/organizerService";
+import {
  Trophy,
  ShieldCheck,
  Cpu,
@@ -115,6 +120,91 @@ export default function TournamentOrganizerPortal({
  () => dbTournaments.find((t: any) => t.id === activeTournamentId) ?? null,
  [dbTournaments, activeTournamentId]
  );
+
+  // --- Duyệt đội đăng ký ---
+  const [pendingTeams, setPendingTeams] = useState<PendingTeam[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [pendingBusy, setPendingBusy] = useState(false);
+
+  const loadPendingTeams = async (tid: number) => {
+    setPendingLoading(true);
+    try { setPendingTeams(await getPendingTeams(tid)); }
+    catch { setPendingTeams([]); }
+    finally { setPendingLoading(false); }
+  };
+
+  const togglePending = (tid: number) => {
+    setPendingOpen((v) => {
+      const next = !v;
+      if (next) loadPendingTeams(tid);
+      return next;
+    });
+  };
+
+  const handleApprove = async (tid: number, name: string) => {
+    setPendingBusy(true);
+    try {
+      await approveTeam(tid, name);
+      await loadPendingTeams(tid);
+      fetchDbTournaments();
+    } catch { /* toast đã hiện */ }
+    finally { setPendingBusy(false); }
+  };
+
+  const handleReject = async (tid: number, name: string) => {
+    setPendingBusy(true);
+    try {
+      await rejectTeam(tid, name);
+      await loadPendingTeams(tid);
+      fetchDbTournaments();
+    } catch { /* toast đã hiện */ }
+    finally { setPendingBusy(false); }
+  };
+
+  // --- Trọng tài ---
+  const [referees, setReferees] = useState<RefereeInfo[]>([]);
+  const [refOpen, setRefOpen] = useState(false);
+  const [refLoading, setRefLoading] = useState(false);
+  const [refBusy, setRefBusy] = useState(false);
+  const [refName, setRefName] = useState("");
+  const [refPhone, setRefPhone] = useState("");
+  const [refEmail, setRefEmail] = useState("");
+
+  const loadReferees = async (tid: number) => {
+    setRefLoading(true);
+    try { setReferees(await getReferees(tid)); }
+    catch { setReferees([]); }
+    finally { setRefLoading(false); }
+  };
+
+  const toggleReferees = (tid: number) => {
+    setRefOpen((v) => {
+      const next = !v;
+      if (next) loadReferees(tid);
+      return next;
+    });
+  };
+
+  const handleAddReferee = async (tid: number) => {
+    if (refName.trim().length < 2) return;
+    setRefBusy(true);
+    try {
+      await addReferee(tid, { name: refName.trim(), phone: refPhone.trim() || undefined, email: refEmail.trim() || undefined });
+      setRefName(""); setRefPhone(""); setRefEmail("");
+      await loadReferees(tid);
+    } catch { /* toast đã hiện */ }
+    finally { setRefBusy(false); }
+  };
+
+  const handleRemoveReferee = async (tid: number, id: number) => {
+    setRefBusy(true);
+    try {
+      await removeReferee(tid, id);
+      await loadReferees(tid);
+    } catch { /* toast đã hiện */ }
+    finally { setRefBusy(false); }
+  };
 
  // Nhánh đấu parse từ bracketJson (nguồn thật, không cần gọi API thêm).
  const activeBracket = useMemo(() => {
@@ -454,6 +544,128 @@ export default function TournamentOrganizerPortal({
  <span>Mở Nhánh Đấu</span>
  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
  </button>
+
+      {/* Nút Duyệt đội + Trọng tài */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => togglePending(Number(t.id))}
+          className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 text-[11px] font-black uppercase transition-all active:scale-95 flex items-center gap-1"
+        >
+          <Users className="w-3.5 h-3.5" />
+          Duyệt đội
+          {pendingTeams.length > 0 && (
+            <span className="min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-white text-[9px] font-black flex items-center justify-center">
+              {pendingTeams.length}
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleReferees(Number(t.id))}
+          className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 text-[11px] font-black uppercase transition-all active:scale-95 flex items-center gap-1"
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          Trọng tài
+          {referees.length > 0 && (
+            <span className="min-w-[16px] h-4 px-1 rounded-full bg-sky-500 text-white text-[9px] font-black flex items-center justify-center">
+              {referees.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Panel duyệt đội */}
+      {pendingOpen && (
+        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
+          <p className="text-[11px] font-black uppercase tracking-wider text-amber-700">Đội chờ duyệt</p>
+          {pendingLoading ? (
+            <p className="text-xs text-slate-500">Đang tải…</p>
+          ) : pendingTeams.length === 0 ? (
+            <p className="text-xs text-slate-500">Không có đội nào chờ duyệt.</p>
+          ) : (
+            <ul className="space-y-2">
+              {pendingTeams.map((pt) => (
+                <li key={pt.teamName} className="flex items-center gap-2 bg-white rounded-lg border border-amber-100 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-slate-800 truncate">{pt.teamName}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{pt.captainName} · {pt.captainPhone}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleApprove(Number(t.id), pt.teamName)}
+                    disabled={pendingBusy}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-40"
+                  >
+                    Duyệt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleReject(Number(t.id), pt.teamName)}
+                    disabled={pendingBusy}
+                    className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-40"
+                  >
+                    Từ chối
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Panel trọng tài */}
+      {refOpen && (
+        <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-2">
+          <p className="text-[11px] font-black uppercase tracking-wider text-sky-700">Trọng tài</p>
+          {refLoading ? (
+            <p className="text-xs text-slate-500">Đang tải…</p>
+          ) : referees.length === 0 ? (
+            <p className="text-xs text-slate-500">Chưa có trọng tài nào.</p>
+          ) : (
+            <ul className="space-y-1.5">
+              {referees.map((r) => (
+                <li key={r.id} className="flex items-center gap-2 bg-white rounded-lg border border-sky-100 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-slate-800 truncate">{r.name}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{r.phone || r.email}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveReferee(Number(t.id), r.id)}
+                    disabled={refBusy}
+                    className="px-2 py-1 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-40"
+                  >
+                    Xoá
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex items-center gap-2">
+            <input
+              value={refName}
+              onChange={(e) => setRefName(e.target.value)}
+              placeholder="Tên trọng tài"
+              className="flex-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+            />
+            <input
+              value={refPhone}
+              onChange={(e) => setRefPhone(e.target.value)}
+              placeholder="SĐT"
+              className="w-24 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+            />
+            <button
+              type="button"
+              onClick={() => handleAddReferee(Number(t.id))}
+              disabled={refBusy || refName.trim().length < 2}
+              className="px-3 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-40"
+            >
+              Thêm
+            </button>
+          </div>
+        </div>
+      )}
  </div>
  </div>
  ))}
@@ -634,14 +846,14 @@ export default function TournamentOrganizerPortal({
  </div>
 
  {!activeBracket ? (
- <p className="p-4 sm:p-8 text-center rounded-2xl border border-dashed border-slate-300 ">
+  <div className="p-4 sm:p-8 text-center rounded-2xl border border-dashed border-slate-300 ">
  <Trophy className="w-8 h-8 text-slate-300 mx-auto" />
  <p className="mt-3 text-sm text-slate-500">
  {dbTournaments.length === 0
  ? "Chưa đọc được giải đấu từ máy chủ."
  : "Chưa giải nào bốc thăm. Vào tab “Giải Đấu & BXH › Bảng Đấu & Nhánh Bracket” để bấm Bốc thăm."}
  </p>
- </p>
+  </div>
  ) : (
  <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar">
  <div className="flex gap-3 sm:gap-6 items-start">
