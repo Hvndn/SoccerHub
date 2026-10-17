@@ -441,32 +441,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
 
       {/* ===== BANNER NỔI BẬT ===== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-        {/* CHAT GIẢI ĐẤU */}
-        <button
-          type="button"
-          onClick={openGeneral}
-          className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
-          style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}
-        >
-          <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/20 rounded-full blur-3xl" />
-          <div className="relative flex items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Radio className="w-5 h-5 text-[#0369a1]" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-[#0369a1]/90">
-                  Trực tuyến · {onlineCount} thành viên
-                </span>
-              </div>
-              <h3 className="text-base sm:text-lg font-black text-white leading-tight">Chat Giải Đấu</h3>
-              <p className="text-[11px] sm:text-xs text-white/95 mt-1 leading-relaxed">
-                Thảo luận trực tiếp với BTC, đội bóng và cầu thủ trong giải đấu.
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-[#0369a1]/70 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
-          </div>
-        </button>
-
-        {/* BẮT ĐỐI GIAO HỮU */}
+        {/* BẮT ĐỐI GIAO HỮU (trái) */}
         <button
           type="button"
           onClick={() => setView({ kind: "matchmaking" })}
@@ -477,15 +452,40 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
           <div className="relative flex items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Flame className="w-5 h-5 text-[#0369a1]" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-[#0369a1]/90">Matchmaking</span>
+                <Flame className="w-5 h-5 text-white" />
+                <span className="text-[10px] font-black uppercase tracking-wider text-white/90">Matchmaking</span>
               </div>
               <h3 className="text-base sm:text-lg font-black text-white leading-tight">Bắt Đối Giao Hữu</h3>
               <p className="text-[11px] sm:text-xs text-white/95 mt-1 leading-relaxed">
                 Tìm đối thủ tương đương phong độ, ghép kèo nhanh chóng.
               </p>
             </div>
-            <ChevronRight className="w-5 h-5 text-[#0369a1]/70 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
+            <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
+          </div>
+        </button>
+
+        {/* CHAT GIẢI ĐẤU (phải) */}
+        <button
+          type="button"
+          onClick={openGeneral}
+          className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
+          style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}
+        >
+          <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/20 rounded-full blur-3xl" />
+          <div className="relative flex items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Radio className="w-5 h-5 text-white" />
+                <span className="text-[10px] font-black uppercase tracking-wider text-white/90">
+                  Trực tuyến · {onlineCount} thành viên
+                </span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-white leading-tight">Chat Giải Đấu</h3>
+              <p className="text-[11px] sm:text-xs text-white/95 mt-1 leading-relaxed">
+                Thảo luận trực tiếp với BTC, đội bóng và cầu thủ trong giải đấu.
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
           </div>
         </button>
       </div>

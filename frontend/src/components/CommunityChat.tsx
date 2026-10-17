@@ -272,7 +272,6 @@ export default function CommunityChat({
             <div className="flex items-center gap-1.5 mb-0.5 px-1">
               <span className={`text-[11px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>{m.senderName}</span>
               <span className="text-[9px] font-bold text-slate-400 uppercase">{m.senderRole}</span>
-              <span className="text-[9px] text-slate-400">{formatTime(m.createdAt)}</span>
             </div>
           )}
           <div
@@ -294,8 +293,8 @@ export default function CommunityChat({
             )}
             {m.content}
           </div>
-          <div className="flex items-center gap-1.5 mt-0.5 px-1">
-            {mine && <span className="text-[9px] text-slate-400">{formatTime(m.createdAt)}</span>}
+          <div className={`flex items-center gap-1.5 mt-0.5 px-1 ${mine ? "flex-row-reverse" : ""}`}>
+            <span className="text-[9px] text-slate-400">{formatTime(m.createdAt)}</span>
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
               {mode === "public" && (
                 <>
