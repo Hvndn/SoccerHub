@@ -9,6 +9,7 @@ import { apiRequest } from "@/lib/api";
 import { toastErr, toastOk } from "@/lib/toast";
 import { ensureLoggedIn } from "@/lib/api";
 import PageSpinner from "./PageSpinner";
+import { useChatPushNotification } from "@/lib/pushNotify";
 
 interface ChatMessage {
   id: number;
@@ -86,6 +87,9 @@ export default function CommunityChat({
   const [pubError, setPubError] = useState<string | null>(null);
   const pubBottomRef = useRef<HTMLDivElement>(null);
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+
+  // Bật thông báo khi có tin mới và người dùng đang ở tab khác
+  useChatPushNotification(mode === "public" && !!user, pubMessages, myEmail);
 
   // ---- DM state ----
   const [conversations, setConversations] = useState<Conversation[]>([]);

@@ -24,6 +24,7 @@ import {
 import { apiRequest, ensureLoggedIn } from "@/lib/api";
 import CommunityChat from "./CommunityChat";
 import PageSpinner from "./PageSpinner";
+import GroupChatPanel from "./GroupChatPanel";
 import MatchmakingMarketplace from "./MatchmakingMarketplace";
 import TeamClubManagement from "./TeamClubManagement";
 
@@ -60,6 +61,7 @@ type HubView =
   | { kind: "home" }
   | { kind: "public"; slug: string; name: string; desc: string }
   | { kind: "dm"; partnerEmail?: string; partnerName?: string }
+  | { kind: "groups" }
   | { kind: "matchmaking" }
   | { kind: "clan" };
 
@@ -336,12 +338,16 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         ? view.partnerName || "Tin nhắn riêng"
         : view.kind === "matchmaking"
         ? "Bắt Đối Giao Hữu"
+        : view.kind === "groups"
+        ? "Nhóm chat"
         : "Đội bóng (Clan)";
     const subtitle =
       view.kind === "public"
         ? view.desc
         : view.kind === "dm"
         ? view.partnerEmail || "Trò chuyện riêng tư 1-1"
+        : view.kind === "groups"
+        ? "Phòng chat riêng cho nhóm bạn"
         : view.kind === "matchmaking"
         ? "Ghép kèo theo trình độ & phong độ"
         : "Quản lý đội bóng của bạn";
@@ -369,7 +375,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
             <div className="relative w-10 h-10 rounded-full bg-slate-100 ring-2 ring-[#0369a1]/40 shadow-sm flex items-center justify-center shrink-0">
               {view.kind === "matchmaking" ? (
                 <Flame className="w-4 h-4 text-[#0369a1]" />
-              ) : view.kind === "clan" ? (
+              ) : view.kind === "clan" || view.kind === "groups" ? (
                 <Users className="w-4 h-4 text-[#0369a1]" />
               ) : (
                 <MessageCircle className="w-4 h-4 text-[#0369a1]" />
@@ -405,6 +411,9 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
                     : undefined
                 }
               />
+            )}
+            {view.kind === "groups" && (
+              <GroupChatPanel user={user} />
             )}
             {view.kind === "matchmaking" && (
               <div className="p-1">
@@ -549,14 +558,24 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
               <Sparkles className="w-3.5 h-3.5 text-[#0369a1]" />
               Kênh trò chuyện
             </h3>
-            <button
-              type="button"
-              onClick={() => openDm()}
-              className="flex items-center gap-1.5 text-[11px] font-bold text-[#0369a1] hover:text-[#075985] transition-colors"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              Tin nhắn mới
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => { runWithLoader(); setView({ kind: "groups" }); }}
+                className="flex items-center gap-1.5 text-[11px] font-bold text-[#0369a1] hover:text-[#075985] transition-colors"
+              >
+                <Users className="w-3.5 h-3.5" />
+                Nhóm chat
+              </button>
+              <button
+                type="button"
+                onClick={() => openDm()}
+                className="flex items-center gap-1.5 text-[11px] font-bold text-[#0369a1] hover:text-[#075985] transition-colors"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                Tin nhắn mới
+              </button>
+            </div>
           </div>
 
           {!user ? (
