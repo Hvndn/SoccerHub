@@ -7,7 +7,8 @@ import TournamentOrganizerPortal from "./TournamentOrganizerPortal";
 import { fetchTournaments } from "@/lib/tournamentService";
 import { apiUrl } from "@/lib/api";
 import FormDots from "./FormDots";
-import { Users, Trophy, Cpu, PlusCircle, Sparkles, ShieldCheck, Flame, Radio } from "lucide-react";
+import { Users, Trophy, Cpu, PlusCircle, Sparkles, ShieldCheck, Flame, Radio, MessageCircle, Search, ChevronRight } from "lucide-react";
+import CommunityChat from "./CommunityChat";
 
 interface CommunityFormProps {
  user?: any;
@@ -17,7 +18,7 @@ interface CommunityFormProps {
 }
 
 export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "matchmaking", onOpenAuth }: CommunityFormProps) {
- const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer" | "formboard">(defaultSubTab as any);
+ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer" | "formboard" | "chat">(defaultSubTab as any);
  const [tournamentCount, setTournamentCount] = useState<number | null>(null);
  const [formBoard, setFormBoard] = useState<any[]>([]);
 
@@ -94,6 +95,60 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
  </div>
  )}
  </div>
+  {/* ========================================================= */}
+  {/* SEARCH BAR + FILTER CHIPS (Mobile-first) */}
+  {/* ========================================================= */}
+  <div className="space-y-3">
+  <div className="relative">
+  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+  <input
+  type="text"
+  placeholder="Tìm kiếm phòng chat, đội bóng, cầu thủ..."
+  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] focus:border-[#0369a1] transition-all"
+  />
+  </div>
+  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+  {["Tất cả", "Chưa đọc", "Riêng tư", "Bạn bè"].map((f) => (
+  <button key={f} type="button" className="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-[#0369a1] hover:text-[#0369a1]">
+  {f}
+  </button>
+  ))}
+  </div>
+  </div>
+
+  {/* ========================================================= */}
+  {/* BANNER NỔI BẬT */}
+  {/* ========================================================= */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <button type="button" onClick={() => setSubTab("chat")} className="group relative overflow-hidden rounded-2xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98]" style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}>
+  <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+  <div className="relative flex items-start justify-between gap-3">
+  <div>
+  <div className="flex items-center gap-2 mb-1">
+  <MessageCircle className="w-5 h-5 text-white" />
+  <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Phòng chat</span>
+  </div>
+  <h3 className="text-base sm:text-lg font-black text-white leading-tight">Chat Giải Đấu</h3>
+  <p className="text-[11px] sm:text-xs text-white/70 mt-1 leading-relaxed">Thảo luận trực tiếp với BTC, đội bóng và cầu thủ trong giải đấu.</p>
+  </div>
+  <ChevronRight className="w-5 h-5 text-white/60 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
+  </div>
+  </button>
+  <button type="button" onClick={() => setSubTab("matchmaking")} className="group relative overflow-hidden rounded-2xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98]" style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}>
+  <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+  <div className="relative flex items-start justify-between gap-3">
+  <div>
+  <div className="flex items-center gap-2 mb-1">
+  <Flame className="w-5 h-5 text-white" />
+  <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Matchmaking</span>
+  </div>
+  <h3 className="text-base sm:text-lg font-black text-white leading-tight">Bắt Đối Giao Hữu</h3>
+  <p className="text-[11px] sm:text-xs text-white/70 mt-1 leading-relaxed">Tìm đối thủ tương đương phong độ, ghép kèo nhanh chóng.</p>
+  </div>
+  <ChevronRight className="w-5 h-5 text-white/60 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
+  </div>
+  </button>
+  </div>
 
  {/* ========================================================= */}
  {/* TAB CHUYỂN ĐỔI CHÍNH 3 TRỤ CỘT CỦA CỘNG ĐỒNG */}
@@ -221,6 +276,12 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
  </table>
  </div>
  )}
+  {/* @ts-ignore */}
+  {subTab === "chat" && (
+  <div className="w-full">
+    <CommunityChat user={user} />
+  </div>
+  )}
  </div>
  )}
  </div>
