@@ -5,9 +5,9 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 /**
- * Tin nhắn trong phòng chat cộng đồng.
- * Thiết kế tối giản: một phòng chat công khai cho mọi người dùng đã đăng nhập.
- * (Mở rộng sau: thêm conversationId để làm chat 1-1 nếu cần.)
+ * Tin nhắn trong phòng chat cộng đồng HOẶC tin nhắn trực tiếp (DM) giữa 2 người.
+ * - recipientEmail = null  → tin nhắn công khai (mọi người đều thấy)
+ * - recipientEmail != null → tin nhắn riêng giữa sender và recipient
  */
 @Entity
 @Table(name = "chat_messages")
@@ -25,13 +25,21 @@ public class ChatMessage {
     @Column(nullable = false, length = 80)
     private String senderName;
 
-    /** Email người gửi — dùng để phân biệt "tin của tôi" ở frontend. */
+    /** Email người gửi — dùng để phân biệt "tin của tôi". */
     @Column(nullable = false, length = 120)
     private String senderEmail;
 
     /** Vai trò người gửi (PLAYER/OWNER/ORGANIZER/ADMIN) để tô màu tên. */
     @Column(length = 20)
     private String senderRole;
+
+    /** Email người nhận. null = tin công khai (mọi người). */
+    @Column(length = 120)
+    private String recipientEmail;
+
+    /** Tên người nhận (để hiển thị). */
+    @Column(length = 80)
+    private String recipientName;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
