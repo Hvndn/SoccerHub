@@ -111,6 +111,9 @@ public class ChatController {
             Map<String, Object> row = new LinkedHashMap<>(meta);
             row.put("lastMessage", last != null ? last.getContent() : "");
             row.put("lastSender", last != null ? last.getSenderName() : "");
+            // Email người gửi tin cuối: frontend cần để biết tin đó có phải
+            // của chính mình hay không (nếu không sẽ tính nhầm là chưa đọc).
+            row.put("lastSenderEmail", last != null ? last.getSenderEmail() : "");
             row.put("lastTime", last != null ? last.getCreatedAt() : null);
             row.put("memberCount", latest.stream().map(ChatMessage::getSenderEmail).distinct().count());
             row.put("pinned", pinRow);

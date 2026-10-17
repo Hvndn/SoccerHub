@@ -59,6 +59,21 @@ public class ChatGroupController {
         return memberRepository.existsByGroupIdAndMemberEmail(groupId, email);
     }
 
+    /**
+     * Kiểm tra quyền truy cập nhóm. Trả ResponseEntity lỗi nếu không hợp lệ,
+     * trả null nếu OK. Kiểm tra "nhóm có tồn tại" TRƯỚC để không trả nhầm 403
+     * cho nhóm không tồn tại.
+     */
+    private ResponseEntity<?> requireMember(Long groupId, String email) {
+        if (loadGroupOrNull(groupId) == null) {
+            return ResponseEntity.status(404).body(Map.of("message", "Nhóm không tồn tại."));
+        }
+        if (!isMember(groupId, email)) {
+            return ResponseEntity.status(403).body(Map.of("message", "Bạn không phải thành viên của nhóm này."));
+        }
+        return null;
+    }
+
     private Map<String, Object> toSummary(ChatGroup g, String email) {
         Map<String, Object> row = new LinkedHashMap<>();
         row.put("id", g.getId());
@@ -119,6 +134,14 @@ public class ChatGroupController {
             return ResponseEntity.badRequest().body(Map.of("message", "Mô tả tối đa 200 ký tự."));
         }
 
+        // Tên nhóm phải khác nhau để người dùng không bị nhầm phòng chat
+        for (ChatGroup g : groupRepository.findAll()) {
+            if (g.getName() != null && g.getName().trim().equalsIgnoreCase(name)) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Đã có nhóm trùng tên \"" + name + "\". Hãy chọn tên khác."));
+            }
+        }
+
         ChatGroup group = groupRepository.save(ChatGroup.builder()
                 .name(name)
                 .description(desc)
@@ -174,11 +197,9 @@ public class ChatGroupController {
         String email = emailOf(me);
         if (email.isEmpty()) return ResponseEntity.status(401).body(Map.of("message", "Chưa đăng nhập."));
 
+        ResponseEntity<?> forbidden = requireMember(id, email);
+        if (forbidden != null) return forbidden;
         ChatGroup g = loadGroupOrNull(id);
-        if (g == null) return ResponseEntity.status(404).body(Map.of("message", "Nhóm không tồn tại."));
-        if (!isMember(id, email)) {
-            return ResponseEntity.status(403).body(Map.of("message", "Bạn không phải thành viên của nhóm này."));
-        }
 
         Map<String, Object> out = toSummary(g, email);
         List<Map<String, Object>> members = new ArrayList<>();
@@ -202,9 +223,8 @@ public class ChatGroupController {
     public ResponseEntity<?> messages(@PathVariable Long id, @AuthenticationPrincipal User me) {
         String email = emailOf(me);
         if (email.isEmpty()) return ResponseEntity.status(401).body(Map.of("message", "Chưa đăng nhập."));
-        if (!isMember(id, email)) {
-            return ResponseEntity.status(403).body(Map.of("message", "Bạn không phải thành viên của nhóm này."));
-        }
+        ResponseEntity<?> forbidden = requireMember(id, email);
+        if (forbidden != null) return forbidden;
         List<ChatMessage> msgs = messageRepository.findTopMessagesByGroupId(id);
         Collections.reverse(msgs);
         return ResponseEntity.ok(msgs);
@@ -216,9 +236,8 @@ public class ChatGroupController {
                                   @AuthenticationPrincipal User me) {
         String email = emailOf(me);
         if (email.isEmpty()) return ResponseEntity.status(401).body(Map.of("message", "Chưa đăng nhập."));
-        if (!isMember(id, email)) {
-            return ResponseEntity.status(403).body(Map.of("message", "Bạn không phải thành viên của nhóm này."));
-        }
+        ResponseEntity<?> forbidden = requireMember(id, email);
+        if (forbidden != null) return forbidden;
 
         String content = req.get("content") != null ? req.get("content").toString().trim() : "";
         if (content.isEmpty()) {
@@ -252,9 +271,8 @@ public class ChatGroupController {
     public ResponseEntity<?> markRead(@PathVariable Long id, @AuthenticationPrincipal User me) {
         String email = emailOf(me);
         if (email.isEmpty()) return ResponseEntity.status(401).body(Map.of("message", "Chưa đăng nhập."));
-        if (!isMember(id, email)) {
-            return ResponseEntity.status(403).body(Map.of("message", "Bạn không phải thành viên của nhóm này."));
-        }
+        ResponseEntity<?> forbidden = requireMember(id, email);
+        if (forbidden != null) return forbidden;
         memberRepository.markRead(id, email, LocalDateTime.now());
         return ResponseEntity.ok(Map.of("message", "Đã đánh dấu đã đọc.", "id", id));
     }

@@ -52,6 +52,8 @@ interface ChannelInfo {
   desc: string;
   lastMessage: string;
   lastSender: string;
+  /** Email người gửi tin cuối — dùng để không tính nhầm tin của mình là chưa đọc. */
+  lastSenderEmail: string;
   lastTime: string | null;
   memberCount: number;
   pinned: { id: number; content: string; senderName: string } | null;
@@ -176,7 +178,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
     const map: Record<string, number> = {};
     channels.forEach((c) => {
       const seen = getSeen("ch:" + c.slug);
-      if (c.lastTime && new Date(c.lastTime).getTime() > seen && c.lastSender !== myEmail) {
+      if (c.lastTime && new Date(c.lastTime).getTime() > seen && c.lastSenderEmail !== myEmail) {
         map[c.slug] = 1;
       }
     });
@@ -218,6 +220,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         desc: "Kênh chung của cộng đồng SoccerHub",
         lastMessage: "",
         lastSender: "",
+        lastSenderEmail: "",
         lastTime: null,
         memberCount: 0,
         pinned: null,

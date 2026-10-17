@@ -1404,12 +1404,17 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  <span><strong>Ký quỹ giải thưởng an toàn:</strong> Tiền thưởng được ký gửi ký quỹ ngân hàng, giải ngân trong 24h.</span>
  </div>
  </div>
- <div className="pt-2">
- <a href="#" className="text-xs text-slate-900 hover:text-sky-700 font-bold flex items-center gap-1">
- <span>Đọc chi tiết Chính Sách FairPlay & Trọng Tài</span>
- <ChevronRight className="w-3.5 h-3.5" />
- </a>
- </div>
+  <details className="pt-2">
+  <summary className="cursor-pointer text-xs text-slate-900 hover:text-sky-700 font-bold flex items-center gap-1">
+  <span>Đọc chi tiết Chính Sách FairPlay & Trọng Tài</span>
+  <ChevronRight className="w-3.5 h-3.5" />
+  </summary>
+  <div className="mt-2.5 pt-2.5 border-t border-slate-200 space-y-2 text-[11px] text-slate-600 leading-relaxed">
+  <p><strong className="text-slate-800">FairPlay:</strong> mọi cầu thủ được đánh giá 1 lần mỗi đội mỗi kèo trên thang 5 sao (đúng giờ, fair-play, thể thức). Điểm uy tín = 60% điểm sao + 40% tỉ lệ trận fair-play.</p>
+  <p><strong className="text-slate-800">Trọng tài:</strong> do BTC bốc thăm ngẫu nhiên trước mỗi trận, không thuộc đội thi đấu. Kết quả trận do trọng tài ký xác nhận mới được tính vào bảng xếp hạng.</p>
+  <p><strong className="text-slate-800">Khiếu nại:</strong> mở kênh "Khiêu Nại & Góp Ý" trong Cộng đồng kèm mã trận. Ban tổ chức phản hồi trong 24 giờ.</p>
+  </div>
+  </details>
  </div>
 
  </div>
