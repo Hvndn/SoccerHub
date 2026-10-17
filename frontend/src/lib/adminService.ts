@@ -123,6 +123,33 @@ export async function clearSimulatedBookings(): Promise<{ deleted: number; messa
   return apiRequest('/api/v1/pitches/simulate-bookings', { method: 'DELETE' });
 }
 
+/** Gửi đánh giá Fair-play cho một đội sau trận giao hữu. */
+export async function submitTeamReview(payload: {
+  reviewedTeamName: string;
+  reviewerTeamName: string;
+  matchmakingPostId?: number;
+  stars: number;
+  onTime: boolean;
+  fairPlay: boolean;
+  sportsmanship: boolean;
+  comment?: string;
+}): Promise<{ message: string }> {
+  return apiRequest('/api/v1/community/reviews', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Lấy danh sách đánh giá Fair-play của một đội. */
+export async function getTeamReviews(teamName: string): Promise<{
+  teamName: string;
+  avgStars: number;
+  reviewCount: number;
+  reviews: any[];
+}> {
+  return apiRequest(`/api/v1/community/reviews/${encodeURIComponent(teamName)}`);
+}
+
 export async function listAdminPitches(): Promise<AdminPitch[]> {
   const data = await apiRequest<AdminPitch[]>('/api/v1/pitches');
   return Array.isArray(data) ? data : [];

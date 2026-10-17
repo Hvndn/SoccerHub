@@ -28,10 +28,11 @@ import {
  ShieldAlert,
  Info,
  RefreshCw,
- X
+X,
 } from "lucide-react";
 import { API_BASE_URL, apiRequest, ensureLoggedIn } from "@/lib/api";
 import { toastOk, toastErr } from "@/lib/toast";
+import { submitTeamReview } from "@/lib/adminService";
 import FormDots from "./FormDots";
 
 interface MatchmakingMarketplaceProps {
@@ -52,6 +53,15 @@ export default function MatchmakingMarketplace({
  const [matchFormat, setMatchFormat] = useState("DOUBLES_MALE");
  const [paymentModel, setPaymentModel] = useState("SPLIT_EQUAL");
  const [joinedMatches, setJoinedMatches] = useState<string[]>([]);
+
+// Fair-play rating modal
+const [reviewPost, setReviewPost] = useState<any>(null);
+const [reviewStars, setReviewStars] = useState(5);
+const [reviewOnTime, setReviewOnTime] = useState(true);
+const [reviewFairPlay, setReviewFairPlay] = useState(true);
+const [reviewSportsmanship, setReviewSportsmanship] = useState(true);
+const [reviewComment, setReviewComment] = useState("");
+const [reviewSubmitting, setReviewSubmitting] = useState(false);
  // Trên mobile: gom bộ lọc nâng cao vào nút thu gọn cho gọn màn hình
  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
@@ -665,9 +675,26 @@ export default function MatchmakingMarketplace({
 
  <div className="flex items-center space-x-2">
  {isMatched ? (
- <span className="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-xs font-bold">
- Đã Đầy Đội
- </span>
+  <>
+  <span className="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-xs font-bold">
+  Đã Đầy Đội
+  </span>
+  <button
+  type="button"
+  onClick={() => {
+    setReviewPost(post);
+    setReviewStars(5);
+    setReviewOnTime(true);
+    setReviewFairPlay(true);
+    setReviewSportsmanship(true);
+    setReviewComment("");
+  }}
+  className="px-3 py-2 rounded-xl bg-[#0369a1]/10 hover:bg-[#0369a1]/20 text-[#0369a1] text-xs font-bold transition-all flex items-center gap-1.5 border border-[#0369a1]/30"
+  >
+  <Star className="w-3.5 h-3.5" />
+  <span>Đánh giá Fair-play</span>
+  </button>
+  </>
  ) : (
  <button
  onClick={() => {
@@ -1076,6 +1103,83 @@ export default function MatchmakingMarketplace({
  </div>
  </div>
  )}
+  {/* Fair-play rating modal */}
+  {reviewPost && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+  <div className="bg-white max-w-md w-full rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-4 border border-slate-200 shadow-2xl">
+  <div className="flex items-center justify-between">
+  <h3 className="font-black text-slate-900 text-base">Đánh giá Fair-play</h3>
+  <button type="button" onClick={() => setReviewPost(null)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors" aria-label="Đóng">✕</button>
+  </div>
+  <p className="text-xs text-slate-500">
+  Đánh giá đội <strong className="text-slate-900">{reviewPost.opponentTeamName || reviewPost.teamName}</strong> sau trận giao hữu.
+  </p>
+  <div className="flex items-center gap-1.5">
+  {[1,2,3,4,5].map((s) => (
+  <button key={s} type="button" onClick={() => setReviewStars(s)} className="p-1 transition-transform hover:scale-110 active:scale-95" aria-label={s + " sao"}>
+  <Star className={`w-7 h-7 ${s <= reviewStars ? "text-amber-500 fill-amber-500" : "text-slate-300"}`} />
+  </button>
+  ))}
+  <span className="ml-2 text-sm font-black text-slate-900">{reviewStars}/5</span>
+  </div>
+  <div className="space-y-2">
+  <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+  <input type="checkbox" checked={reviewOnTime} onChange={(e) => setReviewOnTime(e.target.checked)} className="w-4 h-4 accent-[#0369a1]" />
+  Đúng giờ (không trễ)
+  </label>
+  <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+  <input type="checkbox" checked={reviewFairPlay} onChange={(e) => setReviewFairPlay(e.target.checked)} className="w-4 h-4 accent-[#0369a1]" />
+  Sòng phẳng (chia tiền đúng thỏa thuận)
+  </label>
+  <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+  <input type="checkbox" checked={reviewSportsmanship} onChange={(e) => setReviewSportsmanship(e.target.checked)} className="w-4 h-4 accent-[#0369a1]" />
+  Tinh thần thể thao (không chơi xấu)
+  </label>
+  </div>
+  <textarea
+  value={reviewComment}
+  onChange={(e) => setReviewComment(e.target.value)}
+  placeholder="Nhận xét (tuỳ chọn)..."
+  maxLength={300}
+  rows={3}
+  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] resize-none"
+  />
+  <div className="flex justify-end gap-2.5">
+  <button type="button" onClick={() => setReviewPost(null)} className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all">Hủy</button>
+  <button
+  type="button"
+  disabled={reviewSubmitting}
+  onClick={async () => {
+    try {
+      setReviewSubmitting(true);
+      const reviewed = reviewPost.opponentTeamName || reviewPost.teamName;
+      const reviewer = reviewPost.teamName === reviewed ? reviewPost.opponentTeamName : reviewPost.teamName;
+      await submitTeamReview({
+        reviewedTeamName: reviewed,
+        reviewerTeamName: reviewer,
+        matchmakingPostId: reviewPost.id,
+        stars: reviewStars,
+        onTime: reviewOnTime,
+        fairPlay: reviewFairPlay,
+        sportsmanship: reviewSportsmanship,
+        comment: reviewComment.trim() || undefined,
+      });
+      toastOk("Đã gửi đánh giá Fair-play!");
+      setReviewPost(null);
+    } catch (err: any) {
+      toastErr(err?.message || "Không gửi được đánh giá.");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  }}
+  className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50"
+  >
+  {reviewSubmitting ? "Đang gửi…" : "Gửi đánh giá"}
+  </button>
+  </div>
+  </div>
+  </div>
+  )}
  </div>
  );
 }

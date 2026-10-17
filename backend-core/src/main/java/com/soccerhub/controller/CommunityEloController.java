@@ -1,7 +1,9 @@
 package com.soccerhub.controller;
 
 import com.soccerhub.model.MatchmakingPost;
+import com.soccerhub.model.TeamReview;
 import com.soccerhub.repository.MatchmakingPostRepository;
+import com.soccerhub.repository.TeamReviewRepository;
 import com.soccerhub.repository.TournamentRepository;
 import com.soccerhub.service.TeamFormService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.util.*;
 public class CommunityEloController {
 
     private final MatchmakingPostRepository matchmakingPostRepository;
+    private final TeamReviewRepository teamReviewRepository;
     private final TournamentRepository tournamentRepository;
     private final TeamFormService teamFormService;
 
@@ -190,5 +193,123 @@ public class CommunityEloController {
             board.add(r);
         }
         return ResponseEntity.ok(board);
+    }
+
+    // =========================================================================
+    //  ĐÁNH GIÁ UY TÍN / FAIR-PLAY (Prompt 1 & 2)
+    // =========================================================================
+
+    /**
+     * Chấm điểm Fair-play cho một đội sau trận giao hữu.
+     * - Mỗi đội chỉ được chấm 1 lần cho mỗi bài đăng (matchmakingPostId).
+     * - Sau khi chấm, reputationScore của đội bị đánh giá được cập nhật lại
+     *   = trung bình (onTime + fairPlay + sportsmanship) * 20 + stars * 4, clamp 0-100.
+     */
+    @PostMapping("/reviews")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> submitReview(@RequestBody Map<String, Object> req) {
+        String reviewedTeam = str(req.get("reviewedTeamName"));
+        String reviewerTeam = str(req.get("reviewerTeamName"));
+        if (reviewedTeam == null || reviewerTeam == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Thiếu tên đội bị đánh giá / đội đánh giá."));
+        }
+        if (reviewedTeam.equalsIgnoreCase(reviewerTeam)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Không thể tự đánh giá đội của mình."));
+        }
+
+        Long postId = null;
+        if (req.get("matchmakingPostId") != null) {
+            try { postId = Long.parseLong(req.get("matchmakingPostId").toString()); } catch (NumberFormatException ignored) { }
+        }
+
+        // Mỗi đội chỉ chấm 1 lần cho mỗi bài đăng
+        if (postId != null && teamReviewRepository.existsByMatchmakingPostIdAndReviewerTeamName(postId, reviewerTeam)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Bạn đã đánh giá bài đăng này rồi."));
+        }
+
+        int stars = 5;
+        if (req.get("stars") != null) {
+            try { stars = Math.max(1, Math.min(5, Integer.parseInt(req.get("stars").toString()))); } catch (NumberFormatException ignored) { }
+        }
+        boolean onTime = parseBool(req.get("onTime"), true);
+        boolean fairPlay = parseBool(req.get("fairPlay"), true);
+        boolean sportsmanship = parseBool(req.get("sportsmanship"), true);
+        String comment = str(req.get("comment"));
+
+        TeamReview review = TeamReview.builder()
+                .reviewedTeamName(reviewedTeam)
+                .reviewerTeamName(reviewerTeam)
+                .matchmakingPostId(postId)
+                .stars(stars)
+                .onTime(onTime)
+                .fairPlay(fairPlay)
+                .sportsmanship(sportsmanship)
+                .comment(comment)
+                .build();
+        teamReviewRepository.save(review);
+
+        // Cập nhật reputationScore của đội bị đánh giá
+        updateReputationScore(reviewedTeam);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã gửi đánh giá Fair-play cho đội " + reviewedTeam + ".",
+                "review", review
+        ));
+    }
+
+    /** Lấy danh sách đánh giá của một đội (mới nhất trước). */
+    @GetMapping("/reviews/{teamName}")
+    public ResponseEntity<Map<String, Object>> getReviews(@PathVariable String teamName) {
+        List<TeamReview> reviews = teamReviewRepository.findByReviewedTeamNameOrderByCreatedAtDesc(teamName);
+        Double avg = teamReviewRepository.findAvgStarsByReviewedTeamName(teamName);
+        long count = teamReviewRepository.countByReviewedTeamName(teamName);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("teamName", teamName);
+        result.put("avgStars", avg == null ? 0 : Math.round(avg * 10.0) / 10.0);
+        result.put("reviewCount", count);
+        result.put("reviews", reviews);
+        return ResponseEntity.ok(result);
+    }
+
+    /** Tính lại reputationScore của đội từ các đánh giá Fair-play. */
+    private void updateReputationScore(String teamName) {
+        Double avg = teamReviewRepository.findAvgStarsByReviewedTeamName(teamName);
+        if (avg == null) return;
+        long count = teamReviewRepository.countByReviewedTeamName(teamName);
+
+        // Tính tỷ lệ Fair-play (onTime + fairPlay + sportsmanship) trung bình
+        List<TeamReview> reviews = teamReviewRepository.findByReviewedTeamNameOrderByCreatedAtDesc(teamName);
+        double fairRate = 0;
+        if (!reviews.isEmpty()) {
+            int fairCount = 0;
+            for (TeamReview r : reviews) {
+                if (Boolean.TRUE.equals(r.getOnTime())) fairCount++;
+                if (Boolean.TRUE.equals(r.getFairPlay())) fairCount++;
+                if (Boolean.TRUE.equals(r.getSportsmanship())) fairCount++;
+            }
+            fairRate = fairCount / (double) (reviews.size() * 3);
+        }
+
+        // reputationScore = 0.6 * (avgStars/5 * 100) + 0.4 * (fairRate * 100), clamp 0-100
+        int score = (int) Math.round(0.6 * (avg / 5.0 * 100) + 0.4 * (fairRate * 100));
+        score = Math.max(0, Math.min(100, score));
+
+        // Cập nhật reputationScore trong các bài đăng matchmaking của đội
+        for (MatchmakingPost p : matchmakingPostRepository.findAll()) {
+            if (p.getTeamName() != null && p.getTeamName().equalsIgnoreCase(teamName)) {
+                p.setReputationScore(score);
+                matchmakingPostRepository.save(p);
+            }
+        }
+    }
+
+    private static boolean parseBool(Object v, boolean def) {
+        if (v == null) return def;
+        if (v instanceof Boolean) return (Boolean) v;
+        String s = v.toString().trim().toLowerCase();
+        if (s.equals("true") || s.equals("1") || s.equals("yes")) return true;
+        if (s.equals("false") || s.equals("0") || s.equals("no")) return false;
+        return def;
     }
 }
