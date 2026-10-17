@@ -70,13 +70,17 @@ export default function Home() {
  // MA TRẬN PHÂN QUYỀN TAB (RBAC)
  // ============================================================
  // Tab chỉ dành cho OWNER (Chủ sân)
- const OWNER_TABS = ["admin", "owner-onboarding", "multi-sport"];
+// Tab dành riêng cho OWNER (Chủ sân) — quy trình khởi tạo cụm sân
+  const OWNER_ONLY_TABS = ["owner-onboarding"];
+  // Khu vực QUẢN LÝ riêng của OWNER — các vai trò khác bị chặn.
+  const OWNER_MANAGE_TABS = ["admin", "owner-onboarding", "multi-sport"];
+  // Tab mà OWNER được phép truy cập: quản lý cụm sân + cộng đồng để
+  // trao đổi với khách (hỏi ca trống, xác nhận đặt sân, nhóm chat riêng).
+  const OWNER_TABS = [...OWNER_MANAGE_TABS, "community"];
  // Tab chỉ dành cho ORGANIZER hoặc người có quyền điều hành giải
  const ORGANIZER_TABS = ["organizer"];
  // Tab yêu cầu đăng nhập (bất kỳ vai trò nào cũng phải có tài khoản)
  const AUTH_REQUIRED_TABS = ["my-activities", "profile", "team-management", "membership"];
- // Tab bị cấm với OWNER (Chủ sân không được dùng chức năng dành cho Cầu thủ)
- const PLAYER_ONLY_TABS = ["booking", "community", "tournaments", "team-management", "membership"];
 
  // Role Guard: Tự động điều hướng và bảo vệ phân quyền nhất quán khi role thay đổi
  React.useEffect(() => {
@@ -97,12 +101,12 @@ export default function Home() {
  }
  } else if (currentUser.role === "PLAYER") {
  // CẦU THỦ: Cấm vào trang quản lý sân & điều hành giải (của OWNER/ORGANIZER)
- if (OWNER_TABS.includes(activeTab)) {
+  if (OWNER_MANAGE_TABS.includes(activeTab)) {
  setActiveTab("booking");
  }
  } else if (currentUser.role === "ORGANIZER") {
  // BAN TỔ CHỨC: Cấm vào bảng quản lý sân của Chủ sân
- if (OWNER_TABS.includes(activeTab)) {
+  if (OWNER_MANAGE_TABS.includes(activeTab)) {
  setActiveTab("tournaments");
  }
  } else if (currentUser.role === "ADMIN") {
@@ -126,7 +130,7 @@ export default function Home() {
  // ================================================================
  if (currentUser?.role === "OWNER") {
  if (!OWNER_TABS.includes(newTab)) {
- showRoleWarning("⚠️ Tài khoản Chủ Sân không thể truy cập khu vực Cầu Thủ. Vui lòng dùng Bảng Điều Hành để quản lý cụm sân.");
+  showRoleWarning("⚠️ Tài khoản Chủ Sân không thể truy cập khu vực Cầu Thủ. Vui lòng dùng Bảng Điều Hành hoặc Cộng đồng & Nhắn tin.");
  setActiveTab(currentUser.isNewOwner ? "owner-onboarding" : "admin");
  return;
  }
@@ -136,7 +140,7 @@ export default function Home() {
  // GUARD 2: PLAYER (Cầu Thủ) - Không được vào khu quản lý sân OWNER
  // ================================================================
  if (currentUser?.role === "PLAYER") {
- if (OWNER_TABS.includes(newTab)) {
+  if (OWNER_MANAGE_TABS.includes(newTab)) {
  showRoleWarning("🚫 Truy cập bị từ chối: Tài khoản Cầu Thủ không có quyền vào Bảng Quản Lý Cụm Sân & Doanh Thu.");
  setActiveTab("booking");
  return;
@@ -153,7 +157,7 @@ export default function Home() {
  // GUARD 3: ORGANIZER (Ban Tổ Chức) - Không được vào khu Chủ Sân
  // ================================================================
  if (currentUser?.role === "ORGANIZER") {
- if (OWNER_TABS.includes(newTab)) {
+  if (OWNER_MANAGE_TABS.includes(newTab)) {
  showRoleWarning("🚫 Tài khoản Ban Tổ Chức không có quyền vào Bảng Quản Lý Cụm Sân. Chức năng này chỉ dành cho Chủ Sân (OWNER).");
  setActiveTab("tournaments");
  return;
@@ -164,8 +168,8 @@ export default function Home() {
  // GUARD 4: KHÁCH CHƯA ĐĂNG NHẬP
  // ================================================================
  if (!currentUser) {
- // 4a. Tab chỉ dành Chủ Sân => Yêu cầu đăng nhập OWNER
- if (OWNER_TABS.includes(newTab)) {
+  // 4a. Khu quản lý riêng của Chủ Sân => Yêu cầu đăng nhập OWNER
+  if (OWNER_MANAGE_TABS.includes(newTab)) {
  setPendingTab(newTab);
  showRoleWarning("🔒 Vui lòng đăng nhập với vai trò Chủ Sân để truy cập Bảng Quản Lý!");
  handleOpenAuth("login", "OWNER");

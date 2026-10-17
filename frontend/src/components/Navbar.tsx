@@ -26,10 +26,12 @@ import {
  Menu,
  CheckCircle,
  XCircle,
- AlertCircle
+  AlertCircle,
+  MessageCircle
 } from "lucide-react";
 import { subscribeToBookingEvents, playNotificationChime, type RealtimeBookingEvent } from "@/lib/realtimeService";
 import { listMyNotifications, markNotificationRead } from "@/lib/adminService";
+import { listMyGroups, listMyConversations } from "@/lib/groupChat";
 import NotificationsModal from "./NotificationsModal";
 
 // Notification item type
@@ -66,6 +68,30 @@ export default function Navbar({
  const [showMobileDrawer, setShowMobileDrawer] = useState(false);
  const [mobilePitchOpen, setMobilePitchOpen] = useState(true);
  const [mobileTournamentOpen, setMobileTournamentOpen] = useState(false);
+
+  const [chatUnread, setChatUnread] = useState(0);
+
+  // Chủ sân cần thấy số tin nhắn/nhóm chat chưa đọc ngay trên menu
+  useEffect(() => {
+    if (!user) { setChatUnread(0); return; }
+    let alive = true;
+    const load = async () => {
+      try {
+        const [convos, groups] = await Promise.all([
+          listMyConversations().catch(() => []),
+          listMyGroups().catch(() => []),
+        ]);
+        if (!alive) return;
+        const n = (Array.isArray(convos) ? convos : []).length + (Array.isArray(groups) ? groups : []).length;
+        setChatUnread(n);
+      } catch {
+        /* bỏ qua */
+      }
+    };
+    load();
+    const t = window.setInterval(load, 20000);
+    return () => { alive = false; window.clearInterval(t); };
+  }, [user]);
 
  // Cache thông báo tách riêng theo từng tài khoản (tránh lẫn thông báo khi đổi user chung máy)
  const NOTIFS_KEY_BASE = "soccerhub_user_notifications";
@@ -368,6 +394,24 @@ export default function Navbar({
  <Clock className="w-[18px] h-[18px] text-emerald-400 shrink-0" />
  <span>Sơ Đồ Ca Sân Realtime</span>
  </button>
+
+  <button
+  type="button"
+  onClick={() => handleSelectSubTab("community")}
+  className={`relative flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+  activeTab === "community"
+  ? "bg-[#0369a1] text-white shadow-md"
+  : "text-slate-700 hover:bg-slate-100 "
+  }`}
+  >
+  <MessageCircle className="w-[18px] h-[18px] text-emerald-400 shrink-0" />
+  <span>Cộng Đồng</span>
+  {chatUnread > 0 && (
+  <span className="min-w-[16px] h-4 px-1 rounded-full bg-[#0369a1] text-white text-[9px] font-black flex items-center justify-center">
+  {chatUnread > 9 ? "9+" : chatUnread}
+  </span>
+  )}
+  </button>
  </>
  ) : user?.role === "ADMIN" ? (
  /* ADMIN NAVBAR ITEM — về trang quản trị riêng /admin */
@@ -1074,6 +1118,35 @@ export default function Navbar({
  <div className={`text-[10px] ${activeTab === "multi-sport" ? "text-white/80 " : "text-slate-500"}`}>Ma trận slot & trạng thái thi đấu trực tiếp</div>
  </div>
  </button>
+
+  {/* CỘNG ĐỒNG & NHẮN TIN (Chủ sân trao đổi với khách) */}
+  <button
+  type="button"
+  onClick={() => {
+  handleSelectSubTab("community");
+  setShowMobileDrawer(false);
+  }}
+  className={`w-full text-left p-3 rounded-2xl flex items-center space-x-3 transition-colors ${
+  activeTab === "community"
+  ? "bg-[#0369a1] text-white shadow-md font-extrabold"
+  : "bg-slate-50 hover:bg-slate-100 text-slate-700 "
+  }`}
+  >
+  <div className="relative w-8 h-8 rounded-xl bg-[#0369a1]/10 flex items-center justify-center shrink-0">
+  <MessageCircle className="w-4 h-4 text-[#0369a1]" />
+  {chatUnread > 0 && (
+  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#0369a1] text-white text-[9px] font-black flex items-center justify-center border-2 border-white">
+  {chatUnread > 9 ? "9+" : chatUnread}
+  </span>
+  )}
+  </div>
+  <div className="min-w-0 flex-1">
+  <div className="text-xs font-extrabold leading-tight">Cộng Đồng & Nhắn Tin</div>
+  <div className={`text-[10px] truncate ${activeTab === "community" ? "text-white/80 " : "text-slate-500"}`}>
+  Trao đổi với khách & nhóm chat
+  </div>
+  </div>
+  </button>
  </div>
  ) : user?.role === "ADMIN" ? (
  <div className="space-y-1.5">

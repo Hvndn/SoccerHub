@@ -45,6 +45,14 @@ export async function listMyGroups(): Promise<GroupSummary[]> {
   return Array.isArray(data) ? data : [];
 }
 
+/** Danh sách hội thoại tin nhắn riêng (DM) — dùng cho badge chủ sân. */
+export async function listMyConversations(): Promise<
+  { partnerEmail: string; partnerName: string; lastMessage: string; lastTime: string; isMine: boolean }[]
+> {
+  const data = await apiRequest<any[]>("/api/v1/chat/conversations");
+  return Array.isArray(data) ? data : [];
+}
+
 /** Tạo nhóm mới. memberEmails: danh sách email thêm sẵn. */
 export async function createGroup(input: {
   name: string;
