@@ -9,6 +9,7 @@ import TournamentBracket from "@/components/TournamentBracket";
 import TournamentLeaderboard from "@/components/TournamentLeaderboard";
 import RefereePanel from "@/components/RefereePanel";
 import CommunityForm from "@/components/CommunityForm";
+import CommunityChat from "@/components/CommunityChat";
 import AdminDashboard from "@/components/AdminDashboard";
 import ActivitySchedule from "@/components/ActivitySchedule";
 import MemberCardPortal from "@/components/MemberCardPortal";
@@ -374,6 +375,13 @@ export default function Home() {
  />
  )}
  <CommunityForm user={currentUser} onOpenAuth={handleOpenAuth} />
+
+  {/* Chat c?ng d?ng - ph?ng chat c?ng khai, t? l?m m?i m?i 4 gi?y */}
+  {currentUser && (
+    <div className="mt-4">
+      <CommunityChat user={currentUser} />
+    </div>
+  )}
  </>
  )}
 
