@@ -50,6 +50,12 @@ public class ChatMessage {
     @Builder.Default
     private String channel = "general";
 
+    /**
+     * Id phòng chat nhóm. null = không phải tin trong nhóm.
+     * Khi có groupId thì recipientEmail phải null (tin nhóm, không phải DM).
+     */
+    private Long groupId;
+
     /** Id tin nhắn được trả lời (null = tin thường). */
     private Long replyToId;
 

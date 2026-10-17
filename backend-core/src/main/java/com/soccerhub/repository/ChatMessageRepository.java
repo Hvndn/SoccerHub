@@ -23,6 +23,18 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
            "ORDER BY m.createdAt DESC")
     List<ChatMessage> findTop50ByChannel(String channel);
 
+    /** 50 tin nhắn mới nhất của một phòng chat nhóm, mới nhất đầu tiên. */
+    @Query("SELECT m FROM ChatMessage m WHERE m.groupId = ?1 " +
+           "ORDER BY m.createdAt DESC")
+    List<ChatMessage> findTopMessagesByGroupId(Long groupId);
+
+    /** Số tin nhắn nhóm mới hơn mốc đọc (dùng tính badge chưa đọc). */
+    @Query("SELECT COUNT(m) FROM ChatMessage m WHERE m.groupId = ?1 " +
+           "AND m.createdAt > ?2 AND m.senderEmail <> ?3")
+    long countUnreadInGroup(Long groupId,
+                           java.time.LocalDateTime since,
+                           String myEmail);
+
     /** Tin ghim của kênh (tối đa 1). */
     @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL " +
            "AND m.channel = ?1 AND m.pinned = true " +
