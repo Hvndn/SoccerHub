@@ -297,7 +297,6 @@ export default function Navbar({
  { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
  { key: "community", label: "Chợ kèo", tab: "community", icon: Flame },
  { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
- { key: "my-activities", label: "Vé của tôi", tab: "my-activities", icon: Ticket },
  { key: "profile", label: "Hồ sơ", tab: "profile", icon: User },
  ]
  : [

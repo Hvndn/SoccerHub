@@ -50,8 +50,16 @@ function formatTime(iso: string): string {
   }
 }
 
-export default function CommunityChat({ user }: { user?: any }) {
-  const [mode, setMode] = useState<"public" | "dm">("public");
+export default function CommunityChat({
+  user,
+  initialMode = "public",
+  initialPartner,
+}: {
+  user?: any;
+  initialMode?: "public" | "dm";
+  initialPartner?: { partnerEmail: string; partnerName: string };
+}) {
+  const [mode, setMode] = useState<"public" | "dm">(initialMode);
   const myEmail = (user?.email || "").toLowerCase();
 
   // ---- Public chat state ----
@@ -64,7 +72,11 @@ export default function CommunityChat({ user }: { user?: any }) {
 
   // ---- DM state ----
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activePartner, setActivePartner] = useState<Conversation | null>(null);
+  const [activePartner, setActivePartner] = useState<Conversation | null>(
+    initialPartner
+      ? { partnerEmail: initialPartner.partnerEmail, partnerName: initialPartner.partnerName, lastMessage: "", lastTime: "", isMine: false }
+      : null
+  );
   const [dmMessages, setDmMessages] = useState<ChatMessage[]>([]);
   const [dmInput, setDmInput] = useState("");
   const [dmSending, setDmSending] = useState(false);
