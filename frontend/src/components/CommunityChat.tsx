@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, Loader2, Users, Search, ArrowLeft, UserPlus } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  MessageCircle, Send, Loader2, Users, Search, ArrowLeft, UserPlus,
+  Reply, Pin, Trash2, X, Bookmark,
+} from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { toastErr, toastOk } from "@/lib/toast";
 import { ensureLoggedIn } from "@/lib/api";
@@ -13,6 +16,9 @@ interface ChatMessage {
   senderRole: string;
   recipientEmail?: string;
   recipientName?: string;
+  channel?: string;
+  replyToId?: number | null;
+  pinned?: boolean;
   content: string;
   createdAt: string;
 }
@@ -54,10 +60,16 @@ export default function CommunityChat({
   user,
   initialMode = "public",
   initialPartner,
+  channel = "general",
+  channelName = "Phòng Chat Chung",
+  channelDesc = "Kênh chung của cộng đồng SoccerHub",
 }: {
   user?: any;
   initialMode?: "public" | "dm";
   initialPartner?: { partnerEmail: string; partnerName: string };
+  channel?: string;
+  channelName?: string;
+  channelDesc?: string;
 }) {
   const [mode, setMode] = useState<"public" | "dm">(initialMode);
   const myEmail = (user?.email || "").toLowerCase();
@@ -69,6 +81,7 @@ export default function CommunityChat({
   const [pubLoading, setPubLoading] = useState(true);
   const [pubError, setPubError] = useState<string | null>(null);
   const pubBottomRef = useRef<HTMLDivElement>(null);
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
 
   // ---- DM state ----
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -90,7 +103,9 @@ export default function CommunityChat({
   // ---- Fetch public messages ----
   const fetchPublic = useCallback(async (silent = false) => {
     try {
-      const data = await apiRequest<ChatMessage[]>("/api/v1/chat/messages");
+      const data = await apiRequest<ChatMessage[]>(
+        `/api/v1/chat/messages?channel=${encodeURIComponent(channel)}`
+      );
       setPubMessages(Array.isArray(data) ? data : []);
       setPubError(null);
     } catch (e: any) {
@@ -98,10 +113,12 @@ export default function CommunityChat({
     } finally {
       setPubLoading(false);
     }
-  }, []);
+  }, [channel]);
 
   useEffect(() => {
     if (mode !== "public") return;
+    setPubLoading(true);
+    setReplyTo(null);
     fetchPublic();
     const timer = window.setInterval(() => fetchPublic(true), 4000);
     return () => window.clearInterval(timer);
@@ -120,8 +137,12 @@ export default function CommunityChat({
     if (!ensureLoggedIn("gửi tin nhắn")) return;
     setPubSending(true);
     try {
-      await apiRequest("/api/v1/chat/messages", { method: "POST", body: JSON.stringify({ content: text }) });
+      await apiRequest("/api/v1/chat/messages", {
+        method: "POST",
+        body: JSON.stringify({ content: text, channel, replyToId: replyTo ? replyTo.id : null }),
+      });
       setPubInput("");
+      setReplyTo(null);
       await fetchPublic(true);
     } catch (err: any) {
       toastErr(err?.message || "Không gửi được tin nhắn.");
@@ -129,6 +150,37 @@ export default function CommunityChat({
       setPubSending(false);
     }
   };
+
+  // ---- Ghim / bỏ ghim tin nhắn ----
+  const handlePin = async (m: ChatMessage) => {
+    try {
+      await apiRequest(`/api/v1/chat/messages/${m.id}/pin?value=${!m.pinned}`, { method: "POST" });
+      toastOk(m.pinned ? "Đã bỏ ghim tin nhắn." : "Đã ghim tin nhắn trong kênh.");
+      await fetchPublic(true);
+    } catch (err: any) {
+      toastErr(err?.message || "Không ghim được tin nhắn.");
+    }
+  };
+
+  // ---- Xoá tin nhắn của chính mình ----
+  const handleDelete = async (m: ChatMessage) => {
+    try {
+      await apiRequest(`/api/v1/chat/messages/${m.id}`, { method: "DELETE" });
+      toastOk("Đã xoá tin nhắn.");
+      await fetchPublic(true);
+    } catch (err: any) {
+      toastErr(err?.message || "Không xoá được tin nhắn.");
+    }
+  };
+
+  /** Tìm tin ghim trong kênh hiện tại. */
+  const pinnedMsg = useMemo(() => pubMessages.find((m) => m.pinned) || null, [pubMessages]);
+  /** Map id -> tin để hiển thị trích dẫn khi reply. */
+  const msgById = useMemo(() => {
+    const map: Record<number, ChatMessage> = {};
+    pubMessages.forEach((m) => { map[m.id] = m; });
+    return map;
+  }, [pubMessages]);
 
   // ---- Fetch conversations ----
   const fetchConversations = useCallback(async () => {
@@ -210,29 +262,82 @@ export default function CommunityChat({
     setSearchResults([]);
   };
 
-  const renderMessage = (m: ChatMessage, mine: boolean) => (
-    <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[82%] sm:max-w-[70%] ${mine ? "items-end" : "items-start"} flex flex-col`}>
-        {!mine && (
-          <div className="flex items-center gap-1.5 mb-0.5 px-1">
-            <span className={`text-[11px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>{m.senderName}</span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase">{m.senderRole}</span>
-            <span className="text-[9px] text-slate-400">{formatTime(m.createdAt)}</span>
+  const renderMessage = (m: ChatMessage, mine: boolean) => {
+    const quoted = m.replyToId ? msgById[m.replyToId] : null;
+    const canManage = mine;
+    return (
+      <div key={m.id} className={`group flex ${mine ? "justify-end" : "justify-start"}`}>
+        <div className={`max-w-[82%] sm:max-w-[70%] ${mine ? "items-end" : "items-start"} flex flex-col`}>
+          {!mine && (
+            <div className="flex items-center gap-1.5 mb-0.5 px-1">
+              <span className={`text-[11px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>{m.senderName}</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase">{m.senderRole}</span>
+              <span className="text-[9px] text-slate-400">{formatTime(m.createdAt)}</span>
+            </div>
+          )}
+          <div
+            className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed break-words shadow-xs ${
+              mine
+                ? "bg-[#0369a1] text-white rounded-br-sm"
+                : "bg-white border border-slate-200 text-slate-800 rounded-bl-sm"
+            }`}
+          >
+            {m.pinned && (
+              <div className="flex items-center gap-1 mb-1 text-[10px] font-bold uppercase tracking-wide text-amber-600">
+                <Bookmark className="w-3 h-3" /> Tin ghim
+              </div>
+            )}
+            {quoted && (
+              <div className="mb-1.5 pl-2 border-l-2 border-slate-300 text-[11px] italic text-slate-500 line-clamp-2">
+                {quoted.senderName}: {quoted.content}
+              </div>
+            )}
+            {m.content}
           </div>
-        )}
-        <div
-          className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed break-words shadow-xs ${
-            mine
-              ? "bg-[#0369a1] text-white rounded-br-sm"
-              : "bg-white border border-slate-200 text-slate-800 rounded-bl-sm"
-          }`}
-        >
-          {m.content}
+          <div className="flex items-center gap-1.5 mt-0.5 px-1">
+            {mine && <span className="text-[9px] text-slate-400">{formatTime(m.createdAt)}</span>}
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+              {mode === "public" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setReplyTo(m)}
+                    className="p-1 rounded-md text-slate-400 hover:text-[#0369a1] hover:bg-slate-100 transition-colors"
+                    title="Trả lời"
+                    aria-label="Trả lời tin nhắn"
+                  >
+                    <Reply className="w-3.5 h-3.5" />
+                  </button>
+                  {canManage && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handlePin(m)}
+                        className="p-1 rounded-md text-slate-400 hover:text-amber-600 hover:bg-slate-100 transition-colors"
+                        title={m.pinned ? "Bỏ ghim" : "Ghim tin nhắn"}
+                        aria-label="Ghim tin nhắn"
+                      >
+                        <Pin className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(m)}
+                        className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition-colors"
+                        title="Xoá tin nhắn"
+                        aria-label="Xoá tin nhắn"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
         </div>
-        {mine && <span className="text-[9px] text-slate-400 mt-0.5 px-1">{formatTime(m.createdAt)}</span>}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col h-[520px] sm:h-[600px] rounded-2xl border border-slate-200 bg-white overflow-hidden">
@@ -270,6 +375,20 @@ export default function CommunityChat({
       {/* ---- PUBLIC CHAT ---- */}
       {mode === "public" && (
         <>
+          {/* Tin ghim của kênh */}
+          {pinnedMsg && (
+            <div className="flex items-start gap-2 px-3 sm:px-4 py-2 bg-amber-50 border-b border-amber-200">
+              <Pin className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-amber-700">Tin ghim</p>
+                <p className="text-[11px] text-slate-700 truncate">
+                  <span className="font-bold">{pinnedMsg.senderName}: </span>
+                  {pinnedMsg.content}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 space-y-2.5 bg-slate-50/40">
             {pubLoading ? (
               <div className="flex items-center justify-center h-full text-slate-400 text-xs">
@@ -280,19 +399,42 @@ export default function CommunityChat({
             ) : pubMessages.length === 0 ? (
               <div className="text-center py-10">
                 <MessageCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                <p className="text-xs text-slate-500">Chưa có tin nhắn nào. Hãy là người đầu tiên chào mọi người! 👋</p>
+                <p className="text-xs text-slate-500">
+                  Kênh <strong className="text-slate-700">{channelName}</strong> chưa có tin nhắn nào.
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1">{channelDesc}</p>
               </div>
             ) : (
               pubMessages.map((m) => renderMessage(m, m.senderEmail === myEmail))
             )}
             <div ref={pubBottomRef} />
           </div>
+
+          {/* Ô trả lời */}
+          {replyTo && (
+            <div className="flex items-center gap-2 px-3 sm:px-4 py-2 border-t border-slate-200 bg-sky-50">
+              <Reply className="w-3.5 h-3.5 text-[#0369a1] shrink-0" />
+              <div className="min-w-0 flex-1 text-[11px] text-slate-600 truncate">
+                <span className="font-bold text-slate-800">Trả lời {replyTo.senderName}: </span>
+                {replyTo.content}
+              </div>
+              <button
+                type="button"
+                onClick={() => setReplyTo(null)}
+                className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-white transition-colors shrink-0"
+                aria-label="Huỷ trả lời"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handlePubSend} className="flex items-center gap-2 px-3 py-2.5 border-t border-slate-200 bg-white">
             <input
               type="text"
               value={pubInput}
               onChange={(e) => setPubInput(e.target.value)}
-              placeholder={user ? "Nhập tin nhắn…" : "Đăng nhập để gửi tin nhắn"}
+              placeholder={user ? `Nhắn vào ${channelName}…` : "Đăng nhập để gửi tin nhắn"}
               disabled={!user || pubSending}
               maxLength={500}
               className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] disabled:opacity-60"

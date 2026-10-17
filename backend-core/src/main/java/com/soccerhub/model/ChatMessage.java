@@ -41,6 +41,22 @@ public class ChatMessage {
     @Column(length = 80)
     private String recipientName;
 
+    /**
+     * Slug của kênh phòng chat công khai. null/"general" = phòng chat chung.
+     * Ví dụ: "general", "vang-lai", "bu-thieu-nguoi", "doi-30p", "tinh-trang-san",
+     *          "khieu-nai", "ho-dap-luat", "do-dung-cu", "tuyen-cau-thu".
+     */
+    @Column(length = 40)
+    @Builder.Default
+    private String channel = "general";
+
+    /** Id tin nhắn được trả lời (null = tin thường). */
+    private Long replyToId;
+
+    /** Tin ghim cho kênh (chỉ 1 tin ghim mỗi kênh). */
+    @Builder.Default
+    private Boolean pinned = false;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 

@@ -15,6 +15,11 @@ import {
   Radio,
   Sparkles,
   UserPlus,
+  Clock,
+  Building,
+  AlertCircle,
+  Scale,
+  ShoppingBag,
 } from "lucide-react";
 import { apiRequest, ensureLoggedIn } from "@/lib/api";
 import CommunityChat from "./CommunityChat";
@@ -48,9 +53,20 @@ interface Conversation {
   isMine: boolean;
 }
 
+interface ChannelInfo {
+  slug: string;
+  name: string;
+  desc: string;
+  lastMessage: string;
+  lastSender: string;
+  lastTime: string | null;
+  memberCount: number;
+  pinned: { id: number; content: string; senderName: string } | null;
+}
+
 type HubView =
   | { kind: "home" }
-  | { kind: "public" }
+  | { kind: "public"; slug: string; name: string; desc: string }
   | { kind: "dm"; partnerEmail?: string; partnerName?: string }
   | { kind: "matchmaking" }
   | { kind: "clan" };
@@ -113,17 +129,18 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
 
   const [publicMsgs, setPublicMsgs] = useState<ChatMessage[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [channels, setChannels] = useState<ChannelInfo[]>([]);
   const [loading, setLoading] = useState(false);
 
   // ---- Tải dữ liệu xem trước (chỉ khi đã đăng nhập) ----
   const refresh = useCallback(async () => {
     if (!user) return;
     try {
-      const [pub, convos] = await Promise.all([
-        apiRequest<ChatMessage[]>("/api/v1/chat/messages").catch(() => [] as ChatMessage[]),
+      const [chans, convos] = await Promise.all([
+        apiRequest<ChannelInfo[]>("/api/v1/chat/channels").catch(() => [] as ChannelInfo[]),
         apiRequest<Conversation[]>("/api/v1/chat/conversations").catch(() => [] as Conversation[]),
       ]);
-      setPublicMsgs(Array.isArray(pub) ? pub : []);
+      setChannels(Array.isArray(chans) ? chans : []);
       setConversations(Array.isArray(convos) ? convos : []);
     } finally {
       setLoading(false);
@@ -139,10 +156,16 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
   }, [user, mode, view.kind, refresh]);
 
   // ---- Đếm tin chưa đọc ----
-  const publicUnread = useMemo(() => {
-    const seen = getSeen("public");
-    return publicMsgs.filter((m) => m.senderEmail !== myEmail && new Date(m.createdAt).getTime() > seen).length;
-  }, [publicMsgs, myEmail, tick]);
+  const channelUnread = useMemo(() => {
+    const map: Record<string, number> = {};
+    channels.forEach((c) => {
+      const seen = getSeen("ch:" + c.slug);
+      if (c.lastTime && new Date(c.lastTime).getTime() > seen && c.lastSender !== myEmail) {
+        map[c.slug] = 1;
+      }
+    });
+    return map;
+  }, [channels, myEmail, tick]);
 
   const dmChannels = useMemo(() => {
     return conversations.map((c) => {
@@ -153,20 +176,35 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
   }, [conversations, tick]);
 
   const onlineCount = useMemo(() => {
-    const set = new Set(publicMsgs.map((m) => m.senderEmail));
-    return set.size;
-  }, [publicMsgs]);
+    return channels.find((c) => c.slug === "general")?.memberCount ?? 0;
+  }, [channels]);
 
   // ---- Điều hướng ----
-  const openPublic = () => {
+  const openChannel = (c: ChannelInfo) => {
     if (!user) {
       ensureLoggedIn("vào phòng chat");
       onOpenAuth?.("login", "PLAYER");
       return;
     }
-    markSeen("public");
+    markSeen("ch:" + c.slug);
     setTick((x) => x + 1);
-    setView({ kind: "public" });
+    setView({ kind: "public", slug: c.slug, name: c.name, desc: c.desc });
+  };
+
+  const openGeneral = () => {
+    const g = channels.find((c) => c.slug === "general");
+    if (g) openChannel(g);
+    else
+      openChannel({
+        slug: "general",
+        name: "Phòng Chat Chung",
+        desc: "Kênh chung của cộng đồng SoccerHub",
+        lastMessage: "",
+        lastSender: "",
+        lastTime: null,
+        memberCount: 0,
+        pinned: null,
+      });
   };
 
   const openDm = (partnerEmail?: string, partnerName?: string) => {
@@ -184,42 +222,42 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
 
   const back = () => setView({ kind: "home" });
 
-  // ---- Danh sách channel ----
-  const channels = useMemo(() => {
+  // ---- Danh sách channel (kênh công khai + DM) ----
+  const CHANNEL_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
+    general: Hash,
+    "vang-lai": Flame,
+    "bu-thieu-nguoi": UserPlus,
+    "doi-30p": Clock,
+    "tinh-trang-san": Building,
+    "khieu-nai": AlertCircle,
+    "ho-dap-luat": Scale,
+    "do-dung-cu": ShoppingBag,
+    "tuyen-cau-thu": Users,
+  };
+
+  const channelRows = useMemo(() => {
     const list: {
       id: string;
       name: string;
       preview: string;
-      time: string;
+      time: string | null;
       unread: number;
       icon: React.ComponentType<{ className?: string }>;
       isDm: boolean;
       onClick: () => void;
     }[] = [];
 
-    const lastPub = publicMsgs.length ? publicMsgs[publicMsgs.length - 1] : null;
-    list.push({
-      id: "public",
-      name: "Phòng Chat Chung",
-      preview: lastPub
-        ? `${lastPub.senderName}: ${lastPub.content}`
-        : "Chưa có tin nhắn — hãy là người đầu tiên chào mọi người!",
-      time: lastPub ? lastPub.createdAt : "",
-      unread: publicUnread,
-      icon: Hash,
-      isDm: false,
-      onClick: openPublic,
-    });
-
-    list.push({
-      id: "matchmaking",
-      name: "Chợ Kèo Giao Hữu",
-      preview: "Tìm đối thủ tương đương phong độ, ghép kèo nhanh",
-      time: "",
-      unread: 0,
-      icon: Flame,
-      isDm: false,
-      onClick: () => setView({ kind: "matchmaking" }),
+    channels.forEach((c) => {
+      list.push({
+        id: "ch:" + c.slug,
+        name: c.name,
+        preview: c.lastMessage ? `${c.lastSender}: ${c.lastMessage}` : c.desc,
+        time: c.lastTime,
+        unread: channelUnread[c.slug] ?? 0,
+        icon: CHANNEL_ICON[c.slug] || Hash,
+        isDm: false,
+        onClick: () => openChannel(c),
+      });
     });
 
     dmChannels.forEach((c) => {
@@ -237,18 +275,18 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
 
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicMsgs, publicUnread, dmChannels, myEmail]);
+  }, [channels, channelUnread, dmChannels]);
 
   const filteredChannels = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return channels.filter((ch) => {
+    return channelRows.filter((ch) => {
       if (q && !(ch.name + " " + ch.preview).toLowerCase().includes(q)) return false;
       if (filter === "unread" && ch.unread <= 0) return false;
       if (filter === "private" && !ch.isDm) return false;
       if (filter === "friends" && !ch.isDm) return false;
       return true;
     });
-  }, [channels, search, filter]);
+  }, [channelRows, search, filter]);
 
   /* =========================================================
    * CHANNEL VIEW — mở phòng chat / kèo / đội bóng
@@ -256,7 +294,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
   if (view.kind !== "home") {
     const title =
       view.kind === "public"
-        ? "Phòng Chat Chung"
+        ? view.name
         : view.kind === "dm"
         ? view.partnerName || "Tin nhắn riêng"
         : view.kind === "matchmaking"
@@ -264,7 +302,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         : "Đội bóng (Clan)";
     const subtitle =
       view.kind === "public"
-        ? "Tất cả thành viên cộng đồng"
+        ? view.desc
         : view.kind === "dm"
         ? view.partnerEmail || "Trò chuyện riêng tư 1-1"
         : view.kind === "matchmaking"
@@ -284,7 +322,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
-            <div className="relative w-10 h-10 rounded-full bg-slate-100 ring-2 ring-[#0369a1]/40 shadow-[0_0_16px_rgba(74,222,128,0.45)] flex items-center justify-center shrink-0">
+            <div className="relative w-10 h-10 rounded-full bg-slate-100 ring-2 ring-[#0369a1]/40 shadow-sm flex items-center justify-center shrink-0">
               {view.kind === "matchmaking" ? (
                 <Flame className="w-4 h-4 text-[#0369a1]" />
               ) : view.kind === "clan" ? (
@@ -296,7 +334,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
             <div className="min-w-0 flex-1">
               <h2 className="text-sm sm:text-base font-black text-white truncate leading-tight">{title}</h2>
               <p className="text-[11px] text-slate-500 truncate flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.9)]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 {subtitle}
               </p>
             </div>
@@ -304,7 +342,15 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
 
           {/* Nội dung */}
           <div className="bg-white">
-            {view.kind === "public" && <CommunityChat user={user} initialMode="public" />}
+            {view.kind === "public" && (
+              <CommunityChat
+                user={user}
+                initialMode="public"
+                channel={view.slug}
+                channelName={view.name}
+                channelDesc={view.desc}
+              />
+            )}
             {view.kind === "dm" && (
               <CommunityChat
                 user={user}
@@ -372,7 +418,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm kiếm phòng chat, đội bóng, cầu thủ..."
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0369a1]/40 focus:border-green-400/60 transition-all"
+            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0369a1]/40 focus:border-[#0369a1]/60 transition-all"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
@@ -383,8 +429,8 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
               onClick={() => setFilter(f.key)}
               className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${
                 filter === f.key
-                  ? "bg-[#0369a1] text-white border-green-400 shadow-[0_0_14px_rgba(74,222,128,0.4)]"
-                  : "bg-slate-900/60 text-slate-600 border-slate-200 hover:border-green-400/60 hover:text-[#075985]"
+                  ? "bg-[#0369a1] text-white border-[#0369a1] shadow-md"
+                  : "bg-slate-900/60 text-slate-600 border-slate-200 hover:border-[#0369a1]/60 hover:text-[#075985]"
               }`}
             >
               {f.label}
@@ -398,7 +444,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         {/* CHAT GIẢI ĐẤU */}
         <button
           type="button"
-          onClick={openPublic}
+          onClick={openGeneral}
           className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
           style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}
         >
@@ -425,7 +471,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
           type="button"
           onClick={() => setView({ kind: "matchmaking" })}
           className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
-          style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 60%, #0b1220 100%)" }}
+          style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}
         >
           <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/20 rounded-full blur-3xl" />
           <div className="relative flex items-start justify-between gap-3">
@@ -472,7 +518,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
               <button
                 type="button"
                 onClick={() => onOpenAuth?.("login", "PLAYER")}
-                className="mt-2 px-5 py-2.5 rounded-xl bg-green-400 hover:bg-green-300 text-white text-xs font-black transition-all active:scale-95 shadow-[0_0_18px_rgba(74,222,128,0.4)]"
+                className="mt-2 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 shadow-[0_0_18px_rgba(74,222,128,0.4)]"
               >
                 Đăng nhập ngay
               </button>
@@ -509,7 +555,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
                           <Icon className="w-5 h-5 text-[#0369a1]" />
                         </div>
                         {ch.unread > 0 && (
-                          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-[#0b1220] shadow-[0_0_8px_rgba(74,222,128,0.9)]" />
+                          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white shadow-[0_0_8px_rgba(74,222,128,0.9)]" />
                         )}
                       </div>
 
@@ -547,7 +593,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
           </div>
         ) : (
           <div className="rounded-3xl bg-white border border-slate-200 shadow-2xl px-5 py-12 text-center space-y-3">
-            <div className="w-14 h-14 rounded-2xl bg-[#0369a1]/10 ring-2 ring-green-400/40 flex items-center justify-center mx-auto">
+            <div className="w-14 h-14 rounded-2xl bg-[#0369a1]/10 ring-2 ring-[#0369a1]/40 flex items-center justify-center mx-auto">
               <Users className="w-7 h-7 text-[#0369a1]" />
             </div>
             <h3 className="text-sm font-black text-white">Đội bóng (Clan)</h3>
@@ -557,7 +603,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
             <button
               type="button"
               onClick={() => onOpenAuth?.("login", "PLAYER")}
-              className="mt-1 px-5 py-2.5 rounded-xl bg-green-400 hover:bg-green-300 text-white text-xs font-black transition-all active:scale-95 shadow-[0_0_18px_rgba(74,222,128,0.4)]"
+              className="mt-1 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 shadow-[0_0_18px_rgba(74,222,128,0.4)]"
             >
               Đăng nhập ngay
             </button>
