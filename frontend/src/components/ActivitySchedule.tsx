@@ -69,14 +69,11 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  const [notice, setNotice] = useState<string | null>(null);
  const [selectedMatch, setSelectedMatch] = useState<MatchRow | null>(null);
  const [cancellingId, setCancellingId] = useState<number | null>(null);
+  /** Vé đang chờ xác nhận hủy (thay cho window.confirm). */
+  const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
 
  /** Người đặt tự hủy vé của mình (chỉ khi ca chưa bắt đầu) — backend cũng kiểm lại SĐT. */
  const cancelMyBooking = async (b: any) => {
- const ok = window.confirm(
- `Hủy vé mã ${b.code}?\n\n${b.courtName ?? ""} · ${b.timeSlot} · ${b.bookingDate}\n\n` +
- `Tiền cọc ${money(b.depositPaid)} sẽ được hoàn lại theo chính sách của chủ sân.`
- );
- if (!ok) return;
  try {
  setCancellingId(b.id);
  const res = await apiRequest<any>(`/api/v1/pitches/bookings/${b.id}/cancel-by-customer`, {
@@ -89,7 +86,8 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  } catch (e: any) {
  setNotice(e?.message || "Không hủy được vé. Vui lòng thử lại.");
  } finally {
- setCancellingId(null);
+  setCancellingId(null);
+  setConfirmCancelId(null);
  }
  };
 
@@ -562,14 +560,34 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  {b.status}
  </span>
  {canCancel && !started && (
- <button
- type="button"
- onClick={() => cancelMyBooking(b)}
- disabled={cancellingId === b.id}
- className="px-2.5 py-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-50"
- >
- {cancellingId === b.id ? "Đang hủy…" : "Hủy vé"}
- </button>
+  confirmCancelId === b.id ? (
+  <span className="flex items-center gap-1.5">
+  <span className="text-[10px] font-bold text-slate-600 hidden sm:inline">Hủy vé {b.code}?</span>
+  <button
+  type="button"
+  onClick={() => cancelMyBooking(b)}
+  disabled={cancellingId === b.id}
+  className="px-2.5 py-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-50"
+  >
+  {cancellingId === b.id ? "Đang hủy…" : "Chắc chắn hủy"}
+  </button>
+  <button
+  type="button"
+  onClick={() => setConfirmCancelId(null)}
+  className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-black uppercase transition-all active:scale-95"
+  >
+  Giữ lại
+  </button>
+  </span>
+  ) : (
+  <button
+  type="button"
+  onClick={() => setConfirmCancelId(b.id)}
+  className="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 text-[10px] font-black uppercase transition-all active:scale-95"
+  >
+  Hủy vé
+  </button>
+  )
  )}
  </div>
  </div>
