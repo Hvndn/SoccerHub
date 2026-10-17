@@ -280,4 +280,38 @@ public class ChatController {
 
         return ResponseEntity.ok(saved);
     }
+    // ============================================================
+    // MODERATION (ADMIN): xem / xoá tin nhắn trong các kênh công khai
+    // ============================================================
+
+    /**
+     * Danh sách tin nhắn công khai (mọi kênh) cho admin kiểm duyệt.
+     * Mặc định lấy 100 tin mới nhất; có thể lọc theo kênh.
+     */
+    @GetMapping("/admin/messages")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ChatMessage>> adminListMessages(
+            @RequestParam(required = false) String channel,
+            @RequestParam(defaultValue = "100") int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 500));
+        List<ChatMessage> all = channel != null && !channel.isBlank()
+                ? chatMessageRepository.findTop50ByChannel(channel.trim().toLowerCase())
+                : chatMessageRepository.findTop50AllPublic();
+        if (all.size() > safeLimit) {
+            all = all.subList(0, safeLimit);
+        }
+        return ResponseEntity.ok(all);
+    }
+
+    /** Admin xoá tin nhắn bất kỳ (không giới hạn người gửi). */
+    @DeleteMapping("/admin/messages/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> adminDeleteMessage(@PathVariable Long id) {
+        ChatMessage msg = chatMessageRepository.findById(id).orElse(null);
+        if (msg == null) {
+            return ResponseEntity.status(404).body(Map.of("message", "Không tìm thấy tin nhắn."));
+        }
+        chatMessageRepository.delete(msg);
+        return ResponseEntity.ok(Map.of("message", "Đã xoá tin nhắn.", "id", id));
+    }
 }

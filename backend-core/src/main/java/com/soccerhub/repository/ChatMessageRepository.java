@@ -17,6 +17,11 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
            "ORDER BY m.createdAt DESC")
     List<ChatMessage> findTop50General();
 
+    /** 50 tin nhắn công khai mới nhất của TẤT CẢ kênh (dùng cho admin kiểm duyệt). */
+    @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL " +
+           "ORDER BY m.createdAt DESC")
+    List<ChatMessage> findTop50AllPublic();
+
     /** 50 tin nhắn công khai mới nhất của 1 kênh, mới nhất đầu tiên. */
     @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL " +
            "AND m.channel = ?1 " +

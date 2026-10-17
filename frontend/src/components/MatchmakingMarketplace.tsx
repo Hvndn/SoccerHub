@@ -34,6 +34,7 @@ import { API_BASE_URL, apiRequest, ensureLoggedIn } from "@/lib/api";
 import { toastOk, toastErr } from "@/lib/toast";
 import { submitTeamReview } from "@/lib/adminService";
 import FormDots from "./FormDots";
+import MatchmakingCard from "./MatchmakingCard";
 
 interface MatchmakingMarketplaceProps {
  user?: any;

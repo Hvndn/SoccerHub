@@ -11,6 +11,8 @@ import {
  ShieldCheck,
  LogIn,
  ArrowLeft,
+ MessageSquare,
+ Megaphone,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { AdminToast } from "@/components/admin/AdminUI";
@@ -20,8 +22,10 @@ import AdminTournaments from "@/components/admin/AdminTournaments";
 import AdminPitches from "@/components/admin/AdminPitches";
 import AdminBookings from "@/components/admin/AdminBookings";
 import AdminModeration from "@/components/admin/AdminModeration";
+import AdminNotifications from "@/components/admin/AdminNotifications";
+import AdminChatModeration from "@/components/admin/AdminChatModeration";
 
-type Section = "overview" | "users" | "tournaments" | "pitches" | "bookings" | "moderation";
+type Section = "overview" | "users" | "tournaments" | "pitches" | "bookings" | "moderation" | "chat" | "notifications";
 
 const SECTIONS: { key: Section; label: string; desc: string; icon: React.ReactNode }[] = [
  { key: "overview", label: "Tổng quan", desc: "KPI toàn hệ thống", icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -30,6 +34,8 @@ const SECTIONS: { key: Section; label: string; desc: string; icon: React.ReactNo
  { key: "pitches", label: "Sân bóng", desc: "Danh sách cụm sân", icon: <MapPin className="w-4 h-4" /> },
  { key: "bookings", label: "Đặt sân", desc: "Đơn & doanh thu", icon: <Ticket className="w-4 h-4" /> },
  { key: "moderation", label: "Kiểm duyệt", desc: "Gỡ tin chợ kèo", icon: <ShieldCheck className="w-4 h-4" /> },
+ { key: "chat", label: "Chat", desc: "Kiểm duyệt tin nhắn", icon: <MessageSquare className="w-4 h-4" /> },
+ { key: "notifications", label: "Thông báo", desc: "Gửi thông báo", icon: <Megaphone className="w-4 h-4" /> },
 ];
 
 const SECTION_TITLE: Record<Section, string> = {
@@ -39,6 +45,8 @@ const SECTION_TITLE: Record<Section, string> = {
  pitches: "Quản lý sân bóng",
  bookings: "Đơn đặt sân & doanh thu",
  moderation: "Kiểm duyệt chợ kèo",
+ chat: "Kiểm duyệt tin nhắn chat",
+ notifications: "Gửi thông báo hệ thống",
 };
 
 export default function AdminPage() {
@@ -166,6 +174,8 @@ function AdminConsole() {
  {section === "pitches" && <AdminPitches notify={notify} />}
  {section === "bookings" && <AdminBookings notify={notify} />}
  {section === "moderation" && <AdminModeration notify={notify} />}
+ {section === "chat" && <AdminChatModeration notify={notify} />}
+ {section === "notifications" && <AdminNotifications notify={notify} />}
  </div>
  </div>
  </div>
