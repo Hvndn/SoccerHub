@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   MessageCircle,
   Users,
@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { apiRequest, ensureLoggedIn } from "@/lib/api";
 import CommunityChat from "./CommunityChat";
+import PageSpinner from "./PageSpinner";
 import MatchmakingMarketplace from "./MatchmakingMarketplace";
 import TeamClubManagement from "./TeamClubManagement";
 
@@ -132,6 +133,29 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
   const [channels, setChannels] = useState<ChannelInfo[]>([]);
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Hiệu ứng chuyển trạng thái: bật vòng xoay tối thiểu MIN_LOADING_MS,
+   * kể cả khi dữ liệu về nhanh hơn, để người dùng không thấy màn hình nhảy loè.
+   */
+  const MIN_LOADING_MS = 1000;
+  const [switching, setSwitching] = useState(false);
+  const switchTimer = useRef<number | null>(null);
+
+  const runWithLoader = useCallback(() => {
+    if (switchTimer.current) window.clearTimeout(switchTimer.current);
+    setSwitching(true);
+    switchTimer.current = window.setTimeout(() => {
+      setSwitching(false);
+      switchTimer.current = null;
+    }, MIN_LOADING_MS);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (switchTimer.current) window.clearTimeout(switchTimer.current);
+    };
+  }, []);
+
   // ---- Tải dữ liệu xem trước (chỉ khi đã đăng nhập) ----
   const refresh = useCallback(async () => {
     if (!user) return;
@@ -186,6 +210,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
       onOpenAuth?.("login", "PLAYER");
       return;
     }
+    runWithLoader();
     markSeen("ch:" + c.slug);
     setTick((x) => x + 1);
     setView({ kind: "public", slug: c.slug, name: c.name, desc: c.desc });
@@ -217,10 +242,27 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
       markSeen("dm:" + partnerEmail);
       setTick((x) => x + 1);
     }
+    runWithLoader();
     setView({ kind: "dm", partnerEmail, partnerName });
   };
 
-  const back = () => setView({ kind: "home" });
+  const back = () => {
+    runWithLoader();
+    setView({ kind: "home" });
+  };
+
+  /** Đổi chế độ Trò chuyện / Đội bóng — có hiệu ứng xoay. */
+  const switchMode = (m: "chat" | "clan") => {
+    if (m === mode) return;
+    runWithLoader();
+    setMode(m);
+  };
+
+  /** Mở chợ kèo giao hữu — có hiệu ứng xoay. */
+  const openMatchmaking = () => {
+    runWithLoader();
+    setView({ kind: "matchmaking" });
+  };
 
   // ---- Danh sách channel (kênh công khai + DM) ----
   const CHANNEL_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -311,8 +353,15 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
 
     return (
       <div className="w-full space-y-4 pb-10 sm:pb-16">
-        <div className="rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-2xl">
-          {/* Header dark + neon */}
+        <div className="rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-2xl relative">
+          {/* Vòng xoay khi đang chuyển trạng thái (tối thiểu 1s) */}
+          {switching && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/85 backdrop-blur-[2px] animate-fade-in">
+              <PageSpinner size="md" sub="Đang tải…" />
+            </div>
+          )}
+
+          {/* Header kênh */}
           <div className="flex items-center gap-3 px-3.5 sm:px-5 py-3.5 border-b border-slate-200 bg-gradient-to-r from-white via-slate-50 to-white">
             <button
               type="button"
@@ -380,12 +429,19 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
    * HOME — Hub dark/neon
    * ========================================================= */
   return (
-    <div className="w-full space-y-4 sm:space-y-5 pb-10 sm:pb-16">
+    <div className="w-full space-y-4 sm:space-y-5 pb-10 sm:pb-16 relative">
+      {/* ===== Lớp che + vòng xoay khi chuyển trạng thái (tối thiểu 1s) ===== */}
+      {switching && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-white/80 backdrop-blur-[2px] animate-fade-in">
+          <PageSpinner size="md" sub="Đang tải…" />
+        </div>
+      )}
+
       {/* ===== TOP SUB-NAV: Trò chuyện / Đội bóng (Clan) ===== */}
       <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white border border-slate-200">
         <button
           type="button"
-          onClick={() => setMode("chat")}
+          onClick={() => switchMode("chat")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all ${
             mode === "chat"
               ? "bg-[#0369a1] text-white shadow-md"
@@ -397,7 +453,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         </button>
         <button
           type="button"
-          onClick={() => setMode("clan")}
+          onClick={() => switchMode("clan")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all ${
             mode === "clan"
               ? "bg-[#0369a1] text-white shadow-md"
@@ -444,7 +500,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         {/* BẮT ĐỐI GIAO HỮU (trái) */}
         <button
           type="button"
-          onClick={() => setView({ kind: "matchmaking" })}
+          onClick={openMatchmaking}
           className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
           style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}
         >
@@ -591,7 +647,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         /* ===== CLAN MODE ===== */
         user ? (
           <div className="rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-xl">
-            <TeamClubManagement user={user} onBackToHome={() => setMode("chat")} onNavigateTab={onNavigateTab} />
+            <TeamClubManagement user={user} onBackToHome={() => switchMode("chat")} onNavigateTab={onNavigateTab} />
           </div>
         ) : (
           <div className="rounded-3xl bg-white border border-slate-200 shadow-2xl px-5 py-12 text-center space-y-3">

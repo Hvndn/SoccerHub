@@ -19,6 +19,7 @@ import TeamClubManagement from "@/components/TeamClubManagement";
 import StadiumOwnerOnboarding from "@/components/StadiumOwnerOnboarding";
 import MultiSportArena from "@/components/MultiSportArena";
 import GuestFeatureBanner from "@/components/GuestFeatureBanner";
+import PageSpinner from "@/components/PageSpinner";
 import { MapPin, Trophy, Users, ShieldCheck, ShieldAlert, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import AuthModal from "@/components/AuthModal";
@@ -31,6 +32,9 @@ export default function Home() {
 
  // Transition & Loading States
  const [isTabChanging, setIsTabChanging] = useState(false);
+
+  /** Mọi lần chuyển trạng thái/trang đều hiện vòng xoay tối thiểu 1 giây. */
+  const MIN_TAB_LOADING_MS = 1000;
 
  // Modals state
  const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -183,14 +187,18 @@ export default function Home() {
  }
  }
 
- if (newTab === activeTab) return;
+if (newTab === activeTab) return;
+ // Bật vòng xoay loading, giữ tối thiểu 1s để không thấy màn hình nhảy loè
  setIsTabChanging(true);
+ const startedAt = Date.now();
  setTimeout(() => {
  setActiveTab(newTab);
  window.scrollTo({ top: 0, behavior: "smooth" });
+ const elapsed = Date.now() - startedAt;
+ const remaining = Math.max(0, MIN_TAB_LOADING_MS - elapsed);
  setTimeout(() => {
  setIsTabChanging(false);
- }, 450);
+ }, remaining);
  }, 120);
  };
 
@@ -252,10 +260,15 @@ export default function Home() {
 
  return (
  <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-[#0369a1] selection:text-white relative transition-colors duration-300">
- {/* Top Page Progress Loading Bar */}
- {isTabChanging && (
- <div className="fixed top-0 left-0 right-0 h-1 bg-[#0369a1] z-50 animate-top-loader stadium-shadow" />
- )}
+{/* Vòng xoay loading toàn trang khi chuyển tab/trạng thái (tối thiểu 1s) */}
+  {isTabChanging && (
+  <>
+  <div className="fixed top-0 left-0 right-0 h-1 bg-[#0369a1] z-50 animate-top-loader stadium-shadow" />
+  <div className="fixed inset-0 z-[45] flex items-center justify-center bg-slate-50/70 backdrop-blur-[2px] animate-fade-in">
+  <PageSpinner size="lg" sub="Đang chuyển trang…" />
+  </div>
+  </>
+  )}
 
  {/* Top Navbar */}
  <Navbar

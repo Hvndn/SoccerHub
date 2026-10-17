@@ -8,6 +8,7 @@ import {
 import { apiRequest } from "@/lib/api";
 import { toastErr, toastOk } from "@/lib/toast";
 import { ensureLoggedIn } from "@/lib/api";
+import PageSpinner from "./PageSpinner";
 
 interface ChatMessage {
   id: number;
@@ -36,6 +37,9 @@ interface UserInfo {
   email: string;
   role: string;
 }
+
+/** Vòng xoay trong ô chat tối thiểu 500ms để không nháy khi dữ liệu về nhanh. */
+const MIN_SPINNER_MS = 500;
 
 const ROLE_COLOR: Record<string, string> = {
   ADMIN: "text-rose-600",
@@ -101,6 +105,7 @@ export default function CommunityChat({
   const dmBottomRef = useRef<HTMLDivElement>(null);
 
   // ---- Fetch public messages ----
+  const pubLoadingStart = useRef<number>(0);
   const fetchPublic = useCallback(async (silent = false) => {
     try {
       const data = await apiRequest<ChatMessage[]>(
@@ -111,12 +116,20 @@ export default function CommunityChat({
     } catch (e: any) {
       if (!silent) setPubError(e?.message || "Không tải được tin nhắn.");
     } finally {
-      setPubLoading(false);
+      // Giữ vòng xoay tối thiểu 500ms để không nháy/flicker khi dữ liệu về quá nhanh
+      if (silent) {
+        setPubLoading(false);
+      } else {
+        const elapsed = Date.now() - pubLoadingStart.current;
+        const remaining = Math.max(0, MIN_SPINNER_MS - elapsed);
+        window.setTimeout(() => setPubLoading(false), remaining);
+      }
     }
   }, [channel]);
 
   useEffect(() => {
     if (mode !== "public") return;
+    pubLoadingStart.current = Date.now();
     setPubLoading(true);
     setReplyTo(null);
     fetchPublic();
@@ -390,8 +403,8 @@ export default function CommunityChat({
 
           <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 space-y-2.5 bg-slate-50/40">
             {pubLoading ? (
-              <div className="flex items-center justify-center h-full text-slate-400 text-xs">
-                <Loader2 className="w-4 h-4 animate-spin mr-2" /> Đang tải tin nhắn…
+              <div className="flex items-center justify-center h-full">
+                <PageSpinner size="sm" showText={false} sub="Đang tải tin nhắn…" />
               </div>
             ) : pubError ? (
               <div className="text-xs text-rose-600 text-center py-6">{pubError}</div>
@@ -570,8 +583,8 @@ export default function CommunityChat({
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 space-y-2.5 bg-slate-50/40">
                   {dmLoading ? (
-                    <div className="flex items-center justify-center h-full text-slate-400 text-xs">
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" /> Đang tải…
+                    <div className="flex items-center justify-center h-full">
+                      <PageSpinner size="sm" showText={false} sub="Đang tải tin nhắn…" />
                     </div>
                   ) : dmMessages.length === 0 ? (
                     <div className="text-center py-10">

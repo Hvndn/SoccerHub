@@ -1,25 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PageSpinner from "@/components/PageSpinner";
+import LoadingGate from "@/components/LoadingGate";
 
 /**
  * Màn chờ hiện ngay từ HTML gửi về (server render) nên khi F5 / mở lại trang
  * người dùng thấy vòng xoay thay vì màn trắng trơn, trước cả khi React hydrate.
- * Sau khi React mount xong thì tự ẩn đi, không chặn thao tác.
+ * Giữ tối thiểu 1 giây rồi tự ẩn, không chặn thao tác.
  */
 export default function BootSplash() {
- const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
- useEffect(() => {
- setMounted(true);
- }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
- if (mounted) return null;
+  if (mounted) return null;
 
- return (
- <div className="fixed inset-0 z-[200] bg-slate-50 ">
- <PageSpinner className="h-full w-full" />
- </div>
- );
+  return (
+    <div className="fixed inset-0 z-[200] bg-slate-50">
+      <LoadingGate minMs={1000} className="h-full w-full" />
+    </div>
+  );
 }
