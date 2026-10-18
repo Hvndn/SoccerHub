@@ -71,6 +71,8 @@ export default function TournamentBracket() {
  const [scores, setScores] = useState<Record<string, { a: string; b: string }>>({});
  const [scorerOpen, setScorerOpen] = useState<Record<string, boolean>>({});
  const [scorerRows, setScorerRows] = useState<Record<string, { player: string; team: string; goals: string; assists: string }[]>>({});
+ const [matchStats, setMatchStats] = useState<Record<string, { yellowA?: string; yellowB?: string; redA?: string; redB?: string; subA?: string; subB?: string; mvp?: string; notes?: string }>>({});
+ const [statsOpen, setStatsOpen] = useState<Record<string, boolean>>({});
  const [confirmDraw, setConfirmDraw] = useState(false);
  const [confirmUndo, setConfirmUndo] = useState<BracketMatch | null>(null);
  const [confirmSimulate, setConfirmSimulate] = useState(false);
@@ -379,11 +381,21 @@ export default function TournamentBracket() {
  setScorerOpen((o) => {
  const next = { ...o };
  delete next[m.matchId];
+  setMatchStats((prev) => {
+    const next = { ...prev };
+    delete next[m.matchId];
+    return next;
+  });
  return next;
  });
  setScorerRows((prev) => {
  const next = { ...prev };
  delete next[m.matchId];
+  setMatchStats((prev) => {
+    const next = { ...prev };
+    delete next[m.matchId];
+    return next;
+  });
  return next;
  });
  } catch (err: any) {
