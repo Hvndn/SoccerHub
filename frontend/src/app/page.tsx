@@ -11,6 +11,7 @@ import RefereePanel from "@/components/RefereePanel";
 import CommunityForm from "@/components/CommunityForm";
 import CommunityHub from "@/components/CommunityHub";
 import MatchmakingMarketplace from "@/components/MatchmakingMarketplace";
+import { isPlayerSetupPending } from "@/components/PlayerSetup";
 import AdminDashboard from "@/components/AdminDashboard";
 import ActivitySchedule from "@/components/ActivitySchedule";
 import MemberCardPortal from "@/components/MemberCardPortal";
@@ -85,13 +86,19 @@ export default function Home() {
 
  // Role Guard: Tự động điều hướng và bảo vệ phân quyền nhất quán khi role thay đổi
  React.useEffect(() => {
- if (!currentUser) {
- // Khách chưa đăng nhập: đẩy ra ngoài các tab yêu cầu auth
- if ([...OWNER_TABS, ...ORGANIZER_TABS, ...AUTH_REQUIRED_TABS].includes(activeTab)) {
- setActiveTab("booking");
- }
- return;
- }
+if (!currentUser) {
+  // Khách chưa đăng nhập: đẩy ra ngoài các tab yêu cầu auth
+  if ([...OWNER_TABS, ...ORGANIZER_TABS, ...AUTH_REQUIRED_TABS].includes(activeTab)) {
+  setActiveTab("booking");
+  }
+  return;
+  }
+
+  // PLAYER mới đăng ký: bắt hoàn tất trang "Khởi tạo hồ sơ cầu thủ" trước khi dùng app
+  if (currentUser.role === "PLAYER" && isPlayerSetupPending(currentUser.email || "")) {
+  window.location.assign("/player-setup");
+  return;
+  }
 
  if (currentUser.role === "OWNER") {
  // CHỦ SÂN: Nếu là chủ sân mới (chưa tạo sân) thì giữ ở onboarding
@@ -110,21 +117,26 @@ export default function Home() {
   if (OWNER_MANAGE_TABS.includes(activeTab)) {
  setActiveTab("tournaments");
  }
- } else if (currentUser.role === "ADMIN") {
- // SUPER ADMIN: không thao tác ở trang home — về route quản trị riêng
- window.location.assign("/admin");
+} else if (currentUser.role === "ADMIN") {
+  // SUPER ADMIN: được phép xem trang chủ như mọi tài khoản khác (nút quản trị nằm
+  // trên Navbar). Trước đây bị đẩy cứng về /admin -> vòng lặp, không về tới trang chủ được.
  }
  }, [currentUser?.role, currentUser?.isNewOwner]);
 
- const handleTabChange = (newTab: string) => {
- // ================================================================
- // GUARD 0: SUPER ADMIN - Không thao tác ở trang người dùng/chủ sân
- // ================================================================
- if (currentUser?.role === "ADMIN") {
- showRoleWarning("⚠️ Tài khoản Quản Trị không thao tác ở khu vực này. Đang chuyển về Trang Quản Trị Hệ Thống.");
- window.location.assign("/admin");
- return;
- }
+const handleTabChange = (newTab: string) => {
+  // SUPER ADMIN: được duyệt các khu vực của trang chủ như mọi tài khoản khác.
+  // (Trước đây bị chặn cứng + đẩy về /admin khiến admin không về tới trang chủ được.)
+
+  // ================================================================
+  // GUARD 1: PLAYER mới đăng ký — bắt hoàn tất trang khởi tạo hồ sơ cầu thủ
+  // ================================================================
+  if (
+  currentUser?.role === "PLAYER" &&
+  isPlayerSetupPending(currentUser.email || "")
+  ) {
+  window.location.assign("/player-setup");
+  return;
+  }
 
  // ================================================================
  // GUARD 1: OWNER (Chủ Sân) - Không được vào khu vực Cầu Thủ

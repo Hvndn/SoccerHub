@@ -16,6 +16,7 @@ import {
  User,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { markPlayerSetupPending } from "@/components/PlayerSetup";
 
 interface AuthModalProps {
  isOpen: boolean;
@@ -248,9 +249,13 @@ export default function AuthModal({
  area: area,
  favoriteSport: favoriteSport,
  level: role === "PLAYER" ? level : undefined
- });
- onLoginSuccess({ ...newUser, isNewOwner: role === "OWNER" });
- onClose();
+});
+  // Cầu thủ mới đăng ký -> đánh dấu cần hoàn tất trang "Khởi tạo hồ sơ cầu thủ"
+  if (role === "PLAYER" && newUser?.email) {
+    markPlayerSetupPending(newUser.email);
+  }
+  onLoginSuccess({ ...newUser, isNewOwner: role === "OWNER" });
+  onClose();
  } catch (err: any) {
  setErrorMsg(err.message || "Đăng ký thất bại. Vui lòng thử lại.");
  } finally {
