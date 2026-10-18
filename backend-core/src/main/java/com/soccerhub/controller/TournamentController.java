@@ -526,6 +526,12 @@ public class TournamentController {
                 "registeredTeams", tournament.getRegisteredTeams()));
     }
 
+    private static Integer parseInt(Object raw) {
+        if (raw == null) return 0;
+        try { return Math.max(0, Integer.parseInt(String.valueOf(raw).trim())); }
+        catch (NumberFormatException e) { return 0; }
+    }
+
     private static Integer parseScore(Object raw) {        if (raw == null) return null;
         try {
             int v = Integer.parseInt(String.valueOf(raw).trim());
@@ -555,6 +561,18 @@ public class TournamentController {
         if (matchId.isEmpty() || scoreA == null || scoreB == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Thiếu mã trận hoặc tỷ số không hợp lệ (số nguyên >= 0)."));
         }
+
+        // Thống kê chi tiết trận (thẻ, thay người, MVP) — không bắt buộc
+        int yca = parseInt(body.get("yellowCardsA"));
+        int ycb = parseInt(body.get("yellowCardsB"));
+        int rca = parseInt(body.get("redCardsA"));
+        int rcb = parseInt(body.get("redCardsB"));
+        int suba = parseInt(body.get("substitutionsA"));
+        int subb = parseInt(body.get("substitutionsB"));
+        String mvp = body.get("mvpPlayer") == null ? null : String.valueOf(body.get("mvpPlayer")).trim();
+        if (mvp != null && mvp.isEmpty()) mvp = null;
+        String notes = body.get("notes") == null ? null : String.valueOf(body.get("notes")).trim();
+        if (notes != null && notes.isEmpty()) notes = null;
         if (scoreA.equals(scoreB) && !"ROUND_ROBIN".equals(tournament.getFormat())) {
             return ResponseEntity.badRequest().body(Map.of("message", "Vòng Knockout cần phân thắng bại, không nhận tỷ số hòa."));
         }
@@ -681,6 +699,14 @@ public class TournamentController {
                 .scoreA(scoreA)
                 .scoreB(scoreB)
                 .winner(winner)
+                .yellowCardsA(yca)
+                .yellowCardsB(ycb)
+                .redCardsA(rca)
+                .redCardsB(rcb)
+                .substitutionsA(suba)
+                .substitutionsB(subb)
+                .mvpPlayer(mvp)
+                .notes(notes)
                 .build());
         if (!goalEvents.isEmpty()) {
             goalEventRepository.saveAll(goalEvents);

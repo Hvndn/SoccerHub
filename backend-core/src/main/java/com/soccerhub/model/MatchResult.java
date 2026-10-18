@@ -39,6 +39,23 @@ public class MatchResult {
 
     private String winner;
 
+    // ---- Thống kê chi tiết trận đấu (thẻ, thay người, MVP) ----
+    @Builder.Default
+    private Integer yellowCardsA = 0;
+    @Builder.Default
+    private Integer yellowCardsB = 0;
+    @Builder.Default
+    private Integer redCardsA = 0;
+    @Builder.Default
+    private Integer redCardsB = 0;
+    @Builder.Default
+    private Integer substitutionsA = 0;
+    @Builder.Default
+    private Integer substitutionsB = 0;
+    private String mvpPlayer;
+    @Column(length = 500)
+    private String notes;
+
     @Builder.Default
     private LocalDateTime playedAt = LocalDateTime.now();
 }
