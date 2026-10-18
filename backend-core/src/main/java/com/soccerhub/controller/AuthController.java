@@ -7,6 +7,8 @@ import com.soccerhub.dto.UpdateProfileRequest;
 import com.soccerhub.dto.UserDto;
 import com.soccerhub.model.User;
 import com.soccerhub.service.AuthService;
+import com.soccerhub.service.GoogleAuthService;
+import com.soccerhub.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,8 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final GoogleAuthService googleAuthService;
+    private final JwtTokenProvider tokenProvider;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
@@ -43,6 +47,32 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Đã xảy ra lỗi hệ thống: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> body) {
+        try {
+            String idToken = body.get("idToken");
+            if (idToken == null || idToken.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Thiếu ID token Google."));
+            }
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload =
+                    googleAuthService.verify(idToken);
+            com.soccerhub.model.User user = googleAuthService.findOrCreateUser(payload);
+
+            String token = tokenProvider.generateToken(user.getEmail(), user.getRole().name());
+            com.soccerhub.dto.UserDto userDto = authService.mapToDto(user);
+
+            return ResponseEntity.ok(Map.of(
+                    "token", token,
+                    "user", userDto,
+                    "message", "Đăng nhập Google thành công! Chào mừng " + user.getFullName()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Đã xảy ra lỗi hệ thống: " + e.getMessage()));
         }
     }
 

@@ -56,6 +56,7 @@ export default function RootLayout({
  className={`${beVietnamPro.variable} ${jetbrainsMono.variable} overflow-x-hidden`}
  >
  <body className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 overflow-x-hidden antialiased">
+  <script async defer src="https://accounts.google.com/gsi/client"></script>
  <AuthProvider>
  <ThemeProvider>
  {/* Vòng xoay hiện ngay khi F5, tự ẩn sau khi React mount */}

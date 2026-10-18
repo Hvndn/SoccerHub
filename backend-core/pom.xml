@@ -49,6 +49,13 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
+        <!-- Xác thực Google ID token (Sign in with Google) -->
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+
         <!-- Lombok & Utilities -->
         <dependency>
             <groupId>org.projectlombok</groupId>
