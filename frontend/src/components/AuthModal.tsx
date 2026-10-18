@@ -453,6 +453,25 @@ export default function AuthModal({
  <span>Đăng nhập</span>
  )}
  </button>
+
+ {/* Google Sign-In */}
+ <div className="mt-4 pt-4 border-t border-slate-100">
+ <p className="text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+ Hoặc tiếp tục với
+ </p>
+ <div className="flex justify-center">
+ <GoogleLoginButton
+ mode="login"
+ onSuccess={(u) => {
+ if (u?.email && u?.role === "PLAYER") {
+ markPlayerSetupPending(u.email);
+ }
+ onLoginSuccess({ ...u, isNewOwner: u?.role === "OWNER" });
+ onClose();
+ }}
+ />
+ </div>
+ </div>
  </form>
  ) : (
  <form onSubmit={handleRegister} className="mt-3 space-y-3 sm:mt-4 sm:space-y-4">

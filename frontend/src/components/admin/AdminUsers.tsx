@@ -357,7 +357,6 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
  danger={confirm?.kind === "delete" ? true : confirm?.kind === "status" ? confirm.user.enabled : false}
  busy={busyId !== null}
  onCancel={() => setConfirm(null)}
-onCancel={() => setConfirm(null)}
   onConfirm={doConfirm}
   />
 

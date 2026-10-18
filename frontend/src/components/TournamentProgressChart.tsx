@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Trophy, Loader2 } from "lucide-react";
-import { SectionCard } from "./AdminUI";
+import { SectionCard } from "@/components/admin/AdminUI";
 
 /**
  * Biểu đồ tiến độ giải đấu — số trận thắng của từng đội theo vòng.

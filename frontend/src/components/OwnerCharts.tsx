@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { BarChart3, TrendingUp, Loader2 } from "lucide-react";
-import { SectionCard } from "./AdminUI";
+import { SectionCard } from "@/components/admin/AdminUI";
 import { apiRequest } from "@/lib/api";
 import { formatMoney } from "@/lib/tournamentService";
 

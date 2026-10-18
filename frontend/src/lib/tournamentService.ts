@@ -414,6 +414,14 @@ export async function saveMatchResult(
     scoreA: number;
     scoreB: number;
     scorers?: { playerName: string; teamName: string; goals: number; assists: number }[];
+    yellowCardsA?: number;
+    yellowCardsB?: number;
+    redCardsA?: number;
+    redCardsB?: number;
+    substitutionsA?: number;
+    substitutionsB?: number;
+    mvpPlayer?: string;
+    notes?: string;
   }
 ): Promise<MatchSaveResult> {
   try {

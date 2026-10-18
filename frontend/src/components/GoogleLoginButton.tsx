@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { LogIn } from "lucide-react";
+import { LogIn, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { setAuthToken } from "@/lib/api";
 import { markPlayerSetupPending } from "@/components/PlayerSetup";
 
 /**
@@ -70,10 +71,7 @@ export default function GoogleLoginButton({
               if (!r.ok) throw new Error(data?.message || "Đăng nhập Google thất bại.");
               const token = data.token;
               if (token) {
-                localStorage.setItem("soccerhub_token", token);
-                if (data.user?.role) {
-                  localStorage.setItem(`soccerhub_token_${data.user.role}`, token);
-                }
+                setAuthToken(token, data.user?.role);
               }
               // đánh dấu cần hoàn tất hồ sơ cho PLAYER mới
               if (data.user?.role === "PLAYER" && data.user?.email) {
