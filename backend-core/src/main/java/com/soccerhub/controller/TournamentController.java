@@ -74,7 +74,7 @@ public class TournamentController {
 
     /**
      * Gắn phong độ live (tính từ match_results) vào từng đội — field @Transient,
-     * không lưu DB. Frontend hiển thị chuỗi 5 trận + thành tích thay cho điểm Elo.
+     * không lưu DB. Frontend hiển thị chuỗi 5 trận + thành tích.
      */
     private void attachForm(Tournament t) {
         if (t.getTeams() == null) return;
@@ -670,7 +670,7 @@ public class TournamentController {
         }
         }
 
-        // Lưu lịch sử + nhánh đấu + cầu thủ ghi bàn. KHÔNG còn điểm Elo:
+        // Lưu lịch sử + nhánh đấu + cầu thủ ghi bàn. Hệ thống không dùng điểm Elo:
         // phong độ luôn được tính live từ các bản ghi này nên không cần cộng dồn.
         matchResultRepository.save(MatchResult.builder()
                 .tournamentId(tournament.getId())
@@ -802,7 +802,6 @@ public class TournamentController {
                     if (node != null && slot.equals(node.get("name"))) {
                         node.put("name", slot);
                         node.put("tbd", true);
-                        node.remove("elo");
                     }
                 }
             }

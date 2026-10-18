@@ -83,7 +83,6 @@ public class DataInitializer implements CommandLineRunner {
                     .role(UserRole.ADMIN)
                     .area("TP.HCM")
                     .level("Quản trị viên")
-                    .eloRating(1500)
                     .enabled(true)
                     .build();
             userRepository.save(admin);
@@ -101,7 +100,6 @@ public class DataInitializer implements CommandLineRunner {
                     .area("Quận 7, TP.HCM")
                     .level("Trung bình")
                     .position("Tiền đạo")
-                    .eloRating(1350)
                     .enabled(true)
                     .build());
             log.info("Seeded demo PLAYER account: player@soccerhub.vn / player123");
@@ -116,7 +114,6 @@ public class DataInitializer implements CommandLineRunner {
                     .role(UserRole.OWNER)
                     .area("Quận 7, TP.HCM")
                     .level("Chủ cụm sân")
-                    .eloRating(1400)
                     .enabled(true)
                     .build());
             log.info("Seeded demo OWNER account: owner@soccerhub.vn / owner123");
@@ -131,7 +128,6 @@ public class DataInitializer implements CommandLineRunner {
                     .role(UserRole.ORGANIZER)
                     .area("Quận 10, TP.HCM")
                     .level("Trưởng BTC giải")
-                    .eloRating(1450)
                     .enabled(true)
                     .build());
             log.info("Seeded demo ORGANIZER account: organizer@soccerhub.vn / organizer123");

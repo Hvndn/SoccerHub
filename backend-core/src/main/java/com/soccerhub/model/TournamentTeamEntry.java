@@ -22,11 +22,7 @@ public class TournamentTeamEntry {
     private String captainPhone;
     private String subCaptainPhone;
     private Integer memberCount;
-    private Integer eloRating;
-    /**
-     * Danh sách thành viên (tên cách nhau bằng dấu phẩy). Đội giả lập sinh tự động
-     * đúng quân số theo thể thức sân; đội thật do đội trưởng khai khi đăng ký.
-     */
+    /** Danh sách thành viên (tên cách nhau bằng dấu phẩy). */
     @Column(length = 2000)
     private String memberNames;
     // --- Phong độ tính live từ match_results (KHÔNG lưu DB, tính mỗi lần đọc) ---

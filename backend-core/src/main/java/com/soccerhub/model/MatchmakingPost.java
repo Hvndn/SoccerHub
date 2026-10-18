@@ -23,9 +23,6 @@ public class MatchmakingPost {
     private String captainPhone;
 
     @Builder.Default
-    private Integer eloRating = 1200;
-
-    @Builder.Default
     private Integer reputationScore = 98;
 
     @Column(nullable = false)
@@ -63,7 +60,6 @@ public class MatchmakingPost {
     private String opponentTeamName;
     private String opponentCaptainName;
     private String opponentCaptainPhone;
-    private Integer opponentEloRating;
     private LocalDateTime matchedAt;
 
     @Builder.Default

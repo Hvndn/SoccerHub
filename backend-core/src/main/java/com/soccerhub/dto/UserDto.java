@@ -17,7 +17,6 @@ public class UserDto {
     private String phone;
     private UserRole role;
     private String position;
-    private Integer eloRating;
     private String area;
     private String favoriteSport;
     private String level;

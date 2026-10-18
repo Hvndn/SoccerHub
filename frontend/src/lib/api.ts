@@ -20,20 +20,27 @@ export function apiUrl(path: string): string {
   return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-export function getAuthToken(): string | null {
+export function getAuthToken(role?: string): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('soccerhub_token');
+  const key = role ? `soccerhub_token_${role}` : 'soccerhub_token';
+  return sessionStorage.getItem(key);
 }
 
-export function setAuthToken(token: string) {
+export function setAuthToken(token: string, role?: string) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('soccerhub_token', token);
+    // Luôn lưu key mặc định để apiRequest/Default caller hoạt động
+    sessionStorage.setItem('soccerhub_token', token);
+    // Nếu có role thì lưu thêm key có role cho truy cập tab-specific
+    if (role) {
+      sessionStorage.setItem(`soccerhub_token_${role}`, token);
+    }
   }
 }
 
-export function removeAuthToken() {
+export function removeAuthToken(role?: string) {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('soccerhub_token');
+    const key = role ? `soccerhub_token_${role}` : 'soccerhub_token';
+    sessionStorage.removeItem(key);
   }
 }
 

@@ -33,9 +33,6 @@ public class User {
 
     private String position;
 
-    @Builder.Default
-    private Integer eloRating = 1200;
-
     private String area;
 
     private String favoriteSport;

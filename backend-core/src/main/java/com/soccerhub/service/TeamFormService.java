@@ -11,8 +11,7 @@ import java.util.Map;
 
 /**
  * Phong độ đội bóng tính TRỰC TIẾP từ lịch sử thi đấu thật (bảng match_results).
- * Thay thế hoàn toàn điểm Elo: không lưu điểm, không cộng dồn — mỗi lần đọc là
- * quét lại toàn bộ kết quả của đội.
+ * Hệ thống không dùng điểm số: mỗi lần đọc là quét lại toàn bộ kết quả của đội.
  *
  * <p>Chuỗi form: tối đa 5 ký tự W/D/L, ký tự đầu = trận GẦN NHẤT.
  * Ví dụ "WWDLW" nghĩa là trận mới nhất thắng, rồi thắng, hòa, thua, thắng.</p>

@@ -39,13 +39,6 @@ public class MatchResult {
 
     private String winner;
 
-    private Double eloDeltaA;
-    private Double eloDeltaB;
-
-    /** Cột Elo cũ giữ lại để tương thích dữ liệu đã lưu; hệ thống không còn đọc/ghi điểm số. */
-    private Integer eloBeforeA;
-    private Integer eloBeforeB;
-
     @Builder.Default
     private LocalDateTime playedAt = LocalDateTime.now();
 }

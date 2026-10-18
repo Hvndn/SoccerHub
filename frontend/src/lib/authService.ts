@@ -33,8 +33,8 @@ export async function loginApi(payload: { email: string; password: string }): Pr
     body: JSON.stringify(payload),
   });
 
-  if (data?.token) {
-    setAuthToken(data.token);
+  if (data?.token && data?.user?.role) {
+    setAuthToken(data.token, data.user.role);
   }
 
   return data;
@@ -56,8 +56,8 @@ export async function registerApi(payload: {
     body: JSON.stringify(payload),
   });
 
-  if (data?.token) {
-    setAuthToken(data.token);
+  if (data?.token && data?.user?.role) {
+    setAuthToken(data.token, data.user.role);
   }
 
   return data;
