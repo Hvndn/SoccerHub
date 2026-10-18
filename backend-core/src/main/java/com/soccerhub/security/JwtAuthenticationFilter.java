@@ -38,6 +38,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Optional<User> userOptional = userRepository.findByEmail(email);
                 if (userOptional.isPresent()) {
                     User user = userOptional.get();
+
+                    // Tài khoản bị quản trị khoá -> token cũ phải mất hiệu lực ngay.
+                    // Thiếu kiểm tra này thì token đã phát vẫn dùng được tới hết hạn (24h).
+                    if (Boolean.FALSE.equals(user.getEnabled())) {
+                        logger.warn("Tu choi token cua tai khoan da bi khoa: " + email);
+                        SecurityContextHolder.clearContext();
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
                     SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
                     
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

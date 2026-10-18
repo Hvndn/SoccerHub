@@ -153,30 +153,42 @@ public class PitchBookingController {
         return String.format("%02d:%02d", h, m);
     }
 
-    /**
+/**
      * API Cập Nhật Giờ Mở Cửa & Đóng Cửa Cụm Sân
      */
     @PutMapping("/{id}/operating-hours")
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> updateOperatingHours(
             @PathVariable Long id,
-            @RequestBody Map<String, Object> req
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal com.soccerhub.model.User me
     ) {
         String openTime = (String) req.get("openTime");
         String closeTime = (String) req.get("closeTime");
-        Integer duration = req.get("slotDurationMinutes") != null 
-                ? Integer.valueOf(req.get("slotDurationMinutes").toString()) 
+        Integer duration = req.get("slotDurationMinutes") != null
+                ? Integer.valueOf(req.get("slotDurationMinutes").toString())
                 : 90;
 
-        Pitch updated = pitchService.updateOperatingHours(id, openTime, closeTime, duration);
-        List<String> generatedSlots = generateTimeSlots(updated.getOpenTime(), updated.getCloseTime(), 90);
+        try {
+            Pitch updated = pitchService.updateOperatingHours(id, openTime, closeTime, duration, me);
+            // Sinh ca theo ĐÚNG slotDurationMinutes vừa lưu (trước đây hardcode 90)
+            int slotMin = updated.getSlotDurationMinutes() != null && updated.getSlotDurationMinutes() > 0
+                    ? updated.getSlotDurationMinutes() : 90;
+            List<String> generatedSlots = generateTimeSlots(updated.getOpenTime(), updated.getCloseTime(), slotMin);
 
-        return ResponseEntity.ok(Map.of(
-                "message", "Cập nhật thời gian hoạt động của cụm sân thành công!",
-                "openTime", updated.getOpenTime(),
-                "closeTime", updated.getCloseTime(),
-                "generatedSlots", generatedSlots
-        ));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Cập nhật thời gian hoạt động của cụm sân thành công!",
+                    "openTime", updated.getOpenTime(),
+                    "closeTime", updated.getCloseTime(),
+                    "slotDurationMinutes", slotMin,
+                    "generatedSlots", generatedSlots
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Lỗi cập nhật giờ hoạt động: " + e.getMessage()));
+        }
     }
 
     /**
@@ -186,7 +198,8 @@ public class PitchBookingController {
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> updatePitchPrice(
             @PathVariable Long id,
-            @RequestBody Map<String, Object> req
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal com.soccerhub.model.User me
     ) {
         Integer avgPrice = req.get("avgPricePerHour") != null
                 ? Integer.valueOf(req.get("avgPricePerHour").toString())
@@ -196,7 +209,7 @@ public class PitchBookingController {
                 : null;
 
         try {
-            Pitch updated = pitchService.updatePrice(id, avgPrice, peakPrice);
+            Pitch updated = pitchService.updatePrice(id, avgPrice, peakPrice, me);
             return ResponseEntity.ok(Map.of(
                     "message", "Đã cập nhật giá sân thành công.",
                     "pitch", updated
@@ -585,20 +598,67 @@ public class PitchBookingController {
     }
 
     /**
+/**
+     * Chống IDOR: người gọi phải là chủ sân của đơn đặt đó, hoặc ADMIN.
+     * Trước đây chỉ kiểm tra role OWNER/ADMIN nên bất kỳ chủ sân nào cũng check-in /
+     * huỷ / xoá được đơn của cụm sân khác — thậm chí đặt cashDue = 0 (mất tiền thật).
+     */
+    private void assertOwnsBooking(Booking b, com.soccerhub.model.User me) {
+        if (me == null) {
+            throw new IllegalArgumentException("Cần đăng nhập để quản lý đơn đặt sân.");
+        }
+        boolean isAdmin = me.getRole() != null && "ADMIN".equals(me.getRole().name());
+        if (isAdmin) return;
+
+        Pitch pitch = b.getPitchId() != null
+                ? pitchRepository.findById(b.getPitchId()).orElse(null)
+                : null;
+        if (pitch == null || pitch.getOwnerId() == null) {
+            throw new IllegalArgumentException("Không xác định được chủ sân của đơn này, chỉ Quản Trị viên được phép thao tác.");
+        }
+        if (!pitch.getOwnerId().equals(me.getId())) {
+            throw new IllegalArgumentException("Bạn không phải chủ sân của đơn đặt này.");
+        }
+    }
+
+    /** Chặn OWNER sửa cụm sân không thuộc sở hữu của họ. */
+    private void assertOwnsPitch(Pitch pitch, com.soccerhub.model.User me) {
+        if (me == null) {
+            throw new IllegalArgumentException("Cần đăng nhập để quản lý cụm sân.");
+        }
+        boolean isAdmin = me.getRole() != null && "ADMIN".equals(me.getRole().name());
+        if (isAdmin) return;
+        if (pitch.getOwnerId() == null) {
+            throw new IllegalArgumentException("Cụm sân này chưa có chủ sở hữu, chỉ Quản Trị viên được phép cập nhật.");
+        }
+        if (!pitch.getOwnerId().equals(me.getId())) {
+            throw new IllegalArgumentException("Bạn không phải chủ sân của cụm sân này.");
+        }
+    }
+
+    /**
      * API Thêm Sân Con Mới Vào Cụm Sân (Lưu trực tiếp vào MySQL)
      */
     @PostMapping("/{id}/add-court")
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> addCourtToPitch(
             @PathVariable Long id,
-            @RequestBody Map<String, Object> req
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal com.soccerhub.model.User me
     ) {
         String courtName = (String) req.get("courtName");
         if (courtName == null || courtName.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Tên sân con không được để trống."));
         }
 
-        Pitch pitch = pitchService.getPitchById(id);
+        Pitch pitch;
+        try {
+            pitch = pitchService.getPitchById(id);
+            assertOwnsPitch(pitch, me);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+
         List<String> types = pitch.getPitchTypes();
         if (types == null) {
             types = new ArrayList<>();
@@ -625,8 +685,15 @@ public class PitchBookingController {
      */
     @PutMapping("/bookings/{bookingId}/check-in")
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
-    public ResponseEntity<?> checkInBooking(@PathVariable Long bookingId) {
+    public ResponseEntity<?> checkInBooking(
+            @PathVariable Long bookingId,
+            @AuthenticationPrincipal com.soccerhub.model.User me) {
         return bookingRepository.findById(bookingId).map(b -> {
+            try {
+                assertOwnsBooking(b, me);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            }
             b.setStatus("PLAYING");
             b.setCashDue(0); // Đã thu đủ tại quầy
             bookingRepository.save(b);
@@ -637,11 +704,12 @@ public class PitchBookingController {
     /**
      * API Hủy Ca Đặt (Có Lý Do Hủy và Gửi Thông Báo Tới Người Đặt Sân)
      */
-    @PostMapping("/bookings/{bookingId}/cancel")
+@PostMapping("/bookings/{bookingId}/cancel")
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> cancelBookingWithReason(
             @PathVariable Long bookingId,
-            @RequestBody(required = false) Map<String, Object> req
+            @RequestBody(required = false) Map<String, Object> req,
+            @AuthenticationPrincipal com.soccerhub.model.User me
     ) {
         String reason = (req != null && req.get("reason") != null && !req.get("reason").toString().trim().isEmpty())
                 ? req.get("reason").toString().trim()
@@ -651,6 +719,12 @@ public class PitchBookingController {
                 : "OWNER";
 
         return bookingRepository.findById(bookingId).map(b -> {
+            // Chống IDOR: chỉ chủ sân của đơn này (hoặc ADMIN) mới được huỷ.
+            try {
+                assertOwnsBooking(b, me);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            }
             b.setStatus("CANCELLED");
             b.setCancelReason(reason);
             b.setCancelledBy(cancelledBy);
@@ -743,17 +817,24 @@ public class PitchBookingController {
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy vé đặt này.")));
     }
 
-    @DeleteMapping("/bookings/{bookingId}")
+@DeleteMapping("/bookings/{bookingId}")
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> cancelBooking(
             @PathVariable Long bookingId,
-            @RequestParam(required = false) String reason
+            @RequestParam(required = false) String reason,
+            @AuthenticationPrincipal com.soccerhub.model.User me
     ) {
-        String cancelReason = (reason != null && !reason.trim().isEmpty()) 
-                ? reason.trim() 
+        String cancelReason = (reason != null && !reason.trim().isEmpty())
+                ? reason.trim()
                 : "Chủ sân hủy ca đặt";
 
         return bookingRepository.findById(bookingId).map(b -> {
+            // Chống IDOR: chỉ chủ sân của đơn này (hoặc ADMIN) mới được xoá.
+            try {
+                assertOwnsBooking(b, me);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            }
             bookingRepository.delete(b);
             return ResponseEntity.ok(Map.of(
                     "message", "Đã hủy ca đặt thành công. Khung giờ đã sẵn sàng cho khách khác.",

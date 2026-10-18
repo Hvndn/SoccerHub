@@ -49,8 +49,36 @@ public class PitchService {
         return pitchRepository.save(pitch);
     }
 
-    public Pitch updateOperatingHours(Long id, String openTime, String closeTime, Integer slotDurationMinutes) {
+/**
+     * Kiểm tra quyền sở hữu cụm sân (chống IDOR).
+     *
+     * <p>Chỉ ADMIN được phép đụng vào mọi cụm sân. Chủ sân chỉ được sửa cụm sân
+     * do chính họ tạo. Cụm sân chưa gán chủ (dữ liệu seed / cụm sân công cộng)
+     * thì chỉ ADMIN mới sửa được — tránh việc mọi chủ sân đều chiếm đoạt sân
+     * không có chủ.</p>
+     *
+     * @throws IllegalArgumentException nếu không có quyền
+     */
+    private void assertCanManage(Pitch pitch, User actor) {
+        if (actor == null) {
+            throw new IllegalArgumentException("Cần đăng nhập để quản lý cụm sân.");
+        }
+        boolean isAdmin = actor.getRole() != null && "ADMIN".equals(actor.getRole().name());
+        if (isAdmin) return;
+
+        if (pitch.getOwnerId() == null) {
+            throw new IllegalArgumentException("Cụm sân này chưa có chủ sở hữu, chỉ Quản Trị viên được phép cập nhật.");
+        }
+        if (!pitch.getOwnerId().equals(actor.getId())) {
+            throw new IllegalArgumentException("Bạn không phải chủ sân của cụm sân này.");
+        }
+    }
+
+    /** Cập nhật giờ mở/đóng cửa + độ dài mỗi ca. Yêu cầu đúng chủ sân (hoặc ADMIN). */
+    public Pitch updateOperatingHours(Long id, String openTime, String closeTime,
+                                      Integer slotDurationMinutes, User actor) {
         Pitch pitch = getPitchById(id);
+        assertCanManage(pitch, actor);
         if (openTime != null && !openTime.trim().isEmpty()) {
             pitch.setOpenTime(openTime.trim());
         }
@@ -67,8 +95,9 @@ public class PitchService {
      * Cập nhật giá thuê sân: giá thường (avgPricePerHour) và giá giờ vàng (peakPricePerHour).
      * Các trường null hoặc <= 0 sẽ được giữ nguyên.
      */
-    public Pitch updatePrice(Long id, Integer avgPricePerHour, Integer peakPricePerHour) {
+    public Pitch updatePrice(Long id, Integer avgPricePerHour, Integer peakPricePerHour, User actor) {
         Pitch pitch = getPitchById(id);
+        assertCanManage(pitch, actor);
         if (avgPricePerHour != null && avgPricePerHour > 0) {
             pitch.setAvgPricePerHour(avgPricePerHour);
         }

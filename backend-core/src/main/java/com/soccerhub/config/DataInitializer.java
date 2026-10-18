@@ -72,9 +72,11 @@ public class DataInitializer implements CommandLineRunner {
         log.info("[DataInitializer] Hoàn tất quá trình kiểm tra dữ liệu khởi tạo.");
     }
 
-    private void seedUsers() {
-        // 0. Tài khoản Super Admin mặc định (dùng để vào trang /admin)
-        if (!userRepository.existsByEmail("admin@soccerhub.vn")) {
+private void seedUsers() {
+        // QUAN TRỌNG: chỉ tạo tài khoản admin mặc định khi hệ thống CHƯA CÓ admin nào.
+        // Nếu kiểm tra theo existsByEmail thì khi quản trị xoá acc demo, lần khởi động sau
+        // acc đó sẽ tự hồi sinh với mật khẩu admin123 -> lưng backdoor không xoá được.
+        if (userRepository.countByRole(UserRole.ADMIN) == 0 && !userRepository.existsByEmail("admin@soccerhub.vn")) {
             User admin = User.builder()
                     .fullName("Quản Trị Hệ Thống")
                     .email("admin@soccerhub.vn")
