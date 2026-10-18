@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import MatchmakingMarketplace from "./MatchmakingMarketplace";
+
 import TournamentLeaderboard from "./TournamentLeaderboard";
 import TournamentOrganizerPortal from "./TournamentOrganizerPortal";
 import { fetchTournaments } from "@/lib/tournamentService";
@@ -134,7 +134,7 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
   <ChevronRight className="w-5 h-5 text-white/60 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
   </div>
   </button>
-  <button type="button" onClick={() => setSubTab("matchmaking")} className="group relative overflow-hidden rounded-2xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98]" style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}>
+  <button type="button" onClick={() => onNavigateTab?.("matchmaking")} className="group relative overflow-hidden rounded-2xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98]" style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}>
   <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
   <div className="relative flex items-start justify-between gap-3">
   <div>
@@ -154,20 +154,6 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
  {/* TAB CHUYỂN ĐỔI CHÍNH 3 TRỤ CỘT CỦA CỘNG ĐỒNG */}
  {/* ========================================================= */}
  <div className="relative z-10 mt-3 sm:mt-6 pt-3 sm:pt-5 border-t border-slate-100 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-1.5 max-w-full scroll-smooth">
- <button
- type="button"
- onClick={() => setSubTab("matchmaking")}
- className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
- subTab === "matchmaking"
- ? "bg-[#0369a1] text-white shadow-sm"
- : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
- }`}
- >
- <Users className={`w-4 h-4 ${subTab === "matchmaking" ? "text-sky-100" : "text-sky-700"}`} />
- <span className="sm:hidden">Chợ Kèo</span>
- <span className="hidden sm:inline">1. Chợ Kèo Ghép Đội &amp; Phong Độ</span>
- <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500 text-white font-black">HOT</span>
- </button>
 
  <button
  type="button"
@@ -221,14 +207,10 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
  {/* NỘI DUNG TƯƠNG ỨNG THEO SUBTAB */}
  {/* ========================================================= */}
  <div className="w-full">
- {subTab === "matchmaking" && (
- <MatchmakingMarketplace user={user} onSelectMatch={onSelectSlot} />
- )}
-
  {subTab === "tournaments" && (
  <TournamentLeaderboard
  user={user}
- onBackToHome={() => setSubTab("matchmaking")}
+ onBackToHome={() => onNavigateTab?.("matchmaking")}
  onRequestLogin={onOpenAuth ? () => onOpenAuth("login", "PLAYER") : undefined}
  />
  )}
