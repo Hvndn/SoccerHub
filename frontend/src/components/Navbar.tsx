@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { subscribeToBookingEvents, playNotificationChime, type RealtimeBookingEvent } from "@/lib/realtimeService";
 import { listMyNotifications, markNotificationRead } from "@/lib/adminService";
-import { listMyGroups, listMyConversations } from "@/lib/groupChat";
+import { listMyGroups, listMyConversations, getUnreadCount } from "@/lib/groupChat";
 import NotificationsModal from "./NotificationsModal";
 
 // Notification item type
@@ -71,25 +71,21 @@ export default function Navbar({
 
   const [chatUnread, setChatUnread] = useState(0);
 
-  // Chủ sân cần thấy số tin nhắn/nhóm chat chưa đọc ngay trên menu
+  // Số tin nhắn chat chưa đọc (DM + Group) từ API getUnreadCount
   useEffect(() => {
     if (!user) { setChatUnread(0); return; }
     let alive = true;
     const load = async () => {
       try {
-        const [convos, groups] = await Promise.all([
-          listMyConversations().catch(() => []),
-          listMyGroups().catch(() => []),
-        ]);
+        const { total } = await getUnreadCount();
         if (!alive) return;
-        const n = (Array.isArray(convos) ? convos : []).length + (Array.isArray(groups) ? groups : []).length;
-        setChatUnread(n);
+        setChatUnread(total);
       } catch {
         /* bỏ qua */
       }
     };
     load();
-    const t = window.setInterval(load, 20000);
+    const t = window.setInterval(load, 30000); // poll 30s
     return () => { alive = false; window.clearInterval(t); };
   }, [user]);
 
