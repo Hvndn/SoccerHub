@@ -652,7 +652,7 @@ export default function AuthModal({
  {/* Demo 1-click */}
  <div className="mt-5 pt-4 border-t border-slate-100">
  <p className="text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">
- Dành cho hội đồng chấm — vào ngay 1 chạm
+ Demo
  </p>
  <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
  <button

@@ -6,6 +6,7 @@ import CountUp from "../CountUp";
 import Reveal from "../Reveal";
 import { SectionCard } from "./AdminUI";
 import { getAdminOverview, getRevenueReport, cleanOrphanData, type AdminOverview } from "@/lib/adminService";
+import AdminCharts from "./AdminCharts";
 import { formatMoney } from "@/lib/tournamentService";
 
 export default function AdminOverview({ notify }: { notify: (type: "ok" | "err", text: string) => void }) {
@@ -147,6 +148,14 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  </div>
  )}
  </SectionCard>
+ {/* ===== BIỂU ĐỒ THỐNG KÊ (recharts) ===== */}
+ <div className="pt-2">
+ <div className="flex items-center gap-2 mb-3">
+ <h3 className="font-black text-slate-900 text-sm">Biểu đồ thống kê</h3>
+ <span className="text-[11px] text-slate-500">— dữ liệu trực tiếp từ CSDL</span>
+ </div>
+ <AdminCharts />
+ </div>
  </div>
  );
 }

@@ -75,15 +75,25 @@ public class AdminController {
         long openTournaments = tournamentRepository.findAll().stream()
                 .filter(t -> "OPEN".equals(t.getStatus()))
                 .count();
-        return ResponseEntity.ok(Map.of(
-                "totalUsers", userRepository.count(),
-                "totalPitches", pitchRepository.count(),
-                "totalTournaments", tournamentRepository.count(),
-                "openTournaments", openTournaments,
-                "totalBookings", bookingRepository.count(),
-                "totalMatchmakingPosts", matchmakingPostRepository.count(),
-                "totalRevenue", totalRevenue
-        ));
+
+        // Cơ cấu người dùng theo vai trò — dùng cho biểu đồ tròn trong dashboard.
+        Map<String, Long> countByRole = new LinkedHashMap<>();
+        for (UserRole r : UserRole.values()) {
+            countByRole.put(r.name(), userRepository.findAll().stream()
+                    .filter(u -> u.getRole() == r)
+                    .count());
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("totalUsers", userRepository.count());
+        result.put("totalPitches", pitchRepository.count());
+        result.put("totalTournaments", tournamentRepository.count());
+        result.put("openTournaments", openTournaments);
+        result.put("totalBookings", bookingRepository.count());
+        result.put("totalMatchmakingPosts", matchmakingPostRepository.count());
+        result.put("totalRevenue", totalRevenue);
+        result.put("countByRole", countByRole);
+        return ResponseEntity.ok(result);
     }
 
 /** Danh sách người dùng (KHÔNG bao giờ trả về mật khẩu).
