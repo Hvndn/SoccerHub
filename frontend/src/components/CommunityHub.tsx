@@ -25,7 +25,7 @@ import { apiRequest, ensureLoggedIn } from "@/lib/api";
 import CommunityChat from "./CommunityChat";
 import PageSpinner from "./PageSpinner";
 import GroupChatPanel from "./GroupChatPanel";
-import MatchmakingMarketplace from "./MatchmakingMarketplace";
+
 import TeamClubManagement from "./TeamClubManagement";
 
 /* =========================================================
@@ -64,7 +64,6 @@ type HubView =
   | { kind: "public"; slug: string; name: string; desc: string }
   | { kind: "dm"; partnerEmail?: string; partnerName?: string }
   | { kind: "groups" }
-  | { kind: "matchmaking" }
   | { kind: "clan" };
 
 type Filter = "all" | "unread" | "private" | "friends";
@@ -253,10 +252,11 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
     setMode(m);
   };
 
-  /** Mở chợ kèo giao hữu — có hiệu ứng xoay. */
+  /** Mở chợ kèo giao hữu — chuyển sang tab "Chợ Kèo" riêng. */
   const openMatchmaking = () => {
-    runWithLoader();
-    setView({ kind: "matchmaking" });
+    if (onNavigateTab) {
+      onNavigateTab("matchmaking");
+    }
   };
 
   // ---- Danh sách channel (kênh công khai + DM) ----
@@ -339,8 +339,6 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         ? view.name
         : view.kind === "dm"
         ? view.partnerName || "Tin nhắn riêng"
-        : view.kind === "matchmaking"
-        ? "Bắt Đối Giao Hữu"
         : view.kind === "groups"
         ? "Nhóm chat"
         : "Đội bóng (Clan)";
@@ -351,8 +349,6 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
         ? view.partnerEmail || "Trò chuyện riêng tư 1-1"
         : view.kind === "groups"
         ? "Phòng chat riêng cho nhóm bạn"
-        : view.kind === "matchmaking"
-        ? "Ghép kèo theo trình độ & phong độ"
         : "Quản lý đội bóng của bạn";
 
     return (
@@ -376,9 +372,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="relative w-10 h-10 rounded-full bg-slate-100 ring-2 ring-[#0369a1]/40 shadow-sm flex items-center justify-center shrink-0">
-              {view.kind === "matchmaking" ? (
-                <Flame className="w-4 h-4 text-[#0369a1]" />
-              ) : view.kind === "clan" || view.kind === "groups" ? (
+              {view.kind === "clan" || view.kind === "groups" ? (
                 <Users className="w-4 h-4 text-[#0369a1]" />
               ) : (
                 <MessageCircle className="w-4 h-4 text-[#0369a1]" />
@@ -418,11 +412,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
             {view.kind === "groups" && (
               <GroupChatPanel user={user} />
             )}
-            {view.kind === "matchmaking" && (
-              <div className="p-1">
-                <MatchmakingMarketplace user={user} />
-              </div>
-            )}
+            
             {view.kind === "clan" && (
               <TeamClubManagement user={user} onBackToHome={back} onNavigateTab={onNavigateTab} />
             )}

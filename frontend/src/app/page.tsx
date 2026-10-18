@@ -10,6 +10,7 @@ import TournamentLeaderboard from "@/components/TournamentLeaderboard";
 import RefereePanel from "@/components/RefereePanel";
 import CommunityForm from "@/components/CommunityForm";
 import CommunityHub from "@/components/CommunityHub";
+import MatchmakingMarketplace from "@/components/MatchmakingMarketplace";
 import AdminDashboard from "@/components/AdminDashboard";
 import ActivitySchedule from "@/components/ActivitySchedule";
 import MemberCardPortal from "@/components/MemberCardPortal";
@@ -76,7 +77,7 @@ export default function Home() {
   const OWNER_MANAGE_TABS = ["admin", "owner-onboarding", "multi-sport"];
   // Tab mà OWNER được phép truy cập: quản lý cụm sân + cộng đồng để
   // trao đổi với khách (hỏi ca trống, xác nhận đặt sân, nhóm chat riêng).
-  const OWNER_TABS = [...OWNER_MANAGE_TABS, "community"];
+  const OWNER_TABS = [...OWNER_MANAGE_TABS, "community", "matchmaking"];
  // Tab chỉ dành cho ORGANIZER hoặc người có quyền điều hành giải
  const ORGANIZER_TABS = ["organizer"];
  // Tab yêu cầu đăng nhập (bất kỳ vai trò nào cũng phải có tài khoản)
@@ -376,7 +377,11 @@ if (newTab === activeTab) return;
  />
  )}
 
- {activeTab === "community" && (
+ {activeTab === "matchmaking" && (
+  <MatchmakingMarketplace user={currentUser} />
+  )}
+
+{activeTab === "community" && (
  <>
  {!currentUser && (
  <GuestFeatureBanner

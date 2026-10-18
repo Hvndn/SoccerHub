@@ -310,27 +310,34 @@ export default function Navbar({
  auth?: boolean;
  };
 
- const mobileNav: MobileNavItem[] =
- user?.role === "ORGANIZER"
- ? [
- { key: "organizer", label: "Điều hành", tab: "organizer", icon: ShieldCheck },
- { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
- { key: "community", label: "Chợ kèo", tab: "community", icon: Flame },
- { key: "profile", label: "Hồ sơ", tab: "profile", icon: User },
- ]
- : user
- ? [
- { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
- { key: "community", label: "Chợ kèo", tab: "community", icon: Flame },
- { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
- { key: "profile", label: "Hồ sơ", tab: "profile", icon: User },
- ]
- : [
- { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
- { key: "community", label: "Chợ kèo", tab: "community", icon: Flame },
- { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
- { key: "login", label: "Đăng nhập", auth: true, icon: LogIn },
- ];
+
+const mobileNav: MobileNavItem[] =
+  user?.role === "ORGANIZER"
+  ? [
+  { key: "organizer", label: "Điều hành", tab: "organizer", icon: ShieldCheck },
+  { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
+  { key: "matchmaking", label: "Chợ Kèo", tab: "matchmaking", icon: Flame },
+  { key: "community", label: "Cộng Đồng", tab: "community", icon: MessageCircle },
+  { key: "profile", label: "Hồ sơ", tab: "profile", icon: User },
+  ]
+  : user
+  ? [
+  { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
+  { key: "matchmaking", label: "Chợ Kèo", tab: "matchmaking", icon: Flame },
+  { key: "community", label: "Cộng Đồng", tab: "community", icon: MessageCircle },
+  { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
+  { key: "profile", label: "Hồ sơ", tab: "profile", icon: User },
+  ]
+  : [
+  { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
+  { key: "matchmaking", label: "Chợ Kèo", tab: "matchmaking", icon: Flame },
+  { key: "community", label: "Cộng Đồng", tab: "community", icon: MessageCircle },
+  { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
+  { key: "login", label: "Đăng nhập", auth: true, icon: LogIn },
+  ];
+
+  /** 5 mục trên màn hẹp -> chữ nhỏ lại cho vừa, tránh bị cắt chữ. */
+  const bottomNavDense = mobileNav.length >= 5;
 
  const showBottomNav = user?.role !== "OWNER" && user?.role !== "ADMIN";
 
@@ -454,21 +461,34 @@ export default function Navbar({
  <span>Giải Đấu &amp; BXH</span>
  </button>
 
- <button
- type="button"
- onClick={() => handleSelectSubTab("community")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
- activeTab === "community" || activeTab === "urgent-resale"
- ? "bg-[#0369a1] text-white shadow-sm font-black"
- : "text-slate-700 hover:bg-slate-100"
- }`}
- >
- <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
- <span>Chợ Kèo &amp; Pass Sân</span>
- <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
- HOT
- </span>
- </button>
+<button
+  type="button"
+  onClick={() => handleSelectSubTab("matchmaking")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  activeTab === "matchmaking"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
+  <span>Chợ Kèo</span>
+  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  HOT
+  </span>
+  </button>
+
+  <button
+  type="button"
+  onClick={() => handleSelectSubTab("community")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  activeTab === "community"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <MessageCircle className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-[#0369a1] shrink-0" />
+  <span>Cộng Đồng</span>
+  </button>
  </>
  ) : !user ? (
  /* GUEST NAVBAR ITEMS — khám phá + CTA tham gia */
@@ -486,21 +506,34 @@ export default function Navbar({
  <span>Đặt Sân Bóng Đá</span>
  </button>
 
- <button
- type="button"
- onClick={() => handleSelectSubTab("community")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
- activeTab === "community" || activeTab === "urgent-resale"
- ? "bg-[#0369a1] text-white shadow-sm font-black"
- : "text-slate-700 hover:bg-slate-100"
- }`}
- >
- <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
- <span>Chợ Kèo &amp; Pass Sân</span>
- <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
- HOT
- </span>
- </button>
+<button
+  type="button"
+  onClick={() => handleSelectSubTab("matchmaking")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  activeTab === "matchmaking"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
+  <span>Chợ Kèo</span>
+  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  HOT
+  </span>
+  </button>
+
+  <button
+  type="button"
+  onClick={() => handleSelectSubTab("community")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  activeTab === "community"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <MessageCircle className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-[#0369a1] shrink-0" />
+  <span>Cộng Đồng</span>
+  </button>
 
  <button
  type="button"
@@ -540,21 +573,34 @@ export default function Navbar({
  <span>Đặt Sân Bóng Đá</span>
  </button>
 
- <button
- type="button"
- onClick={() => handleSelectSubTab("community")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
- activeTab === "community" || activeTab === "urgent-resale"
- ? "bg-[#0369a1] text-white shadow-sm font-black"
- : "text-slate-700 hover:bg-slate-100"
- }`}
- >
- <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
- <span>Chợ Kèo &amp; Pass Sân</span>
- <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
- HOT
- </span>
- </button>
+<button
+  type="button"
+  onClick={() => handleSelectSubTab("matchmaking")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  activeTab === "matchmaking"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
+  <span>Chợ Kèo</span>
+  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  HOT
+  </span>
+  </button>
+
+  <button
+  type="button"
+  onClick={() => handleSelectSubTab("community")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  activeTab === "community"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <MessageCircle className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-[#0369a1] shrink-0" />
+  <span>Cộng Đồng</span>
+  </button>
 
  <button
  type="button"
@@ -1211,28 +1257,34 @@ export default function Navbar({
  </div>
  </button>
 
- <button
- type="button"
- onClick={() => handleSelectSubTab("community")}
- className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
- activeTab === "community" || activeTab === "urgent-resale"
- ? "bg-[#0369a1] text-white shadow-md font-extrabold"
- : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
- }`}
- >
- <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
- <Flame className="w-[18px] h-[18px] text-rose-600" />
- </div>
- <div>
- <div className="text-xs font-extrabold leading-tight flex items-center gap-1.5">
- <span>Chợ Kèo & Pass Sân</span>
- <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-rose-500 text-white">HOT</span>
- </div>
- <div className={`text-[10px] ${activeTab === "community" || activeTab === "urgent-resale" ? "text-white/80" : "text-slate-500"}`}>
- Tìm đối cáp kèo & tuyển quân
- </div>
- </div>
- </button>
+<button
+  type="button"
+  onClick={() => handleSelectSubTab("matchmaking")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  activeTab === "matchmaking"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
+  <span>Chợ Kèo</span>
+  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  HOT
+  </span>
+  </button>
+
+  <button
+  type="button"
+  onClick={() => handleSelectSubTab("community")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  activeTab === "community"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <MessageCircle className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-[#0369a1] shrink-0" />
+  <span>Cộng Đồng</span>
+  </button>
  </div>
  ) : (
  <div className="space-y-3">
@@ -1258,28 +1310,34 @@ export default function Navbar({
  </button>
 
  {/* ITEM 2: CHỢ KÈO & PASS SÂN */}
- <button
- type="button"
- onClick={() => handleSelectSubTab("community")}
- className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
- activeTab === "community" || activeTab === "urgent-resale"
- ? "bg-[#0369a1] text-white shadow-md font-extrabold"
- : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
- }`}
- >
- <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
- <Flame className="w-[18px] h-[18px] text-rose-600" />
- </div>
- <div>
- <div className="text-xs font-extrabold leading-tight flex items-center gap-1.5">
- <span>Chợ Kèo & Pass Sân</span>
- <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-rose-500 text-white">HOT</span>
- </div>
- <div className={`text-[10px] ${activeTab === "community" || activeTab === "urgent-resale" ? "text-white/80" : "text-slate-500"}`}>
- Tìm đối cáp kèo, pass sân gấp & tuyển quân
- </div>
- </div>
- </button>
+<button
+  type="button"
+  onClick={() => handleSelectSubTab("matchmaking")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  activeTab === "matchmaking"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
+  <span>Chợ Kèo</span>
+  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  HOT
+  </span>
+  </button>
+
+  <button
+  type="button"
+  onClick={() => handleSelectSubTab("community")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  activeTab === "community"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <MessageCircle className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-[#0369a1] shrink-0" />
+  <span>Cộng Đồng</span>
+  </button>
 
  {/* ITEM 3: GIẢI ĐẤU & BXH */}
  <button
@@ -1429,7 +1487,11 @@ export default function Navbar({
  }`}
  />
  <Icon className="w-[21px] h-[21px]" />
- <span className="text-[10px] font-bold leading-none tracking-tight">
+ <span
+  className={`font-bold leading-none tracking-tight ${
+  bottomNavDense ? "text-[8.5px]" : "text-[10px]"
+  }`}
+  >
  {item.label}
  </span>
  </button>
