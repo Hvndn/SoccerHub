@@ -95,19 +95,30 @@ public class SoccerHubApplication {
             }
         }
 
-        // Test kết nối TCP tới MySQL với timeout ngắn (5000ms)
+        // Thử kết nối TCP tới MySQL với cơ chế retry (đợi MySQL cloud thức dậy nếu đang Sleeping)
         boolean isConnected = false;
-        try (java.net.Socket socket = new java.net.Socket()) {
-            System.out.println("[SoccerHub] Đang kiểm tra kết nối tới MySQL (" + targetHost + ":" + targetPort + ")...");
-            socket.connect(new java.net.InetSocketAddress(targetHost, targetPort), 5000);
-            isConnected = true;
-            System.out.println("[SoccerHub] ✅ Kết nối MySQL THÀNH CÔNG! Sử dụng MySQL cloud.");
-        } catch (Exception e) {
-            System.out.println("[SoccerHub] ⚠️ Không thể kết nối tới MySQL (" + targetHost + ":" + targetPort + "): " + e.getMessage());
+        int maxAttempts = 5;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try (java.net.Socket socket = new java.net.Socket()) {
+                System.out.println("[SoccerHub] Đang kiểm tra kết nối tới MySQL (" + targetHost + ":" + targetPort + ") - Lần thử " + attempt + "/" + maxAttempts + "...");
+                socket.connect(new java.net.InetSocketAddress(targetHost, targetPort), 6000);
+                isConnected = true;
+                System.out.println("[SoccerHub] ✅ Kết nối MySQL THÀNH CÔNG! Sử dụng MySQL cloud lưu trữ lâu dài.");
+                break;
+            } catch (Exception e) {
+                System.out.println("[SoccerHub] ⚠️ Lần " + attempt + " chưa kết nối được (" + e.getMessage() + "), đợi 3 giây...");
+                try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
+            }
         }
 
         if (!isConnected) {
-            enableH2Fallback("MySQL đang Sleeping hoặc chưa thông mạng private trên Railway.");
+            System.err.println("[SoccerHub] ⚠️ CẢNH BÁO: Không thể kết nối tới MySQL sau 5 lần thử.");
+            // Chỉ fallback H2 khi thật sự không có host hoặc URL được cấu hình
+            if (!isSet(host) && !isSet(dbUrl)) {
+                enableH2Fallback("Không có thông tin MySQL đích.");
+            } else {
+                System.out.println("[SoccerHub] Giữ nguyên cấu hình MySQL để HikariCP tự động thử lại (tránh dùng H2 làm mất dữ liệu).");
+            }
         }
     }
 
