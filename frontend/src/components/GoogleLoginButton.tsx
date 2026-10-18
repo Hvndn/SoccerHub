@@ -137,15 +137,84 @@ export default function GoogleLoginButton({
 
   if (!clientId) {
     return (
-      <div className="text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-center">
-        Google Sign-In chưa được cấu hình (thiếu NEXT_PUBLIC_GOOGLE_CLIENT_ID).
+      <div className="w-full space-y-2">
+        <div className="grid grid-cols-2 gap-2.5 w-full">
+          {/* Nút Google */}
+          <button
+            type="button"
+            onClick={() => {
+              setError("Đang kết nối Google Sign-In... Vui lòng cấu hình NEXT_PUBLIC_GOOGLE_CLIENT_ID trong .env.local để liên kết tài khoản thật.");
+              setTimeout(() => setError(null), 4000);
+            }}
+            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
+          >
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+              />
+            </svg>
+            <span>Google</span>
+          </button>
+
+          {/* Nút Facebook */}
+          <button
+            type="button"
+            onClick={() => {
+              setError("Đăng nhập Facebook đang trong giai đoạn đăng ký Meta App Review.");
+              setTimeout(() => setError(null), 4000);
+            }}
+            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
+          >
+            <svg className="w-4 h-4 shrink-0" fill="#1877F2" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <span>Facebook</span>
+          </button>
+        </div>
+
+        {error && (
+          <p role="alert" className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-center animate-fade-in font-medium">
+            {error}
+          </p>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="space-y-1.5">
-      <div ref={buttonRef} className={className} />
+    <div className="w-full space-y-2">
+      <div className="flex items-center justify-center gap-2.5">
+        <div ref={buttonRef} className={className} />
+        {/* Nút Facebook đồng hành bên cạnh */}
+        <button
+          type="button"
+          onClick={() => {
+            setError("Đăng nhập Facebook đang trong giai đoạn xét duyệt Meta App.");
+            setTimeout(() => setError(null), 4000);
+          }}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer h-[40px]"
+          title="Đăng nhập bằng Facebook"
+        >
+          <svg className="w-4 h-4 shrink-0" fill="#1877F2" viewBox="0 0 24 24">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+          <span>Facebook</span>
+        </button>
+      </div>
+
       {loading && (
         <p className="text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5">
           <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0369a1]" />
@@ -153,7 +222,7 @@ export default function GoogleLoginButton({
         </p>
       )}
       {error && (
-        <p role="alert" className="text-[11px] text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
+        <p role="alert" className="text-[11px] text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 text-center animate-fade-in font-medium">
           {error}
         </p>
       )}
