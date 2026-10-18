@@ -8,7 +8,6 @@ import { fetchTournaments } from "@/lib/tournamentService";
 import { apiUrl } from "@/lib/api";
 import FormDots from "./FormDots";
 import { Users, Trophy, Cpu, PlusCircle, Sparkles, ShieldCheck, Flame, Radio, MessageCircle, Search, ChevronRight } from "lucide-react";
-import CommunityChat from "./CommunityChat";
 
 interface CommunityFormProps {
  user?: any;
@@ -258,11 +257,6 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
  </table>
  </div>
  )}
-  {/* @ts-ignore */}
-  {subTab === "chat" && (
-  <div className="w-full">
-    <CommunityChat user={user} />
-  </div>
   )}
  </div>
  )}
