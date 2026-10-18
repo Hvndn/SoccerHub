@@ -385,6 +385,18 @@ export default function PlayerSetup() {
  Bạn có thể sửa lại hồ sơ này bất cứ lúc nào trong mục{" "}
  <strong className="text-slate-700">Hồ Sơ VĐV</strong>.
  </p>
+ <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+ <button
+ type="button"
+ disabled={saving}
+ onClick={() => {
+ if (user?.email) clearPlayerSetupPending(user.email);
+ router.replace("/");
+ }}
+ className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-all active:scale-95 disabled:opacity-40 whitespace-nowrap"
+ >
+ Hoàn thiện sau
+ </button>
  <button
  type="submit"
  disabled={saving || progress < 100}
@@ -393,6 +405,7 @@ export default function PlayerSetup() {
  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
  {saving ? "Đang lưu…" : "Hoàn tất & vào hệ thống"}
  </button>
+ </div>
  </div>
  </form>
 

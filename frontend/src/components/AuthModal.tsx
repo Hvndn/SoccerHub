@@ -232,8 +232,6 @@ export default function AuthModal({
  setErrorMsg("Mật khẩu phải có ít nhất 6 ký tự.");
  return;
  }
- setRegStep(2);
- return;
  }
 
  setIsSubmitting(true);
