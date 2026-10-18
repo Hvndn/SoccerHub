@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from "react";
 
@@ -14,9 +14,10 @@ interface CommunityFormProps {
  onSelectSlot?: any;
  defaultSubTab?: "matchmaking" | "tournaments" | "organizer";
  onOpenAuth?: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
+  onNavigateTab?: (tab: string) => void;
 }
 
-export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "matchmaking", onOpenAuth }: CommunityFormProps) {
+export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "matchmaking", onOpenAuth, onNavigateTab }: CommunityFormProps) {
  const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer" | "formboard" | "chat">(defaultSubTab as any);
  const [tournamentCount, setTournamentCount] = useState<number | null>(null);
  const [formBoard, setFormBoard] = useState<any[]>([]);
@@ -257,8 +258,7 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
  </table>
  </div>
  )}
-  )}
- </div>
+  </div>
  )}
  </div>
  </div>

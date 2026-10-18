@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { API_BASE_URL, apiRequest } from "@/lib/api";
-import { sportLabel, formatLabel, formatMoney } from "@/lib/tournamentService";
+import { sportLabel, formatLabel, formatMoney, createTournament, fillSimulatedTeams } from "@/lib/tournamentService";
 import FormDots from "./FormDots";
 import {
   getPendingTeams, approveTeam, rejectTeam,
@@ -31,13 +31,15 @@ import {
 } from "lucide-react";
 
 interface TournamentOrganizerPortalProps {
- onBackToHome?: () => void;
- onNavigateTab?: (tab: string) => void;
+  onBackToHome?: () => void;
+  onNavigateTab?: (tab: string) => void;
+  onOpenBracket?: (tournamentId: string) => void;
 }
 
 export default function TournamentOrganizerPortal({
- onBackToHome,
- onNavigateTab
+  onBackToHome,
+  onNavigateTab,
+  onOpenBracket
 }: TournamentOrganizerPortalProps) {
  // Sport Filter State
  const [selectedSport, setSelectedSport] = useState<string>("all");
@@ -206,7 +208,43 @@ export default function TournamentOrganizerPortal({
     finally { setRefBusy(false); }
   };
 
- // Nhánh đấu parse từ bracketJson (nguồn thật, không cần gọi API thêm).
+ // 
+  const handleCreateRandomTournament = async () => {
+    try {
+      const now = new Date();
+      const startDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      const res = await createTournament({
+        title: 'Giải Test ' + new Date().toLocaleDateString('vi-VN') + ' ' + now.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}),
+        description: 'Giải đấu tự động tạo để test bốc thăm và giả lập kết quả',
+        sportType: 'SAN_7',
+        format: 'KNOCKOUT',
+        pitchName: 'Cụm Sân Test Turfzone',
+        location: 'Đà Nẵng',
+        totalTeams: 16,
+        prizePool: 50000000,
+        entryFee: 2000000,
+        startDate,
+        endDate,
+        registrationDeadline: startDate,
+        status: 'OPEN',
+      });
+
+      const newTournamentId = res?.id;
+      if (!newTournamentId) throw new Error('Không lấy được ID giải mới');
+
+      await fillSimulatedTeams(newTournamentId);
+
+      onOpenBracket?.(String(newTournamentId));
+
+    } catch (err: any) {
+      console.error('Tạo giải test thất bại:', err);
+      alert('Tạo giải test thất bại: ' + (err?.message || 'Lỗi không xác định'));
+    }
+  };
+
+// Nhánh đấu parse từ bracketJson (nguồn thật, không cần gọi API thêm).
  const activeBracket = useMemo(() => {
  if (!activeTournament?.bracketJson) return null;
  try {
@@ -538,7 +576,7 @@ export default function TournamentOrganizerPortal({
  </span>
 
  <button
- onClick={() => onNavigateTab?.("tournaments")}
+ onClick={() => onOpenBracket?.(String(activeTournament?.id))}
  className="text-xs font-black text-[#0369a1] hover:text-[#0369a1] flex items-center space-x-1 group"
  >
  <span>Mở Nhánh Đấu</span>
@@ -814,7 +852,7 @@ export default function TournamentOrganizerPortal({
 
  <div className="mt-5 flex flex-wrap gap-2">
  <button
- onClick={() => onNavigateTab?.("tournaments")}
+ onClick={() => onOpenBracket?.(String(activeTournament?.id))}
  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5"
  >
  <Video className="w-4 h-4 text-red-500" />
@@ -1198,13 +1236,22 @@ export default function TournamentOrganizerPortal({
  </div>
 
  <button
- onClick={() => onNavigateTab?.("tournaments")}
+ onClick={() => onOpenBracket?.(String(activeTournament?.id))}
  className="w-full py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
  >
  <Sparkles className="w-4 h-4" />
  <span>Mở Bảng Điều Hành Bốc Thăm</span>
  </button>
- </div>
+ 
+  <button
+    onClick={handleCreateRandomTournament}
+    className="w-full py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border-2 border-dashed border-slate-300 transition-all flex items-center justify-center space-x-2 active:scale-95"
+    title="Tự động tạo giải Test (16 đội, Knockout, sân ngẫu nhiên) + fill teams + bốc thăm ngay"
+  >
+    <RefreshCw className="w-4 h-4" />
+    <span>Tạo giải Test ngẫu nhiên & Bốc thăm</span>
+  </button>
+  </div>
 
  {/* 2. QUỸ THƯỞNG THẬT (prizePool từ CSDL) */}
  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-6">
