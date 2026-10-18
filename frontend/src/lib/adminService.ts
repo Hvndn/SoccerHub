@@ -76,8 +76,72 @@ export async function getAdminOverview(): Promise<AdminOverview> {
 }
 
 export async function listAdminUsers(): Promise<AdminUser[]> {
-  const data = await apiRequest<AdminUser[]>('/api/v1/admin/users');
+  const data = await apiRequest<AdminUser[]>('/api/v1/admin/users/legacy');
   return Array.isArray(data) ? data : [];
+}
+
+/** === Phân trang + tìm kiếm danh sách người dùng (server-side) === */
+export interface PagedUsers {
+  content: AdminUser[];
+  total: number;
+  page: number;
+  size: number;
+  totalPages: number;
+  countByRole: Record<string, number>;
+}
+
+export async function listAdminUsersPaged(params: {
+  page?: number;
+  size?: number;
+  q?: string;
+  role?: string;
+} = {}): Promise<PagedUsers> {
+  const qs = new URLSearchParams();
+  qs.set('page', String(params.page ?? 0));
+  qs.set('size', String(params.size ?? 20));
+  if (params.q) qs.set('q', params.q);
+  if (params.role) qs.set('role', params.role);
+  return apiRequest<PagedUsers>('/api/v1/admin/users?' + qs.toString());
+}
+
+/** Chi tiết người dùng: hồ sơ + lịch sử đặt sân + kèo đã đăng. */
+export async function getAdminUserDetail(id: number) {
+  return apiRequest<{
+    user: any;
+    bookingCount: number;
+    totalSpent: number;
+    matchmakingPosts: Array<{
+      id: number;
+      teamName: string;
+      pitchName: string;
+      matchTime: string;
+      status: string;
+      estimatedFee?: number | null;
+      opponentTeamName?: string | null;
+      createdAt: string;
+    }>;
+  }>('/api/v1/admin/users/' + id + '/detail');
+}
+
+/** Thống kê nâng cao: top cụm sân doanh thu + top khách hàng. */
+export async function getAdminInsights() {
+  return apiRequest<{
+    topPitches: Array<{ pitchId: number; pitchName: string; revenue: number }>;
+    topCustomers: Array<{
+      customerName: string;
+      customerPhone: string;
+      totalSpent: number;
+      bookingCount: number;
+    }>;
+  }>('/api/v1/admin/insights');
+}
+
+/** Admin huỷ đơn đặt sân (kèm hoàn cọc) khi có khiếu nại. */
+export async function adminCancelBooking(id: number, reason: string) {
+  return apiRequest<{ message: string; refundAmount: number }>(
+    '/api/v1/admin/bookings/' + id + '/cancel',
+    { method: 'POST', body: JSON.stringify({ reason }) }
+  );
 }
 
 export async function setAdminUserStatus(id: number, enabled: boolean): Promise<{ message: string }> {

@@ -86,9 +86,11 @@ public class AdminController {
         ));
     }
 
-    /** Danh sách người dùng (KHÔNG bao giờ trả về mật khẩu). */
-    @GetMapping("/users")
-    public ResponseEntity<List<Map<String, Object>>> listUsers() {
+/** Danh sách người dùng (KHÔNG bao giờ trả về mật khẩu).
+ *  Endpoint phân trang + tìm kiếm nằm ở AdminManageController#listUsersPaged. */
+    @GetMapping("/users/legacy")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Map<String, Object>>> listUsersLegacy() {
         List<Map<String, Object>> result = new ArrayList<>();
         for (User u : userRepository.findAll()) {
             Map<String, Object> m = new LinkedHashMap<>();
