@@ -422,6 +422,14 @@ export default function TournamentBracket() {
  scoreA,
  scoreB,
  scorers: rows,
+  yellowCardsA: Number((matchStats[m.matchId] ?? {}).yellowA ?? 0),
+  yellowCardsB: Number((matchStats[m.matchId] ?? {}).yellowB ?? 0),
+  redCardsA: Number((matchStats[m.matchId] ?? {}).redA ?? 0),
+  redCardsB: Number((matchStats[m.matchId] ?? {}).redB ?? 0),
+  substitutionsA: Number((matchStats[m.matchId] ?? {}).subA ?? 0),
+  substitutionsB: Number((matchStats[m.matchId] ?? {}).subB ?? 0),
+  mvpPlayer: ((matchStats[m.matchId] ?? {}).mvp ?? "").trim() || undefined,
+  notes: ((matchStats[m.matchId] ?? {}).notes ?? "").trim() || undefined,
  });
  const forms = (res.formChanges ?? [])
  .map((c: any) => `${c.team} ${c.after?.record ?? ""}`)
