@@ -21,37 +21,45 @@ public class TurfzoneApplication {
      * spring.datasource.* của Spring Boot để không bị lỗi kết nối hoặc thiếu JDBC scheme.
      */
     private static void configureRailwayMysqlUrl() {
-        if (isSet(getenv("SPRING_DATASOURCE_URL"))) {
-            return; // Đã có cấu hình URL trực tiếp
+        String springDsUrl = getenv("SPRING_DATASOURCE_URL");
+        if (isSet(springDsUrl)) {
+            if (springDsUrl.startsWith("mysql://")) {
+                convertAndSetMysqlUrl(springDsUrl);
+            }
+            return;
         }
         String rawUrl = firstNonBlank(getenv("MYSQL_URL"), getenv("MYSQLURL"), getenv("DATABASE_URL"));
         if (isSet(rawUrl) && rawUrl.startsWith("mysql://")) {
-            try {
-                java.net.URI uri = new java.net.URI(rawUrl);
-                String host = uri.getHost();
-                int port = uri.getPort() > 0 ? uri.getPort() : 3306;
-                String path = uri.getPath();
-                String database = (path != null && path.length() > 1) ? path.substring(1) : "Turfzone_db";
+            convertAndSetMysqlUrl(rawUrl);
+        }
+    }
 
-                String userInfo = uri.getUserInfo();
-                String user = null;
-                String pass = null;
-                if (userInfo != null && userInfo.contains(":")) {
-                    String[] parts = userInfo.split(":", 2);
-                    user = parts[0];
-                    pass = parts[1];
-                } else if (userInfo != null) {
-                    user = userInfo;
-                }
+    private static void convertAndSetMysqlUrl(String rawUrl) {
+        try {
+            java.net.URI uri = new java.net.URI(rawUrl);
+            String host = uri.getHost();
+            int port = uri.getPort() > 0 ? uri.getPort() : 3306;
+            String path = uri.getPath();
+            String database = (path != null && path.length() > 1) ? path.substring(1) : "railway";
 
-                String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000&socketTimeout=60000";
-                System.setProperty("spring.datasource.url", jdbcUrl);
-                if (user != null) System.setProperty("spring.datasource.username", user);
-                if (pass != null) System.setProperty("spring.datasource.password", pass);
-                System.out.println("[Turfzone] [Railway] Tự động chuyển đổi MYSQL_URL (" + host + ":" + port + "/" + database + ") sang Spring JDBC!");
-            } catch (Exception e) {
-                System.err.println("[Turfzone] [Railway] Cảnh báo lỗi phân giải MYSQL_URL: " + e.getMessage());
+            String userInfo = uri.getUserInfo();
+            String user = null;
+            String pass = null;
+            if (userInfo != null && userInfo.contains(":")) {
+                String[] parts = userInfo.split(":", 2);
+                user = parts[0];
+                pass = parts[1];
+            } else if (userInfo != null) {
+                user = userInfo;
             }
+
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=15000&socketTimeout=60000";
+            System.setProperty("spring.datasource.url", jdbcUrl);
+            if (user != null) System.setProperty("spring.datasource.username", user);
+            if (pass != null) System.setProperty("spring.datasource.password", pass);
+            System.out.println("[Turfzone] [Railway] Tự động chuyển đổi MYSQL_URL (" + host + ":" + port + "/" + database + ") sang Spring JDBC!");
+        } catch (Exception e) {
+            System.err.println("[Turfzone] [Railway] Cảnh báo lỗi phân giải MYSQL_URL: " + e.getMessage());
         }
     }
 
