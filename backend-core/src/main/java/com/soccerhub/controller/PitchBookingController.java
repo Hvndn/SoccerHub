@@ -7,6 +7,7 @@ import com.soccerhub.model.User;
 import com.soccerhub.repository.BookingRepository;
 import com.soccerhub.repository.PitchRepository;
 import com.soccerhub.service.NotificationService;
+import com.soccerhub.service.EmailService;
 import com.soccerhub.service.PitchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,8 @@ public class PitchBookingController {
     private final PitchRepository pitchRepository;
     private final BookingRepository bookingRepository;
     private final NotificationService notificationService;
+    private final com.soccerhub.service.EmailService emailService;
+    private final com.soccerhub.repository.UserRepository userRepository;
 
     @GetMapping
     public ResponseEntity<List<Pitch>> getAllPitches() {
@@ -651,16 +654,65 @@ public class PitchBookingController {
                 .code(code)
                 .build();
 
-        Booking saved = bookingRepository.save(booking);
+Booking saved = bookingRepository.save(booking);
         notificationService.notify("OWNER",
                 "Đơn đặt sân mới: " + customerName,
                 customerName + " (" + customerPhone + ") vừa đặt " + courtName + " ca " + timeSlot + " ngày " + bookingDate + ". Mã: " + code + ".",
                 "BOOKING", null);
+
+        // Gửi email xác nhận cho KHÁCH + báo cho CHỦ SÂN (nếu đã bật SMTP).
+        // Lỗi email KHÔNG làm hỏng việc tạo đơn — đơn đã lưu ở trên.
+        sendBookingEmails(saved);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     /**
-/**
+     * Gửi email cho khách đặt sân và cho chủ sân của cụm sân.
+     * Toàn bộ lỗi đều bị nuốt bên trong EmailService.
+     */
+    private void sendBookingEmails(Booking b) {
+        Pitch pitch = b.getPitchId() != null
+                ? pitchRepository.findById(b.getPitchId()).orElse(null) : null;
+
+        // 1) Khách: dùng SĐT nếu là email hợp lệ, không thì thử tìm user theo SĐT.
+// (khai báo final ở dưới để dùng được trong lambda của Thread)
+
+        // 2) Chủ sân: tìm theo ownerId -> email trong bảng users.
+        String ownerMailTmp = null;
+        if (pitch != null && pitch.getOwnerId() != null) {
+            ownerMailTmp = userRepository.findById(pitch.getOwnerId())
+                    .map(u -> u.getEmail())
+                    .orElse(null);
+        }
+        final String ownerMail = ownerMailTmp;
+        final String customerMail = resolveCustomerEmail(b.getCustomerPhone());
+
+        // Chạy nền để không làm chậm phản hồi cho người đặt.
+        Thread t = new Thread(() -> {
+            if (customerMail != null) emailService.sendBookingConfirmationToCustomer(b, pitch, customerMail);
+            if (ownerMail != null) emailService.sendNewBookingToOwner(b, pitch, ownerMail);
+        }, "soccerhub-mail-booking-" + b.getId());
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /**
+     * Tìm email của khách: nếu SĐT để dạng email thì dùng luôn,
+     * ngược lại tra bảng users theo số điện thoại.
+     */
+    private String resolveCustomerEmail(String phoneOrEmail) {
+        if (phoneOrEmail == null || phoneOrEmail.isBlank()) return null;
+        String s = phoneOrEmail.trim();
+        if (EmailService.isValidEmail(s)) return s;
+        String digits = s.replaceAll("\\s+", "");
+        return userRepository.findByPhone(digits)
+                .map(com.soccerhub.model.User::getEmail)
+                .filter(EmailService::isValidEmail)
+                .orElse(null);
+    }
+
+    /**
      * Chống IDOR: người gọi phải là chủ sân của đơn đặt đó, hoặc ADMIN.
      * Trước đây chỉ kiểm tra role OWNER/ADMIN nên bất kỳ chủ sân nào cũng check-in /
      * huỷ / xoá được đơn của cụm sân khác — thậm chí đặt cashDue = 0 (mất tiền thật).

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { FileSpreadsheet, Download, Loader2, BarChart3, CalendarRange, ClipboardList } from "lucide-react";
 import { API_BASE_URL, getAuthToken } from "@/lib/api";
 import { toastOk, toastErr } from "@/lib/toast";
+import { Mail, Send } from "lucide-react";
 
 type ReportType = "revenue" | "bookings" | "summary";
 
@@ -76,6 +77,67 @@ export default function OwnerReportExport() {
  const [from, setFrom] = useState(today(-30));
  const [to, setTo] = useState(today(0));
  const [days, setDays] = useState(30);
+
+ // Gửi email
+ const [mailTo, setMailTo] = useState("");
+ const [mailType, setMailType] = useState<ReportType>("revenue");
+ const [mailBusy, setMailBusy] = useState(false);
+ const [mailReady, setMailReady] = useState<boolean | null>(null);
+
+ const loadMailStatus = React.useCallback(async () => {
+ try {
+ const token = getAuthToken();
+ const res = await fetch(`${API_BASE_URL}/api/v1/reports/email-status`, {
+ headers: token ? { Authorization: `Bearer ${token}` } : {},
+ });
+ if (!res.ok) return;
+ const j = await res.json();
+ setMailReady(!!j?.enabled);
+ } catch {
+ setMailReady(false);
+ }
+ }, []);
+
+ React.useEffect(() => {
+ loadMailStatus();
+ }, [loadMailStatus]);
+
+ const sendMail = async () => {
+ const to = mailTo.trim();
+ if (!to) {
+ toastErr("Vui lòng nhập email nhận báo cáo.");
+ return;
+ }
+ setMailBusy(true);
+ try {
+ const token = getAuthToken();
+ const res = await fetch(`${API_BASE_URL}/api/v1/reports/send-email`, {
+ method: "POST",
+ headers: {
+ "Content-Type": "application/json",
+ ...(token ? { Authorization: `Bearer ${token}` } : {}),
+ },
+ body: JSON.stringify({
+ toEmail: to,
+ type: mailType,
+ months,
+ days,
+ from,
+ to,
+ }),
+ });
+ const j = await res.json().catch(() => ({}));
+ if (!res.ok) {
+ toastErr(j?.message || "Không gửi được báo cáo qua email.");
+ return;
+ }
+ toastOk(j?.message || "Đã gửi báo cáo qua email.");
+ } catch (err: any) {
+ toastErr(err?.message || "Lỗi khi gửi báo cáo qua email.");
+ } finally {
+ setMailBusy(false);
+ }
+ };
 
  const run = async (t: ReportType) => {
  const meta = REPORTS.find((r) => r.key === t)!;
@@ -198,6 +260,76 @@ export default function OwnerReportExport() {
  Doanh thu tính = tiền cọc + tiền mặt còn lại ở các đơn đã thu; đơn đã huỷ không tính.
  </span>
  </p>
+
+ {/* ---- Gửi báo cáo qua email ---- */}
+ <div className="pt-3 border-t border-slate-100 space-y-3">
+ <div className="flex items-center gap-2.5">
+ <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+ <Mail className="w-4 h-4" />
+ </div>
+ <div className="min-w-0 flex-1">
+ <h4 className="font-black text-xs text-slate-900">Hoặc gửi báo cáo qua email</h4>
+ <p className="text-[11px] text-slate-500 mt-0.5">
+ File CSV được đính kèm trực tiếp trong email.
+ </p>
+ </div>
+ {mailReady === false && (
+ <span className="shrink-0 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black">
+ SMTP chưa bật
+ </span>
+ )}
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_auto] gap-3 items-end">
+ <label className="block">
+ <span className="block text-[11px] font-bold text-slate-600 mb-1">Email nhận báo cáo</span>
+ <input
+ type="email"
+ value={mailTo}
+ onChange={(e) => setMailTo(e.target.value)}
+ placeholder="VD: chusan@gmail.com"
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ />
+ </label>
+
+ <label className="block">
+ <span className="block text-[11px] font-bold text-slate-600 mb-1">Loại báo cáo</span>
+ <select
+ value={mailType}
+ onChange={(e) => setMailType(e.target.value as ReportType)}
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ >
+ {REPORTS.map((r) => (
+ <option key={r.key} value={r.key}>
+ {r.label}
+ </option>
+ ))}
+ </select>
+ </label>
+
+ <button
+ type="button"
+ onClick={sendMail}
+ disabled={mailBusy || !mailTo.trim()}
+ className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 whitespace-nowrap h-[38px]"
+ >
+ {mailBusy ? (
+ <Loader2 className="w-3.5 h-3.5 animate-spin" />
+ ) : (
+ <Send className="w-3.5 h-3.5" />
+ )}
+ {mailBusy ? "Đang gửi…" : "Gửi email"}
+ </button>
+ </div>
+
+ {mailReady === false && (
+ <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 leading-relaxed">
+ Hệ thống chưa cấu hình SMTP nên chưa gửi được email. Quản trị viên cần đặt các biến{" "}
+ <code className="font-mono">MAIL_ENABLED=true</code>, <code className="font-mono">MAIL_USERNAME</code>,{" "}
+ <code className="font-mono">MAIL_PASSWORD</code> (với Gmail dùng Mật khẩu ứng dụng).
+ </p>
+ )}
+ </div>
  </section>
  );
 }

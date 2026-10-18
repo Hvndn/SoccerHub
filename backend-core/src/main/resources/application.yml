@@ -49,3 +49,39 @@ ai-service:
 jwt:
   secret: SoccerHubSuperSecretKeyForJWTAuthentication2026PitchManagement
   expiration: 86400000
+
+# ============================================================================
+#  GỬI EMAIL (SMTP)
+# ============================================================================
+#  Mặc định TẮT — hệ thống vẫn chạy bình thường, chỉ ghi cảnh báo vào log.
+#  Muốn bật: đặt MAIL_ENABLED=true + điền thông tin SMTP.
+#
+#  Gmail: bật Xác thực 2 lớp -> tạo "Mật khẩu ứng dụng" (16 ký tự)
+#         -> MAIL_USERNAME = gmail của bạn, MAIL_PASSWORD = mật khẩu ứng dụng
+#         (không dùng mật khẩu đăng nhập Gmail thường)
+#
+#  SendGrid/Resend: đổi host + user + app key tương ứng.
+# ============================================================================
+mail:
+  enabled: ${MAIL_ENABLED:false}
+  host: ${MAIL_HOST:smtp.gmail.com}
+  port: ${MAIL_PORT:587}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
+  from: ${MAIL_FROM:${MAIL_USERNAME:no-reply@soccerhub.vn}}
+  from-name: ${MAIL_FROM_NAME:SoccerHub}
+
+spring.mail:
+  host: ${MAIL_HOST:smtp.gmail.com}
+  port: ${MAIL_PORT:587}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+        connectiontimeout: 15000
+        timeout: 15000
+        writetimeout: 15000
