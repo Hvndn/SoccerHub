@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api";
 import { simulateBookings } from "@/lib/adminService";
+import OwnerReportExport from "@/components/OwnerReportExport";
 import {
  ShieldCheck,
  TrendingUp,
@@ -907,6 +908,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
  </div>
  </div>
 
+{/* === XUẤT BÁO CÁO THỐNG KÊ (CSV cho Excel) === */}
+  <OwnerReportExport />
+
+  {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
  {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
 
  {/* Dữ liệu trống -> gợi ý tạo dữ liệu demo ngay tại dashboard chủ sân

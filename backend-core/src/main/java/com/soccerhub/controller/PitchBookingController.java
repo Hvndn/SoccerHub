@@ -521,16 +521,78 @@ public class PitchBookingController {
     /**
      * API Lấy Danh Sách Booking Của Cụm Sân Trong Ngày
      */
+/**
+ * Che số điện thoại khi trả về cho người KHÔNG phải chủ sân.
+ * VD: "0912345678" -> "0912****678" (giữ 4 số đầu + 3 số cuối).
+ */
+    private static String maskPhone(String phone) {
+        if (phone == null || phone.isBlank()) return phone;
+        String s = phone.trim();
+        if (s.length() <= 7) return "*******";
+        return s.substring(0, 4) + "****" + s.substring(s.length() - 3);
+    }
+
+    /** Bản sao đơn đặt đã che số điện thoại (không trả entity gốc ra ngoài). */
+    private static Map<String, Object> maskedBooking(Booking b) {
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("id", b.getId());
+        m.put("pitchId", b.getPitchId());
+        m.put("courtName", b.getCourtName());
+        m.put("courtType", b.getCourtType());
+        m.put("bookingDate", b.getBookingDate());
+        m.put("timeSlot", b.getTimeSlot());
+        m.put("customerName", b.getCustomerName());
+        m.put("customerPhone", maskPhone(b.getCustomerPhone()));
+        m.put("totalPrice", b.getTotalPrice());
+        m.put("depositPaid", b.getDepositPaid());
+        m.put("cashDue", b.getCashDue());
+        m.put("status", b.getStatus());
+        m.put("via", b.getVia());
+        m.put("code", b.getCode());
+        m.put("createdAt", b.getCreatedAt());
+        return m;
+    }
+
+    /**
+     * Danh sách đơn đặt của một cụm sân trong ngày.
+     *
+     * <p>Yêu cầu đăng nhập: trước đây endpoint công khai trả về TÊN + SỐ ĐIỆN THOẠI
+     * của mọi khách, ai cũng gọi được.</p>
+     */
     @GetMapping("/{id}/bookings")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getPitchBookings(
             @PathVariable Long id,
-            @RequestParam(required = false) String date
+            @RequestParam(required = false) String date,
+            @AuthenticationPrincipal com.soccerhub.model.User me
     ) {
-        String targetDate = (date != null && !date.trim().isEmpty()) 
-                ? date.trim() 
+        String targetDate = (date != null && !date.trim().isEmpty())
+                ? date.trim()
                 : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         List<Booking> bookings = bookingRepository.findByPitchIdAndBookingDate(id, targetDate);
-        return ResponseEntity.ok(bookings);
+
+        boolean privileged = me != null && me.getRole() != null
+                && ("OWNER".equals(me.getRole().name()) || "ADMIN".equals(me.getRole().name()));
+        Pitch pitch = pitchRepository.findById(id).orElse(null);
+        boolean isOwnerOfPitch = pitch != null && pitch.getOwnerId() != null && me != null
+                && pitch.getOwnerId().equals(me.getId());
+
+        // Chủ sân của chính cụm sân này hoặc ADMIN được xem đầy đủ; người khác xem số đã che.
+        boolean fullAccess = privileged && (isOwnerOfPitch
+                || (me != null && me.getRole() != null && "ADMIN".equals(me.getRole().name())));
+
+        List<Map<String, Object>> out = bookings.stream()
+                .map(b -> fullAccess ? bookingToMap(b) : maskedBooking(b))
+                .toList();
+        return ResponseEntity.ok(out);
+    }
+
+    private static Map<String, Object> bookingToMap(Booking b) {
+        Map<String, Object> m = maskedBooking(b);
+        m.put("customerPhone", b.getCustomerPhone());
+        m.put("cancelReason", b.getCancelReason());
+        m.put("cancelledBy", b.getCancelledBy());
+        return m;
     }
 
     /**
