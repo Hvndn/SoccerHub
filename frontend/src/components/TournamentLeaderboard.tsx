@@ -1388,7 +1388,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  <div className="p-5 rounded-2xl bg-slate-100/80 shadow-xs border border-slate-200 flex flex-col gap-3">
  <div className="flex items-center gap-2 text-slate-900 text-sm font-bold">
  <ShieldCheck className="w-5 h-5 text-sky-700" />
- <span>Bảo Chứng Giải Đấu SoccerHub</span>
+ <span>Bảo Chứng Giải Đấu Turfzone</span>
  </div>
  <div className="flex flex-col gap-2.5 text-xs text-slate-600 ">
  <div className="flex items-start gap-2.5">

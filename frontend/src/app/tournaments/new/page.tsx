@@ -159,7 +159,7 @@ function NewTournamentWizard() {
  backLabel="Quay lại Giải Đấu & BXH"
  crumb="Tạo giải đấu mới"
  title="Khởi tạo giải đấu bóng đá mới"
- subtitle="Hoàn tất 4 bước để công bố giải lên hệ thống SoccerHub & CSDL thật."
+ subtitle="Hoàn tất 4 bước để công bố giải lên hệ thống Turfzone & CSDL thật."
  >
  <WizardStepper
  steps={STEPS}

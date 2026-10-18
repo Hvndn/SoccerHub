@@ -16,7 +16,7 @@ import { markPlayerSetupPending } from "@/components/PlayerSetup";
  *   1. Người dùng bấm nút → Google popup → người dùng chọn tài khoản
  *   2. Google trả về ID token (JWT) chứa email, tên, ảnh
  *   3. Frontend gửi ID token tới backend /api/v1/auth/google
- *   4. Backend xác minh với Google, tạo/tìm tài khoản, trả về JWT của SoccerHub
+ *   4. Backend xác minh với Google, tạo/tìm tài khoản, trả về JWT của Turfzone
  *   5. Frontend lưu token + cập nhật user state
  */
 export default function GoogleLoginButton({

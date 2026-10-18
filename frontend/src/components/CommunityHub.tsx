@@ -216,7 +216,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
       openChannel({
         slug: "general",
         name: "Phòng Chat Chung",
-        desc: "Kênh chung của cộng đồng SoccerHub",
+        desc: "Kênh chung của cộng đồng Turfzone",
         lastMessage: "",
         lastSender: "",
         lastSenderEmail: "",
@@ -679,7 +679,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
       {/* Ghi chú nhỏ */}
       <p className="text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5">
         <ShieldCheck className="w-3.5 h-3.5 text-[#0369a1]" />
-        Cộng đồng SoccerHub — kết nối cầu thủ, chủ sân &amp; ban tổ chức giải đấu
+        Cộng đồng Turfzone — kết nối cầu thủ, chủ sân &amp; ban tổ chức giải đấu
       </p>
     </div>
   );

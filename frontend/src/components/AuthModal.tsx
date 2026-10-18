@@ -242,7 +242,7 @@ export default function AuthModal({
  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanIdentifier);
  const newUser = await register({
  fullName: fullName.trim(),
- email: isEmail ? cleanIdentifier : `${cleanIdentifier}@phone.soccerhub.vn`,
+ email: isEmail ? cleanIdentifier : `${cleanIdentifier}@phone.Turfzone.vn`,
  phone: isEmail ? undefined : cleanIdentifier,
  password: password,
  role: role,
@@ -404,7 +404,7 @@ export default function AuthModal({
  autoComplete="username"
  value={identifier}
  onChange={(e) => setIdentifier(e.target.value)}
- placeholder="vidu@soccerhub.vn hoặc 0909…"
+ placeholder="vidu@Turfzone.vn hoặc 0909…"
  className={inputCls}
  required
  />
@@ -498,7 +498,7 @@ export default function AuthModal({
  autoComplete="username"
  value={identifier}
  onChange={(e) => setIdentifier(e.target.value)}
- placeholder="vidu@soccerhub.vn hoặc 0909…"
+ placeholder="vidu@Turfzone.vn hoặc 0909…"
  className={inputCls}
  required
  />
@@ -696,7 +696,7 @@ export default function AuthModal({
  <button
  type="button"
  disabled={isSubmitting}
- onClick={() => handleQuickDemoLogin("player@soccerhub.vn", "PLAYER")}
+ onClick={() => handleQuickDemoLogin("player@Turfzone.vn", "PLAYER")}
  className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
  >
  ⚽ Cầu Thủ
@@ -704,7 +704,7 @@ export default function AuthModal({
  <button
  type="button"
  disabled={isSubmitting}
- onClick={() => handleQuickDemoLogin("owner@soccerhub.vn", "OWNER")}
+ onClick={() => handleQuickDemoLogin("owner@Turfzone.vn", "OWNER")}
  className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
  >
  🏟️ Chủ Sân
@@ -712,7 +712,7 @@ export default function AuthModal({
  <button
  type="button"
  disabled={isSubmitting}
- onClick={() => handleQuickDemoLogin("organizer@soccerhub.vn", "ORGANIZER")}
+ onClick={() => handleQuickDemoLogin("organizer@Turfzone.vn", "ORGANIZER")}
  className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
  >
  🏆 Ban Tổ Chức

@@ -67,7 +67,7 @@ export default function CommunityChat({
   initialPartner,
   channel = "general",
   channelName = "Phòng Chat Chung",
-  channelDesc = "Kênh chung của cộng đồng SoccerHub",
+  channelDesc = "Kênh chung của cộng đồng Turfzone",
 }: {
   user?: any;
   initialMode?: "public" | "dm";

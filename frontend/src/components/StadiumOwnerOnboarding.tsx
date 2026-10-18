@@ -177,7 +177,7 @@ export default function StadiumOwnerOnboarding({
  <div>
  <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/20 text-[#0b4f6c] text-xs font-bold mb-2">
  <ShieldCheck className="w-4 h-4" />
- <span>SoccerHub • Quy Trình Onboarding Chủ Sân</span>
+ <span>Turfzone • Quy Trình Onboarding Chủ Sân</span>
  </div>
  <h1 className="text-lg sm:text-3xl font-black text-slate-900 tracking-tight">
  Khởi Tạo & Cấu Hình Cụm Sân (Stadium Setup Wizard)
@@ -466,11 +466,11 @@ export default function StadiumOwnerOnboarding({
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 text-xs">
  <div className="space-y-3">
  <p className="text-xs text-slate-500">
- Hệ thống không giữ tiền giúp bạn — luồng thanh toán trong SoccerHub chạy như sau:
+ Hệ thống không giữ tiền giúp bạn — luồng thanh toán trong Turfzone chạy như sau:
  </p>
  {[
  { t: "1. Khách đặt ca", d: "Khách chọn khung giờ trống, hệ thống sinh đơn giữ chỗ trong CSDL, ca đó chuyển sang trạng thái Đã Đặt." },
- { t: "2. Thu tiền theo quy định của sân", d: "Khách trả trực tiếp tại quầy hoặc chuyển khoản theo thông tin tài khoản chủ sân tự công bố. SoccerHub không can thiệp số tiền này." },
+ { t: "2. Thu tiền theo quy định của sân", d: "Khách trả trực tiếp tại quầy hoặc chuyển khoản theo thông tin tài khoản chủ sân tự công bố. Turfzone không can thiệp số tiền này." },
  { t: "3. Check-in khi khách tới", d: "Chủ sân mở mã đơn ở tab Quản Lý Cụm Sân để xác nhận khách đã tới và bàn giao ca." },
  { t: "4. Hủy ca", d: "Nếu khách không tới, chủ sân hủy đơn để ca trở lại trạng thái trống cho người khác đặt." }
  ].map((s) => (

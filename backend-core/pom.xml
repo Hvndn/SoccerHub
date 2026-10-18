@@ -9,11 +9,11 @@
         <version>3.2.3</version>
         <relativePath/>
     </parent>
-    <groupId>com.soccerhub</groupId>
+    <groupId>com.turfzone</groupId>
     <artifactId>backend-core</artifactId>
     <version>1.0.0</version>
-    <name>SoccerHub Backend Core</name>
-    <description>Core backend service for SoccerHub pitch management and tournaments</description>
+    <name>Turfzone Backend Core</name>
+    <description>Core backend service for Turfzone pitch management and tournaments</description>
 
     <properties>
         <java.version>17</java.version>

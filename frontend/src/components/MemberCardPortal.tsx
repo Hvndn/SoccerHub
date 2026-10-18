@@ -44,7 +44,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <div className="relative z-10 space-y-3 sm:space-y-6">
  <div className="flex items-center gap-2">
  <span className="font-mono text-[11px] uppercase tracking-widest text-emerald-400 font-extrabold bg-slate-900/80 border border-[#0369a1]/30 px-3 py-1 rounded-full">
- SOCCERHUB 4.0
+ Turfzone 4.0
  </span>
  <span className="w-1.5 h-1.5 rounded-full bg-[#0369a1]"></span>
  <span className="text-[11px] tracking-wide text-slate-300 font-bold uppercase">
@@ -180,7 +180,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <Sparkles className="w-4 h-4" />
  </div>
  <div>
- <p className="text-sm font-extrabold tracking-tight text-slate-900 ">SoccerHub SPORTS PASS</p>
+ <p className="text-sm font-extrabold tracking-tight text-slate-900 ">Turfzone SPORTS PASS</p>
  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-mono">Universal Athlete ID</p>
  </div>
  </div>
@@ -234,7 +234,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
 
  {/* Footer Thẻ */}
  <div className="pt-3 border-t border-slate-200 flex items-center justify-between relative z-10 text-[11px]">
- <span className="font-mono text-slate-500 tracking-wider">{memberId} • SOCCERHUB</span>
+ <span className="font-mono text-slate-500 tracking-wider">{memberId} • Turfzone</span>
  <span className="flex items-center gap-1.5 text-sky-800 font-bold">
  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> ĐÃ KÍCH HOẠT THÀNH CÔNG
  </span>

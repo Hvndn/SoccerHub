@@ -21,7 +21,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getAuthToken } from "@/lib/api";
 
 /** Cờ đánh dấu "tài khoản cầu thủ mới, chưa hoàn tất khởi tạo hồ sơ" — lưu theo từng email. */
-const PENDING_KEY = "soccerhub_player_setup_pending_";
+const PENDING_KEY = "Turfzone_player_setup_pending_";
 
 export function markPlayerSetupPending(email: string) {
   if (typeof window === "undefined" || !email) return;

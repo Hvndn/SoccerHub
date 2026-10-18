@@ -189,7 +189,7 @@ function AdminConsole() {
 
  <footer className="border-t border-slate-200 py-4">
  <p className="text-center text-[11px] text-slate-600 ">
- © 2026 SoccerHub — Khu vực quản trị hệ thống (Super Admin).
+ © 2026 Turfzone — Khu vực quản trị hệ thống (Super Admin).
  </p>
  </footer>
 

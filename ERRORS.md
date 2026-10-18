@@ -23,7 +23,7 @@
 
 - **Type**: Runtime / Integration
 - **Severity**: High
-- **File**: `backend-core/src/main/java/com/soccerhub/config/DataInitializer.java:35`
+- **File**: `backend-core/src/main/java/com/Turfzone/config/DataInitializer.java:35`
 - **Agent**: Antigravity Orchestrator (Thần)
 - **Root Cause**: 
   1. `DataInitializer.run()` (CommandLineRunner) chạy đồng bộ ngay khi Spring Boot khởi động nhưng không có `try-catch`. Khi kết nối MySQL cloud trên Railway bị trễ hoặc thiếu biến, HikariCP timeout 30s ném ngoại lệ làm sập toàn bộ Spring Boot JVM (exit code 1).
@@ -37,7 +37,7 @@
 - **Fix Applied**: 
   1. Bọc toàn bộ các bước seed dữ liệu trong `DataInitializer.java` vào từng khối `try-catch` an toàn, log cảnh báo thay vì làm sập ứng dụng.
   2. Thêm cờ giới hạn bộ nhớ `-Xmx384m -Xms128m -XX:+UseG1GC` vào `nixpacks.toml` và `render.yaml`.
-  3. Thêm hàm `configureRailwayMysqlUrl()` trong `SoccerHubApplication.java` tự động phân giải `MYSQL_URL` sang JDBC properties.
+  3. Thêm hàm `configureRailwayMysqlUrl()` trong `TurfzoneApplication.java` tự động phân giải `MYSQL_URL` sang JDBC properties.
   4. Tạo `HealthController.java` (`/`, `/health`, `/api/v1/health`) và mở quyền `permitAll` trong `SecurityConfig.java`.
 - **Prevention**: Mọi tác vụ `CommandLineRunner` hoặc background seeder phải luôn bọc `try-catch` độc lập và JVM container phải luôn có trần `-Xmx`.
 - **Status**: Fixed

@@ -135,7 +135,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  }
  ];
 
- // Direct Comparison (Traditional vs SoccerHub)
+ // Direct Comparison (Traditional vs Turfzone)
  const traditionalIssues = [
  {
  title: "Ghi chép sổ tay & Nhắn tin Zalo dễ trùng giờ",
@@ -250,14 +250,14 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  </div>
  </section>
 
- {/* --- SECTION 2: DIRECT COMPARISON (TRUYỀN THỐNG VS SOCCERHUB) --- */}
+ {/* --- SECTION 2: DIRECT COMPARISON (TRUYỀN THỐNG VS Turfzone) --- */}
  <section className="w-full bg-slate-100/90 p-4 sm:p-10 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-5 sm:space-y-8">
  <div className="text-center max-w-2xl mx-auto space-y-2">
  <span className="text-xs font-extrabold text-[#0b4f6c] uppercase tracking-wider block">
  So Sánh Đột Phá
  </span>
  <h2 className="text-xl sm:text-4xl font-black text-slate-900 tracking-tight">
- Tại Sao Chọn SoccerHub Thay Vì Sổ Tay &amp; Gọi Điện Thoại?
+ Tại Sao Chọn Turfzone Thay Vì Sổ Tay &amp; Gọi Điện Thoại?
  </h2>
  </div>
 
@@ -292,7 +292,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  </div>
  </div>
 
- {/* SoccerHub Smart Way Card */}
+ {/* Turfzone Smart Way Card */}
  <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-[#0369a1]/40 space-y-4 sm:space-y-5 shadow-xl relative overflow-hidden">
  <div className="flex items-center justify-between pb-3 border-b border-slate-100 ">
  <div className="flex items-center space-x-3">
@@ -300,7 +300,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <Zap className="w-5 h-5 text-amber-300 fill-amber-300" />
  </div>
  <div>
- <h3 className="font-extrabold text-slate-900 text-base">Hệ Thống Thông Minh SoccerHub</h3>
+ <h3 className="font-extrabold text-slate-900 text-base">Hệ Thống Thông Minh Turfzone</h3>
  <p className="text-xs text-[#0b4f6c] font-bold">Tự động hóa 100% bằng công nghệ thể thao số</p>
  </div>
  </div>
@@ -337,7 +337,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  </h2>
 
  <p className="hidden sm:block text-xs sm:text-sm text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
- Hòa mình vào hệ sinh thái quản lý sân bóng và giải đấu SoccerHub. Đặt sân tức thì, theo dõi doanh thu và tổ chức giải đấu chuyên nghiệp.
+ Hòa mình vào hệ sinh thái quản lý sân bóng và giải đấu Turfzone. Đặt sân tức thì, theo dõi doanh thu và tổ chức giải đấu chuyên nghiệp.
  </p>
 
  <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-3.5">

@@ -264,7 +264,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
               <input
                 value={gMembers}
                 onChange={(e) => setGMembers(e.target.value)}
-                placeholder="a@soccerhub.vn, b@soccerhub.vn"
+                placeholder="a@Turfzone.vn, b@Turfzone.vn"
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
               />
             </div>

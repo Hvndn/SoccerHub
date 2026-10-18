@@ -94,7 +94,7 @@ export default function Navbar({
   }, [user]);
 
  // Cache thông báo tách riêng theo từng tài khoản (tránh lẫn thông báo khi đổi user chung máy)
- const NOTIFS_KEY_BASE = "soccerhub_user_notifications";
+ const NOTIFS_KEY_BASE = "Turfzone_user_notifications";
  const userEmailRef = useRef<string | null>(null);
  userEmailRef.current = user?.email ?? null;
  const notifKey = () =>
@@ -355,18 +355,18 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab(user?.role === "OWNER" ? "admin" : "booking");
  }}
  className="flex items-center space-x-2 cursor-pointer select-none shrink-0 group"
- title="SoccerHub - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh"
+ title="Turfzone - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh"
  >
  {/* Light Mode Logo Image */}
  <SafeImage 
  src="/turfzone-logo.png" 
- alt="SoccerHub Logo" 
+ alt="Turfzone Logo" 
  className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-105" 
  />
  {/* Dark Mode Logo Image */}
  <SafeImage 
  src="/turfzone-logo-dark.png" 
- alt="SoccerHub Logo" 
+ alt="Turfzone Logo" 
  className="h-8 sm:h-9 w-auto object-contain hidden transition-transform group-hover:scale-105" 
  />
  </div>
@@ -1040,12 +1040,12 @@ const mobileNav: MobileNavItem[] =
  <div className="flex items-center space-x-2">
  <SafeImage
  src="/turfzone-logo.png"
- alt="SoccerHub Logo"
+ alt="Turfzone Logo"
  className="h-7 w-auto object-contain "
  />
  <SafeImage
  src="/turfzone-logo-dark.png"
- alt="SoccerHub Logo"
+ alt="Turfzone Logo"
  className="h-7 w-auto object-contain hidden "
  />
  </div>
@@ -1070,7 +1070,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  <div className="min-w-0 flex-1">
  <p className="font-black text-sm text-slate-900 truncate">
- {user.fullName || user.name || "Cầu Thủ SoccerHub"}
+ {user.fullName || user.name || "Cầu Thủ Turfzone"}
  </p>
  <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-sky-50 text-[#0b4f6c] ">
  {user.role === "OWNER" ? "Chủ Sân Đối Tác" : user.role === "ORGANIZER" ? "Ban Tổ Chức" : user.role === "ADMIN" ? "Quản Trị Viên" : "VĐV Chuyên Nghiệp"}
@@ -1091,7 +1091,7 @@ const mobileNav: MobileNavItem[] =
  ) : (
  <div className="p-4 rounded-2xl bg-sky-50 border border-sky-100 space-y-2">
  <p className="font-extrabold text-xs text-[#0b4f6c] ">
- Gia nhập cộng đồng SoccerHub
+ Gia nhập cộng đồng Turfzone
  </p>
  <p className="text-[11px] text-slate-600 leading-relaxed">
  Đăng nhập để theo dõi lịch trình, giải đấu và phong độ thi đấu của bạn.

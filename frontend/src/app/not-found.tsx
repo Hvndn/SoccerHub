@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SearchX, Home, LayoutGrid } from "lucide-react";
 
 export const metadata = {
- title: "Không tìm thấy trang — SoccerHub",
+ title: "Không tìm thấy trang — Turfzone",
 };
 
 export default function NotFound() {

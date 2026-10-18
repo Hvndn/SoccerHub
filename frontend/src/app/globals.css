@@ -98,7 +98,7 @@ p {
   scrollbar-width: none !important; /* Firefox */
 }
 
-/* --- SOCCERHUB UNIFIED RESPONSIVE CONTAINER --- */
+/* --- Turfzone UNIFIED RESPONSIVE CONTAINER --- */
 .hub-container {
   width: 100%;
   max-width: 1720px;
@@ -178,7 +178,7 @@ button.bg-emerald-700,
   color: #ffffff !important;
 }
 
-/* --- SOCCERHUB MOTION TOKENS (dùng chung toàn trang) --- */
+/* --- Turfzone MOTION TOKENS (dùng chung toàn trang) --- */
 :root {
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast: 150ms;

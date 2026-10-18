@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 > nul
-title Kick-ON SoccerHub - Single Terminal Runner
+title Kick-ON Turfzone - Single Terminal Runner
 
 echo ========================================================
-echo   SOCCERHUB [KICK-ON] - SINGLE TERMINAL RUNNER (NO DOCKER)
+echo   Turfzone [KICK-ON] - SINGLE TERMINAL RUNNER (NO DOCKER)
 echo ========================================================
 echo.
 

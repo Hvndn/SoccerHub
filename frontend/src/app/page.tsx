@@ -398,7 +398,7 @@ if (newTab === activeTab) return;
  {!currentUser && (
  <GuestFeatureBanner
  title="Cộng Đồng Cầu Thủ & Phong Độ Thi Đấu"
- description="Tham gia cộng đồng SoccerHub. Ghép trận (Matchmaking) tìm đối thủ tương đương phong độ và theo dõi lịch sử thi đấu của bản thân."
+ description="Tham gia cộng đồng Turfzone. Ghép trận (Matchmaking) tìm đối thủ tương đương phong độ và theo dõi lịch sử thi đấu của bản thân."
  features={[
  "Lịch sử thi đấu & chuỗi phong độ 5 trận",
  "Ghép trận tìm đối thủ theo trình độ",
@@ -634,7 +634,7 @@ if (newTab === activeTab) return;
  <footer className={`glass-panel border-t border-slate-200 pt-6 transition-colors duration-300 ${showBottomNav ? "pb-28 lg:pb-6" : "pb-6"}`}>
  <div className="w-full max-w-full mx-auto px-4 sm:px-6 lg:px-10 text-center text-xs text-slate-500 space-y-1.5">
  <p>
- © 2026 <strong>SoccerHub</strong>
+ © 2026 <strong>Turfzone</strong>
  <span className="hidden sm:inline"> — Nền Tảng Đặt Sân &amp; Quản Lý Bóng Đá Thông Minh. Đồ Án Tốt Nghiệp: Hệ thống quản lý cụm sân bóng đá mini cỏ nhân tạo (Sân 5, Sân 7, Sân 11), giải đấu phủi và kết nối đối thủ AI.</span>
  </p>
  <p className="hidden sm:block text-[#0b4f6c] font-semibold">Công nghệ: Spring Boot, MySQL, Next.js 14, Python FastAPI (lịch sử & phong độ thi đấu), QR VietQR sinh từ STK báo cáo giải.</p>

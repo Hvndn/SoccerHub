@@ -6,8 +6,8 @@ from recommendation import recommend_pitches
 from form_matchmaking import find_matchmaking_opponents
 
 app = FastAPI(
-    title="SoccerHub AI Recommendation & Form Matchmaking API",
-    description="Microservice AI gợi ý sân bóng và ghép đội theo phong độ thi đấu cho hệ thống SoccerHub",
+    title="Turfzone AI Recommendation & Form Matchmaking API",
+    description="Microservice AI gợi ý sân bóng và ghép đội theo phong độ thi đấu cho hệ thống Turfzone",
     version="2.0.0"
 )
 
@@ -65,7 +65,7 @@ class MatchmakingRequest(BaseModel):
 @app.get("/")
 def root():
     return {
-        "service": "SoccerHub AI Engine",
+        "service": "Turfzone AI Engine",
         "status": "ONLINE",
         "endpoints": ["/api/v1/ai/recommend-pitches", "/api/v1/ai/matchmaking"]
     }

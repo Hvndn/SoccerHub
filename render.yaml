@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: soccerhub-ai-service
+    name: Turfzone-ai-service
     env: python
     rootDir: ai-service
     plan: free
@@ -11,7 +11,7 @@ services:
         value: "https://soccer-hub-wheat.vercel.app,http://localhost:3000,http://localhost:3001"
 
   - type: web
-    name: soccerhub-backend-core
+    name: Turfzone-backend-core
     env: java
     rootDir: backend-core
     plan: free

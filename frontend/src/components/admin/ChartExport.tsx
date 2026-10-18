@@ -70,7 +70,7 @@ export default function ChartExport({
 
       pdf.setFontSize(8);
       pdf.setTextColor(120, 130, 145);
-      pdf.text(`SoccerHub · xuất lúc ${new Date().toLocaleString("vi-VN")}`, margin, margin + 9);
+      pdf.text(`Turfzone · xuất lúc ${new Date().toLocaleString("vi-VN")}`, margin, margin + 9);
 
       // Giữ tỷ lệ khung hình, canh giữa
       const imgW = pageW - margin * 2;

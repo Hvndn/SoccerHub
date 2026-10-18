@@ -991,7 +991,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
  <div className="text-2xl sm:text-3xl font-black text-[#0369a1] font-mono">
  {pitchStats.onlineBookings} Ca Online
  </div>
- <span className="text-xs font-bold text-slate-500">Ca đặt qua trang đặt sân của SoccerHub</span>
+ <span className="text-xs font-bold text-slate-500">Ca đặt qua trang đặt sân của Turfzone</span>
  </div>
 
  <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
@@ -1169,7 +1169,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
  className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer shadow-xs"
  >
  <option value="ALL">Tất cả hình thức</option>
- <option value="ONLINE">📱 Đặt qua Website SoccerHub</option>
+ <option value="ONLINE">📱 Đặt qua Website Turfzone</option>
  <option value="OFFLINE">☎️ Tạo Tại Quầy (Vãng Lai)</option>
  <option value="RESALE">🔄 Sàn Nhượng Ca Gấp</option>
  <option value="EMPTY">⚪ Ca Trống Chưa Đặt</option>

@@ -385,7 +385,7 @@ export default function TournamentOrganizerPortal({
  </div>
 
  <h1 className="text-lg sm:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
- <span>Quản Lý Giải Đấu Bóng Đá SoccerHub</span>
+ <span>Quản Lý Giải Đấu Bóng Đá Turfzone</span>
  <Award className="w-8 h-8 text-amber-700 shrink-0 hidden sm:inline-block" />
  </h1>
  <p className="text-sm text-slate-600 max-w-2xl font-medium leading-relaxed hidden sm:block">

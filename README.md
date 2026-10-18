@@ -1,4 +1,4 @@
-# SoccerHub — Nền Tảng Quản Lý Sân Bóng & Giải Đấu
+# Turfzone — Nền Tảng Quản Lý Sân Bóng & Giải Đấu
 
 > **Đồ Án Tốt Nghiệp:** Xây dựng hệ thống quản lý sân bóng và giải đấu thể thao tích hợp tính năng thông minh.
 > Phong độ đội bóng được suy ra từ **lịch sử thi đấu thật** (không dùng điểm Elo cộng dồn).
@@ -11,10 +11,10 @@ Hệ thống tự tạo sẵn khi khởi động lần đầu (`DataInitializer`
 
 | Vai trò | Email | Mật khẩu | Dùng để demo |
 |---|---|---|---|
-| Quản trị hệ thống | `admin@soccerhub.vn` | `admin123` | Khu vực `/admin`: KPI, quản lý người dùng/giải/sân, duyệt chợ kèo |
-| Cầu thủ | `player@soccerhub.vn` | `player123` | Đặt sân, xem vé, tự hủy vé, tham gia chợ kèo |
-| Chủ sân | `owner@soccerhub.vn` | `owner123` | Dashboard cụm sân: doanh thu, tỷ lệ lấp đầy, đơn tại quầy |
-| Ban tổ chức | `organizer@soccerhub.vn` | `organizer123` | Tạo giải, bốc thăm, nhập tỷ số, VAR |
+| Quản trị hệ thống | `admin@Turfzone.vn` | `admin123` | Khu vực `/admin`: KPI, quản lý người dùng/giải/sân, duyệt chợ kèo |
+| Cầu thủ | `player@Turfzone.vn` | `player123` | Đặt sân, xem vé, tự hủy vé, tham gia chợ kèo |
+| Chủ sân | `owner@Turfzone.vn` | `owner123` | Dashboard cụm sân: doanh thu, tỷ lệ lấp đầy, đơn tại quầy |
+| Ban tổ chức | `organizer@Turfzone.vn` | `organizer123` | Tạo giải, bốc thăm, nhập tỷ số, VAR |
 
 Ở màn đăng nhập có nút **đăng nhập nhanh 1 chạm** cho 3 vai trò phía trên.
 
@@ -53,7 +53,7 @@ Ngoài ra seed sẵn **một giải đã kết thúc** kèm nhánh đấu và 3 
 
 ## 🚀 Hướng Dẫn Chạy Local
 
-- **1. MySQL:** tạo database `soccerhub_db` (mặc định `root/1234`, cấu hình tại `backend-core/src/main/resources/application.yml`).
+- **1. MySQL:** tạo database `Turfzone_db` (mặc định `root/1234`, cấu hình tại `backend-core/src/main/resources/application.yml`).
 
 - **2. AI Service:**
   ```bash
@@ -78,7 +78,7 @@ Ngoài ra seed sẵn **một giải đã kết thúc** kèm nhánh đấu và 3 
 
 > Nếu chạy frontend local nhưng backend chưa bật, trỏ sang bản deploy:
 > ```bash
-> $env:NEXT_PUBLIC_API_BASE_URL='https://soccerhub-backend-core-production.up.railway.app'; npm run dev
+> $env:NEXT_PUBLIC_API_BASE_URL='https://Turfzone-backend-core-production.up.railway.app'; npm run dev
 > ```
 
 ---
@@ -113,7 +113,7 @@ Ngoài ra seed sẵn **một giải đã kết thúc** kèm nhánh đấu và 3 
 ## 🗂 Cấu Trúc Thư Mục
 
 ```
-SoccerHub/
+Turfzone/
 ├── backend-core/    # Spring Boot API (cổng 8080)
 ├── ai-service/      # FastAPI — gợi ý sân & ghép kèo theo phong độ (cổng 8000)
 ├── frontend/        # Next.js app (cổng 3000)

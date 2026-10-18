@@ -72,7 +72,7 @@ export default function WizardPageShell({
 
  <footer className="border-t border-slate-200 py-4">
  <p className="text-center text-[11px] text-slate-600 ">
- © 2026 SoccerHub — Đồ Án Tốt Nghiệp: Hệ thống quản lý sân bóng & giải đấu phủi.
+ © 2026 Turfzone — Đồ Án Tốt Nghiệp: Hệ thống quản lý sân bóng & giải đấu phủi.
  </p>
  </footer>
  </div>

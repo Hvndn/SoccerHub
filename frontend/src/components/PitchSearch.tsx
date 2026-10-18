@@ -583,7 +583,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  ) : (
  <>
  Chào bạn đến với{" "}
- <span className="text-[#0b4f6c] ">SoccerHub</span>! 👋
+ <span className="text-[#0b4f6c] ">Turfzone</span>! 👋
  </>
  )}
  </h1>
@@ -1290,12 +1290,12 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  )}
  </section>
 
- {/* WIDGET 2: THẺ VẬN ĐỘNG VIÊN SOCCERHUB QUICKPASS (QR SCAN BARRIER) */}
+ {/* WIDGET 2: THẺ VẬN ĐỘNG VIÊN Turfzone QUICKPASS (QR SCAN BARRIER) */}
  <section className="bg-white text-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200 space-y-4 relative overflow-hidden">
  <div className="flex items-center justify-between">
  <div className="flex items-center space-x-2">
  <QrCode className="w-5 h-5 text-amber-700" />
- <h3 className="font-black text-sm text-slate-900 ">SoccerHub QuickPass</h3>
+ <h3 className="font-black text-sm text-slate-900 ">Turfzone QuickPass</h3>
  </div>
  <span className="px-2.5 py-0.5 rounded bg-[#0369a1] text-white font-black text-[9px] uppercase">
  Check-in Không Chạm

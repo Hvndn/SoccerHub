@@ -1,4 +1,4 @@
-name: SoccerHub Continuous Integration & Deployment Pipeline
+name: Turfzone Continuous Integration & Deployment Pipeline
 
 on:
   push:

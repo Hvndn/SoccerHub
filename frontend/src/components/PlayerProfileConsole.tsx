@@ -362,7 +362,7 @@ export default function PlayerProfileConsole({
  <div className="hidden md:flex items-center gap-3 text-xs text-slate-500 font-mono shrink-0">
  <span className="flex items-center gap-1.5">
  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
- Nguồn: Lịch sử thi đấu SoccerHub
+ Nguồn: Lịch sử thi đấu Turfzone
  </span>
  </div>
  </div>
@@ -452,7 +452,7 @@ export default function PlayerProfileConsole({
  type="button"
  onClick={() => {
  navigator.clipboard.writeText(window.location.href);
- toastOk("Đã sao chép liên kết hồ sơ cầu thủ SoccerHub!");
+ toastOk("Đã sao chép liên kết hồ sơ cầu thủ Turfzone!");
  }}
  className="p-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 text-xs sm:text-sm font-semibold transition-all shadow-sm shrink-0 min-h-[42px] min-w-[42px] flex items-center justify-center"
  title="Chia sẻ hồ sơ"
@@ -1428,7 +1428,7 @@ export default function PlayerProfileConsole({
  </div>
 
  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-center text-slate-500">
- Hồ sơ tự động cập nhật từ hệ thống giải đấu SoccerHub
+ Hồ sơ tự động cập nhật từ hệ thống giải đấu Turfzone
  </div>
  </div>
 

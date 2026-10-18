@@ -330,7 +330,7 @@ export default function AdminCharts() {
           <ChartExport
             targetRef={wrapRef}
             filename="admin-charts"
-            title="SoccerHub — Biểu đồ thống kê quản trị"
+            title="Turfzone — Biểu đồ thống kê quản trị"
           />
         </div>
       </div>

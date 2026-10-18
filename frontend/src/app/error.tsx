@@ -18,7 +18,7 @@ export default function GlobalError({
 }) {
  useEffect(() => {
  // Ghi ra console để còn tra được khi demo trước mặt thầy
- console.error("[SoccerHub] Lỗi runtime:", error);
+ console.error("[Turfzone] Lỗi runtime:", error);
  }, [error]);
 
  return (

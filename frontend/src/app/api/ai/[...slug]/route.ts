@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * Nhờ vậy production vẫn chạy đúng kể cả khi quên set biến môi trường.
  */
 const LOCAL_AI_BASE_URL = 'http://localhost:8000';
-const PROD_AI_BASE_URL = 'https://soccerhub-ai-service.onrender.com';
+const PROD_AI_BASE_URL = 'https://Turfzone-ai-service.onrender.com';
 
 function resolveAiBaseUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_AI_BASE_URL || process.env.AI_BASE_URL;

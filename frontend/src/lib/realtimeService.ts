@@ -1,5 +1,5 @@
 /**
- * SoccerHub Realtime Event Bus & Notification Service
+ * Turfzone Realtime Event Bus & Notification Service
  * Cung cấp khả năng đồng bộ đa tab, đa role tức thời (0 mili-giây)
  * giữa Cầu Thủ (User đặt sân) và Chủ Sân (Owner nhận thông báo).
  */
@@ -23,9 +23,9 @@ export interface RealtimeBookingEvent {
   timestamp: number;
 }
 
-const CHANNEL_NAME = "soccerhub_realtime_channel";
-const STORAGE_KEY = "soccerhub_realtime_last_event";
-const CUSTOM_EVENT_NAME = "soccerhub:booking_event";
+const CHANNEL_NAME = "Turfzone_realtime_channel";
+const STORAGE_KEY = "Turfzone_realtime_last_event";
+const CUSTOM_EVENT_NAME = "Turfzone:booking_event";
 
 let broadcastChannel: BroadcastChannel | null = null;
 
