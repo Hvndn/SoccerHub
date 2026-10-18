@@ -65,27 +65,32 @@ export default function AdminCharts() {
   const [report, setReport] = useState<any>(null);
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [insights, setInsights] = useState<any>(null);
+  const [pitches, setPitches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Khoảng thời gian lọc — 7/30/90/365 ngày gần nhất
   const [rangeDays, setRangeDays] = useState(90);
+  // Lọc theo cụm sân ("" = tất cả)
+  const [pitchId, setPitchId] = useState<string>("");
   const wrapRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const [ov, rep, bks, ins] = await Promise.all([
+        const [ov, rep, bks, ins, ps] = await Promise.all([
           apiRequest<any>("/api/v1/admin/overview").catch(() => null),
           apiRequest<any>("/api/v1/admin/revenue-report").catch(() => null),
           apiRequest<any[]>("/api/v1/admin/bookings?limit=500").catch(() => []),
           apiRequest<any>("/api/v1/admin/insights").catch(() => null),
+          apiRequest<any[]>("/api/v1/pitches").catch(() => []),
         ]);
         if (!alive) return;
         setOverview(ov);
         setReport(rep);
         setAllBookings(Array.isArray(bks) ? bks : []);
         setInsights(ins);
+        setPitches(Array.isArray(ps) ? ps : []);
       } finally {
         if (alive) setLoading(false);
       }
@@ -120,22 +125,69 @@ export default function AdminCharts() {
   }, [rangeDays]);
 
   const bookings = useMemo(
-    () => allBookings.filter((b) => !b?.bookingDate || String(b.bookingDate) >= cutoffDate),
-    [allBookings, cutoffDate]
+    () =>
+      allBookings.filter((b) => {
+        if (b?.bookingDate && String(b.bookingDate) < cutoffDate) return false;
+        if (pitchId && String(b?.pitchId) !== pitchId) return false;
+        return true;
+      }),
+    [allBookings, cutoffDate, pitchId]
+  );
+
+  // Lọc insights.topPitches theo cụm sân đang chọn
+  const filteredInsights = useMemo(() => {
+    if (!insights) return null;
+    if (!pitchId) return insights;
+    const filtered = (insights.topPitches ?? []).filter(
+      (p: any) => String(p.pitchId) === pitchId
+    );
+    return { ...insights, topPitches: filtered };
+  }, [insights, pitchId]);
+
+  const topPitchData = useMemo(
+    () =>
+      (filteredInsights?.topPitches ?? []).map((p: any) => ({
+        name: String(p.pitchName ?? "—").length > 22
+          ? String(p.pitchName).slice(0, 20) + "…"
+          : p.pitchName,
+        full: p.pitchName,
+        revenue: Number(p.revenue ?? 0),
+      })),
+    [filteredInsights]
   );
 
   // ------------------------------------------------------------------
-  //  1. Doanh thu theo tháng (cột)
+  //  1. Doanh thu theo tháng (cột) — tính lại từ bookings đã lọc để bám theo
+  //     khoảng thời gian + cụm sân người dùng chọn
   // ------------------------------------------------------------------
   const revenueData = useMemo(() => {
-    // Backend trả về `monthlyChart` (mảng {month, revenue, bookings, occupancyRate})
-    const rows: any[] = report?.monthlyChart ?? report?.monthly ?? [];
-    return rows.map((m: any) => ({
-      month: String(m.month ?? "").replace(" (Dự kiến)", "*"),
-      revenue: Number(m.revenue ?? 0),
-      bookings: Number(m.bookings ?? m.count ?? 0),
-    }));
-  }, [report]);
+    const monthNames = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+      "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
+    const map = new Map<string, { revenue: number; bookings: number }>();
+    for (const b of bookings) {
+      if (!b?.bookingDate) continue;
+      const ym = String(b.bookingDate).slice(0, 7); // yyyy-MM
+      if (ym.length !== 7) continue;
+      const cur = map.get(ym) ?? { revenue: 0, bookings: 0 };
+      if (b.status !== "CANCELLED") {
+        const amount = (b.depositPaid ?? 0) + (b.cashDue ?? 0);
+        cur.revenue += amount;
+        cur.bookings += 1;
+      }
+      map.set(ym, cur);
+    }
+    // Sắp xếp theo thời gian tăng dần
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([ym, v]) => {
+        const m = Number(ym.slice(5, 7));
+        return {
+          month: monthNames[m - 1] + (ym.slice(0, 4) !== String(new Date().getFullYear()) ? ` ${ym.slice(0, 4)}` : ""),
+          revenue: v.revenue,
+          bookings: v.bookings,
+        };
+      });
+  }, [bookings]);
 
   /** Doanh thu tính lại từ đơn trong khoảng lọc — bám theo bộ lọc, không phụ thuộc tháng backend. */
   const revenueInRange = useMemo(() => {
@@ -220,19 +272,9 @@ export default function AdminCharts() {
   }, [bookings]);
 
   // ------------------------------------------------------------------
-  //  5. Top cụm sân doanh thu (cột ngang)
+  //  5. Top cụm sân doanh thu (cột ngang) — đã lọc theo pitchId nếu có
   // ------------------------------------------------------------------
-  const topPitchData = useMemo(
-    () =>
-      (insights?.topPitches ?? []).map((p: any) => ({
-        name: String(p.pitchName ?? "—").length > 22
-          ? String(p.pitchName).slice(0, 20) + "…"
-          : p.pitchName,
-        full: p.pitchName,
-        revenue: Number(p.revenue ?? 0),
-      })),
-    [insights]
-  );
+  // (đã khai báo topPitchData ở trên)
 
   const emptyHint = (msg: string) => (
     <div className="h-56 flex flex-col items-center justify-center gap-2 text-center">
@@ -244,36 +286,53 @@ export default function AdminCharts() {
 
   return (
     <div className="space-y-3 sm:space-y-4" ref={wrapRef}>
-      {/* Bộ lọc khoảng thời gian + xuất file */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-2xl border border-slate-200 p-3 sm:p-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Khoảng thời gian:</span>
-          {RANGES.map((r) => (
-            <button
-              key={r.days}
-              type="button"
-              onClick={() => setRangeDays(r.days)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                rangeDays === r.days
-                  ? "bg-[#0369a1] text-white shadow-sm"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              {r.label}
-            </button>
-          ))}
-          <span className="text-[11px] font-mono text-slate-500 ml-1">
-            Tổng trong {rangeDays} ngày:{" "}
-            <strong className="text-[#0369a1]">{revenueInRange.sum.toLocaleString("vi-VN")}đ</strong>
-            {" · "}
-            <strong className="text-slate-700">{revenueInRange.count}</strong> đơn
-          </span>
+      {/* Bộ lọc khoảng thời gian + cụm sân + xuất file */}
+      <div className="flex flex-col gap-3 bg-white rounded-2xl border border-slate-200 p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Khoảng thời gian:</span>
+            {RANGES.map((r) => (
+              <button
+                key={r.days}
+                type="button"
+                onClick={() => setRangeDays(r.days)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  rangeDays === r.days
+                    ? "bg-[#0369a1] text-white shadow-sm"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+            {pitches.length > 1 && (
+              <select
+                value={pitchId}
+                onChange={(e) => setPitchId(e.target.value)}
+                aria-label="Lọc theo cụm sân"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+              >
+                <option value="">Tất cả cụm sân</option>
+                {pitches.map((p: any) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <span className="text-[11px] font-mono text-slate-500 ml-1">
+              Tổng trong {rangeDays} ngày:{" "}
+              <strong className="text-[#0369a1]">{revenueInRange.sum.toLocaleString("vi-VN")}đ</strong>
+              {" · "}
+              <strong className="text-slate-700">{revenueInRange.count}</strong> đơn
+            </span>
+          </div>
+          <ChartExport
+            targetRef={wrapRef}
+            filename="admin-charts"
+            title="SoccerHub — Biểu đồ thống kê quản trị"
+          />
         </div>
-        <ChartExport
-          targetRef={wrapRef}
-          filename="admin-charts"
-          title="SoccerHub — Biểu đồ thống kê quản trị"
-        />
       </div>
 
       {/* Hàng 1: Doanh thu theo tháng + trạng thái đơn */}
