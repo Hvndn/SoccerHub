@@ -11,7 +11,7 @@ spring:
     # LƯU Ý: không dùng createDatabaseIfNotExist — user MySQL trên Railway /
     # PlanetScale / Aiven thường KHÔNG có quyền CREATE DATABASE nên sẽ lỗi
     # ngay lúc Hibernate chạy ddl-auto: update. Database luôn được plugin tạo sẵn.
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:Turfzone_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=15000&socketTimeout=60000}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQL_DATABASE:${MYSQLDATABASE:railway}}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=15000&socketTimeout=60000}
     username: ${SPRING_DATASOURCE_USERNAME:${MYSQLUSER:root}}
     password: ${SPRING_DATASOURCE_PASSWORD:${MYSQLPASSWORD:1234}}
     driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:com.mysql.cj.jdbc.Driver}
