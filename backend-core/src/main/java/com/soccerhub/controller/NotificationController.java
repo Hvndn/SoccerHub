@@ -3,6 +3,7 @@ package com.soccerhub.controller;
 import com.soccerhub.model.Notification;
 import com.soccerhub.model.User;
 import com.soccerhub.repository.NotificationRepository;
+import com.soccerhub.service.AdminAuditService;
 import com.soccerhub.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Set;
 
 /** Thông báo hệ thống cho user đã đăng nhập + broadcast của ADMIN. */
 @RestController
@@ -20,6 +22,7 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final NotificationRepository notificationRepository;
+    private final AdminAuditService adminAuditService;
 
     @GetMapping("/mine")
     public ResponseEntity<?> mine(@AuthenticationPrincipal User me) {
@@ -64,10 +67,16 @@ public class NotificationController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteNotification(@PathVariable Long id) {
+    public ResponseEntity<?> deleteNotification(@PathVariable Long id,
+            @AuthenticationPrincipal User me) {
         return notificationRepository.findById(id)
                 .map(n -> {
                     notificationRepository.delete(n);
+                    adminAuditService.log(
+                            me != null ? me.getEmail() : null,
+                            me != null ? me.getFullName() : null,
+                            "NOTIFICATION", "DELETE_NOTIFICATION", "id=" + id,
+                            "Xóa thông báo #" + id + ": " + n.getTitle());
                     return ResponseEntity.ok(Map.of("message", "Đã xóa thông báo.", "id", id));
                 })
                 .orElse(ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy thông báo.")));
@@ -75,18 +84,30 @@ public class NotificationController {
 
     @PostMapping("/broadcast")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> broadcast(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> broadcast(@RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal User me) {
         String title = String.valueOf(body.getOrDefault("title", "")).trim();
         String message = String.valueOf(body.getOrDefault("message", "")).trim();
         if (title.isEmpty() || message.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Thiếu tiêu đề hoặc nội dung."));
         }
+
         String targetRole = String.valueOf(body.getOrDefault("targetRole", "ALL")).trim().toUpperCase();
-        if (!java.util.Set.of("ALL", "PLAYER", "OWNER", "ORGANIZER", "ADMIN").contains(targetRole)) {
+        if (!Set.of("ALL", "PLAYER", "OWNER", "ORGANIZER", "ADMIN").contains(targetRole)) {
             targetRole = "ALL";
         }
+
         notificationService.notify(targetRole, title, message, "SYSTEM",
                 body.get("link") != null ? String.valueOf(body.get("link")) : null);
-        return ResponseEntity.ok(Map.of("message", "Đã gửi thông báo tới nhóm " + targetRole + "."));
+
+        adminAuditService.log(
+                me != null ? me.getEmail() : null,
+                me != null ? me.getFullName() : null,
+                "NOTIFICATION", "BROADCAST", targetRole,
+                "Gửi thông báo \"" + title + "\" tới nhóm " + targetRole);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã gửi thông báo tới nhóm " + targetRole + ".",
+                "targetRole", targetRole));
     }
 }

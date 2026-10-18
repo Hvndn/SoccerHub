@@ -13,6 +13,7 @@ import {
  ArrowLeft,
  MessageSquare,
  Megaphone,
+ ScrollText,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { AdminToast } from "@/components/admin/AdminUI";
@@ -24,8 +25,9 @@ import AdminBookings from "@/components/admin/AdminBookings";
 import AdminModeration from "@/components/admin/AdminModeration";
 import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminChatModeration from "@/components/admin/AdminChatModeration";
+import AdminAuditLogs from "@/components/admin/AdminAuditLogs";
 
-type Section = "overview" | "users" | "tournaments" | "pitches" | "bookings" | "moderation" | "chat" | "notifications";
+type Section = "overview" | "users" | "tournaments" | "pitches" | "bookings" | "moderation" | "chat" | "notifications" | "audit";
 
 const SECTIONS: { key: Section; label: string; desc: string; icon: React.ReactNode }[] = [
  { key: "overview", label: "Tổng quan", desc: "KPI toàn hệ thống", icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -36,6 +38,7 @@ const SECTIONS: { key: Section; label: string; desc: string; icon: React.ReactNo
  { key: "moderation", label: "Kiểm duyệt", desc: "Gỡ tin chợ kèo", icon: <ShieldCheck className="w-4 h-4" /> },
  { key: "chat", label: "Chat", desc: "Kiểm duyệt tin nhắn", icon: <MessageSquare className="w-4 h-4" /> },
  { key: "notifications", label: "Thông báo", desc: "Gửi thông báo", icon: <Megaphone className="w-4 h-4" /> },
+ { key: "audit", label: "Nhật ký", desc: "Lịch sử thao tác", icon: <ScrollText className="w-4 h-4" /> },
 ];
 
 const SECTION_TITLE: Record<Section, string> = {
@@ -47,6 +50,7 @@ const SECTION_TITLE: Record<Section, string> = {
  moderation: "Kiểm duyệt chợ kèo",
  chat: "Kiểm duyệt tin nhắn chat",
  notifications: "Gửi thông báo hệ thống",
+ audit: "Nhật ký thao tác quản trị",
 };
 
 export default function AdminPage() {
@@ -176,6 +180,7 @@ function AdminConsole() {
  {section === "moderation" && <AdminModeration notify={notify} />}
  {section === "chat" && <AdminChatModeration notify={notify} />}
  {section === "notifications" && <AdminNotifications notify={notify} />}
+ {section === "audit" && <AdminAuditLogs notify={notify} />}
  </div>
  </div>
  </div>

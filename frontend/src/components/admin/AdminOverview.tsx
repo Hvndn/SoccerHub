@@ -126,7 +126,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  <div className="skeleton-shimmer h-40 w-full rounded-xl" />
  ) : monthly.length === 0 ? (
  <p className="text-xs text-slate-500 text-center py-6 sm:py-8">
- Chưa có dữ liệu báo cáo. {report === null ? "Backend /admin/revenue-report hiện trả số liệu mẫu." : ""}
+  Chưa có dữ liệu doanh thu trong khoảng thời gian này.
  </p>
  ) : (
  <div className="flex items-end gap-2 h-44" role="img" aria-label="Biểu đồ doanh thu theo tháng">

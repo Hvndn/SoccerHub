@@ -34,6 +34,36 @@ public class AdminController {
     private final MatchmakingPostRepository matchmakingPostRepository;
     private final MatchResultRepository matchResultRepository;
     private final GoalEventRepository goalEventRepository;
+    private final com.soccerhub.service.AdminAuditService auditService;
+
+    /** Ghi nhật ký thao tác của admin (không ném exception để không chặn thao tác chính). */
+    private void audit(User me, String group, String action, String target, String detail) {
+        if (me == null) return;
+        auditService.log(me.getEmail(), me.getFullName(), group, action, target, detail);
+    }
+
+    /**
+     * Nhật ký quản trị: liệt kê thao tác gần đây của các admin.
+     * Có thể lọc theo nhóm (USER / TOURNAMENT / BOOKING / CHAT / NOTIFICATION...).
+     */
+    @GetMapping("/audit-logs")
+    public ResponseEntity<List<Map<String, Object>>> listAuditLogs(
+            @RequestParam(required = false) String group,
+            @RequestParam(defaultValue = "100") int limit) {
+        List<Map<String, Object>> rows = auditService.recent(group, limit).stream().map(l -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", l.getId());
+            m.put("adminEmail", l.getAdminEmail());
+            m.put("adminName", l.getAdminName());
+            m.put("actionGroup", l.getActionGroup());
+            m.put("action", l.getAction());
+            m.put("target", l.getTarget());
+            m.put("detail", l.getDetail());
+            m.put("createdAt", l.getCreatedAt());
+            return m;
+        }).toList();
+        return ResponseEntity.ok(rows);
+    }
 
     /** Tổng quan: các con số KPI cho dashboard admin. */
     @GetMapping("/overview")
@@ -98,6 +128,9 @@ public class AdminController {
         boolean enabled = raw instanceof Boolean b ? b : Boolean.parseBoolean(String.valueOf(raw));
         user.setEnabled(enabled);
         userRepository.save(user);
+        audit(me, "USER", enabled ? "UNLOCK_USER" : "LOCK_USER", user.getEmail(),
+                (enabled ? "Mở khóa tài khoản " : "Khóa tài khoản ") + user.getEmail()
+                        + " (" + user.getFullName() + ")");
         return ResponseEntity.ok(Map.of(
                 "message", enabled ? "Đã mở khóa tài khoản." : "Đã khóa tài khoản.",
                 "id", user.getId(),
@@ -127,6 +160,9 @@ public class AdminController {
         }
         user.setRole(role);
         userRepository.save(user);
+        audit(me, "USER", "CHANGE_ROLE", user.getEmail(),
+                "Đổi vai trò " + user.getEmail() + ": " + (me == null ? "?" : me.getEmail())
+                        + " đổi sang " + role.name());
         return ResponseEntity.ok(Map.of(
                 "message", "Đã cập nhật vai trò thành " + role.name(),
                 "id", user.getId(),
@@ -144,12 +180,16 @@ public class AdminController {
         return ResponseEntity.ok(all.subList(0, Math.min(safeLimit, all.size())));
     }
 
-    /** Gỡ bài đăng chợ kèo vi phạm (kiểm duyệt). */
+/** Gỡ bài đăng chợ kèo vi phạm (kiểm duyệt). */
     @DeleteMapping("/matchmaking-posts/{id}")
-    public ResponseEntity<?> deleteMatchmakingPost(@PathVariable Long id) {
-        return matchmakingPostRepository.findById(id)
+    public ResponseEntity<?> deleteMatchmakingPost(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User me) {
+return matchmakingPostRepository.findById(id)
                 .map(post -> {
                     matchmakingPostRepository.delete(post);
+                    audit(me, "MATCHMAKING", "DELETE_POST", "id=" + id,
+                            "Gỡ bài đăng chợ kèo #" + id + " của đội " + post.getTeamName());
                     return ResponseEntity.ok(Map.of("message", "Đã gỡ bài đăng khỏi chợ kèo.", "id", id));
                 })
                 .orElse(ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy bài đăng.")));
@@ -177,7 +217,10 @@ public class AdminController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Không thể xóa quản trị viên cuối cùng."));
             }
         }
-        userRepository.delete(user);
+userRepository.delete(user);
+        audit(me, "USER", "DELETE_USER", user.getEmail(),
+                "Xóa tài khoản " + user.getEmail() + " (" + user.getFullName()
+                        + ", vai trò " + user.getRole() + ")");
         return ResponseEntity.ok(Map.of("message", "Đã xóa tài khoản " + user.getEmail() + ".", "id", id));
     }
 
