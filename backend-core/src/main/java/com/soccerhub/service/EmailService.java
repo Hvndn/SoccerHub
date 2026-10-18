@@ -47,6 +47,28 @@ public class EmailService {
         return enabled;
     }
 
+    /**
+     * Gửi email HTML tuỳ ý (dùng cho các thông báo nghiệp vụ như duyệt đội, lịch thi đấu).
+     * Trả true nếu gửi thành công; false nếu SMTP chưa bật hoặc lỗi.
+     */
+    public boolean sendHtmlDirect(String toEmail, String subject, String html) {
+        if (!isReady() || !isValidEmail(toEmail)) return false;
+        try {
+            MimeMessage msg = mailSender.createMimeMessage();
+            MimeMessageHelper h = new MimeMessageHelper(msg, true, StandardCharsets.UTF_8.name());
+            h.setFrom(from, fromName);
+            h.setTo(toEmail);
+            h.setSubject(subject);
+            h.setText(html == null ? "" : html, true);
+            mailSender.send(msg);
+            log.info("[Email] Da gui email '{}' toi {}", subject, toEmail);
+            return true;
+        } catch (MailException | MessagingException | java.io.UnsupportedEncodingException e) {
+            log.warn("[Email] Khong gui duoc email toi {}: {}", toEmail, e.getMessage());
+            return false;
+        }
+    }
+
     /** Có thể gửi email không (đã bật + có cấu hình SMTP). */
     public boolean isReady() {
         return enabled && mailSender != null;
