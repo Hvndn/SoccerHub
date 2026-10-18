@@ -60,4 +60,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     List<ChatMessage> findDirectMessagesForUser(String email);
 
     Optional<ChatMessage> findTopByRecipientEmailIsNullAndChannelAndPinnedTrueOrderByCreatedAtDesc(String channel);
+
+    /** Đếm tin nhắn DM chưa đọc (recipientEmail = email, readAt = null). */
+    long countByRecipientEmailAndReadAtIsNull(String recipientEmail);
 }

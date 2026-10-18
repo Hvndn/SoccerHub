@@ -63,6 +63,28 @@ public class ChatMessage {
     @Builder.Default
     private Boolean pinned = false;
 
+    /** URL file đính kèm (ảnh, file) — null nếu chỉ text. */
+    private String fileUrl;
+
+    /** Loại file: IMAGE, DOCUMENT, AUDIO, VIDEO — null nếu không có file. */
+    private String fileType;
+
+    /** Tên file gốc. */
+    private String fileName;
+
+    /** Kích thước file (bytes). */
+    private Long fileSize;
+
+    /** Thời điểm tin nhắn được đọc (null = chưa đọc). Dùng cho DM & group. */
+    private LocalDateTime readAt;
+
+    /** Id tin nhắn được trả lời (null = tin thường). */
+    private Long replyToId;
+
+    /** Tin ghim cho kênh (chỉ 1 tin ghim mỗi kênh). */
+    @Builder.Default
+    private Boolean pinned = false;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 

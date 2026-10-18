@@ -1,16 +1,28 @@
-package com.turfzone.controller;
+﻿package com.turfzone.controller;
 
 import com.turfzone.model.ChatMessage;
+import com.turfzone.model.ChatReaction;
 import com.turfzone.model.User;
 import com.turfzone.repository.ChatMessageRepository;
+import com.turfzone.repository.ChatReactionRepository;
 import com.turfzone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 /**
  * Phòng chat cộng đồng (nhiều kênh) + tin nhắn trực tiếp (DM) giữa 2 người dùng.
@@ -31,6 +43,7 @@ import java.util.*;
 public class ChatController {
 
     private final ChatMessageRepository chatMessageRepository;
+    private final ChatReactionRepository chatReactionRepository;
     private final UserRepository userRepository;
 
     /** Slug kênh hợp lệ, mặc định "general". Chống rác / SQL injection. */
@@ -313,5 +326,211 @@ public class ChatController {
         }
         chatMessageRepository.delete(msg);
         return ResponseEntity.ok(Map.of("message", "Đã xoá tin nhắn.", "id", id));
+    }
+
+
+    // ============================================================
+    // REACTION (Emoji) — Messenger style
+    // ============================================================
+
+    /** Thêm/bỏ reaction emoji cho một tin nhắn. */
+    @PostMapping(\"/messages/{id}/react\")
+    @PreAuthorize(\"isAuthenticated()\")
+    public ResponseEntity<?> react(
+            @PathVariable Long id,
+            @RequestParam String emoji,
+            @AuthenticationPrincipal User me
+    ) {
+        if (me == null) return ResponseEntity.status(401).body(Map.of(\"message\", \"Chưa đăng nhập.\"));
+        ChatMessage msg = chatMessageRepository.findById(id).orElse(null);
+        if (msg == null) return ResponseEntity.status(404).body(Map.of(\"message\", \"Không tìm thấy tin nhắn.\"));
+
+        String email = me.getEmail().toLowerCase();
+        Optional<ChatReaction> existing = chatReactionRepository.findByMessageIdAndUserEmailAndEmoji(id, email, emoji);
+        if (existing.isPresent()) {
+            // Bỏ reaction nếu đã có
+            chatReactionRepository.delete(existing.get());
+            return ResponseEntity.ok(Map.of(\"reacted\", false, \"emoji\", emoji));
+        } else {
+            // Thêm reaction mới
+            ChatReaction r = ChatReaction.builder()
+                    .messageId(id)
+                    .userEmail(email)
+                    .emoji(emoji)
+                    .build();
+            chatReactionRepository.save(r);
+            return ResponseEntity.ok(Map.of(\"reacted\", true, \"emoji\", emoji));
+        }
+    }
+
+    /** Lấy danh sách reaction của một tin nhắn (gộp theo emoji + đếm). */
+    @GetMapping(\"/messages/{id}/reactions\")
+    @PreAuthorize(\"isAuthenticated()\")
+    public ResponseEntity<List<Map<String, Object>>> getReactions(@PathVariable Long id) {
+        ChatMessage msg = chatMessageRepository.findById(id).orElse(null);
+        if (msg == null) return ResponseEntity.status(404).body(List.of());
+
+        List<ChatReaction> reactions = chatReactionRepository.findByMessageId(id);
+        Map<String, List<ChatReaction>> byEmoji = reactions.stream()
+                .collect(Collectors.groupingBy(ChatReaction::getEmoji));
+
+        String currentEmail = me != null ? me.getEmail().toLowerCase() : \"\";
+
+        List<Map<String, Object>> result = byEmoji.entrySet().stream().map(e -> {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put(\"emoji\", e.getKey());
+            row.put(\"count\", e.getValue().size());
+            row.put(\"users\", e.getValue().stream().map(r -> r.getUserEmail()).toList());
+            row.put(\"meReacted\", e.getValue().stream().anyMatch(r -> r.getUserEmail().equals(currentEmail)));
+            return row;
+        }).toList();
+
+        return ResponseEntity.ok(result);
+    }
+
+    // ============================================================
+    // READ RECEIPT (Đã đọc) — cho DM & Group
+    // ============================================================
+
+    /** Đánh dấu tin nhắn DM/Group đã đọc. */
+    @PostMapping(\"/messages/{id}/read\")
+    @PreAuthorize(\"isAuthenticated()\")
+    public ResponseEntity<?> markRead(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User me
+    ) {
+        if (me == null) return ResponseEntity.status(401).body(Map.of(\"message\", \"Chưa đăng nhập.\"));
+        ChatMessage msg = chatMessageRepository.findById(id).orElse(null);
+        if (msg == null) return ResponseEntity.status(404).body(Map.of(\"message\", \"Không tìm thấy tin nhắn.\"));
+
+        // Chỉ người nhận mới được đánh dấu đã đọc
+        String email = me.getEmail().toLowerCase();
+        if (msg.getRecipientEmail() != null && !msg.getRecipientEmail().equalsIgnoreCase(email)) {
+            return ResponseEntity.status(403).body(Map.of(\"message\", \"Chỉ người nhận mới đánh dấu đã đọc.\"));
+        }
+        if (msg.getGroupId() != null) {
+            // Group: cần table riêng để track read per user per group message - bỏ qua hiện tại
+        }
+
+        if (msg.getReadAt() == null) {
+            msg.setReadAt(LocalDateTime.now());
+            chatMessageRepository.save(msg);
+        }
+        return ResponseEntity.ok(Map.of(\"read\", true, \"readAt\", msg.getReadAt()));
+    }
+
+    // ============================================================
+    // FILE UPLOAD (Ảnh/File đính kèm)
+    // ============================================================
+
+    /** Upload file đính kèm tin nhắn. Trả về URL để frontend gửi kèm khi send message. */
+    @PostMapping(\"/upload\")
+    @PreAuthorize(\"isAuthenticated()\")
+    public ResponseEntity<?> uploadFile(
+            @RequestParam(\"file\") MultipartFile file,
+            @AuthenticationPrincipal User me
+    ) {
+        if (me == null) return ResponseEntity.status(401).body(Map.of(\"message\", \"Chưa đăng nhập.\"));
+        if (file.isEmpty()) return ResponseEntity.badRequest().body(Map.of(\"message\", \"File rỗng.\"));
+
+        // Validate file type & size (max 10MB)
+        String contentType = file.getContentType();
+        if (contentType == null) return ResponseEntity.badRequest().body(Map.of(\"message\", \"Không xác định loại file.\"));
+        boolean isImage = contentType.startsWith(\"image/\");
+        boolean isDoc = contentType.equals(\"application/pdf\") ||
+                contentType.equals(\"application/msword\") ||
+                contentType.equals(\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\");
+        if (!isImage && !isDoc) {
+            return ResponseEntity.badRequest().body(Map.of(\"message\", \"Chỉ cho phép ảnh (jpg/png/webp) và PDF/DOC.\"));
+        }
+        if (file.getSize() > 10 * 1024 * 1024) {
+            return ResponseEntity.badRequest().body(Map.of(\"message\", \"File quá lớn (tối đa 10MB).\"));
+        }
+
+        try {
+            // Lưu file vào thư mục uploads (production nên dùng S3/Cloudinary)
+            String dir = \"uploads/chat/\" + LocalDate.now().format(DateTimeFormatter.ofPattern(\"yyyy/MM/dd\"));
+            Path uploadDir = Paths.get(dir);
+            Files.createDirectories(uploadDir);
+
+            String ext = \"\";
+            String original = file.getOriginalFilename();
+            if (original != null && original.contains(\".\")) {
+                ext = original.substring(original.lastIndexOf(\".\"));
+            }
+            String filename = UUID.randomUUID() + ext;
+            Path filePath = uploadDir.resolve(filename);
+            Files.write(filePath, file.getBytes());
+
+            String fileUrl = \"/api/v1/chat/files/\" + filename; // serve qua endpoint static
+            String fileType = isImage ? \"IMAGE\" : \"DOCUMENT\";
+
+            return ResponseEntity.ok(Map.of(
+                    \"fileUrl\", fileUrl,
+                    \"fileType\", fileType,
+                    \"fileName\", original,
+                    \"fileSize\", file.getSize()
+            ));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of(\"message\", \"Lưu file thất bại: \" + e.getMessage()));
+        }
+    }
+
+    // ============================================================
+    // SEARCH MESSAGES (Tìm tin nhắn trong hội thoại/kênh)
+    // ============================================================
+
+    /** Tìm tin nhắn theo từ khóa trong DM hoặc kênh. */
+    @GetMapping(\"/messages/search\")
+    @PreAuthorize(\"isAuthenticated()\")
+    public ResponseEntity<List<ChatMessage>> searchMessages(
+            @RequestParam String query,
+            @RequestParam(required = false) String with,
+            @RequestParam(required = false) String channel,
+            @AuthenticationPrincipal User me
+    ) {
+        if (me == null) return ResponseEntity.status(401).body(List.of());
+        String email = me.getEmail().toLowerCase();
+        String q = query.trim().toLowerCase();
+
+        List<ChatMessage> candidates;
+        if (with != null && !with.isBlank()) {
+            candidates = chatMessageRepository.findDirectMessages(email, with.trim());
+        } else {
+            String channelSlug = normalizeChannel(channel);
+            candidates = \"general\".equals(channelSlug)
+                    ? chatMessageRepository.findTop50General()
+                    : chatMessageRepository.findTop50ByChannel(channelSlug);
+        }
+
+        List<ChatMessage> result = candidates.stream()
+                .filter(m -> m.getContent().toLowerCase().contains(q))
+                .limit(50)
+                .toList();
+        return ResponseEntity.ok(result);
+    }
+
+    // ============================================================
+    // UNREAD COUNT (Số tin chưa đọc) — cho badge
+    // ============================================================
+
+    /** Tổng số tin nhắn chưa đọc (DM + Group) của user hiện tại. */
+    @GetMapping(\"/unread-count\")
+    @PreAuthorize(\"isAuthenticated()\")
+    public ResponseEntity<Map<String, Object>> unreadCount(@AuthenticationPrincipal User me) {
+        if (me == null) return ResponseEntity.status(401).body(Map.of(\"total\", 0));
+        String email = me.getEmail().toLowerCase();
+
+        // DM chưa đọc: tin nhắn có recipientEmail = email và readAt = null
+        long dmUnread = chatMessageRepository.countByRecipientEmailAndReadAtIsNull(email);
+
+        // Group chưa đọc: cần table riêng — tạm trả 0
+        long groupUnread = 0;
+
+        return ResponseEntity.ok(Map.of(
+                \"dm\", dmUnread,
+                \"group\", groupUnread,
+                \"total\", dmUnread + groupUnread
+        ));
     }
 }

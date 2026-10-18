@@ -247,7 +247,19 @@ export default function Navbar({
  });
  }, []);
 
- const removeNotification = useCallback((id: string) => {
+ const markSingleRead = useCallback((id: string) => {
+  setNotifications(prev => {
+  const notif = prev.find(n => n.id === id);
+  if (notif?.serverId != null && !notif.read) {
+    markNotificationRead(notif.serverId as number).catch(() => {});
+  }
+  const updated = prev.map(n => n.id === id ? { ...n, read: true } : n);
+  saveNotifications(updated);
+  return updated;
+  });
+}, []);
+
+const removeNotification = useCallback((id: string) => {
  setNotifications(prev => {
  const updated = prev.filter(n => n.id !== id);
  saveNotifications(updated);
@@ -807,6 +819,7 @@ const mobileNav: MobileNavItem[] =
  onDelete={removeNotification}
  onClearAll={clearAllNotifications}
  onMarkAllRead={markAllRead}
+  onMarkRead={markSingleRead}
  />
 
  {user ? (

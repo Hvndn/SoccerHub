@@ -3,13 +3,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   MessageCircle, Send, Loader2, Users, Search, ArrowLeft, UserPlus,
-  Reply, Pin, Trash2, X, Bookmark,
+  Reply, Pin, Trash2, X, Bookmark, Smile, Paperclip, Image, FileText, Check, Eye,
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { toastErr, toastOk } from "@/lib/toast";
 import { ensureLoggedIn } from "@/lib/api";
 import PageSpinner from "./PageSpinner";
 import { useChatPushNotification } from "@/lib/pushNotify";
+import { uploadChatFile } from "@/lib/groupChat";
 
 interface ChatMessage {
   id: number;
@@ -23,6 +24,20 @@ interface ChatMessage {
   pinned?: boolean;
   content: string;
   createdAt: string;
+  // New fields
+  fileUrl?: string | null;
+  fileType?: string | null;
+  fileName?: string | null;
+  fileSize?: number | null;
+  readAt?: string | null;
+  reactions?: ReactionSummary[];
+}
+
+interface ReactionSummary {
+  emoji: string;
+  count: number;
+  users: string[];
+  meReacted: boolean;
 }
 
 interface Conversation {

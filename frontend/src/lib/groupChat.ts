@@ -37,6 +37,20 @@ export interface GroupMessage {
   replyToId?: number | null;
   content: string;
   createdAt: string;
+  // New fields for file/reaction/read
+  fileUrl?: string | null;
+  fileType?: string | null;
+  fileName?: string | null;
+  fileSize?: number | null;
+  readAt?: string | null;
+  reactions?: ReactionSummary[];
+}
+
+export interface ReactionSummary {
+  emoji: string;
+  count: number;
+  users: string[];
+  meReacted: boolean;
 }
 
 /** Danh sách nhóm tôi tham gia. */
@@ -80,11 +94,22 @@ export async function getGroupMessages(id: number): Promise<GroupMessage[]> {
 export async function sendGroupMessage(
   id: number,
   content: string,
-  replyToId?: number | null
+  replyToId?: number | null,
+  fileUrl?: string | null,
+  fileType?: string | null,
+  fileName?: string | null,
+  fileSize?: number | null
 ): Promise<GroupMessage> {
   return apiRequest<GroupMessage>(`/api/v1/chat-groups/${id}/messages`, {
     method: "POST",
-    body: JSON.stringify({ content, replyToId: replyToId ?? null }),
+    body: JSON.stringify({ 
+      content, 
+      replyToId: replyToId ?? null,
+      fileUrl,
+      fileType,
+      fileName,
+      fileSize
+    }),
   });
 }
 
@@ -114,6 +139,57 @@ export async function removeGroupMember(id: number, email: string): Promise<void
 export async function deleteGroup(id: number): Promise<void> {
   await apiRequest(`/api/v1/chat-groups/${id}`, { method: "DELETE" });
   toastOk("Đã xoá nhóm.");
+}
+
+/** Reaction (emoji) cho tin nhắn nhóm. */
+export async function reactGroupMessage(messageId: number, emoji: string): Promise<{ reacted: boolean; emoji: string }> {
+  const data = await apiRequest<{ reacted: boolean; emoji: string }>(`/api/v1/chat/messages/${messageId}/react`, {
+    method: "POST",
+    body: JSON.stringify({ emoji }),
+  });
+  return data;
+}
+
+/** Lấy reaction của tin nhắn nhóm. */
+export async function getGroupMessageReactions(messageId: number): Promise<ReactionSummary[]> {
+  const data = await apiRequest<ReactionSummary[]>(`/api/v1/chat/messages/${messageId}/reactions`);
+  return Array.isArray(data) ? data : [];
+}
+
+/** Đánh dấu tin nhắn nhóm đã đọc. */
+export async function markGroupMessageRead(messageId: number): Promise<void> {
+  await apiRequest(`/api/v1/chat/messages/${messageId}/read`, { method: "POST" });
+}
+
+/** Upload file cho chat (chung cho group/DM/public). */
+export async function uploadChatFile(file: File): Promise<{ fileUrl: string; fileType: string; fileName: string; fileSize: number }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://soccerhub-backend-core-production.up.railway.app"}/api/v1/chat/upload`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: "Upload thất bại" }));
+    throw new Error(err.message || "Upload thất bại");
+  }
+  return res.json();
+}
+
+/** Tìm tin nhắn theo từ khóa. */
+export async function searchChatMessages(query: string, withEmail?: string, channel?: string): Promise<any[]> {
+  const params = new URLSearchParams({ query });
+  if (withEmail) params.append("with", withEmail);
+  if (channel) params.append("channel", channel);
+  const data = await apiRequest<any[]>(`/api/v1/chat/messages/search?${params.toString()}`);
+  return Array.isArray(data) ? data : [];
+}
+
+/** Lấy số tin chưa đọc (DM + Group). */
+export async function getUnreadCount(): Promise<{ dm: number; group: number; total: number }> {
+  const data = await apiRequest<{ dm: number; group: number; total: number }>("/api/v1/chat/unread-count");
+  return data || { dm: 0, group: 0, total: 0 };
 }
 
 /** Bọc lỗi lại thành toast cho gọn phía component. */
