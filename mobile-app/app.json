@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "TurfZone Mobile",
+    "slug": "turfzone-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0369a1"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0369a1"
+      }
+    }
+  }
+}

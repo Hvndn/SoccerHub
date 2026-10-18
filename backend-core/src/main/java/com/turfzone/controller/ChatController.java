@@ -7,6 +7,10 @@ import com.turfzone.repository.ChatMessageRepository;
 import com.turfzone.repository.ChatReactionRepository;
 import com.turfzone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -532,5 +536,33 @@ public class ChatController {
                 \"group\", groupUnread,
                 \"total\", dmUnread + groupUnread
         ));
+    }
+
+// ============================================================
+    // STATIC FILE SERVING (File uploads)
+    // ============================================================
+
+    /** Phục vụ file upload (ảnh/PDF/DOC). */
+    @GetMapping("/files/{filename:.+}")
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
+        try {
+            String dir = "uploads/chat/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+            Path filePath = Paths.get(dir).resolve(filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) contentType = "application/octet-stream";
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
