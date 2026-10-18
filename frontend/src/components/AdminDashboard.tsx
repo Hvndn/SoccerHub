@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api";
 import { simulateBookings } from "@/lib/adminService";
 import OwnerReportExport from "@/components/OwnerReportExport";
+import OwnerCharts from "@/components/OwnerCharts";
 import {
  ShieldCheck,
  TrendingUp,
@@ -906,6 +907,10 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
  <span>Quản Lý Canteen & Vật Tư</span>
  </button>
  </div>
+{/* === BIỂU ĐỒ THỐNG KÊ CHỦ SÂN (recharts) === */}
+  <OwnerCharts activePitch={activePitch} />
+
+  {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
  </div>
 
 {/* === XUẤT BÁO CÁO THỐNG KÊ (CSV cho Excel) === */}

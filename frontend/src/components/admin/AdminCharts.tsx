@@ -17,6 +17,7 @@ import {
   Legend,
 } from "recharts";
 import { BarChart3, PieChart as PieIcon, TrendingUp, Loader2 } from "lucide-react";
+import ChartExport from "./ChartExport";
 import { SectionCard } from "./AdminUI";
 import { apiRequest } from "@/lib/api";
 import { formatMoney } from "@/lib/tournamentService";
@@ -62,9 +63,13 @@ const countTip = (v: any) => [`${Number(v)} đơn`, "Số đơn"];
 export default function AdminCharts() {
   const [overview, setOverview] = useState<any>(null);
   const [report, setReport] = useState<any>(null);
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [allBookings, setAllBookings] = useState<any[]>([]);
   const [insights, setInsights] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Khoảng thời gian lọc — 7/30/90/365 ngày gần nhất
+  const [rangeDays, setRangeDays] = useState(90);
+  const wrapRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let alive = true;
@@ -79,7 +84,7 @@ export default function AdminCharts() {
         if (!alive) return;
         setOverview(ov);
         setReport(rep);
-        setBookings(Array.isArray(bks) ? bks : []);
+        setAllBookings(Array.isArray(bks) ? bks : []);
         setInsights(ins);
       } finally {
         if (alive) setLoading(false);
@@ -89,6 +94,35 @@ export default function AdminCharts() {
       alive = false;
     };
   }, []);
+
+  // ------------------------------------------------------------------
+  //  Lọc theo khoảng thời gian
+  // ------------------------------------------------------------------
+  const RANGES = [
+    { days: 7, label: "7 ngày" },
+    { days: 30, label: "30 ngày" },
+    { days: 90, label: "90 ngày" },
+    { days: 365, label: "1 năm" },
+  ];
+
+  /** Lấy ngày chuẩn yyyy-MM-dd, so sánh chuỗi (nhanh, không lệch múi giờ). */
+  function ymd(d: Date) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  const cutoffDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - (rangeDays - 1));
+    return ymd(d);
+  }, [rangeDays]);
+
+  const bookings = useMemo(
+    () => allBookings.filter((b) => !b?.bookingDate || String(b.bookingDate) >= cutoffDate),
+    [allBookings, cutoffDate]
+  );
 
   // ------------------------------------------------------------------
   //  1. Doanh thu theo tháng (cột)
@@ -102,6 +136,18 @@ export default function AdminCharts() {
       bookings: Number(m.bookings ?? m.count ?? 0),
     }));
   }, [report]);
+
+  /** Doanh thu tính lại từ đơn trong khoảng lọc — bám theo bộ lọc, không phụ thuộc tháng backend. */
+  const revenueInRange = useMemo(() => {
+    let sum = 0;
+    let count = 0;
+    for (const b of bookings) {
+      if (b?.status === "CANCELLED") continue;
+      sum += (b.totalPrice ?? 0) || (b.depositPaid ?? 0) + (b.cashDue ?? 0);
+      count += 1;
+    }
+    return { sum, count };
+  }, [bookings]);
 
   // ------------------------------------------------------------------
   //  2. Phân bố trạng thái đơn đặt sân (tròn)
@@ -195,8 +241,41 @@ export default function AdminCharts() {
     </div>
   );
 
+
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4" ref={wrapRef}>
+      {/* Bộ lọc khoảng thời gian + xuất file */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-2xl border border-slate-200 p-3 sm:p-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Khoảng thời gian:</span>
+          {RANGES.map((r) => (
+            <button
+              key={r.days}
+              type="button"
+              onClick={() => setRangeDays(r.days)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                rangeDays === r.days
+                  ? "bg-[#0369a1] text-white shadow-sm"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+          <span className="text-[11px] font-mono text-slate-500 ml-1">
+            Tổng trong {rangeDays} ngày:{" "}
+            <strong className="text-[#0369a1]">{revenueInRange.sum.toLocaleString("vi-VN")}đ</strong>
+            {" · "}
+            <strong className="text-slate-700">{revenueInRange.count}</strong> đơn
+          </span>
+        </div>
+        <ChartExport
+          targetRef={wrapRef}
+          filename="admin-charts"
+          title="SoccerHub — Biểu đồ thống kê quản trị"
+        />
+      </div>
+
       {/* Hàng 1: Doanh thu theo tháng + trạng thái đơn */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <ChartCard
