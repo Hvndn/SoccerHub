@@ -55,6 +55,37 @@ export function ensureLoggedIn(action = 'thực hiện thao tác này'): boolean
   return false;
 }
 
+/**
+ * Gọi fetch và cập nhật trạng thái kết nối máy chủ.
+ *
+ * <p>Khi fetch ném lỗi (mất mạng / máy chủ sập) thì thay vì đẩy nguyên chuỗi
+ * `TypeError: Failed to fetch` lên từng màn hình, ta ghi nhận trạng thái mất
+ * kết nối để hiện thông báo toàn cục và ném lỗi thân thiện hơn.</p>
+ *
+ * <p>Hàm này import động module trạng thái để tránh vòng phụ thuộc
+ * (backendStatus cần API_BASE_URL từ đây).</p>
+ */
+async function fetchWithStatus(url: string, options: RequestInit): Promise<Response> {
+  let statusMod: typeof import('@/lib/backendStatus');
+  try {
+    statusMod = await import('@/lib/backendStatus');
+  } catch {
+    statusMod = null as any;
+  }
+
+  try {
+    const res = await fetch(url, options);
+    // Máy chủ trả lỗi HTTP vẫn là "sống" (chỉ là endpoint lỗi) — đánh dấu online.
+    statusMod?.markBackendReachable();
+    return res;
+  } catch (e) {
+    statusMod?.markBackendUnreachable(
+      'Không kết nối được tới máy chủ Turfzone. Hệ thống có thể đang bảo trì hoặc mất kết nối.'
+    );
+    throw new Error('Không kết nối được tới máy chủ. Vui lòng thử lại sau ít phút.');
+  }
+}
+
 export async function apiRequest<T = any>(
   endpoint: string,
   options: RequestInit = {}
@@ -80,7 +111,7 @@ export async function apiRequest<T = any>(
     cache: 'no-store', // Prevent caching issues on mobile
   };
 
-  const response = await fetch(url, fetchOptions);
+  const response = await fetchWithStatus(url, fetchOptions);
 
   let data: any;
   try {

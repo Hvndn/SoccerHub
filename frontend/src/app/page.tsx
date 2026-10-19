@@ -22,6 +22,7 @@ import StadiumOwnerOnboarding from "@/components/StadiumOwnerOnboarding";
 import MultiSportArena from "@/components/MultiSportArena";
 import GuestFeatureBanner from "@/components/GuestFeatureBanner";
 import PageSpinner from "@/components/PageSpinner";
+import BackendStatusBanner, { BackendRestoredToast } from "@/components/BackendStatusBanner";
 import { MapPin, Trophy, Users, ShieldCheck, ShieldAlert, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import AuthModal from "@/components/AuthModal";
@@ -290,6 +291,9 @@ if (newTab === activeTab) return;
 
  return (
  <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-[#0369a1] selection:text-white relative transition-colors duration-300">
+{/* Báo toàn cục khi mất kết nối máy chủ + thông báo đã kết nối lại */}
+<BackendStatusBanner />
+<BackendRestoredToast />
 {/* Vòng xoay loading toàn trang khi chuyển tab/trạng thái (tối thiểu 1s) */}
   {isTabChanging && (
   <>
