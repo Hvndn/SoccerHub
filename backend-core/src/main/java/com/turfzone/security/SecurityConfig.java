@@ -47,7 +47,7 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(frame -> frame.disable())) // For H2 console if enabled
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/health", "/api/v1/health", "/api/v1/auth/**", "/h2-console/**", "/error").permitAll()
+                .requestMatchers("/", "/health", "/api/v1/health", "/api/v1/auth/**", "/h2-console/**", "/error", "/api/v1/chat/files/**").permitAll()
                 .requestMatchers("/api/v1/pitches/**", "/api/v1/tournaments/**", "/api/v1/community/**").permitAll()
                 .anyRequest().authenticated()
             );

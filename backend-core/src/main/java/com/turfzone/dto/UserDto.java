@@ -27,4 +27,10 @@ public class UserDto {
     private String weight;
     private String preferredTime;
     private String currentClub;
+    /**
+     * Chỉ được điền khi người dùng vừa ĐỔI EMAIL.
+     * JWT lấy subject = email nên token đang dùng sẽ hết hiệu lực ngay sau khi đổi;
+     * backend cấp token mới trong cùng response để client thay thế mà không bị đăng xuất.
+     */
+    private String token;
 }

@@ -553,12 +553,19 @@ public class ChatController {
     // STATIC FILE SERVING (File uploads)
     // ============================================================
 
-    /** Phục vụ file upload (ảnh/PDF/DOC). */
+    /** Phục vụ file upload (ảnh/PDF/DOC). Tìm file theo tên trong toàn bộ thư mục uploads/chat (đệ quy) */
     @GetMapping("/files/{filename:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
         try {
-            String dir = "uploads/chat/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-            Path filePath = Paths.get(dir).resolve(filename).normalize();
+            // Trước đây fix cứng theo ngày hôm nay -> nếu file upload ngày trước
+            // (avatar/file tin nhắn cũ) sẽ 404. Giờ quét đệ quy toàn bộ uploads/chat.
+            Path filePath = Files.walk(Paths.get("uploads/chat"))
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().equals(filename))
+                    .findFirst()
+                    .orElse(null);
+
+            if (filePath == null) return ResponseEntity.notFound().build();
             Resource resource = new UrlResource(filePath.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
@@ -571,6 +578,7 @@ public class ChatController {
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                    .header(HttpHeaders.CACHE_CONTROL, "public, max-age=3600")
                     .body(resource);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();

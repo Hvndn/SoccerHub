@@ -1,14 +1,17 @@
 package com.turfzone.service;
 
 import com.turfzone.dto.*;
+import com.turfzone.model.Pitch;
 import com.turfzone.model.User;
 import com.turfzone.model.UserRole;
+import com.turfzone.repository.PitchRepository;
 import com.turfzone.repository.UserRepository;
 import com.turfzone.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -17,6 +20,7 @@ import java.util.regex.Pattern;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final PitchRepository pitchRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
 
@@ -153,6 +157,27 @@ public class AuthService {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Người dùng không tồn tại."));
 
+        String previousFullName = user.getFullName();
+
+        // Đổi email = đổi luôn "tên đăng nhập" (JWT đặt subject = email), nên phải
+        // kiểm tra định dạng + chống trùng trước khi ghi, và cấp lại token ở cuối.
+        boolean emailChanging = false;
+        if (req.getEmail() != null && !req.getEmail().trim().isEmpty()) {
+            String newEmail = req.getEmail().trim();
+            if (!newEmail.equalsIgnoreCase(user.getEmail())) {
+                if (!EMAIL_PATTERN.matcher(newEmail).matches()) {
+                    throw new IllegalArgumentException("Email không hợp lệ. Ví dụ hợp lệ: tenban@gmail.com");
+                }
+                userRepository.findByEmail(newEmail).ifPresent(other -> {
+                    if (!other.getId().equals(user.getId())) {
+                        throw new IllegalArgumentException("Email " + newEmail + " đã được dùng cho một tài khoản khác.");
+                    }
+                });
+                user.setEmail(newEmail);
+                emailChanging = true;
+            }
+        }
+
         if (req.getFullName() != null && !req.getFullName().trim().isEmpty()) {
             user.setFullName(req.getFullName().trim());
         }
@@ -183,7 +208,29 @@ public class AuthService {
         if (req.getCurrentClub() != null) user.setCurrentClub(req.getCurrentClub().trim());
 
         userRepository.save(user);
-        return mapToDto(user);
+
+        // Đồng bộ tên chủ sân lên toàn bộ cụm sân họ đang sở hữu.
+        // Giao diện không có chỗ sửa riêng "tên chủ sân" của từng cụm sân, nên tên
+        // hiển thị công khai phải bám theo hồ sơ cá nhân — trước đây đổi tên xong
+        // các cụm sân vẫn hiển thị tên cũ đã chụp lại lúc tạo sân.
+        boolean ownerRenamed = user.getRole() == UserRole.OWNER
+                && user.getFullName() != null
+                && !user.getFullName().equals(previousFullName);
+        if (ownerRenamed) {
+            List<Pitch> ownedPitches = pitchRepository.findByOwnerId(user.getId());
+            if (!ownedPitches.isEmpty()) {
+                ownedPitches.forEach(p -> p.setOwnerName(user.getFullName()));
+                pitchRepository.saveAll(ownedPitches);
+            }
+        }
+
+        UserDto dto = mapToDto(user);
+        if (emailChanging) {
+            // Token cũ gắn với email cũ nên vô hiệu ngay sau khi đổi email;
+            // trả token mới trong cùng response để client thay thế, không phải đăng nhập lại.
+            dto.setToken(tokenProvider.generateToken(user.getEmail(), user.getRole().name()));
+        }
+        return dto;
     }
 
     public UserDto mapToDto(User user) {
