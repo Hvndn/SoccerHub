@@ -848,7 +848,9 @@ setIsSavingInfo(false);
  {/* HEADER BANNER WITH REAL BACKEND DATA */}
  <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-4 shadow-sm">
  <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
- <div className="min-w-0 flex-1">
+ {/* min-w-[480px] ở xl: chặn cột trái bị ép về 0px khi dãy nút bên phải
+     (max-content ~1286px) chiếm hết chỗ → chữ tiêu đề rớt thành cột dọc. */}
+ <div className="min-w-0 flex-1 xl:min-w-[480px]">
  <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/20 text-[#0b4f6c] text-sm font-bold mb-2">
  <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
  <span>
@@ -1848,7 +1850,8 @@ setIsSavingInfo(false);
   <div className="space-y-1.5 sm:col-span-2">
   <label className="font-extrabold text-slate-800 text-sm">Ảnh cụm sân (URL)</label>
   <input
-  type="url"
+  type="text"
+  inputMode="url"
   value={infoImageUrl}
   onChange={(e) => setInfoImageUrl(e.target.value)}
   placeholder="https://images.unsplash.com/..."
