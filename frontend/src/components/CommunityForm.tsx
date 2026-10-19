@@ -1,11 +1,11 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState } from "react";
 
 import TournamentLeaderboard from "./TournamentLeaderboard";
 import TournamentOrganizerPortal from "./TournamentOrganizerPortal";
 import { fetchTournaments } from "@/lib/tournamentService";
-import { apiUrl } from "@/lib/api";
+import { apiUrl, fetchWithTimeout } from '@/lib/api';
 import FormDots from "./FormDots";
 import { Users, Trophy, Cpu, PlusCircle, Sparkles, ShieldCheck, Flame, Radio, MessageCircle, Search, ChevronRight } from "lucide-react";
 
@@ -28,7 +28,7 @@ export default function CommunityForm({ user, onSelectSlot, onStartDm, defaultSu
  useEffect(() => {
  if (subTab !== "formboard" || formBoard.length > 0) return;
  let alive = true;
- fetch(apiUrl("/api/v1/community/players/leaderboard"), { cache: "no-store" })
+ fetchWithTimeout(apiUrl("/api/v1/community/players/leaderboard"), { cache: "no-store" })
  .then((r) => (r.ok ? r.json() : []))
  .then((d) => {
  if (!alive) return;

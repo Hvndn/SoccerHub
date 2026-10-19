@@ -30,7 +30,7 @@ import {
  RefreshCw,
 X,
 } from "lucide-react";
-import { API_BASE_URL, apiRequest, ensureLoggedIn } from "@/lib/api";
+import { API_BASE_URL, apiRequest, ensureLoggedIn, fetchWithTimeout } from '@/lib/api';
 import { toastOk, toastErr } from "@/lib/toast";
 import { submitTeamReview } from "@/lib/adminService";
 import FormDots from "./FormDots";
@@ -210,7 +210,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  const fetchPosts = async () => {
  try {
  setLoadingPosts(true);
- const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`);
+ const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/community/matchmaking-posts`);
  if (res.ok) {
  const data = await res.json();
  // Chỉ hiển thị kèo còn MỞ — kèo đã ghép (MATCHED) không nhận được nữa.

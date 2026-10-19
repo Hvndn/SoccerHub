@@ -1,4 +1,4 @@
-import { apiRequest, ensureLoggedIn } from "./api";
+import { apiRequest, ensureLoggedIn, fetchWithTimeout } from "./api";
 import { toastErr, toastOk } from "./toast";
 
 /* =========================================================
@@ -165,7 +165,7 @@ export async function markGroupMessageRead(messageId: number): Promise<void> {
 export async function uploadChatFile(file: File): Promise<{ fileUrl: string; fileType: string; fileName: string; fileSize: number }> {
   const formData = new FormData();
   formData.append("file", file);
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://soccerhub-backend-core-production.up.railway.app"}/api/v1/chat/upload`, {
+  const res = await fetchWithTimeout(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://soccerhub-backend-core-production.up.railway.app"}/api/v1/chat/upload`, {
     method: "POST",
     credentials: "include",
     body: formData,

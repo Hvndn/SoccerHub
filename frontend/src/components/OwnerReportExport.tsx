@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { FileSpreadsheet, Download, Loader2, BarChart3, CalendarRange, ClipboardList } from "lucide-react";
-import { API_BASE_URL, getAuthToken } from "@/lib/api";
+import { API_BASE_URL, getAuthToken, fetchWithTimeout } from '@/lib/api';
 import { toastOk, toastErr } from "@/lib/toast";
 import { Mail, Send } from "lucide-react";
 
@@ -47,7 +47,7 @@ function today(offsetDays = 0) {
 /** Tải file CSV từ endpoint báo cáo (cần gửi Authorization vì backend chặn khách). */
 async function downloadReport(path: string, filename: string) {
  const token = getAuthToken();
- const res = await fetch(`${API_BASE_URL}${path}`, {
+ const res = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
  headers: token ? { Authorization: `Bearer ${token}` } : {},
  });
  if (!res.ok) {
@@ -87,7 +87,7 @@ export default function OwnerReportExport() {
  const loadMailStatus = React.useCallback(async () => {
  try {
  const token = getAuthToken();
- const res = await fetch(`${API_BASE_URL}/api/v1/reports/email-status`, {
+ const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/reports/email-status`, {
  headers: token ? { Authorization: `Bearer ${token}` } : {},
  });
  if (!res.ok) return;
@@ -111,7 +111,7 @@ export default function OwnerReportExport() {
  setMailBusy(true);
  try {
  const token = getAuthToken();
- const res = await fetch(`${API_BASE_URL}/api/v1/reports/send-email`, {
+ const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/reports/send-email`, {
  method: "POST",
  headers: {
  "Content-Type": "application/json",

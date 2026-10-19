@@ -13,7 +13,7 @@ import {
  Flame,
  Shield
 } from "lucide-react";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, fetchWithTimeout } from '@/lib/api';
 
 interface LandingHeroProps {
  onOpenAuth: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
@@ -34,7 +34,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  useEffect(() => {
  let alive = true;
  const get = (p: string) =>
- fetch(`${API_BASE_URL}${p}`)
+ fetchWithTimeout(`${API_BASE_URL}${p}`)
  .then((r) => (r.ok ? r.json() : []))
  .catch(() => []);
  Promise.all([

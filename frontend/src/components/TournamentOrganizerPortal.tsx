@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { API_BASE_URL, apiRequest } from "@/lib/api";
+import { API_BASE_URL, apiRequest, fetchWithTimeout } from '@/lib/api';
 import {
   sportLabel,
   formatLabel,
@@ -82,7 +82,7 @@ export default function TournamentOrganizerPortal({
  const fetchDbTournaments = async () => {
  try {
  setLoadingDb(true);
- const res = await fetch(`${API_BASE_URL}/api/v1/tournaments`);
+ const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments`);
  if (res.ok) {
  const data = await res.json();
  setDbTournaments(data);
@@ -478,7 +478,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  useEffect(() => {
  let alive = true;
  if (!activeTournamentId) { setTopScorers([]); return; }
- fetch(`${API_BASE_URL}/api/v1/tournaments/${activeTournamentId}/scorers`)
+ fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments/${activeTournamentId}/scorers`)
  .then((r) => (r.ok ? r.json() : []))
  .then((d) => { if (alive && Array.isArray(d)) setTopScorers(d.slice(0, 5)); })
  .catch(() => { if (alive) setTopScorers([]); });

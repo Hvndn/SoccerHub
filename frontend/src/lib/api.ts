@@ -65,6 +65,50 @@ export function ensureLoggedIn(action = 'thực hiện thao tác này'): boolean
  * <p>Hàm này import động module trạng thái để tránh vòng phụ thuộc
  * (backendStatus cần API_BASE_URL từ đây).</p>
  */
+/** Thời gian chờ mặc định cho một lời gọi API (mili-giây). */
+export const API_TIMEOUT_MS = 15000;
+
+/**
+ * fetch CÓ timeout.
+ *
+ * <p>Lý do tồn tại: khi backend treo (Railway đang restart, MySQL chết khiến app
+ * chờ rồi báo lỗi) thì `fetch()` của trình duyệt không hề reject — nó treo tới
+ * khi TCP timeout của hệ điều hành, có thể hàng chục giây tới vài phút. Kết quả
+ * là `try/catch/finally` không bao giờ chạy tới `finally`, màn hình kẹt vòng
+ * xoay vĩnh viễn và người dùng không hiểu chuyện gì xảy ra.</p>
+ *
+ * <p>Hết thời gian thì hủy request và ném lỗi có thông điệp rõ ràng, để phần
+ * gọi xử lý được bằng `catch` + `finally` như bình thường.</p>
+ */
+export async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = API_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  // Giữ tín hiệu abort từ bên ngoài nếu có.
+  const external = options.signal;
+  if (external) {
+    if (external.aborted) controller.abort();
+    else external.addEventListener('abort', () => controller.abort(), { once: true });
+  }
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (e: any) {
+    if (e?.name === 'AbortError') {
+      throw new Error(
+        'Máy chủ phản hồi quá chậm. Vui lòng kiểm tra kết nối hoặc thử lại sau.'
+      );
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function fetchWithStatus(url: string, options: RequestInit): Promise<Response> {
   let statusMod: typeof import('@/lib/backendStatus');
   try {

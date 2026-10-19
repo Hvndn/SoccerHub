@@ -5,7 +5,7 @@ import {
  Home, ChevronRight, Calendar, Clock, MapPin, Trophy, Users, ShieldCheck, Zap,
  QrCode, Video, MessageSquare, CheckCircle2, RefreshCw, XCircle, PlayCircle, FileText
 } from "lucide-react";
-import { API_BASE_URL, apiRequest } from "@/lib/api";
+import { API_BASE_URL, apiRequest, fetchWithTimeout } from '@/lib/api';
 import { todayLocal, isPastDay } from "@/lib/dateUtils";
 import {
  fetchTournaments, sportLabel, formatLabel,
@@ -109,7 +109,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  try {
  const [ts, ps] = await Promise.all([
  fetchTournaments(true).catch(() => [] as Tournament[]),
- fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`)
+ fetchWithTimeout(`${API_BASE_URL}/api/v1/community/matchmaking-posts`)
  .then((r) => (r.ok ? r.json() : []))
  .catch(() => [] as any[]),
  ]);
@@ -119,7 +119,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  // Vé của chính mình: tra theo SĐT trong tài khoản (API search bookings)
  const phone = (user?.phone ?? "").toString().replace(/\s/g, "");
  if (phone.length >= 8) {
- const bs = await fetch(`${API_BASE_URL}/api/v1/pitches/bookings/search?query=${encodeURIComponent(phone)}`)
+ const bs = await fetchWithTimeout(`${API_BASE_URL}/api/v1/pitches/bookings/search?query=${encodeURIComponent(phone)}`)
  .then((r) => (r.ok ? r.json() : []))
  .catch(() => [] as any[]);
  setMyBookings(Array.isArray(bs) ? bs : []);

@@ -44,7 +44,7 @@ import {
 
 import PitchDetail from "./PitchDetail";
 import { getAllPitchesApi } from "@/lib/pitchService";
-import { API_BASE_URL, apiRequest, ensureLoggedIn } from "@/lib/api";
+import { API_BASE_URL, apiRequest, ensureLoggedIn, fetchWithTimeout } from '@/lib/api';
 import { todayLocal } from "@/lib/dateUtils";
 import { fetchTournaments } from "@/lib/tournamentService";
 import { recommendPitches, type AiPitchCluster } from "@/lib/aiService";
@@ -186,7 +186,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  if (mapped.length > 0) {
  try {
  const todayStr = todayLocal();
- const matrixRes = await fetch(`${API_BASE_URL}/api/v1/pitches/${mapped[0].numericId}/matrix?date=${todayStr}&duration=120`);
+ const matrixRes = await fetchWithTimeout(`${API_BASE_URL}/api/v1/pitches/${mapped[0].numericId}/matrix?date=${todayStr}&duration=120`);
  if (matrixRes.ok) {
  const matrixData = await matrixRes.json();
  if (Array.isArray(matrixData) && matrixData.length > 0 && matrixData[0].slots) {
@@ -252,7 +252,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
  const fetchOpenPosts = React.useCallback(async () => {
  try {
- const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`);
+ const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/community/matchmaking-posts`);
  if (res.ok) {
  const data = await res.json();
  setOpenPosts(

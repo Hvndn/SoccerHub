@@ -21,7 +21,7 @@ import {
  QrCode
 } from 'lucide-react';
 
-import { API_BASE_URL, apiRequest, ensureLoggedIn } from "@/lib/api";
+import { API_BASE_URL, apiRequest, ensureLoggedIn, fetchWithTimeout } from '@/lib/api';
 
 interface Court {
  id: string;
@@ -90,7 +90,7 @@ export default function MultiSportArena({
  // Sân thật: GET /api/v1/pitches
  const loadCourts = async () => {
  try {
- const res = await fetch(`${API_BASE_URL}/api/v1/pitches`);
+ const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/pitches`);
  const data = await res.json();
  const list: any[] = Array.isArray(data) ? data : [];
  setCourts(
@@ -119,7 +119,7 @@ export default function MultiSportArena({
  // Kèo đang mở thật: GET /api/v1/community/matchmaking-posts
  const loadMatches = async () => {
  try {
- const res = await fetch(`${API_BASE_URL}/api/v1/community/matchmaking-posts`);
+ const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/community/matchmaking-posts`);
  const data = await res.json();
  const list: any[] = Array.isArray(data) ? data : [];
  setMatchQueues(
