@@ -353,13 +353,13 @@ export default function PitchDetail({
  <div className="flex items-center space-x-3">
  <button
  onClick={onBack}
- className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-sm transition-all flex items-center space-x-1.5 active:scale-95 shadow-xs"
+ className="shrink-0 px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-sm transition-all flex items-center space-x-1.5 active:scale-95 shadow-xs"
  >
- <ArrowLeft className="w-4 h-4" />
- <span>Quay Lại Tìm Sân</span>
+ <ArrowLeft className="w-4 h-4 shrink-0" />
+ <span className="whitespace-nowrap">Quay Lại Tìm Sân</span>
  </button>
 
- <ol className="hidden sm:flex items-center space-x-1.5 text-xs text-slate-500">
+ <ol className="hidden sm:flex min-w-0 flex-1 items-center space-x-1.5 text-xs text-slate-500 overflow-hidden">
  <li className="flex items-center space-x-1">
  <span>Trang chủ</span>
  <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
@@ -374,7 +374,7 @@ export default function PitchDetail({
  </ol>
  </div>
 
- <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/20 text-sky-700 text-xs font-bold">
+ <div className="shrink-0 hidden lg:inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/20 text-sky-700 text-xs font-bold">
  <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] animate-pulse" />
  <span>Thông tin ca sân cập nhật theo thời gian thực</span>
  </div>
