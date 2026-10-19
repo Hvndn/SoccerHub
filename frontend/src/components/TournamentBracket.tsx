@@ -55,6 +55,8 @@ export default function TournamentBracket() {
  const [tournaments, setTournaments] = useState<Tournament[]>([]);
  const [selectedId, setSelectedId] = useState("");
  const [fillBusy, setFillBusy] = useState(false);
+// Số đội Test muốn thêm vào giải đang chọn (API fill-teams nhận {"count": n}).
+const [addCount, setAddCount] = useState("4");
  const [clearBusy, setClearBusy] = useState(false);
  const [drawBusy, setDrawBusy] = useState(false);
  const [scheduleBusy, setScheduleBusy] = useState(false);
@@ -230,11 +232,11 @@ export default function TournamentBracket() {
  }
  };
 
- const handleFill = async () => {
+ const handleFill = async (count?: number) => {
  if (!selected) return;
  try {
  setFillBusy(true);
- const res = await fillSimulatedTeams(selected.id);
+ const res = await fillSimulatedTeams(selected.id, count);
  triggerToast(res.message);
  } catch (err: any) {
  triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để giả lập.");
@@ -754,7 +756,7 @@ export default function TournamentBracket() {
 
  <div className="flex flex-wrap items-center gap-2">
  <button
- onClick={handleFill}
+ onClick={() => handleFill()}
  disabled={!selected || full || fillBusy}
  title="Sinh đội Test kèm đủ quân số + danh sách thành viên cho đủ sức chứa (chỉ dùng demo)"
  className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -766,6 +768,32 @@ export default function TournamentBracket() {
  )}
  <span>{full ? "Đã đủ đội" : `Giả lập đủ đội (Test)${selected && !full && teamCap ? ` +${teamCap - teamCount}` : ""}`}</span>
  </button>
+  {/* THÊM N ĐỘI NGẪU NHIÊN — chọn số đội rồi thêm đúng N đội vào giải đang chọn.
+      API: POST /api/v1/tournaments/{id}/fill-teams {"count": n} */}
+  {selected && !full && (
+  <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5">
+  <UserPlus className="w-3.5 h-3.5 text-[#0369a1] shrink-0" />
+  <input
+  type="number"
+  min={1}
+  max={Math.max(1, teamCap - teamCount)}
+  value={addCount}
+  onChange={(e) => setAddCount(e.target.value.replace(/[^0-9]/g, ""))}
+  aria-label="Số đội Test muốn thêm vào giải"
+  title="Nhập số đội muốn thêm (tối đa sức chứa còn trống)"
+  className="w-12 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-black text-slate-900 text-center focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+  />
+  <span className="text-[11px] font-bold text-slate-500 shrink-0">đội</span>
+  <button
+  onClick={() => handleFill(Number(addCount))}
+  disabled={fillBusy || !Number(addCount)}
+  title="Thêm đúng số đội Test đã nhập vào giải đang chọn"
+  className="px-2.5 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[11px] font-black transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+  >
+  {fillBusy ? "..." : "Thêm đội"}
+  </button>
+  </div>
+  )}
 
  {simulatedCount > 0 && (
  <button
