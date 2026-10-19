@@ -571,14 +571,6 @@ const mobileNav: MobileNavItem[] =
  <span>Giải Đấu &amp; BXH</span>
  </button>
 
- <button
- type="button"
- onClick={() => onOpenAuth("register")}
- className="flex items-center space-x-1.5 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-black transition-all bg-[#0369a1] hover:bg-[#075985] text-white shadow-md active:scale-95"
- >
- <Plus className="w-4 h-4 shrink-0" />
- <span>Tham Gia Ngay</span>
- </button>
  </>
  ) : (
  /* PLAYER NAVBAR ITEMS */
