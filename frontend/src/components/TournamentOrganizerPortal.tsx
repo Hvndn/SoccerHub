@@ -40,7 +40,8 @@ import {
  X,
  Pencil,
  Wallet,
- Users2
+ Users2,
+ AlertCircle
 } from "lucide-react";
 
 interface TournamentOrganizerPortalProps {
@@ -65,6 +66,10 @@ export default function TournamentOrganizerPortal({
 
  // Thông báo tương tác trong trang (không dùng alert để giữ đúng nghiệp vụ)
  const [varNotice, setVarNotice] = useState<string | null>(null);
+
+ // Giải BTC đang thao tác. Mặc định lấy giải đầu tiên đã bốc thăm (nếu chưa chọn
+ // tay) để các bảng BXH / lịch / tài chính vẫn có dữ liệu ngay khi vào trang.
+ const [selectedTournamentId, setSelectedTournamentId] = useState<number | null>(null);
 
  // Active Tab for Tables/Logs
  const [bottomTab, setBottomTab] = useState<"standings" | "var_logs" | "schedule" | "finance">("standings");
@@ -133,9 +138,10 @@ export default function TournamentOrganizerPortal({
 
  // Giải dùng làm nguồn cho BXH / kết quả / lịch: giải đầu tiên đã bốc thăm trong CSDL.
  const activeTournamentId = useMemo(() => {
+ if (selectedTournamentId) return selectedTournamentId;
  const withBracket = dbTournaments.find((t: any) => t.bracketJson);
  return withBracket?.id ?? dbTournaments[0]?.id ?? null;
- }, [dbTournaments]);
+ }, [dbTournaments, selectedTournamentId]);
 
  const activeTournament = useMemo(
  () => dbTournaments.find((t: any) => t.id === activeTournamentId) ?? null,
@@ -255,11 +261,16 @@ export default function TournamentOrganizerPortal({
 
       await fillSimulatedTeams(newTournamentId);
 
+// Chọn luôn giải vừa tạo để BTC thấy ngay nhánh đấu vừa bốc.
+setSelectedTournamentId(Number(newTournamentId));
+await fetchDbTournaments();
+setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
+
       onOpenBracket?.(String(newTournamentId));
 
     } catch (err: any) {
       console.error('Tạo giải test thất bại:', err);
-      alert('Tạo giải test thất bại: ' + (err?.message || 'Lỗi không xác định'));
+      setVarNotice('❌ Tạo giải test thất bại: ' + (err?.message || 'Lỗi không xác định'));
     }
   };
 
@@ -559,6 +570,23 @@ export default function TournamentOrganizerPortal({
  </p>
  </div>
 
+ {/* Thông báo kết quả thao tác. Trước đây setVarNotice() được gọi ở nhiều nơi
+ nhưng không có chỗ nào render nó, nên mọi phản hồi đều vô hình với người dùng. */}
+ {varNotice && (
+ <div className="mt-4 flex items-start gap-3 rounded-2xl border border-[#0369a1]/25 bg-[#0369a1]/5 px-4 py-3 animate-fade-in">
+ <AlertCircle className="w-4 h-4 text-[#0b4f6c] shrink-0 mt-0.5" />
+ <p className="text-xs sm:text-sm font-bold text-slate-700 leading-relaxed flex-1">{varNotice}</p>
+ <button
+ type="button"
+ onClick={() => setVarNotice(null)}
+ className="shrink-0 rounded-lg p-1 text-slate-500 hover:text-slate-800 hover:bg-white transition-colors"
+ aria-label="Đóng thông báo"
+ >
+ <X className="w-4 h-4" />
+ </button>
+ </div>
+ )}
+
  {/* Action Header Buttons */}
  <div className="flex flex-wrap items-center gap-3">
  <button
@@ -646,12 +674,31 @@ export default function TournamentOrganizerPortal({
  ) : filteredTournaments.map((t: any) => (
  <div
  key={t.id}
- className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-xs ${
- t.status === "live"
- ? "bg-sky-50/40 border-sky-300 text-slate-900"
- : "bg-white border-slate-200/90 text-slate-900"
- }`}
+ className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-xs cursor-pointer ${
+  String(t.id) === String(activeTournamentId)
+    ? "border-[#0369a1] ring-2 ring-[#0369a1]/25"
+    : t.status === "live"
+    ? "bg-sky-50/40 border-sky-300 text-slate-900 hover:border-sky-400"
+    : "bg-white border-slate-200/90 text-slate-900 hover:border-slate-300"
+  }`}
+ onClick={() => setSelectedTournamentId(Number(t.id))}
+ role="button"
+ tabIndex={0}
+ onKeyDown={(e) => {
+ if (e.key === "Enter" || e.key === " ") {
+ e.preventDefault();
+ setSelectedTournamentId(Number(t.id));
+ }
+ }}
  >
+ {String(t.id) === String(activeTournamentId) && (
+ <div className="absolute -top-px -right-px z-20">
+ <span className="inline-flex items-center gap-1 rounded-bl-xl rounded-tr-2xl bg-[#0369a1] px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-white shadow-sm">
+ <CheckCircle2 className="w-3 h-3" />
+ Đang thao tác
+ </span>
+ </div>
+ )}
  {t.status === "live" && (
  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-200/30 rounded-full blur-2xl pointer-events-none" />
  )}
@@ -704,7 +751,10 @@ export default function TournamentOrganizerPortal({
  </span>
 
  <button
- onClick={() => onOpenBracket?.(String(activeTournament?.id))}
+ onClick={(e) => {
+ e.stopPropagation();
+ onOpenBracket?.(String(t.id));
+ }}
  className="text-xs font-black text-[#0369a1] hover:text-[#0369a1] flex items-center space-x-1 group"
  >
  <span>Mở Nhánh Đấu</span>
