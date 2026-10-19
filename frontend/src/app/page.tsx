@@ -101,8 +101,13 @@ export default function Home() {
  // Role Guard: Tự động điều hướng và bảo vệ phân quyền nhất quán khi role thay đổi
  React.useEffect(() => {
 if (!currentUser) {
-  // Khách chưa đăng nhập: đẩy ra ngoài các tab yêu cầu auth
-  if ([...OWNER_TABS, ...ORGANIZER_TABS, ...AUTH_REQUIRED_TABS].includes(activeTab)) {
+  // Khách chưa đăng nhập: chỉ chặn tab thật sự cần đăng nhập.
+  // PHẢI dùng OWNER_MANAGE_TABS (khớp với handleTabChange), KHÔNG dùng
+  // OWNER_TABS — vì OWNER_TABS còn chứa "community" và "matchmaking" là những
+  // tab khách vẫn được xem. Trước đây dùng nhầm OWNER_TABS khiến effect này
+  // reset ngay lập tức về "booking", bấm Chợ Kèo / Cộng Đồng trên bottom nav
+  // không ăn được.
+  if ([...OWNER_MANAGE_TABS, ...ORGANIZER_TABS, ...AUTH_REQUIRED_TABS].includes(activeTab)) {
   setActiveTab("booking");
   }
   return;
@@ -123,7 +128,10 @@ if (!currentUser) {
  }
  } else if (currentUser.role === "PLAYER") {
  // CẦU THỦ: Cấm vào trang quản lý sân & điều hành giải (của OWNER/ORGANIZER)
-  if (OWNER_MANAGE_TABS.includes(activeTab)) {
+  // handleTabChange chan ca tab quan ly san cua Chu san VA tab dieu hanh giai cua BTC,
+  // nen auto-guard cung phai chan ca hai. Truoc day chi chan OWNER_MANAGE_TABS,
+  // nen mo ?tab=organizer lot vao giao dien BTC roi moi API deu 403.
+  if ([...OWNER_MANAGE_TABS, ...ORGANIZER_TABS].includes(activeTab)) {
  setActiveTab("booking");
  }
  } else if (currentUser.role === "ORGANIZER") {
