@@ -7,7 +7,7 @@ import TournamentOrganizerPortal from "./TournamentOrganizerPortal";
 import { fetchTournaments } from "@/lib/tournamentService";
 import { apiUrl, fetchWithTimeout } from '@/lib/api';
 import FormDots from "./FormDots";
-import { Users, Trophy, Cpu, PlusCircle, Sparkles, ShieldCheck, Flame, Radio, MessageCircle, ChevronRight } from "lucide-react";
+import { Users, Trophy, Cpu, Flame } from "lucide-react";
 
 interface CommunityFormProps {
  user?: any;
@@ -54,87 +54,6 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
 
  return (
  <div className="w-full space-y-4 sm:space-y-6 pb-10 sm:pb-16">
- {/* ========================================================= */}
- {/* HEADER COCKPIT BANNER: CỘNG ĐỒNG CẦU THỦ & GIẢI ĐẤU PRO */}
- {/* ========================================================= */}
- <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-7 border border-slate-200/90 shadow-sm relative isolate overflow-hidden transition-colors">
- <div className="hidden sm:block absolute -z-10 top-0 right-0 w-80 h-80 bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
- <div className="hidden sm:block absolute -z-10 -bottom-10 left-1/3 w-72 h-72 bg-sky-50/50 rounded-full blur-3xl pointer-events-none" />
-
- <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
- <div className="space-y-2">
- <div className="flex flex-wrap items-center gap-2">
- <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-sky-50 text-sky-700 border border-sky-200/80">
- <ShieldCheck className="w-3.5 h-3.5 text-[#0369a1]" />
- Chuẩn Phong Độ Phủi 4.0
- </span>
- </div>
-
- <h1 className="text-lg sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-2.5">
- <span>Cộng Đồng Kèo Cáp &amp; Giải Đấu Bóng Đá</span>
- <Trophy className="w-7 h-7 text-amber-700 hidden sm:inline-block shrink-0" />
- </h1>
-
- <p className="hidden sm:block text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed font-medium">
- Không gian thi đấu toàn diện cho Cầu thủ, Đội bóng & Ban tổ chức: Ghép kèo cáp theo phong độ 5 trận gần nhất, tham gia các giải đấu phong trào quy mô lớn và điều hành nhánh đấu Knockout với Tòa Trọng Tài VAR.
- </p>
- </div>
-
- {/* User Quick Badge */}
- {user && (
- <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex items-center gap-3 shrink-0 self-start lg:self-auto shadow-xs">
- <div className="w-10 h-10 rounded-xl bg-[#0369a1] text-white font-black text-sm flex items-center justify-center shadow-xs">
- {user.fullName ? user.fullName.charAt(0) : "U"}
- </div>
- <div className="text-xs">
- <div className="font-bold text-slate-900 flex items-center gap-1.5">
- <span>{user.fullName || user.name || "Cầu Thủ"}</span>
- <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-100 text-amber-800 font-extrabold border border-amber-200">
- {user?.level ?? "Cầu thủ"}
- </span>
- </div>
- <div className="text-slate-500 text-[11px] mt-0.5">
- {user.role === "OWNER" ? "Chủ Sân" : "Cầu Thủ Phủi Tự Do"} • Sẵn sàng nhận kèo
- </div>
- </div>
- </div>
- )}
- </div>
-  {/* ========================================================= */}
-  {/* BANNER NỔI BẬT */}
-  {/* ========================================================= */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-  {/* Card Chat: chuyển sang tab "Cộng Đồng" thật thay vì sub-tab "chat" (trước đây
-      setSubTab("chat") không có khối nội dung nào render -> màn trắng). */}
-  <button type="button" onClick={() => onNavigateTab?.("community")} className="group relative overflow-hidden rounded-2xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98]" style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}>
-  <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
-  <div className="relative flex items-start justify-between gap-3">
-  <div>
-  <div className="flex items-center gap-2 mb-1">
-  <MessageCircle className="w-5 h-5 text-white" />
-  <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Phòng chat</span>
-  </div>
-  <h3 className="text-base sm:text-lg font-black text-white leading-tight">Chat Giải Đấu</h3>
-  <p className="text-[11px] sm:text-xs text-white/70 mt-1 leading-relaxed">Thảo luận trực tiếp với BTC, đội bóng và cầu thủ trong giải đấu.</p>
-  </div>
-  <ChevronRight className="w-5 h-5 text-white/60 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
-  </div>
-  </button>
-  <button type="button" onClick={() => onNavigateTab?.("matchmaking")} className="group relative overflow-hidden rounded-2xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98]" style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}>
-  <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
-  <div className="relative flex items-start justify-between gap-3">
-  <div>
-  <div className="flex items-center gap-2 mb-1">
-  <Flame className="w-5 h-5 text-white" />
-  <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Matchmaking</span>
-  </div>
-  <h3 className="text-base sm:text-lg font-black text-white leading-tight">Bắt Đối Giao Hữu</h3>
-  <p className="text-[11px] sm:text-xs text-white/70 mt-1 leading-relaxed">Tìm đối thủ tương đương phong độ, ghép kèo nhanh chóng.</p>
-  </div>
-  <ChevronRight className="w-5 h-5 text-white/60 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
-  </div>
-  </button>
-  </div>
 
  {/* ========================================================= */}
  {/* TAB CHUYỂN ĐỔI CHÍNH 3 TRỤ CỘT CỦA CỘNG ĐỒNG */}
@@ -186,7 +105,6 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  <span className="sm:hidden">Phong Độ</span>
  <span className="hidden sm:inline">4. BXH Phong Độ 5 Trận</span>
  </button>
- </div>
  </div>
 
  {/* ========================================================= */}
