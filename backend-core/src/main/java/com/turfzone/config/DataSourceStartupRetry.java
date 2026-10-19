@@ -22,12 +22,16 @@ import java.util.logging.Logger;
  * ổn và chỉ cần thêm vài chục giây.</p>
  *
  * <p><b>Cách sửa:</b> thay vì ném lỗi ngay, {@code getConnection()} sẽ thử lại
- * liên tục trong tối đa {@link #MAX_WAIT_MINUTES} phút rồi mới bỏ cuộc. App vẫn
+ * liên tục trong tối đa {@code MAX_WAIT_MINUTES} phút rồi mới bỏ cuộc. App vẫn
  * khởi động được ngay khi database sẵn sàng, không cần can thiệp thủ công.</p>
  *
- * <p>Đăng ký dưới dạng {@link BeanPostProcessor} để lớp bọc được áp dụng <em>trước</em>
- * khi Hibernate tạo EntityManagerFactory (BeanPostProcessor luôn được khởi tạo
- * trước các singleton thông thường).</p>
+ * <p>Retry chỉ áp dụng cho tới lúc kết nối thành công lần đầu (giai đoạn khởi động).
+ * Sau đó mọi lỗi kết nối đều trả về ngay cho request, để API báo lỗi nhanh thay
+ * vì treo từng request tối đa 10 phút khi database hạ gục giữa chừng.</p>
+ *
+ * <p>Đăng ký dưới dạng {@link BeanPostProcessor} để lớp bọc được áp dụng trước khi
+ * Hibernate tạo EntityManagerFactory (BeanPostProcessor luôn được khởi tạo trước
+ * các singleton thông thường).</p>
  */
 @Component
 @Slf4j
@@ -55,13 +59,21 @@ public class DataSourceStartupRetry implements BeanPostProcessor {
     static class RetryingDataSource implements DataSource {
 
         private final DataSource delegate;
+        /** Đã từng kết nối được DB chưa — hết giai đoạn chờ khởi động là fail-fast. */
+        private volatile boolean everConnected = false;
         private volatile boolean warned = false;
 
         RetryingDataSource(DataSource delegate) {
             this.delegate = delegate;
         }
 
-        private Connection retry(String op, SqlCall call) throws SQLException {
+        private Connection retry(SqlCall call) throws SQLException {
+            // Đã kết nối được rồi thì không retry: DB hạ gục giữa chừng sẽ báo lỗi
+            // nhanh cho từng request thay vì treo tối đa 10 phút.
+            if (everConnected) {
+                return call.get();
+            }
+
             long deadline = System.currentTimeMillis() + MAX_WAIT_MINUTES * 60_000L;
             SQLException last = null;
             int attempt = 0;
@@ -70,8 +82,9 @@ public class DataSourceStartupRetry implements BeanPostProcessor {
                 attempt++;
                 try {
                     Connection c = call.get();
+                    everConnected = true;
                     if (attempt > 1) {
-                        log.info("[DataSource] Kết nối database thành công sau {} lần thử.", attempt);
+                        log.info("[DataSource] Kết nối database thành công sau {} lần thử — app khởi động xong.", attempt);
                     }
                     return c;
                 } catch (SQLException e) {
@@ -97,12 +110,12 @@ public class DataSourceStartupRetry implements BeanPostProcessor {
 
         @Override
         public Connection getConnection() throws SQLException {
-            return retry("getConnection", delegate::getConnection);
+            return retry(delegate::getConnection);
         }
 
         @Override
         public Connection getConnection(String username, String password) throws SQLException {
-            return retry("getConnection(user)", () -> delegate.getConnection(username, password));
+            return retry(() -> delegate.getConnection(username, password));
         }
 
         @Override
