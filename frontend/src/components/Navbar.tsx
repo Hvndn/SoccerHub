@@ -410,6 +410,21 @@ const mobileNav: MobileNavItem[] =
  <span>Sơ Đồ Ca Sân Realtime</span>
  </button>
 
+  {/* Chu san cung to chuc giai tai cum san cua ho - page.tsx da cho render tab
+  nay cho OWNER nhung truoc day khong co loi vao nao tu giao dien. */}
+  <button
+  type="button"
+  onClick={() => handleSelectSubTab("organizer")}
+  className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+  activeTab === "organizer"
+  ? "bg-[#0369a1] text-white shadow-md"
+  : "text-slate-700 hover:bg-slate-100 "
+  }}`}
+  >
+  <Trophy className="w-[18px] h-[18px] text-sky-700 shrink-0" />
+  <span>Điều Hành Giải Đấu</span>
+  </button>
+
   <button
   type="button"
   onClick={() => handleSelectSubTab("community")}
@@ -915,6 +930,17 @@ const mobileNav: MobileNavItem[] =
  <Clock className="w-4 h-4 text-[#0369a1]" />
  <span>Sơ Đồ Ca Sân Realtime</span>
  </button>
+  <button
+  type="button"
+  onClick={() => {
+  handleSelectSubTab("organizer");
+  setShowUserDropdown(false);
+  }}
+  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+  >
+  <Trophy className="w-4 h-4 text-sky-700" />
+  <span>Điều Hành Giải Đấu</span>
+  </button>
  </>
  ) : user.role === "ORGANIZER" ? (
  <>

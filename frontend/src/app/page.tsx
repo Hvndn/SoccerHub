@@ -123,7 +123,9 @@ if (!currentUser) {
  // CHỦ SÂN: Nếu là chủ sân mới (chưa tạo sân) thì giữ ở onboarding
  if (currentUser.isNewOwner && activeTab !== "owner-onboarding") {
  setActiveTab("owner-onboarding");
- } else if (!OWNER_TABS.includes(activeTab)) {
+ // Chu san cung to chuc giai tai cum san cua ho -> cho phep tab "organizer"
+ // (Navbar da co nut mo tab nay cho OWNER).
+ } else if (!OWNER_TABS.includes(activeTab) && !ORGANIZER_TABS.includes(activeTab)) {
  setActiveTab("admin");
  }
  } else if (currentUser.role === "PLAYER") {
@@ -164,7 +166,9 @@ const handleTabChange = (newTab: string) => {
  // GUARD 1: OWNER (Chủ Sân) - Không được vào khu vực Cầu Thủ
  // ================================================================
  if (currentUser?.role === "OWNER") {
- if (!OWNER_TABS.includes(newTab)) {
+ // Chu san duoc vao tab "organizer" (to chuc giai tai cum san cua ho) - Navbar
+ // da co nut mo tab nay cho OWNER.
+ if (!OWNER_TABS.includes(newTab) && !ORGANIZER_TABS.includes(newTab)) {
   showRoleWarning("⚠️ Tài khoản Chủ Sân không thể truy cập khu vực Cầu Thủ. Vui lòng dùng Bảng Điều Hành hoặc Cộng đồng & Nhắn tin.");
  setActiveTab(currentUser.isNewOwner ? "owner-onboarding" : "admin");
  return;

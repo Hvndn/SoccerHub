@@ -47,7 +47,7 @@ public class TournamentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<Tournament> createTournament(@RequestBody Tournament tournament) {
         if (tournament.getRegisteredTeams() == null) {
             tournament.setRegisteredTeams(0);
@@ -81,7 +81,7 @@ public class TournamentController {
      * registeredTeams, teams, bracketJson, status, createdAt.</p>
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> updateTournament(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) {
@@ -164,7 +164,7 @@ public class TournamentController {
      * đang chờ, giải thưởng còn phải chi và tỉ lệ lấp đầy.
      */
     @GetMapping("/{id}/finance")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> tournamentFinance(@PathVariable Long id) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) {
@@ -339,7 +339,7 @@ public class TournamentController {
      * Body tuỳ chọn {"count": n} để chỉ thêm đúng n đội thay vì lấp đầy.
      */
     @PostMapping("/{id}/fill-teams")
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> fillTeams(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
@@ -516,7 +516,7 @@ public class TournamentController {
      * Kết quả lưu vào bracketJson. Phong độ mỗi đội lấy live từ lịch sử thi đấu.
      */
     @PostMapping("/{id}/draw")
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> drawBracket(@PathVariable Long id) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
@@ -657,7 +657,7 @@ public class TournamentController {
      * Dùng để dọn sau demo. Kèm reset nhánh đấu vì danh sách đã đổi.
      */
     @DeleteMapping("/{id}/simulated-teams")
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> clearSimulatedTeams(@PathVariable Long id) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
@@ -699,7 +699,7 @@ public class TournamentController {
      * (đẩy đội thắng vào vòng sau). Phong độ hai đội tự cập nhật từ lịch sử.
      */
     @PostMapping("/{id}/matches")
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> saveMatchResult(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
@@ -899,7 +899,7 @@ public class TournamentController {
      * Chỉ cho phép khi các trận vòng sau chưa có kết quả (để không phá nhánh đấu).
      */
     @DeleteMapping("/{id}/matches/{matchId}")
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> undoMatchResult(@PathVariable Long id, @PathVariable String matchId) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
@@ -1015,7 +1015,7 @@ public class TournamentController {
      * lưới mà không cần nhập tay. Trận đã DONE giữ nguyên. Vô địch → giải COMPLETED.
      */
     @PostMapping("/{id}/simulate-results")
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> simulateResults(@PathVariable Long id) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
@@ -1256,7 +1256,7 @@ public class TournamentController {
      *   startHour (mặc định 17), matchMinutes (mặc định 120) }.
      */
     @PostMapping("/{id}/schedule")
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> generateSchedule(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
@@ -1468,7 +1468,7 @@ public class TournamentController {
      * BTC xác nhận đã thu lệ phí của một đội → CONFIRMED (mới được bốc thăm).
      */
     @PostMapping("/{id}/teams/confirm-payment")
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> confirmTeamPayment(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
@@ -1503,7 +1503,7 @@ public class TournamentController {
 
     /** Danh sách đội chờ duyệt (PENDING_PAYMENT) của một giải. */
     @GetMapping("/{id}/teams/pending")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> pendingTeams(@PathVariable Long id) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
@@ -1525,7 +1525,7 @@ public class TournamentController {
 
     /** Duyệt đội vào giải (chuyển PENDING_PAYMENT → CONFIRMED). */
     @PostMapping("/{id}/teams/{teamName}/approve")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> approveTeam(@PathVariable Long id, @PathVariable String teamName) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
@@ -1543,7 +1543,7 @@ public class TournamentController {
 
     /** Từ chối đội (xoá khỏi danh sách đăng ký). */
     @PostMapping("/{id}/teams/{teamName}/reject")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> rejectTeam(@PathVariable Long id, @PathVariable String teamName) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
@@ -1565,7 +1565,7 @@ public class TournamentController {
 
     /** Danh sách trọng tài của một giải. */
     @GetMapping("/{id}/referees")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> listReferees(@PathVariable Long id) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
@@ -1587,7 +1587,7 @@ public class TournamentController {
 
     /** Thêm trọng tài vào giải. */
     @PostMapping("/{id}/referees")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> addReferee(@PathVariable Long id, @RequestBody Map<String, Object> req) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
@@ -1620,7 +1620,7 @@ public class TournamentController {
 
     /** Xoá trọng tài khỏi giải. */
     @DeleteMapping("/{id}/referees/{refId}")
-    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> removeReferee(@PathVariable Long id, @PathVariable Long refId) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
