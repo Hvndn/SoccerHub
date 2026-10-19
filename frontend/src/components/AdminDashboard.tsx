@@ -80,7 +80,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
  counterBookings: 0
  });
 
- const [activeSubTab, setActiveSubTab] = useState<"matrix" | "pitches" | "pricing" | "canteen">("matrix");
+ const [activeSubTab, setActiveSubTab] = useState<"matrix" | "pitches" | "pricing" | "canteen" | "reports">("matrix");
  const [matrixFilterStatus, setMatrixFilterStatus] = useState<string>("ALL");
  const [matrixFilterType, setMatrixFilterType] = useState<string>("ALL");
  const [matrixFilterTime, setMatrixFilterTime] = useState<string>("ALL");
@@ -1000,21 +1000,30 @@ setIsSavingInfo(false);
  <Coffee className="w-4 h-4 text-emerald-400 shrink-0" />
  <span>Quản Lý Canteen & Vật Tư</span>
  </button>
- </div>
-{/* === BIỂU ĐỒ THỐNG KÊ CHỦ SÂN (recharts) === */}
-  <OwnerCharts activePitch={activePitch} />
 
-  {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
+ <button
+ type="button"
+ onClick={() => setActiveSubTab("reports")}
+ className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
+ activeSubTab === "reports"
+ ? "bg-[#0369a1] text-white shadow-md"
+ : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+ }`}
+ >
+ <PieChart className="w-4 h-4 text-emerald-400 shrink-0" />
+ <span>Doanh Thu & Xuất Báo Cáo</span>
+ </button>
  </div>
-
-{/* === XUẤT BÁO CÁO THỐNG KÊ (CSV cho Excel) === */}
-  {activeSubTab === "pricing" && <OwnerReportExport />}
+ </div>
 
  {/* Kênh liên lạc với Ban Tổ Chức (B2B) */}
  <BusinessContacts viewerRole="OWNER" onStartDm={onStartDm} />
 
-  {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
- {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
+ {/* --- SUB-TAB CONTENT 5: DOANH THU & XUAT BAO CAO (rieng biet, khong gop voi cac tab khac) --- */}
+ {activeSubTab === "reports" && (
+ <div className="space-y-3 sm:space-y-6">
+ {/* === BIỂU ĐỒ THỐNG KÊ CHỦ SÂN (recharts) === */}
+ <OwnerCharts activePitch={activePitch} />
 
  {/* Dữ liệu trống -> gợi ý tạo dữ liệu demo ngay tại dashboard chủ sân
  (trước đây chỉ ADMIN tạo được ở /admin, chủ sân không có cách nào) */}
@@ -1100,7 +1109,13 @@ setIsSavingInfo(false);
  </div>
  </div>
 
+ {/* === XUẤT BÁO CÁO THỐNG KÊ (CSV cho Excel + gửi email) === */}
+ <OwnerReportExport />
+ </div>
+ )}
+
  {/* QUICK SEARCH & CHECK-IN TOOLBAR */}
+ {activeSubTab === "matrix" && (
  <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white ">
  <div className="flex items-center space-x-3 w-full sm:w-auto">
  <div className="w-10 h-10 rounded-xl bg-[#0369a1]/10 text-[#0b4f6c] flex items-center justify-center shrink-0">
@@ -1132,6 +1147,7 @@ setIsSavingInfo(false);
  </button>
  </div>
  </div>
+ )}
 
  {/* --- SUB-TAB CONTENT 1: LIVE MATRIX VIEW --- */}
  {activeSubTab === "matrix" && (
