@@ -1824,7 +1824,7 @@ setIsSavingInfo(false);
   value={infoName}
   onChange={(e) => setInfoName(e.target.value)}
   required
-  placeholder="VD: Turfzone Cầu Giấy"
+  placeholder="VD: Turfzone Đà Nẵng"
   className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
   />
   </div>
@@ -1836,7 +1836,7 @@ setIsSavingInfo(false);
   value={infoAddress}
   onChange={(e) => setInfoAddress(e.target.value)}
   required
-  placeholder="VD: 123 Trần Đăng Ninh, Hà Nội"
+  placeholder="VD: 123 Trần Phú, Hải Châu, Đà Nẵng"
   className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
   />
   </div>
@@ -1847,7 +1847,7 @@ setIsSavingInfo(false);
   type="text"
   value={infoArea}
   onChange={(e) => setInfoArea(e.target.value)}
-  placeholder="VD: Cầu Giấy, Hà Nội"
+  placeholder="VD: Quận 7, Đà Nẵng"
   className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
   />
   </div>

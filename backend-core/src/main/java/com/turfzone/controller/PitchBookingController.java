@@ -1023,8 +1023,8 @@ Booking saved = bookingRepository.save(booking);
     };
     private static final String[] SIM_TEAMS = {
             "FC Saigon Warriors", "FC Hoàng Nom Q7", "FC Lộc Phát", "Đội bóng Hải Phòng",
-            "Team Cầu Giấy", "Sài Gòn United", "Bình Dương FC", "Hà Nội Đông A",
-            "Đại Việt Youth", "Phú Nhuận Football", "Thanh Trì FC", "Quận 8 All Stars"
+            "Team Đà Nẵng", "Đà Nẵng United", "Đà Nẵng City FC", "Đà Nẵng Đông Á",
+            "Đại Việt Youth", "Hải Châu Football", "Thanh Trì FC", "Quận 8 Đà Nẵng"
     };
 
     /**

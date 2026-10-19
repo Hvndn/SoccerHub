@@ -481,7 +481,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="space-y-1">
  <div className="flex justify-between items-center text-xs">
  <span className="text-slate-500 uppercase font-extrabold text-[10px]">Bán kính</span>
- <span className="text-slate-600 font-bold text-[11px]">&lt; {radiusKm}km (Q.7, Nhà Bè)</span>
+ <span className="text-slate-600 font-bold text-[11px]">&lt; {radiusKm}km (Q.7, Hải Châu)</span>
  </div>
  <input
  type="range"

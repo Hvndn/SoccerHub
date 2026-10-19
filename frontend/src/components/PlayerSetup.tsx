@@ -335,7 +335,7 @@ export default function PlayerSetup() {
  <input
  value={form.area}
  onChange={set("area")}
- placeholder="VD: Quận 7, TP.HCM"
+ placeholder="VD: Quận 7, Đà Nẵng"
  className={inputCls}
  required
  />

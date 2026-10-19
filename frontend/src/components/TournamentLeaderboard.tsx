@@ -48,7 +48,7 @@ const SPORT_TABS: { key: SportType | 'all'; label: string; emoji: string; badgeC
  { key: 'SAN_7', label: 'Sân 7 Phủi', emoji: '⚽', badgeClass: 'bg-[#0369a1] text-white' },
  { key: 'SAN_5', label: 'Sân 5 Mini', emoji: '🥅', badgeClass: 'bg-lime-500 text-slate-950' },
  { key: 'SAN_11', label: 'Sân 11 Người', emoji: '🏟️', badgeClass: 'bg-amber-500 text-slate-950' },
- { key: 'FUTSAL', label: 'Futsal Sài Gòn', emoji: '👟', badgeClass: 'bg-[#0369a1] text-white' },
+ { key: 'FUTSAL', label: 'Futsal Đà Nẵng', emoji: '👟', badgeClass: 'bg-[#0369a1] text-white' },
 ];
 
 type TabKey = 'open' | 'live' | 'bracket' | 'rankings';
@@ -1092,7 +1092,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
  <span className="flex items-center gap-1">
  <MapPin className="w-3.5 h-3.5 text-sky-700" />
- {t.pitchName || t.location || "TP. Hồ Chí Minh"}
+ {t.pitchName || t.location || "Đà Nẵng"}
  </span>
  <span className="flex items-center gap-1">
  <Calendar className="w-3.5 h-3.5 text-slate-500" />
@@ -1334,7 +1334,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  BXH Vua Phá Lưới & Kiến Tạo
  </h3>
  </div>
- <span className="text-xs text-slate-500 font-semibold">TP.HCM • Mùa Q4</span>
+ <span className="text-xs text-slate-500 font-semibold">Đà Nẵng • Mùa Q4</span>
  </div>
 
  {/* Leaderboard Rows — dữ liệu thật từ CSDL */}

@@ -36,7 +36,7 @@ const ROLES: { id: Role; label: string; desc: string; icon: React.ReactNode }[] 
 ];
 
 const POSITIONS = ["Thủ Môn (GK)", "Hậu Vệ (CB)", "Hậu Vệ Cánh (RB/LB)", "Tiền Vệ (CM)", "Tiền Vệ Cánh (LM/RM)", "Tiền Đạo (ST)"];
-const AREAS = ["Q. Hải Châu, Đà Nẵng", "Q. Cẩm Lệ, Đà Nẵng", "Q.7, TP.HCM", "Q.1, TP.HCM", "TP. Thủ Đức, TP.HCM", "Khu vực khác"];
+const AREAS = ["Q. Hải Châu, Đà Nẵng", "Q. Cẩm Lệ, Đà Nẵng", "Q. Thanh Khê, Đà Nẵng", "Q. Sơn Trà, Đà Nẵng", "Q. Liên Chiểu, Đà Nẵng", "Q. Ngũ Hành Sơn, Đà Nẵng", "Khu vực khác"];
 const LEVELS = ["Mới chơi", "Phong trào", "Bán chuyên", "Chuyên nghiệp"];
 const SPORTS = ["Bóng Đá Sân 5", "Bóng Đá Sân 7", "Bóng Đá Sân 11", "Futsal"];
 
@@ -167,7 +167,7 @@ export default function AuthModal({
  eloRating: 1200,
  form: "",
  record: "0-0-0",
- area: "Đà Nẵng / TP.HCM",
+ area: "Đà Nẵng",
  avatar: demoRole === "PLAYER" ? "TL" : demoRole === "OWNER" ? "NS" : "LG",
  isNewOwner: false
  };

@@ -1766,7 +1766,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  type="text"
  value={editForm.pitchName}
  onChange={(e) => setEditForm((f) => ({ ...f, pitchName: e.target.value }))}
- placeholder="VD: Cụm Sân Turfzone Cầu Giấy"
+ placeholder="VD: Cụm Sân Turfzone Đà Nẵng"
  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
  />
  </div>
@@ -1777,7 +1777,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  type="text"
  value={editForm.location}
  onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
- placeholder="VD: Hà Nội"
+ placeholder="VD: Đà Nẵng"
  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
  />
  </div>
