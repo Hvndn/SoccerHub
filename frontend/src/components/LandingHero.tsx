@@ -93,7 +93,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-700 fill-amber-700" />
  </div>
  <span className="font-extrabold text-xs sm:text-sm text-slate-800 leading-snug">
- Đặt ca trực tiếp từ CSDL • Không trùng lịch
+ Đặt ca trực tiếp • Không trùng lịch
  </span>
  </div>
 

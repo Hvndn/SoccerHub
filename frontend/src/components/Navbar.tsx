@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import SafeImage from "@/components/SafeImage";
+import NavbarAvatar from "@/components/NavbarAvatar";
 import {
  Trophy,
  Users,
@@ -29,23 +31,8 @@ import {
   AlertCircle,
   MessageCircle
 } from "lucide-react";
-import { subscribeToBookingEvents, playNotificationChime, type RealtimeBookingEvent } from "@/lib/realtimeService";
-import { listMyNotifications, markNotificationRead } from "@/lib/adminService";
 import { listMyGroups, listMyConversations, getUnreadCount } from "@/lib/groupChat";
-import NotificationsModal from "./NotificationsModal";
-
-// Notification item type
-interface AppNotification {
- id: string;
- type: string;
- title: string;
- message: string;
- time: Date;
- read: boolean;
- cancelReason?: string;
- serverId?: number;
- link?: string | null;
-}
+import { useNotifications, formatNotifTime } from "@/lib/useNotifications";
 
 interface NavbarProps {
  activeTab: string;
@@ -62,8 +49,8 @@ export default function Navbar({
  onOpenAuth,
  onLogout
 }: NavbarProps) {
+ const router = useRouter();
  const [showNotifications, setShowNotifications] = useState(false);
- const [showAllNotifications, setShowAllNotifications] = useState(false);
  const [showUserDropdown, setShowUserDropdown] = useState(false);
  const [showMobileDrawer, setShowMobileDrawer] = useState(false);
  const [mobilePitchOpen, setMobilePitchOpen] = useState(true);
@@ -89,86 +76,14 @@ export default function Navbar({
     return () => { alive = false; window.clearInterval(t); };
   }, [user]);
 
- // Cache thông báo tách riêng theo từng tài khoản (tránh lẫn thông báo khi đổi user chung máy)
- const NOTIFS_KEY_BASE = "Turfzone_user_notifications";
- const userEmailRef = useRef<string | null>(null);
- userEmailRef.current = user?.email ?? null;
- const notifKey = () =>
- NOTIFS_KEY_BASE + (userEmailRef.current ? "_" + userEmailRef.current : "_guest");
-
- // Notification Center State — chỉ lấy thông báo thật từ server, không có mẫu giả
- const [notifications, setNotifications] = useState<AppNotification[]>([]);
- const notificationsRef = useRef<AppNotification[]>([]);
- // Mirror để đọc state mới nhất ngoài render (đồng bộ server)
- useEffect(() => {
- notificationsRef.current = notifications;
- }, [notifications]);
-
- // Load cache của đúng tài khoản đang đăng nhập (đổi user -> nạp lại, logout -> rỗng)
- useEffect(() => {
- try {
- const saved = localStorage.getItem(
- NOTIFS_KEY_BASE + (user?.email ? "_" + user.email : "_guest")
- );
- if (saved) {
- const parsed = JSON.parse(saved);
- if (Array.isArray(parsed) && parsed.length > 0) {
- const formatted = parsed.map((item: any) => ({
- ...item,
- time: new Date(item.time)
- }));
- setNotifications(formatted);
- return;
- }
- }
- setNotifications([]);
- } catch (e) {
- // ignore parse error
- }
- }, [user?.email]);
-
- // Thông báo thật từ server khi đã đăng nhập (poll mỗi 60s). Khách: giữ local.
- useEffect(() => {
- if (!user) return;
- let alive = true;
- const pull = async (initial = false) => {
- try {
- const rows = await listMyNotifications();
- if (!alive) return;
- setNotifications((prev) => {
- const localOnly = prev.filter((n) => n.serverId == null);
- const mapped: AppNotification[] = rows.map((r) => ({
- id: `srv-${r.id}`,
- serverId: r.id,
- type: r.type || "SYSTEM",
- title: r.title,
- message: r.message || "",
- time: r.createdAt ? new Date(r.createdAt) : new Date(),
- read: !!r.read,
- link: r.link ?? null,
- }));
- const merged = [...mapped, ...localOnly].slice(0, 25);
- saveNotifications(merged);
- return merged;
- });
- } catch {
- // backend chưa chạy / chưa đăng nhập xong — giữ thông báo local
- }
- };
- pull(true);
- const timer = setInterval(() => pull(false), 60000);
- return () => {
- alive = false;
- clearInterval(timer);
- };
- }, [user]);
-
- // Save to localStorage helper (đúng tài khoản đang dùng)
- const saveNotifications = (items: AppNotification[]) => {
- try {
- localStorage.setItem(notifKey(), JSON.stringify(items));
- } catch (e) {}
- };
+ // Trung Tâm Thông Báo: dùng chung hook với trang /notifications
+ const {
+ notifications,
+ unreadCount,
+ markAllRead,
+ removeNotification,
+ clearAllNotifications,
+ } = useNotifications(user);
 
  // Grouped Dropdown States
  const [showPitchMenu, setShowPitchMenu] = useState(false);
@@ -178,105 +93,6 @@ export default function Navbar({
  const tournamentMenuRef = useRef<HTMLDivElement>(null);
  const userMenuRef = useRef<HTMLDivElement>(null);
  const notificationRef = useRef<HTMLDivElement>(null);
-
- // Subscribe to realtime booking events (cả cùng tab và đa tab)
- useEffect(() => {
- const unsubscribe = subscribeToBookingEvents((event: RealtimeBookingEvent) => {
- let newNotif: AppNotification | null = null;
-
- if (event.type === "BOOKING_CREATED") {
- newNotif = {
- id: `booking-${event.bookingId || Date.now()}`,
- type: "BOOKING_CREATED",
- title: "✅ Đặt Sân Thành Công!",
- message: `Ca ${event.timeSlot || ""} tại ${event.courtName || "sân"} đã được xác nhận. Mã: ${event.code || "--"}.`,
- time: new Date(event.timestamp),
- read: false
- };
- } else if (event.type === "BOOKING_CANCELLED") {
- newNotif = {
- id: `cancel-${event.bookingId || Date.now()}`,
- type: "BOOKING_CANCELLED",
- title: "❌ Ca Đặt Sân Bị Hủy",
- message: `Ca ${event.timeSlot || ""} tại ${event.courtName || "sân"} đã bị hủy bởi chủ sân.`,
- time: new Date(event.timestamp),
- read: false,
- cancelReason: event.cancelReason
- };
- } else if (event.type === "BOOKING_CHECKED_IN") {
- newNotif = {
- id: `checkin-${event.bookingId || Date.now()}`,
- type: "BOOKING_CHECKED_IN",
- title: "🏟️ Check-in Xác Nhận!",
- message: `Bạn đã check-in thành công ca ${event.timeSlot || ""} tại ${event.courtName || "sân"}.`,
- time: new Date(event.timestamp),
- read: false
- };
- }
-
- if (newNotif) {
- playNotificationChime();
- setNotifications(prev => {
- // Tránh duplicate notification id
- const filtered = prev.filter(n => n.id !== newNotif!.id);
- const updated = [newNotif!, ...filtered].slice(0, 25);
- saveNotifications(updated);
- return updated;
- });
- }
- });
-
- return unsubscribe;
- }, []);
-
- const unreadCount = notifications.filter(n => !n.read).length;
-
- const markAllRead = useCallback(() => {
- // Đồng bộ lên server trước (fire-and-forget), rồi mới đánh dấu local
- notificationsRef.current
- .filter(n => n.serverId != null && !n.read)
- .forEach(n => markNotificationRead(n.serverId as number).catch(() => {}));
- setNotifications(prev => {
- const updated = prev.map(n => ({ ...n, read: true }));
- saveNotifications(updated);
- return updated;
- });
- }, []);
-
- const markSingleRead = useCallback((id: string) => {
-  setNotifications(prev => {
-  const notif = prev.find(n => n.id === id);
-  if (notif?.serverId != null && !notif.read) {
-    markNotificationRead(notif.serverId as number).catch(() => {});
-  }
-  const updated = prev.map(n => n.id === id ? { ...n, read: true } : n);
-  saveNotifications(updated);
-  return updated;
-  });
-}, []);
-
-const removeNotification = useCallback((id: string) => {
- setNotifications(prev => {
- const updated = prev.filter(n => n.id !== id);
- saveNotifications(updated);
- return updated;
- });
- }, []);
-
- const clearAllNotifications = useCallback(() => {
- setNotifications([]);
- saveNotifications([]);
- }, []);
-
- const formatTime = (date: Date) => {
- const diff = Date.now() - date.getTime();
- const mins = Math.floor(diff / 60000);
- if (mins < 1) return "Vừa xong";
- if (mins < 60) return `${mins} phút trước`;
- const hours = Math.floor(mins / 60);
- if (hours < 24) return `${hours} giờ trước`;
- return date.toLocaleDateString("vi-VN");
- };
 
  useEffect(() => {
  function handleClickOutside(event: MouseEvent) {
@@ -768,7 +584,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  )}
 
- <p className="text-[11px] text-slate-500 font-mono mt-1.5">{formatTime(notif.time)}</p>
+ <p className="text-[11px] text-slate-500 font-mono mt-1.5">{formatNotifTime(notif.time)}</p>
  </div>
 
  {/* Nút xóa */}
@@ -793,7 +609,7 @@ const mobileNav: MobileNavItem[] =
  type="button"
  onClick={() => {
  setShowNotifications(false);
- setShowAllNotifications(true);
+ router.push("/notifications");
  }}
  className="text-xs font-black text-[#0b4f6c] hover:underline"
  >
@@ -813,17 +629,6 @@ const mobileNav: MobileNavItem[] =
  )}
  </div>
  )}
-
- {/* Modal xem tất cả thông báo (lọc theo loại + đánh dấu đã đọc) */}
- <NotificationsModal
- open={showAllNotifications}
- onClose={() => setShowAllNotifications(false)}
- notifications={notifications}
- onDelete={removeNotification}
- onClearAll={clearAllNotifications}
- onMarkAllRead={markAllRead}
-  onMarkRead={markSingleRead}
- />
 
  {user ? (
  <div className="relative" ref={userMenuRef}>
@@ -853,8 +658,8 @@ const mobileNav: MobileNavItem[] =
  </div>
  </div>
 
- <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0369a1] border-2 border-sky-400 text-white font-extrabold text-[10px] sm:text-xs flex items-center justify-center shrink-0 shadow-sm">
- {user.avatar || (user.fullName ? user.fullName.substring(0, 2).toUpperCase() : user.name ? user.name.substring(0, 2).toUpperCase() : "SH")}
+ <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0369a1] border-2 border-sky-400 text-white font-extrabold text-[10px] sm:text-xs flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+ <NavbarAvatar user={user} />
  </div>
  </div>
 
@@ -932,6 +737,18 @@ const mobileNav: MobileNavItem[] =
   >
   <Trophy className="w-4 h-4 text-sky-700" />
   <span>Điều Hành Giải Đấu</span>
+  </button>
+
+  <button
+  type="button"
+  onClick={() => {
+  handleSelectSubTab("profile");
+  setShowUserDropdown(false);
+  }}
+  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+  >
+  <User className="w-4 h-4 text-[#0369a1]" />
+  <span>Hồ Sơ Cá Nhân</span>
   </button>
  </>
  ) : user.role === "ORGANIZER" ? (
@@ -1217,6 +1034,30 @@ const mobileNav: MobileNavItem[] =
   <div className="text-xs font-extrabold leading-tight">Cộng Đồng & Nhắn Tin</div>
   <div className={`text-[10px] truncate ${activeTab === "community" ? "text-white/80 " : "text-slate-500"}`}>
   Trao đổi với khách & nhóm chat
+  </div>
+  </div>
+  </button>
+
+  {/* HỒ SƠ CÁ NHÂN (chủ sân sửa họ tên, SĐT, khu vực, avatar) */}
+  <button
+  type="button"
+  onClick={() => {
+  handleSelectSubTab("profile");
+  setShowMobileDrawer(false);
+  }}
+  className={`w-full text-left p-3 rounded-2xl flex items-center space-x-3 transition-colors ${
+  activeTab === "profile"
+  ? "bg-[#0369a1] text-white shadow-md font-extrabold"
+  : "bg-slate-50 hover:bg-slate-100 text-slate-700 "
+  }`}
+  >
+  <div className="w-8 h-8 rounded-xl bg-[#0369a1]/10 flex items-center justify-center shrink-0">
+  <User className="w-4 h-4 text-[#0369a1]" />
+  </div>
+  <div className="min-w-0 flex-1">
+  <div className="text-xs font-extrabold leading-tight">Hồ Sơ Cá Nhân</div>
+  <div className={`text-[10px] truncate ${activeTab === "profile" ? "text-white/80 " : "text-slate-500"}`}>
+  Họ tên, SĐT, khu vực & ảnh đại diện
   </div>
   </div>
   </button>

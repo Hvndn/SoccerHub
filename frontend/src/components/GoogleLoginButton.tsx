@@ -73,8 +73,15 @@ export default function GoogleLoginButton({
               if (token) {
                 setAuthToken(token, data.user?.role);
               }
-              // đánh dấu cần hoàn tất hồ sơ cho PLAYER mới
-              if (data.user?.role === "PLAYER" && data.user?.email) {
+              // CHỈ đánh dấu cần hoàn tất hồ sơ khi cầu thủ CHƯA có dữ liệu hồ sơ.
+              // Trước đây đánh dấu cho MỌI lần đăng nhập Google nên người chơi cũ
+              // cũng bị đẩy vào trang "Khởi tạo hồ sơ cầu thủ" mỗi lần đăng nhập.
+              const hasProfile = !!(
+                data.user?.position ||
+                data.user?.dominantFoot ||
+                data.user?.jerseyNumber
+              );
+              if (data.user?.role === "PLAYER" && data.user?.email && !hasProfile) {
                 markPlayerSetupPending(data.user.email);
               }
               onSuccess?.(data.user);

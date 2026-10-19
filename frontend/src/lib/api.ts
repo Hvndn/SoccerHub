@@ -118,14 +118,21 @@ async function fetchWithStatus(url: string, options: RequestInit): Promise<Respo
   }
 
   try {
-    const res = await fetch(url, options);
+    // Dùng fetchWithTimeout để MỌI lời gọi API đều bị chặn trần thời gian. Trước đây
+    // gọi fetch() trần nên khi backend treo, request đứng im tới lúc TCP tự hết hạn
+    // (hàng chục giây → vài phút) — khiến trang "Khởi tạo hồ sơ cầu thủ" quay rất lâu.
+    const res = await fetchWithTimeout(url, options);
     // Máy chủ trả lỗi HTTP vẫn là "sống" (chỉ là endpoint lỗi) — đánh dấu online.
     statusMod?.markBackendReachable();
     return res;
-  } catch (e) {
+  } catch (e: any) {
     statusMod?.markBackendUnreachable(
       'Không kết nối được tới máy chủ Turfzone. Hệ thống có thể đang bảo trì hoặc mất kết nối.'
     );
+    // Giữ thông điệp timeout rõ ràng của fetchWithTimeout; các lỗi khác thì thay
+    // bằng câu thân thiện để không lộ chi tiết kỹ thuật.
+    const msg = String(e?.message || '');
+    if (msg.includes('quá chậm')) throw e;
     throw new Error('Không kết nối được tới máy chủ. Vui lòng thử lại sau ít phút.');
   }
 }
@@ -166,7 +173,11 @@ export async function apiRequest<T = any>(
 
   if (!response.ok) {
     const errorMessage = data?.message || `Lỗi yêu cầu: ${response.status} ${response.statusText}`;
-    throw new Error(errorMessage);
+    // Gắn mã HTTP vào Error để tầng gọi phân biệt "máy chủ từ chối phiên" (401/403)
+    // với "không kết nối được" (timeout/mất mạng) — tránh xoá token oan khi backend chết.
+    const err: any = new Error(errorMessage);
+    err.status = response.status;
+    throw err;
   }
 
   return data as T;

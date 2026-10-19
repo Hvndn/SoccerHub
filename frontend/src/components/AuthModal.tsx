@@ -461,9 +461,6 @@ export default function AuthModal({
  <GoogleLoginButton
  mode="login"
  onSuccess={(u) => {
- if (u?.email && u?.role === "PLAYER") {
- markPlayerSetupPending(u.email);
- }
  onLoginSuccess({ ...u, isNewOwner: u?.role === "OWNER" });
  onClose();
  }}
@@ -673,9 +670,6 @@ export default function AuthModal({
   <GoogleLoginButton
   mode={mode}
   onSuccess={(u) => {
-  if (u?.email && u?.role === "PLAYER") {
-  markPlayerSetupPending(u.email);
-  }
   onLoginSuccess({ ...u, isNewOwner: u?.role === "OWNER" });
   onClose();
   }}

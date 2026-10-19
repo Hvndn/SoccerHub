@@ -1,4 +1,4 @@
-import { apiRequest, ensureLoggedIn, fetchWithTimeout } from "./api";
+import { apiRequest, ensureLoggedIn, fetchWithTimeout, API_BASE_URL, getAuthToken } from "./api";
 import { toastErr, toastOk } from "./toast";
 
 /* =========================================================
@@ -161,13 +161,19 @@ export async function markGroupMessageRead(messageId: number): Promise<void> {
   await apiRequest(`/api/v1/chat/messages/${messageId}/read`, { method: "POST" });
 }
 
-/** Upload file cho chat (chung cho group/DM/public). */
+/** Upload file cho chat (chung cho group/DM/public) và avatar hồ sơ. */
 export async function uploadChatFile(file: File): Promise<{ fileUrl: string; fileType: string; fileName: string; fileSize: number }> {
   const formData = new FormData();
   formData.append("file", file);
-  const res = await fetchWithTimeout(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://soccerhub-backend-core-production.up.railway.app"}/api/v1/chat/upload`, {
+  // GH fix: gắn token vì /api/v1/chat/upload yêu cầu đăng nhập (fetchWithTimeout
+  // không tự thêm Authorization); trước đây chỉ dựa credentials:include nên 401.
+  const token = getAuthToken();
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/chat/upload`, {
     method: "POST",
     credentials: "include",
+    headers,
     body: formData,
   });
   if (!res.ok) {

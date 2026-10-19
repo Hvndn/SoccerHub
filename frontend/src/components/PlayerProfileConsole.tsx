@@ -2,6 +2,8 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { toastOk, toastInfo } from "@/lib/toast";
+import AvatarUploader from "@/components/AvatarUploader";
+import { resolveAvatarUrl } from "@/lib/avatar";
 import SafeImage from "@/components/SafeImage";
 import {
  User,
@@ -165,8 +167,11 @@ export default function PlayerProfileConsole({
  const displayArea = editForm.area || "Chưa khai báo khu vực";
  const displayLevel = editForm.level || "Chưa xếp bậc";
  const displayAvatar = editForm.avatar || activeUser?.avatar;
+ // GH fix: avatar upload trả "/api/v1/chat/files/xxx.png" (đường tương đối) —
+ // dùng helper dùng chung để biến thành URL thật, chữ viết tắt thì trả null.
+ const avatarImgUrl = resolveAvatarUrl(displayAvatar);
 
- const isAvatarUrl = displayAvatar && (displayAvatar.startsWith("http://") || displayAvatar.startsWith("https://") || displayAvatar.startsWith("data:"));
+ const isAvatarUrl = !!avatarImgUrl;
  const initials = displayFullName
  ? displayFullName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
  : "HD";
@@ -378,12 +383,13 @@ export default function PlayerProfileConsole({
  <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-2xl sm:text-3xl lg:text-4xl flex items-center justify-center shadow-lg border-4 border-white overflow-hidden">
  {isAvatarUrl ? (
  <SafeImage
- src={displayAvatar}
+ src={avatarImgUrl}
  alt={displayFullName}
  className="w-full h-full object-cover"
+ fallbackLabel="Ảnh đại diện đang tải..."
  />
  ) : (
- <span>{initials}</span>
+ <span>{displayAvatar || initials}</span>
  )}
  </div>
  <div className="absolute -bottom-1 -right-1 bg-[#0369a1] text-white p-1 sm:p-1.5 rounded-xl shadow-md border-2 border-white " title="Tài khoản đã xác minh căn cước & số điện thoại">
@@ -748,13 +754,17 @@ export default function PlayerProfileConsole({
  <label className="block text-xs font-semibold text-slate-700 mb-1">
  URL Ảnh Đại Diện (Avatar)
  </label>
+ <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
  <input
- type="url"
+ type="text"
+ inputMode="url"
  value={editForm.avatar}
  onChange={(e) => setEditForm({ ...editForm, avatar: e.target.value })}
- className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:ring-2 focus:ring-[#0369a1] outline-none"
+ className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:ring-2 focus:ring-[#0369a1] outline-none"
  placeholder="https://... ảnh chân dung"
  />
+ <AvatarUploader compact onUploaded={(url) => setEditForm({ ...editForm, avatar: url })} label="Tải ảnh từ máy" />
+ </div>
  </div>
  </div>
 

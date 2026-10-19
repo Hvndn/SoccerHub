@@ -18,6 +18,11 @@ export interface UserProfile {
   weight?: string;
   preferredTime?: string;
   currentClub?: string;
+  /**
+   * Chỉ có khi vừa đổi email: backend cấp token mới vì JWT gắn với email cũ.
+   * FE dùng để thay token đang lưu, không hiển thị cho người dùng.
+   */
+  token?: string;
 }
 
 export interface AuthResponseData {
@@ -69,8 +74,13 @@ export async function getCurrentUserApi(): Promise<UserProfile | null> {
       method: 'GET',
     });
     return user;
-  } catch (error) {
-    removeAuthToken();
+  } catch (error: any) {
+    // CHỈ xoá token khi máy chủ nói phiên không hợp lệ (401/403). Nếu lỗi do
+    // mạng/máy chủ chậm (timeout) thì giữ token để lần sau khôi phục lại — trước
+    // đây xoá token ở mọi lỗi khiến người dùng bị đăng xuất oan khi backend chết.
+    if (error?.status === 401 || error?.status === 403) {
+      removeAuthToken();
+    }
     return null;
   }
 }
