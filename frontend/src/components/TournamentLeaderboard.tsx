@@ -8,13 +8,15 @@ import {
  Trophy, Award, Flame, Search, Filter, Calendar, MapPin, Users, ChevronRight, 
  PlayCircle, Zap, ArrowUpRight, ShieldCheck, CheckCircle2, UserCheck, PlusCircle,
  Radio, RefreshCw, Star, Info, Share2, Sparkles, Check, Home, Video, ChevronDown,
- Activity, AlertTriangle, LogIn
+ Activity, AlertTriangle, LogIn, Shuffle, Dices, Lock
 } from 'lucide-react';
 import {
  Tournament,
  SportType,
  fetchTournaments,
  fetchTopScorers,
+ drawTournamentBracket,
+ simulateTournamentResults,
  type ScorerRow,
  subscribeTournaments,
  countBySport,
@@ -61,6 +63,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  onRequestLogin
 }) => {
  const [activeSport, setActiveSport] = useState<SportType | 'all'>('all');
+  // BTC (ORGANIZER) hoặc ADMIN mới được bốc thăm / giả lập kết quả.
+  const canManage = user?.role === 'ORGANIZER' || user?.role === 'ADMIN';
  const [activeTab, setActiveTab] = useState<TabKey>('open');
  const [selectedFormat, setSelectedFormat] = useState<'ALL' | 'KNOCKOUT' | 'ROUND_ROBIN'>('ALL');
  // Mặc định OPEN — khớp với tab "Giải Đấu Đang Mở Đăng Ký" đang chọn sẵn.
@@ -74,6 +78,65 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  const [loadingTournaments, setLoadingTournaments] = useState(true);
  const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
  const [loadError, setLoadError] = useState<string | null>(null);
+ // Bốc thăm / giả lập nhanh ngay trên card giải (chỉ BTC + ADMIN)
+ const [busyTournamentId, setBusyTournamentId] = useState<number | null>(null);
+ const [busyAction, setBusyAction] = useState<'draw' | 'simulate' | null>(null);
+ const [actionNotice, setActionNotice] = useState<string | null>(null);
+
+ /** Giải chưa tới ngày thi đấu -> BTC được bốc thăm trước (không cần chờ tới ngày). */
+ const notStartedYet = (t: Tournament): boolean => {
+  if (!t?.startDate) return false;
+  const start = new Date(t.startDate);
+  if (Number.isNaN(start.getTime())) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  start.setHours(0, 0, 0, 0);
+  return start.getTime() > today.getTime();
+ };
+
+ /** Giải đã có nhánh đấu (bracketJson) hay chưa. */
+ const hasBracket = (t: Tournament): boolean => {
+  if (!t?.bracketJson) return false;
+  try {
+  return !!JSON.parse(t.bracketJson);
+  } catch {
+  return false;
+  }
+ };
+
+ /** Bốc thăm ngay cho giải chưa tới ngày (nút trên card giải đấu). */
+ const handleQuickDraw = async (t: Tournament) => {
+  setBusyTournamentId(t.id);
+  setBusyAction('draw');
+  setActionNotice(null);
+  try {
+  const res = await drawTournamentBracket(t.id);
+  setActionNotice(res?.message || `Đã bốc thăm cho giải "${t.title}".`);
+  await reloadTournaments(true);
+  } catch (err: any) {
+  setActionNotice(err?.message || 'Không bốc thăm được. Cần đăng nhập ORGANIZER hoặc ADMIN.');
+  } finally {
+  setBusyTournamentId(null);
+  setBusyAction(null);
+  }
+ };
+
+ /** Giả lập toàn bộ kết quả (knockout / vòng tròn) sau khi đã bốc thăm. */
+ const handleQuickSimulate = async (t: Tournament) => {
+  setBusyTournamentId(t.id);
+  setBusyAction('simulate');
+  setActionNotice(null);
+  try {
+  const res = await simulateTournamentResults(t.id);
+  setActionNotice(res?.message || `Đã giả lập kết quả giải "${t.title}".`);
+  await reloadTournaments(true);
+  } catch (err: any) {
+  setActionNotice(err?.message || 'Không giả lập được kết quả. Cần đăng nhập ORGANIZER hoặc ADMIN.');
+  } finally {
+  setBusyTournamentId(null);
+  setBusyAction(null);
+  }
+ };
 
  // Đăng ký đội đã chuyển sang trang wizard riêng: /tournaments/register (4 bước)
 
@@ -685,6 +748,21 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  </p>
  </div>
  )}
+  {/* Thông báo kết quả bốc thăm / giả lập nhanh trên card giải */}
+  {actionNotice && (
+  <div className="flex items-start gap-2.5 rounded-2xl border border-sky-200 bg-sky-50 px-3.5 py-2.5">
+  <Sparkles className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
+  <p className="text-xs font-bold text-sky-900 leading-relaxed">{actionNotice}</p>
+  <button
+  type="button"
+  onClick={() => setActionNotice(null)}
+  aria-label="Đóng thông báo"
+  className="ml-auto shrink-0 text-sky-600 hover:text-sky-900 p-0.5"
+  >
+  ✕
+  </button>
+  </div>
+  )}
 
  {/* 5. MAIN NAVIGATION TABS — số liệu đếm từ CSDL */}
  <div className="flex items-center gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Khu vực nội dung giải đấu">
@@ -1168,6 +1246,43 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  + Nộp Danh Sách Đội Tham Gia
  </Link>
  )}
+  {/* NHANH BTC: giải chưa tới ngày -> bốc thăm luôn; đã bốc thăm -> giả lập kết quả */}
+  {t.status !== 'COMPLETED' && canManage && (
+  <>
+  {!hasBracket(t) && notStartedYet(t) && reg >= 2 && (
+  <button
+  type="button"
+  onClick={() => handleQuickDraw(t)}
+  disabled={busyTournamentId === t.id}
+  title="Giải chưa tới ngày thi đấu — bấm để bốc thăm ngay, không cần chờ tới ngày"
+  className="px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0369a1] bg-amber-500 hover:bg-amber-600 text-white active:scale-95 inline-flex items-center gap-1.5 disabled:opacity-50"
+  >
+  {busyTournamentId === t.id && busyAction === 'draw' ? (
+  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+  ) : (
+  <Shuffle className="w-3.5 h-3.5" />
+  )}
+  {t.format === 'ROUND_ROBIN' ? 'Xếp Lịch Vòng Tròn' : 'Bốc Thăm Ngay'}
+  </button>
+  )}
+  {hasBracket(t) && (
+  <button
+  type="button"
+  onClick={() => handleQuickSimulate(t)}
+  disabled={busyTournamentId === t.id}
+  title="Giả lập toàn bộ tỷ số + cầu thủ ghi bàn cho giải này (chỉ dùng demo/thuyết trình)"
+  className="px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0369a1] bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95 inline-flex items-center gap-1.5 disabled:opacity-50"
+  >
+  {busyTournamentId === t.id && busyAction === 'simulate' ? (
+  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+  ) : (
+  <Dices className="w-3.5 h-3.5" />
+  )}
+  {t.format === 'ROUND_ROBIN' ? 'Giả Lập Vòng Tròn' : 'Giả Lập Knockout'}
+  </button>
+  )}
+  </>
+  )}
  </div>
  </div>
  </div>
