@@ -1008,7 +1008,7 @@ setIsSavingInfo(false);
  </div>
 
 {/* === XUẤT BÁO CÁO THỐNG KÊ (CSV cho Excel) === */}
-  <OwnerReportExport />
+  {activeSubTab === "pricing" && <OwnerReportExport />}
 
  {/* Kênh liên lạc với Ban Tổ Chức (B2B) */}
  <BusinessContacts viewerRole="OWNER" onStartDm={onStartDm} />
