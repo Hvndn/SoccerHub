@@ -32,8 +32,8 @@ export default function BackendStatusBanner() {
   if (!status || status.reachable || dismissed) return null;
 
   return (
-    <div className="fixed inset-x-0 top-0 z-[80] flex justify-center px-3 pt-3 pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-amber-300 bg-amber-50/98 shadow-2xl backdrop-blur-md px-4 py-3 animate-fade-in-down">
+    <div className="w-full flex justify-center px-3 pt-3 shrink-0">
+      <div className="w-full max-w-2xl rounded-2xl border border-amber-300 bg-amber-50/95 shadow-lg backdrop-blur-md px-4 py-3 animate-fade-in-down">
         <div className="flex items-start gap-3">
           <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-700">
             <ServerCrash className="h-5 w-5" />
