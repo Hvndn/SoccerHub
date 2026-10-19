@@ -456,9 +456,9 @@ export default function PitchDetail({
  </div>
 
  {/* Bento Gallery Ảnh Bóng Đá Đích Thực */}
- <div className="grid grid-cols-1 md:grid-cols-12 gap-3 h-[280px] sm:h-[340px] rounded-2xl overflow-hidden shadow-xs">
+ <div className="grid grid-cols-1 md:grid-cols-12 gap-3 min-h-[280px] sm:min-h-[340px] rounded-2xl overflow-hidden shadow-xs">
  {/* Main Wide Photo (7 cols) */}
- <div className="md:col-span-7 relative h-full group overflow-hidden bg-slate-900 rounded-2xl">
+ <div className="md:col-span-6 lg:col-span-7 min-w-0 relative h-full group overflow-hidden bg-slate-900 rounded-2xl">
  <SafeImage
  src={venueData.mainImage}
  alt="Sân Bóng Đá Cỏ Nhân Tạo Chuẩn VFF"
@@ -470,7 +470,7 @@ export default function PitchDetail({
  <span className="font-black text-xs bg-[#0369a1]/90 backdrop-blur-md px-2.5 py-1 rounded text-white uppercase tracking-wider">
  {pitchDetails?.pitchTypes?.[0] || pitch?.sportBadge || "Sân bóng đá"}
  </span>
- <p className="font-black text-base sm:text-lg mt-1 text-white">
+ <p className="font-black text-base sm:text-lg mt-1 text-white break-words">
  {pitchDetails?.description || venueData.address}
  </p>
  </div>
@@ -478,14 +478,14 @@ export default function PitchDetail({
  </div>
 
  {/* Secondary Photo Column (3 cols) */}
- <div className="hidden md:flex md:col-span-3 flex-col gap-3 h-full">
+ <div className="hidden md:flex md:col-span-3 min-w-0 flex-col gap-3 h-full">
  <div className="relative flex-1 overflow-hidden group bg-slate-900 rounded-2xl">
  <SafeImage
  src={venueData.subImages[0]}
  alt="Bóng Thi Đấu & Điểm Phát Bóng"
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
  />
- <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-xs text-white font-bold">
+ <div className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-xs text-white font-bold">
  {venueData.name}
  </div>
  </div>
@@ -495,24 +495,24 @@ export default function PitchDetail({
  alt="Khung Thành & Khu Vực Kỹ Thuật"
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
  />
- <div className="absolute bottom-2 left-2 bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-xs text-white font-bold">
+ <div className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-xs text-white font-bold">
  {venueData.name}
  </div>
  </div>
  </div>
 
  {/* Quick Amenities Card (2 cols) — đọc từ cột amenities của bảng pitches */}
- <div className="hidden md:flex md:col-span-2 flex-col justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200 ">
+ <div className="hidden md:flex md:col-span-3 lg:col-span-2 min-w-0 flex-col justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200 ">
  <div>
- <p className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2.5">
+ <p className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2.5 break-words">
  Tiện ích sân bóng
  </p>
  <div className="space-y-2.5 text-xs font-semibold text-slate-700 ">
  {pitchDetails?.amenities?.length ? (
  pitchDetails.amenities.map((a: string) => (
- <div key={a} className="flex items-center space-x-2">
+ <div key={a} className="flex items-start space-x-2 min-w-0">
  <CheckCircle2 className="w-4 h-4 text-[#0b4f6c] shrink-0" />
- <span>{a}</span>
+ <span className="min-w-0 break-words">{a}</span>
  </div>
  ))
  ) : (
@@ -521,9 +521,9 @@ export default function PitchDetail({
  </div>
  </div>
 
- <div className="pt-3 border-t border-slate-200 flex flex-col">
+ <div className="pt-3 border-t border-slate-200 flex flex-col min-w-0">
  <span className="text-xs text-slate-500">Giá ca sân từ:</span>
- <span className="text-xl font-black text-sky-700 font-mono">
+ <span className="text-lg font-black text-sky-700 font-mono leading-tight break-words">
  {pitchDetails?.avgPricePerHour
  ? pitchDetails.avgPricePerHour.toLocaleString("vi-VN")
  : "—"}
