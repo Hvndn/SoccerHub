@@ -24,7 +24,7 @@ import {
 } from "@/lib/organizerService";
 import {
  Trophy,
- ShieldCheck,
+ ShieldCheck, MessageCircle,
  Cpu,
  Activity,
  Users,
@@ -54,6 +54,8 @@ interface TournamentOrganizerPortalProps {
  user?: any;
  /** Mở cuộc trò chuyện riêng với chủ sân. */
  onStartDm?: (partnerEmail: string, partnerName: string) => void;
+  /** Mở phòng chat riêng của giải đấu (tab Cộng đồng > Chat Giải Đấu). */
+  onOpenTournamentChat?: () => void;
 }
 
 export default function TournamentOrganizerPortal({
@@ -61,7 +63,8 @@ export default function TournamentOrganizerPortal({
   onNavigateTab,
   onOpenBracket,
  user,
- onStartDm
+ onStartDm,
+ onOpenTournamentChat
 }: TournamentOrganizerPortalProps) {
  // Sport Filter State
  const [selectedSport, setSelectedSport] = useState<string>("all");
@@ -1618,10 +1621,23 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  </div>
 
- {/* Kênh liên lạc B2B với Chủ Sân */}
- {user?.role === "ORGANIZER" && (
- <BusinessContacts viewerRole="ORGANIZER" onStartDm={onStartDm} />
- )}
+  {/* Kênh liên lạc B2B với Chủ Sân */}
+  {user?.role === "ORGANIZER" && (
+  <>
+  {onOpenTournamentChat && (
+  <button
+  type="button"
+  onClick={onOpenTournamentChat}
+  title="Vào phòng chat riêng của giải đấu để trao đổi với đội bóng và cầu thủ"
+  className="w-full mb-3 px-4 py-3 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+  >
+  <MessageCircle className="w-4 h-4" />
+  <span>Chat Giải Đấu — trao đổi với đội bóng & cầu thủ</span>
+  </button>
+  )}
+  <BusinessContacts viewerRole="ORGANIZER" onStartDm={onStartDm} />
+  </>
+  )}
 
  {/* MODAL SỬA THÔNG TIN GIẢI ĐẤU */}
  {showEditModal && (

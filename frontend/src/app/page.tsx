@@ -74,6 +74,14 @@ export default function Home() {
  setActiveTab("community");
  if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
  };
+  // BTC bấm "Chat Giải Đấu" ở trang Điều Hành giải đấu -> mở thẳng kênh chat giải
+  // trong tab Cộng đồng (thay vì phải tự tìm trong danh sách kênh).
+  const [pendingChannel, setPendingChannel] = useState<string | null>(null);
+  const handleOpenTournamentChat = () => {
+  setPendingChannel("giai-dau");
+  setActiveTab("community");
+  if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
  // Thông báo phân quyền khi người dùng cố truy cập trang ngoài quyền hạn
  const [roleWarning, setRoleWarning] = useState<string | null>(null);
@@ -445,7 +453,7 @@ if (newTab === activeTab) return;
  onOpenAuth={handleOpenAuth}
  />
  )}
-  <CommunityHub user={currentUser} onOpenAuth={handleOpenAuth} onNavigateTab={handleTabChange} initialDmPartner={pendingDmPartner} />
+  <CommunityHub user={currentUser} onOpenAuth={handleOpenAuth} onNavigateTab={handleTabChange} initialDmPartner={pendingDmPartner} initialChannel={pendingChannel} />
  </>
  )}
 
@@ -596,6 +604,7 @@ if (newTab === activeTab) return;
  onOpenAuth={handleOpenAuth}
  onStartDm={handleStartDm}
  onNavigateTab={handleTabChange}
+ onOpenTournamentChat={handleOpenTournamentChat}
  />
  ) : currentUser ? (
  <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">

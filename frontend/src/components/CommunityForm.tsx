@@ -17,9 +17,11 @@ interface CommunityFormProps {
  defaultSubTab?: "matchmaking" | "tournaments" | "organizer";
  onOpenAuth?: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
   onNavigateTab?: (tab: string) => void;
+  /** Mở phòng chat riêng của giải đấu (tab Cộng đồng > Chat Giải Đấu). */
+  onOpenTournamentChat?: () => void;
 }
 
-export default function CommunityForm({ user, onSelectSlot, onStartDm, defaultSubTab = "matchmaking", onOpenAuth, onNavigateTab }: CommunityFormProps) {
+export default function CommunityForm({ user, onSelectSlot, onStartDm, defaultSubTab = "matchmaking", onOpenAuth, onNavigateTab, onOpenTournamentChat }: CommunityFormProps) {
  // "chat" đã bỏ khỏi danh sách: khối chat cộng đồng (search phòng chat, filter
 // chưa đọc/riêng tư/bạn bè, danh sách kênh) nằm ở tab "Cộng Đồng" (CommunityHub).
 // Trang Ban Tổ Chức chỉ lo phần giải đấu + điều hành + phong độ để tránh lặp UI.
@@ -124,6 +126,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
   user={user}
   onNavigateTab={onNavigateTab}
   onStartDm={onStartDm}
+  onOpenTournamentChat={onOpenTournamentChat}
   onOpenBracket={() => setSubTab("tournaments")}
   />
  )}

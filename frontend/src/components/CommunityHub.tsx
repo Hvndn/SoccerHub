@@ -74,9 +74,14 @@ interface CommunityHubProps {
   onNavigateTab?: (tab: string) => void;
   /** Mở thẳng cuộc trò chuyện riêng với một người (dùng bởi kênh liên lạc B2B). */
   initialDmPartner?: { partnerEmail: string; partnerName: string } | null;
+  /** Mở thẳng một kênh chat cụ thể (vd: "giai-dau" khi BTC bấm nút "Chat Giải Đấu"). */
+  initialChannel?: string | null;
 }
 
 const SEEN_PREFIX = "shub_chat_seen_";
+
+/** Slug kênh chat riêng cho giải đấu (BTC ↔ đội bóng ↔ cầu thủ). */
+const TOURNAMENT_CHANNEL = "giai-dau";
 
 function getSeen(key: string): number {
   if (typeof window === "undefined") return 0;
@@ -115,7 +120,7 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "friends", label: "Bạn bè" },
 ];
 
-export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialDmPartner }: CommunityHubProps) {
+export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialDmPartner, initialChannel }: CommunityHubProps) {
   const myEmail = (user?.email || "").toLowerCase();
 
   const [mode, setMode] = useState<"chat" | "clan">("chat");
@@ -239,6 +244,55 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
         pinned: null,
       });
   };
+
+  /**
+   * Mở kênh "Chat Giải Đấu" (trao đổi với BTC / đội bóng / cầu thủ trong giải).
+   * Trước đây card này mở nhầm kênh "general" (Phòng Chat Chung) — sai ý nghĩa.
+   */
+  const openTournamentChat = () => {
+    const t = channels.find((c) => c.slug === TOURNAMENT_CHANNEL);
+    if (t) {
+      openChannel(t);
+      return;
+    }
+    openChannel({
+      slug: TOURNAMENT_CHANNEL,
+      name: "Chat Giải Đấu",
+      desc: "Trao đổi trực tiếp với Ban Tổ Chức, đội bóng và cầu thủ trong giải đấu",
+      lastMessage: "",
+      lastSender: "",
+      lastSenderEmail: "",
+      lastTime: null,
+      memberCount: 0,
+      pinned: null,
+    });
+  };
+
+  // Mở sẵn kênh được yêu cầu (vd: BTC bấm "Chat Giải Đấu" ở trang Điều Hành giải đấu).
+  const openedInitialChannel = useRef<string | null>(null);
+  useEffect(() => {
+    if (!initialChannel) return;
+    if (openedInitialChannel.current === initialChannel) return;
+    if (!user) return;
+    if (channels.length === 0) return; // chờ danh sách kênh tải xong
+    openedInitialChannel.current = initialChannel;
+    const found = channels.find((c) => c.slug === initialChannel);
+    if (found) {
+      openChannel(found);
+    } else {
+      openChannel({
+        slug: initialChannel,
+        name: "Chat Giải Đấu",
+        desc: "Trao đổi trực tiếp với Ban Tổ Chức, đội bóng và cầu thủ trong giải đấu",
+        lastMessage: "",
+        lastSender: "",
+        lastSenderEmail: "",
+        lastTime: null,
+        memberCount: 0,
+        pinned: null,
+      });
+    }
+  }, [initialChannel, channels, user]);
 
   const openDm = (partnerEmail?: string, partnerName?: string) => {
     if (!user) {
@@ -534,7 +588,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
         {/* CHAT GIẢI ĐẤU (phải) */}
         <button
           type="button"
-          onClick={openGeneral}
+          onClick={openTournamentChat}
           className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
           style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}
         >

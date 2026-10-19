@@ -53,7 +53,7 @@ public class ChatController {
     /** Slug kênh hợp lệ, mặc định "general". Chống rác / SQL injection. */
     private static final Set<String> VALID_CHANNELS = Set.of(
             "general", "vang-lai", "bu-thieu-nguoi", "doi-30p", "tinh-trang-san",
-            "khieu-nai", "ho-dap-luat", "do-dung-cu", "tuyen-cau-thu"
+            "khieu-nai", "ho-dap-luat", "do-dung-cu", "tuyen-cau-thu", "giai-dau"
     );
 
     private static String normalizeChannel(String raw) {
@@ -72,7 +72,8 @@ public class ChatController {
             Map.of("slug", "khieu-nai", "name", "Khiêu Nại & Góp Ý", "desc", "Phản ánh chất lượng sân, nhân viên, hệ thống"),
             Map.of("slug", "ho-dap-luat", "name", "Hỏi Đáp Luật", "desc", "Luật phạt đều, VAR, fair-play, thủ tục đăng ký"),
             Map.of("slug", "do-dung-cu", "name", "Đồ Dụng Cụ", "desc", "Mua bán hoặc trá phóng bóng, áo, giày"),
-            Map.of("slug", "tuyen-cau-thu", "name", "Tuyển Cầu Thủ", "desc", "Đội lớn tuyển người, đăng thông tin")
+            Map.of("slug", "tuyen-cau-thu", "name", "Tuyển Cầu Thủ", "desc", "Đội lớn tuyển người, đăng thông tin"),
+            Map.of("slug", "giai-dau", "name", "Chat Giải Đấu", "desc", "Trao đổi trực tiếp với Ban Tổ Chức, đội bóng và cầu thủ trong giải đấu")
     );
 
     @GetMapping("/messages")
