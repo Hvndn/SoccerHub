@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import LandingHero from "@/components/LandingHero";
 import LandingFeatures from "@/components/LandingFeatures";
@@ -17,6 +18,7 @@ import ActivitySchedule from "@/components/ActivitySchedule";
 import MemberCardPortal from "@/components/MemberCardPortal";
 import TournamentOrganizerPortal from "@/components/TournamentOrganizerPortal";
 import PlayerProfileConsole from "@/components/PlayerProfileConsole";
+import OwnerProfileConsole from "@/components/OwnerProfileConsole";
 import TeamClubManagement from "@/components/TeamClubManagement";
 import StadiumOwnerOnboarding from "@/components/StadiumOwnerOnboarding";
 import MultiSportArena from "@/components/MultiSportArena";
@@ -29,6 +31,7 @@ import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
+ const router = useRouter();
  const [activeTab, setActiveTab] = useState("booking");
  const { user: authUser, logout: authLogout } = useAuth();
  const [localUser, setLocalUser] = useState<any | null>(null);
@@ -92,7 +95,9 @@ export default function Home() {
   const OWNER_MANAGE_TABS = ["admin", "owner-onboarding", "multi-sport"];
   // Tab mà OWNER được phép truy cập: quản lý cụm sân + cộng đồng để
   // trao đổi với khách (hỏi ca trống, xác nhận đặt sân, nhóm chat riêng).
-  const OWNER_TABS = [...OWNER_MANAGE_TABS, "community", "matchmaking"];
+  // "profile" = Hồ sơ cá nhân của chính chủ sân (họ tên, SĐT, khu vực, avatar);
+  // trước đây thiếu tab này nên chủ sân không có chỗ sửa thông tin cá nhân.
+  const OWNER_TABS = [...OWNER_MANAGE_TABS, "community", "matchmaking", "profile"];
  // Tab chỉ dành cho ORGANIZER hoặc người có quyền điều hành giải
  const ORGANIZER_TABS = ["organizer"];
  // Tab yêu cầu đăng nhập (bất kỳ vai trò nào cũng phải có tài khoản)
@@ -115,7 +120,10 @@ if (!currentUser) {
 
   // PLAYER mới đăng ký: bắt hoàn tất trang "Khởi tạo hồ sơ cầu thủ" trước khi dùng app
   if (currentUser.role === "PLAYER" && isPlayerSetupPending(currentUser.email || "")) {
-  window.location.assign("/player-setup");
+  // Điều hướng client (không reload cả trang) để giữ nguyên phiên đã đăng nhập,
+  // tránh phải gọi lại /auth/me và chờ mạng — trước đây dùng window.location.assign
+  // nên phải nạp lại toàn bộ trang rồi mới hiện được form.
+  router.replace("/player-setup");
   return;
   }
 
@@ -158,7 +166,7 @@ const handleTabChange = (newTab: string) => {
   currentUser?.role === "PLAYER" &&
   isPlayerSetupPending(currentUser.email || "")
   ) {
-  window.location.assign("/player-setup");
+  router.replace("/player-setup");
   return;
   }
 
@@ -543,12 +551,21 @@ if (newTab === activeTab) return;
 
  {activeTab === "profile" && (
  currentUser ? (
+ currentUser.role === "OWNER" ? (
+ // Chủ sân dùng trang hồ sơ riêng, không hiển thị phong độ/thể chất cầu thủ
+ <OwnerProfileConsole
+ user={currentUser}
+ onOpenAuth={handleOpenAuth}
+ onNavigateTab={handleTabChange}
+ />
+ ) : (
  <PlayerProfileConsole 
  user={currentUser}
  onOpenAuth={handleOpenAuth}
  onBackToHome={() => handleTabChange("booking")} 
  onNavigateTab={handleTabChange}
  />
+ )
  ) : (
  <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
  <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
