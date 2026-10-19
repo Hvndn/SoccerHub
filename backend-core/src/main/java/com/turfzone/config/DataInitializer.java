@@ -30,6 +30,9 @@ import java.util.Map;
 @Slf4j
 public class DataInitializer implements CommandLineRunner {
 
+    /** Số cụm sân seed gán cho tài khoản Chủ Sân demo (phần còn lại là sân công cộng). */
+    private static final long DEMO_OWNER_PITCH_COUNT = 3L;
+
     private final UserRepository userRepository;
     private final PitchRepository pitchRepository;
     private final TournamentRepository tournamentRepository;
@@ -62,6 +65,12 @@ public class DataInitializer implements CommandLineRunner {
             seedPitches();
         } catch (Exception e) {
             log.warn("[DataInitializer] Bỏ qua seed cụm sân do lỗi: {}", e.getMessage());
+        }
+
+        try {
+            assignDemoPitchesToOwner();
+        } catch (Exception e) {
+            log.warn("[DataInitializer] Bỏ qua gán cụm sân cho chủ sân demo do lỗi: {}", e.getMessage());
         }
 
         try {
@@ -405,6 +414,45 @@ private void seedUsers() {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * Gán một phần cụm sân cho tài khoản Chủ Sân demo.
+     *
+     * <p>Bắt buộc: {@code PitchService.assertCanManage} chỉ cho phép sửa cụm sân
+     * khi {@code ownerId} khớp với chủ sân đang đăng nhập. Các cụm sân seed mặc
+     * định có {@code owner_id = NULL}, nên nếu không gán thì tài khoản OWNER demo
+     * sẽ không sửa được cụm sân nào — tính năng "Sửa hồ sơ cụm sân" trở nên vô
+     * dụng khi trình diễn.</p>
+     *
+     * <p>Chỉ gán {@value #DEMO_OWNER_PITCH_COUNT} cụm sân đầu, phần còn lại giữ
+     * nguyên làm sân công cộng cho Chợ Kèo và Cộng đồng. Method chạy độc lập với
+     * {@code seedPitches()} nên áp dụng được cả với database đã có sẵn dữ liệu.</p>
+     */
+    private void assignDemoPitchesToOwner() {
+        User owner = userRepository.findByEmail("owner@Turfzone.vn")
+                .filter(u -> u.getRole() == UserRole.OWNER)
+                .orElse(null);
+        if (owner == null) {
+            log.warn("[DataInitializer] Chưa có tài khoản owner@Turfzone.vn nên bỏ qua gán cụm sân.");
+            return;
+        }
+
+        List<Pitch> unowned = pitchRepository.findAll().stream()
+                .filter(p -> p.getOwnerId() == null)
+                .limit(DEMO_OWNER_PITCH_COUNT)
+                .toList();
+
+        if (unowned.isEmpty()) {
+            return;
+        }
+        for (Pitch p : unowned) {
+            p.setOwnerId(owner.getId());
+            p.setOwnerName(owner.getFullName() != null ? owner.getFullName() : owner.getEmail());
+            pitchRepository.save(p);
+        }
+        log.info("Assigned {} seed pitches to the demo OWNER account ({}).",
+                unowned.size(), owner.getEmail());
     }
 
     private void seedPitches() {

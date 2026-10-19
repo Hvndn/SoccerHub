@@ -183,6 +183,19 @@ const [infoDescription, setInfoDescription] = useState("");
 const [infoPitchTypes, setInfoPitchTypes] = useState<string[]>([]);
 const [infoAmenities, setInfoAmenities] = useState<string[]>([]);
 
+// Danh sách gợi ý GỘP thêm các giá trị đang lưu trong DB. Nếu chỉ dùng danh sách
+// cố định thì các tiện ích cũ (ví dụ "Giữ xe", "Áo bib", "Đèn LED") không khớp
+// chip nào, bấm "Lưu Hồ Sơ" sẽ ghi đè mất chúng.
+const PITCH_TYPE_OPTIONS = [
+"Sân 5 Người", "Sân 7 Người", "Sân 11 Người", "Futsal", "Cỏ tự nhiên",
+];
+const AMENITY_OPTIONS = [
+"Đèn chiếu sáng", "CCTV", "Phòng thay đồ", "Căng tin",
+"Cho thuê giày", "Bãi xe", "WiFi", "Nước uống",
+];
+const pitchTypeOptions = Array.from(new Set([...PITCH_TYPE_OPTIONS, ...infoPitchTypes]));
+const amenityOptions = Array.from(new Set([...AMENITY_OPTIONS, ...infoAmenities]));
+
 // Mở modal sửa hồ sơ và nạp dữ liệu cụm sân hiện tại vào form
 const openEditInfoModal = () => {
 const p: any = activePitch;
@@ -1848,7 +1861,7 @@ setIsSavingInfo(false);
   <div className="space-y-2">
   <label className="font-extrabold text-slate-800 text-sm">Bộ môn thể thao</label>
   <div className="flex flex-wrap gap-2">
-  {["Sân 5 Người", "Sân 7 Người", "Sân 11 Người", "Futsal", "Cỏ tự nhiên"].map((t) => (
+  {pitchTypeOptions.map((t) => (
   <button
   key={t}
   type="button"
@@ -1869,7 +1882,7 @@ setIsSavingInfo(false);
   <div className="space-y-2">
   <label className="font-extrabold text-slate-800 text-sm">Tiện ích đi kèm</label>
   <div className="flex flex-wrap gap-2">
-  {["Đèn chiếu sáng", "CCTV", "Phòng thay đồ", "Căng tin", "Cho thuê giày", "Bãi xe", "WiFi", "Nước uống"].map((a) => (
+  {amenityOptions.map((a) => (
   <button
   key={a}
   type="button"
