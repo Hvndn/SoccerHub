@@ -2,6 +2,7 @@ package com.turfzone.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,13 +56,22 @@ public class Pitch {
     @Builder.Default
     private Integer slotDurationMinutes = 120; // Ca 2 tiếng (120 phút - gồm thời gian đá và giao/trả ca)
 
+    /**
+     * Bộ môn + tiện ích của cụm sân.
+     *
+     * <p>{@code @BatchSize} chống N+1: không có nó, mỗi lần {@code findAll()} sẽ bắn 2 query
+     * riêng cho từng sân (9 sân = 18 query). Có BatchSize, Hibernate gom hết vào 1 query
+     * {@code IN (pitch_ids)} cho mỗi bảng con — trang đặt sân / trang chủ sân tải nhanh hơn.</p>
+     */
     @ElementCollection(fetch = FetchType.EAGER)
+    @BatchSize(size = 100)
     @CollectionTable(name = "pitch_types", joinColumns = @JoinColumn(name = "pitch_id"))
     @Column(name = "pitch_type")
     @Builder.Default
     private List<String> pitchTypes = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @BatchSize(size = 100)
     @CollectionTable(name = "pitch_amenities", joinColumns = @JoinColumn(name = "pitch_id"))
     @Column(name = "amenity")
     @Builder.Default

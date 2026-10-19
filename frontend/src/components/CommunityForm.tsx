@@ -71,7 +71,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  >
  <Trophy className={`w-4 h-4 ${subTab === "tournaments" ? "text-amber-200" : "text-amber-700"}`} />
  <span className="sm:hidden">Giải Đấu</span>
- <span className="hidden sm:inline">2. Danh Sách Giải Đấu &amp; Nhánh Bracket</span>
+ <span className="hidden sm:inline">Danh Sách Giải Đấu &amp; Nhánh Bracket</span>
  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-sky-100 text-sky-900 font-black border border-sky-200">
  {tournamentCount === null ? "…" : `${tournamentCount} GIẢI`}
  </span>
@@ -88,7 +88,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  >
  <Cpu className={`w-4 h-4 ${subTab === "organizer" ? "text-sky-100" : "text-[#0369a1]"}`} />
  <span className="sm:hidden">Điều Hành</span>
- <span className="hidden sm:inline">3. Điều Hành Giải Đấu &amp; Tòa VAR AI</span>
+ <span className="hidden sm:inline">Điều Hành Giải Đấu &amp; Tòa VAR AI</span>
  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-sky-100 text-sky-800 font-black border border-sky-200">BTC PRO</span>
  </button>
 
@@ -103,7 +103,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  >
  <Flame className={`w-4 h-4 ${subTab === "formboard" ? "text-amber-200" : "text-amber-700"}`} />
  <span className="sm:hidden">Phong Độ</span>
- <span className="hidden sm:inline">4. BXH Phong Độ 5 Trận</span>
+ <span className="hidden sm:inline">BXH Phong Độ 5 Trận</span>
  </button>
  </div>
 

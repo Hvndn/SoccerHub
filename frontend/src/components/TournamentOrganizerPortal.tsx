@@ -11,6 +11,8 @@ import {
   updateTournament,
   fetchTournamentFinance,
   fillSimulatedTeams,
+  fetchTournaments,
+  subscribeTournaments,
   type TournamentFinance,
 } from "@/lib/tournamentService";
 import FormDots from "./FormDots";
@@ -79,14 +81,13 @@ export default function TournamentOrganizerPortal({
  const [loadingDb, setLoadingDb] = useState(false);
 
  // Fetch real tournaments from backend
+ // Dùng CHUNG cache của tournamentService (không tự gọi API riêng) để tránh tải
+ // trùng toàn bộ danh sách giải mỗi lần mở tab / sau mỗi thao tác.
  const fetchDbTournaments = async () => {
  try {
  setLoadingDb(true);
- const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments`);
- if (res.ok) {
- const data = await res.json();
+ const data = await fetchTournaments();
  setDbTournaments(data);
- }
  } catch (e) {
  console.error("Lỗi tải giải đấu:", e);
  } finally {
@@ -96,6 +97,9 @@ export default function TournamentOrganizerPortal({
 
  React.useEffect(() => {
  fetchDbTournaments();
+ // Cập nhật ngay khi cache dùng chung thay đổi (sau khi tạo giải / thêm đội / bốc thăm)
+ const unsubscribe = subscribeTournaments((list) => setDbTournaments(list));
+ return unsubscribe;
  }, []);
 
  // Danh sách giải lấy từ CSDL — không dùng dữ liệu giả.

@@ -4,6 +4,7 @@ import com.turfzone.model.MatchResult;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +22,15 @@ public interface MatchResultRepository extends JpaRepository<MatchResult, Long> 
      * của đội sẽ bị tính thiếu.
      */
     List<MatchResult> findByTeamAIgnoreCaseOrTeamBIgnoreCaseOrderByPlayedAtDesc(String teamA, String teamB);
+
+    /**
+     * PHONG ĐỘ NHIỀU ĐỘI TRONG 1 LẦN TRUY VẤN — chống N+1.
+     * Trước đây mỗi đội gọi 1 query ({@code formOf}), nên GET /tournaments với 14 giải ×
+     * 16 đội = ~224 query DB, mỗi lần tạo giải/đăng ký đội đều phải chờ hàng trăm ms.
+     * Bản này lấy tất cả trận của mọi đội trong danh sách bằng 1 query IN, rồi nhóm in-memory.
+     */
+    List<MatchResult> findByTeamAInIgnoreCaseOrTeamBInIgnoreCaseOrderByPlayedAtDesc(
+            Collection<String> teamA, Collection<String> teamB);
 
     /** Bản ghi mới nhất của một trận — dùng để xoá khi BTC huỷ kết quả. */
     Optional<MatchResult> findFirstByTournamentIdAndMatchIdOrderByPlayedAtDesc(Long tournamentId, String matchId);

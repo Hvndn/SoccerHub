@@ -125,6 +125,34 @@ export const subscribeTournaments = (fn: (t: Tournament[]) => void): (() => void
   return () => listeners.delete(fn);
 };
 
+/**
+ * Làm mới MỘT giải trong cache (GET /tournaments/{id}) thay vì GET toàn bộ danh sách.
+ *
+ * <p>Sau mỗi thao tác tạo giải / thêm đội / bốc thăm, code cũ gọi
+ * {@code fetchTournaments(true)} — tức tải lại TOÀN BỘ giải đấu (kèm danh sách đội và
+ * phong độ của từng đội). Danh sách càng dài thì càng chậm, và người dùng phải đứng
+ * chờ. Hàm này chỉ tải đúng giải vừa thay đổi rồi cập nhật tại chỗ trong cache.</p>
+ */
+export async function refreshTournamentInCache(tournamentId: number): Promise<Tournament | null> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const one = (await res.json()) as Tournament;
+    if (!one || !one.id) return null;
+    if (cache) {
+      const idx = cache.findIndex((t) => t.id === one.id);
+      if (idx >= 0) cache[idx] = one;
+      else cache = [one, ...cache];
+      notify(cache);
+    }
+    return one;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchTournaments(force = false): Promise<Tournament[]> {
   if (cache && !force) return cache;
   if (inflight && !force) return inflight;
@@ -158,7 +186,8 @@ export async function createTournament(
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  await fetchTournaments(true); // refresh cache so lists/badges re-sync
+  // Chỉ tải lại GIẢI VỪA TẠO thay vì toàn bộ danh sách (nhanh hơn nhiều khi đã có nhiều giải).
+  await refreshTournamentInCache(body?.id ?? 0);
   return body;
 }
 
@@ -217,7 +246,7 @@ export async function registerTeam(
   if (!res.ok) {
     throw new Error(body?.error || 'Đăng ký không thành công, vui lòng thử lại.');
   }
-  await fetchTournaments(true); // refresh cache with the new registration count
+  await refreshTournamentInCache(tournamentId); // chỉ làm mới giải vừa đăng ký đội
   return body;
 }
 
@@ -277,7 +306,7 @@ export async function fillSimulatedTeams(tournamentId: number, count?: number): 
       `/api/v1/tournaments/${tournamentId}/fill-teams`,
       { method: 'POST', body: JSON.stringify(count && count > 0 ? { count } : {}) }
     );
-    await fetchTournaments(true);
+    await refreshTournamentInCache(tournamentId);
     return body;
   } catch (err) {
     throw new Error(friendlyAdminError(err, 'Giả lập đội thất bại.'));
@@ -318,7 +347,7 @@ export async function clearSimulatedTeams(tournamentId: number): Promise<{ messa
       `/api/v1/tournaments/${tournamentId}/simulated-teams`,
       { method: 'DELETE' }
     );
-    await fetchTournaments(true);
+    await refreshTournamentInCache(tournamentId);
     return body;
   } catch (err) {
     throw new Error(friendlyAdminError(err, 'Xóa đội Test thất bại.'));

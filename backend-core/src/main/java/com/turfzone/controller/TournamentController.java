@@ -42,7 +42,7 @@ public class TournamentController {
     @GetMapping
     public ResponseEntity<List<Tournament>> getTournaments() {
         List<Tournament> tournaments = tournamentRepository.findAll();
-        tournaments.forEach(this::attachForm);
+        attachForms(tournaments); // 1 lần truy vấn phong độ cho toàn bộ đội, không N+1
         return ResponseEntity.ok(tournaments);
     }
 
@@ -234,10 +234,44 @@ public class TournamentController {
         enrichEntries(t.getTeams());
     }
 
-    /** Tính phong độ live cho danh sách đội (dùng khi bốc thăm + response). */
+    /**
+     * Gắn phong độ cho DANH SÁCH nhiều giải cùng lúc — 1 lần truy vấn cho tất cả đội.
+     *
+     * <p>Trước đây {@code getTournaments()} gọi {@code attachForm()} cho từng giải, mà mỗi
+     * đội lại 1 query → ~224 query DB cho 14 giải × 16 đội. Bản này gom tên đội của tất cả
+     * giải rồi query 1 lần, nên thao tác tạo giải / thêm đội không còn phải chờ lâu.</p>
+     */
+    private void attachForms(List<Tournament> tournaments) {
+        List<String> allNames = new ArrayList<>();
+        for (Tournament t : tournaments) {
+            if (t.getTeams() == null) continue;
+            for (TournamentTeamEntry e : t.getTeams()) {
+                if (e.getTeamName() != null) allNames.add(e.getTeamName());
+            }
+        }
+        Map<String, TeamFormService.FormRecord> forms = teamFormService.formsOf(allNames);
+        for (Tournament t : tournaments) {
+            if (t.getTeams() == null) continue;
+            applyForms(t.getTeams(), forms);
+        }
+    }
+
+    /** Tính phong độ live cho danh sách đội (dùng khi bốc thăm + response) — 1 lần truy vấn. */
     private void enrichEntries(List<TournamentTeamEntry> entries) {
+        if (entries == null || entries.isEmpty()) return;
+        List<String> names = new ArrayList<>();
         for (TournamentTeamEntry e : entries) {
-            TeamFormService.FormRecord f = teamFormService.formOf(e.getTeamName());
+            if (e.getTeamName() != null) names.add(e.getTeamName());
+        }
+        applyForms(entries, teamFormService.formsOf(names));
+    }
+
+    /** Gán phong độ đã tính sẵn vào từng đội (không query thêm). */
+    private void applyForms(List<TournamentTeamEntry> entries,
+                            Map<String, TeamFormService.FormRecord> forms) {
+        for (TournamentTeamEntry e : entries) {
+            TeamFormService.FormRecord f = forms.get(e.getTeamName() == null ? "" : e.getTeamName().trim());
+            if (f == null) f = TeamFormService.FormRecord.empty();
             e.setForm(f.form());
             e.setRecord(f.record());
             e.setWinRate(f.winRate());

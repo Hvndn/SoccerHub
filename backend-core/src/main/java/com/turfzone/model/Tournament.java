@@ -2,6 +2,7 @@ package com.turfzone.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +63,15 @@ public class Tournament {
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    /**
+     * Danh sách đội đã đăng ký.
+     *
+     * <p>{@code @BatchSize} rất quan trọng: nếu không có, mỗi lần {@code findAll()} sẽ bắn
+     * 1 query riêng cho từng giải (14 giải = 14 query, mất ~80ms). Có BatchSize, Hibernate gom
+     * hết vào 1 query {@code IN (tournament_ids)} — nhanh hơn nhiều khi BTC tạo giải / thêm đội.</p>
+     */
     @ElementCollection(fetch = FetchType.EAGER)
+    @BatchSize(size = 100)
     @CollectionTable(name = "tournament_registered_teams", joinColumns = @JoinColumn(name = "tournament_id"))
     @Builder.Default
     private List<TournamentTeamEntry> teams = new ArrayList<>();
