@@ -195,6 +195,33 @@ public class PitchBookingController {
     }
 
     /**
+     * API Cập Nhật Hồ Sơ Cụm Sân (tên, địa chỉ, SĐT, bộ môn, tiện ích, ảnh, mô tả).
+     *
+     * <p>Trước đây chủ sân tạo xong không sửa được gì: chỉ có API đổi giá
+     * (PUT /{id}/price) và giờ mở cửa (PUT /{id}/operating-hours).</p>
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+    public ResponseEntity<?> updatePitchInfo(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal com.turfzone.model.User me
+    ) {
+        try {
+            Pitch updated = pitchService.updatePitchInfo(id, req, me);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Đã cập nhật hồ sơ cụm sân.",
+                    "pitch", updated
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Lỗi cập nhật hồ sơ cụm sân: " + e.getMessage()));
+        }
+    }
+
+    /**
      * API cập nhật giá thuê sân (giá thường & giá giờ vàng) của một cụm sân.
      */
     @PutMapping("/{id}/price")

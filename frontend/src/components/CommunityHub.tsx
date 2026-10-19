@@ -72,6 +72,8 @@ interface CommunityHubProps {
   user?: any;
   onOpenAuth?: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
   onNavigateTab?: (tab: string) => void;
+  /** Mở thẳng cuộc trò chuyện riêng với một người (dùng bởi kênh liên lạc B2B). */
+  initialDmPartner?: { partnerEmail: string; partnerName: string } | null;
 }
 
 const SEEN_PREFIX = "shub_chat_seen_";
@@ -113,7 +115,7 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "friends", label: "Bạn bè" },
 ];
 
-export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: CommunityHubProps) {
+export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialDmPartner }: CommunityHubProps) {
   const myEmail = (user?.email || "").toLowerCase();
 
   const [mode, setMode] = useState<"chat" | "clan">("chat");
@@ -125,6 +127,18 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab }: Commun
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [channels, setChannels] = useState<ChannelInfo[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Mở thẳng DM khi bên ngoài yêu cầu (nút "Nhắn tin" ở kênh liên lạc B2B của
+  // chủ sân / ban tổ chức). Xoá yêu cầu sau khi dùng để không mở lại khi back về.
+  useEffect(() => {
+    if (!initialDmPartner?.partnerEmail) return;
+    setMode("chat");
+    setView({
+      kind: "dm",
+      partnerEmail: initialDmPartner.partnerEmail,
+      partnerName: initialDmPartner.partnerName || initialDmPartner.partnerEmail,
+    });
+  }, [initialDmPartner]);
 
   /**
    * Hiệu ứng chuyển trạng thái: bật vòng xoay tối thiểu MIN_LOADING_MS,

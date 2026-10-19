@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api";
 import { simulateBookings } from "@/lib/adminService";
+import BusinessContacts from "@/components/BusinessContacts";
 import OwnerReportExport from "@/components/OwnerReportExport";
 import OwnerCharts from "@/components/OwnerCharts";
 import {
@@ -48,7 +49,8 @@ import {
  PieChart,
  Tag,
  Activity,
- Volume2
+ Volume2,
+ Pencil
 } from "lucide-react";
 import {
  playNotificationChime,
@@ -60,9 +62,11 @@ import {
 interface AdminDashboardProps {
  onBackToHome?: () => void;
  onNavigateTab?: (tab: string) => void;
+ /** Mở cuộc trò chuyện riêng với đối tác (dùng cho kênh liên lạc với Ban Tổ Chức). */
+ onStartDm?: (partnerEmail: string, partnerName: string) => void;
 }
 
-export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDashboardProps = {}) {
+export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm }: AdminDashboardProps = {}) {
  const [mounted, setMounted] = useState(false);
  const [realPitches, setRealPitches] = useState<any[]>([]);
  const [activePitch, setActivePitch] = useState<any | null>(null);
@@ -166,6 +170,81 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
  const [newPitchType, setNewPitchType] = useState("Sân 7 Người");
  const [newPitchBasePrice, setNewPitchBasePrice] = useState("450000");
  const [newPitchPeakPrice, setNewPitchPeakPrice] = useState("600000");
+
+// Sửa hồ sơ cụm sân (trước đây chỉ sửa được giá + giờ mở cửa)
+const [showEditInfoModal, setShowEditInfoModal] = useState(false);
+const [isSavingInfo, setIsSavingInfo] = useState(false);
+const [infoName, setInfoName] = useState("");
+const [infoAddress, setInfoAddress] = useState("");
+const [infoArea, setInfoArea] = useState("");
+const [infoPhone, setInfoPhone] = useState("");
+const [infoImageUrl, setInfoImageUrl] = useState("");
+const [infoDescription, setInfoDescription] = useState("");
+const [infoPitchTypes, setInfoPitchTypes] = useState<string[]>([]);
+const [infoAmenities, setInfoAmenities] = useState<string[]>([]);
+
+// Mở modal sửa hồ sơ và nạp dữ liệu cụm sân hiện tại vào form
+const openEditInfoModal = () => {
+const p: any = activePitch;
+setInfoName(p?.name ?? "");
+setInfoAddress(p?.address ?? "");
+setInfoArea(p?.area ?? "");
+setInfoPhone(p?.phone ?? "");
+setInfoImageUrl(p?.imageUrl ?? "");
+setInfoDescription(p?.description ?? "");
+setInfoPitchTypes(Array.isArray(p?.pitchTypes) ? [...p.pitchTypes] : []);
+setInfoAmenities(Array.isArray(p?.amenities) ? [...p.amenities] : []);
+setShowEditInfoModal(true);
+};
+
+/** Bật/tắt một mục trong danh sách bộ môn hoặc tiện ích. */
+const toggleInfoList = (
+value: string,
+current: string[],
+setter: (next: string[]) => void
+) => {
+setter(
+current.includes(value)
+? current.filter((v) => v !== value)
+: [...current, value]
+);
+};
+
+const handleSavePitchInfo = async (e: React.FormEvent) => {
+e.preventDefault();
+const currentId = activePitch?.id;
+if (!currentId) {
+showToast("Chưa chọn cụm sân cần cập nhật.");
+return;
+}
+if (!infoName.trim() || !infoAddress.trim()) {
+showToast("Tên và địa chỉ cụm sân là bắt buộc.");
+return;
+}
+setIsSavingInfo(true);
+try {
+await apiRequest(`/api/v1/pitches/${currentId}`, {
+method: "PUT",
+body: JSON.stringify({
+name: infoName.trim(),
+address: infoAddress.trim(),
+area: infoArea.trim(),
+phone: infoPhone.trim(),
+imageUrl: infoImageUrl.trim(),
+description: infoDescription.trim(),
+pitchTypes: infoPitchTypes,
+amenities: infoAmenities,
+}),
+});
+await fetchRealData();
+setShowEditInfoModal(false);
+showToast("✅ Đã cập nhật hồ sơ cụm sân.");
+} catch (err: any) {
+showToast(`❌ ${err?.message || "Không lưu được hồ sơ cụm sân"}`);
+} finally {
+setIsSavingInfo(false);
+}
+};
 
  // Danh sách 14 ngày tới để chủ sân linh hoạt chuyển ngày xem lịch đặt
  const upcomingDays = useMemo(() => {
@@ -916,6 +995,9 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
 {/* === XUẤT BÁO CÁO THỐNG KÊ (CSV cho Excel) === */}
   <OwnerReportExport />
 
+ {/* Kênh liên lạc với Ban Tổ Chức (B2B) */}
+ <BusinessContacts viewerRole="OWNER" onStartDm={onStartDm} />
+
   {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
  {/* TOP KPI OVERVIEW CARDS (REAL-TIME LIVE DATA FROM MYSQL) */}
 
@@ -1437,6 +1519,26 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
  </button>
  </div>
 
+ {/* Nút sửa hồ sơ + giờ mở cửa (trước đây thiếu API sửa hồ sơ cụm sân) */}
+ <div className="flex flex-wrap items-center gap-2">
+ <button
+ type="button"
+ onClick={openEditInfoModal}
+ className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-extrabold text-sm shadow-sm transition-all flex items-center space-x-2 active:scale-95"
+ >
+ <Pencil className="w-4 h-4 text-[#0b4f6c]" />
+ <span>Sửa Hồ Sơ Cụm Sân</span>
+ </button>
+ <button
+ type="button"
+ onClick={() => setShowHoursModal(true)}
+ className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-extrabold text-sm shadow-sm transition-all flex items-center space-x-2 active:scale-95"
+ >
+ <Clock className="w-4 h-4 text-[#0b4f6c]" />
+ <span>Giờ Mở Cửa</span>
+ </button>
+ </div>
+
  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
  {pitchMatrix.map((pitch) => (
  <div key={pitch.pitchId} className="p-3 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 sm:space-y-4">
@@ -1654,7 +1756,170 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab }: AdminDas
  </div>
  )}
 
- {/* MODAL 1: ADD NEW PITCH (Thêm Sân Con Mới) */}
+ {/* MODAL 0: SỬA HỒ SƠ CỤM SÂN (tên, địa chỉ, SĐT, bộ môn, tiện ích, ảnh, mô tả) */}
+  {mounted && showEditInfoModal && typeof document !== "undefined" && createPortal(
+  <div
+  className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
+  onClick={(e) => {
+  if (e.target === e.currentTarget) setShowEditInfoModal(false);
+  }}
+  >
+  <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl my-8 border border-slate-200 overflow-hidden">
+  <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
+  <div className="flex items-center gap-2.5">
+  <Pencil className="w-5 h-5 text-[#0369a1]" />
+  <h3 className="font-black text-lg text-slate-900">Sửa Hồ Sơ Cụm Sân</h3>
+  </div>
+  <button
+  type="button"
+  onClick={() => setShowEditInfoModal(false)}
+  className="text-slate-500 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+  aria-label="Đóng"
+  >
+  <X className="w-5 h-5" />
+  </button>
+  </div>
+
+  <p className="px-5 sm:px-6 pt-4 text-xs text-slate-500 leading-relaxed">
+  Thông tin này hiển thị công khai cho cầu thủ khi tìm sân. Giá thuê và giờ mở cửa được sửa ở tab riêng.
+  </p>
+
+  <form onSubmit={handleSavePitchInfo} className="px-5 sm:px-6 py-4 space-y-3.5">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <div className="space-y-1.5 sm:col-span-2">
+  <label className="font-extrabold text-slate-800 text-sm">Tên cụm sân <span className="text-rose-500">*</span></label>
+  <input
+  type="text"
+  value={infoName}
+  onChange={(e) => setInfoName(e.target.value)}
+  required
+  placeholder="VD: Turfzone Cầu Giấy"
+  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+  />
+  </div>
+
+  <div className="space-y-1.5 sm:col-span-2">
+  <label className="font-extrabold text-slate-800 text-sm">Địa chỉ <span className="text-rose-500">*</span></label>
+  <input
+  type="text"
+  value={infoAddress}
+  onChange={(e) => setInfoAddress(e.target.value)}
+  required
+  placeholder="VD: 123 Trần Đăng Ninh, Hà Nội"
+  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+  />
+  </div>
+
+  <div className="space-y-1.5">
+  <label className="font-extrabold text-slate-800 text-sm">Khu vực</label>
+  <input
+  type="text"
+  value={infoArea}
+  onChange={(e) => setInfoArea(e.target.value)}
+  placeholder="VD: Cầu Giấy, Hà Nội"
+  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+  />
+  </div>
+
+  <div className="space-y-1.5">
+  <label className="font-extrabold text-slate-800 text-sm">Số điện thoại</label>
+  <input
+  type="tel"
+  value={infoPhone}
+  onChange={(e) => setInfoPhone(e.target.value)}
+  placeholder="VD: 0901234567"
+  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+  />
+  </div>
+
+  <div className="space-y-1.5 sm:col-span-2">
+  <label className="font-extrabold text-slate-800 text-sm">Ảnh cụm sân (URL)</label>
+  <input
+  type="url"
+  value={infoImageUrl}
+  onChange={(e) => setInfoImageUrl(e.target.value)}
+  placeholder="https://images.unsplash.com/..."
+  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+  />
+  </div>
+  </div>
+
+  {/* Bộ môn — chủ sân tự khai báo, không bịa sẵn */}
+  <div className="space-y-2">
+  <label className="font-extrabold text-slate-800 text-sm">Bộ môn thể thao</label>
+  <div className="flex flex-wrap gap-2">
+  {["Sân 5 Người", "Sân 7 Người", "Sân 11 Người", "Futsal", "Cỏ tự nhiên"].map((t) => (
+  <button
+  key={t}
+  type="button"
+  onClick={() => toggleInfoList(t, infoPitchTypes, setInfoPitchTypes)}
+  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+  infoPitchTypes.includes(t)
+  ? "bg-[#0369a1] text-white border-[#0369a1]"
+  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+  }`}
+  >
+  {t}
+  </button>
+  ))}
+  </div>
+  </div>
+
+  {/* Tiện ích */}
+  <div className="space-y-2">
+  <label className="font-extrabold text-slate-800 text-sm">Tiện ích đi kèm</label>
+  <div className="flex flex-wrap gap-2">
+  {["Đèn chiếu sáng", "CCTV", "Phòng thay đồ", "Căng tin", "Cho thuê giày", "Bãi xe", "WiFi", "Nước uống"].map((a) => (
+  <button
+  key={a}
+  type="button"
+  onClick={() => toggleInfoList(a, infoAmenities, setInfoAmenities)}
+  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+  infoAmenities.includes(a)
+  ? "bg-[#0369a1] text-white border-[#0369a1]"
+  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+  }`}
+  >
+  {a}
+  </button>
+  ))}
+  </div>
+  </div>
+
+  <div className="space-y-1.5">
+  <label className="font-extrabold text-slate-800 text-sm">Mô tả cụm sân</label>
+  <textarea
+  value={infoDescription}
+  onChange={(e) => setInfoDescription(e.target.value)}
+  rows={3}
+  placeholder="Mô tả chất lượng mặt cỏ, vị trí, chỗ để xe..."
+  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm resize-y"
+  />
+  </div>
+
+  <div className="flex gap-3 pt-2">
+  <button
+  type="button"
+  onClick={() => setShowEditInfoModal(false)}
+  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
+  >
+  Huỷ Bỏ
+  </button>
+  <button
+  type="submit"
+  disabled={isSavingInfo || !infoName.trim() || !infoAddress.trim()}
+  className="flex-1 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+  >
+  {isSavingInfo ? "Đang lưu…" : "Lưu Hồ Sơ"}
+  </button>
+  </div>
+  </form>
+  </div>
+  </div>,
+  document.body
+  )}
+
+  {/* MODAL 1: ADD NEW PITCH (Thêm Sân Con Mới) */}
  {mounted && showAddPitchModal && typeof document !== "undefined" && createPortal(
  <div 
  className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"

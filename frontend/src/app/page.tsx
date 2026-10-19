@@ -58,6 +58,19 @@ export default function Home() {
  // Khi đăng xuất: cả hai đều là null => Trở về trạng thái Guest tự nhiên, không bị khóa cứng
  const currentUser = authUser || localUser;
 
+ // Kênh liên lạc B2B: chủ sân và ban tổ chức bấm "Nhắn tin" sẽ đưa cả hai sang
+ // tab Cộng đồng và mở thẳng cuộc trò chuyện riêng với đối tác.
+ const [pendingDmPartner, setPendingDmPartner] = useState<{
+ partnerEmail: string;
+ partnerName: string;
+ } | null>(null);
+
+ const handleStartDm = (partnerEmail: string, partnerName: string) => {
+ setPendingDmPartner({ partnerEmail, partnerName });
+ setActiveTab("community");
+ if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+ };
+
  // Thông báo phân quyền khi người dùng cố truy cập trang ngoài quyền hạn
  const [roleWarning, setRoleWarning] = useState<string | null>(null);
  // Lưu tab đang cố truy cập để sau khi đăng nhập xong thì tự chuyển về
@@ -408,7 +421,7 @@ if (newTab === activeTab) return;
  onOpenAuth={handleOpenAuth}
  />
  )}
-  <CommunityHub user={currentUser} onOpenAuth={handleOpenAuth} onNavigateTab={handleTabChange} />
+  <CommunityHub user={currentUser} onOpenAuth={handleOpenAuth} onNavigateTab={handleTabChange} initialDmPartner={pendingDmPartner} />
  </>
  )}
 
@@ -443,9 +456,10 @@ if (newTab === activeTab) return;
 
  {activeTab === "admin" && (
  currentUser?.role === "OWNER" ? (
- <AdminDashboard 
- onBackToHome={() => handleTabChange("admin")} 
+ <AdminDashboard
+ onBackToHome={() => handleTabChange("admin")}
  onNavigateTab={handleTabChange}
+ onStartDm={handleStartDm}
  />
  ) : (
  <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
@@ -547,6 +561,7 @@ if (newTab === activeTab) return;
  user={currentUser} 
  defaultSubTab="organizer"
  onOpenAuth={handleOpenAuth}
+ onStartDm={handleStartDm}
  />
  ) : currentUser ? (
  <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">

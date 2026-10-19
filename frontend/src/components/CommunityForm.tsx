@@ -12,12 +12,14 @@ import { Users, Trophy, Cpu, PlusCircle, Sparkles, ShieldCheck, Flame, Radio, Me
 interface CommunityFormProps {
  user?: any;
  onSelectSlot?: any;
+ /** Mở cuộc trò chuyện riêng với đối tác (dùng cho kênh liên lạc với Chủ Sân). */
+ onStartDm?: (partnerEmail: string, partnerName: string) => void;
  defaultSubTab?: "matchmaking" | "tournaments" | "organizer";
  onOpenAuth?: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
   onNavigateTab?: (tab: string) => void;
 }
 
-export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "matchmaking", onOpenAuth, onNavigateTab }: CommunityFormProps) {
+export default function CommunityForm({ user, onSelectSlot, onStartDm, defaultSubTab = "matchmaking", onOpenAuth, onNavigateTab }: CommunityFormProps) {
  const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer" | "formboard" | "chat">(defaultSubTab as any);
  const [tournamentCount, setTournamentCount] = useState<number | null>(null);
  const [formBoard, setFormBoard] = useState<any[]>([]);
@@ -216,7 +218,12 @@ export default function CommunityForm({ user, onSelectSlot, defaultSubTab = "mat
  )}
 
  {subTab === "organizer" && (
- <TournamentOrganizerPortal />
+ <TournamentOrganizerPortal
+  user={user}
+  onNavigateTab={onNavigateTab}
+  onStartDm={onStartDm}
+  onOpenBracket={() => setSubTab("tournaments")}
+  />
  )}
 
  {subTab === "formboard" && (

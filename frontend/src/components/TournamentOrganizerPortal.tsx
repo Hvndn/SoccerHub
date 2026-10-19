@@ -1,10 +1,20 @@
-﻿"use client";
+"use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { API_BASE_URL, apiRequest } from "@/lib/api";
-import { sportLabel, formatLabel, formatMoney, createTournament, fillSimulatedTeams } from "@/lib/tournamentService";
+import {
+  sportLabel,
+  formatLabel,
+  formatMoney,
+  createTournament,
+  updateTournament,
+  fetchTournamentFinance,
+  fillSimulatedTeams,
+  type TournamentFinance,
+} from "@/lib/tournamentService";
 import FormDots from "./FormDots";
+import BusinessContacts from "./BusinessContacts";
 import {
   getPendingTeams, approveTeam, rejectTeam,
   getReferees, addReferee, removeReferee,
@@ -27,19 +37,28 @@ import {
  Radio,
  Sparkles,
  Filter,
- X
+ X,
+ Pencil,
+ Wallet,
+ Users2
 } from "lucide-react";
 
 interface TournamentOrganizerPortalProps {
   onBackToHome?: () => void;
   onNavigateTab?: (tab: string) => void;
   onOpenBracket?: (tournamentId: string) => void;
+ /** Người đang điều hành — dùng cho kênh liên lạc B2B với chủ sân. */
+ user?: any;
+ /** Mở cuộc trò chuyện riêng với chủ sân. */
+ onStartDm?: (partnerEmail: string, partnerName: string) => void;
 }
 
 export default function TournamentOrganizerPortal({
   onBackToHome,
   onNavigateTab,
-  onOpenBracket
+  onOpenBracket,
+ user,
+ onStartDm
 }: TournamentOrganizerPortalProps) {
  // Sport Filter State
  const [selectedSport, setSelectedSport] = useState<string>("all");
@@ -48,7 +67,7 @@ export default function TournamentOrganizerPortal({
  const [varNotice, setVarNotice] = useState<string | null>(null);
 
  // Active Tab for Tables/Logs
- const [bottomTab, setBottomTab] = useState<"standings" | "var_logs" | "schedule">("standings");
+ const [bottomTab, setBottomTab] = useState<"standings" | "var_logs" | "schedule" | "finance">("standings");
 
  // Real Database Tournaments (danh sách thật từ backend)
  const [dbTournaments, setDbTournaments] = useState<any[]>([]);
@@ -244,8 +263,117 @@ export default function TournamentOrganizerPortal({
     }
   };
 
+  // ---- SỬA THÔNG TIN GIẢI (trước đây BTC tạo xong không sửa được gì) ----
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    sportType: 'SAN_7',
+    format: 'KNOCKOUT',
+    pitchName: '',
+    location: '',
+    totalTeams: 8,
+    prizePool: 0,
+    entryFee: 0,
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '',
+    bankCode: '',
+    bankAccount: '',
+    accountName: '',
+  });
+
+  /** Mở modal sửa và nạp dữ liệu giải đang chọn vào form. */
+  const openEditModal = (t: any) => {
+    if (!t) return;
+    setEditForm({
+      title: t.title ?? '',
+      description: t.description ?? '',
+      sportType: t.sportType ?? 'SAN_7',
+      format: t.format ?? 'KNOCKOUT',
+      pitchName: t.pitchName ?? '',
+      location: t.location ?? '',
+      totalTeams: t.totalTeams ?? 8,
+      prizePool: t.prizePool ?? 0,
+      entryFee: t.entryFee ?? 0,
+      startDate: t.startDate ?? '',
+      endDate: t.endDate ?? '',
+      registrationDeadline: t.registrationDeadline ?? '',
+      bankCode: t.bankCode ?? '',
+      bankAccount: t.bankAccount ?? '',
+      accountName: t.accountName ?? '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const t = activeTournament;
+    if (!t?.id) return;
+    if (!editForm.title.trim()) {
+      setVarNotice('⚠️ Tên giải không được để trống.');
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      // Chỉ gửi field người dùng thực sự sửa — backend giữ nguyên phần còn lại.
+      await updateTournament(Number(t.id), {
+        title: editForm.title.trim(),
+        description: editForm.description.trim(),
+        sportType: editForm.sportType,
+        format: editForm.format,
+        pitchName: editForm.pitchName.trim(),
+        location: editForm.location.trim(),
+        totalTeams: Number(editForm.totalTeams) || 2,
+        prizePool: Number(editForm.prizePool) || 0,
+        entryFee: Number(editForm.entryFee) || 0,
+        startDate: editForm.startDate || null,
+        endDate: editForm.endDate || null,
+        registrationDeadline: editForm.registrationDeadline || null,
+        bankCode: editForm.bankCode.trim(),
+        bankAccount: editForm.bankAccount.trim(),
+        accountName: editForm.accountName.trim(),
+      });
+      await fetchDbTournaments();
+      setShowEditModal(false);
+      setVarNotice('✅ Đã lưu thông tin giải đấu.');
+    } catch (err: any) {
+      setVarNotice('❌ ' + (err?.message || 'Không lưu được thông tin giải.'));
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  // ---- THỐNG KÊ TÀI CHÍNH GIẢI ----
+  const [finance, setFinance] = useState<TournamentFinance | null>(null);
+  const [financeLoading, setFinanceLoading] = useState(false);
+
+  const loadFinance = useCallback(async (tournamentId?: number | string | null) => {
+    const id = Number(tournamentId);
+    if (!id) {
+      setFinance(null);
+      return;
+    }
+    setFinanceLoading(true);
+    try {
+      setFinance(await fetchTournamentFinance(id));
+    } catch (err: any) {
+      // Không chặn trang: chỉ hiện thông báo nhỏ, các tab khác vẫn dùng được.
+      setFinance(null);
+      setVarNotice('⚠️ ' + (err?.message || 'Không tải được thống kê tài chính.'));
+    } finally {
+      setFinanceLoading(false);
+    }
+  }, []);
+
+  // Tự nạp thống kê tài chính khi chọn giải khác (hoặc sau khi vừa sửa xong).
+  useEffect(() => {
+    loadFinance(activeTournamentId);
+  }, [activeTournamentId, loadFinance]);
+
 // Nhánh đấu parse từ bracketJson (nguồn thật, không cần gọi API thêm).
- const activeBracket = useMemo(() => {
+  const activeBracket = useMemo(() => {
  if (!activeTournament?.bracketJson) return null;
  try {
  const p = JSON.parse(activeTournament.bracketJson);
@@ -975,7 +1103,8 @@ export default function TournamentOrganizerPortal({
  {[
  { id: "standings", label: "Bảng Xếp Hạng" },
  { id: "var_logs", label: "Kết Quả & Vua Phá Lưới" },
- { id: "schedule", label: "Lịch Thi Đấu" }
+ { id: "schedule", label: "Lịch Thi Đấu" },
+ { id: "finance", label: "Tài Chính Giải" }
  ].map(tab => (
  <button
  key={tab.id}
@@ -999,6 +1128,23 @@ export default function TournamentOrganizerPortal({
  <RefreshCw className={`w-3.5 h-3.5 ${loadingDb ? "animate-spin" : ""}`} />
  <span>{loadingDb ? "Đang tải…" : "Tải lại từ CSDL"}</span>
  </button>
+ </div>
+
+ <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+  <p className="text-[11px] text-slate-500">
+  {activeTournament
+  ? `Đang thao tác trên giải: ${activeTournament.title}`
+  : "Chưa chọn giải — hãy mở tab “Giải Đấu & BXH” và chọn một giải."}
+  </p>
+  <button
+  type="button"
+  onClick={() => openEditModal(activeTournament)}
+  disabled={!activeTournament}
+  className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-extrabold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+  >
+  <Pencil className="w-3.5 h-3.5" />
+  <span>Sửa Thông Tin Giải</span>
+  </button>
  </div>
 
  {/* Chưa chọn giải có nhánh đấu */}
@@ -1138,9 +1284,90 @@ export default function TournamentOrganizerPortal({
  </div>
  )}
 
+ {/* TAB CONTENT: THỐNG KÊ TÀI CHÍNH GIẢI (BTC) */}
+ {bottomTab === "finance" && (
+ <div className="space-y-4">
+ {!activeTournament ? (
+ <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">
+ Chưa chọn giải để xem thống kê tài chính.
+ </p>
+ ) : financeLoading && !finance ? (
+ <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">Đang tải số liệu…</p>
+ ) : !finance ? (
+ <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">
+ Chưa tải được thống kê tài chính của giải này.
+ </p>
+ ) : (
+ <>
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+ {[
+ { label: "Tổng lệ phí đã thu", value: finance.totalCollected, hint: `${finance.confirmedTeams} đội đã chuyển khoản`, tone: "text-emerald-600", icon: Wallet },
+ { label: "Đang chờ chuyển khoản", value: finance.totalAwaiting, hint: `${finance.pendingTeams} đội chờ duyệt`, tone: "text-amber-600", icon: Users2 },
+ { label: "Tiền thưởng dự kiến", value: finance.prizePool, hint: finance.prizeToPay > 0 ? "Đã tới hạn trao" : "Trao khi kết thúc giải", tone: "text-sky-700", icon: Award },
+ { label: "Tiền còn lại dự kiến", value: finance.netAfterPrize, hint: "Sau khi chi giải thưởng", tone: "text-[#0b4f6c]", icon: Sparkles },
+ ].map((card) => {
+ const Icon = card.icon;
+ return (
+ <div key={card.label} className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+ <div className="flex items-center gap-1.5 text-slate-500">
+ <Icon className="w-3.5 h-3.5 shrink-0" />
+ <span className="text-[10px] font-black uppercase tracking-wide">{card.label}</span>
+ </div>
+ <p className={`text-base sm:text-lg font-black ${card.tone}`}>
+ {formatMoney(card.value)}
+ </p>
+ <p className="text-[10px] text-slate-500">{card.hint}</p>
+ </div>
+ );
+ })}
+ </div>
+
+ <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-3">
+ <div className="flex flex-wrap items-center justify-between gap-2">
+ <h4 className="font-black text-sm text-slate-900 flex items-center gap-1.5">
+ <Users2 className="w-4 h-4 text-[#0369a1]" />
+ Quy mô giải đấu
+ </h4>
+ <span className="text-xs font-mono text-slate-500">
+ {finance.totalTeams}/{finance.capacity || "∞"} đội · {finance.fillPercent}%
+ </span>
+ </div>
+ <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
+ <div
+ className="h-full bg-[#0369a1] rounded-full transition-all"
+ style={{ width: `${Math.max(2, finance.fillPercent)}%` }}
+ />
+ </div>
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
+ <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
+ <span className="block text-slate-500 text-[10px] font-bold">Đã xác nhận</span>
+ <strong className="text-emerald-700 font-black">{finance.confirmedTeams}</strong>
+ </div>
+ <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200">
+ <span className="block text-slate-500 text-[10px] font-bold">Chờ duyệt</span>
+ <strong className="text-amber-700 font-black">{finance.pendingTeams}</strong>
+ </div>
+ <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+ <span className="block text-slate-500 text-[10px] font-bold">Đội giả lập</span>
+ <strong className="text-slate-700 font-black">{finance.simulatedTeams}</strong>
+ </div>
+ <div className="p-2.5 rounded-xl bg-sky-50 border border-sky-200">
+ <span className="block text-slate-500 text-[10px] font-bold">Lệ phí/đội</span>
+ <strong className="text-sky-700 font-black">{formatMoney(finance.entryFee)}</strong>
+ </div>
+ </div>
+ <p className="text-[10px] text-slate-500 leading-relaxed">
+ Đội do nút “Giả lập đội” sinh ra là dữ liệu thử nghiệm nên không tính vào doanh thu thực tế.
+ </p>
+ </div>
+ </>
+ )}
+ </div>
+ )}
+
  {/* TAB CONTENT: LỊCH THI ĐẤU THẬT */}
  {bottomTab === "schedule" && activeBracket && (
- scheduledMatches.length === 0 ? (
+  scheduledMatches.length === 0 ? (
  <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">
  BTC chưa bấm “Xếp lịch thi đấu” cho giải này nên chưa có ngày/giờ cho từng trận.
  </p>
@@ -1327,6 +1554,232 @@ export default function TournamentOrganizerPortal({
  </div>
 
  </div>
+
+ {/* Kênh liên lạc B2B với Chủ Sân */}
+ {user?.role === "ORGANIZER" && (
+ <BusinessContacts viewerRole="ORGANIZER" onStartDm={onStartDm} />
+ )}
+
+ {/* MODAL SỬA THÔNG TIN GIẢI ĐẤU */}
+ {showEditModal && (
+ <div
+ className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
+ onClick={(e) => {
+ if (e.target === e.currentTarget) setShowEditModal(false);
+ }}
+ >
+ <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl my-8 border border-slate-200 overflow-hidden">
+ <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
+ <div className="flex items-center gap-2.5">
+ <Pencil className="w-5 h-5 text-[#0369a1]" />
+ <h3 className="font-black text-lg text-slate-900">Sửa Thông Tin Giải Đấu</h3>
+ </div>
+ <button
+ type="button"
+ onClick={() => setShowEditModal(false)}
+ className="text-slate-500 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+ aria-label="Đóng"
+ >
+ <X className="w-5 h-5" />
+ </button>
+ </div>
+
+ <form onSubmit={handleSaveEdit} className="px-5 sm:px-6 py-4 space-y-3.5">
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Tên giải <span className="text-rose-500">*</span></label>
+ <input
+ type="text"
+ value={editForm.title}
+ onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+ required
+ placeholder="VD: Giải Giao Hữu Mùa Xu"
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Môn thi đấu</label>
+ <select
+ value={editForm.sportType}
+ onChange={(e) => setEditForm((f) => ({ ...f, sportType: e.target.value }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
+ >
+ <option value="SAN_7">Bóng Đá Sân 7</option>
+ <option value="SAN_5">Bóng Đá Sân 5</option>
+ <option value="SAN_11">Bóng Đá Sân 11</option>
+ <option value="FUTSAL">Futsal Trong Nhà</option>
+ </select>
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Thể thức giải</label>
+ <select
+ value={editForm.format}
+ onChange={(e) => setEditForm((f) => ({ ...f, format: e.target.value }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
+ >
+ <option value="KNOCKOUT">Loại trực tiếp (Knockout)</option>
+ <option value="ROUND_ROBIN">Đấu vòng tròn</option>
+ </select>
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Số đội tối đa</label>
+ <input
+ type="number"
+ min={2}
+ max={128}
+ value={editForm.totalTeams}
+ onChange={(e) => setEditForm((f) => ({ ...f, totalTeams: Number(e.target.value) }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Đã đăng ký</label>
+ <div className="w-full p-3 rounded-xl bg-slate-100 border border-slate-200 text-sm font-mono font-bold text-slate-600">
+ {activeTournament?.teams?.length ?? 0} đội
+ </div>
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Tiền thưởng (VNĐ)</label>
+ <input
+ type="number"
+ min={0}
+ step={100000}
+ value={editForm.prizePool}
+ onChange={(e) => setEditForm((f) => ({ ...f, prizePool: Number(e.target.value) }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Lệ phí mỗi đội (VNĐ)</label>
+ <input
+ type="number"
+ min={0}
+ step={100000}
+ value={editForm.entryFee}
+ onChange={(e) => setEditForm((f) => ({ ...f, entryFee: Number(e.target.value) }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Ngày mở giải</label>
+ <input
+ type="date"
+ value={editForm.startDate ?? ""}
+ onChange={(e) => setEditForm((f) => ({ ...f, startDate: e.target.value }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Ngày kết thúc</label>
+ <input
+ type="date"
+ value={editForm.endDate ?? ""}
+ onChange={(e) => setEditForm((f) => ({ ...f, endDate: e.target.value }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Hạn đăng ký</label>
+ <input
+ type="date"
+ value={editForm.registrationDeadline ?? ""}
+ onChange={(e) => setEditForm((f) => ({ ...f, registrationDeadline: e.target.value }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Sân thi đấu</label>
+ <input
+ type="text"
+ value={editForm.pitchName}
+ onChange={(e) => setEditForm((f) => ({ ...f, pitchName: e.target.value }))}
+ placeholder="VD: Cụm Sân Turfzone Cầu Giấy"
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Địa điểm</label>
+ <input
+ type="text"
+ value={editForm.location}
+ onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
+ placeholder="VD: Hà Nội"
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Mô tả giải đấu</label>
+ <textarea
+ value={editForm.description}
+ onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+ rows={3}
+ placeholder="Luật chơi, điều kiện thi, đồ đạo..."
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm resize-y"
+ />
+ </div>
+
+ <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+ <p className="text-[11px] font-extrabold text-slate-600">
+ Tài khoản nhận lệ phí (hiển thị cho đội khi đăng ký)
+ </p>
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+ <input
+ type="text"
+ value={editForm.bankCode}
+ onChange={(e) => setEditForm((f) => ({ ...f, bankCode: e.target.value }))}
+ placeholder="Mã ngân hàng"
+ className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-xs"
+ />
+ <input
+ type="text"
+ value={editForm.bankAccount}
+ onChange={(e) => setEditForm((f) => ({ ...f, bankAccount: e.target.value }))}
+ placeholder="Số tài khoản"
+ className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-xs"
+ />
+ <input
+ type="text"
+ value={editForm.accountName}
+ onChange={(e) => setEditForm((f) => ({ ...f, accountName: e.target.value }))}
+ placeholder="Chủ tài khoản"
+ className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-xs"
+ />
+ </div>
+ </div>
+
+ <div className="flex gap-3 pt-1">
+ <button
+ type="button"
+ onClick={() => setShowEditModal(false)}
+ className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
+ >
+ Huỷ Bỏ
+ </button>
+ <button
+ type="submit"
+ disabled={savingEdit || !editForm.title.trim()}
+ className="flex-1 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+ >
+ {savingEdit ? "Đang lưu…" : "Lưu Thay Đổi"}
+ </button>
+ </div>
+ </form>
+ </div>
+ </div>
+ )}
 
  </div>
  </div>

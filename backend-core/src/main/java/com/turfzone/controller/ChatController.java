@@ -215,25 +215,31 @@ public class ChatController {
         return ResponseEntity.ok(result);
     }
 
-    /** Tìm kiếm người dùng để nhắn tin (theo tên hoặc email). */
+    /** Tìm kiếm người dùng để nhắn tin (theo tên hoặc email).
+     *  Có thể lọc theo vai trò — dùng cho kênh liên lạc B2B: chủ sân tìm ban tổ chức,
+     *  ban tổ chức tìm chủ sân (không cần biết trước email của nhau). */
     @GetMapping("/users")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Map<String, Object>>> searchUsers(
             @RequestParam(required = false) String query,
+            @RequestParam(required = false) String role,
             @AuthenticationPrincipal User me
     ) {
         String q = (query == null) ? "" : query.trim().toLowerCase();
+        String roleFilter = (role == null) ? "" : role.trim().toUpperCase();
         List<User> users = userRepository.findAll();
         List<Map<String, Object>> result = new ArrayList<>();
         for (User u : users) {
             if (me != null && me.getEmail() != null && me.getEmail().equalsIgnoreCase(u.getEmail())) continue;
             String name = u.getFullName() != null ? u.getFullName() : "";
             String email = u.getEmail() != null ? u.getEmail() : "";
+            String userRole = u.getRole() != null ? u.getRole().name() : "PLAYER";
+            if (!roleFilter.isEmpty() && !roleFilter.equals(userRole)) continue;
             if (q.isEmpty() || name.toLowerCase().contains(q) || email.toLowerCase().contains(q)) {
                 Map<String, Object> row = new LinkedHashMap<>();
                 row.put("name", name.isEmpty() ? email.split("@")[0] : name);
                 row.put("email", email);
-                row.put("role", u.getRole() != null ? u.getRole().name() : "PLAYER");
+                row.put("role", userRole);
                 result.add(row);
             }
             if (result.size() >= 20) break;

@@ -162,6 +162,48 @@ export async function createTournament(
   return body;
 }
 
+/**
+ * Ban tổ chức sửa thông tin giải sau khi đã đăng (tên, thể thức, thưởng, lệ phí,
+ * hạn đăng ký, sân thi đấu…). Chỉ gửi các field thực sự đổi — backend giữ nguyên
+ * phần còn lại. Yêu cầu token ORGANIZER/ADMIN.
+ */
+export async function updateTournament(
+  tournamentId: number,
+  patch: Record<string, unknown>
+): Promise<Tournament> {
+  const body = await apiRequest<Tournament>(`/api/v1/tournaments/${tournamentId}`, {
+    method: 'PUT',
+    body: JSON.stringify(patch),
+  });
+  await fetchTournaments(true); // refresh cache so lists/badges re-sync
+  return body;
+}
+
+export interface TournamentFinance {
+  tournamentId: number;
+  tournamentTitle: string;
+  status: string;
+  entryFee: number;
+  prizePool: number;
+  totalTeams: number;
+  capacity: number;
+  confirmedTeams: number;
+  pendingTeams: number;
+  simulatedTeams: number;
+  totalCollected: number;
+  totalAwaiting: number;
+  prizeToPay: number;
+  netAfterPrize: number;
+  fillPercent: number;
+}
+
+/** Thống kê tài chính giải cho Ban tổ chức. Yêu cầu token ORGANIZER/ADMIN. */
+export async function fetchTournamentFinance(
+  tournamentId: number
+): Promise<TournamentFinance> {
+  return apiRequest<TournamentFinance>(`/api/v1/tournaments/${tournamentId}/finance`);
+}
+
 export async function registerTeam(
   tournamentId: number,
   payload: Record<string, unknown>

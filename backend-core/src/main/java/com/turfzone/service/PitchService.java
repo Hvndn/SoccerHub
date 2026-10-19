@@ -6,7 +6,10 @@ import com.turfzone.model.User;
 import com.turfzone.repository.PitchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -109,6 +112,80 @@ public class PitchService {
             throw new IllegalArgumentException("Giá giờ vàng phải lớn hơn hoặc bằng giá thường.");
         }
         return pitchRepository.save(pitch);
+    }
+
+    /**
+     * Cập nhật hồ sơ cụm sân (tên, địa chỉ, khu vực, SĐT, bộ môn, tiện ích, ảnh, mô tả,
+     * tọa độ). Trước đây chủ sân tạo xong không sửa được gì — chỉ có API đổi giá và giờ mở cửa.
+     *
+     * <p>Chỉ nhận các field thực sự có trong body; field vắng mặt giữ nguyên giá trị cũ
+     * nên gọi PATCH cũng cho kết quả đúng. Bộ môn/tiện ích gửi list rỗng sẽ bị bỏ qua
+     * (để tránh xoá sạch chỉ vì frontend gửi mảng rỗng do chưa chọn gì).</p>
+     */
+    public Pitch updatePitchInfo(Long id, Map<String, Object> body, User actor) {
+        Pitch pitch = getPitchById(id);
+        assertCanManage(pitch, actor);
+
+        String name = str(body.get("name"));
+        if (name != null) {
+            if (name.isEmpty()) throw new IllegalArgumentException("Tên cụm sân không được để trống.");
+            pitch.setName(name);
+        }
+
+        String address = str(body.get("address"));
+        if (address != null) {
+            if (address.isEmpty()) throw new IllegalArgumentException("Địa chỉ cụm sân không được để trống.");
+            pitch.setAddress(address);
+        }
+
+        if (body.containsKey("area")) pitch.setArea(str(body.get("area")));
+        if (body.containsKey("phone")) pitch.setPhone(str(body.get("phone")));
+        if (body.containsKey("description")) pitch.setDescription(str(body.get("description")));
+        if (body.containsKey("imageUrl")) {
+            String img = str(body.get("imageUrl"));
+            pitch.setImageUrl(img != null && !img.isEmpty() ? img : pitch.getImageUrl());
+        }
+
+        Double lat = dbl(body.get("latitude"));
+        if (lat != null) pitch.setLatitude(lat);
+        Double lng = dbl(body.get("longitude"));
+        if (lng != null) pitch.setLongitude(lng);
+
+        List<String> types = strList(body.get("pitchTypes"));
+        if (types != null && !types.isEmpty()) pitch.setPitchTypes(new ArrayList<>(types));
+        List<String> amenities = strList(body.get("amenities"));
+        if (amenities != null && !amenities.isEmpty()) pitch.setAmenities(new ArrayList<>(amenities));
+
+        pitch.setUpdatedAt(LocalDateTime.now());
+        return pitchRepository.save(pitch);
+    }
+
+    /** Đọc chuỗi, tự cắt khoảng trắng; trả null nếu không có giá trị. */
+    private String str(Object v) {
+        if (v == null) return null;
+        return String.valueOf(v).trim();
+    }
+
+    /** Đọc số thực an toàn (form gửi string cũng parse được). */
+    private Double dbl(Object v) {
+        if (v == null) return null;
+        try {
+            return Double.valueOf(String.valueOf(v).trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /** Đọc list chuỗi từ body (Jackson deserialize thành List<?>). */
+    @SuppressWarnings("unchecked")
+    private List<String> strList(Object v) {
+        if (!(v instanceof List)) return null;
+        List<Object> raw = (List<Object>) v;
+        List<String> out = new ArrayList<>();
+        for (Object o : raw) {
+            if (o != null && !String.valueOf(o).trim().isEmpty()) out.add(String.valueOf(o).trim());
+        }
+        return out;
     }
 
     public List<Pitch> getAllPitches() {

@@ -73,6 +73,159 @@ public class TournamentController {
     }
 
     /**
+     * Ban tổ chức sửa giải sau khi đã đăng.
+     *
+     * <p>Trước đây chỉ có POST (tạo) và DELETE (xoá) — BTC tạo giải xong không đổi được
+     * tên, thể thức, thưởng, lệ phí, hạn đăng ký hay sân thi đấu. Chỉ nhận các field có mặt
+     * trong body (null = giữ nguyên), và cố tình KHÔNG cho sửa các field do hệ thống quản lý:
+     * registeredTeams, teams, bracketJson, status, createdAt.</p>
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    public ResponseEntity<?> updateTournament(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+
+        String title = str(body.get("title"));
+        if (title != null) {
+            if (title.isEmpty()) return ResponseEntity.badRequest().body(Map.of("message", "Tên giải không được để trống."));
+            t.setTitle(title);
+        }
+
+        if (body.containsKey("description")) t.setDescription(str(body.get("description")));
+
+        String sportType = str(body.get("sportType"));
+        if (sportType != null && !sportType.isEmpty()) {
+            if (!Set.of("SAN_7", "SAN_5", "SAN_11", "FUTSAL").contains(sportType)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Thể thức không hợp lệ: " + sportType));
+            }
+            // Đã có đội đăng ký thì không đổi môn (bracket + bảng xếp hạng sẽ lệch)
+            if (t.getTeams() != null && !t.getTeams().isEmpty()
+                    && t.getSportType() != null && !t.getSportType().equals(sportType)) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Giải đã có đội đăng ký nên không thể đổi thể thức thi đấu."));
+            }
+            t.setSportType(sportType);
+        }
+
+        String format = str(body.get("format"));
+        if (format != null && !format.isEmpty()) {
+            if (!Set.of("KNOCKOUT", "ROUND_ROBIN").contains(format)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Thể thức giải không hợp lệ: " + format));
+            }
+            t.setFormat(format);
+        }
+
+        if (body.containsKey("pitchName")) t.setPitchName(str(body.get("pitchName")));
+        if (body.containsKey("location")) t.setLocation(str(body.get("location")));
+        if (body.containsKey("startDate")) t.setStartDate(str(body.get("startDate")));
+        if (body.containsKey("endDate")) t.setEndDate(str(body.get("endDate")));
+        if (body.containsKey("registrationDeadline")) t.setRegistrationDeadline(str(body.get("registrationDeadline")));
+        if (body.containsKey("bannerUrl")) t.setBannerUrl(str(body.get("bannerUrl")));
+        if (body.containsKey("bankCode")) t.setBankCode(str(body.get("bankCode")));
+        if (body.containsKey("bankAccount")) t.setBankAccount(str(body.get("bankAccount")));
+        if (body.containsKey("accountName")) t.setAccountName(str(body.get("accountName")));
+
+        Long totalTeams = longOf(body.get("totalTeams"));
+        if (totalTeams != null) {
+            int current = t.getRegisteredTeams() != null ? t.getRegisteredTeams()
+                    : (t.getTeams() != null ? t.getTeams().size() : 0);
+            if (totalTeams < 2) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Số đội tối thiểu là 2."));
+            }
+            if (totalTeams < current) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Đã có " + current + " đội đăng ký, không thể giảm quy mô giải xuống " + totalTeams + " đội."));
+            }
+            t.setTotalTeams(totalTeams.intValue());
+        }
+
+        Long prizePool = longOf(body.get("prizePool"));
+        if (prizePool != null) {
+            if (prizePool < 0) return ResponseEntity.badRequest().body(Map.of("message", "Tiền thưởng không thể âm."));
+            t.setPrizePool(prizePool);
+        }
+
+        Long entryFee = longOf(body.get("entryFee"));
+        if (entryFee != null) {
+            if (entryFee < 0) return ResponseEntity.badRequest().body(Map.of("message", "Lệ phí không thể âm."));
+            t.setEntryFee(entryFee);
+        }
+
+        Tournament saved = tournamentRepository.save(t);
+        attachForm(saved);
+        return ResponseEntity.ok(saved);
+    }
+
+    /**
+     * Thống kê tài chính giải cho Ban tổ chức: tổng lệ phí dự kiến, đã thu (đội đã chuyển khoản),
+     * đang chờ, giải thưởng còn phải chi và tỉ lệ lấp đầy.
+     */
+    @GetMapping("/{id}/finance")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    public ResponseEntity<?> tournamentFinance(@PathVariable Long id) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+
+        long fee = t.getEntryFee() != null ? t.getEntryFee() : 0L;
+        List<TournamentTeamEntry> teams = t.getTeams() != null ? t.getTeams() : List.of();
+
+        int confirmed = 0, pending = 0, simulated = 0;
+        for (TournamentTeamEntry e : teams) {
+            String st = e.getRegistrationStatus();
+            if ("CONFIRMED".equals(st)) confirmed++;
+            else if ("PENDING_PAYMENT".equals(st)) pending++;
+            else if ("SIMULATED".equals(st)) simulated++;
+        }
+        // Đội do hệ thống sinh ra (nút "Giả lập đội") không phải tiền thật nên không tính vào doanh thu.
+        long collected = (long) confirmed * fee;
+        long awaiting = (long) pending * fee;
+        long prizePool = t.getPrizePool() != null ? t.getPrizePool() : 0L;
+
+        int capacity = t.getTotalTeams() != null ? t.getTotalTeams() : 0;
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("tournamentId", t.getId());
+        out.put("tournamentTitle", t.getTitle());
+        out.put("status", t.getStatus());
+        out.put("entryFee", fee);
+        out.put("prizePool", prizePool);
+        out.put("totalTeams", teams.size());
+        out.put("capacity", capacity);
+        out.put("confirmedTeams", confirmed);
+        out.put("pendingTeams", pending);
+        out.put("simulatedTeams", simulated);
+        out.put("totalCollected", collected);
+        out.put("totalAwaiting", awaiting);
+        // Tiền thưởng chỉ bỏ ra sau khi giải kết thúc và có người thắng, nên hiển thị
+        // "còn phải chi" cho tới lúc đó.
+        out.put("prizeToPay", "COMPLETED".equals(t.getStatus()) ? prizePool : 0L);
+        out.put("netAfterPrize", "COMPLETED".equals(t.getStatus()) ? collected - prizePool : collected);
+        out.put("fillPercent", capacity > 0 ? Math.min(100, Math.round((teams.size() * 100.0) / capacity)) : 0);
+        return ResponseEntity.ok(out);
+    }
+
+    /** Đọc chuỗi cắt khoảng trắng, null nếu thiếu. */
+    private String str(Object v) {
+        if (v == null) return null;
+        return String.valueOf(v).trim();
+    }
+
+    /** Đọc số nguyên an toàn (form gửi string cũng parse được). */
+    private Long longOf(Object v) {
+        if (v == null) return null;
+        if (v instanceof Number n) return n.longValue();
+        try {
+            return Long.valueOf(String.valueOf(v).trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
      * Gắn phong độ live (tính từ match_results) vào từng đội — field @Transient,
      * không lưu DB. Frontend hiển thị chuỗi 5 trận + thành tích.
      */
