@@ -1,4 +1,4 @@
-﻿package com.turfzone.controller;
+package com.turfzone.controller;
 
 import com.turfzone.model.ChatMessage;
 import com.turfzone.model.ChatReaction;
@@ -344,23 +344,23 @@ public class ChatController {
     // ============================================================
 
     /** Thêm/bỏ reaction emoji cho một tin nhắn. */
-    @PostMapping(\"/messages/{id}/react\")
-    @PreAuthorize(\"isAuthenticated()\")
+    @PostMapping("/messages/{id}/react")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> react(
             @PathVariable Long id,
             @RequestParam String emoji,
             @AuthenticationPrincipal User me
     ) {
-        if (me == null) return ResponseEntity.status(401).body(Map.of(\"message\", \"Chưa đăng nhập.\"));
+        if (me == null) return ResponseEntity.status(401).body(Map.of("message", "Chưa đăng nhập."));
         ChatMessage msg = chatMessageRepository.findById(id).orElse(null);
-        if (msg == null) return ResponseEntity.status(404).body(Map.of(\"message\", \"Không tìm thấy tin nhắn.\"));
+        if (msg == null) return ResponseEntity.status(404).body(Map.of("message", "Không tìm thấy tin nhắn."));
 
         String email = me.getEmail().toLowerCase();
         Optional<ChatReaction> existing = chatReactionRepository.findByMessageIdAndUserEmailAndEmoji(id, email, emoji);
         if (existing.isPresent()) {
             // Bỏ reaction nếu đã có
             chatReactionRepository.delete(existing.get());
-            return ResponseEntity.ok(Map.of(\"reacted\", false, \"emoji\", emoji));
+            return ResponseEntity.ok(Map.of("reacted", false, "emoji", emoji));
         } else {
             // Thêm reaction mới
             ChatReaction r = ChatReaction.builder()
@@ -369,13 +369,13 @@ public class ChatController {
                     .emoji(emoji)
                     .build();
             chatReactionRepository.save(r);
-            return ResponseEntity.ok(Map.of(\"reacted\", true, \"emoji\", emoji));
+            return ResponseEntity.ok(Map.of("reacted", true, "emoji", emoji));
         }
     }
 
     /** Lấy danh sách reaction của một tin nhắn (gộp theo emoji + đếm). */
-    @GetMapping(\"/messages/{id}/reactions\")
-    @PreAuthorize(\"isAuthenticated()\")
+    @GetMapping("/messages/{id}/reactions")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Map<String, Object>>> getReactions(@PathVariable Long id) {
         ChatMessage msg = chatMessageRepository.findById(id).orElse(null);
         if (msg == null) return ResponseEntity.status(404).body(List.of());
@@ -384,14 +384,14 @@ public class ChatController {
         Map<String, List<ChatReaction>> byEmoji = reactions.stream()
                 .collect(Collectors.groupingBy(ChatReaction::getEmoji));
 
-        String currentEmail = me != null ? me.getEmail().toLowerCase() : \"\";
+        String currentEmail = me != null ? me.getEmail().toLowerCase() : "";
 
         List<Map<String, Object>> result = byEmoji.entrySet().stream().map(e -> {
             Map<String, Object> row = new LinkedHashMap<>();
-            row.put(\"emoji\", e.getKey());
-            row.put(\"count\", e.getValue().size());
-            row.put(\"users\", e.getValue().stream().map(r -> r.getUserEmail()).toList());
-            row.put(\"meReacted\", e.getValue().stream().anyMatch(r -> r.getUserEmail().equals(currentEmail)));
+            row.put("emoji", e.getKey());
+            row.put("count", e.getValue().size());
+            row.put("users", e.getValue().stream().map(r -> r.getUserEmail()).toList());
+            row.put("meReacted", e.getValue().stream().anyMatch(r -> r.getUserEmail().equals(currentEmail)));
             return row;
         }).toList();
 
@@ -403,20 +403,20 @@ public class ChatController {
     // ============================================================
 
     /** Đánh dấu tin nhắn DM/Group đã đọc. */
-    @PostMapping(\"/messages/{id}/read\")
-    @PreAuthorize(\"isAuthenticated()\")
+    @PostMapping("/messages/{id}/read")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> markRead(
             @PathVariable Long id,
             @AuthenticationPrincipal User me
     ) {
-        if (me == null) return ResponseEntity.status(401).body(Map.of(\"message\", \"Chưa đăng nhập.\"));
+        if (me == null) return ResponseEntity.status(401).body(Map.of("message", "Chưa đăng nhập."));
         ChatMessage msg = chatMessageRepository.findById(id).orElse(null);
-        if (msg == null) return ResponseEntity.status(404).body(Map.of(\"message\", \"Không tìm thấy tin nhắn.\"));
+        if (msg == null) return ResponseEntity.status(404).body(Map.of("message", "Không tìm thấy tin nhắn."));
 
         // Chỉ người nhận mới được đánh dấu đã đọc
         String email = me.getEmail().toLowerCase();
         if (msg.getRecipientEmail() != null && !msg.getRecipientEmail().equalsIgnoreCase(email)) {
-            return ResponseEntity.status(403).body(Map.of(\"message\", \"Chỉ người nhận mới đánh dấu đã đọc.\"));
+            return ResponseEntity.status(403).body(Map.of("message", "Chỉ người nhận mới đánh dấu đã đọc."));
         }
         if (msg.getGroupId() != null) {
             // Group: cần table riêng để track read per user per group message - bỏ qua hiện tại
@@ -426,7 +426,7 @@ public class ChatController {
             msg.setReadAt(LocalDateTime.now());
             chatMessageRepository.save(msg);
         }
-        return ResponseEntity.ok(Map.of(\"read\", true, \"readAt\", msg.getReadAt()));
+        return ResponseEntity.ok(Map.of("read", true, "readAt", msg.getReadAt()));
     }
 
     // ============================================================
@@ -434,55 +434,55 @@ public class ChatController {
     // ============================================================
 
     /** Upload file đính kèm tin nhắn. Trả về URL để frontend gửi kèm khi send message. */
-    @PostMapping(\"/upload\")
-    @PreAuthorize(\"isAuthenticated()\")
+    @PostMapping("/upload")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> uploadFile(
-            @RequestParam(\"file\") MultipartFile file,
+            @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User me
     ) {
-        if (me == null) return ResponseEntity.status(401).body(Map.of(\"message\", \"Chưa đăng nhập.\"));
-        if (file.isEmpty()) return ResponseEntity.badRequest().body(Map.of(\"message\", \"File rỗng.\"));
+        if (me == null) return ResponseEntity.status(401).body(Map.of("message", "Chưa đăng nhập."));
+        if (file.isEmpty()) return ResponseEntity.badRequest().body(Map.of("message", "File rỗng."));
 
         // Validate file type & size (max 10MB)
         String contentType = file.getContentType();
-        if (contentType == null) return ResponseEntity.badRequest().body(Map.of(\"message\", \"Không xác định loại file.\"));
-        boolean isImage = contentType.startsWith(\"image/\");
-        boolean isDoc = contentType.equals(\"application/pdf\") ||
-                contentType.equals(\"application/msword\") ||
-                contentType.equals(\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\");
+        if (contentType == null) return ResponseEntity.badRequest().body(Map.of("message", "Không xác định loại file."));
+        boolean isImage = contentType.startsWith("image/");
+        boolean isDoc = contentType.equals("application/pdf") ||
+                contentType.equals("application/msword") ||
+                contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
         if (!isImage && !isDoc) {
-            return ResponseEntity.badRequest().body(Map.of(\"message\", \"Chỉ cho phép ảnh (jpg/png/webp) và PDF/DOC.\"));
+            return ResponseEntity.badRequest().body(Map.of("message", "Chỉ cho phép ảnh (jpg/png/webp) và PDF/DOC."));
         }
         if (file.getSize() > 10 * 1024 * 1024) {
-            return ResponseEntity.badRequest().body(Map.of(\"message\", \"File quá lớn (tối đa 10MB).\"));
+            return ResponseEntity.badRequest().body(Map.of("message", "File quá lớn (tối đa 10MB)."));
         }
 
         try {
             // Lưu file vào thư mục uploads (production nên dùng S3/Cloudinary)
-            String dir = \"uploads/chat/\" + LocalDate.now().format(DateTimeFormatter.ofPattern(\"yyyy/MM/dd\"));
+            String dir = "uploads/chat/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
             Path uploadDir = Paths.get(dir);
             Files.createDirectories(uploadDir);
 
-            String ext = \"\";
+            String ext = "";
             String original = file.getOriginalFilename();
-            if (original != null && original.contains(\".\")) {
-                ext = original.substring(original.lastIndexOf(\".\"));
+            if (original != null && original.contains(".")) {
+                ext = original.substring(original.lastIndexOf("."));
             }
             String filename = UUID.randomUUID() + ext;
             Path filePath = uploadDir.resolve(filename);
             Files.write(filePath, file.getBytes());
 
-            String fileUrl = \"/api/v1/chat/files/\" + filename; // serve qua endpoint static
-            String fileType = isImage ? \"IMAGE\" : \"DOCUMENT\";
+            String fileUrl = "/api/v1/chat/files/" + filename; // serve qua endpoint static
+            String fileType = isImage ? "IMAGE" : "DOCUMENT";
 
             return ResponseEntity.ok(Map.of(
-                    \"fileUrl\", fileUrl,
-                    \"fileType\", fileType,
-                    \"fileName\", original,
-                    \"fileSize\", file.getSize()
+                    "fileUrl", fileUrl,
+                    "fileType", fileType,
+                    "fileName", original,
+                    "fileSize", file.getSize()
             ));
         } catch (IOException e) {
-            return ResponseEntity.status(500).body(Map.of(\"message\", \"Lưu file thất bại: \" + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("message", "Lưu file thất bại: " + e.getMessage()));
         }
     }
 
@@ -491,8 +491,8 @@ public class ChatController {
     // ============================================================
 
     /** Tìm tin nhắn theo từ khóa trong DM hoặc kênh. */
-    @GetMapping(\"/messages/search\")
-    @PreAuthorize(\"isAuthenticated()\")
+    @GetMapping("/messages/search")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ChatMessage>> searchMessages(
             @RequestParam String query,
             @RequestParam(required = false) String with,
@@ -508,7 +508,7 @@ public class ChatController {
             candidates = chatMessageRepository.findDirectMessages(email, with.trim());
         } else {
             String channelSlug = normalizeChannel(channel);
-            candidates = \"general\".equals(channelSlug)
+            candidates = "general".equals(channelSlug)
                     ? chatMessageRepository.findTop50General()
                     : chatMessageRepository.findTop50ByChannel(channelSlug);
         }
@@ -525,10 +525,10 @@ public class ChatController {
     // ============================================================
 
     /** Tổng số tin nhắn chưa đọc (DM + Group) của user hiện tại. */
-    @GetMapping(\"/unread-count\")
-    @PreAuthorize(\"isAuthenticated()\")
+    @GetMapping("/unread-count")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> unreadCount(@AuthenticationPrincipal User me) {
-        if (me == null) return ResponseEntity.status(401).body(Map.of(\"total\", 0));
+        if (me == null) return ResponseEntity.status(401).body(Map.of("total", 0));
         String email = me.getEmail().toLowerCase();
 
         // DM chưa đọc: tin nhắn có recipientEmail = email và readAt = null
@@ -538,9 +538,9 @@ public class ChatController {
         long groupUnread = 0;
 
         return ResponseEntity.ok(Map.of(
-                \"dm\", dmUnread,
-                \"group\", groupUnread,
-                \"total\", dmUnread + groupUnread
+                "dm", dmUnread,
+                "group", groupUnread,
+                "total", dmUnread + groupUnread
         ));
     }
 
