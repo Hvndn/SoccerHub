@@ -151,21 +151,29 @@ export default function TournamentOrganizerPortal({
   // --- Duyệt đội đăng ký ---
   const [pendingTeams, setPendingTeams] = useState<PendingTeam[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
-  const [pendingOpen, setPendingOpen] = useState(false);
   const [pendingBusy, setPendingBusy] = useState(false);
 
   const loadPendingTeams = async (tid: number) => {
     setPendingLoading(true);
+    setPendingFor(tid);
     try { setPendingTeams(await getPendingTeams(tid)); }
     catch { setPendingTeams([]); }
     finally { setPendingLoading(false); }
   };
 
+  // Lưu ID giải đang mở panel thay vì boolean, vì panel nằm TRONG TỪNG card:
+  // nếu dùng boolean chung thì bấm "Duyệt đội" ở giải B sẽ mở panel của cả giải A
+  // (và hiển thị nhầm dữ liệu của B).
+  const [pendingOpenFor, setPendingOpenFor] = useState<number | null>(null);
+  // Giải mà pendingTeams/referees đang nạp — dùng để chỉ hiện badge cho đúng card.
+  const [pendingFor, setPendingFor] = useState<number | null>(null);
+  const [refFor, setRefFor] = useState<number | null>(null);
+
   const togglePending = (tid: number) => {
-    setPendingOpen((v) => {
-      const next = !v;
-      if (next) loadPendingTeams(tid);
-      return next;
+    setPendingOpenFor((cur) => {
+      if (cur === tid) return null; // đang mở đúng giải này -> đóng lại
+      loadPendingTeams(tid);
+      return tid;
     });
   };
 
@@ -191,7 +199,7 @@ export default function TournamentOrganizerPortal({
 
   // --- Trọng tài ---
   const [referees, setReferees] = useState<RefereeInfo[]>([]);
-  const [refOpen, setRefOpen] = useState(false);
+  const [refOpen, setRefOpen] = useState<number | null>(null);
   const [refLoading, setRefLoading] = useState(false);
   const [refBusy, setRefBusy] = useState(false);
   const [refName, setRefName] = useState("");
@@ -200,16 +208,17 @@ export default function TournamentOrganizerPortal({
 
   const loadReferees = async (tid: number) => {
     setRefLoading(true);
+    setRefFor(tid);
     try { setReferees(await getReferees(tid)); }
     catch { setReferees([]); }
     finally { setRefLoading(false); }
   };
 
   const toggleReferees = (tid: number) => {
-    setRefOpen((v) => {
-      const next = !v;
-      if (next) loadReferees(tid);
-      return next;
+    setRefOpen((cur) => {
+      if (cur === tid) return null; // đang mở đúng giải này -> đóng lại
+      loadReferees(tid);
+      return tid;
     });
   };
 
@@ -770,7 +779,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
         >
           <Users className="w-3.5 h-3.5" />
           Duyệt đội
-          {pendingTeams.length > 0 && (
+          {pendingTeams.length > 0 && pendingFor === Number(t.id) && (
             <span className="min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-white text-[9px] font-black flex items-center justify-center">
               {pendingTeams.length}
             </span>
@@ -783,7 +792,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           Trọng tài
-          {referees.length > 0 && (
+          {referees.length > 0 && refFor === Number(t.id) && (
             <span className="min-w-[16px] h-4 px-1 rounded-full bg-sky-500 text-white text-[9px] font-black flex items-center justify-center">
               {referees.length}
             </span>
@@ -792,7 +801,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       </div>
 
       {/* Panel duyệt đội */}
-      {pendingOpen && (
+      {pendingOpenFor === Number(t.id) && (
         <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
           <p className="text-[11px] font-black uppercase tracking-wider text-amber-700">Đội chờ duyệt</p>
           {pendingLoading ? (
@@ -831,7 +840,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       )}
 
       {/* Panel trọng tài */}
-      {refOpen && (
+      {refOpen === Number(t.id) && (
         <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-2">
           <p className="text-[11px] font-black uppercase tracking-wider text-sky-700">Trọng tài</p>
           {refLoading ? (
