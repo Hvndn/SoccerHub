@@ -7,7 +7,7 @@ import TournamentOrganizerPortal from "./TournamentOrganizerPortal";
 import { fetchTournaments } from "@/lib/tournamentService";
 import { apiUrl, fetchWithTimeout } from '@/lib/api';
 import FormDots from "./FormDots";
-import { Users, Trophy, Cpu, PlusCircle, Sparkles, ShieldCheck, Flame, Radio, MessageCircle, Search, ChevronRight } from "lucide-react";
+import { Users, Trophy, Cpu, PlusCircle, Sparkles, ShieldCheck, Flame, Radio, MessageCircle, ChevronRight } from "lucide-react";
 
 interface CommunityFormProps {
  user?: any;
@@ -20,7 +20,10 @@ interface CommunityFormProps {
 }
 
 export default function CommunityForm({ user, onSelectSlot, onStartDm, defaultSubTab = "matchmaking", onOpenAuth, onNavigateTab }: CommunityFormProps) {
- const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer" | "formboard" | "chat">(defaultSubTab as any);
+ // "chat" đã bỏ khỏi danh sách: khối chat cộng đồng (search phòng chat, filter
+// chưa đọc/riêng tư/bạn bè, danh sách kênh) nằm ở tab "Cộng Đồng" (CommunityHub).
+// Trang Ban Tổ Chức chỉ lo phần giải đấu + điều hành + phong độ để tránh lặp UI.
+const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer" | "formboard">(defaultSubTab as any);
  const [tournamentCount, setTournamentCount] = useState<number | null>(null);
  const [formBoard, setFormBoard] = useState<any[]>([]);
 
@@ -98,31 +101,12 @@ export default function CommunityForm({ user, onSelectSlot, onStartDm, defaultSu
  )}
  </div>
   {/* ========================================================= */}
-  {/* SEARCH BAR + FILTER CHIPS (Mobile-first) */}
-  {/* ========================================================= */}
-  <div className="space-y-3">
-  <div className="relative">
-  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-  <input
-  type="text"
-  placeholder="Tìm kiếm phòng chat, đội bóng, cầu thủ..."
-  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] focus:border-[#0369a1] transition-all"
-  />
-  </div>
-  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-  {["Tất cả", "Chưa đọc", "Riêng tư", "Bạn bè"].map((f) => (
-  <button key={f} type="button" className="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-[#0369a1] hover:text-[#0369a1]">
-  {f}
-  </button>
-  ))}
-  </div>
-  </div>
-
-  {/* ========================================================= */}
   {/* BANNER NỔI BẬT */}
   {/* ========================================================= */}
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-  <button type="button" onClick={() => setSubTab("chat")} className="group relative overflow-hidden rounded-2xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98]" style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}>
+  {/* Card Chat: chuyển sang tab "Cộng Đồng" thật thay vì sub-tab "chat" (trước đây
+      setSubTab("chat") không có khối nội dung nào render -> màn trắng). */}
+  <button type="button" onClick={() => onNavigateTab?.("community")} className="group relative overflow-hidden rounded-2xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98]" style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}>
   <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
   <div className="relative flex items-start justify-between gap-3">
   <div>

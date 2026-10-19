@@ -595,6 +595,7 @@ if (newTab === activeTab) return;
  defaultSubTab="organizer"
  onOpenAuth={handleOpenAuth}
  onStartDm={handleStartDm}
+ onNavigateTab={handleTabChange}
  />
  ) : currentUser ? (
  <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
