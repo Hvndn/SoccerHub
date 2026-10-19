@@ -376,7 +376,10 @@ public class ChatController {
     /** Lấy danh sách reaction của một tin nhắn (gộp theo emoji + đếm). */
     @GetMapping("/messages/{id}/reactions")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Map<String, Object>>> getReactions(@PathVariable Long id) {
+    public ResponseEntity<List<Map<String, Object>>> getReactions(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User me
+    ) {
         ChatMessage msg = chatMessageRepository.findById(id).orElse(null);
         if (msg == null) return ResponseEntity.status(404).body(List.of());
 
@@ -384,7 +387,9 @@ public class ChatController {
         Map<String, List<ChatReaction>> byEmoji = reactions.stream()
                 .collect(Collectors.groupingBy(ChatReaction::getEmoji));
 
-        String currentEmail = me != null ? me.getEmail().toLowerCase() : "";
+        String currentEmail = (me != null && me.getEmail() != null)
+                ? me.getEmail().toLowerCase()
+                : "";
 
         List<Map<String, Object>> result = byEmoji.entrySet().stream().map(e -> {
             Map<String, Object> row = new LinkedHashMap<>();
