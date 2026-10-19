@@ -9,7 +9,7 @@
  * nói rõ chuyện gì đang xảy ra.
  * ========================================================= */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { ServerCrash, RefreshCw, WifiOff, CheckCircle2 } from "lucide-react";
 import {
   subscribeBackendStatus,
@@ -17,10 +17,33 @@ import {
   type BackendStatus,
 } from "@/lib/backendStatus";
 
+/** Đo chiều cao Navbar (đang fixed) để chừa khoảng, tránh bị Navbar đè lên. */
+function useNavbarHeight(): number {
+  const [h, setH] = useState(0);
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const nav = document.querySelector("header") || document.querySelector("nav");
+      setH(nav ? Math.round(nav.getBoundingClientRect().height) : 0);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    // Bản dựng mới thêm/sửa Navbar có thể đổi chiều cao sau vài frame.
+    const t = setTimeout(measure, 400);
+    return () => {
+      window.removeEventListener("resize", measure);
+      clearTimeout(t);
+    };
+  }, []);
+
+  return h;
+}
+
 export default function BackendStatusBanner() {
   const [status, setStatus] = useState<BackendStatus | null>(null);
   /** Người dùng đã tự tắt banner — không ép hiện lại cho tới lần tải trang sau. */
   const [dismissed, setDismissed] = useState(false);
+  const navHeight = useNavbarHeight();
 
   useEffect(() => {
     const unsubscribe = subscribeBackendStatus(setStatus);
@@ -32,7 +55,10 @@ export default function BackendStatusBanner() {
   if (!status || status.reachable || dismissed) return null;
 
   return (
-    <div className="w-full flex justify-center px-3 pt-3 shrink-0">
+    <div
+      className="w-full flex justify-center px-3 shrink-0"
+      style={{ paddingTop: navHeight + 12 }}
+    >
       <div className="w-full max-w-2xl rounded-2xl border border-amber-300 bg-amber-50/95 shadow-lg backdrop-blur-md px-4 py-3 animate-fade-in-down">
         <div className="flex items-start gap-3">
           <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-700">
