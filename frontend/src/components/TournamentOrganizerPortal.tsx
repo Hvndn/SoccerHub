@@ -1308,7 +1308,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
  {/* TABS HEADER */}
  <div className="flex items-center justify-between border-b border-slate-200 pb-4">
- <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-2 flex-wrap">
  {[
  { id: "standings", label: "Bảng Xếp Hạng" },
  { id: "var_logs", label: "Kết Quả & Vua Phá Lưới" },

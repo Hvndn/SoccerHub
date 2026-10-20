@@ -969,7 +969,7 @@ export default function PlayerProfileConsole({
  </div>
 
  {/* Tabs thể thức: Sân 7, Sân 5, Sân 11, Futsal */}
- <div className="flex items-center bg-slate-100 p-1 rounded-xl text-[13px] font-semibold overflow-x-auto no-scrollbar max-w-full shrink-0">
+ <div className="flex items-center bg-slate-100 p-1 rounded-xl text-[13px] font-semibold shrink-0 flex-wrap">
  <button
  onClick={() => setActiveFormat("san7")}
  className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
@@ -1153,7 +1153,7 @@ export default function PlayerProfileConsole({
  </div>
 
  {/* Filter nút */}
- <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-[13px] font-semibold overflow-x-auto no-scrollbar max-w-full shrink-0">
+ <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-[13px] font-semibold shrink-0 flex-wrap">
  <button
  onClick={() => setHistoryFilter("all")}
  className={`px-2.5 py-1 rounded-lg whitespace-nowrap transition-all ${

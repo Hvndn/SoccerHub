@@ -557,7 +557,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
             className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0369a1]/40 focus:border-[#0369a1]/60 transition-all"
           />
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+        <div className="flex items-center gap-2 pb-0.5 flex-wrap">
           {FILTERS.map((f) => (
             <button
               key={f.key}

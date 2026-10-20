@@ -572,7 +572,7 @@ export default function PitchDetail({
  </div>
 
  {/* Dải 7 Ngày Động Tự Động Tính Theo Thời Gian Thực */}
- <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
+ <div className="flex items-center gap-2 pb-1 flex-wrap">
  {upcomingDays.map((d) => (
  <button
  key={d.iso}
@@ -626,7 +626,7 @@ export default function PitchDetail({
 
  {/* Bộ lọc Sân Con & Khung Giờ */}
  <div className="flex flex-wrap items-center justify-between gap-3">
- <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
+ <div className="flex items-center gap-2 pb-1 flex-wrap">
  {[
  { id: "ALL", label: "Tất Cả Sân Con" },
  { id: "Sân 7", label: "Sân 7 Người (Cỏ Nhân Tạo)" },

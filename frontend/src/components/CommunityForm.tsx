@@ -60,7 +60,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  {/* ========================================================= */}
  {/* TAB CHUYỂN ĐỔI CHÍNH 3 TRỤ CỘT CỦA CỘNG ĐỒNG */}
  {/* ========================================================= */}
- <div className="relative z-10 mt-3 sm:mt-6 pt-3 sm:pt-5 border-t border-slate-100 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-1.5 max-w-full scroll-smooth">
+ <div className="relative z-10 mt-3 sm:mt-6 pt-3 sm:pt-5 border-t border-slate-100 flex items-center gap-1.5 sm:gap-2 pb-1.5 flex-wrap">
 
  <button
  type="button"

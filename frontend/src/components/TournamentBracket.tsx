@@ -1083,7 +1083,7 @@ const [addCount, setAddCount] = useState("4");
  </div>
 
  {/* Console Nav Tabs */}
- <div className="flex items-center gap-2 mt-6 pt-6 border-t border-slate-200 overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-2 mt-6 pt-6 border-t border-slate-200 flex-wrap">
  <button
  onClick={() => setActiveTab("bracket")}
  className={`px-4 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center space-x-2 ${

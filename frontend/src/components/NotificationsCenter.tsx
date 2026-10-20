@@ -96,7 +96,7 @@ export default function NotificationsCenter({
     >
       {/* Bộ lọc theo loại + đánh dấu đã đọc hết */}
       <div className="px-3 sm:px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar min-w-0">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
           {FILTERS.map((f) => (
             <button
               key={f.id}

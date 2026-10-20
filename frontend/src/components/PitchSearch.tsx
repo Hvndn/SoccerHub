@@ -678,7 +678,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
  {/* Hàng 1: Tabs loại sân thể thao */}
  <div className={`${showMobileFilters ? "flex" : "hidden"} sm:flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3`}>
- <div className="flex items-center space-x-2 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth">
+ <div className="flex items-center gap-2 pb-1 flex-wrap">
  {sportsTabs.map((tab) => (
  <button
  key={tab.id}
@@ -691,16 +691,18 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  }`}
  >
  <span>{tab.icon}</span>
- <span>{tab.name}</span>
- {tab.badge && (
- <span className={`text-[13px] px-1.5 py-0.2 rounded-md ${
+ <span>
+ {tab.name}
+ {tab.badge ? (
+ <span className={`ml-1 px-1.5 py-0.2 rounded-md ${
  selectedSport === tab.id
  ? "bg-white/20 text-white "
  : "bg-slate-200 text-slate-600 "
  }`}>
  {tab.badge}
  </span>
- )}
+ ) : null}
+ </span>
  </button>
  ))}
  </div>
@@ -716,7 +718,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  }`}
  >
  <span className={`w-2 h-2 rounded-full ${onlyAvailableTonight ? "bg-[#0369a1] text-white animate-ping" : "bg-slate-400"}`} />
- <span>Chỉ xem sân còn ca trống tối nay</span>
+ <span>Chỉ xem ca trống tối nay</span>
  </button>
  </div>
 
