@@ -44,15 +44,15 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  points: [
  {
  title: "Tìm sân theo khu vực & khung giờ",
- desc: "Lọc theo khu vực, loại sân và ngày — danh sách ca trống lấy trực tiếp từ ma trận ca sân trong CSDL."
+ desc: "Lọc theo khu vực, loại sân và ngày — ca trống lấy trực tiếp từ CSDL."
  },
  {
  title: "Chống trùng ca khi đặt",
- desc: "Ca đã có đơn giữ chỗ thì chuyển trạng thái Đã Đặt trên hệ thống, người khác không thể đặt tiếp cùng khung giờ."
+ desc: "Ca đã có đơn sẽ chuyển sang Đã Đặt, không ai đặt trùng khung giờ."
  },
  {
  title: "Cọc 50% hoặc 100% qua VietQR",
- desc: "Chọn mức cọc khi đặt; chính sách hoàn cọc do từng chủ sân quy định, hiển thị rõ trước khi bạn xác nhận."
+ desc: "Chọn mức cọc khi đặt; chính sách hoàn cọc hiển thị rõ trước khi xác nhận."
  }
  ],
  metricLabel: "Luồng đặt sân:",
@@ -69,15 +69,15 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  points: [
  {
  title: "Nhập giá ca sân & tiền cọc",
- desc: "Chủ sân tự đặt giá trung bình và giá giờ cao điểm ngay trên dashboard — thay đổi lưu thẳng vào CSDL."
+ desc: "Chủ sân tự đặt giá trung bình và giá giờ cao điểm ngay trên dashboard."
  },
  {
  title: "Nhãn giờ vàng theo khung giờ cao điểm",
- desc: "Hệ thống gắn nhãn giờ vàng cho các ca chiều/tối đông khách, chủ sân dựa vào đó để điều chỉnh giá thủ công."
+ desc: "Gắn nhãn giờ vàng cho ca chiều/tối để chủ sân điều chỉnh giá."
  },
  {
  title: "Bảng doanh thu & sổ cọc",
- desc: "Thống kê doanh thu từ các đơn đặt thật, đối soát tiền cọc với khách khi check-in tại quầy."
+ desc: "Thống kê doanh thu từ đơn đặt thật, đối soát tiền cọc khi check-in."
  }
  ],
  metricLabel: "Giá & tiền cọc:",
@@ -94,7 +94,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  points: [
  {
  title: "Tự Động Xếp Lịch & Cây Nhánh Loại Trực Tiếp",
- desc: "BTC nhập đội và hệ thống sinh bảng đấu, nhánh knock-out lưu ngay trong hồ sơ giải — không cần vẽ tay."
+ desc: "BTC nhập đội, hệ thống sinh bảng đấu và nhánh knock-out lưu ngay trong hồ sơ giải."
  },
  {
  title: "Cập nhật tỷ số & Vua Phá Lưới",
@@ -187,7 +187,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  Giải Pháp Toàn Diện Cho Thể Thao Số
  </h2>
  <p className="hidden sm:block text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
- Hệ thống kết nối mượt mà từ lúc tìm sân, cáp kèo, đặt cọc cho đến khi tiếng còi bế mạc giải đấu vang lên.
+ Mượt mà từ tìm sân, cáp kèo, đặt cọc đến lúc giải đấu khai tiếng.
  </p>
  </div>
 

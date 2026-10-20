@@ -111,7 +111,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <p className="text-[13px] sm:text-base text-slate-600 font-medium leading-relaxed max-w-2xl pt-1">
  Nền tảng kết nối <strong>Cầu Thủ</strong>, <strong>Chủ Cụm Sân</strong> và <strong>Ban Tổ Chức Giải Đấu</strong>.
  <span className="hidden sm:inline">
- {" "}Đặt sân online với thanh toán cọc qua <strong>VietQR</strong>, quản lý ca sân và giải đấu loại trực tiếp, lưu <strong>lịch sử thi đấu</strong> và chuỗi phong độ cho từng trận.
+ {" "}Đặt sân online, cọc qua <strong>VietQR</strong>, quản lý ca sân và giải đấu loại trực tiếp.
  </span>
  </p>
 
@@ -167,7 +167,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  </div>
  <div>
  <span className="text-xs sm:text-sm font-black text-slate-900 tracking-wider block">
- Bộ Lọc Tìm Sân Trống Theo Khu Vực &amp; Giờ Vàng
+ Bộ Lọc Tìm Sân Trống
  </span>
  <span className="text-[12px] sm:text-xs text-slate-500 font-medium">
  Lọc theo khu vực, loại sân và khung giờ trống trong ngày

@@ -717,7 +717,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="bg-slate-50 rounded-xl px-3.5 py-2 border border-slate-200 flex items-center space-x-2.5">
  <MapPin className="w-4 h-4 text-rose-600 shrink-0" />
  <div className="flex-1 min-w-0">
- <span className="text-[11px] text-slate-500 font-extrabold block leading-none">Khu Vực Địa Lý</span>
+ <span className="text-[13px] text-slate-500 font-extrabold block leading-none">Khu Vực Địa Lý</span>
  <select
  aria-label="Khu vực địa lý"
  value={selectedDistrict}
@@ -737,7 +737,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="bg-slate-50 rounded-xl px-3.5 py-2 border border-slate-200 flex items-center space-x-2.5">
  <Clock className="w-4 h-4 text-[#0b4f6c] shrink-0" />
  <div className="flex-1 min-w-0">
- <span className="text-[11px] text-slate-500 font-extrabold block leading-none">Khung Giờ Thi Đấu</span>
+ <span className="text-[13px] text-slate-500 font-extrabold block leading-none">Khung Giờ Thi Đấu</span>
  <select
  aria-label="Khung giờ thi đấu"
  value={selectedTimeSlotFilter}
@@ -756,7 +756,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="bg-slate-50 rounded-xl px-3.5 py-2 border border-slate-200 flex items-center space-x-2.5">
  <Layers className="w-4 h-4 text-emerald-500 shrink-0" />
  <div className="flex-1 min-w-0">
- <span className="text-[11px] text-slate-500 font-extrabold block leading-none">Quy Mô Sân Con</span>
+ <span className="text-[13px] text-slate-500 font-extrabold block leading-none">Quy Mô Sân Con</span>
  <select
  aria-label="Quy mô sân con"
  value={selectedPitchFormat}
