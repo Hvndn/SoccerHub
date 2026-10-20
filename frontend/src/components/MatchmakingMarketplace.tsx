@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { matchmakingAi } from "@/lib/aiService";
 import {
  Sparkles,
@@ -84,6 +84,15 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  // Modal nhận kèo đối thủ
  const [acceptingPost, setAcceptingPost] = useState<any | null>(null);
+
+ // Cac form (tao keo / xac nhan bat keo / danh gia fair-play) hien INLINE -> tu cuon toi.
+ useEffect(() => {
+  if (!showCreateModal && !acceptingPost && !reviewPost) return;
+  const raf = requestAnimationFrame(() => {
+   document.querySelector('[id^="mm-inline-"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  return () => cancelAnimationFrame(raf);
+ }, [showCreateModal, acceptingPost, reviewPost]);
  const [acceptOpponentTeam, setAcceptOpponentTeam] = useState("");
  const [acceptOpponentPhone, setAcceptOpponentPhone] = useState(user?.phone || "");
  const [accepting, setAccepting] = useState(false);
@@ -892,8 +901,8 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* MODAL 1: TẠO KÈO GIAO LƯU BÓNG ĐÁ MỚI */}
  {showCreateModal && (
- <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
- <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 my-auto max-h-[92vh] overflow-y-auto">
+ <div id="mm-inline-create" className="w-full animate-fade-in">
+ <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-2xl text-slate-900">
  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
  <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 ">
  <PlusCircle className="w-5 h-5 text-[#0b4f6c] " />
@@ -1020,8 +1029,8 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* MODAL 2: XÁC NHẬN BẮT KÈO ĐỐI THỦ */}
  {acceptingPost && (
- <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
- <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-md w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-modal-pop text-slate-900 my-auto max-h-[92vh] overflow-y-auto">
+ <div id="mm-inline-accept" className="w-full animate-fade-in">
+ <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-md w-full p-4 sm:p-6 space-y-4 shadow-2xl text-slate-900">
  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
  <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 ">
  <Zap className="w-5 h-5 text-[#0b4f6c] " />
@@ -1106,7 +1115,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  )}
   {/* Fair-play rating modal */}
   {reviewPost && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+  <div id="mm-inline-review" className="w-full animate-fade-in">
   <div className="bg-white max-w-md w-full rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-4 border border-slate-200 shadow-2xl">
   <div className="flex items-center justify-between">
   <h3 className="font-black text-slate-900 text-base">Đánh giá Fair-play</h3>

@@ -79,6 +79,15 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
  // Kèo ghép & tương tác
  const [showCreateMatchModal, setShowCreateMatchModal] = useState(false);
+
+ // Form tao keo moi hien INLINE -> tu cuon toi.
+ useEffect(() => {
+  if (!showCreateMatchModal) return;
+  const raf = requestAnimationFrame(() => {
+   document.getElementById("ps-inline-create-match")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  return () => cancelAnimationFrame(raf);
+ }, [showCreateMatchModal]);
  const [newMatchTitle, setNewMatchTitle] = useState("");
  const [newMatchSlot, setNewMatchSlot] = useState("19:00 - 21:00");
  const [newMatchPitchId, setNewMatchPitchId] = useState("");
@@ -1392,8 +1401,8 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
  {/* MODAL TẠO KÈO MỚI */}
  {showCreateMatchModal && (
- <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
- <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-md w-full border border-slate-200 shadow-2xl space-y-4 animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
+ <div id="ps-inline-create-match" className="w-full animate-fade-in">
+ <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-md w-full border border-slate-200 shadow-2xl space-y-4">
  <div className="flex items-center justify-between pb-3 border-b border-slate-100 ">
  <div className="flex items-center space-x-2">
  <div className="w-8 h-8 rounded-xl bg-[#0369a1]/20 text-emerald-500 flex items-center justify-center font-bold">
