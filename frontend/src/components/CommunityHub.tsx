@@ -575,27 +575,24 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
       </div>
 
       {/* ===== BANNER NỔI BẬT ===== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* BẮT ĐỐI GIAO HỮU (trái) */}
         <button
           type="button"
           onClick={openMatchmaking}
-          className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
+          className="group relative overflow-hidden rounded-2xl px-4 py-3 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
           style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}
         >
           <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/20 rounded-full blur-3xl" />
-          <div className="relative flex items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Flame className="w-5 h-5 text-white" />
-                <span className="text-[12px] font-black tracking-wider text-white/90">Matchmaking</span>
-              </div>
-              <h3 className="text-base sm:text-lg font-black text-white leading-tight">Bắt Đối Giao Hữu</h3>
-              <p className="text-[13px] sm:text-xs text-white/95 mt-1 leading-relaxed">
-                Ghép kèo nhanh theo phong độ.
-              </p>
+          <div className="relative flex items-center gap-3">
+            <span className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+              <Flame className="w-5 h-5 text-white" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[15px] sm:text-base font-black text-white leading-tight">Bắt Đối Giao Hữu</h3>
+              <p className="text-[13px] text-white/90 leading-snug">Ghép kèo nhanh theo phong độ</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
+            <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform shrink-0" />
           </div>
         </button>
 
@@ -603,24 +600,19 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
         <button
           type="button"
           onClick={openTournamentChat}
-          className="group relative overflow-hidden rounded-3xl p-4 sm:p-5 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
+          className="group relative overflow-hidden rounded-2xl px-4 py-3 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
           style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}
         >
           <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/20 rounded-full blur-3xl" />
-          <div className="relative flex items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Radio className="w-5 h-5 text-white" />
-                <span className="text-[12px] font-black tracking-wider text-white/90">
-                  Trực tuyến · {onlineCount} thành viên
-                </span>
-              </div>
-              <h3 className="text-base sm:text-lg font-black text-white leading-tight">Chat Giải Đấu</h3>
-              <p className="text-[13px] sm:text-xs text-white/95 mt-1 leading-relaxed">
-                Trao đổi với BTC và các đội bóng.
-              </p>
+          <div className="relative flex items-center gap-3">
+            <span className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+              <Radio className="w-5 h-5 text-white" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[15px] sm:text-base font-black text-white leading-tight">Chat Giải Đấu</h3>
+              <p className="text-[13px] text-white/90 leading-snug">Trao đổi với BTC · {onlineCount} người online</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
+            <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform shrink-0" />
           </div>
         </button>
       </div>

@@ -447,7 +447,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  {/* 2. FOOTBALL SPORT FILTER RIBBON & QUICK ACTIONS — số liệu lấy từ CSDL */}
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-xl bg-white shadow-xs border border-slate-200/80 ">
  {/* Sport Switcher Ribbon */}
- <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0" role="tablist" aria-label="Lọc theo thể thức giải đấu">
+ <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Lọc theo thể thức giải đấu">
  {SPORT_TABS.map((tab) => {
  const count = countBySport(statusBase, tab.key);
  const isActive = activeSport === tab.key;
@@ -660,7 +660,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  {featured.title}
  </h1>
  {featured.description && (
- <p className="text-sm sm:text-lg text-sky-800 font-bold mt-1">
+ <p className="text-sm sm:text-lg text-sky-800 font-bold mt-1 line-clamp-2">
  {featured.description}
  </p>
  )}
@@ -669,21 +669,21 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  {/* Metric Badges Grid */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
  <div className="flex flex-col p-2.5 rounded-xl bg-slate-50 border border-slate-200 shadow-xs">
- <span className="text-[12px] text-slate-500 tracking-wider font-semibold">Tổng Giải Thưởng</span>
+ <span className="text-[12px] text-slate-500 tracking-wider font-semibold">Giải thưởng</span>
  <span className="text-lg sm:text-xl font-black text-sky-800 font-mono mt-0.5"><CountUp value={featured.prizePool ?? 0} format={(n) => `${Math.round(n).toLocaleString('vi-VN')}đ`} /></span>
  </div>
  <div className="flex flex-col p-2.5 rounded-xl bg-slate-50 border border-slate-200 shadow-xs">
- <span className="text-[12px] text-slate-500 tracking-wider font-semibold">Thời Gian Diễn Ra</span>
+ <span className="text-[12px] text-slate-500 tracking-wider font-semibold">Thời gian</span>
  <span className="text-sm font-bold text-slate-800 mt-0.5">
  {formatDate(featured.startDate)}{featured.endDate ? ` - ${formatDate(featured.endDate)}` : ''}
  </span>
  </div>
  <div className="flex flex-col p-2.5 rounded-xl bg-slate-50 border border-slate-200 shadow-xs">
- <span className="text-[12px] text-slate-500 tracking-wider font-semibold">Thể Thức Hạng Đấu</span>
+ <span className="text-[12px] text-slate-500 tracking-wider font-semibold">Thể thức</span>
  <span className="text-sm font-bold text-slate-800 mt-0.5">{sportLabel(featured.sportType)}</span>
  </div>
  <div className="flex flex-col p-2.5 rounded-xl bg-slate-50 border border-slate-200 shadow-xs">
- <span className="text-[12px] text-slate-500 tracking-wider font-semibold">Địa Điểm Thi Đấu</span>
+ <span className="text-[12px] text-slate-500 tracking-wider font-semibold">Địa điểm</span>
  <span className="text-sm font-bold text-slate-800 mt-0.5">{featured.pitchName || featured.location || 'Sắp công bố'}</span>
  </div>
  </div>
@@ -807,7 +807,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   />
 
  {/* 5. MAIN NAVIGATION TABS — số liệu đếm từ CSDL */}
- <div className="flex items-center gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Khu vực nội dung giải đấu">
+ <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Khu vực nội dung giải đấu">
  <button 
  type="button"
  role="tab"
@@ -1171,9 +1171,9 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  const reg = registeredCount(t);
  const cap = t.totalTeams ?? 0;
  const statusLabel =
- t.status === 'ONGOING' ? 'ĐANG DIỄN RA'
- : t.status === 'COMPLETED' ? 'ĐÃ KẾT THÚC'
- : full ? 'ĐÃ ĐỦ ĐỘI' : 'ĐANG MỞ ĐĂNG KÝ';
+ t.status === 'ONGOING' ? 'Đang diễn ra'
+ : t.status === 'COMPLETED' ? 'Đã kết thúc'
+ : full ? 'Đã đủ đội' : 'Đang mở đăng ký';
 
  return (
  <div 
@@ -1234,7 +1234,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  </div>
 
  <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-start shrink-0">
- <span className="text-[12px] text-slate-500 font-semibold">Tổng Giải Thưởng</span>
+ <span className="text-[12px] text-slate-500 font-semibold">Giải thưởng</span>
  <span className="text-xl font-black font-mono text-sky-700 ">
  {formatMoney(t.prizePool)}
  </span>
@@ -1245,28 +1245,28 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  <div className="flex items-center gap-2">
  <Users className="w-4 h-4 text-sky-700" />
  <span>
- Số đội: <strong className="text-slate-900 ">{reg} / {cap || '—'} Đội</strong>
+ Số đội: <strong className="text-slate-900 ">{reg}/{cap || '—'}</strong>
  {!full && cap > 0 && <span className="text-sky-700 font-bold ml-1">(Còn {cap - reg} slot)</span>}
  </span>
  </div>
  <div className="flex items-center gap-2">
  <ShieldCheck className="w-4 h-4 text-sky-700" />
- <span>Lệ phí: <strong className="text-slate-900 ">{formatMoney(t.entryFee)} / Đội</strong></span>
+ <span>Lệ phí: <strong className="text-slate-900 ">{formatMoney(t.entryFee)}/đội</strong></span>
  </div>
  <div className="flex items-center gap-2">
  <Video className="w-4 h-4 text-sky-700" />
- <span>Công nghệ: <strong className="text-slate-900 ">Camera AI & VAR Trực Tiếp</strong></span>
+ <span><strong className="text-slate-900 ">Camera AI & VAR</strong></span>
  </div>
  </div>
 
  {/* Registered Teams Snippet if any */}
  {t.teams && t.teams.length > 0 && (
  <div className="px-3 py-2 bg-slate-100/70 rounded-xl text-xs space-y-1">
- <span className="text-[13px] font-bold text-slate-500">Đội bóng tiêu biểu đã ghi danh:</span>
+ <span className="text-[13px] font-bold text-slate-500">Đội đã ghi danh:</span>
  <div className="flex flex-wrap gap-1.5">
  {t.teams.map((tm: any, idx: number) => (
  <span key={idx} className="px-2 py-0.5 rounded-md bg-white text-slate-800 text-[13px] font-semibold border border-slate-200 ">
- ⚽ {tm.teamName} (Cap: {tm.captainName})
+ ⚽ {tm.teamName} · {tm.captainName}
  </span>
  ))}
  </div>
@@ -1279,7 +1279,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  <div className="w-36 h-2 bg-slate-200 rounded-full overflow-hidden">
  <div className="h-full bg-[#0369a1] rounded-full transition-all duration-300" style={{ width: `${Math.min(percentage, 100)}%` }}></div>
  </div>
- <span className="text-[13px] text-slate-500 font-medium">{percentage}% Slot đã nộp</span>
+ <span className="text-[13px] text-slate-500 font-medium">{percentage}% đã nộp</span>
  </div>
  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
  {t.status === 'COMPLETED' ? (

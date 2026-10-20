@@ -443,11 +443,11 @@ if (newTab === activeTab) return;
  {!currentUser && (
  <GuestFeatureBanner
  title="Cộng Đồng Cầu Thủ & Phong Độ Thi Đấu"
- description="Tham gia cộng đồng Turfzone. Ghép trận (Matchmaking) tìm đối thủ tương đương phong độ và theo dõi lịch sử thi đấu của bản thân."
+ description="Ghép trận theo phong độ, theo dõi lịch sử thi đấu và kết nối cộng đồng Turfzone."
  features={[
- "Lịch sử thi đấu & chuỗi phong độ 5 trận",
- "Ghép trận tìm đối thủ theo trình độ",
- "Bảng xếp hạng phong độ & CLB",
+ "Lịch sử thi đấu & chuỗi phong độ",
+ "Ghép trận theo trình độ",
+ "Bảng xếp hạng phong độ",
  ]}
  icon={Users}
  onOpenAuth={handleOpenAuth}

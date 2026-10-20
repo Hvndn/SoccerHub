@@ -1123,8 +1123,8 @@ setIsSavingInfo(false);
  <QrCode className="w-5 h-5" />
  </div>
  <div>
- <span className="text-sm font-black text-slate-900 block">Tra Cứu Mã Vé & Check-in Tiếp Nhận</span>
- <span className="hidden sm:inline text-xs text-slate-500">Nhập mã vé hoặc SĐT khách để check-in</span>
+ <span className="text-sm font-black text-slate-900 block">Tra Cứu Mã Vé & Check-in</span>
+ <span className="hidden sm:inline text-xs text-slate-500">Nhập mã vé hoặc SĐT khách</span>
  </div>
  </div>
 
@@ -1162,7 +1162,7 @@ setIsSavingInfo(false);
  Sơ Đồ Ca Sân Thời Gian Thực
  </h2>
  <span className="hidden sm:block text-xs text-slate-500 mt-0.5">
- Giờ mở cửa: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca thi đấu 2 tiếng (120 phút) • Tự động chống trùng lịch
+ Giờ mở: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca 2 tiếng (120 phút)
  </span>
  </div>
  </div>
