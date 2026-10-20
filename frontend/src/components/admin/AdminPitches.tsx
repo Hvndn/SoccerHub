@@ -5,6 +5,14 @@ import AdminTable, { type AdminColumn } from "./AdminTable";
 import { SectionCard } from "./AdminUI";
 import { listAdminPitches, type AdminPitch } from "@/lib/adminService";
 
+/** Nhãn tiếng Việt cho mã loại sân (tránh lộ mã kỹ thuật ra UI). */
+const PITCH_TYPE_LABEL: Record<string, string> = {
+ SAN_5: "Sân 5",
+ SAN_7: "Sân 7",
+ SAN_11: "Sân 11",
+ FUTSAL: "Futsal",
+};
+
 export default function AdminPitches({ notify }: { notify: (type: "ok" | "err", text: string) => void }) {
  const [rows, setRows] = useState<AdminPitch[]>([]);
  const [loading, setLoading] = useState(true);
@@ -56,7 +64,7 @@ export default function AdminPitches({ notify }: { notify: (type: "ok" | "err", 
  header: "Loại sân",
  render: (r) => (
  <span className="text-[13px] text-slate-600 ">
- {(r.pitchTypes ?? []).join(", ") || "—"}
+ {((r.pitchTypes ?? []).map((x) => PITCH_TYPE_LABEL[String(x).toUpperCase()] ?? String(x)).join(", ")) || "—"}
  </span>
  ),
  },

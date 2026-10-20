@@ -1189,7 +1189,7 @@ setIsSavingInfo(false);
  className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer shadow-xs"
  >
  <option value="ALL">Tất cả trạng thái</option>
- <option value="BOOKED">🟢 Đã Cọc (CONFIRMED)</option>
+ <option value="BOOKED">🟢 Đã Cọc</option>
  <option value="PLAYING">🔴 Đang Đá (IN_USE)</option>
  <option value="EMPTY">⚪ Ca Trống (AVAILABLE)</option>
  <option value="RESALE">🟡 Sàn Nhượng Gấp</option>
@@ -1358,7 +1358,7 @@ setIsSavingInfo(false);
  <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-sm font-bold pt-1">
  <span className="flex items-center space-x-2 text-sky-700 ">
  <span className="w-3.5 h-3.5 rounded-full bg-[#0369a1] shadow-xs shrink-0" />
- <span>Đã Cọc (CONFIRMED)</span>
+ <span>Đã Cọc</span>
  </span>
  <span className="flex items-center space-x-2 text-rose-600">
  <span className="w-3.5 h-3.5 rounded-full bg-rose-500 shadow-xs shrink-0" />
