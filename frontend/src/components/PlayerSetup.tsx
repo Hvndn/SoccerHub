@@ -107,7 +107,7 @@ function Field({
 }) {
  return (
  <label className="block space-y-1.5">
- <span className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+ <span className="flex items-center gap-1.5 text-[13px] font-bold text-slate-700">
  <span className="text-[#0369a1]">{icon}</span>
  {label}
  {required && <span className="text-rose-500">*</span>}
@@ -231,7 +231,7 @@ export default function PlayerSetup() {
  <h1 className="text-xl sm:text-2xl font-black text-slate-900">
  Khởi tạo hồ sơ cầu thủ
  </h1>
- <p className="text-xs text-slate-500 mt-0.5">
+ <p className="text-[13px] text-slate-500 mt-0.5">
  Chào mừng <strong className="text-slate-800">{user?.fullName}</strong> — hoàn tất hồ sơ để
  hệ thống ghép kèo và đánh giá phong độ phù hợp với bạn.
  </p>
@@ -374,7 +374,7 @@ export default function PlayerSetup() {
  {error && (
  <p
  role="alert"
- className="rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold px-3.5 py-2.5"
+ className="rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-[13px] font-bold px-3.5 py-2.5"
  >
  {error}
  </p>

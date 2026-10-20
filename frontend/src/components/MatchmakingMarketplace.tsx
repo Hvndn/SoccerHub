@@ -302,7 +302,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
  {/* Breadcrumb + AI Matchmaking Indicator */}
  <div className="space-y-1.5">
- <div className="hidden sm:flex items-center space-x-1.5 text-xs text-slate-500">
+ <div className="hidden sm:flex items-center space-x-1.5 text-[13px] text-slate-500">
  <span className="hover:text-[#0b4f6c] cursor-pointer">Trang chủ</span>
  <span>/</span>
  <span>Chợ Kèo Ghép Đội</span>
@@ -314,11 +314,11 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#acf847] opacity-75" />
  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#0369a1]" />
  </span>
- <span className="font-mono text-xs font-bold text-slate-900 ">
+ <span className="font-mono text-[13px] font-bold text-slate-900 ">
  Ghép kèo theo phong độ thi đấu
  </span>
  <span className="text-slate-500">•</span>
- <span className="px-3 py-0.5 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] font-bold text-xs">
+ <span className="px-3 py-0.5 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] font-bold text-[13px]">
  {onlineCaptains > 0
  ? `${onlineCaptains} đội đang mở kèo trên sàn`
  : "Chưa có kèo nào đang mở"}
@@ -328,14 +328,14 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* Action Bar Right */}
  <div className="flex items-center gap-2.5">
- <button className="hidden sm:flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-colors shadow-xs">
+ <button className="hidden sm:flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[13px] transition-colors shadow-xs">
  <Filter className="w-4 h-4 shrink-0 text-[#0b4f6c] " />
  <span className="whitespace-nowrap">Bộ Lọc Kèo Quanh Tôi</span>
  </button>
 
  <button
  onClick={() => setShowCreateModal(true)}
- className="flex-1 sm:flex-none justify-center flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-xs shadow-md transition-all active:scale-95"
+ className="flex-1 sm:flex-none justify-center flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] shadow-md transition-all active:scale-95"
  >
  <PlusCircle className="w-4 h-4 text-white" />
  <span className="sm:hidden">+ Tạo Kèo</span>
@@ -351,56 +351,56 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="flex flex-wrap items-center gap-2">
  <button
  onClick={() => setSelectedSport("SAN_7")}
- className={`flex items-center space-x-2 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
+ className={`flex items-center space-x-2 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-bold text-[13px] shrink-0 transition-all ${
  selectedSport === "SAN_7"
  ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
  <span>⚽ Bóng Đá Sân 7</span>
- <span className="px-2 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[12px] font-black">
+ <span className="px-2 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[13px] font-black">
  {openKèoBySport.get("SAN_7") ?? 0} kèo mở
  </span>
  </button>
 
  <button
  onClick={() => setSelectedSport("SAN_5")}
- className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
+ className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-[13px] shrink-0 transition-all ${
  selectedSport === "SAN_5"
  ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
  <span>👟 Sân 5 Cỏ Nhân Tạo</span>
- <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[12px]">
+ <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[13px]">
  {openKèoBySport.get("SAN_5") ?? 0} kèo
  </span>
  </button>
 
  <button
  onClick={() => setSelectedSport("SAN_11")}
- className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
+ className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-[13px] shrink-0 transition-all ${
  selectedSport === "SAN_11"
  ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
  <span>🏟️ Bóng Đá Sân 11 FIFA</span>
- <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[12px]">
+ <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[13px]">
  {openKèoBySport.get("SAN_11") ?? 0} kèo
  </span>
  </button>
 
  <button
  onClick={() => setSelectedSport("FUTSAL")}
- className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
+ className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-[13px] shrink-0 transition-all ${
  selectedSport === "FUTSAL"
  ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
  <span>🥅 Futsal Trong Nhà</span>
- <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[12px]">
+ <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[13px]">
  {openKèoBySport.get("FUTSAL") ?? 0} kèo
  </span>
  </button>
@@ -413,11 +413,11 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  aria-expanded={showMobileFilters}
  className="md:hidden w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-left"
  >
- <span className="flex items-center gap-2 text-xs font-bold text-slate-800 ">
+ <span className="flex items-center gap-2 text-[13px] font-bold text-slate-800 ">
  <Filter className="w-4 h-4 text-[#0b4f6c] " />
  Bộ lọc kèo nâng cao
  </span>
- <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+ <span className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-500">
  {showMobileFilters ? "Thu gọn" : "Mở rộng"}
  <ChevronDown className={`w-4 h-4 transition-transform ${showMobileFilters ? "rotate-180" : ""}`} />
  </span>
@@ -427,8 +427,8 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className={`${showMobileFilters ? "grid" : "hidden"} md:grid bg-slate-50 rounded-2xl p-3 sm:p-4 border border-slate-200 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-center`}>
  {/* Level / Phong độ */}
  <div className="space-y-1">
- <div className="flex justify-between items-center text-xs">
- <span className="text-slate-500 font-extrabold text-[12px]">Lọc theo phong độ</span>
+ <div className="flex justify-between items-center text-[13px]">
+ <span className="text-slate-500 font-extrabold text-[13px]">Lọc theo phong độ</span>
  <span className="text-[#0b4f6c] font-bold text-[13px]">
  {selectedLevel === "Tất cả" ? "Mọi trình độ" : selectedLevel}
  </span>
@@ -438,7 +438,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <button
  key={lvl}
  onClick={() => setSelectedLevel(lvl)}
- className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-mono font-bold transition-all ${
+ className={`flex-1 py-1.5 px-2 rounded-xl text-[13px] font-mono font-bold transition-all ${
  selectedLevel === lvl
  ? "bg-[#0369a1] text-white shadow-xs"
  : "bg-white text-slate-700 hover:bg-slate-200"
@@ -452,11 +452,11 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* Time Slot */}
  <div className="space-y-1">
- <span className="text-slate-500 font-extrabold text-[12px] block">Khung giờ</span>
+ <span className="text-slate-500 font-extrabold text-[13px] block">Khung giờ</span>
  <div className="flex items-center space-x-1 pt-0.5">
  <button
  onClick={() => setSelectedTimeSlot("TONIGHT")}
- className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all ${
+ className={`flex-1 py-1.5 px-2 rounded-xl text-[13px] font-bold transition-all ${
  selectedTimeSlot === "TONIGHT"
  ? "bg-slate-900 text-white "
  : "bg-white text-slate-700 "
@@ -466,7 +466,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </button>
  <button
  onClick={() => setSelectedTimeSlot("TOMORROW")}
- className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all ${
+ className={`flex-1 py-1.5 px-2 rounded-xl text-[13px] font-bold transition-all ${
  selectedTimeSlot === "TOMORROW"
  ? "bg-slate-900 text-white "
  : "bg-white text-slate-700 "
@@ -479,8 +479,8 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* Radius Filter */}
  <div className="space-y-1">
- <div className="flex justify-between items-center text-xs">
- <span className="text-slate-500 font-extrabold text-[12px]">Bán kính</span>
+ <div className="flex justify-between items-center text-[13px]">
+ <span className="text-slate-500 font-extrabold text-[13px]">Bán kính</span>
  <span className="text-slate-600 font-bold text-[13px]">&lt; {radiusKm}km (Q.7, Hải Châu)</span>
  </div>
  <input
@@ -495,12 +495,12 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* Format Filter */}
  <div className="space-y-1">
- <span className="text-slate-500 font-extrabold text-[12px] block">Thể thức thi đấu</span>
+ <span className="text-slate-500 font-extrabold text-[13px] block">Thể thức thi đấu</span>
  <select
  aria-label="Thể thức thi đấu"
  value={matchFormat}
  onChange={(e) => setMatchFormat(e.target.value)}
- className="w-full py-2 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none"
+ className="w-full py-2 px-3 rounded-xl bg-white border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none"
  >
  <option value="SAN_7">Kèo Bóng Đá Sân 7</option>
  <option value="SAN_5">Kèo Futsal / Sân 5 Người</option>
@@ -511,12 +511,12 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* Payment Model */}
  <div className="space-y-1">
- <span className="text-slate-500 font-extrabold text-[12px] block">Hình thức tiền sân</span>
+ <span className="text-slate-500 font-extrabold text-[13px] block">Hình thức tiền sân</span>
  <select
  aria-label="Hình thức tiền sân"
  value={paymentModel}
  onChange={(e) => setPaymentModel(e.target.value)}
- className="w-full py-2 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none"
+ className="w-full py-2 px-3 rounded-xl bg-white border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none"
  >
  <option value="SPLIT_EQUAL">Chia đều tự động (~45k-60k)</option>
  <option value="LOSER_PAYS">Đội thua chịu 100% sân</option>
@@ -535,11 +535,11 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <h2 className="text-xl font-black text-slate-900 shrink-0">
  Kèo Đang Mở Đăng Ký ({openKèoCount})
  </h2>
- <span className="px-3 py-1 rounded-full bg-[#acf847] text-[#102000] font-mono text-xs font-extrabold whitespace-nowrap">
+ <span className="px-3 py-1 rounded-full bg-[#acf847] text-[#102000] font-mono text-[13px] font-extrabold whitespace-nowrap">
  {matchableCount}/{openKèoCount} kèo cùng tầm
  </span>
  </div>
- <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 shrink-0 whitespace-nowrap">
+ <div className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 shrink-0 whitespace-nowrap">
  <span>Sắp xếp:</span>
  <button
  type="button"
@@ -564,14 +564,14 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  {loadingPosts ? (
  <div className="p-5 sm:p-8 text-center bg-white rounded-2xl sm:rounded-3xl border border-slate-200 ">
  <RefreshCw className="w-6 h-6 animate-spin text-[#0b4f6c] mx-auto mb-2" />
- <p className="text-xs text-slate-500 font-bold">Đang tải danh sách các kèo giao lưu thật từ hệ thống...</p>
+ <p className="text-[13px] text-slate-500 font-bold">Đang tải danh sách các kèo giao lưu thật từ hệ thống...</p>
  </div>
  ) : posts.length === 0 ? (
  <div className="p-5 sm:p-8 text-center bg-white rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3">
  <p className="text-sm text-slate-500 font-semibold">Chưa có kèo nào đang mở. Hãy là người đầu tiên tạo kèo!</p>
  <button
  onClick={() => setShowCreateModal(true)}
- className="px-5 py-2.5 rounded-2xl bg-[#0369a1] text-white text-xs font-bold"
+ className="px-5 py-2.5 rounded-2xl bg-[#0369a1] text-white text-[13px] font-bold"
  >
  + Đăng Tin Tạo Kèo Ngay
  </button>
@@ -589,7 +589,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  >
  <div className="flex flex-wrap items-center justify-between gap-2">
  <div className="flex items-center space-x-2">
- <span className={`flex items-center space-x-1 px-3 py-1 rounded-lg font-extrabold text-xs border ${
+ <span className={`flex items-center space-x-1 px-3 py-1 rounded-lg font-extrabold text-[13px] border ${
  isMatched 
  ? "bg-slate-100 text-slate-500 border-slate-200 " 
  : "bg-rose-500/10 text-rose-600 border-rose-500/30 animate-pulse"
@@ -597,17 +597,17 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <Flame className="w-4 h-4 text-rose-600" />
  <span>{isMatched ? "Đã có đối thủ" : "Kèo đang mở"}</span>
  </span>
- <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs">
+ <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-[13px]">
  {post.pitchType === "SAN_7" ? "Sân 7 Cỏ Nhân Tạo" : post.pitchType === "SAN_5" ? "Sân 5 Mini" : "Sân 11 FIFA"}
  </span>
  {isAiTop && (
- <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-black text-xs flex items-center gap-1">
+ <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-black text-[13px] flex items-center gap-1">
  <Sparkles className="w-3.5 h-3.5" />
  <span>{aiOffline ? "Hợp phong độ nhất" : "AI đề xuất"}</span>
  </span>
  )}
  </div>
- <div className="flex items-center space-x-1.5 text-[#0b4f6c] font-mono font-bold text-xs">
+ <div className="flex items-center space-x-1.5 text-[#0b4f6c] font-mono font-bold text-[13px]">
  <ShieldCheck className="w-4 h-4 text-[#0b4f6c] " />
  <FormDots form={post.form} size="sm" />
  <span className="text-slate-500 font-sans font-bold">
@@ -620,11 +620,11 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="space-y-1">
  <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
  <span>{post.teamName}</span>
- <span className="text-xs px-2 py-0.5 rounded bg-sky-100 text-sky-900 font-bold">
+ <span className="text-[13px] px-2 py-0.5 rounded bg-sky-100 text-sky-900 font-bold">
  Cap: {post.captainName}
  </span>
  </h3>
- <div className="flex items-center space-x-2 text-xs text-slate-500">
+ <div className="flex items-center space-x-2 text-[13px] text-slate-500">
  <span className="flex items-center space-x-1 text-slate-900 font-bold">
  <MapPin className="w-4 h-4 text-[#0b4f6c] " />
  <span>{post.pitchName}</span>
@@ -640,7 +640,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  <div className="flex flex-col md:items-end bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-xl">
  <div className="text-xl font-black text-slate-900 font-mono">
- {(post.estimatedFee || 50000).toLocaleString('vi-VN')}đ <span className="text-xs font-normal text-slate-500">/người</span>
+ {(post.estimatedFee || 50000).toLocaleString('vi-VN')}đ <span className="text-[13px] font-normal text-slate-500">/người</span>
  </div>
  <span className="text-[13px] font-bold text-[#0b4f6c] ">
  {post.paymentModel === "SPLIT_EQUAL" ? "Chia đôi tiền sân (50/50)" : post.paymentModel === "LOSER_PAYS" ? "Đội thua trả tiền sân" : "Chủ kèo bao trọn"}
@@ -650,7 +650,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* Note / Lời nhắn của đội */}
  {post.note && (
- <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-700 border border-slate-200/60 ">
+ <div className="p-3 bg-slate-50 rounded-xl text-[13px] text-slate-700 border border-slate-200/60 ">
  <span className="font-bold text-slate-500 mr-1">Ghi chú:</span>
  <span>{post.note}</span>
  </div>
@@ -658,7 +658,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* Opponent matched info if any */}
  {isMatched && (
- <div className="p-3 bg-sky-50 border border-[#0369a1]/30 rounded-xl text-xs flex items-center justify-between">
+ <div className="p-3 bg-sky-50 border border-[#0369a1]/30 rounded-xl text-[13px] flex items-center justify-between">
  <div>
  <span className="font-bold text-sky-900 ">Đối thủ đã nhận: </span>
  <strong className="text-slate-900 ">{post.opponentTeamName}</strong> (Cap: {post.opponentCaptainName})
@@ -677,7 +677,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="flex items-center space-x-2">
  {isMatched ? (
   <>
-  <span className="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-xs font-bold">
+  <span className="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-[13px] font-bold">
   Đã Đầy Đội
   </span>
   <button
@@ -690,7 +690,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
     setReviewSportsmanship(true);
     setReviewComment("");
   }}
-  className="px-3 py-2 rounded-xl bg-[#0369a1]/10 hover:bg-[#0369a1]/20 text-[#0369a1] text-xs font-bold transition-all flex items-center gap-1.5 border border-[#0369a1]/30"
+  className="px-3 py-2 rounded-xl bg-[#0369a1]/10 hover:bg-[#0369a1]/20 text-[#0369a1] text-[13px] font-bold transition-all flex items-center gap-1.5 border border-[#0369a1]/30"
   >
   <Star className="w-3.5 h-3.5" />
   <span>Đánh giá Fair-play</span>
@@ -702,7 +702,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  setAcceptingPost(post);
  setAcceptOpponentTeam(`FC ${userName}`);
  }}
- className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-xs shadow-md transition-all flex items-center space-x-1.5 active:scale-95"
+ className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] shadow-md transition-all flex items-center space-x-1.5 active:scale-95"
  >
  <Zap className="w-4 h-4 text-white" />
  <span>Bắt Kèo Giao Lưu Ngay</span>
@@ -728,26 +728,26 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </div>
  <h3 className="font-black text-sm text-slate-900 ">Kèo Gợi Ý Cho Bạn</h3>
  </div>
- <span className="px-2.5 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-xs font-black">
+ <span className="px-2.5 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[13px] font-black">
  {matchableCount}/{openKèoCount} cùng tầm
  </span>
  </div>
 
  <div className="bg-slate-50 rounded-2xl p-3.5 flex items-center justify-between border border-slate-200 ">
  <div className="flex flex-col">
- <span className="text-[12px] text-slate-500 font-extrabold">Hồ sơ của bạn</span>
+ <span className="text-[13px] text-slate-500 font-extrabold">Hồ sơ của bạn</span>
  <span className="font-bold text-sm text-slate-900 ">{userName}</span>
  </div>
- <div className="text-right font-mono text-xs">
+ <div className="text-right font-mono text-[13px]">
  <div className="font-extrabold text-[#0b4f6c] ">{userTier}</div>
- <div className="text-slate-500 text-[12px]">
+ <div className="text-slate-500 text-[13px]">
  {myTeamPost ? `Phong độ: ${myTeamPost.record ?? myTeamPost.form ?? "—"}` : "Chưa đăng kèo"}
  </div>
  </div>
  </div>
 
- <div className="space-y-2 text-xs">
- <span className="text-[12px] font-extrabold text-slate-500 block">
+ <div className="space-y-2 text-[13px]">
+ <span className="text-[13px] font-extrabold text-slate-500 block">
  Kèo đang mở trong CSDL:
  </span>
  {loadingPosts ? (
@@ -780,7 +780,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  {recommendedPost && (
  <button
  onClick={() => setAcceptingPost(recommendedPost)}
- className="w-full py-3 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center space-x-1.5 active:scale-95"
+ className="w-full py-3 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] shadow-md transition-all flex items-center justify-center space-x-1.5 active:scale-95"
  >
  <Zap className="w-4 h-4 text-white" />
  <span>Xem Chi Tiết &amp; Nhận Kèo</span>
@@ -795,16 +795,16 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <ShieldCheck className="w-5 h-5 text-[#0b4f6c] " />
  <h3 className="font-black text-sm text-slate-900 ">Hồ Sơ Cầu Thủ</h3>
  </div>
- <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs font-bold">
+ <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[13px] font-bold">
  {user?.email ? "Đã đăng nhập" : "Khách"}
  </span>
  </div>
 
  <div className="bg-slate-900 text-white rounded-2xl p-4 space-y-1 shadow-md">
- <span className="text-[12px] text-slate-500 font-extrabold block">Phong độ đội của bạn</span>
+ <span className="text-[13px] text-slate-500 font-extrabold block">Phong độ đội của bạn</span>
  <div className="flex items-baseline justify-between font-mono">
  <FormDots form={myForm} />
- <span className="text-xs text-slate-300 font-bold">
+ <span className="text-[13px] text-slate-300 font-bold">
  {myTeamPost
  ? `${myTeamPost.record ?? "0-0-0"} • Thắng ${myWinRate}%`
  : user?.level ?? "Chưa xếp bậc"}
@@ -815,7 +815,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </p>
  </div>
 
- <div className="space-y-2 text-xs">
+ <div className="space-y-2 text-[13px]">
  <div className="flex justify-between items-center text-slate-600 ">
  <span>Kèo đang mở trên sàn:</span>
  <span className="font-bold text-[#0b4f6c] font-mono">{openKèoCount} kèo</span>
@@ -846,15 +846,15 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <Trophy className="w-5 h-5 text-amber-700" />
  <h3 className="font-black text-sm text-slate-900 ">Đội Mở Kèo Nhiều Nhất</h3>
  </div>
- <span className="text-xs text-slate-500 font-semibold">{openKèoCount} kèo trong CSDL</span>
+ <span className="text-[13px] text-slate-500 font-semibold">{openKèoCount} kèo trong CSDL</span>
  </div>
 
  {topTeams.length === 0 ? (
- <p className="text-xs text-slate-500 py-4 text-center">
+ <p className="text-[13px] text-slate-500 py-4 text-center">
  Chưa có kèo nào. Bấm “+ Tạo Kèo Giao Lưu Mới” để mở kèo đầu tiên.
  </p>
  ) : (
- <div className="space-y-2 text-xs">
+ <div className="space-y-2 text-[13px]">
  {topTeams.map((t, i) => (
  <div
  key={t.teamName}
@@ -866,7 +866,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  >
  <div className="flex items-center space-x-2.5 min-w-0">
  <span
- className={`w-6 h-6 rounded-full flex items-center justify-center font-mono font-black text-xs shrink-0 ${
+ className={`w-6 h-6 rounded-full flex items-center justify-center font-mono font-black text-[13px] shrink-0 ${
  i === 0
  ? "bg-[#acf847] text-[#102000]"
  : "bg-slate-200 text-slate-900 font-bold"
@@ -876,7 +876,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </span>
  <div className="min-w-0">
  <p className="font-bold text-slate-900 truncate">{t.teamName}</p>
- <span className="text-[12px] text-slate-500">
+ <span className="text-[13px] text-slate-500">
  {t.count} kèo đang mở • {t.pitchType ?? "Sân 7"}
  </span>
  </div>
@@ -907,7 +907,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </button>
  </div>
 
- <form onSubmit={handleCreatePost} className="space-y-3.5 text-xs">
+ <form onSubmit={handleCreatePost} className="space-y-3.5 text-[13px]">
  <div>
  <label className="block font-bold mb-1 text-slate-700 ">Tên Đội Bóng Của Bạn (FC)</label>
  <input 
@@ -1035,7 +1035,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </button>
  </div>
 
- <div className="p-3 bg-sky-50 border border-[#0369a1]/30 rounded-2xl text-xs space-y-1">
+ <div className="p-3 bg-sky-50 border border-[#0369a1]/30 rounded-2xl text-[13px] space-y-1">
  <span className="font-extrabold text-sky-900 block">
  Đối đầu: {acceptingPost.teamName} (Cap: {acceptingPost.captainName})
  </span>
@@ -1045,7 +1045,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </div>
  </div>
 
- <form onSubmit={handleAcceptPost} className="space-y-3.5 text-xs">
+ <form onSubmit={handleAcceptPost} className="space-y-3.5 text-[13px]">
  <div>
  <label className="block font-bold mb-1 text-slate-700 ">Tên Đội Của Bạn (FC Thách Đấu)</label>
  <input 
@@ -1112,7 +1112,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
   <h3 className="font-black text-slate-900 text-base">Đánh giá Fair-play</h3>
   <button type="button" onClick={() => setReviewPost(null)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors" aria-label="Đóng">✕</button>
   </div>
-  <p className="text-xs text-slate-500">
+  <p className="text-[13px] text-slate-500">
   Đánh giá đội <strong className="text-slate-900">{reviewPost.opponentTeamName || reviewPost.teamName}</strong> sau trận giao hữu.
   </p>
   <div className="flex items-center gap-1.5">
@@ -1124,15 +1124,15 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
   <span className="ml-2 text-sm font-black text-slate-900">{reviewStars}/5</span>
   </div>
   <div className="space-y-2">
-  <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+  <label className="flex items-center gap-2 text-[13px] font-bold text-slate-700 cursor-pointer">
   <input type="checkbox" checked={reviewOnTime} onChange={(e) => setReviewOnTime(e.target.checked)} className="w-4 h-4 accent-[#0369a1]" />
   Đúng giờ (không trễ)
   </label>
-  <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+  <label className="flex items-center gap-2 text-[13px] font-bold text-slate-700 cursor-pointer">
   <input type="checkbox" checked={reviewFairPlay} onChange={(e) => setReviewFairPlay(e.target.checked)} className="w-4 h-4 accent-[#0369a1]" />
   Sòng phẳng (chia tiền đúng thỏa thuận)
   </label>
-  <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+  <label className="flex items-center gap-2 text-[13px] font-bold text-slate-700 cursor-pointer">
   <input type="checkbox" checked={reviewSportsmanship} onChange={(e) => setReviewSportsmanship(e.target.checked)} className="w-4 h-4 accent-[#0369a1]" />
   Tinh thần thể thao (không chơi xấu)
   </label>
@@ -1146,7 +1146,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] resize-none"
   />
   <div className="flex justify-end gap-2.5">
-  <button type="button" onClick={() => setReviewPost(null)} className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all">Hủy</button>
+  <button type="button" onClick={() => setReviewPost(null)} className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold transition-all">Hủy</button>
   <button
   type="button"
   disabled={reviewSubmitting}
@@ -1173,7 +1173,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
       setReviewSubmitting(false);
     }
   }}
-  className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50"
+  className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-50"
   >
   {reviewSubmitting ? "Đang gửi…" : "Gửi đánh giá"}
   </button>

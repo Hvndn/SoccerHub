@@ -254,7 +254,7 @@ const mobileNav: MobileNavItem[] =
   <MessageCircle className="w-[18px] h-[18px] text-emerald-400 shrink-0" />
   <span>Cộng Đồng</span>
   {chatUnread > 0 && (
-  <span className="min-w-[16px] h-4 px-1 rounded-full bg-[#0369a1] text-white text-[11px] font-black flex items-center justify-center">
+  <span className="min-w-[16px] h-4 px-1 rounded-full bg-[#0369a1] text-white text-[13px] font-black flex items-center justify-center">
   {chatUnread > 9 ? "9+" : chatUnread}
   </span>
   )}
@@ -275,7 +275,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => handleSelectSubTab("organizer")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
  activeTab === "organizer"
  ? "bg-[#0369a1] text-white shadow-sm font-black"
  : "text-slate-700 hover:bg-slate-100"
@@ -283,7 +283,7 @@ const mobileNav: MobileNavItem[] =
  >
  <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-sky-700 shrink-0" />
  <span>Điều Hành Giải Đấu</span>
- <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-[#0369a1] text-white leading-none shadow-xs">
+ <span className="px-1.5 py-0.5 rounded text-[13px] font-black bg-[#0369a1] text-white leading-none shadow-xs">
  BTC
  </span>
  </button>
@@ -291,7 +291,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => handleSelectSubTab("tournaments")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
  activeTab === "tournaments"
  ? "bg-[#0369a1] text-white shadow-sm font-black"
  : "text-slate-700 hover:bg-slate-100"
@@ -304,7 +304,7 @@ const mobileNav: MobileNavItem[] =
 <button
   type="button"
   onClick={() => handleSelectSubTab("matchmaking")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
   activeTab === "matchmaking"
   ? "bg-[#0369a1] text-white shadow-sm font-black"
   : "text-slate-700 hover:bg-slate-100"
@@ -312,7 +312,7 @@ const mobileNav: MobileNavItem[] =
   >
   <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  <span className="px-1.5 py-0.5 rounded text-[13px] font-black bg-rose-500 text-white leading-none shadow-xs">
   HOT
   </span>
   </button>
@@ -320,7 +320,7 @@ const mobileNav: MobileNavItem[] =
   <button
   type="button"
   onClick={() => handleSelectSubTab("community")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
   activeTab === "community"
   ? "bg-[#0369a1] text-white shadow-sm font-black"
   : "text-slate-700 hover:bg-slate-100"
@@ -336,7 +336,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => handleSelectSubTab("booking")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
  activeTab === "booking"
  ? "bg-[#0369a1] text-white shadow-sm font-black"
  : "text-slate-700 hover:bg-slate-100"
@@ -349,7 +349,7 @@ const mobileNav: MobileNavItem[] =
 <button
   type="button"
   onClick={() => handleSelectSubTab("matchmaking")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
   activeTab === "matchmaking"
   ? "bg-[#0369a1] text-white shadow-sm font-black"
   : "text-slate-700 hover:bg-slate-100"
@@ -357,7 +357,7 @@ const mobileNav: MobileNavItem[] =
   >
   <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  <span className="px-1.5 py-0.5 rounded text-[13px] font-black bg-rose-500 text-white leading-none shadow-xs">
   HOT
   </span>
   </button>
@@ -365,7 +365,7 @@ const mobileNav: MobileNavItem[] =
   <button
   type="button"
   onClick={() => handleSelectSubTab("community")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
   activeTab === "community"
   ? "bg-[#0369a1] text-white shadow-sm font-black"
   : "text-slate-700 hover:bg-slate-100"
@@ -378,7 +378,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => handleSelectSubTab("tournaments")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
  activeTab === "tournaments"
  ? "bg-[#0369a1] text-white shadow-sm font-black"
  : "text-slate-700 hover:bg-slate-100"
@@ -395,7 +395,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => handleSelectSubTab("booking")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
  activeTab === "booking"
  ? "bg-[#0369a1] text-white shadow-sm font-black"
  : "text-slate-700 hover:bg-slate-100"
@@ -408,7 +408,7 @@ const mobileNav: MobileNavItem[] =
 <button
   type="button"
   onClick={() => handleSelectSubTab("matchmaking")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
   activeTab === "matchmaking"
   ? "bg-[#0369a1] text-white shadow-sm font-black"
   : "text-slate-700 hover:bg-slate-100"
@@ -416,7 +416,7 @@ const mobileNav: MobileNavItem[] =
   >
   <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  <span className="px-1.5 py-0.5 rounded text-[13px] font-black bg-rose-500 text-white leading-none shadow-xs">
   HOT
   </span>
   </button>
@@ -424,7 +424,7 @@ const mobileNav: MobileNavItem[] =
   <button
   type="button"
   onClick={() => handleSelectSubTab("community")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
   activeTab === "community"
   ? "bg-[#0369a1] text-white shadow-sm font-black"
   : "text-slate-700 hover:bg-slate-100"
@@ -437,7 +437,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => handleSelectSubTab("tournaments")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
  activeTab === "tournaments"
  ? "bg-[#0369a1] text-white shadow-sm font-black"
  : "text-slate-700 hover:bg-slate-100"
@@ -450,7 +450,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => handleSelectSubTab("team-management")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
  activeTab === "team-management"
  ? "bg-[#0369a1] text-white shadow-sm font-black"
  : "text-slate-700 hover:bg-slate-100"
@@ -463,7 +463,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => handleSelectSubTab("membership")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
  activeTab === "membership"
  ? "bg-[#0369a1] text-white shadow-sm font-black"
  : "text-slate-700 hover:bg-slate-100"
@@ -479,7 +479,7 @@ const mobileNav: MobileNavItem[] =
  {/* RIGHT SIDE WIDGETS */}
  <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
  {user?.role === "PLAYER" && (
- <div className="hidden 2xl:flex items-center space-x-3 bg-slate-100 px-3 py-1.5 rounded-2xl border border-slate-200 text-xs font-bold font-mono">
+ <div className="hidden 2xl:flex items-center space-x-3 bg-slate-100 px-3 py-1.5 rounded-2xl border border-slate-200 text-[13px] font-bold font-mono">
  <div className="flex items-center space-x-1.5 text-slate-800 ">
  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
  <span>{user?.level || "Phong trào"}</span>
@@ -509,7 +509,7 @@ const mobileNav: MobileNavItem[] =
  >
  <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-[#0b4f6c] " />
  {unreadCount > 0 && (
- <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-rose-500 text-white text-[12px] font-black flex items-center justify-center px-1.5 ring-2 ring-white animate-pulse">
+ <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-rose-500 text-white text-[13px] font-black flex items-center justify-center px-1.5 ring-2 ring-white animate-pulse">
  {unreadCount > 9 ? "9+" : unreadCount}
  </span>
  )}
@@ -525,13 +525,13 @@ const mobileNav: MobileNavItem[] =
  </div>
  <span className="font-extrabold text-base text-slate-900 ">Trung Tâm Thông Báo</span>
  {unreadCount > 0 && (
- <span className="px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-xs font-black">
+ <span className="px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[13px] font-black">
  {unreadCount} mới
  </span>
  )}
  </div>
  <div className="flex items-center space-x-2">
- <span className="px-2.5 py-1 rounded-full bg-sky-50 text-xs text-sky-700 font-bold flex items-center space-x-1.5 border border-sky-200 ">
+ <span className="px-2.5 py-1 rounded-full bg-sky-50 text-[13px] text-sky-700 font-bold flex items-center space-x-1.5 border border-sky-200 ">
  <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-pulse inline-block" />
  <span>Live Realtime</span>
  </span>
@@ -574,12 +574,12 @@ const mobileNav: MobileNavItem[] =
  <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] mt-1 shrink-0" />
  )}
  </div>
- <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-medium">{notif.message}</p>
+ <p className="text-[13px] sm:text-[13px] text-slate-600 leading-relaxed font-medium">{notif.message}</p>
 
  {/* Lý do hủy - hiển thị nổi bật */}
  {notif.type === "BOOKING_CANCELLED" && notif.cancelReason && (
  <div className="mt-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200 ">
- <p className="text-xs font-bold text-rose-700 ">
+ <p className="text-[13px] font-bold text-rose-700 ">
  📋 Lý do: <span className="font-normal">{notif.cancelReason}</span>
  </p>
  </div>
@@ -612,15 +612,15 @@ const mobileNav: MobileNavItem[] =
  setShowNotifications(false);
  router.push("/notifications");
  }}
- className="text-xs font-black text-[#0b4f6c] hover:underline"
+ className="text-[13px] font-black text-[#0b4f6c] hover:underline"
  >
  Xem tất cả →
  </button>
- <span className="text-xs font-semibold text-slate-500">{notifications.length} thông báo</span>
+ <span className="text-[13px] font-semibold text-slate-500">{notifications.length} thông báo</span>
  <button
  type="button"
  onClick={() => clearAllNotifications()}
- className="text-xs font-bold text-slate-500 hover:text-rose-600 transition-colors"
+ className="text-[13px] font-bold text-slate-500 hover:text-rose-600 transition-colors"
  >
  Xóa tất cả
  </button>
@@ -643,10 +643,10 @@ const mobileNav: MobileNavItem[] =
  className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer pl-1 py-1 rounded-2xl hover:bg-slate-100 transition-colors"
  >
  <div className="text-right hidden sm:block max-w-[130px] md:max-w-[170px]">
- <div className="text-xs font-extrabold text-slate-900 leading-tight truncate">
+ <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">
  {user.fullName || user.name || "Người Dùng"}
  </div>
- <div className="text-[12px] font-bold text-slate-500 font-mono flex items-center justify-end space-x-1 whitespace-nowrap">
+ <div className="text-[13px] font-bold text-slate-500 font-mono flex items-center justify-end space-x-1 whitespace-nowrap">
  <span className="text-[#0b4f6c] font-extrabold shrink-0">
  {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'BTC' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
  </span>
@@ -659,7 +659,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  </div>
 
- <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0369a1] border-2 border-sky-400 text-white font-extrabold text-[12px] sm:text-xs flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+ <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0369a1] border-2 border-sky-400 text-white font-extrabold text-[13px] sm:text-[13px] flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
  <NavbarAvatar user={user} />
  </div>
  </div>
@@ -668,14 +668,14 @@ const mobileNav: MobileNavItem[] =
  <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 space-y-1.5 z-50 animate-modal-pop">
  <div className="px-3 py-2.5 border-b border-slate-100 bg-slate-50/80 rounded-xl">
  <div className="flex items-center justify-between">
- <p className="font-extrabold text-xs text-slate-900 truncate max-w-[140px]">
+ <p className="font-extrabold text-[13px] text-slate-900 truncate max-w-[140px]">
  {user.fullName || user.name || "Người Dùng"}
  </p>
- <span className="text-[11px] font-black px-1.5 py-0.5 rounded bg-[#0369a1]/10 text-[#0b4f6c] ">
+ <span className="text-[13px] font-black px-1.5 py-0.5 rounded bg-[#0369a1]/10 text-[#0b4f6c] ">
  {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'Ban Tổ Chức' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
  </span>
  </div>
- <p className="text-[12px] font-mono text-slate-500 truncate mt-0.5">
+ <p className="text-[13px] font-mono text-slate-500 truncate mt-0.5">
  {user.email || user.phone || ""}
  </p>
  </div>
@@ -684,7 +684,7 @@ const mobileNav: MobileNavItem[] =
  <a
  href="/admin"
  onClick={() => setShowUserDropdown(false)}
- className="w-full text-left px-3 py-2 rounded-xl text-xs font-black text-white bg-rose-600 hover:bg-rose-700 flex items-center space-x-2 transition-all active:scale-95 shadow-md"
+ className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-black text-white bg-rose-600 hover:bg-rose-700 flex items-center space-x-2 transition-all active:scale-95 shadow-md"
  >
  <ShieldCheck className="w-4 h-4" />
  <span>Quản Trị Hệ Thống</span>
@@ -699,7 +699,7 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab("admin");
  setShowUserDropdown(false);
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
  >
  <ShieldCheck className="w-4 h-4 text-emerald-500" />
  <span>Bảng Điều Hành Cụm Sân</span>
@@ -711,7 +711,7 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab("owner-onboarding");
  setShowUserDropdown(false);
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-indigo-600 bg-indigo-50/60 hover:bg-indigo-100 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-indigo-600 bg-indigo-50/60 hover:bg-indigo-100 flex items-center space-x-2 transition-colors"
  >
  <Plus className="w-4 h-4 text-indigo-500" />
  <span>Thiết Lập / Khởi Tạo Sân Mới</span>
@@ -723,7 +723,7 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab("multi-sport");
  setShowUserDropdown(false);
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
  >
  <Clock className="w-4 h-4 text-[#0369a1]" />
  <span>Sơ Đồ Ca Sân Realtime</span>
@@ -734,7 +734,7 @@ const mobileNav: MobileNavItem[] =
   handleSelectSubTab("organizer");
   setShowUserDropdown(false);
   }}
-  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+  className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
   >
   <Trophy className="w-4 h-4 text-sky-700" />
   <span>Điều Hành Giải Đấu</span>
@@ -746,7 +746,7 @@ const mobileNav: MobileNavItem[] =
   handleSelectSubTab("community");
   setShowUserDropdown(false);
   }}
-  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+  className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
   >
   <Building2 className="w-4 h-4 text-sky-700" />
   <span>CLB của tôi</span>
@@ -758,7 +758,7 @@ const mobileNav: MobileNavItem[] =
   handleSelectSubTab("profile");
   setShowUserDropdown(false);
   }}
-  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+  className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
   >
   <User className="w-4 h-4 text-[#0369a1]" />
   <span>Hồ Sơ Cá Nhân</span>
@@ -772,7 +772,7 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab("organizer");
  setShowUserDropdown(false);
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
  >
  <Trophy className="w-4 h-4 text-emerald-500" />
  <span>Điều Hành Giải Đấu</span>
@@ -784,7 +784,7 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab("tournaments");
  setShowUserDropdown(false);
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
  >
  <Award className="w-4 h-4 text-amber-700" />
  <span>Giải Đấu & BXH</span>
@@ -796,7 +796,7 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab("my-activities");
  setShowUserDropdown(false);
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
  >
  <Calendar className="w-4 h-4 text-emerald-500" />
  <span>Lịch Trình & Vé Đã Đặt</span>
@@ -810,7 +810,7 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab("profile");
  setShowUserDropdown(false);
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
  >
  <User className="w-4 h-4 text-[#0369a1]" />
  <span>Hồ Sơ VĐV & Rating</span>
@@ -822,7 +822,7 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab("my-activities");
  setShowUserDropdown(false);
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
  >
  <Calendar className="w-4 h-4 text-emerald-500" />
  <span>Lịch Trình & Vé Đã Đặt</span>
@@ -837,7 +837,7 @@ const mobileNav: MobileNavItem[] =
  setShowUserDropdown(false);
  onLogout();
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-xs font-extrabold text-rose-600 hover:bg-rose-50 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[13px] font-extrabold text-rose-600 hover:bg-rose-50 flex items-center space-x-2 transition-colors"
  >
  <LogOut className="w-4 h-4 text-rose-600" />
  <span>Đăng Xuất</span>
@@ -851,7 +851,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => onOpenAuth("login")}
- className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-extrabold text-xs transition-all border border-slate-200 flex items-center space-x-1 active:scale-95 shrink-0"
+ className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-extrabold text-[13px] transition-all border border-slate-200 flex items-center space-x-1 active:scale-95 shrink-0"
  >
  <LogIn className="w-3.5 h-3.5 text-[#0b4f6c] " />
  <span>Đăng Nhập</span>
@@ -859,7 +859,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => onOpenAuth("register")}
- className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-xs transition-all shadow-md hidden sm:flex items-center space-x-1 active:scale-95"
+ className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] transition-all shadow-md hidden sm:flex items-center space-x-1 active:scale-95"
  >
  <span>Đăng Ký</span>
  </button>
@@ -929,13 +929,13 @@ const mobileNav: MobileNavItem[] =
  <p className="font-black text-sm text-slate-900 truncate">
  {user.fullName || user.name || "Cầu Thủ Turfzone"}
  </p>
- <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-sky-50 text-[#0b4f6c] ">
+ <span className="inline-block px-2 py-0.5 rounded-full text-[13px] font-extrabold bg-sky-50 text-[#0b4f6c] ">
  {user.role === "OWNER" ? "Chủ Sân Đối Tác" : user.role === "ORGANIZER" ? "Ban Tổ Chức" : user.role === "ADMIN" ? "Quản Trị Viên" : "VĐV Chuyên Nghiệp"}
  </span>
  </div>
  </div>
  {(user.role === "PLAYER" || user.role === "ORGANIZER") && (
- <div className="flex items-center justify-between text-xs font-mono font-bold pt-2 border-t border-slate-200/60 ">
+ <div className="flex items-center justify-between text-[13px] font-mono font-bold pt-2 border-t border-slate-200/60 ">
  <span className="text-slate-500">
  Trình độ:{" "}
  <strong className="text-[#0b4f6c] ">
@@ -947,7 +947,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  ) : (
  <div className="p-4 rounded-2xl bg-sky-50 border border-sky-100 space-y-2">
- <p className="font-extrabold text-xs text-[#0b4f6c] ">
+ <p className="font-extrabold text-[13px] text-[#0b4f6c] ">
  Gia nhập cộng đồng Turfzone
  </p>
  <p className="text-[13px] text-slate-600 leading-relaxed">
@@ -960,7 +960,7 @@ const mobileNav: MobileNavItem[] =
  setShowMobileDrawer(false);
  onOpenAuth("login");
  }}
- className="flex-1 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs text-center shadow-xs"
+ className="flex-1 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] text-center shadow-xs"
  >
  Đăng Nhập
  </button>
@@ -970,7 +970,7 @@ const mobileNav: MobileNavItem[] =
  setShowMobileDrawer(false);
  onOpenAuth("register");
  }}
- className="flex-1 py-2 rounded-xl bg-white text-slate-700 font-bold text-xs border border-slate-200 text-center"
+ className="flex-1 py-2 rounded-xl bg-white text-slate-700 font-bold text-[13px] border border-slate-200 text-center"
  >
  Đăng Ký
  </button>
@@ -980,7 +980,7 @@ const mobileNav: MobileNavItem[] =
 
  {/* Danh mục menu điều hướng chính đồng bộ 100% với PC Dropdowns */}
  <div className="space-y-3">
- <span className="text-[12px] font-extrabold tracking-wider text-slate-500 px-1 block">
+ <span className="text-[13px] font-extrabold tracking-wider text-slate-500 px-1 block">
  Danh Mục Nền Tảng
  </span>
 
@@ -999,8 +999,8 @@ const mobileNav: MobileNavItem[] =
  <ShieldCheck className="w-4 h-4 text-emerald-500" />
  </div>
  <div>
- <div className="text-xs font-extrabold leading-tight">Quản Lý Cụm Sân & Doanh Thu</div>
- <div className={`text-[12px] ${activeTab === "admin" ? "text-white/80 " : "text-slate-500"}`}>Điều hành doanh thu, ca sân & giá cọc</div>
+ <div className="text-[13px] font-extrabold leading-tight">Quản Lý Cụm Sân & Doanh Thu</div>
+ <div className={`text-[13px] ${activeTab === "admin" ? "text-white/80 " : "text-slate-500"}`}>Điều hành doanh thu, ca sân & giá cọc</div>
  </div>
  </button>
 
@@ -1017,8 +1017,8 @@ const mobileNav: MobileNavItem[] =
  <Clock className="w-4 h-4 text-[#0369a1]" />
  </div>
  <div>
- <div className="text-xs font-extrabold leading-tight">Sơ Đồ Ca Sân Realtime</div>
- <div className={`text-[12px] ${activeTab === "multi-sport" ? "text-white/80 " : "text-slate-500"}`}>Ma trận slot & trạng thái thi đấu trực tiếp</div>
+ <div className="text-[13px] font-extrabold leading-tight">Sơ Đồ Ca Sân Realtime</div>
+ <div className={`text-[13px] ${activeTab === "multi-sport" ? "text-white/80 " : "text-slate-500"}`}>Ma trận slot & trạng thái thi đấu trực tiếp</div>
  </div>
  </button>
 
@@ -1038,14 +1038,14 @@ const mobileNav: MobileNavItem[] =
   <div className="relative w-8 h-8 rounded-xl bg-[#0369a1]/10 flex items-center justify-center shrink-0">
   <MessageCircle className="w-4 h-4 text-[#0369a1]" />
   {chatUnread > 0 && (
-  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#0369a1] text-white text-[11px] font-black flex items-center justify-center border-2 border-white">
+  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#0369a1] text-white text-[13px] font-black flex items-center justify-center border-2 border-white">
   {chatUnread > 9 ? "9+" : chatUnread}
   </span>
   )}
   </div>
   <div className="min-w-0 flex-1">
-  <div className="text-xs font-extrabold leading-tight">Cộng Đồng & Nhắn Tin</div>
-  <div className={`text-[12px] truncate ${activeTab === "community" ? "text-white/80 " : "text-slate-500"}`}>
+  <div className="text-[13px] font-extrabold leading-tight">Cộng Đồng & Nhắn Tin</div>
+  <div className={`text-[13px] truncate ${activeTab === "community" ? "text-white/80 " : "text-slate-500"}`}>
   Trao đổi với khách & nhóm chat
   </div>
   </div>
@@ -1068,8 +1068,8 @@ const mobileNav: MobileNavItem[] =
   <User className="w-4 h-4 text-[#0369a1]" />
   </div>
   <div className="min-w-0 flex-1">
-  <div className="text-xs font-extrabold leading-tight">Hồ Sơ Cá Nhân</div>
-  <div className={`text-[12px] truncate ${activeTab === "profile" ? "text-white/80 " : "text-slate-500"}`}>
+  <div className="text-[13px] font-extrabold leading-tight">Hồ Sơ Cá Nhân</div>
+  <div className={`text-[13px] truncate ${activeTab === "profile" ? "text-white/80 " : "text-slate-500"}`}>
   Họ tên, SĐT, khu vực & ảnh đại diện
   </div>
   </div>
@@ -1086,8 +1086,8 @@ const mobileNav: MobileNavItem[] =
  <ShieldCheck className="w-4 h-4" />
  </div>
  <div>
- <div className="text-xs font-extrabold leading-tight">Quản Trị Hệ Thống</div>
- <div className="text-[12px] text-white/80">
+ <div className="text-[13px] font-extrabold leading-tight">Quản Trị Hệ Thống</div>
+ <div className="text-[13px] text-white/80">
  Tổng quan, người dùng, giải đấu & kiểm duyệt
  </div>
  </div>
@@ -1108,11 +1108,11 @@ const mobileNav: MobileNavItem[] =
  <Trophy className="w-[18px] h-[18px] text-sky-700" />
  </div>
  <div>
- <div className="text-xs font-extrabold leading-tight flex items-center gap-1.5">
+ <div className="text-[13px] font-extrabold leading-tight flex items-center gap-1.5">
  <span>Điều Hành Giải Đấu</span>
  <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-[#0369a1] text-white">BTC</span>
  </div>
- <div className={`text-[12px] ${activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
+ <div className={`text-[13px] ${activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
  Tạo giải, duyệt đội & bốc thăm
  </div>
  </div>
@@ -1131,8 +1131,8 @@ const mobileNav: MobileNavItem[] =
  <Award className="w-[18px] h-[18px] text-amber-700" />
  </div>
  <div>
- <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
- <div className={`text-[12px] ${activeTab === "tournaments" ? "text-white/80" : "text-slate-500"}`}>
+ <div className="text-[13px] font-extrabold leading-tight">Giải Đấu & BXH</div>
+ <div className={`text-[13px] ${activeTab === "tournaments" ? "text-white/80" : "text-slate-500"}`}>
  Theo dõi nhánh đấu & phong độ thi đấu
  </div>
  </div>
@@ -1141,7 +1141,7 @@ const mobileNav: MobileNavItem[] =
 <button
   type="button"
   onClick={() => handleSelectSubTab("matchmaking")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
   activeTab === "matchmaking"
   ? "bg-[#0369a1] text-white shadow-sm font-black"
   : "text-slate-700 hover:bg-slate-100"
@@ -1149,7 +1149,7 @@ const mobileNav: MobileNavItem[] =
   >
   <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  <span className="px-1.5 py-0.5 rounded text-[13px] font-black bg-rose-500 text-white leading-none shadow-xs">
   HOT
   </span>
   </button>
@@ -1157,7 +1157,7 @@ const mobileNav: MobileNavItem[] =
   <button
   type="button"
   onClick={() => handleSelectSubTab("community")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
   activeTab === "community"
   ? "bg-[#0369a1] text-white shadow-sm font-black"
   : "text-slate-700 hover:bg-slate-100"
@@ -1183,8 +1183,8 @@ const mobileNav: MobileNavItem[] =
  <Calendar className="w-[18px] h-[18px] text-sky-700" />
  </div>
  <div>
- <div className="text-xs font-extrabold leading-tight">Đặt Sân Bóng Đá</div>
- <div className={`text-[12px] ${activeTab === "booking" ? "text-white/80" : "text-slate-500"}`}>
+ <div className="text-[13px] font-extrabold leading-tight">Đặt Sân Bóng Đá</div>
+ <div className={`text-[13px] ${activeTab === "booking" ? "text-white/80" : "text-slate-500"}`}>
  Tìm cụm sân gần nhất & giữ chỗ online
  </div>
  </div>
@@ -1194,7 +1194,7 @@ const mobileNav: MobileNavItem[] =
 <button
   type="button"
   onClick={() => handleSelectSubTab("matchmaking")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
   activeTab === "matchmaking"
   ? "bg-[#0369a1] text-white shadow-sm font-black"
   : "text-slate-700 hover:bg-slate-100"
@@ -1202,7 +1202,7 @@ const mobileNav: MobileNavItem[] =
   >
   <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  <span className="px-1.5 py-0.5 rounded text-[13px] font-black bg-rose-500 text-white leading-none shadow-xs">
   HOT
   </span>
   </button>
@@ -1210,7 +1210,7 @@ const mobileNav: MobileNavItem[] =
   <button
   type="button"
   onClick={() => handleSelectSubTab("community")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[13px] xl:text-sm font-bold transition-all ${
   activeTab === "community"
   ? "bg-[#0369a1] text-white shadow-sm font-black"
   : "text-slate-700 hover:bg-slate-100"
@@ -1234,8 +1234,8 @@ const mobileNav: MobileNavItem[] =
  <Trophy className="w-[18px] h-[18px] text-amber-700" />
  </div>
  <div>
- <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
- <div className={`text-[12px] ${activeTab === "tournaments" || activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
+ <div className="text-[13px] font-extrabold leading-tight">Giải Đấu & BXH</div>
+ <div className={`text-[13px] ${activeTab === "tournaments" || activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
  Đăng ký giải, nhánh đấu & lịch sử thi đấu
  </div>
  </div>
@@ -1256,8 +1256,8 @@ const mobileNav: MobileNavItem[] =
  <Award className="w-[18px] h-[18px] text-[#0369a1]" />
  </div>
  <div>
- <div className="text-xs font-extrabold leading-tight">Thẻ Hội Viên & Ưu Đãi</div>
- <div className={`text-[12px] ${activeTab === "membership" ? "text-white/80" : "text-slate-500"}`}>
+ <div className="text-[13px] font-extrabold leading-tight">Thẻ Hội Viên & Ưu Đãi</div>
+ <div className={`text-[13px] ${activeTab === "membership" ? "text-white/80" : "text-slate-500"}`}>
  Gói Pass tháng, tích điểm MP & quà tặng
  </div>
  </div>
@@ -1267,7 +1267,7 @@ const mobileNav: MobileNavItem[] =
  {/* KHỐI CÁ NHÂN VĐV NẾU ĐÃ LOGIN (LỊCH TRÌNH & HỒ SƠ) */}
  {user && (
  <div className="pt-2 border-t border-slate-200/80 space-y-2">
- <span className="text-[12px] font-extrabold tracking-wider text-slate-500 px-1 block">
+ <span className="text-[13px] font-extrabold tracking-wider text-slate-500 px-1 block">
  Hồ Sơ & Hoạt Động
  </span>
 
@@ -1279,7 +1279,7 @@ const mobileNav: MobileNavItem[] =
  }`}
  >
  <Calendar className="w-4 h-4 text-emerald-500 shrink-0" />
- <span className="text-xs font-bold">Lịch Trình & Vé Đã Đặt</span>
+ <span className="text-[13px] font-bold">Lịch Trình & Vé Đã Đặt</span>
  </button>
 
  <button
@@ -1290,7 +1290,7 @@ const mobileNav: MobileNavItem[] =
  }`}
  >
  <User className="w-4 h-4 text-[#0369a1] shrink-0" />
- <span className="text-xs font-bold">Hồ Sơ VĐV & Lịch Sử Thi Đấu</span>
+ <span className="text-[13px] font-bold">Hồ Sơ VĐV & Lịch Sử Thi Đấu</span>
  </button>
 
  <button
@@ -1301,7 +1301,7 @@ const mobileNav: MobileNavItem[] =
  }`}
  >
  <Users className="w-4 h-4 text-emerald-500 shrink-0" />
- <span className="text-xs font-bold">Đội Bóng Của Tôi</span>
+ <span className="text-[13px] font-bold">Đội Bóng Của Tôi</span>
  </button>
  </div>
  )}
@@ -1319,7 +1319,7 @@ const mobileNav: MobileNavItem[] =
  setShowMobileDrawer(false);
  onLogout();
  }}
- className="w-full py-2.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 font-extrabold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer active:scale-95"
+ className="w-full py-2.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 font-extrabold text-[13px] flex items-center justify-center space-x-2 transition-all cursor-pointer active:scale-95"
  >
  <LogOut className="w-4 h-4" />
  <span>Đăng Xuất Tài Khoản</span>
@@ -1370,7 +1370,7 @@ const mobileNav: MobileNavItem[] =
  <Icon className="w-[21px] h-[21px]" />
  <span
   className={`font-bold leading-none tracking-tight ${
-  bottomNavDense ? "text-[8.5px]" : "text-[12px]"
+  bottomNavDense ? "text-[8.5px]" : "text-[13px]"
   }`}
   >
  {item.label}

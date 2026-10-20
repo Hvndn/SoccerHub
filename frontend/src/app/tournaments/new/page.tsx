@@ -23,7 +23,7 @@ const STEPS = [
 const SPORT_OPTIONS = ["SAN_7", "SAN_5", "SAN_11", "FUTSAL"] as const;
 const inputCls =
  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-[#0369a1] focus:border-emerald-500";
-const labelCls = "block text-xs font-bold text-slate-700 mb-1.5";
+const labelCls = "block text-[13px] font-bold text-slate-700 mb-1.5";
 const errCls = "mt-1 text-[13px] font-semibold text-rose-600 ";
 
 function isValidDate(s: string) {
@@ -181,14 +181,14 @@ function NewTournamentWizard() {
  <h2 className="text-lg font-black text-slate-900 ">
  Công bố giải đấu thành công!
  </h2>
- <p className="text-xs sm:text-sm text-slate-500">
+ <p className="text-[13px] sm:text-sm text-slate-500">
  Giải <strong className="text-slate-900 ">“{form.title}”</strong> đã được
  lưu vào CSDL và hiển thị trong danh sách Giải Đấu & BXH.
  </p>
  <div className="flex flex-wrap justify-center gap-2.5 pt-2">
  <a
  href="/?tab=tournaments"
- className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95"
+ className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95"
  >
  Xem danh sách giải đấu
  </a>
@@ -200,7 +200,7 @@ function NewTournamentWizard() {
  setStep(0);
  setMaxReached(0);
  }}
- className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all"
+ className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold transition-all"
  >
  Tạo giải khác
  </button>
@@ -273,7 +273,7 @@ function NewTournamentWizard() {
  <span className="block text-sm font-black text-slate-900 ">
  {f === "KNOCKOUT" ? "Loại trực tiếp" : "Vòng tròn tính điểm"}
  </span>
- <span className="block mt-1 text-xs text-slate-500">
+ <span className="block mt-1 text-[13px] text-slate-500">
  {f === "KNOCKOUT"
  ? "Thua là loại — kịch tính, phù hợp cúp ngắn ngày."
  : "Đá vòng tròn — công bằng, phù hợp league dài hơi."}
@@ -311,7 +311,7 @@ function NewTournamentWizard() {
    : "border-slate-200 bg-white hover:border-emerald-300"
   }`}
   >
-  <span className="block text-xs font-black text-slate-900">🔓 Ai cũng có thể tham gia</span>
+  <span className="block text-[13px] font-black text-slate-900">🔓 Ai cũng có thể tham gia</span>
   <span className="block text-[10.5px] text-slate-500 mt-1 leading-relaxed">
   Mọi người có tài khoản đều đăng ký đội thi được.
   </span>
@@ -326,7 +326,7 @@ function NewTournamentWizard() {
    : "border-slate-200 bg-white hover:border-amber-300"
   }`}
   >
-  <span className="block text-xs font-black text-slate-900">🔒 Chỉ ai được mời qua email</span>
+  <span className="block text-[13px] font-black text-slate-900">🔒 Chỉ ai được mời qua email</span>
   <span className="block text-[10.5px] text-slate-500 mt-1 leading-relaxed">
   Giải kín — BTC sẽ mời từng email sau khi tạo giải.
   </span>
@@ -439,7 +439,7 @@ function NewTournamentWizard() {
 
  {/* Tài khoản nhận lệ phí (tùy chọn — để hiện QR thu phí khi đội đăng ký) */}
  <div className="rounded-xl border border-dashed border-slate-300 p-3 sm:p-3.5 space-y-3">
- <p className="text-xs font-black text-slate-700 ">
+ <p className="text-[13px] font-black text-slate-700 ">
  Tài khoản nhận lệ phí <span className="font-medium text-slate-500">(tùy chọn)</span>
  </p>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -495,7 +495,7 @@ function NewTournamentWizard() {
  </div>
 
  {/* Review */}
- <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-2 text-xs">
+ <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-2 text-[13px]">
  <p className="flex items-center gap-2 font-black text-slate-900 text-sm">
  <Trophy className="w-4 h-4 text-sky-700" />
  {form.title || "(Chưa đặt tên giải)"}
@@ -511,7 +511,7 @@ function NewTournamentWizard() {
  </div>
 
  {submitError && (
- <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 ">
+ <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-[13px] font-bold text-rose-700 ">
  {submitError}
  </p>
  )}
@@ -526,7 +526,7 @@ function NewTournamentWizard() {
  type="button"
  onClick={goBack}
  disabled={step === 0}
- className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-all"
+ className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 text-[13px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-all"
  >
  <ArrowLeft className="w-4 h-4" />
  <span>Quay lại</span>
@@ -536,7 +536,7 @@ function NewTournamentWizard() {
  <button
  type="button"
  onClick={goNext}
- className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95"
+ className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95"
  >
  <span>Tiếp tục</span>
  <ArrowRight className="w-4 h-4" />
@@ -546,7 +546,7 @@ function NewTournamentWizard() {
  type="button"
  onClick={handleSubmit}
  disabled={submitting}
- className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50"
+ className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-50"
  >
  {submitting && <RefreshCw className="w-4 h-4 animate-spin" />}
  <span>{submitting ? "Đang công bố…" : "Xác nhận & Công bố giải"}</span>

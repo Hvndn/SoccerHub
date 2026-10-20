@@ -77,8 +77,8 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
       render: (r) => (
         <div className="max-w-[180px]">
           <p className="font-bold text-slate-900 truncate">{r.senderName}</p>
-          <p className="text-[12px] font-mono text-slate-500 truncate">{r.senderEmail}</p>
-          <span className="text-[11px] font-bold text-slate-400">{r.senderRole}</span>
+          <p className="text-[13px] font-mono text-slate-500 truncate">{r.senderEmail}</p>
+          <span className="text-[13px] font-bold text-slate-400">{r.senderRole}</span>
         </div>
       ),
     },
@@ -98,7 +98,7 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
       header: "Nội dung",
       render: (r) => (
         <div className="max-w-[360px]">
-          {r.pinned && <span className="text-[11px] font-bold text-amber-600 mr-1">[Ghim]</span>}
+          {r.pinned && <span className="text-[13px] font-bold text-amber-600 mr-1">[Ghim]</span>}
           <span className="text-slate-700 break-words">{r.content}</span>
         </div>
       ),
@@ -109,7 +109,7 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
       sortable: true,
       sortValue: (r) => r.createdAt ?? "",
       render: (r) => (
-        <span className="text-[12px] font-mono text-slate-500 whitespace-nowrap">
+        <span className="text-[13px] font-mono text-slate-500 whitespace-nowrap">
           {r.createdAt ? String(r.createdAt).replace("T", " ").slice(0, 16) : "—"}
         </span>
       ),
@@ -145,7 +145,7 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
             <select
               value={channel}
               onChange={(e) => setChannel(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
             >
               <option value="">Tất cả kênh</option>
               <option value="general">Phòng Chat Chung</option>
@@ -161,7 +161,7 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
             <button
               type="button"
               onClick={load}
-              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all flex items-center gap-1.5"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Tải lại
             </button>

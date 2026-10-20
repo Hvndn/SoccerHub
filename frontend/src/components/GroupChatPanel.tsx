@@ -223,7 +223,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
     return (
       <div className="rounded-3xl bg-white border border-slate-200 shadow-xl overflow-hidden">
         <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-100">
-          <h3 className="text-xs font-black text-slate-500 flex items-center gap-2">
+          <h3 className="text-[13px] font-black text-slate-500 flex items-center gap-2">
             <Users className="w-3.5 h-3.5 text-[#0369a1]" />
             Nhóm chat của tôi
           </h3>
@@ -273,14 +273,14 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
                 type="button"
                 onClick={handleCreate}
                 disabled={creating || gName.trim().length < 3}
-                className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 disabled:opacity-40"
+                className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-40"
               >
                 {creating ? "Đang tạo…" : "Tạo nhóm"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowCreate(false)}
-                className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold transition-all active:scale-95"
+                className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-[13px] font-bold transition-all active:scale-95"
               >
                 Huỷ
               </button>
@@ -297,13 +297,13 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
           <div className="px-5 py-12 text-center space-y-2">
             <Users className="w-10 h-10 text-slate-300 mx-auto" />
             <p className="text-sm font-bold text-slate-700">Chưa có nhóm chat nào</p>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+            <p className="text-[13px] text-slate-500 max-w-sm mx-auto leading-relaxed">
               Tạo nhóm để rủ đội bóng, đồng đội hoặc BTC vào một phòng riêng tư.
             </p>
             <button
               type="button"
               onClick={() => setShowCreate(true)}
-              className="mt-2 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95"
+              className="mt-2 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95"
             >
               Tạo nhóm đầu tiên
             </button>
@@ -322,7 +322,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
                       <Users className="w-5 h-5 text-[#0369a1]" />
                     </div>
                     {g.unread > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#0369a1] text-white text-[11px] font-black flex items-center justify-center border-2 border-white" />
+                      <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#0369a1] text-white text-[13px] font-black flex items-center justify-center border-2 border-white" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -332,8 +332,8 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
-                    {g.lastTime && <span className="text-[12px] text-slate-500 font-semibold">{formatTime(g.lastTime)}</span>}
-                    <span className="text-[12px] text-slate-500">{g.memberCount} thành viên</span>
+                    {g.lastTime && <span className="text-[13px] text-slate-500 font-semibold">{formatTime(g.lastTime)}</span>}
+                    <span className="text-[13px] text-slate-500">{g.memberCount} thành viên</span>
                   </div>
                 </button>
               </li>
@@ -385,21 +385,21 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
       {/* Panel thành viên */}
       {showMembers && detail && (
         <div className="px-4 sm:px-5 py-4 bg-slate-50 border-b border-slate-200 space-y-3">
-          <p className="text-xs font-black text-slate-500">Thành viên</p>
+          <p className="text-[13px] font-black text-slate-500">Thành viên</p>
           <ul className="space-y-1.5">
             {(detail.members || []).map((m) => (
               <li key={m.email} className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-sky-50 ring-1 ring-[#0369a1]/20 flex items-center justify-center shrink-0">
-                  <span className="text-xs font-black text-[#0369a1]">
+                  <span className="text-[13px] font-black text-[#0369a1]">
                     {(m.name || m.email).charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-slate-800 truncate flex items-center gap-1.5">
+                  <p className="text-[13px] font-bold text-slate-800 truncate flex items-center gap-1.5">
                     {m.name || m.email}
                     {m.isOwner && <Crown className="w-3 h-3 text-amber-600 shrink-0" />}
                   </p>
-                  <p className="text-[12px] text-slate-500 truncate">{m.email}</p>
+                  <p className="text-[13px] text-slate-500 truncate">{m.email}</p>
                 </div>
                 {detail.isOwner && !m.isOwner && (
                   <button
@@ -425,13 +425,13 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
                   onChange={(e) => setAddEmail(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
                   placeholder="email người muốn thêm"
-                  className="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  className="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
                 />
                 <button
                   type="button"
                   onClick={handleAdd}
                   disabled={busyMember || !addEmail.includes("@")}
-                  className="px-3 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-40"
+                  className="px-3 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-40"
                 >
                   <UserPlus className="w-3.5 h-3.5" /> Thêm
                 </button>
@@ -440,7 +440,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
                 type="button"
                 onClick={handleDeleteGroup}
                 disabled={busyMember}
-                className="w-full px-3 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-xs font-black transition-all active:scale-95 disabled:opacity-40"
+                className="w-full px-3 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-[13px] font-black transition-all active:scale-95 disabled:opacity-40"
               >
                 Xoá nhóm này
               </button>
@@ -463,7 +463,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
         ) : messages.length === 0 ? (
           <div className="text-center py-10">
             <MessageCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-            <p className="text-xs text-slate-500">Nhóm chưa có tin nhắn nào.</p>
+            <p className="text-[13px] text-slate-500">Nhóm chưa có tin nhắn nào.</p>
             <p className="text-[13px] text-slate-400 mt-1">Hãy là người đầu tiên nhắn tin 👋</p>
           </div>
         ) : (
@@ -478,7 +478,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
                       <span className={`text-[13px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>
                         {m.senderName}
                       </span>
-                      <span className="text-[11px] font-bold text-slate-400">{m.senderRole}</span>
+                      <span className="text-[13px] font-bold text-slate-400">{m.senderRole}</span>
                     </div>
                   )}
                   <div
@@ -496,7 +496,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
                     {m.content}
                   </div>
                   <div className={`flex items-center gap-1.5 mt-0.5 px-1 ${mine ? "flex-row-reverse" : ""}`}>
-                    <span className="text-[11px] text-slate-400">{formatTime(m.createdAt)}</span>
+                    <span className="text-[13px] text-slate-400">{formatTime(m.createdAt)}</span>
                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                       <button
                         type="button"

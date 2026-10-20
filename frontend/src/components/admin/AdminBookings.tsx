@@ -99,7 +99,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  render: (r) => (
  <div>
  <p className="font-mono font-bold text-slate-700 ">{r.code || `#${r.id}`}</p>
- <p className="text-[12px] font-mono text-slate-500">{r.createdAt ? String(r.createdAt).slice(0, 16).replace("T", " ") : ""}</p>
+ <p className="text-[13px] font-mono text-slate-500">{r.createdAt ? String(r.createdAt).slice(0, 16).replace("T", " ") : ""}</p>
  </div>
  ),
  },
@@ -176,13 +176,13 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  value={query}
  onChange={(e) => setQuery(e.target.value)}
  placeholder="Mã vé / SĐT…"
- className="pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-[#0369a1] w-48 sm:w-56"
+ className="pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0369a1] w-48 sm:w-56"
  />
  </div>
  <button
  type="submit"
  disabled={searching}
- className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+ className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-all active:scale-95 disabled:opacity-50"
  >
  {searching ? "Đang tìm…" : "Tra cứu"}
  </button>
@@ -192,7 +192,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  {/* Bộ công cụ dữ liệu demo — mọi đơn sinh ra đều có mã bắt đầu bằng "SIM-" nên xoá sạch được */}
  <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2.5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-3">
  <div className="flex-1 min-w-0">
- <p className="text-xs font-black text-slate-700 flex items-center gap-1.5">
+ <p className="text-[13px] font-black text-slate-700 flex items-center gap-1.5">
  <Sparkles className="w-3.5 h-3.5 text-[#0369a1]" />
  Dữ liệu demo
  </p>
@@ -210,14 +210,14 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  value={perDay}
  onChange={(e) => setPerDay(Math.max(1, Math.min(30, Number(e.target.value) || 1)))}
  aria-label="Số đơn giả lập mỗi ngày"
- className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-xs font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[13px] font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
  <button
  type="button"
  onClick={runSimulate}
  disabled={simBusy !== null}
- className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+ className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-all active:scale-95 disabled:opacity-50"
  >
  <Sparkles className="w-3.5 h-3.5" />
  {simBusy === "gen" ? "Đang tạo…" : "Tạo đơn giả lập"}
@@ -226,7 +226,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  type="button"
  onClick={runClearSim}
  disabled={simBusy !== null}
- className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+ className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold transition-all active:scale-95 disabled:opacity-50"
  >
  <Eraser className="w-3.5 h-3.5" />
  {simBusy === "clear" ? "Đang xoá…" : "Dọn dữ liệu demo"}

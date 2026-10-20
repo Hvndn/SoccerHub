@@ -79,14 +79,14 @@ function AdminConsole() {
  <span className="text-sky-800 ">Turf</span>
  <span className="text-slate-900 ">Zone</span>
  </Link>
- <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[12px] font-black">
+ <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[13px] font-black">
  Quản Trị
  </span>
  </div>
  <Link
  href="/"
  aria-label="Về trang chủ"
- className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
+ className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
  >
  <ArrowLeft className="w-4 h-4 shrink-0" />
  <span className="hidden sm:inline">Về trang chủ</span>
@@ -106,7 +106,7 @@ function AdminConsole() {
  <LogIn className="w-8 h-8 text-rose-600" />
  </div>
  <h1 className="text-xl font-black">Khu vực quản trị hệ thống</h1>
- <p className="text-xs sm:text-sm text-slate-500">
+ <p className="text-[13px] sm:text-sm text-slate-500">
  Bạn cần đăng nhập tài khoản <strong>Quản trị viên (ADMIN)</strong> để truy cập.
  </p>
  <Link
@@ -122,7 +122,7 @@ function AdminConsole() {
  <ShieldCheck className="w-8 h-8 text-rose-600" />
  </div>
  <h1 className="text-xl font-black">Truy cập bị từ chối</h1>
- <p className="text-xs sm:text-sm text-slate-500">
+ <p className="text-[13px] sm:text-sm text-slate-500">
  Tài khoản <strong>{user.fullName || user.email}</strong> (vai trò {String(user.role)}) không có
  quyền quản trị hệ thống. Chỉ tài khoản <strong>ADMIN</strong> được vào khu vực này.
  </p>
@@ -156,8 +156,8 @@ function AdminConsole() {
  >
  <span className={active ? "text-white" : "text-sky-700 "}>{s.icon}</span>
  <span className="min-w-0">
- <span className="block text-xs font-black whitespace-nowrap">{s.label}</span>
- <span className={`hidden lg:block text-[12px] ${active ? "text-cyan-50" : "text-slate-500"}`}>
+ <span className="block text-[13px] font-black whitespace-nowrap">{s.label}</span>
+ <span className={`hidden lg:block text-[13px] ${active ? "text-cyan-50" : "text-slate-500"}`}>
  {s.desc}
  </span>
  </span>

@@ -193,7 +193,7 @@ export default function OwnerReportExport() {
  <Download className="w-4 h-4 text-slate-400 group-hover:text-[#0369a1] transition-colors" />
  )}
  </div>
- <p className="font-black text-xs text-slate-900 leading-tight">{r.label}</p>
+ <p className="font-black text-[13px] text-slate-900 leading-tight">{r.label}</p>
  <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">{r.desc}</p>
  </button>
  ))}
@@ -206,7 +206,7 @@ export default function OwnerReportExport() {
  <select
  value={months}
  onChange={(e) => setMonths(Number(e.target.value))}
- className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {[3, 6, 12, 24].map((m) => (
  <option key={m} value={m}>
@@ -223,7 +223,7 @@ export default function OwnerReportExport() {
  value={from}
  max={to}
  onChange={(e) => setFrom(e.target.value)}
- className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
 
@@ -235,13 +235,13 @@ export default function OwnerReportExport() {
  value={to}
  min={from}
  onChange={(e) => setTo(e.target.value)}
- className="flex-1 min-w-0 px-2.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="flex-1 min-w-0 px-2.5 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  <select
  value={days}
  onChange={(e) => setDays(Number(e.target.value))}
  aria-label="Số ngày thống kê tổng quan"
- className="px-2 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="px-2 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {[30, 90, 180, 365].map((d) => (
  <option key={d} value={d}>
@@ -268,13 +268,13 @@ export default function OwnerReportExport() {
  <Mail className="w-4 h-4" />
  </div>
  <div className="min-w-0 flex-1">
- <h4 className="font-black text-xs text-slate-900">Hoặc gửi báo cáo qua email</h4>
+ <h4 className="font-black text-[13px] text-slate-900">Hoặc gửi báo cáo qua email</h4>
  <p className="text-[13px] text-slate-500 mt-0.5">
  File CSV được đính kèm trực tiếp trong email.
  </p>
  </div>
  {mailReady === false && (
- <span className="shrink-0 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-[12px] font-black">
+ <span className="shrink-0 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-[13px] font-black">
  SMTP chưa bật
  </span>
  )}
@@ -288,7 +288,7 @@ export default function OwnerReportExport() {
  value={mailTo}
  onChange={(e) => setMailTo(e.target.value)}
  placeholder="VD: chusan@gmail.com"
- className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
 
@@ -297,7 +297,7 @@ export default function OwnerReportExport() {
  <select
  value={mailType}
  onChange={(e) => setMailType(e.target.value as ReportType)}
- className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {REPORTS.map((r) => (
  <option key={r.key} value={r.key}>
@@ -311,7 +311,7 @@ export default function OwnerReportExport() {
  type="button"
  onClick={sendMail}
  disabled={mailBusy || !mailTo.trim()}
- className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 whitespace-nowrap h-[38px]"
+ className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 whitespace-nowrap h-[38px]"
  >
  {mailBusy ? (
  <Loader2 className="w-3.5 h-3.5 animate-spin" />

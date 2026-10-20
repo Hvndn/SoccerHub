@@ -64,7 +64,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
  } ${clickable ? "cursor-pointer" : "cursor-default"}`}
  >
  <span
- className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+ className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-black ${
  active
  ? "bg-[#0369a1] text-white"
  : done
@@ -76,7 +76,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
  </span>
  <span className="min-w-0">
  <span
- className={`block truncate text-[13px] font-black sm:text-xs ${
+ className={`block truncate text-[13px] font-black sm:text-[13px] ${
  active
  ? "text-sky-900 "
  : "text-slate-700 "
@@ -85,7 +85,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
  {step.label}
  </span>
  {step.hint && (
- <span className="hidden truncate text-[12px] text-slate-500 sm:block">
+ <span className="hidden truncate text-[13px] text-slate-500 sm:block">
  {step.hint}
  </span>
  )}

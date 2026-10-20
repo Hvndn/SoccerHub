@@ -62,7 +62,7 @@ export default function TournamentProgressChart({ tournament }: { tournament: an
         </div>
       </div>
       {data.length === 0 ? (
-        <div className="h-40 flex items-center justify-center text-xs font-bold text-slate-500">
+        <div className="h-40 flex items-center justify-center text-[13px] font-bold text-slate-500">
           Giải chưa có trận nào có kết quả. Bốc thăm và nhập tỷ số để xem biểu đồ.
         </div>
       ) : (

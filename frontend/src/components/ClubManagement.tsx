@@ -190,7 +190,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
         <button
           type="button"
           onClick={() => setShowCreate((v) => !v)}
-          className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-extrabold transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
+          className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
         >
           {showCreate ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
           {showCreate ? "Đóng" : "Tạo CLB"}
@@ -205,7 +205,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
         >
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#0b4f6c]" />
-            <span className="text-xs font-black text-slate-900">
+            <span className="text-[13px] font-black text-slate-900">
               Tạo CLB mới — bạn sẽ là đại diện
             </span>
           </div>
@@ -269,7 +269,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
           <button
             type="submit"
             disabled={creating}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-extrabold transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5"
           >
             {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
             {creating ? "Đang tạo…" : "Tạo CLB"}
@@ -285,20 +285,20 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
           ))}
         </div>
       ) : error ? (
-        <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700">
+        <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-[13px] font-bold text-rose-700">
           {error}
         </p>
       ) : clubs.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center space-y-2">
           <Users className="w-8 h-8 text-slate-300 mx-auto" />
           <p className="text-sm font-bold text-slate-700">Bạn chưa có CLB nào</p>
-          <p className="text-xs text-slate-500">
+          <p className="text-[13px] text-slate-500">
             Tạo CLB để quản lý danh sách đội và đặt sân cho CLB của bạn.
           </p>
           <button
             type="button"
             onClick={() => setShowCreate(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-extrabold transition-all active:scale-95"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold transition-all active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" /> Tạo CLB ngay
           </button>
@@ -312,7 +312,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                 key={c.id}
                 type="button"
                 onClick={() => setActiveClubId(c.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all border ${
+                className={`px-3.5 py-2 rounded-xl text-[13px] font-extrabold transition-all border ${
                   c.id === activeClubId
                     ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
                     : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
@@ -333,7 +333,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                     {activeClub.name}
                   </h3>
                   {activeClub.description && (
-                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                    <p className="text-[13px] text-slate-500 mt-0.5 leading-relaxed">
                       {activeClub.description}
                     </p>
                   )}
@@ -369,13 +369,13 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                       value={memberEmail}
                       onChange={(e) => setMemberEmail(e.target.value)}
                       placeholder="Email thành viên — VD: player@Turfzone.vn"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-xs"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[13px]"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={memberBusy || !memberEmail.trim()}
-                    className="px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 shrink-0"
+                    className="px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 shrink-0"
                   >
                     {memberBusy ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -412,15 +412,15 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-black text-slate-900 truncate">
+                        <p className="text-[13px] font-black text-slate-900 truncate">
                           {m.name || m.email}
                           {m.isRepresentative && (
-                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[11px] font-black">
+                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[13px] font-black">
                               Đại diện
                             </span>
                           )}
                           {m.email === myEmail && (
-                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[11px] font-black">
+                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[13px] font-black">
                               Bạn
                             </span>
                           )}
@@ -461,7 +461,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                     </div>
                   ))}
                   {(activeClub.memberList ?? []).length === 0 && (
-                    <p className="text-xs text-slate-500 text-center py-3">
+                    <p className="text-[13px] text-slate-500 text-center py-3">
                       CLB chưa có thành viên nào.
                     </p>
                   )}

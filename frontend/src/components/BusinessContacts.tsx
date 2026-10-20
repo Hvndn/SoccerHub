@@ -119,14 +119,14 @@ export default function BusinessContacts({ viewerRole, onStartDm }: BusinessCont
       )}
 
       {loading && contacts.length === 0 ? (
-        <div className="flex items-center justify-center gap-2 py-5 text-xs text-slate-500">
+        <div className="flex items-center justify-center gap-2 py-5 text-[13px] text-slate-500">
           <Loader2 className="w-4 h-4 animate-spin" />
           Đang tải danh sách…
         </div>
       ) : contacts.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-5 text-center">
           <Users2 className="w-8 h-8 text-slate-300" />
-          <p className="text-xs text-slate-500">{cfg.empty}</p>
+          <p className="text-[13px] text-slate-500">{cfg.empty}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -136,10 +136,10 @@ export default function BusinessContacts({ viewerRole, onStartDm }: BusinessCont
               className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200"
             >
               <div className="min-w-0">
-                <p className="text-xs font-black text-slate-900 truncate">{c.name}</p>
-                <p className="text-[12px] text-slate-500 truncate">{c.email}</p>
+                <p className="text-[13px] font-black text-slate-900 truncate">{c.name}</p>
+                <p className="text-[13px] text-slate-500 truncate">{c.email}</p>
                 <span
-                  className={`inline-block mt-1 px-1.5 py-0.5 rounded-md border text-[11px] font-black ${
+                  className={`inline-block mt-1 px-1.5 py-0.5 rounded-md border text-[13px] font-black ${
                     ROLE_BADGE[c.role] ?? ROLE_BADGE.PLAYER
                   }`}
                 >

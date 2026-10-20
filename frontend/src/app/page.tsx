@@ -380,7 +380,7 @@ if (newTab === activeTab) return;
  <h2 className="text-xl sm:text-2xl font-black text-slate-900 ">
  Không Gian Dành Cho Cầu Thủ Đặt Sân
  </h2>
- <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+ <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
  Bạn đang đăng nhập bằng tài khoản <strong>Chủ Sân ({currentUser.fullName || currentUser.name})</strong>. Chức năng tìm kiếm và cọc sân này dành riêng cho Cầu Thủ. Vui lòng chuyển sang Bảng Điều Hành để quản lý cụm sân và theo dõi doanh thu.
  </p>
  </div>
@@ -475,7 +475,7 @@ if (newTab === activeTab) return;
  </div>
  <div className="space-y-2">
  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
- <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+ <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
  Đăng nhập để quản lý đội bóng, thành viên và lịch thi đấu của CLB.
  </p>
  </div>
@@ -506,7 +506,7 @@ if (newTab === activeTab) return;
  <h2 className="text-xl sm:text-2xl font-black text-slate-900 ">
  Truy Cập Bị Từ Chối (403 Forbidden)
  </h2>
- <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+ <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
  Trang Bảng Điều Hành và Quản Lý Doanh Thu chỉ dành riêng cho tài khoản <strong>Chủ Sân (OWNER)</strong>. Tài khoản Cầu Thủ hoặc khách chưa đăng nhập không có quyền truy cập khu vực này.
  </p>
  </div>
@@ -522,7 +522,7 @@ if (newTab === activeTab) return;
  <button
  type="button"
  onClick={() => handleOpenAuth("login", "OWNER")}
- className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
+ className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[13px] transition-all cursor-pointer"
  >
  Đăng Nhập Chủ Sân
  </button>
@@ -546,7 +546,7 @@ if (newTab === activeTab) return;
  </div>
  <div className="space-y-2">
  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
- <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+ <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
  Vui lòng đăng nhập để xem lịch thi đấu và hoạt động của bạn.
  </p>
  </div>
@@ -585,7 +585,7 @@ if (newTab === activeTab) return;
  </div>
  <div className="space-y-2">
  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
- <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+ <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
  Đăng nhập để xem và quản lý hồ sơ cầu thủ, phong độ và thành tích thi đấu.
  </p>
  </div>
@@ -617,7 +617,7 @@ if (newTab === activeTab) return;
  </div>
  <div className="space-y-2">
  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🚫 Truy Cập Bị Từ Chối</h2>
- <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+ <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
  Khu vực Điều Hành Giải Đấu chỉ dành cho tài khoản <strong>Ban Tổ Chức (ORGANIZER)</strong>. Liên hệ quản trị để được nâng cấp quyền điều hành.
  </p>
  </div>
@@ -636,7 +636,7 @@ if (newTab === activeTab) return;
  </div>
  <div className="space-y-2">
  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập với Tài Khoản Ban Tổ Chức</h2>
- <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+ <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
  Chức năng Điều Hành Giải Đấu yêu cầu tài khoản <strong>ORGANIZER</strong> có xác thực.
  </p>
  </div>
@@ -665,7 +665,7 @@ if (newTab === activeTab) return;
  </div>
  <div className="space-y-2">
  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập</h2>
- <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+ <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
  Đăng nhập để xem và quản lý Thẻ Hội Viên, ưu đãi và điểm tích lũy của bạn.
  </p>
  </div>
@@ -694,7 +694,7 @@ if (newTab === activeTab) return;
 
  {/* Footer */}
  <footer className={`glass-panel border-t border-slate-200 pt-6 transition-colors duration-300 ${showBottomNav ? "pb-28 lg:pb-6" : "pb-6"}`}>
- <div className="w-full max-w-full mx-auto px-4 sm:px-6 lg:px-10 text-center text-xs text-slate-500 space-y-1.5">
+ <div className="w-full max-w-full mx-auto px-4 sm:px-6 lg:px-10 text-center text-[13px] text-slate-500 space-y-1.5">
  <p>
  © 2026 <strong>Turfzone</strong>
  <span className="hidden sm:inline"> — Nền Tảng Đặt Sân &amp; Quản Lý Bóng Đá Thông Minh. Đồ Án Tốt Nghiệp: Hệ thống quản lý cụm sân bóng đá mini cỏ nhân tạo (Sân 5, Sân 7, Sân 11), giải đấu phủi và kết nối đối thủ AI.</span>

@@ -179,14 +179,14 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  {/* --- SECTION 1: 4 TRỤ CỘT ĐỀ TÀI (BENTO GRID) --- */}
  <section className="space-y-5 sm:space-y-8">
  <div className="text-center max-w-3xl mx-auto space-y-3">
- <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] text-xs font-black">
+ <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] text-[13px] font-black">
  <Sparkles className="w-3.5 h-3.5" />
  <span>Bốn Trụ Cột Đột Phá Của Đề Tài</span>
  </div>
  <h2 className="text-2xl sm:text-5xl font-black text-slate-900 tracking-tight">
  Giải Pháp Toàn Diện Cho Thể Thao Số
  </h2>
- <p className="hidden sm:block text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+ <p className="hidden sm:block text-[13px] sm:text-sm text-slate-600 leading-relaxed font-medium">
  Mượt mà từ tìm sân, cáp kèo, đặt cọc đến lúc giải đấu khai tiếng.
  </p>
  </div>
@@ -208,13 +208,13 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${pillar.gradient} text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
  <Icon className="w-6 h-6" />
  </div>
- <span className="text-[12px] font-mono tracking-wider font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 ">
+ <span className="text-[13px] font-mono tracking-wider font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 ">
  {pillar.badge}
  </span>
  </div>
 
  <div>
- <span className="text-xs font-bold text-slate-500">{pillar.title}</span>
+ <span className="text-[13px] font-bold text-slate-500">{pillar.title}</span>
  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
  {pillar.subtitle}
  </h3>
@@ -226,7 +226,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <div key={idx} className="flex items-start space-x-2.5">
  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
  <div>
- <strong className="text-xs font-black text-slate-800 block">{pt.title}</strong>
+ <strong className="text-[13px] font-black text-slate-800 block">{pt.title}</strong>
  <p className="text-[13px] text-slate-500 leading-relaxed font-medium mt-0.5">
  {pt.desc}
  </p>
@@ -237,7 +237,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  </div>
 
  {/* Bottom Metric Strip */}
- <div className="pt-3 sm:pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
+ <div className="pt-3 sm:pt-4 border-t border-slate-100 flex items-center justify-between text-[13px] font-bold">
  <span className="text-slate-500">{pillar.metricLabel}</span>
  <span className="font-mono text-sky-700 font-black text-sm">
  {pillar.metricValue}
@@ -253,7 +253,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  {/* --- SECTION 2: DIRECT COMPARISON (TRUYỀN THỐNG VS Turfzone) --- */}
  <section className="w-full bg-slate-100/90 p-4 sm:p-10 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-5 sm:space-y-8">
  <div className="text-center max-w-2xl mx-auto space-y-2">
- <span className="text-xs font-extrabold text-[#0b4f6c] block">
+ <span className="text-[13px] font-extrabold text-[#0b4f6c] block">
  So Sánh Đột Phá
  </span>
  <h2 className="text-xl sm:text-4xl font-black text-slate-900 tracking-tight">
@@ -271,10 +271,10 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  </div>
  <div>
  <h3 className="font-extrabold text-slate-900 text-base">Phương Thức Truyền Thống</h3>
- <p className="text-xs text-slate-500 font-medium">Ghi sổ tay, nhắn tin Zalo, giữ chỗ bằng miệng</p>
+ <p className="text-[13px] text-slate-500 font-medium">Ghi sổ tay, nhắn tin Zalo, giữ chỗ bằng miệng</p>
  </div>
  </div>
- <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-extrabold text-[12px]">
+ <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-extrabold text-[13px]">
  Rủi ro cao
  </span>
  </div>
@@ -284,7 +284,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <div key={idx} className="flex items-start space-x-3 p-3 sm:p-3.5 rounded-2xl bg-rose-50/50 border border-rose-100 ">
  <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
  <div>
- <h4 className="text-xs font-extrabold text-slate-900 ">{item.title}</h4>
+ <h4 className="text-[13px] font-extrabold text-slate-900 ">{item.title}</h4>
  <p className="text-[13px] text-slate-500 font-medium mt-0.5 leading-relaxed">{item.desc}</p>
  </div>
  </div>
@@ -301,10 +301,10 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  </div>
  <div>
  <h3 className="font-extrabold text-slate-900 text-base">Hệ Thống Thông Minh Turfzone</h3>
- <p className="text-xs text-[#0b4f6c] font-bold">Tự động hóa 100% bằng công nghệ thể thao số</p>
+ <p className="text-[13px] text-[#0b4f6c] font-bold">Tự động hóa 100% bằng công nghệ thể thao số</p>
  </div>
  </div>
- <span className="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-extrabold text-[12px] border border-sky-200 ">
+ <span className="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-extrabold text-[13px] border border-sky-200 ">
  Chuẩn xác 99.9%
  </span>
  </div>
@@ -314,7 +314,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <div key={idx} className="flex items-start space-x-3 p-3 sm:p-3.5 rounded-2xl bg-[#0369a1]/5 border border-[#0369a1]/15 ">
  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
  <div>
- <h4 className="text-xs font-extrabold text-slate-900 ">{item.title}</h4>
+ <h4 className="text-[13px] font-extrabold text-slate-900 ">{item.title}</h4>
  <p className="text-[13px] text-slate-600 font-medium mt-0.5 leading-relaxed">{item.desc}</p>
  </div>
  </div>
@@ -327,7 +327,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  {/* --- SECTION 3: FINAL CALL TO ACTION BANNER --- */}
  <section className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white text-slate-900 p-5 sm:p-14 border border-slate-200 shadow-2xl">
  <div className="relative z-10 max-w-3xl mx-auto text-center space-y-4 sm:space-y-6">
- <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/30 text-sky-700 text-xs font-extrabold">
+ <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/30 text-sky-700 text-[13px] font-extrabold">
  <Trophy className="w-3.5 h-3.5 text-amber-400" />
  <span>Đồ Án Tốt Nghiệp • Trải Nghiệm Thực Tế</span>
  </div>
@@ -336,7 +336,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  Sẵn Sàng Nâng Tầm Trải Nghiệm Thể Thao Của Bạn?
  </h2>
 
- <p className="hidden sm:block text-xs sm:text-sm text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
+ <p className="hidden sm:block text-[13px] sm:text-sm text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
  Hòa mình vào hệ sinh thái quản lý sân bóng và giải đấu Turfzone. Đặt sân tức thì, theo dõi doanh thu và tổ chức giải đấu chuyên nghiệp.
  </p>
 
@@ -344,7 +344,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <button
  type="button"
  onClick={() => onExplore("PLAYER")}
- className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+ className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[13px] sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
  >
  <Users className="w-4 h-4" />
  <span>Khám Phá Cổng Cầu Thủ</span>
@@ -353,7 +353,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <button
  type="button"
  onClick={() => onExplore("OWNER")}
- className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-xs sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+ className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-[13px] sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
  >
  <Store className="w-4 h-4 text-[#0b4f6c] " />
  <span>Dành Cho Chủ Sân (Quản Lý Cụm Sân)</span>
@@ -362,7 +362,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <button
  type="button"
  onClick={() => onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER")}
- className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-white hover:bg-sky-50 text-sky-800 font-black text-xs sm:text-sm border border-emerald-600/40 transition-all transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+ className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-white hover:bg-sky-50 text-sky-800 font-black text-[13px] sm:text-sm border border-emerald-600/40 transition-all transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
  >
  <Trophy className="w-4 h-4 text-amber-400" />
  <span>Xem Giải Đấu &amp; Cây Nhánh</span>

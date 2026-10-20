@@ -39,19 +39,19 @@ export default function RefereePanel() {
       <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-rose-500/40 relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold mb-2">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[13px] font-bold mb-2">
               <Radio className="w-4 h-4 animate-pulse" />
               <span className="sm:hidden">Biên Bản Trọng Tài Realtime</span>
               <span className="hidden sm:inline">Biên Bản Trọng Tài &amp; Điều Khiển Trận Realtime</span>
             </div>
             <h1 className="text-xl sm:text-3xl font-extrabold text-white">Bảng Điều Khiển Trận Đấu Trực Tiếp</h1>
-            <p className="text-slate-500 text-xs mt-1 hidden sm:block">Cập nhật tỷ số, thẻ phạt, bàn thắng tức thì. Hệ thống tự tính BXH.</p>
+            <p className="text-slate-500 text-[13px] mt-1 hidden sm:block">Cập nhật tỷ số, thẻ phạt, bàn thắng tức thì. Hệ thống tự tính BXH.</p>
           </div>
 
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setIsLive(!isLive)}
-              className={`px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center space-x-2 ${
+              className={`px-4 py-2.5 rounded-xl font-extrabold text-[13px] transition-all flex items-center space-x-2 ${
                 isLive ? "bg-rose-600 text-white shadow-lg shadow-rose-600/40" : "bg-slate-800 text-slate-500"
               }`}
             >
@@ -77,7 +77,7 @@ export default function RefereePanel() {
               FT
             </div>
             <h2 className="text-xl font-extrabold text-white">FC Tigers</h2>
-            <span className="text-xs text-slate-500 font-semibold">Chủ nhà (Đỏ)</span>
+            <span className="text-[13px] text-slate-500 font-semibold">Chủ nhà (Đỏ)</span>
           </div>
 
           {/* Big Score Counter */}
@@ -93,12 +93,12 @@ export default function RefereePanel() {
               FE
             </div>
             <h2 className="text-xl font-extrabold text-white">FC Eagles</h2>
-            <span className="text-xs text-slate-500 font-semibold">Khách (Xanh)</span>
+            <span className="text-[13px] text-slate-500 font-semibold">Khách (Xanh)</span>
           </div>
         </div>
 
         {/* Referee Interactive Control Actions */}
-        <div className="pt-6 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs max-w-3xl mx-auto">
+        <div className="pt-6 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-[13px] max-w-3xl mx-auto">
           {/* Team A Actions */}
           <div className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-3">
             <span className="font-bold text-pitch-emerald block text-center tracking-wider">Hành Động: FC Tigers</span>
@@ -159,7 +159,7 @@ export default function RefereePanel() {
 
         <div className="space-y-2">
           {events.map((evt) => (
-            <div key={evt.id} className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2 text-xs">
+            <div key={evt.id} className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2 text-[13px]">
               <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
                 <span className="px-2.5 py-1 rounded-lg bg-slate-950 text-pitch-lime font-mono font-extrabold">{evt.minute}'</span>
                 <span className="font-bold text-white">{evt.team}</span>
@@ -167,7 +167,7 @@ export default function RefereePanel() {
               </div>
               <div className="flex items-center space-x-2 font-semibold">
                 <span className="text-slate-300 hidden sm:inline">{evt.detail}</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-pitch-emerald font-extrabold text-[12px]">
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-pitch-emerald font-extrabold text-[13px]">
                   {evt.type}
                 </span>
               </div>

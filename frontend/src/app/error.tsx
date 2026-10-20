@@ -29,7 +29,7 @@ export default function GlobalError({
  </div>
 
  <h1 className="text-xl sm:text-2xl font-black tracking-tight">Ứng dụng gặp sự cố</h1>
- <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+ <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
  Có lỗi xảy ra khi tải trang này. Thường là do mất kết nối mạng hoặc máy chủ tạm thời không phản hồi.
  Bạn có thể thử tải lại — dữ liệu tài khoản của bạn vẫn được giữ nguyên.
  </p>

@@ -47,7 +47,7 @@ export default function PageSpinner({
       {showText && (
         <span className="flex flex-col items-center gap-1.5 text-center">
           <span className="text-sm sm:text-base font-extrabold tracking-wide text-slate-700">{label}</span>
-          <span className="text-[13px] sm:text-xs font-medium text-slate-500">{sub}</span>
+          <span className="text-[13px] sm:text-[13px] font-medium text-slate-500">{sub}</span>
         </span>
       )}
     </div>

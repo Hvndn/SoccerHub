@@ -53,7 +53,7 @@ export default function MatchmakingCard({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 flex-wrap">
           <span
-            className={`flex items-center gap-1 px-3 py-1 rounded-lg font-extrabold text-xs border ${
+            className={`flex items-center gap-1 px-3 py-1 rounded-lg font-extrabold text-[13px] border ${
               isMatched
                 ? "bg-slate-100 text-slate-500 border-slate-200"
                 : "bg-rose-500/10 text-rose-600 border-rose-500/30 animate-pulse"
@@ -62,11 +62,11 @@ export default function MatchmakingCard({
             <Flame className="w-4 h-4 text-rose-600" />
             <span>{isMatched ? "Đã có đối thủ" : "Kèo đang mở"}</span>
           </span>
-          <span className={`px-2.5 py-1 rounded-lg font-bold text-xs border ${skill.tone}`}>
+          <span className={`px-2.5 py-1 rounded-lg font-bold text-[13px] border ${skill.tone}`}>
             {skill.label}
           </span>
           {isAiTop && (
-            <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-black text-xs flex items-center gap-1">
+            <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-black text-[13px] flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5" />
               <span>{aiOffline ? "Hợp phong độ nhất" : "AI đề xuất"}</span>
             </span>
@@ -81,7 +81,7 @@ export default function MatchmakingCard({
               className={`w-3.5 h-3.5 ${i <= stars ? "text-amber-500 fill-amber-500" : "text-slate-300"}`}
             />
           ))}
-          <span className="text-[12px] font-bold text-slate-500 ml-1">{post.reputationScore ?? 98}</span>
+          <span className="text-[13px] font-bold text-slate-500 ml-1">{post.reputationScore ?? 98}</span>
         </div>
       </div>
 
@@ -90,11 +90,11 @@ export default function MatchmakingCard({
         <div className="space-y-1">
           <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
             <span>{post.teamName}</span>
-            <span className="text-xs px-2 py-0.5 rounded bg-sky-100 text-sky-900 font-bold">
+            <span className="text-[13px] px-2 py-0.5 rounded bg-sky-100 text-sky-900 font-bold">
               Cap: {post.captainName}
             </span>
           </h3>
-          <div className="flex items-center space-x-2 text-xs text-slate-500">
+          <div className="flex items-center space-x-2 text-[13px] text-slate-500">
             <span className="flex items-center gap-1 text-slate-900 font-bold">
               <MapPin className="w-4 h-4 text-[#0b4f6c]" />
               <span>{post.pitchName}</span>
@@ -111,7 +111,7 @@ export default function MatchmakingCard({
         <div className="flex flex-col md:items-end bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-xl">
           <div className="text-xl font-black text-slate-900 font-mono">
             {(post.estimatedFee || 50000).toLocaleString("vi-VN")}đ{" "}
-            <span className="text-xs font-normal text-slate-500">/người</span>
+            <span className="text-[13px] font-normal text-slate-500">/người</span>
           </div>
           <span className="text-[13px] font-bold text-[#0b4f6c]">
             {PAYMENT_LABEL[post.paymentModel] || post.paymentModel}
@@ -121,7 +121,7 @@ export default function MatchmakingCard({
 
       {/* Note */}
       {post.note && (
-        <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-700 border border-slate-200/60">
+        <div className="p-3 bg-slate-50 rounded-xl text-[13px] text-slate-700 border border-slate-200/60">
           <span className="font-bold text-slate-500 mr-1">Ghi chú:</span>
           <span>{post.note}</span>
         </div>
@@ -129,7 +129,7 @@ export default function MatchmakingCard({
 
       {/* Matched info */}
       {isMatched && (
-        <div className="p-3 bg-sky-50 border border-[#0369a1]/30 rounded-xl text-xs flex items-center justify-between">
+        <div className="p-3 bg-sky-50 border border-[#0369a1]/30 rounded-xl text-[13px] flex items-center justify-between">
           <div>
             <span className="font-bold text-sky-900">Đối thủ đã nhận: </span>
             <strong className="text-slate-900">{post.opponentTeamName}</strong> (Cap: {post.opponentCaptainName})
@@ -151,14 +151,14 @@ export default function MatchmakingCard({
         <div className="flex items-center space-x-2">
           {isMatched ? (
             <>
-              <span className="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-xs font-bold">
+              <span className="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-[13px] font-bold">
                 Đã Đầy Đội
               </span>
               {onReview && (
                 <button
                   type="button"
                   onClick={() => onReview(post)}
-                  className="px-3 py-2 rounded-xl bg-[#0369a1]/10 hover:bg-[#0369a1]/20 text-[#0369a1] text-xs font-bold transition-all flex items-center gap-1.5 border border-[#0369a1]/30"
+                  className="px-3 py-2 rounded-xl bg-[#0369a1]/10 hover:bg-[#0369a1]/20 text-[#0369a1] text-[13px] font-bold transition-all flex items-center gap-1.5 border border-[#0369a1]/30"
                 >
                   <Star className="w-3.5 h-3.5" />
                   <span>Đánh giá</span>
@@ -168,7 +168,7 @@ export default function MatchmakingCard({
           ) : (
             <button
               onClick={() => onAccept?.(post)}
-              className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-xs shadow-md transition-all flex items-center space-x-1.5 active:scale-95"
+              className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] shadow-md transition-all flex items-center space-x-1.5 active:scale-95"
             >
               <Zap className="w-4 h-4 text-white" />
               <span>Nhận Kèo Giao Lưu Ngay</span>

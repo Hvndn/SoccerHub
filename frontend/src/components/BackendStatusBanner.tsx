@@ -79,7 +79,7 @@ export default function BackendStatusBanner() {
             <p className="text-sm font-black text-amber-900 leading-tight">
               Không kết nối được máy chủ Turfzone
             </p>
-            <p className="mt-0.5 text-xs leading-relaxed text-amber-800">
+            <p className="mt-0.5 text-[13px] leading-relaxed text-amber-800">
               {status.message ??
                 "Hệ thống có thể đang bảo trì hoặc mất kết nối. Dữ liệu sẽ tự tải lại khi máy chủ phản hồi trở lại."}
             </p>
@@ -90,7 +90,7 @@ export default function BackendStatusBanner() {
               type="button"
               onClick={() => probeBackend()}
               disabled={status.checking}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#0369a1] px-3 py-2 text-xs font-extrabold text-white transition-all hover:bg-[#075985] active:scale-95 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#0369a1] px-3 py-2 text-[13px] font-extrabold text-white transition-all hover:bg-[#075985] active:scale-95 disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${status.checking ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Thử lại</span>
@@ -98,7 +98,7 @@ export default function BackendStatusBanner() {
             <button
               type="button"
               onClick={() => setDismissed(true)}
-              className="rounded-lg px-2 py-1.5 text-xs font-bold text-amber-800 transition-colors hover:bg-amber-100"
+              className="rounded-lg px-2 py-1.5 text-[13px] font-bold text-amber-800 transition-colors hover:bg-amber-100"
             >
               Ẩn
             </button>
@@ -124,7 +124,7 @@ export function BackendOfflineDot() {
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[12px] font-black text-amber-800"
+      className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[13px] font-black text-amber-800"
       title={status.message ?? "Mất kết nối máy chủ"}
     >
       <WifiOff className="h-3 w-3" />
@@ -154,7 +154,7 @@ export function BackendRestoredToast() {
 
   return (
     <div className="fixed bottom-24 left-1/2 z-[80] -translate-x-1/2 sm:bottom-8">
-      <div className="flex items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-xs font-extrabold text-emerald-800 shadow-xl animate-fade-in-up">
+      <div className="flex items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-[13px] font-extrabold text-emerald-800 shadow-xl animate-fade-in-up">
         <CheckCircle2 className="h-4 w-4" />
         Đã kết nối lại máy chủ
       </div>

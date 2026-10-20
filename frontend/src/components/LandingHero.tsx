@@ -92,7 +92,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 border border-amber-200">
  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-700 fill-amber-700" />
  </div>
- <span className="font-extrabold text-xs sm:text-sm text-slate-800 leading-snug">
+ <span className="font-extrabold text-[13px] sm:text-sm text-slate-800 leading-snug">
  Đặt ca trực tiếp • Không trùng lịch
  </span>
  </div>
@@ -101,7 +101,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sky-100 flex items-center justify-center shrink-0 border border-sky-200">
  <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-700 fill-sky-700" />
  </div>
- <span className="font-extrabold text-xs sm:text-sm text-slate-800 leading-snug">
+ <span className="font-extrabold text-[13px] sm:text-sm text-slate-800 leading-snug">
  Sân 5 · 7 · 11 &amp; Futsal • Giải đấu theo phong độ
  </span>
  </div>
@@ -120,7 +120,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <button
  type="button"
  onClick={() => onOpenAuth("login", "PLAYER")}
- className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-xs sm:text-sm tracking-wider shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-2.5 cursor-pointer"
+ className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[13px] sm:text-sm tracking-wider shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-2.5 cursor-pointer"
  >
  <Users className="w-4 h-4 text-white" />
  <span>Đặt Sân Ngay →</span>
@@ -129,7 +129,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <button
  type="button"
  onClick={() => onOpenAuth("login", "OWNER")}
- className="w-full sm:w-auto px-7 py-3.5 sm:py-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm border border-slate-200 transition-all active:scale-[0.98] flex items-center justify-center space-x-2 cursor-pointer shadow-xs"
+ className="w-full sm:w-auto px-7 py-3.5 sm:py-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-[13px] sm:text-sm border border-slate-200 transition-all active:scale-[0.98] flex items-center justify-center space-x-2 cursor-pointer shadow-xs"
  >
  <Shield className="w-4 h-4 text-sky-700" />
  <span>Cổng Chủ Sân</span>
@@ -166,15 +166,15 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <Search className="w-4 h-4" />
  </div>
  <div>
- <span className="text-xs sm:text-sm font-black text-slate-900 tracking-wider block">
+ <span className="text-[13px] sm:text-sm font-black text-slate-900 tracking-wider block">
  Bộ Lọc Tìm Sân Trống
  </span>
- <span className="text-[12px] sm:text-xs text-slate-500 font-medium">
+ <span className="text-[13px] sm:text-[13px] text-slate-500 font-medium">
  Lọc theo khu vực, loại sân và khung giờ trống trong ngày
  </span>
  </div>
  </div>
- <span className="hidden sm:inline-block text-[12px] font-mono font-bold text-sky-800 bg-sky-100/70 px-2.5 py-1 rounded-lg border border-sky-300 ">
+ <span className="hidden sm:inline-block text-[13px] font-mono font-bold text-sky-800 bg-sky-100/70 px-2.5 py-1 rounded-lg border border-sky-300 ">
  Dữ liệu trực tiếp từ CSDL
  </span>
  </div>
@@ -190,7 +190,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  id="hero-city"
  value={city}
  onChange={(e) => setCity(e.target.value)}
- className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
+ className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
  >
  <option value="dn">Đà Nẵng — Toàn thành phố</option>
  <option value="dn-hai-chau">Đà Nẵng — Quận Hải Châu, Quận 1, Quận 7</option>
@@ -209,7 +209,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  id="hero-pitch-type"
  value={pitchType}
  onChange={(e) => setPitchType(e.target.value)}
- className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
+ className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
  >
  <option value="7">Sân 7 Người (Cỏ FIFA Pro)</option>
  <option value="5">Sân 5 Người (Mini / Futsal)</option>
@@ -227,7 +227,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  id="hero-date"
  value={dateChoice}
  onChange={(e) => setDateChoice(e.target.value)}
- className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
+ className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
  >
  <option value="today">Hôm Nay (Tối nay có ca)</option>
  <option value="tomorrow">Ngày Mai (Đặt cọc giữ chỗ)</option>
@@ -245,7 +245,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  id="hero-timeslot"
  value={timeSlot}
  onChange={(e) => setTimeSlot(e.target.value)}
- className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
+ className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
  >
  <option value="gold">Giờ Vàng: 16:00 - 20:00</option>
  <option value="afternoon">Chiều Sớm: 14:00 - 16:00</option>
@@ -257,7 +257,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
  {/* Action Row */}
  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 ">
- <div className="hidden sm:flex items-center space-x-2 text-[13px] sm:text-xs font-semibold text-slate-600 ">
+ <div className="hidden sm:flex items-center space-x-2 text-[13px] sm:text-[13px] font-semibold text-slate-600 ">
  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
  <span>Đặt theo giá niêm yết • Cọc 50% qua VietQR</span>
  </div>
@@ -265,7 +265,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <button
  type="button"
  onClick={() => onOpenAuth("login", "PLAYER")}
- className="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-[#0369a1] to-[#075985] hover:from-[#075985] hover:to-[#0369a1] text-white font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+ className="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-[#0369a1] to-[#075985] hover:from-[#075985] hover:to-[#0369a1] text-white font-black text-[13px] sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
  >
  <Search className="w-4 h-4" />
  <span>Quét Ca Sân Trống Ngay</span>
@@ -281,24 +281,24 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <div className="text-xl sm:text-3xl font-mono font-black text-[#0b4f6c] ">
  {stats.loading ? "—" : stats.pitches}
  </div>
- <div className="text-[12px] sm:text-xs font-bold text-slate-500 tracking-wider">Cụm sân trong CSDL</div>
+ <div className="text-[13px] sm:text-[13px] font-bold text-slate-500 tracking-wider">Cụm sân trong CSDL</div>
  </div>
 
  <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1 min-w-0">
  <div className="text-xl sm:text-3xl font-mono font-black text-sky-700 ">
  {stats.loading ? "—" : stats.tournaments}
  </div>
- <div className="text-[12px] sm:text-xs font-bold text-slate-500 tracking-wider">Giải đấu đã đăng</div>
+ <div className="text-[13px] sm:text-[13px] font-bold text-slate-500 tracking-wider">Giải đấu đã đăng</div>
  </div>
 
  <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1 min-w-0">
  <div className="text-xl sm:text-3xl font-mono font-black text-amber-700">{stats.loading ? "—" : stats.matchesPlayed}</div>
- <div className="text-[12px] sm:text-xs font-bold text-slate-500 tracking-wider">Trận đã có kết quả</div>
+ <div className="text-[13px] sm:text-[13px] font-bold text-slate-500 tracking-wider">Trận đã có kết quả</div>
  </div>
 
  <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1 min-w-0">
  <div className="text-xl sm:text-3xl font-mono font-black text-[#0369a1]">{stats.loading ? "—" : stats.posts}</div>
- <div className="text-[12px] sm:text-xs font-bold text-slate-500 tracking-wider">Kèo đang mở</div>
+ <div className="text-[13px] sm:text-[13px] font-bold text-slate-500 tracking-wider">Kèo đang mở</div>
  </div>
  </div>
  </div>

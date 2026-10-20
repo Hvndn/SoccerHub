@@ -31,7 +31,7 @@ export default function SafeImage({ src, alt, className = "", fallbackLabel, ...
  className={`${className} flex flex-col items-center justify-center gap-1.5 bg-slate-100 text-slate-500`}
  >
  <ImageOff className="w-6 h-6 shrink-0" />
- <span className="text-[12px] font-bold text-center px-2 leading-tight">
+ <span className="text-[13px] font-bold text-center px-2 leading-tight">
  {fallbackLabel || alt || "Ảnh không tải được"}
  </span>
  </div>

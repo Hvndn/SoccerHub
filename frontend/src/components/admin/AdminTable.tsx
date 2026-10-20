@@ -88,7 +88,7 @@ export default function AdminTable<T>({
  setPage(0);
  }}
  placeholder={searchPlaceholder}
- className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </div>
  <span className="text-[13px] font-mono text-slate-500 whitespace-nowrap">
@@ -97,7 +97,7 @@ export default function AdminTable<T>({
  </div>
 
  <div className="overflow-x-auto -mx-1 px-1 rounded-xl border border-slate-200 ">
- <table className="w-full text-xs border-collapse min-w-[720px] bg-white ">
+ <table className="w-full text-[13px] border-collapse min-w-[720px] bg-white ">
  <thead>
  <tr className="text-left text-[13px] tracking-wider text-slate-500 border-b border-slate-200 bg-slate-50/60 ">
  {columns.map((col, ci) => (

@@ -162,7 +162,7 @@ export default function AdminTournaments({ notify }: { notify: (type: "ok" | "er
  <button
  type="button"
  onClick={load}
- className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all"
+ className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all"
  >
  Tải lại
  </button>

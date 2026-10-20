@@ -83,7 +83,7 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
   const empty = (msg: string) => (
     <div className="h-48 flex flex-col items-center justify-center gap-2 text-center">
       <BarChart3 className="w-8 h-8 text-slate-300" />
-      <p className="text-xs font-bold text-slate-500">{msg}</p>
+      <p className="text-[13px] font-bold text-slate-500">{msg}</p>
     </div>
   );
 

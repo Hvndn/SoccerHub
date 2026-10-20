@@ -166,7 +166,7 @@ export default function OwnerProfileConsole({
           <ShieldCheck className="w-8 h-8 text-amber-700" />
         </div>
         <h2 className="text-xl sm:text-2xl font-black text-slate-900">Yêu Cầu Đăng Nhập Chủ Sân</h2>
-        <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+        <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
           Đăng nhập bằng tài khoản Chủ Sân để xem và cập nhật thông tin cá nhân.
         </p>
         <button
@@ -188,12 +188,12 @@ export default function OwnerProfileConsole({
         <div className="relative min-h-[5.5rem] sm:h-32 bg-slate-100 px-4 sm:px-8 py-3 flex items-center justify-between overflow-hidden">
           <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#0369a1_1px,transparent_1px)] [background-size:16px_16px]" />
           <div className="relative z-10 min-w-0">
-            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-[12px] sm:text-xs font-semibold bg-[#0369a1]/10 text-sky-800 border border-[#0369a1]/30">
+            <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-[13px] sm:text-[13px] font-semibold bg-[#0369a1]/10 text-sky-800 border border-[#0369a1]/30">
               <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-700 shrink-0" />
               <span className="truncate">Hồ Sơ Cá Nhân Chủ Sân</span>
             </span>
           </div>
-          <div className="hidden md:flex items-center gap-3 text-xs text-slate-500 font-mono shrink-0">
+          <div className="hidden md:flex items-center gap-3 text-[13px] text-slate-500 font-mono shrink-0">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               Tài khoản Chủ Sân Turfzone
@@ -228,12 +228,12 @@ export default function OwnerProfileConsole({
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight break-words">
                     {displayFullName}
                   </h1>
-                  <span className="px-2.5 py-0.5 rounded-full text-[13px] sm:text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200">
+                  <span className="px-2.5 py-0.5 rounded-full text-[13px] sm:text-[13px] font-semibold bg-sky-50 text-sky-800 border border-sky-200">
                     Chủ Sân
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 sm:gap-x-4 gap-y-1.5 text-xs sm:text-sm text-slate-600">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 sm:gap-x-4 gap-y-1.5 text-[13px] sm:text-sm text-slate-600">
                   <span className="flex items-center gap-1.5 text-slate-700 font-medium min-w-0">
                     <Mail className="w-3.5 h-3.5 text-sky-700 shrink-0" />
                     <span className="truncate max-w-[220px] sm:max-w-none">{displayEmail}</span>
@@ -255,7 +255,7 @@ export default function OwnerProfileConsole({
               <button
                 type="button"
                 onClick={handleToggleEdit}
-                className={`px-4 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm min-h-[42px] active:scale-95 ${
+                className={`px-4 py-2.5 rounded-xl border text-[13px] sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm min-h-[42px] active:scale-95 ${
                   isEditing
                     ? "border-[#0369a1] bg-sky-50 text-sky-800"
                     : "border-slate-300 bg-white hover:bg-slate-50 text-slate-800"
@@ -269,7 +269,7 @@ export default function OwnerProfileConsole({
                 <button
                   type="button"
                   onClick={() => onNavigateTab("admin")}
-                  className="px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs sm:text-sm font-black transition-all shadow-md flex items-center justify-center gap-2 min-h-[42px] active:scale-95"
+                  className="px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] sm:text-sm font-black transition-all shadow-md flex items-center justify-center gap-2 min-h-[42px] active:scale-95"
                 >
                   <Building2 className="w-4 h-4 shrink-0" />
                   <span>Bảng Điều Hành Cụm Sân</span>
@@ -287,7 +287,7 @@ export default function OwnerProfileConsole({
                     <Edit3 className="w-5 h-5 text-sky-700" />
                     Cập Nhật Thông Tin Cá Nhân
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-[13px] text-slate-500 mt-0.5">
                     Họ tên chủ sân được hiển thị công khai cho cầu thủ khi xem trang sân của bạn.
                   </p>
                 </div>
@@ -302,7 +302,7 @@ export default function OwnerProfileConsole({
               </div>
 
               {errorMsg && (
-                <div className="mb-4 p-3.5 rounded-xl bg-rose-50 text-rose-800 border border-rose-300 text-xs">
+                <div className="mb-4 p-3.5 rounded-xl bg-rose-50 text-rose-800 border border-rose-300 text-[13px]">
                   {errorMsg}
                 </div>
               )}
@@ -310,7 +310,7 @@ export default function OwnerProfileConsole({
               <form onSubmit={handleSave} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="owner-full-name">
+                    <label className="block text-[13px] font-semibold text-slate-700 mb-1" htmlFor="owner-full-name">
                       Họ và Tên Chủ Sân <span className="text-rose-600">*</span>
                     </label>
                     <input
@@ -325,7 +325,7 @@ export default function OwnerProfileConsole({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="owner-phone">
+                    <label className="block text-[13px] font-semibold text-slate-700 mb-1" htmlFor="owner-phone">
                       Số Điện Thoại Liên Hệ
                     </label>
                     <input
@@ -339,7 +339,7 @@ export default function OwnerProfileConsole({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="owner-area">
+                    <label className="block text-[13px] font-semibold text-slate-700 mb-1" htmlFor="owner-area">
                       Khu Vực Hoạt Động
                     </label>
                     <input
@@ -353,7 +353,7 @@ export default function OwnerProfileConsole({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="owner-email">
+                    <label className="block text-[13px] font-semibold text-slate-700 mb-1" htmlFor="owner-email">
                       Email Đăng Nhập <span className="text-rose-600">*</span>
                     </label>
                     <input
@@ -372,7 +372,7 @@ export default function OwnerProfileConsole({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="owner-avatar">
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1" htmlFor="owner-avatar">
                     Ảnh Đại Diện (đường dẫn ảnh)
                   </label>
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -425,20 +425,20 @@ export default function OwnerProfileConsole({
           </div>
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-slate-500 text-xs font-semibold">Vai trò</span>
+              <span className="text-slate-500 text-[13px] font-semibold">Vai trò</span>
               <span className="font-bold text-sky-800">Chủ Sân (OWNER)</span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-slate-500 text-xs font-semibold">Email đăng nhập</span>
-              <span className="font-mono text-xs text-slate-800 truncate max-w-[60%]">{displayEmail}</span>
+              <span className="text-slate-500 text-[13px] font-semibold">Email đăng nhập</span>
+              <span className="font-mono text-[13px] text-slate-800 truncate max-w-[60%]">{displayEmail}</span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-slate-500 text-xs font-semibold">Số điện thoại</span>
-              <span className="font-mono text-xs text-slate-800">{displayPhone}</span>
+              <span className="text-slate-500 text-[13px] font-semibold">Số điện thoại</span>
+              <span className="font-mono text-[13px] text-slate-800">{displayPhone}</span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-slate-500 text-xs font-semibold">Khu vực</span>
-              <span className="text-xs font-bold text-slate-800 text-right">{displayArea}</span>
+              <span className="text-slate-500 text-[13px] font-semibold">Khu vực</span>
+              <span className="text-[13px] font-bold text-slate-800 text-right">{displayArea}</span>
             </div>
           </div>
         </div>
@@ -448,7 +448,7 @@ export default function OwnerProfileConsole({
             <Info className="w-5 h-5 text-[#0369a1]" />
             <h3 className="font-extrabold text-base text-slate-900">Lưu Ý Khi Cập Nhật</h3>
           </div>
-          <ul className="space-y-3 text-xs text-slate-600 leading-relaxed">
+          <ul className="space-y-3 text-[13px] text-slate-600 leading-relaxed">
             <li className="flex items-start gap-2">
               <ArrowRight className="w-4 h-4 text-[#0369a1] shrink-0 mt-0.5" />
               <span>Tên hiển thị công khai khi khách đặt ca.</span>

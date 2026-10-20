@@ -65,7 +65,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  <button
  type="button"
  onClick={() => setSubTab("tournaments")}
- className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
+ className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[13px] sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
  subTab === "tournaments"
  ? "bg-[#0369a1] text-white shadow-sm"
  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
@@ -74,7 +74,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  <Trophy className={`w-4 h-4 ${subTab === "tournaments" ? "text-amber-200" : "text-amber-700"}`} />
  <span className="sm:hidden">Giải Đấu</span>
  <span className="hidden sm:inline">Danh Sách Giải Đấu &amp; Nhánh Bracket</span>
- <span className="px-1.5 py-0.2 rounded-full text-[12px] bg-sky-100 text-sky-900 font-black border border-sky-200">
+ <span className="px-1.5 py-0.2 rounded-full text-[13px] bg-sky-100 text-sky-900 font-black border border-sky-200">
  {tournamentCount === null ? "…" : `${tournamentCount} GIẢI`}
  </span>
  </button>
@@ -82,7 +82,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  <button
  type="button"
  onClick={() => setSubTab("organizer")}
- className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
+ className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[13px] sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
  subTab === "organizer"
  ? "bg-[#0369a1] text-white shadow-sm"
  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
@@ -91,13 +91,13 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  <Cpu className={`w-4 h-4 ${subTab === "organizer" ? "text-sky-100" : "text-[#0369a1]"}`} />
  <span className="sm:hidden">Điều Hành</span>
  <span className="hidden sm:inline">Điều Hành Giải Đấu</span>
- <span className="px-1.5 py-0.2 rounded-full text-[12px] bg-sky-100 text-sky-800 font-black border border-sky-200">BTC Pro</span>
+ <span className="px-1.5 py-0.2 rounded-full text-[13px] bg-sky-100 text-sky-800 font-black border border-sky-200">BTC Pro</span>
  </button>
 
  <button
  type="button"
  onClick={() => setSubTab("formboard")}
- className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
+ className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[13px] sm:text-sm font-semibold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
  subTab === "formboard"
  ? "bg-[#0369a1] text-white shadow-sm"
  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
@@ -141,12 +141,12 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  <span className="text-[13px] text-slate-500">Top {formBoard.length} đội • xếp theo tỷ lệ thắng</span>
  </div>
  {formBoard.length === 0 ? (
- <p className="text-xs text-slate-500 py-4 text-center">
+ <p className="text-[13px] text-slate-500 py-4 text-center">
  Chưa có đội nào có lịch sử thi đấu. Nhập kết quả trận đấu trong giải để bảng tự cập nhật.
  </p>
  ) : (
  <div className="overflow-x-auto -mx-1 px-1">
- <table className="w-full text-xs border-collapse min-w-[520px]">
+ <table className="w-full text-[13px] border-collapse min-w-[520px]">
  <thead>
  <tr className="text-left text-[13px] tracking-wider text-slate-500 border-b border-slate-200 ">
  <th scope="col" className="py-2 pr-2 font-bold">#</th>

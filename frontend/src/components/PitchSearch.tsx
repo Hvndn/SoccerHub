@@ -479,7 +479,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <Sparkles className="w-4 h-4 text-amber-700" />
  AI Gợi Ý Sân Cho Bạn
  </h2>
- <p className="text-[13px] sm:text-xs text-slate-500 mt-0.5">
+ <p className="text-[13px] sm:text-[13px] text-slate-500 mt-0.5">
  Chấm điểm theo ngân sách {maxBudget.toLocaleString("vi-VN")}đ và thể thức đang lọc.
  </p>
  </div>
@@ -487,7 +487,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  type="button"
  onClick={askAiRecommend}
  disabled={aiLoading || realPitches.length === 0}
- className="shrink-0 px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
+ className="shrink-0 px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[13px] shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
  >
  {aiLoading ? (
  <><Loader2 className="w-4 h-4 animate-spin" /><span>Đang hỏi AI…</span></>
@@ -517,7 +517,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
  {aiResults !== null && (
  aiResults.length === 0 ? (
- <p className="text-xs text-slate-500 rounded-xl bg-slate-50 border border-slate-200 p-3.5">
+ <p className="text-[13px] text-slate-500 rounded-xl bg-slate-50 border border-slate-200 p-3.5">
  AI gợi ý đang tạm không phản hồi. Bạn vẫn chọn và đặt sân thủ công bên dưới như bình thường — thử bấm lại sau
  vài giây nếu muốn dùng gợi ý.
  </p>
@@ -526,14 +526,14 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {aiResults.map((r, i) => (
  <div key={r.id} className="rounded-2xl border-2 border-[#0369a1]/50 bg-sky-50/50 p-3.5 space-y-1">
  <div className="flex items-center justify-between gap-2">
- <span className="text-[12px] font-black tracking-wider text-sky-800 ">
+ <span className="text-[13px] font-black tracking-wider text-sky-800 ">
  Lựa chọn #{i + 1}
  </span>
  <span className="font-mono text-[13px] font-black text-sky-800 ">
  {Math.round(r.compatibility_score ?? 0)} điểm
  </span>
  </div>
- <p className="text-xs font-black text-slate-900 truncate">{r.name}</p>
+ <p className="text-[13px] font-black text-slate-900 truncate">{r.name}</p>
  <p className="text-[13px] text-slate-500 truncate">{r.address || ""}</p>
  <p className="text-[13px] font-mono font-bold text-slate-700 ">
  {Number(r.avg_price_per_hour || 0).toLocaleString("vi-VN")}đ/giờ
@@ -554,15 +554,15 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {/* Cột trái: Thông tin cầu thủ & Lời chào */}
  <div className="flex-1 space-y-4 w-full">
  <div className="flex items-center space-x-2 flex-wrap gap-y-2">
- <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-sky-50 text-sky-800 font-extrabold text-[13px] sm:text-xs tracking-wider border border-sky-200 ">
+ <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-sky-50 text-sky-800 font-extrabold text-[13px] sm:text-[13px] tracking-wider border border-sky-200 ">
  <CheckCircle2 className="w-3.5 h-3.5 text-sky-700 " />
  <span>Đã Xác Thực Tài Khoản</span>
  </span>
- <span className="hidden sm:inline-block font-mono text-[13px] sm:text-xs font-bold text-[#0b4f6c] bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200 ">
+ <span className="hidden sm:inline-block font-mono text-[13px] sm:text-[13px] font-bold text-[#0b4f6c] bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200 ">
  VĐV ID: {user?.id ? `#SH-${user.id}` : "#SH-GH"}
  </span>
  {userMatchesPlayed > 0 ? (
- <span className="hidden sm:inline-flex items-center space-x-1 text-[13px] sm:text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 ">
+ <span className="hidden sm:inline-flex items-center space-x-1 text-[13px] sm:text-[13px] font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 ">
  <Flame className="w-3.5 h-3.5 text-amber-700" />
  <span>Đã đá {userMatchesPlayed} trận</span>
  </span>
@@ -587,7 +587,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </>
  )}
  </h1>
- <p className="text-[13px] sm:text-xs md:text-sm text-slate-600 font-medium mt-0.5 leading-relaxed">
+ <p className="text-[13px] sm:text-[13px] md:text-sm text-slate-600 font-medium mt-0.5 leading-relaxed">
  Vị trí:{" "}
  <span className="text-[#0b4f6c] font-bold">
  {user?.position ?? "Chưa cập nhật"}
@@ -606,16 +606,16 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  🏆
  </div>
  <div className="flex flex-col min-w-0">
- <span className="text-[12px] text-slate-500 tracking-wider font-extrabold">Phong Độ Đội Bạn</span>
+ <span className="text-[13px] text-slate-500 tracking-wider font-extrabold">Phong Độ Đội Bạn</span>
  <div className="flex items-baseline space-x-2">
  <span className="text-xl sm:text-2xl font-black text-[#0b4f6c] font-mono">
  {hasUser ? (myTeamEntry ? myRecord : "—") : "—"}
  </span>
- <span className="text-xs text-slate-700 font-bold truncate">
+ <span className="text-[13px] text-slate-700 font-bold truncate">
  {myTeamEntry ? `${myTeamEntry.teamName} • Thắng ${myWinRate}%` : (user?.level ?? "Chưa xếp bậc")}
  </span>
  </div>
- <span className="text-[12px] text-slate-500 truncate">
+ <span className="text-[13px] text-slate-500 truncate">
  {userMatchesPlayed > 0
  ? `Đã đá ${userMatchesPlayed} trận trong các giải của hệ thống`
  : "Chưa thi đấu trong giải nào trên hệ thống"}
@@ -628,13 +628,13 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  ⚽
  </div>
  <div className="flex flex-col min-w-0">
- <span className="text-[12px] text-slate-500 tracking-wider font-extrabold">Môn Thể Thức Yêu Thích</span>
+ <span className="text-[13px] text-slate-500 tracking-wider font-extrabold">Môn Thể Thức Yêu Thích</span>
  <div className="flex items-baseline space-x-2">
  <span className="text-xl sm:text-2xl font-black text-sky-700 font-mono truncate">
  {user?.favoriteSport === "football" ? "Bóng Đá" : user?.favoriteSport ?? "—"}
  </span>
  </div>
- <span className="text-[12px] text-sky-700 font-bold truncate">
+ <span className="text-[13px] text-sky-700 font-bold truncate">
  {realPitches.length} cụm sân đang mở đặt trên hệ thống
  </span>
  </div>
@@ -656,12 +656,12 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <SlidersHorizontal className="w-4 h-4 text-[#0b4f6c] " />
  Bộ lọc tìm sân
  {activeFilterCount > 0 && (
- <span className="text-[12px] font-black px-1.5 py-0.5 rounded-md bg-[#0369a1] text-white ">
+ <span className="text-[13px] font-black px-1.5 py-0.5 rounded-md bg-[#0369a1] text-white ">
  {activeFilterCount}
  </span>
  )}
  </span>
- <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+ <span className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-500">
  {showMobileFilters ? "Thu gọn" : "Mở rộng"}
  <ChevronDown className={`w-4 h-4 transition-transform ${showMobileFilters ? "rotate-180" : ""}`} />
  </span>
@@ -675,7 +675,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  key={tab.id}
  type="button"
  onClick={() => setSelectedSport(tab.id)}
- className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
+ className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
  selectedSport === tab.id
  ? "bg-[#0369a1] text-white shadow-sm"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200 "
@@ -684,7 +684,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <span>{tab.icon}</span>
  <span>{tab.name}</span>
  {tab.badge && (
- <span className={`text-[12px] px-1.5 py-0.2 rounded-md ${
+ <span className={`text-[13px] px-1.5 py-0.2 rounded-md ${
  selectedSport === tab.id
  ? "bg-white/20 text-white "
  : "bg-slate-200 text-slate-600 "
@@ -700,7 +700,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <button
  type="button"
  onClick={() => setOnlyAvailableTonight(!onlyAvailableTonight)}
- className={`w-full sm:w-auto shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 border transition-all cursor-pointer ${
+ className={`w-full sm:w-auto shrink-0 px-3.5 py-2 rounded-xl text-[13px] font-bold flex items-center justify-center space-x-1.5 border transition-all cursor-pointer ${
  onlyAvailableTonight
  ? "bg-[#0369a1]/10 border-[#0369a1] text-sky-700 "
  : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300"
@@ -722,7 +722,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  aria-label="Khu vực địa lý"
  value={selectedDistrict}
  onChange={(e) => setSelectedDistrict(e.target.value)}
- className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer mt-0.5"
+ className="w-full bg-transparent text-[13px] font-bold text-slate-900 focus:outline-none cursor-pointer mt-0.5"
  >
  {districtList.map((d) => (
  <option key={d.id} value={d.id} className="">
@@ -742,7 +742,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  aria-label="Khung giờ thi đấu"
  value={selectedTimeSlotFilter}
  onChange={(e) => setSelectedTimeSlotFilter(e.target.value)}
- className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer mt-0.5"
+ className="w-full bg-transparent text-[13px] font-bold text-slate-900 focus:outline-none cursor-pointer mt-0.5"
  >
  <option value="ALL" className="">Tất Cả Ca (14:00 - 22:00)</option>
  <option value="PEAK" className="">⭐ Ca Vàng (18:00 - 20:00)</option>
@@ -761,7 +761,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  aria-label="Quy mô sân con"
  value={selectedPitchFormat}
  onChange={(e) => setSelectedPitchFormat(e.target.value)}
- className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer mt-0.5"
+ className="w-full bg-transparent text-[13px] font-bold text-slate-900 focus:outline-none cursor-pointer mt-0.5"
  >
  <option value="ALL" className="">Tất Cả Sân Con</option>
  <option value="SAN_7" className="">Sân 7 (Cỏ Nhân Tạo 50mm)</option>
@@ -775,7 +775,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="bg-slate-50 rounded-xl px-3.5 py-2 border border-slate-200 flex items-center space-x-2.5">
  <DollarSign className="w-4 h-4 text-emerald-500 shrink-0" />
  <div className="flex-1 min-w-0">
- <div className="flex items-center justify-between text-[11px] text-slate-500 font-extrabold leading-none">
+ <div className="flex items-center justify-between text-[13px] text-slate-500 font-extrabold leading-none">
  <span>Ngân Sách Tối Đa</span>
  <span className="text-sky-700 font-mono font-bold">
  {maxBudget.toLocaleString("vi-VN")}đ
@@ -806,11 +806,11 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="space-y-4">
  <div className="flex flex-wrap items-center justify-between gap-2">
  <div className="flex items-center space-x-2">
- <span className="px-2.5 py-1 bg-[#0369a1] text-white font-black text-[12px] rounded-lg flex items-center tracking-wider shadow-xs">
+ <span className="px-2.5 py-1 bg-[#0369a1] text-white font-black text-[13px] rounded-lg flex items-center tracking-wider shadow-xs">
  <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-300 " />
  Gợi ý sân thông minh
  </span>
- <span className="font-mono text-xs font-extrabold text-sky-700 flex items-center">
+ <span className="font-mono text-[13px] font-extrabold text-sky-700 flex items-center">
  <Zap className="w-3.5 h-3.5 mr-0.5" />
  Phong độ: {hasUser ? (myTeamEntry ? `${myRecord} • Thắng ${myWinRate}%` : "tân binh") : "chưa đăng nhập"}
  </span>
@@ -822,7 +822,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <span className="text-[#0b4f6c] ">{featuredPitch.name}</span>
  </h2>
 
- <p className="hidden sm:block text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+ <p className="hidden sm:block text-[13px] sm:text-sm text-slate-600 font-medium leading-relaxed">
  Gợi ý dựa trên vị trí thật tại{" "}
  <strong className="text-slate-900 ">
  {featuredPitch.address ?? featuredPitch.area ?? "khu vực của bạn"}
@@ -844,7 +844,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {/* 3 Thông Số Lấy Từ Hồ Sơ Sân Trong CSDL */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
- <span className="text-[12px] font-bold text-slate-500">Giờ Mở Cửa</span>
+ <span className="text-[13px] font-bold text-slate-500">Giờ Mở Cửa</span>
  <div className="text-sm font-black text-slate-900 font-mono">
  {featuredPitch.openTime ?? "—"} - {featuredPitch.closeTime ?? "—"}
  </div>
@@ -854,7 +854,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </div>
 
  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
- <span className="text-[12px] font-bold text-slate-500">Loại Sân</span>
+ <span className="text-[13px] font-bold text-slate-500">Loại Sân</span>
  <div className="text-sm font-black text-slate-900 font-mono truncate">
  {featuredPitch.pitchTypes?.filter(Boolean).slice(0, 2).join(" · ") ||
  featuredPitch.type ||
@@ -866,7 +866,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </div>
 
  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
- <span className="text-[12px] font-bold text-slate-500">Giá Mỗi Ca</span>
+ <span className="text-[13px] font-bold text-slate-500">Giá Mỗi Ca</span>
  <div className="text-sm font-black text-slate-900 font-mono truncate">
  {featuredPitch.priceDiscounted?.toLocaleString("vi-VN")}đ
  </div>
@@ -882,14 +882,14 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
  <div className="hidden sm:flex items-center space-x-2">
  <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] animate-pulse" />
- <span className="text-xs font-bold text-slate-600 ">
+ <span className="text-[13px] font-bold text-slate-600 ">
  Giá theo niêm yết của sân — đặt xong hệ thống sinh mã giữ chỗ
  </span>
  </div>
  <button
  type="button"
  onClick={() => setSelectedPitchForSlot(featuredPitch)}
- className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+ className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
  >
  <span>Chọn Khung Giờ Ngay</span>
  <ArrowRight className="w-4 h-4 text-white" />
@@ -905,19 +905,19 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <Lock className="w-[18px] h-[18px] text-amber-700" />
  <span className="font-extrabold text-sm text-slate-900 ">Trạng Thái Ca Sân Hôm Nay</span>
  </div>
- <span className="font-mono text-[12px] font-extrabold px-2.5 py-0.5 bg-sky-50 text-sky-800 border border-sky-200 rounded-full flex items-center">
+ <span className="font-mono text-[13px] font-extrabold px-2.5 py-0.5 bg-sky-50 text-sky-800 border border-sky-200 rounded-full flex items-center">
  <span className="w-1.5 h-1.5 rounded-full bg-[#0369a1] mr-1.5" />
  Đọc từ CSDL
  </span>
  </div>
 
- <p className="hidden sm:block text-xs text-slate-500 font-medium">
+ <p className="hidden sm:block text-[13px] text-slate-500 font-medium">
  Ma trận ca sân lấy trực tiếp từ bảng bookings — ca nào đã có khách đặt thì không
  thể chọn tiếp.
  </p>
 
  {/* State Legend */}
- <div className="hidden sm:flex items-center space-x-3 text-xs font-bold pt-1">
+ <div className="hidden sm:flex items-center space-x-3 text-[13px] font-bold pt-1">
  <span className="flex items-center text-sky-700 ">
  <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] mr-1.5" /> Sẵn Sàng
  </span>
@@ -927,7 +927,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </div>
 
  {/* Danh sách ca sân thời gian thực từ cơ sở dữ liệu thật */}
- <div className="space-y-2 font-mono text-xs pt-2">
+ <div className="space-y-2 font-mono text-[13px] pt-2">
  {featuredLiveSlots.length > 0 ? (
  featuredLiveSlots.map((ls: any, lIdx: number) => (
  <div
@@ -947,14 +947,14 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </span>
  </div>
  {ls.status === 'BOOKED' || ls.status === 'PLAYING' ? (
- <span className="px-2 py-0.5 bg-slate-200 text-slate-700 text-[12px] font-bold rounded font-sans min-w-0 break-words text-right">
+ <span className="px-2 py-0.5 bg-slate-200 text-slate-700 text-[13px] font-bold rounded font-sans min-w-0 break-words text-right">
  Đã Đặt ({ls.customer})
  </span>
  ) : (
  <button
  type="button"
  onClick={() => setSelectedPitchForSlot(featuredPitch)}
- className="px-2.5 sm:px-3 py-1 bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[12px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
+ className="px-2.5 sm:px-3 py-1 bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
  >
  Chọn Ca
  </button>
@@ -974,7 +974,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </div>
 
  <div className="hidden sm:block text-right pt-2 border-t border-slate-100 ">
- <span className="font-mono text-[12px] text-slate-500">
+ <span className="font-mono text-[13px] text-slate-500">
  Nguồn: bảng bookings · cập nhật khi tải trang
  </span>
  </div>
@@ -993,7 +993,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <p className="text-sm font-bold text-amber-900 ">
  Chưa tải được dữ liệu sân
  </p>
- <p className="text-xs text-amber-800/90 mt-0.5">
+ <p className="text-[13px] text-amber-800/90 mt-0.5">
  {pitchLoadError}
  </p>
  </div>
@@ -1001,7 +1001,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  type="button"
  onClick={fetchPitches}
  disabled={loadingRealPitches}
- className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] disabled:opacity-60 text-white text-xs font-bold transition-colors"
+ className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] disabled:opacity-60 text-white text-[13px] font-bold transition-colors"
  >
  <RefreshCw className={`w-3.5 h-3.5 ${loadingRealPitches ? "animate-spin" : ""}`} />
  <span>Thử lại</span>
@@ -1017,18 +1017,18 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <h2 className="text-lg sm:text-xl font-black text-slate-900 ">
  Sân Trống Khả Dụng Khung Giờ Tối
  </h2>
- <span className="hidden sm:inline px-2.5 py-0.5 rounded-full bg-[#0369a1]/20 text-emerald-500 text-[12px] font-black animate-pulse border border-[#0369a1]/30">
+ <span className="hidden sm:inline px-2.5 py-0.5 rounded-full bg-[#0369a1]/20 text-emerald-500 text-[13px] font-black animate-pulse border border-[#0369a1]/30">
  LIVE
  </span>
  <span className="sm:hidden w-2 h-2 rounded-full bg-[#0369a1] animate-pulse" aria-hidden="true" />
  </div>
- <p className="hidden sm:block text-xs text-slate-500 font-medium mt-0.5">
+ <p className="hidden sm:block text-[13px] text-slate-500 font-medium mt-0.5">
  Danh sách lấy từ bảng pitches và ma trận ca sân của hệ thống
  </p>
  </div>
 
  <div className="flex items-center space-x-2">
- <span className="text-xs font-bold text-[#0369a1] bg-sky-50 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-sky-200 text-[13px] sm:text-xs">
+ <span className="text-[13px] font-bold text-[#0369a1] bg-sky-50 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-sky-200 text-[13px] sm:text-[13px]">
  Gần nhất
  </span>
  </div>
@@ -1050,7 +1050,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <h3 className="text-lg font-black text-slate-900 ">
  Không tìm thấy cụm sân bóng nào phù hợp
  </h3>
- <p className="text-xs text-slate-500 max-w-md mx-auto">
+ <p className="text-[13px] text-slate-500 max-w-md mx-auto">
  Vui lòng thử mở rộng bán kính tìm kiếm hoặc điều chỉnh ngân sách ca đấu.
  </p>
  </div>
@@ -1077,12 +1077,12 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </span>
  </div>
 
- <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs font-bold">
+ <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-[13px] font-bold">
  <div className="flex items-center space-x-1">
  <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
  <span className="truncate max-w-[170px]">{pitch.districtName}</span>
  </div>
- <span className="bg-[#0369a1]/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[12px]">
+ <span className="bg-[#0369a1]/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[13px]">
  {pitch.openTime} - {pitch.closeTime}
  </span>
  </div>
@@ -1099,7 +1099,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  >
  {pitch.name}
  </h3>
- <p className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+ <p className="text-[13px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
  <Navigation className="w-3.5 h-3.5 text-slate-500 shrink-0" />
  <span>{pitch.address}</span>
  </p>
@@ -1107,10 +1107,10 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {pitch.rating ? (
  <div className="flex items-center space-x-1 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl shrink-0">
  <Star className="w-3.5 h-3.5 text-amber-700 fill-amber-500" />
- <span className="font-extrabold text-xs text-slate-900 ">
+ <span className="font-extrabold text-[13px] text-slate-900 ">
  {pitch.rating}
  </span>
- <span className="text-[12px] text-slate-500">({pitch.reviewsCount})</span>
+ <span className="text-[13px] text-slate-500">({pitch.reviewsCount})</span>
  </div>
  ) : null}
  </div>
@@ -1118,14 +1118,14 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {/* Tiện ích khai báo trong hồ sơ sân */}
  <div className="flex flex-wrap gap-1.5 pt-0.5">
  {(pitch.amenities ?? []).length === 0 ? (
- <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-bold text-[12px]">
+ <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-bold text-[13px]">
  Chủ sân chưa khai báo tiện ích
  </span>
  ) : (
  pitch.amenities.slice(0, 3).map((a: string) => (
  <span
  key={a}
- className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-800 font-bold text-[12px] flex items-center gap-1 border border-sky-200 "
+ className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-800 font-bold text-[13px] flex items-center gap-1 border border-sky-200 "
  >
  <Camera className="w-3 h-3 text-emerald-500" />
  {a}
@@ -1137,7 +1137,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
  {/* Dải ca trống hôm nay từ database */}
  <div className="space-y-1.5">
- <div className="flex items-center justify-between text-[12px] font-extrabold text-slate-500 tracking-wider">
+ <div className="flex items-center justify-between text-[13px] font-extrabold text-slate-500 tracking-wider">
  <span>Ca trống hôm nay ({pitch.openTime} - {pitch.closeTime}):</span>
  <span className="text-sky-700 ">120p (2 tiếng)/ca</span>
  </div>
@@ -1147,7 +1147,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  key={i}
  type="button"
  onClick={() => setSelectedPitchForSlot(pitch)}
- className={`px-3 py-1.5 rounded-xl font-mono text-xs font-bold shrink-0 transition-all cursor-pointer ${
+ className={`px-3 py-1.5 rounded-xl font-mono text-[13px] font-bold shrink-0 transition-all cursor-pointer ${
  ts.status === "ACTIVE"
  ? "bg-[#0369a1] text-white shadow-xs"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200 "
@@ -1166,11 +1166,11 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <span className="text-xl font-black text-sky-700 font-mono">
  {pitch.priceDiscounted.toLocaleString("vi-VN")}đ
  </span>
- <span className="px-1.5 py-0.2 rounded bg-[#0369a1]/15 text-sky-800 text-[11px] font-black">
+ <span className="px-1.5 py-0.2 rounded bg-[#0369a1]/15 text-sky-800 text-[13px] font-black">
  {pitch.slotDurationMinutes} phút/ca
  </span>
  </div>
- <p className="hidden sm:block text-[12px] text-slate-500 font-medium">
+ <p className="hidden sm:block text-[13px] text-slate-500 font-medium">
  Giá theo niêm yết của sân · ca giờ vàng tính theo giá peak
  </p>
  </div>
@@ -1178,7 +1178,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <button
  type="button"
  onClick={() => setSelectedPitchForSlot(pitch)}
- className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
+ className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
  >
  <span>Xem Ca & Đặt</span>
  <ChevronRight className="w-4 h-4" />
@@ -1205,14 +1205,14 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <button
  type="button"
  onClick={() => setShowCreateMatchModal(true)}
- className="text-xs font-bold text-[#0369a1] hover:underline flex items-center gap-1 cursor-pointer"
+ className="text-[13px] font-bold text-[#0369a1] hover:underline flex items-center gap-1 cursor-pointer"
  >
  <PlusCircle className="w-3.5 h-3.5" />
  <span>Tạo Kèo Mới</span>
  </button>
  </div>
 
- <p className="text-xs text-slate-500 font-medium leading-relaxed">
+ <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
  Danh sách kèo do đội khác đăng lên hệ thống, sắp theo thời điểm đăng
  {hasUser && myTeamEntry ? (
  <>
@@ -1223,11 +1223,11 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </p>
 
  {postsLoading ? (
- <p className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500 flex items-center gap-2">
+ <p className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-[13px] text-slate-500 flex items-center gap-2">
  <Loader2 className="w-4 h-4 animate-spin" /> Đang tải kèo từ CSDL…
  </p>
  ) : openPosts.length === 0 ? (
- <p className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500 leading-relaxed">
+ <p className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-[13px] text-slate-500 leading-relaxed">
  Chưa có kèo nào đang mở. Bấm <strong>“Tạo Kèo Mới”</strong> để đăng đội
  của bạn lên sàn, hoặc vào tab <strong>Chợ Kèo</strong> để xem chi tiết.
  </p>
@@ -1247,18 +1247,18 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2"
  >
  <div className="flex items-center justify-between">
- <span className="px-2 py-0.5 rounded bg-[#0369a1]/20 text-sky-800 font-black text-[12px]">
+ <span className="px-2 py-0.5 rounded bg-[#0369a1]/20 text-sky-800 font-black text-[13px]">
  {label}
  </span>
- <span className="font-mono text-xs font-bold text-slate-500">
+ <span className="font-mono text-[13px] font-bold text-slate-500">
  {p.matchTime ?? "—"}
  </span>
  </div>
- <h4 className="font-black text-xs text-slate-900 ">
+ <h4 className="font-black text-[13px] text-slate-900 ">
  {p.pitchName ?? "Chưa chọn sân"}
  {p.note ? ` • ${p.note}` : ""}
  </h4>
- <div className="flex items-center justify-between text-xs text-slate-500">
+ <div className="flex items-center justify-between text-[13px] text-slate-500">
  <span>
  Phong độ:{" "}
  <strong className="text-slate-900 ">
@@ -1279,7 +1279,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <button
  type="button"
  onClick={() => handleAcceptFromWidget(p)}
- className="px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer bg-[#0369a1] hover:bg-[#075985] text-white active:scale-95 shrink-0"
+ className="px-3.5 py-1.5 rounded-xl font-bold text-[13px] transition-all cursor-pointer bg-[#0369a1] hover:bg-[#075985] text-white active:scale-95 shrink-0"
  >
  Bắt Kèo Ngay
  </button>
@@ -1297,7 +1297,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <QrCode className="w-5 h-5 text-amber-700" />
  <h3 className="font-black text-sm text-slate-900 ">Turfzone QuickPass</h3>
  </div>
- <span className="px-2.5 py-0.5 rounded bg-[#0369a1] text-white font-black text-[11px]">
+ <span className="px-2.5 py-0.5 rounded bg-[#0369a1] text-white font-black text-[13px]">
  Check-in Không Chạm
  </span>
  </div>
@@ -1311,9 +1311,9 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <QrCode className="w-12 h-12 text-slate-950" />
  </div>
  <div className="flex-1 min-w-0 space-y-1">
- <h4 className="font-black text-xs text-slate-900 truncate">{userName}</h4>
+ <h4 className="font-black text-[13px] text-slate-900 truncate">{userName}</h4>
  <p className="font-mono text-[13px] text-[#0b4f6c] ">ID: {user?.id ? `#SH-${user.id}` : "#SH-GH"}</p>
- <div className="flex items-center space-x-2 text-[12px] font-mono text-sky-800 font-bold">
+ <div className="flex items-center space-x-2 text-[13px] font-mono text-sky-800 font-bold">
  <span>{user?.level ?? "Chưa xếp bậc"}</span>
  <span>•</span>
  <span>{hasUser ? (myTeamEntry ? `Thành tích ${myRecord}` : "Tân binh") : "Chưa đăng nhập"}</span>
@@ -1324,7 +1324,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <button
  type="button"
  onClick={() => setShowQrModal(true)}
- className="w-full py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-1.5"
+ className="w-full py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[13px] shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-1.5"
  >
  <span>Mở Thẻ Hội Viên QR</span>
  <ArrowRight className="w-4 h-4" />
@@ -1336,11 +1336,11 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="flex items-center justify-between">
  <div className="flex items-center space-x-2">
  <Trophy className="w-4 h-4 text-amber-700" />
- <h3 className="font-black text-slate-900 text-xs">
+ <h3 className="font-black text-slate-900 text-[13px]">
  Đội Phong Độ Cao Nhất
  </h3>
  </div>
- <span className="text-[12px] font-bold text-slate-500">
+ <span className="text-[13px] font-bold text-slate-500">
  {tournaments.length} giải trong CSDL
  </span>
  </div>
@@ -1355,7 +1355,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  topTeamsByForm.map((tm: any, idx: number) => (
  <div
  key={`${tm.teamName}-${idx}`}
- className={`flex items-center justify-between p-2 rounded-xl text-xs ${
+ className={`flex items-center justify-between p-2 rounded-xl text-[13px] ${
  idx === 0
  ? "bg-amber-500/10 border border-amber-500/20"
  : "bg-slate-50 "
@@ -1412,7 +1412,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
  <div className="space-y-3">
  <div>
- <label className="text-xs font-bold text-slate-700 block mb-1">
+ <label className="text-[13px] font-bold text-slate-700 block mb-1">
  Tên Đội / Tiêu đề kèo:
  </label>
  <input
@@ -1420,19 +1420,19 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  placeholder="Ví dụ: FC Anh Em Liên Chiểu tìm đối giao lưu vui vẻ"
  value={newMatchTitle}
  onChange={(e) => setNewMatchTitle(e.target.value)}
- className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </div>
 
  <div>
- <label className="text-xs font-bold text-slate-700 block mb-1">
+ <label className="text-[13px] font-bold text-slate-700 block mb-1">
  Sân thi đấu:
  </label>
  <select
  aria-label="Sân thi đấu"
  value={newMatchPitchId}
  onChange={(e) => setNewMatchPitchId(e.target.value)}
- className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {realPitches.length === 0 ? (
  <option value="">Chưa tải được danh sách sân</option>
@@ -1447,14 +1447,14 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </div>
 
  <div>
- <label className="text-xs font-bold text-slate-700 block mb-1">
+ <label className="text-[13px] font-bold text-slate-700 block mb-1">
  Khung giờ thi đấu:
  </label>
  <select
  aria-label="Khung giờ thi đấu"
  value={newMatchSlot}
  onChange={(e) => setNewMatchSlot(e.target.value)}
- className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {(featuredPitch?.timeSlots?.length
  ? featuredPitch.timeSlots.map((s: any) => String(s.time))
@@ -1468,7 +1468,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </div>
 
  <div>
- <label className="text-xs font-bold text-slate-700 block mb-1">
+ <label className="text-[13px] font-bold text-slate-700 block mb-1">
  Ghi chú / vị trí cần ghép:
  </label>
  <input
@@ -1476,7 +1476,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  placeholder="Ví dụ: Cần thêm 1 GK bắt gôn + 2 hậu vệ đá cánh"
  value={newMatchNeed}
  onChange={(e) => setNewMatchNeed(e.target.value)}
- className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </div>
  </div>
@@ -1485,7 +1485,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <button
  type="button"
  onClick={() => setShowCreateMatchModal(false)}
- className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 "
+ className="px-4 py-2 rounded-xl text-[13px] font-bold text-slate-600 hover:bg-slate-100 "
  >
  Hủy bỏ
  </button>
@@ -1493,7 +1493,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  type="button"
  disabled={creatingPost}
  onClick={handleCreateFromWidget}
- className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
+ className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
  >
  {creatingPost && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
  {creatingPost ? "Đang đăng…" : "Đăng Kèo Ngay"}
@@ -1508,7 +1508,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
  <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-sm w-full border border-slate-200 shadow-2xl text-center space-y-4 animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
  <div className="flex items-center justify-between pb-2 border-b border-slate-100 ">
- <span className="text-xs font-black text-slate-900">
+ <span className="text-[13px] font-black text-slate-900">
  Thẻ Hội Viên QR
  </span>
  <button
@@ -1538,7 +1538,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  setShowQrModal(false);
  showToast("✓ Đã lưu mã QR vào thư viện ảnh thiết bị!");
  }}
- className="w-full py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs shadow-md"
+ className="w-full py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-md"
  >
  Lưu Mã Về Điện Thoại
  </button>

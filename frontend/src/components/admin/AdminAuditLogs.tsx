@@ -125,7 +125,7 @@ export default function AdminAuditLogs({
  sortValue: (r) => r.actionGroup,
  render: (r) => (
  <span
- className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[12px] font-black border ${
+ className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[13px] font-black border ${
  (GROUP_TONE[r.actionGroup] ?? "slate") === "sky"
  ? "bg-sky-50 text-sky-700 border-sky-200"
  : (GROUP_TONE[r.actionGroup] ?? "slate") === "amber"
@@ -163,7 +163,7 @@ export default function AdminAuditLogs({
  <p className="font-bold text-slate-900 truncate">
  {r.adminName || r.adminEmail || "—"}
  </p>
- <p className="text-[12px] font-mono text-slate-500 truncate">{r.adminEmail}</p>
+ <p className="text-[13px] font-mono text-slate-500 truncate">{r.adminEmail}</p>
  </div>
  ),
  },
@@ -171,7 +171,7 @@ export default function AdminAuditLogs({
  key: "detail",
  header: "Chi tiết",
  render: (r) => (
- <p className="text-xs text-slate-700 max-w-[420px] break-words">{r.detail || "—"}</p>
+ <p className="text-[13px] text-slate-700 max-w-[420px] break-words">{r.detail || "—"}</p>
  ),
  },
  {
@@ -180,7 +180,7 @@ export default function AdminAuditLogs({
  sortable: true,
  sortValue: (r) => r.createdAt ?? "",
  render: (r) => (
- <span className="text-[12px] font-mono text-slate-500 whitespace-nowrap">
+ <span className="text-[13px] font-mono text-slate-500 whitespace-nowrap">
  {fmtDate(r.createdAt)}
  </span>
  ),
@@ -206,7 +206,7 @@ export default function AdminAuditLogs({
  value={group}
  onChange={(e) => setGroup(e.target.value)}
  aria-label="Lọc theo nhóm thao tác"
- className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {GROUPS.map((g) => (
  <option key={g.value} value={g.value}>
@@ -217,7 +217,7 @@ export default function AdminAuditLogs({
  <button
  type="button"
  onClick={load}
- className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all flex items-center gap-1.5"
+ className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all flex items-center gap-1.5"
  >
  <RefreshCw className="w-3.5 h-3.5" /> Tải lại
  </button>

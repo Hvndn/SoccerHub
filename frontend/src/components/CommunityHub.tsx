@@ -509,7 +509,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
         <button
           type="button"
           onClick={() => switchMode("chat")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] sm:text-sm font-black transition-all ${
             mode === "chat"
               ? "bg-[#0369a1] text-white shadow-md"
               : "text-slate-500 hover:text-slate-900"
@@ -521,7 +521,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
         <button
           type="button"
           onClick={() => switchMode("clan")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] sm:text-sm font-black transition-all ${
             mode === "clan"
               ? "bg-[#0369a1] text-white shadow-md"
               : "text-slate-500 hover:text-slate-900"
@@ -533,7 +533,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
         <button
           type="button"
           onClick={() => switchMode("club")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] sm:text-sm font-black transition-all ${
             mode === "club"
               ? "bg-[#0369a1] text-white shadow-md"
               : "text-slate-500 hover:text-slate-900"
@@ -563,7 +563,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
               key={f.key}
               type="button"
               onClick={() => setFilter(f.key)}
-              className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${
+              className={`shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-bold transition-all border ${
                 filter === f.key
                   ? "bg-[#0369a1] text-white border-[#0369a1] shadow-md"
                   : "bg-white text-slate-600 border-slate-200 hover:border-[#0369a1]/60 hover:text-[#075985]"
@@ -625,7 +625,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
       {mode === "chat" ? (
         <div className="rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
           <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-200">
-            <h3 className="text-xs font-black text-slate-500 flex items-center gap-2">
+            <h3 className="text-[13px] font-black text-slate-500 flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-[#0369a1]" />
               Kênh trò chuyện
             </h3>
@@ -653,25 +653,25 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
             <div className="px-5 py-10 text-center space-y-3">
               <Lock className="w-10 h-10 text-slate-600 mx-auto" />
               <p className="text-sm font-bold text-slate-900">Đăng nhập để tham gia cộng đồng</p>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+              <p className="text-[13px] text-slate-500 max-w-sm mx-auto leading-relaxed">
                 Trò chuyện với cầu thủ, chủ sân và ban tổ chức giải đấu.
               </p>
               <button
                 type="button"
                 onClick={() => onOpenAuth?.("login", "PLAYER")}
-                className="mt-2 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 shadow-[0_0_18px_rgba(74,222,128,0.4)]"
+                className="mt-2 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 shadow-[0_0_18px_rgba(74,222,128,0.4)]"
               >
                 Đăng nhập ngay
               </button>
             </div>
           ) : loading && channels.length === 0 ? (
-            <div className="px-5 py-10 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+            <div className="px-5 py-10 text-center text-slate-500 text-[13px] flex items-center justify-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin" /> Đang tải kênh…
             </div>
           ) : filteredChannels.length === 0 ? (
             <div className="px-5 py-10 text-center space-y-2">
               <MessageCircle className="w-9 h-9 text-slate-600 mx-auto" />
-              <p className="text-xs text-slate-500">
+              <p className="text-[13px] text-slate-500">
                 {filter === "unread"
                   ? "Không có tin nhắn chưa đọc."
                   : filter === "private" || filter === "friends"
@@ -712,9 +712,9 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
 
                       {/* Thời gian + badge chưa đọc */}
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        {ch.time && <span className="text-[12px] text-slate-500 font-semibold">{formatTime(ch.time)}</span>}
+                        {ch.time && <span className="text-[13px] text-slate-500 font-semibold">{formatTime(ch.time)}</span>}
                         {ch.unread > 0 ? (
-                          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#0369a1] text-white text-[12px] font-black flex items-center justify-center">
+                          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#0369a1] text-white text-[13px] font-black flex items-center justify-center">
                             {ch.unread > 9 ? "9+" : ch.unread}
                           </span>
                         ) : (
@@ -740,13 +740,13 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
               <Users className="w-7 h-7 text-[#0369a1]" />
             </div>
             <h3 className="text-sm font-black text-slate-900">Đội bóng (Clan)</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+            <p className="text-[13px] text-slate-500 max-w-sm mx-auto leading-relaxed">
               Đăng nhập để tạo đội, quản lý thành viên và theo dõi lịch sử thi đấu của đội bạn.
             </p>
             <button
               type="button"
               onClick={() => onOpenAuth?.("login", "PLAYER")}
-              className="mt-1 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 shadow-[0_0_18px_rgba(74,222,128,0.4)]"
+              className="mt-1 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 shadow-[0_0_18px_rgba(74,222,128,0.4)]"
             >
               Đăng nhập ngay
             </button>
@@ -764,13 +764,13 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
               <Building2 className="w-7 h-7 text-[#0369a1]" />
             </div>
             <h3 className="text-sm font-black text-slate-900">CLB của tôi</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+            <p className="text-[13px] text-slate-500 max-w-sm mx-auto leading-relaxed">
               Đăng nhập để tạo CLB, thêm thành viên và quản lý đội bóng của CLB bạn.
             </p>
             <button
               type="button"
               onClick={() => onOpenAuth?.("login", "PLAYER")}
-              className="mt-1 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95"
+              className="mt-1 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95"
             >
               Đăng nhập ngay
             </button>

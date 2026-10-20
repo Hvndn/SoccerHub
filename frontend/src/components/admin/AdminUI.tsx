@@ -56,7 +56,7 @@ export function ConfirmModal({
  </div>
  <div>
  <h3 className="font-black text-slate-900 ">{title}</h3>
- <div className="mt-1 text-xs text-slate-500 leading-relaxed">{message}</div>
+ <div className="mt-1 text-[13px] text-slate-500 leading-relaxed">{message}</div>
  </div>
  </div>
  <div className="flex justify-end gap-2.5">
@@ -64,7 +64,7 @@ export function ConfirmModal({
  type="button"
  onClick={onCancel}
  disabled={busy}
- className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all disabled:opacity-50"
+ className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold transition-all disabled:opacity-50"
  >
  Hủy bỏ
  </button>
@@ -72,7 +72,7 @@ export function ConfirmModal({
  type="button"
  onClick={onConfirm}
  disabled={busy}
- className={`px-4 py-2 rounded-xl text-white text-xs font-black transition-all active:scale-95 disabled:opacity-50 ${
+ className={`px-4 py-2 rounded-xl text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-50 ${
  danger ? "bg-rose-600 hover:bg-rose-700" : "bg-[#0369a1] hover:bg-[#075985]"
  }`}
  >
@@ -99,7 +99,7 @@ export function AdminToast({ toast, onClose }: { toast: { type: "ok" | "err"; te
  ) : (
  <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
  )}
- <span className="text-xs font-bold">{toast.text}</span>
+ <span className="text-[13px] font-bold">{toast.text}</span>
  </div>
  );
 }
@@ -135,7 +135,7 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
  <div className="p-4 sm:p-8 text-center">
  <Search className="w-8 h-8 text-slate-300 mx-auto" />
  <p className="mt-3 text-sm font-bold text-slate-600 ">{title}</p>
- {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+ {hint && <p className="mt-1 text-[13px] text-slate-500">{hint}</p>}
  </div>
  );
 }

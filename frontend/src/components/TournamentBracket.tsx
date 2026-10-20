@@ -526,13 +526,13 @@ const [addCount, setAddCount] = useState("4");
  const renderMatch = (match: BracketMatch, idx: number) => {
  if (match.status === "BYE" && match.bye) {
  return (
- <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className="animate-fade-in-up bg-amber-50 rounded-2xl border border-amber-300 overflow-hidden text-xs">
+ <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className="animate-fade-in-up bg-amber-50 rounded-2xl border border-amber-300 overflow-hidden text-[13px]">
  <div className="p-3 flex justify-between items-center gap-2">
  <span className="font-bold text-amber-900 truncate">{match.bye.name}</span>
- <span className="px-2 py-0.5 rounded bg-amber-500 text-white text-[12px] font-black shrink-0">Miễn vòng</span>
+ <span className="px-2 py-0.5 rounded bg-amber-500 text-white text-[13px] font-black shrink-0">Miễn vòng</span>
  </div>
  {match.bye.record && (
- <div className="px-3 pb-2 text-[12px] font-mono text-amber-700 ">Thành tích {match.bye.record} • Hạt giống #{match.bye.seed ?? "—"}</div>
+ <div className="px-3 pb-2 text-[13px] font-mono text-amber-700 ">Thành tích {match.bye.record} • Hạt giống #{match.bye.seed ?? "—"}</div>
  )}
  </div>
  );
@@ -544,8 +544,8 @@ const [addCount, setAddCount] = useState("4");
  const setScore = (side: "a" | "b", v: string) =>
  setScores((s) => ({ ...s, [match.matchId]: { a: side === "a" ? v : (s[match.matchId]?.a ?? String(match.scoreA ?? 0)), b: side === "b" ? v : (s[match.matchId]?.b ?? String(match.scoreB ?? 0)) } }));
  return (
- <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className={`animate-fade-in-up rounded-2xl border overflow-hidden text-xs shadow-xs ${done ? "bg-sky-50 border-sky-300 " : "bg-slate-50 border-slate-200 "}`}>
- <div className="px-2.5 pt-2 font-mono text-[12px] font-black text-slate-500 flex items-center justify-between gap-1">
+ <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className={`animate-fade-in-up rounded-2xl border overflow-hidden text-[13px] shadow-xs ${done ? "bg-sky-50 border-sky-300 " : "bg-slate-50 border-slate-200 "}`}>
+ <div className="px-2.5 pt-2 font-mono text-[13px] font-black text-slate-500 flex items-center justify-between gap-1">
  <span>{match.matchId}</span>
  <div className="flex items-center gap-1">
  {done && <span className="text-sky-700 ">{match.winner ? "✓ ĐÃ ĐÁ" : "= HÒA"}</span>}
@@ -556,7 +556,7 @@ const [addCount, setAddCount] = useState("4");
  aria-label={`Huỷ kết quả trận ${match.matchId}`}
  disabled={savingMatch === match.matchId}
  onClick={() => setConfirmUndo(match)}
- className="px-1.5 py-0.5 rounded-md border border-rose-300 text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all text-[11px] font-black disabled:opacity-40 active:scale-95"
+ className="px-1.5 py-0.5 rounded-md border border-rose-300 text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all text-[13px] font-black disabled:opacity-40 active:scale-95"
  >
  {savingMatch === match.matchId ? "…" : "Huỷ KQ"}
  </button>
@@ -566,18 +566,18 @@ const [addCount, setAddCount] = useState("4");
  {/* Lịch thi đấu thật do BTC sinh (POST /schedule) */}
  {match.matchDate && (
  <div className="px-2.5 pt-1.5 flex flex-wrap items-center gap-1">
- <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-700 text-[12px] font-black">
+ <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-700 text-[13px] font-black">
  <Calendar className="w-2.5 h-2.5" />
  {prettyDate(match.matchDate)}
  </span>
  {match.timeSlot && (
- <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-200 text-slate-600 text-[12px] font-mono font-bold">
+ <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-200 text-slate-600 text-[13px] font-mono font-bold">
  <Clock className="w-2.5 h-2.5" />
  {match.timeSlot}
  </span>
  )}
  {match.pitchName && (
- <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 text-[12px] font-bold truncate max-w-full">
+ <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 text-[13px] font-bold truncate max-w-full">
  {match.pitchName}
  </span>
  )}
@@ -591,7 +591,7 @@ const [addCount, setAddCount] = useState("4");
  <div className={`p-3 flex justify-between items-center gap-2 ${t?.tbd ? "text-slate-500 italic" : isWinner ? "text-sky-900 font-black" : "text-slate-700 font-bold"}`}>
  <span className="truncate">{t?.name ?? "?"}{isWinner ? " 👑" : ""}</span>
  {t && !t.tbd && (t.record || t.form) && (
- <span className="font-mono text-[12px] text-slate-500 shrink-0">{t.record ?? t.form}</span>
+ <span className="font-mono text-[13px] text-slate-500 shrink-0">{t.record ?? t.form}</span>
  )}
  </div>
  </div>
@@ -656,7 +656,7 @@ const [addCount, setAddCount] = useState("4");
  aria-label="Đội của cầu thủ"
  value={row.team}
  onChange={(e) => setScorerRow(match.matchId, ri, { team: e.target.value })}
- className="px-1 py-1 rounded-md border border-slate-300 bg-white text-[12px] font-bold focus:outline-none focus:ring-1 focus:ring-[#0369a1] truncate"
+ className="px-1 py-1 rounded-md border border-slate-300 bg-white text-[13px] font-bold focus:outline-none focus:ring-1 focus:ring-[#0369a1] truncate"
  >
  <option value={match.teamA?.name}>{match.teamA?.name}</option>
  <option value={match.teamB?.name}>{match.teamB?.name}</option>
@@ -684,7 +684,7 @@ const [addCount, setAddCount] = useState("4");
  </div>
  ))}
  <div className="flex items-center justify-between">
- <span className="text-[12px] text-slate-500">Cột: tên • đội • bàn • kiến tạo</span>
+ <span className="text-[13px] text-slate-500">Cột: tên • đội • bàn • kiến tạo</span>
  <button
  type="button"
  onClick={() => addScorerRow(match)}
@@ -713,7 +713,7 @@ const [addCount, setAddCount] = useState("4");
  {toastMessage && (
  <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-slate-900 text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-sky-400 animate-fade-in-up sm:max-w-sm">
  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
- <span className="font-semibold text-xs sm:text-sm">{toastMessage}</span>
+ <span className="font-semibold text-[13px] sm:text-sm">{toastMessage}</span>
  </div>
  )}
 
@@ -721,14 +721,14 @@ const [addCount, setAddCount] = useState("4");
  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-slate-900 shadow-xl relative overflow-hidden">
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
  <div className="min-w-0">
- <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/30 text-sky-800 text-xs font-bold mb-3">
+ <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/30 text-sky-800 text-[13px] font-bold mb-3">
  <Trophy className="w-4 h-4 text-sky-700 " />
  <span>{selected ? `${selected.title} • Nhánh đấu & VAR` : "Nhánh đấu & Bàn trọng tài Live VAR"}</span>
  </div>
  <h1 className="text-lg sm:text-3xl font-extrabold tracking-tight text-slate-900 ">
  Quản Lý Giải Đấu & Bốc Thăm Chia Cặp Thật
  </h1>
- <p className="text-slate-600 text-xs sm:text-sm mt-1 max-w-2xl">
+ <p className="text-slate-600 text-[13px] sm:text-sm mt-1 max-w-2xl">
  {selected
  ? `${sportLabel(selected.sportType)} • ${formatLabel(selected.format)} • ${teamCount}/${teamCap || "—"} đội • Khởi tranh ${formatDate(selected.startDate)}`
  : "Chọn một giải đấu để quản lý nhánh đấu."}
@@ -744,7 +744,7 @@ const [addCount, setAddCount] = useState("4");
  id="bracket-tournament"
  value={selectedId}
  onChange={(e) => setSelectedId(e.target.value)}
- className="bg-slate-50 border border-slate-200 text-xs font-extrabold text-slate-900 rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0369a1] max-w-full"
+ className="bg-slate-50 border border-slate-200 text-[13px] font-extrabold text-slate-900 rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0369a1] max-w-full"
  >
  {tournaments.length === 0 && <option value="">Chưa có giải đấu</option>}
  {tournaments.map((t) => (
@@ -759,7 +759,7 @@ const [addCount, setAddCount] = useState("4");
  onClick={() => handleFill()}
  disabled={!selected || full || fillBusy}
  title="Sinh đội Test kèm đủ quân số + danh sách thành viên cho đủ sức chứa (chỉ dùng demo)"
- className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+ className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
  {fillBusy ? (
  <RefreshCw className="w-4 h-4 animate-spin" />
@@ -781,7 +781,7 @@ const [addCount, setAddCount] = useState("4");
   onChange={(e) => setAddCount(e.target.value.replace(/[^0-9]/g, ""))}
   aria-label="Số đội Test muốn thêm vào giải"
   title="Nhập số đội muốn thêm (tối đa sức chứa còn trống)"
-  className="w-12 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-black text-slate-900 text-center focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+  className="w-12 bg-white border border-slate-200 rounded-lg px-2 py-1 text-[13px] font-black text-slate-900 text-center focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
   />
   <span className="text-[13px] font-bold text-slate-500 shrink-0">đội</span>
   <button
@@ -800,7 +800,7 @@ const [addCount, setAddCount] = useState("4");
  onClick={handleClearSimulated}
  disabled={!selected || clearBusy}
  title="Xóa đội Test đã giả lập, giữ nguyên đội đăng ký thật"
- className="px-3.5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40"
+ className="px-3.5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-extrabold text-[13px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40"
  >
  {clearBusy ? (
  <RefreshCw className="w-4 h-4 animate-spin" />
@@ -815,7 +815,7 @@ const [addCount, setAddCount] = useState("4");
  onClick={() => (bracket ? setConfirmDraw(true) : startDraw())}
  disabled={!selected || teamCount < 2 || drawBusy}
  title="Bốc thăm hạt giống theo thứ tự đăng ký, lưu nhánh đấu vào CSDL"
- className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+ className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
  {drawBusy ? (
  <RefreshCw className="w-4 h-4 animate-spin" />
@@ -830,7 +830,7 @@ const [addCount, setAddCount] = useState("4");
  onClick={() => setConfirmSimulate(true)}
  disabled={!selected || simulateBusy}
  title="Tự random tỷ số + cầu thủ ghi bàn cho mọi trận chưa đá (chỉ dùng demo)"
- className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-extrabold text-xs transition-all flex items-center space-x-1.5 shadow-md border border-slate-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+ className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-md border border-slate-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
  {simulateBusy ? (
  <RefreshCw className="w-4 h-4 animate-spin" />
@@ -847,7 +847,7 @@ const [addCount, setAddCount] = useState("4");
  onClick={() => setShowScheduleForm((v) => !v)}
  disabled={!selected || scheduleBusy}
  title="Sinh ngày + khung giờ + sân cho từng trận, lưu vào CSDL"
- className={`px-3.5 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40 ${
+ className={`px-3.5 py-2.5 rounded-xl font-extrabold text-[13px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40 ${
  showScheduleForm
  ? "bg-[#0369a1] text-white shadow-lg"
  : "bg-[#0369a1]/20 text-sky-300 hover:bg-[#0369a1]/30 border border-[#0369a1]/40"
@@ -858,7 +858,7 @@ const [addCount, setAddCount] = useState("4");
  </button>
  )}
  </div>
- <p className="hidden sm:block text-[12px] text-slate-500">
+ <p className="hidden sm:block text-[13px] text-slate-500">
  Cần đăng nhập ORGANIZER hoặc ADMIN.
  </p>
 
@@ -870,56 +870,56 @@ const [addCount, setAddCount] = useState("4");
  </p>
  <div className="grid grid-cols-2 gap-2">
  <label className="col-span-2 sm:col-span-1 block">
- <span className="text-[12px] font-bold text-slate-300 block mb-1">
+ <span className="text-[13px] font-bold text-slate-300 block mb-1">
  Ngày thi đấu đầu tiên
  </span>
  <input
  type="date"
  value={scheduleForm.startDate}
  onChange={(e) => setScheduleForm((f) => ({ ...f, startDate: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  {!scheduleForm.startDate && (
- <span className="text-[11px] text-slate-500">
+ <span className="text-[13px] text-slate-500">
  Để trống = dùng ngày khai giải ({prettyDate(selected?.startDate) || "—"}).
  </span>
  )}
  </label>
  <label className="block">
- <span className="text-[12px] font-bold text-slate-300 block mb-1">Trận / ngày</span>
+ <span className="text-[13px] font-bold text-slate-300 block mb-1">Trận / ngày</span>
  <input
  type="number"
  min={1}
  max={12}
  value={scheduleForm.matchesPerDay}
  onChange={(e) => setScheduleForm((f) => ({ ...f, matchesPerDay: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
  <label className="block">
- <span className="text-[12px] font-bold text-slate-300 block mb-1">Cách giữa vòng (ngày)</span>
+ <span className="text-[13px] font-bold text-slate-300 block mb-1">Cách giữa vòng (ngày)</span>
  <input
  type="number"
  min={0}
  max={14}
  value={scheduleForm.daysBetweenRounds}
  onChange={(e) => setScheduleForm((f) => ({ ...f, daysBetweenRounds: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
  <label className="block">
- <span className="text-[12px] font-bold text-slate-300 block mb-1">Giờ bắt đầu</span>
+ <span className="text-[13px] font-bold text-slate-300 block mb-1">Giờ bắt đầu</span>
  <input
  type="number"
  min={0}
  max={23}
  value={scheduleForm.startHour}
  onChange={(e) => setScheduleForm((f) => ({ ...f, startHour: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
  <label className="block">
- <span className="text-[12px] font-bold text-slate-300 block mb-1">Độ dài trận (phút)</span>
+ <span className="text-[13px] font-bold text-slate-300 block mb-1">Độ dài trận (phút)</span>
  <input
  type="number"
  min={30}
@@ -927,7 +927,7 @@ const [addCount, setAddCount] = useState("4");
  step={15}
  value={scheduleForm.matchMinutes}
  onChange={(e) => setScheduleForm((f) => ({ ...f, matchMinutes: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
  </div>
@@ -935,12 +935,12 @@ const [addCount, setAddCount] = useState("4");
  type="button"
  onClick={handleSchedule}
  disabled={scheduleBusy}
- className="w-full px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-xs transition-all flex items-center justify-center space-x-1.5 shadow-md active:scale-95 disabled:opacity-50"
+ className="w-full px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] transition-all flex items-center justify-center space-x-1.5 shadow-md active:scale-95 disabled:opacity-50"
  >
  {scheduleBusy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
  <span>{scheduleBusy ? "Đang xếp lịch…" : "Sinh lịch & lưu vào CSDL"}</span>
  </button>
- <p className="hidden sm:block text-[11px] text-slate-500 leading-relaxed">
+ <p className="hidden sm:block text-[13px] text-slate-500 leading-relaxed">
  Sân lấy từ <span className="font-bold text-slate-500">{selected?.pitchName || selected?.location || "Sân BTC"}</span> trong hồ sơ giải. Xếp lại sẽ ghi đè lịch cũ.
  </p>
  </div>
@@ -954,7 +954,7 @@ const [addCount, setAddCount] = useState("4");
  </p>
  <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
  {pendingTeams.map((t) => (
- <div key={t.teamName} className="flex items-center justify-between gap-2 text-xs">
+ <div key={t.teamName} className="flex items-center justify-between gap-2 text-[13px]">
  <span className="text-slate-200 font-bold truncate">
  {t.teamName}
  <span className="text-slate-500 font-medium"> • {t.captainPhone || "—"}</span>
@@ -979,7 +979,7 @@ const [addCount, setAddCount] = useState("4");
  <div className="flex items-center space-x-2 mt-6 pt-6 border-t border-slate-800 overflow-x-auto">
  <button
  onClick={() => setActiveTab("bracket")}
- className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+ className={`px-4 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center space-x-2 ${
  activeTab === "bracket"
  ? "bg-[#0369a1] text-white shadow-md"
  : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
@@ -991,7 +991,7 @@ const [addCount, setAddCount] = useState("4");
 
  <button
  onClick={() => setActiveTab("var_referee")}
- className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+ className={`px-4 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center space-x-2 ${
  activeTab === "var_referee"
  ? "bg-[#0369a1] text-white shadow-md"
  : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
@@ -999,12 +999,12 @@ const [addCount, setAddCount] = useState("4");
  >
  <Video className="w-4 h-4 text-red-400" />
  <span>Bàn Trọng Tài Live VAR</span>
- <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[11px] font-mono">LIVE</span>
+ <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[13px] font-mono">LIVE</span>
  </button>
 
  <button
  onClick={() => setActiveTab("standings")}
- className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+ className={`px-4 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center space-x-2 ${
  activeTab === "standings"
  ? "bg-[#0369a1] text-white shadow-md"
  : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
@@ -1016,7 +1016,7 @@ const [addCount, setAddCount] = useState("4");
 
  <button
  onClick={() => setActiveTab("esheet")}
- className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+ className={`px-4 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center space-x-2 ${
  activeTab === "esheet"
  ? "bg-[#0369a1] text-white shadow-md"
  : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
@@ -1036,7 +1036,7 @@ const [addCount, setAddCount] = useState("4");
  <Trophy className="w-5 h-5 text-emerald-500" />
  <span>Cây Nhánh Đấu {bracket ? `— ${bracket.rounds.length} vòng` : ""}</span>
  </h2>
- <span className="text-xs text-slate-500 font-medium">
+ <span className="text-[13px] text-slate-500 font-medium">
  {bracket ? `Bốc thăm lúc ${bracket.drawnAt?.slice(0, 16).replace("T", " ")} • Hạt giống theo thứ tự đăng ký` : "Chưa có nhánh đấu"}
  </span>
  </div>
@@ -1068,7 +1068,7 @@ const [addCount, setAddCount] = useState("4");
  <p className="mt-3 text-sm font-bold text-slate-700 ">
  Giải “{selected.title}” chưa bốc thăm chia cặp
  </p>
- <p className="mt-1 text-xs text-slate-500">
+ <p className="mt-1 text-[13px] text-slate-500">
  {teamCount < 2
  ? `Mới có ${teamCount} đội — cần ít nhất 2 đội. Dùng nút “Giả lập đủ đội (Test)” nếu thiếu.`
  : `Đã có ${teamCount} đội. Bấm “Bốc thăm chia cặp” (hạt giống theo thứ tự đăng ký).`}
@@ -1078,7 +1078,7 @@ const [addCount, setAddCount] = useState("4");
  <div key={bracket.drawnAt} className="flex gap-3 sm:gap-6 pb-2 items-start overflow-x-auto">
  {bracket.rounds.map((round, ri) => (
  <div key={ri} className="min-w-[250px] flex-1 space-y-3 sm:space-y-4">
- <div className={`text-center text-xs font-extrabold py-2 rounded-xl border ${
+ <div className={`text-center text-[13px] font-extrabold py-2 rounded-xl border ${
  ri === bracket.rounds.length - 1
  ? "text-amber-600 bg-amber-500/10 border-amber-500/30"
  : "text-sky-700 bg-slate-100 border-slate-200 "
@@ -1099,14 +1099,14 @@ const [addCount, setAddCount] = useState("4");
  <div className="lg:col-span-2 bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-md space-y-3 sm:space-y-6">
  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
  <div className="min-w-0">
- <span className="bg-red-500 text-white text-[12px] font-black px-2 py-0.5 rounded mr-2">VAR</span>
+ <span className="bg-red-500 text-white text-[13px] font-black px-2 py-0.5 rounded mr-2">VAR</span>
  <span className="font-extrabold text-base text-slate-900 ">
  {varMatch
  ? `${varRound} · ${varMatch.teamA?.name} vs ${varMatch.teamB?.name}`
  : "Chọn một trận để điều khiển tỷ số"}
  </span>
  </div>
- <div className="text-xs font-mono font-bold text-slate-500">
+ <div className="text-[13px] font-mono font-bold text-slate-500">
  {varMatch?.matchDate
  ? `${varMatch.matchDate.split("-").reverse().join("/")} • ${varMatch.timeSlot ?? ""} • ${varMatch.pitchName ?? "Chưa xếp sân"}`
  : "Chưa xếp lịch"}
@@ -1132,7 +1132,7 @@ const [addCount, setAddCount] = useState("4");
  )}
 
  <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 text-slate-900 text-center shadow-2xl space-y-3 sm:space-y-4">
- <div className="flex items-center justify-center space-x-3 text-xs text-slate-500 font-monost font-bold">
+ <div className="flex items-center justify-center space-x-3 text-[13px] text-slate-500 font-monost font-bold">
  <Clock className="w-4 h-4 text-sky-700 " />
  <span>
  {varMatch.status === "DONE" ? "ĐÃ KẾT THÚC" : "ĐANG ĐIỀU KHIỂN"} • TỶ SỐ THỜI GIAN THỰC
@@ -1144,7 +1144,7 @@ const [addCount, setAddCount] = useState("4");
  <div className="text-base sm:text-lg font-black text-sky-800 truncate">
  {varMatch.teamA?.name}
  </div>
- <div className="text-[12px] text-slate-500 font-mono">Thành tích {varMatch.teamA?.record ?? varMatch.teamA?.form ?? "—"}</div>
+ <div className="text-[13px] text-slate-500 font-mono">Thành tích {varMatch.teamA?.record ?? varMatch.teamA?.form ?? "—"}</div>
  <div className="text-2xl sm:text-6xl font-mono font-black text-slate-900 bg-slate-100 py-3 rounded-2xl border border-slate-200 shadow-inner">
  {varScoreA}
  </div>
@@ -1152,13 +1152,13 @@ const [addCount, setAddCount] = useState("4");
  <div className="flex justify-center space-x-2 pt-2">
  <button
  onClick={() => setVarScoreA(varScoreA + 1)}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
+ className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold px-3 py-1.5 rounded-lg shadow"
  >
  +1 Bàn
  </button>
  <button
  onClick={() => setVarScoreA(Math.max(0, varScoreA - 1))}
- className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1.5 rounded-lg"
+ className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold px-2 py-1.5 rounded-lg"
  >
  -1
  </button>
@@ -1168,9 +1168,9 @@ const [addCount, setAddCount] = useState("4");
 
  <div className="space-y-1">
  <div className="text-xl font-extrabold text-amber-600 font-mono">VS</div>
- <div className="text-[12px] text-slate-500 font-mono">{varMatch.matchId}</div>
+ <div className="text-[13px] text-slate-500 font-mono">{varMatch.matchId}</div>
  {varStatus && (
- <div className="bg-amber-500/10 text-amber-700 text-[12px] font-bold p-2 rounded-lg border border-amber-500/30 ">
+ <div className="bg-amber-500/10 text-amber-700 text-[13px] font-bold p-2 rounded-lg border border-amber-500/30 ">
  VAR: {varStatus}
  </div>
  )}
@@ -1180,7 +1180,7 @@ const [addCount, setAddCount] = useState("4");
  <div className="text-base sm:text-lg font-black text-cyan-700 truncate">
  {varMatch.teamB?.name}
  </div>
- <div className="text-[12px] text-slate-500 font-mono">Thành tích {varMatch.teamB?.record ?? varMatch.teamB?.form ?? "—"}</div>
+ <div className="text-[13px] text-slate-500 font-mono">Thành tích {varMatch.teamB?.record ?? varMatch.teamB?.form ?? "—"}</div>
  <div className="text-2xl sm:text-6xl font-mono font-black text-slate-900 bg-slate-100 py-3 rounded-2xl border border-slate-200 shadow-inner">
  {varScoreB}
  </div>
@@ -1188,13 +1188,13 @@ const [addCount, setAddCount] = useState("4");
  <div className="flex justify-center space-x-2 pt-2">
  <button
  onClick={() => setVarScoreB(varScoreB + 1)}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow"
+ className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold px-3 py-1.5 rounded-lg shadow"
  >
  +1 Bàn
  </button>
  <button
  onClick={() => setVarScoreB(Math.max(0, varScoreB - 1))}
- className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1.5 rounded-lg"
+ className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold px-2 py-1.5 rounded-lg"
  >
  -1
  </button>
@@ -1207,7 +1207,7 @@ const [addCount, setAddCount] = useState("4");
  <button
  onClick={saveVarScore}
  disabled={savingMatch === varMatch.matchId}
- className="w-full bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-50"
+ className="w-full bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-50"
  >
  {savingMatch === varMatch.matchId
  ? "Đang lưu…"
@@ -1218,13 +1218,13 @@ const [addCount, setAddCount] = useState("4");
 
  {/* Chọn trận */}
  <div className="space-y-2">
- <label className="text-xs font-bold text-slate-700 ">
+ <label className="text-[13px] font-bold text-slate-700 ">
  Chọn trận để điều khiển ({playableMatches.length} trận có đủ 2 đội)
  </label>
  <select
  value={varMatchId}
  onChange={(e) => setVarMatchId(e.target.value)}
- className="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {playableMatches.map((p) => (
  <option key={p.match.matchId} value={p.match.matchId}>
@@ -1247,7 +1247,7 @@ const [addCount, setAddCount] = useState("4");
  <button
  key={cam}
  onClick={() => setSelectedCameraAngle(cam)}
- className={`p-2.5 rounded-xl text-xs font-bold transition border ${
+ className={`p-2.5 rounded-xl text-[13px] font-bold transition border ${
  selectedCameraAngle === cam
  ? "bg-rose-600 text-white border-rose-600 shadow-md"
  : "bg-slate-100 text-slate-700 border-slate-200 "
@@ -1259,30 +1259,30 @@ const [addCount, setAddCount] = useState("4");
  </div>
 
  <div className="p-3 sm:p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
- <div className="text-xs font-bold text-slate-700 ">
+ <div className="text-[13px] font-bold text-slate-700 ">
  Quyết định Trọng Tài ({selectedCameraAngle}):
  </div>
  <div className="flex flex-wrap gap-2">
  <button
  onClick={() => handleVarCheck("Bóng trong sân (In-Bounds)", "ok")}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold px-3 py-2 rounded-lg transition"
+ className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold px-3 py-2 rounded-lg transition"
  >
  ✅ Bóng Trong Sân
  </button>
  <button
  onClick={() => handleVarCheck("Bóng ngoài sân (Out-of-Bounds)", "bad")}
- className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition"
+ className="bg-rose-600 hover:bg-rose-700 text-white text-[13px] font-bold px-3 py-2 rounded-lg transition"
  >
  ❌ Bóng Out
  </button>
  <button
  onClick={() => handleVarCheck("Lỗi chân vạch Kitchen", "warn")}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold px-3 py-2 rounded-lg transition"
+ className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold px-3 py-2 rounded-lg transition"
  >
  ⚠️ Lỗi Kitchen
  </button>
  </div>
- <p className="hidden sm:block text-[12px] text-slate-500 leading-relaxed">
+ <p className="hidden sm:block text-[13px] text-slate-500 leading-relaxed">
  Camera là bộ công cụ mô phỏng dùng để minh hoạ luồng VAR. Quyết định bấm ở đây được ghi vào
  nhật ký phiên làm việc của BTC, không ghi vào CSDL.
  </p>
@@ -1301,11 +1301,11 @@ const [addCount, setAddCount] = useState("4");
  </h3>
 
  {varLog.length === 0 ? (
- <p className="text-xs text-slate-500">
+ <p className="text-[13px] text-slate-500">
  Chưa có mốc nào trong phiên làm việc này. Các quyết định VAR và lần lưu kết quả sẽ hiện ở đây.
  </p>
  ) : (
- <div className="space-y-2 text-xs max-h-72 overflow-y-auto pr-1">
+ <div className="space-y-2 text-[13px] max-h-72 overflow-y-auto pr-1">
  {varLog.map((e, i) => (
  <div
  key={i}
@@ -1334,7 +1334,7 @@ const [addCount, setAddCount] = useState("4");
  <QrCode className="w-8 h-8 text-sky-700 flex-shrink-0" />
  <div>
  <h4 className="font-bold text-sm">Biên Bản Trận Đấu</h4>
- <p className="text-xs text-slate-600 ">
+ <p className="text-[13px] text-slate-600 ">
  {varMatch
  ? `Mã biên bản: ${selected?.title ? selected.title.slice(0, 18) : "SH"}-${varMatch.matchId}-${(varMatch.matchDate ?? "").replace(/-/g, "") || "CHUALICH"}`
  : "Chọn trận để tạo biên bản"}
@@ -1345,7 +1345,7 @@ const [addCount, setAddCount] = useState("4");
  <button
  onClick={() => setActiveTab("esheet")}
  disabled={!varMatch}
- className="w-full bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-40"
+ className="w-full bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold py-3 rounded-xl shadow-lg transition active:scale-[0.99] disabled:opacity-40"
  >
  Mở Biên Bản Điện Tử
  </button>
@@ -1362,7 +1362,7 @@ const [addCount, setAddCount] = useState("4");
  <ListOrdered className="w-5 h-5 text-emerald-500" />
  <span>Bảng Xếp Hạng {selected ? `— ${selected.title}` : ""}</span>
  </h2>
- <span className="text-xs text-slate-500">
+ <span className="text-[13px] text-slate-500">
  Thắng = 3 điểm • Phong độ cập nhật tự động từ lịch sử sau mỗi trận
  </span>
  </div>
@@ -1376,7 +1376,7 @@ const [addCount, setAddCount] = useState("4");
  </div>
  ) : (
  <div className="overflow-x-auto -mx-1 px-1">
- <table className="w-full text-left border-collapse text-xs min-w-[640px]">
+ <table className="w-full text-left border-collapse text-[13px] min-w-[640px]">
  <thead>
  <tr className="border-b border-slate-200 text-slate-500 font-bold text-[13px] tracking-wider">
  <th className="py-3 px-2 sm:px-4 sticky left-0 bg-white z-10">Hạng</th>
@@ -1409,9 +1409,9 @@ const [addCount, setAddCount] = useState("4");
  </td>
  <td className="py-3.5 px-2 sm:px-4 text-right">
  {row.simulated ? (
- <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-800 text-[12px] font-black">TEST</span>
+ <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-800 text-[13px] font-black">TEST</span>
  ) : (
- <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-900 text-[12px] font-black">Chính thức</span>
+ <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-900 text-[13px] font-black">Chính thức</span>
  )}
  </td>
  </tr>
@@ -1432,7 +1432,7 @@ const [addCount, setAddCount] = useState("4");
  <FileText className="w-5 h-5 text-emerald-500" />
  <span>Biên Bản Trận Đấu — E-Scoresheet</span>
  </h2>
- <p className="text-xs text-slate-500 mt-1">
+ <p className="text-[13px] text-slate-500 mt-1">
  Dữ liệu lấy trực tiếp từ bảng <span className="font-mono">tournaments</span> &amp;{" "}
  <span className="font-mono">match_results</span> trong CSDL
  </p>
@@ -1442,7 +1442,7 @@ const [addCount, setAddCount] = useState("4");
  value={varMatchId}
  onChange={(e) => setVarMatchId(e.target.value)}
  aria-label="Chọn trận cho biên bản"
- className="px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] max-w-[240px]"
+ className="px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] max-w-[240px]"
  >
  {playableMatches.map((p) => (
  <option key={p.match.matchId} value={p.match.matchId}>
@@ -1453,7 +1453,7 @@ const [addCount, setAddCount] = useState("4");
  <button
  onClick={() => window.print()}
  disabled={!varMatch}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition active:scale-95 disabled:opacity-40 print:hidden"
+ className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold px-4 py-2.5 rounded-xl shadow transition active:scale-95 disabled:opacity-40 print:hidden"
  >
  In / Lưu PDF
  </button>
@@ -1468,15 +1468,15 @@ const [addCount, setAddCount] = useState("4");
  </p>
  </div>
  ) : (
- <div className="esheet-print bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 space-y-3 sm:space-y-5 text-xs print:bg-white print:border-0 print:p-0">
+ <div className="esheet-print bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 space-y-3 sm:space-y-5 text-[13px] print:bg-white print:border-0 print:p-0">
  {/* Header */}
  <div className="text-center space-y-1 pb-4 border-b border-slate-200 print:border-slate-400">
  <p className="text-[13px] font-black tracking-widest text-slate-500">Cộng Hòa Xã Hội Chủ Nghĩa Việt Nam</p>
- <p className="text-[12px] font-bold text-slate-500">Độc lập – Tự do – Hạnh phúc</p>
+ <p className="text-[13px] font-bold text-slate-500">Độc lập – Tự do – Hạnh phúc</p>
  <h3 className="text-base font-black text-slate-900">
  Biên Bản Trận Đấu — {selected ? sportLabel(selected.sportType) : "Bóng Đá Sân 7 Phủi"}
  </h3>
- <p className="text-[12px] font-mono text-slate-500">
+ <p className="text-[13px] font-mono text-slate-500">
  Mã biên bản: {(selected?.title ?? "SH").slice(0, 20)}-{varMatch.matchId}-
  {(varMatch.matchDate ?? "").replace(/-/g, "") || "CHUALICH"}
  </p>
@@ -1542,7 +1542,7 @@ const [addCount, setAddCount] = useState("4");
  <td className="py-2.5 px-3 text-center font-black text-base">
  {i === 0 ? (varMatch.scoreA ?? 0) : (varMatch.scoreB ?? 0)}
  </td>
- <td className="py-2.5 px-3 text-center font-bold text-xs">
+ <td className="py-2.5 px-3 text-center font-bold text-[13px]">
  {varMatch.status !== "DONE"
  ? "Chưa có"
  : varMatch.winner === team?.name

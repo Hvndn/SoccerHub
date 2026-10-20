@@ -258,14 +258,14 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   onChange={(e) => setQuery(e.target.value)}
   placeholder="Tìm tên, email, SĐT…"
   aria-label="Tìm kiếm người dùng"
-  className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] w-48"
+  className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] w-48"
   />
   </div>
   <select
   value={roleFilter}
   onChange={(e) => setRoleFilter(e.target.value)}
   aria-label="Lọc theo vai trò"
-  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
   >
   <option value="">Tất cả ({countByRole.ALL ?? total})</option>
   {ALL_ROLES.map((r) => (
@@ -277,7 +277,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   <button
   type="button"
   onClick={load}
-  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all"
+  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all"
   >
   Tải lại
   </button>
@@ -305,7 +305,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   type="button"
   disabled={page === 0 || loading}
   onClick={() => setPage((p) => Math.max(0, p - 1))}
-  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1"
   >
   <ChevronLeft className="w-3.5 h-3.5" /> Trước
   </button>
@@ -316,7 +316,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   type="button"
   disabled={page + 1 >= totalPages || loading}
   onClick={() => setPage((p) => p + 1)}
-  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1"
   >
   Sau <ChevronRight className="w-3.5 h-3.5" />
   </button>
@@ -396,21 +396,21 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   <Loader2 className="w-6 h-6 animate-spin text-[#0369a1]" />
   </div>
   ) : detail.data ? (
-  <div className="p-5 space-y-5 text-xs">
+  <div className="p-5 space-y-5 text-[13px]">
   {/* Chỉ số nhanh */}
   <div className="grid grid-cols-3 gap-3">
   <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
-  <p className="text-[12px] font-bold text-slate-500">Số đơn đặt</p>
+  <p className="text-[13px] font-bold text-slate-500">Số đơn đặt</p>
   <p className="font-mono font-black text-lg text-slate-900">{detail.data.bookingCount ?? 0}</p>
   </div>
   <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
-  <p className="text-[12px] font-bold text-emerald-700">Tổng chi</p>
+  <p className="text-[13px] font-bold text-emerald-700">Tổng chi</p>
   <p className="font-mono font-black text-lg text-emerald-700">
   {Number(detail.data.totalSpent ?? 0).toLocaleString("vi-VN")}đ
   </p>
   </div>
   <div className="rounded-xl bg-rose-50 border border-rose-200 p-3">
-  <p className="text-[12px] font-bold text-rose-700">Kèo đã đăng</p>
+  <p className="text-[13px] font-bold text-rose-700">Kèo đã đăng</p>
   <p className="font-mono font-black text-lg text-rose-700">
   {(detail.data.matchmakingPosts || []).length}
   </p>
@@ -419,7 +419,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
 
   {/* Hồ sơ */}
   <div>
-  <h4 className="font-black text-slate-900 text-xs mb-2 pb-1.5 border-b border-slate-100">
+  <h4 className="font-black text-slate-900 text-[13px] mb-2 pb-1.5 border-b border-slate-100">
   Hồ sơ cá nhân
   </h4>
   <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
@@ -438,7 +438,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   ["Ngày đăng ký", detail.data.user.createdAt ? String(detail.data.user.createdAt).slice(0, 10) : "—"],
   ].map(([label, val]) => (
   <div key={String(label)}>
-  <p className="text-[12px] font-bold text-slate-400">{label}</p>
+  <p className="text-[13px] font-bold text-slate-400">{label}</p>
   <p className="font-bold text-slate-800 truncate">{String(val ?? "—")}</p>
   </div>
   ))}
@@ -448,7 +448,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   {/* Kèo đã đăng */}
   {(detail.data.matchmakingPosts || []).length > 0 && (
   <div>
-  <h4 className="font-black text-slate-900 text-xs mb-2 pb-1.5 border-b border-slate-100">
+  <h4 className="font-black text-slate-900 text-[13px] mb-2 pb-1.5 border-b border-slate-100">
   Kèo giao hữu đã đăng
   </h4>
   <div className="space-y-1.5">
@@ -459,7 +459,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   >
   <div className="min-w-0">
   <p className="font-bold text-slate-900 truncate">{p.teamName}</p>
-  <p className="text-[12px] text-slate-500 truncate">
+  <p className="text-[13px] text-slate-500 truncate">
   {p.pitchName} · {p.matchTime}
   {p.opponentTeamName ? ` · đã ghép với ${p.opponentTeamName}` : ""}
   </p>

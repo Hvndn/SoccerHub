@@ -771,7 +771,7 @@ setIsSavingInfo(false);
  {toastMsg && (
  <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
- <span className="text-xs font-bold">{toastMsg}</span>
+ <span className="text-[13px] font-bold">{toastMsg}</span>
  </div>
  )}
 
@@ -786,7 +786,7 @@ setIsSavingInfo(false);
  </div>
  <div className="space-y-1">
  <div className="flex items-center space-x-2">
- <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[12px] tracking-wider shadow-xs">
+ <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[13px] tracking-wider shadow-xs">
  ⚡ ĐƠN ĐẶT SÂN MỚI TỨC THỜI
  </span>
  <span className="text-[13px] font-mono text-sky-800 font-bold">Vừa đặt cọc xong</span>
@@ -794,7 +794,7 @@ setIsSavingInfo(false);
  <h3 className="text-base sm:text-lg font-black text-slate-900 ">
  Khách hàng <span className="text-amber-600 underline underline-offset-2">{realtimeAlert.customerName}</span> ({realtimeAlert.customerPhone}) vừa cọc ca thi đấu!
  </h3>
- <p className="text-xs text-sky-800 font-medium flex flex-wrap items-center gap-x-2">
+ <p className="text-[13px] text-sky-800 font-medium flex flex-wrap items-center gap-x-2">
  <span>🏟️ {realtimeAlert.courtName}</span>
  <span>•</span>
  <span>⏰ Ca: <strong className="text-slate-900 font-mono">{realtimeAlert.timeSlot}</strong></span>
@@ -810,7 +810,7 @@ setIsSavingInfo(false);
  <button
  type="button"
  onClick={() => playNotificationChime()}
- className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center space-x-1 transition-all cursor-pointer"
+ className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[13px] flex items-center space-x-1 transition-all cursor-pointer"
  title="Phát lại âm thanh chuông thông báo"
  >
  <Volume2 className="w-4 h-4" />
@@ -822,7 +822,7 @@ setIsSavingInfo(false);
  setRealtimeAlert(null);
  showToast("✓ Đã xác nhận đơn! Ma trận ca sân đã cập nhật trạng thái mới nhất.");
  }}
- className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs shadow-lg transition-all active:scale-95 cursor-pointer"
+ className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-[13px] shadow-lg transition-all active:scale-95 cursor-pointer"
  >
  Đã Nhận Đơn ✓
  </button>
@@ -833,7 +833,7 @@ setIsSavingInfo(false);
  {/* Real-time Order Notification Banner */}
  {notification && (
  <div className="bg-[#0369a1] text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl shadow-lg border border-sky-400/30 flex items-center justify-between animate-fade-in">
- <div className="flex items-center space-x-3 text-xs font-bold">
+ <div className="flex items-center space-x-3 text-[13px] font-bold">
  <Bell className="w-4 h-4 animate-bell-wiggle text-amber-300 shrink-0" />
  <span>{notification}</span>
  </div>
@@ -907,7 +907,7 @@ setIsSavingInfo(false);
  <button
  type="button"
  onClick={() => setShowHoursModal(true)}
- className="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 flex items-center space-x-1.5 whitespace-normal sm:whitespace-nowrap shrink-0"
+ className="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-[13px] sm:text-sm shadow-xs transition-all active:scale-95 flex items-center space-x-1.5 whitespace-normal sm:whitespace-nowrap shrink-0"
  title="Cài đặt khung giờ mở cửa và đóng cửa cụm sân"
  >
  <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
@@ -918,7 +918,7 @@ setIsSavingInfo(false);
  <button
  type="button"
  onClick={() => onNavigateTab("owner-onboarding")}
- className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+ className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0 cursor-pointer"
  title="Khởi tạo hoặc thiết lập cụm sân mới qua Wizard 4 bước"
  >
  <Building className="w-4 h-4 shrink-0" />
@@ -929,7 +929,7 @@ setIsSavingInfo(false);
  <button
  type="button"
  onClick={() => setShowAddPitchModal(true)}
- className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
+ className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
  >
  <Plus className="w-4 h-4 shrink-0" />
   <span>Thêm Sân Con</span>
@@ -938,7 +938,7 @@ setIsSavingInfo(false);
  <button
  type="button"
  onClick={() => setShowOfflineModal(true)}
- className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
+ className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
  >
  <PhoneCall className="w-4 h-4 shrink-0" />
   <span>Đặt Ca Quầy</span>
@@ -951,7 +951,7 @@ setIsSavingInfo(false);
  <button
  type="button"
  onClick={() => setActiveSubTab("matrix")}
- className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
+ className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
  activeSubTab === "matrix"
  ? "bg-[#0369a1] text-white shadow-md"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -964,7 +964,7 @@ setIsSavingInfo(false);
  <button
  type="button"
  onClick={() => setActiveSubTab("pitches")}
- className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
+ className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
  activeSubTab === "pitches"
  ? "bg-[#0369a1] text-white shadow-md"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -977,7 +977,7 @@ setIsSavingInfo(false);
  <button
  type="button"
  onClick={() => setActiveSubTab("pricing")}
- className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
+ className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
  activeSubTab === "pricing"
  ? "bg-[#0369a1] text-white shadow-md"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -990,7 +990,7 @@ setIsSavingInfo(false);
  <button
  type="button"
  onClick={() => setActiveSubTab("canteen")}
- className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
+ className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
  activeSubTab === "canteen"
  ? "bg-[#0369a1] text-white shadow-md"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -1003,7 +1003,7 @@ setIsSavingInfo(false);
  <button
  type="button"
  onClick={() => setActiveSubTab("reports")}
- className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
+ className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
  activeSubTab === "reports"
  ? "bg-[#0369a1] text-white shadow-md"
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -1029,7 +1029,7 @@ setIsSavingInfo(false);
  {(pitchStats.bookedSlots ?? 0) === 0 && !isLoadingBackend && (
  <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-3.5">
  <div className="flex-1 min-w-0">
- <p className="text-xs font-black text-slate-700 flex items-center gap-1.5">
+ <p className="text-[13px] font-black text-slate-700 flex items-center gap-1.5">
  <Sparkles className="w-3.5 h-3.5 text-[#0369a1] shrink-0" />
  Cụm sân chưa có đơn nào
  </p>
@@ -1059,7 +1059,7 @@ setIsSavingInfo(false);
  setSimBusy(null);
  }
  }}
- className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+ className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-all active:scale-95 disabled:opacity-50"
  >
  <Sparkles className="w-3.5 h-3.5" />
  {simBusy === "gen" ? "Đang tạo…" : "Tạo đơn giả lập"}
@@ -1076,7 +1076,7 @@ setIsSavingInfo(false);
  <div className="text-2xl sm:text-3xl font-black text-emerald-500 font-mono">
  {(pitchStats.totalRevenue || 0).toLocaleString("vi-VN")} VNĐ
  </div>
- <span className="text-xs font-bold text-sky-700 flex items-center">
+ <span className="text-[13px] font-bold text-sky-700 flex items-center">
  <TrendingUp className="w-4 h-4 mr-1 shrink-0" /> Online {pitchStats.onlineBookings} ca • Quầy {pitchStats.counterBookings} ca
  </span>
  </div>
@@ -1086,7 +1086,7 @@ setIsSavingInfo(false);
  <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
  {pitchStats.occupancyRate}%
  </div>
- <span className="text-xs font-bold text-emerald-500">
+ <span className="text-[13px] font-bold text-emerald-500">
  Khóa {pitchStats.bookedSlots} / {pitchStats.totalSlots} ca đặt
  </span>
  </div>
@@ -1096,7 +1096,7 @@ setIsSavingInfo(false);
  <div className="text-2xl sm:text-3xl font-black text-[#0369a1] font-mono">
  {pitchStats.onlineBookings} Ca Online
  </div>
- <span className="text-xs font-bold text-slate-500">Ca đặt qua trang đặt sân của Turfzone</span>
+ <span className="text-[13px] font-bold text-slate-500">Ca đặt qua trang đặt sân của Turfzone</span>
  </div>
 
  <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
@@ -1104,7 +1104,7 @@ setIsSavingInfo(false);
  <div className="text-2xl sm:text-3xl font-black text-amber-700 font-mono">
  {pitchStats.counterBookings} Ca Trực Tiếp
  </div>
- <span className="text-xs font-bold text-amber-700">Khóa lịch ca tức thì trên toàn sàn</span>
+ <span className="text-[13px] font-bold text-amber-700">Khóa lịch ca tức thì trên toàn sàn</span>
  </div>
  </div>
 
@@ -1122,7 +1122,7 @@ setIsSavingInfo(false);
  </div>
  <div>
  <span className="text-sm font-black text-slate-900 block">Tra Cứu Mã Vé & Check-in</span>
- <span className="hidden sm:inline text-xs text-slate-500">Nhập mã vé hoặc SĐT khách</span>
+ <span className="hidden sm:inline text-[13px] text-slate-500">Nhập mã vé hoặc SĐT khách</span>
  </div>
  </div>
 
@@ -1159,7 +1159,7 @@ setIsSavingInfo(false);
  <h2 className="text-xl font-black text-slate-900 ">
  Sơ Đồ Ca Sân Thời Gian Thực
  </h2>
- <span className="hidden sm:block text-xs text-slate-500 mt-0.5">
+ <span className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
  Giờ mở: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca 2 tiếng (120 phút)
  </span>
  </div>
@@ -1268,18 +1268,18 @@ setIsSavingInfo(false);
  </div>
  <div>
  <div className="flex items-center space-x-2">
- <span className="text-xs font-black text-slate-700">
+ <span className="text-[13px] font-black text-slate-700">
  Lịch Đặt Ca Ngày:
  </span>
- <span className="px-2.5 py-0.5 rounded-lg bg-[#0369a1] text-white font-black text-xs font-mono shadow-xs">
+ <span className="px-2.5 py-0.5 rounded-lg bg-[#0369a1] text-white font-black text-[13px] font-mono shadow-xs">
  {upcomingDays.find(d => d.iso === matrixDate)?.display || `Ngày ${matrixDate.split("-").reverse().join("/")}`}
  </span>
  {matrixDate === upcomingDays[0]?.iso ? (
- <span className="text-[12px] px-2 py-0.5 rounded-md bg-sky-100 text-sky-800 font-extrabold">
+ <span className="text-[13px] px-2 py-0.5 rounded-md bg-sky-100 text-sky-800 font-extrabold">
  🟢 Hôm Nay
  </span>
  ) : (
- <span className="text-[12px] px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 font-extrabold">
+ <span className="text-[13px] px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 font-extrabold">
  📅 Ngày Tương Lai
  </span>
  )}
@@ -1299,14 +1299,14 @@ setIsSavingInfo(false);
  onChange={(e) => {
  if (e.target.value) handleSelectDate(e.target.value);
  }}
- className="text-xs font-bold font-mono text-slate-900 bg-transparent cursor-pointer focus:outline-none"
+ className="text-[13px] font-bold font-mono text-slate-900 bg-transparent cursor-pointer focus:outline-none"
  />
  </div>
  {matrixDate !== upcomingDays[0]?.iso && (
  <button
  type="button"
  onClick={() => handleSelectDate(upcomingDays[0]?.iso || "")}
- className="px-3 py-1.5 rounded-xl bg-sky-100 hover:bg-sky-200 text-[#0b4f6c] font-extrabold text-xs transition-colors border border-sky-200 shrink-0 cursor-pointer"
+ className="px-3 py-1.5 rounded-xl bg-sky-100 hover:bg-sky-200 text-[#0b4f6c] font-extrabold text-[13px] transition-colors border border-sky-200 shrink-0 cursor-pointer"
  >
  ↩ Về Hôm Nay
  </button>
@@ -1323,14 +1323,14 @@ setIsSavingInfo(false);
  key={day.iso}
  type="button"
  onClick={() => handleSelectDate(day.iso)}
- className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer ${
+ className={`px-3 py-1.5 rounded-xl text-[13px] font-black whitespace-nowrap transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer ${
  isSelected
  ? "bg-[#0369a1] text-white shadow-md scale-102 ring-2 ring-[#0369a1]/50"
  : "bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:bg-sky-50/50 "
  }`}
  >
  <span>{day.label}</span>
- <span className={`text-[12px] font-mono px-1.5 py-0.2 rounded-md ${
+ <span className={`text-[13px] font-mono px-1.5 py-0.2 rounded-md ${
  isSelected 
  ? "bg-white/20 text-white font-bold" 
  : "bg-slate-100 text-slate-500"
@@ -1369,7 +1369,7 @@ setIsSavingInfo(false);
  <div className="py-12 text-center text-sm text-slate-500 bg-white/40 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center space-y-2">
  <AlertCircle className="w-8 h-8 text-amber-700" />
  <span className="font-bold text-slate-700 ">Không tìm thấy sân con hoặc ca đá nào phù hợp</span>
- <span className="text-xs">Vui lòng chọn Đặt Lại bộ lọc để hiển thị toàn bộ ma trận ca sân</span>
+ <span className="text-[13px]">Vui lòng chọn Đặt Lại bộ lọc để hiển thị toàn bộ ma trận ca sân</span>
  </div>
  ) : (
  filteredMatrix.map((pitch) => (
@@ -1377,11 +1377,11 @@ setIsSavingInfo(false);
  <div className="flex justify-between items-center text-sm">
  <div className="flex items-center space-x-2.5">
  <span className="font-black text-slate-900 text-base">{pitch.pitchName}</span>
- <span className="px-2.5 py-0.5 rounded-lg bg-slate-200 text-xs font-mono text-slate-700 font-bold">
+ <span className="px-2.5 py-0.5 rounded-lg bg-slate-200 text-[13px] font-mono text-slate-700 font-bold">
  {pitch.type}
  </span>
  </div>
- <div className="text-xs font-mono text-slate-500">
+ <div className="text-[13px] font-mono text-slate-500">
  Giá cơ bản: <strong className="text-slate-900 font-bold text-sm">{(pitch.basePrice/1000).toFixed(0)}k/ca</strong>
  </div>
  </div>
@@ -1419,7 +1419,7 @@ setIsSavingInfo(false);
  : "bg-white border-slate-200 text-slate-500 hover:border-sky-400 hover:bg-sky-50/20"
  }`}
  >
- <div className="flex justify-between items-center text-xs font-mono">
+ <div className="flex justify-between items-center text-[13px] font-mono">
  <span className="font-extrabold text-sm">{slot.time}</span>
  <span className="font-black text-sm">{slot.price}</span>
  </div>
@@ -1429,12 +1429,12 @@ setIsSavingInfo(false);
  {slot.customer}
  </p>
  {slot.isContinuation && (
- <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-700 text-[12px] font-black tracking-wider">
+ <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-700 text-[13px] font-black tracking-wider">
  🔗 Ca Nối Dài
  </span>
  )}
  {slot.isGapSlot && (
- <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 text-[12px] font-black tracking-wider">
+ <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 text-[13px] font-black tracking-wider">
  ⚡ Khe Trống {slot.durationMinutes}p
  </span>
  )}
@@ -1447,7 +1447,7 @@ setIsSavingInfo(false);
  </div>
  )}
  
- <div className="text-xs space-y-1 opacity-90 font-mono">
+ <div className="text-[13px] space-y-1 opacity-90 font-mono">
  <span className="block text-slate-500">
  Cọc: <strong className={slot.isContinuation ? "text-indigo-600 font-bold" : slot.status === "empty" ? "text-slate-500" : "text-sky-700 font-bold"}>
  {slot.isContinuation ? "Đã tính ở ca trước" : slot.depositPaid}
@@ -1461,7 +1461,7 @@ setIsSavingInfo(false);
  )}
  </div>
 
- <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200/50 ">
+ <div className="flex items-center justify-between text-[13px] pt-2 border-t border-slate-200/50 ">
  <span className="truncate font-semibold">{slot.isContinuation ? "Ca lấn giờ tiếp nối" : slot.via}</span>
  <ChevronRight className="w-4 h-4 shrink-0" />
  </div>
@@ -1528,31 +1528,31 @@ setIsSavingInfo(false);
  <div>
  <div className="flex items-center space-x-2.5">
  <h3 className="font-black text-lg text-slate-900 ">{pitch.pitchName}</h3>
- <span className="px-2.5 py-0.5 rounded-lg bg-[#0369a1]/10 text-[#0b4f6c] text-xs font-mono font-bold">
+ <span className="px-2.5 py-0.5 rounded-lg bg-[#0369a1]/10 text-[#0b4f6c] text-[13px] font-mono font-bold">
  {pitch.type}
  </span>
  </div>
- <span className="text-xs text-slate-500 font-medium mt-0.5 block">Mã sân: {pitch.pitchId}</span>
+ <span className="text-[13px] text-slate-500 font-medium mt-0.5 block">Mã sân: {pitch.pitchId}</span>
  </div>
 
- <span className="px-3 py-1 rounded-full bg-[#0369a1]/10 text-emerald-500 text-xs font-bold border border-[#0369a1]/20">
+ <span className="px-3 py-1 rounded-full bg-[#0369a1]/10 text-emerald-500 text-[13px] font-bold border border-[#0369a1]/20">
  Đang hoạt động
  </span>
  </div>
 
  <div className="grid grid-cols-2 gap-3 text-sm font-mono p-3.5 rounded-xl bg-white border border-slate-200 ">
  <div>
- <span className="text-slate-500 block text-xs font-semibold">Giá giờ thường</span>
+ <span className="text-slate-500 block text-[13px] font-semibold">Giá giờ thường</span>
  <strong className="text-slate-900 font-extrabold text-sm sm:text-base">{pitch.basePrice.toLocaleString("vi-VN")} đ/ca</strong>
  </div>
  <div>
- <span className="text-slate-500 block text-xs font-semibold">Giá giờ vàng</span>
+ <span className="text-slate-500 block text-[13px] font-semibold">Giá giờ vàng</span>
  <strong className="text-amber-700 font-black text-sm sm:text-base">{pitch.peakPrice.toLocaleString("vi-VN")} đ/ca</strong>
  </div>
  </div>
 
  <div className="flex items-center justify-between text-sm pt-2">
- <span className="text-slate-500 text-xs sm:text-sm">
+ <span className="text-slate-500 text-[13px] sm:text-sm">
  Tiện ích:{" "}
  {activePitch?.amenities?.length
  ? activePitch.amenities.join(", ")
@@ -1583,14 +1583,14 @@ setIsSavingInfo(false);
  </div>
  </div>
 
- <p className="hidden sm:block text-xs text-slate-500">
+ <p className="hidden sm:block text-[13px] text-slate-500">
  Giá đọc và ghi thẳng vào bảng <code>pitches</code> trong CSDL. Ca bắt đầu từ 17:00, 18:00 và
  19:00 được tính theo giá giờ vàng khi thanh toán.
  </p>
 
  <div className="space-y-3 sm:space-y-4 pt-2">
  {realPitches.length === 0 ? (
- <p className="text-xs text-slate-500 p-4 rounded-2xl bg-slate-50 border border-slate-200 ">
+ <p className="text-[13px] text-slate-500 p-4 rounded-2xl bg-slate-50 border border-slate-200 ">
  Chưa có cụm sân nào trong CSDL.
  </p>
  ) : (
@@ -1650,7 +1650,7 @@ setIsSavingInfo(false);
  type="button"
  disabled={saving}
  onClick={() => savePitchPrice(p)}
- className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-60 flex items-center gap-1.5"
+ className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[13px] shadow-md transition-all active:scale-95 disabled:opacity-60 flex items-center gap-1.5"
  >
  {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
  {saving ? "Đang lưu..." : "Lưu giá sân"}
@@ -1668,7 +1668,7 @@ setIsSavingInfo(false);
  <h3 className="font-extrabold text-base text-slate-900 ">Tiền Cọc & Giữ Chỗ</h3>
  </div>
 
- <div className="space-y-3 sm:space-y-4 text-xs">
+ <div className="space-y-3 sm:space-y-4 text-[13px]">
  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
  <span className="font-extrabold text-slate-900 block">
  Cọc khi đặt qua web / app: 50% giá ca
@@ -1725,8 +1725,8 @@ setIsSavingInfo(false);
  {canteenItems.map((item) => (
  <div key={item.id} className="p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
  <div className="flex justify-between items-start">
- <span className="font-extrabold text-xs text-slate-900 ">{item.name}</span>
- <span className="font-mono font-black text-emerald-500 text-xs">{item.price.toLocaleString("vi-VN")}đ</span>
+ <span className="font-extrabold text-[13px] text-slate-900 ">{item.name}</span>
+ <span className="font-mono font-black text-emerald-500 text-[13px]">{item.price.toLocaleString("vi-VN")}đ</span>
  </div>
  <div className="flex justify-between text-[13px] text-slate-500 font-mono">
  <span>Đã bán hôm nay: <strong className="text-slate-900 ">{item.soldToday}</strong></span>
@@ -1762,7 +1762,7 @@ setIsSavingInfo(false);
   </button>
   </div>
 
-  <p className="px-5 sm:px-6 pt-4 text-xs text-slate-500 leading-relaxed">
+  <p className="px-5 sm:px-6 pt-4 text-[13px] text-slate-500 leading-relaxed">
   Thông tin này hiển thị công khai cho cầu thủ khi tìm sân. Giá thuê và giờ mở cửa được sửa ở tab riêng.
   </p>
 
@@ -1836,7 +1836,7 @@ setIsSavingInfo(false);
   key={t}
   type="button"
   onClick={() => toggleInfoList(t, infoPitchTypes, setInfoPitchTypes)}
-  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+  className={`px-3 py-1.5 rounded-xl text-[13px] font-bold border transition-colors ${
   infoPitchTypes.includes(t)
   ? "bg-[#0369a1] text-white border-[#0369a1]"
   : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
@@ -1857,7 +1857,7 @@ setIsSavingInfo(false);
   key={a}
   type="button"
   onClick={() => toggleInfoList(a, infoAmenities, setInfoAmenities)}
-  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+  className={`px-3 py-1.5 rounded-xl text-[13px] font-bold border transition-colors ${
   infoAmenities.includes(a)
   ? "bg-[#0369a1] text-white border-[#0369a1]"
   : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
@@ -1977,10 +1977,10 @@ setIsSavingInfo(false);
 
  <div className="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-between">
  <div className="space-y-0.5">
- <span className="text-xs font-bold text-indigo-700 block">
+ <span className="text-[13px] font-bold text-indigo-700 block">
  Giờ hoạt động cụm: {operatingOpenTime} - {operatingCloseTime}
  </span>
- <span className="text-xs text-slate-500">
+ <span className="text-[13px] text-slate-500">
  Độ dài ca: {operatingSlotDuration} phút/ca (Áp dụng {availableTimeSlots.length} ca tự động)
  </span>
  </div>
@@ -2047,7 +2047,7 @@ setIsSavingInfo(false);
  <div className="space-y-1.5">
  <label className="font-extrabold text-slate-800 flex items-center justify-between">
  <span>Ngày Thi Đấu:</span>
- <span className="text-xs text-sky-700 font-bold">
+ <span className="text-[13px] text-sky-700 font-bold">
  {upcomingDays.find(d => d.iso === offlineDate)?.label || offlineDate}
  </span>
  </label>
@@ -2069,7 +2069,7 @@ setIsSavingInfo(false);
  onChange={(e) => {
  if (e.target.value) setOfflineDate(e.target.value);
  }}
- className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 text-[13px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </div>
  </div>
@@ -2327,7 +2327,7 @@ setIsSavingInfo(false);
 
  {/* Thông báo cơ chế đặt linh hoạt theo yêu cầu người dùng */}
  <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-200 space-y-1.5">
- <div className="flex items-center space-x-2 text-sky-800 font-extrabold text-xs">
+ <div className="flex items-center space-x-2 text-sky-800 font-extrabold text-[13px]">
  <Sparkles className="w-4 h-4 text-emerald-500" />
  <span>Cơ Chế Đặt Sân Linh Hoạt</span>
  </div>
@@ -2403,7 +2403,7 @@ setIsSavingInfo(false);
  {/* Body */}
  <div className="px-6 py-5 space-y-3 sm:space-y-4">
  <div>
- <label className="block text-xs font-extrabold text-slate-800 mb-2">
+ <label className="block text-[13px] font-extrabold text-slate-800 mb-2">
  Lý Do Hủy Ca <span className="text-rose-600">*</span>
  </label>
 
@@ -2419,7 +2419,7 @@ setIsSavingInfo(false);
  key={reason}
  type="button"
  onClick={() => setCancelReasonInput(reason)}
- className={`px-2.5 py-1 rounded-lg text-[12px] font-bold transition-all border ${
+ className={`px-2.5 py-1 rounded-lg text-[13px] font-bold transition-all border ${
  cancelReasonInput === reason
  ? "bg-rose-600 text-white border-rose-600 shadow-sm"
  : "bg-slate-100 text-slate-600 border-slate-200 hover:border-rose-300 hover:text-rose-600"
@@ -2441,7 +2441,7 @@ setIsSavingInfo(false);
 
  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start space-x-2">
  <span className="text-sm shrink-0">⚠️</span>
- <p className="text-[12px] text-amber-700 font-medium leading-relaxed">
+ <p className="text-[13px] text-amber-700 font-medium leading-relaxed">
  Lý do hủy sẽ được gửi ngay tới thông báo của khách hàng. Khung giờ này sẽ mở lại cho người đặt mới.
  </p>
  </div>

@@ -39,7 +39,7 @@ export default function WizardPageShell({
  <Link
  href={backHref}
  aria-label={backLabel}
- className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
+ className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
  >
  <ArrowLeft className="w-4 h-4 shrink-0" />
  <span className="hidden sm:inline">{backLabel}</span>
@@ -50,7 +50,7 @@ export default function WizardPageShell({
  <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-4 sm:py-8">
  <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5">
  {/* Breadcrumb */}
- <nav aria-label="Điều hướng" className="flex items-center gap-1.5 text-xs text-slate-500">
+ <nav aria-label="Điều hướng" className="flex items-center gap-1.5 text-[13px] text-slate-500">
  <MapPin className="w-3.5 h-3.5" />
  <Link href="/" className="hover:underline font-semibold">Trang chủ</Link>
  <span aria-hidden>›</span>
@@ -63,7 +63,7 @@ export default function WizardPageShell({
  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 ">
  {title}
  </h1>
- <p className="mt-1 text-xs sm:text-sm text-slate-500">{subtitle}</p>
+ <p className="mt-1 text-[13px] sm:text-sm text-slate-500">{subtitle}</p>
  </div>
 
  {children}

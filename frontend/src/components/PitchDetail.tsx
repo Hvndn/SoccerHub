@@ -359,7 +359,7 @@ export default function PitchDetail({
  <span className="whitespace-nowrap">Quay Lại Tìm Sân</span>
  </button>
 
- <ol className="hidden sm:flex min-w-0 flex-1 items-center space-x-1.5 text-xs text-slate-500 overflow-hidden">
+ <ol className="hidden sm:flex min-w-0 flex-1 items-center space-x-1.5 text-[13px] text-slate-500 overflow-hidden">
  <li className="flex items-center space-x-1">
  <span>Trang chủ</span>
  <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
@@ -374,7 +374,7 @@ export default function PitchDetail({
  </ol>
  </div>
 
- <div className="shrink-0 hidden lg:inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/20 text-sky-700 text-xs font-bold">
+ <div className="shrink-0 hidden lg:inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/20 text-sky-700 text-[13px] font-bold">
  <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] animate-pulse" />
  <span>Thông tin ca sân cập nhật theo thời gian thực</span>
  </div>
@@ -386,19 +386,19 @@ export default function PitchDetail({
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
  <div className="space-y-2">
  <div className="flex flex-wrap items-center gap-2">
- <span className="bg-[#0369a1] text-white text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
+ <span className="bg-[#0369a1] text-white text-[13px] font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
  <ShieldCheck className="w-3.5 h-3.5" />
  <span>{pitchDetails?.pitchTypes?.[0] || "Sân cỏ nhân tạo"}</span>
  </span>
- <span className="bg-[#0369a1] text-white text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
+ <span className="bg-[#0369a1] text-white text-[13px] font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
  <Zap className="w-3.5 h-3.5" />
  <span>Đèn LED chiếu sáng sân</span>
  </span>
- <span className="bg-slate-100 text-slate-700 text-xs font-bold px-3 py-1 rounded-lg border border-slate-200 ">
+ <span className="bg-slate-100 text-slate-700 text-[13px] font-bold px-3 py-1 rounded-lg border border-slate-200 ">
  {matrixCourts.length > 0 ? `${matrixCourts.length} Sân Con Hoạt Động` : "Cụm Sân Tiêu Chuẩn"}
  </span>
  {venueData.rating ? (
- <div className="inline-flex items-center space-x-1.5 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg text-xs">
+ <div className="inline-flex items-center space-x-1.5 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg text-[13px]">
  <Star className="w-4 h-4 text-amber-700 fill-amber-500" />
  <span className="font-extrabold text-slate-900 ">{venueData.rating}</span>
  <span className="text-slate-500 font-normal">({venueData.reviewsCount} đánh giá)</span>
@@ -421,7 +421,7 @@ export default function PitchDetail({
  <span>Hotline: {venueData.phone}</span>
  </span>
  <span className="text-slate-500">•</span>
- <span className="bg-[#0369a1]/10 text-sky-700 border border-[#0369a1]/20 px-2.5 py-0.5 rounded-lg text-xs font-bold font-mono">
+ <span className="bg-[#0369a1]/10 text-sky-700 border border-[#0369a1]/20 px-2.5 py-0.5 rounded-lg text-[13px] font-bold font-mono">
  Mở cửa: {venueData.openTime} - {venueData.closeTime} (Linh hoạt 1h - 2h)
  </span>
  </div>
@@ -467,7 +467,7 @@ export default function PitchDetail({
  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
  <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
  <div>
- <span className="font-black text-xs bg-[#0369a1]/90 backdrop-blur-md px-2.5 py-1 rounded text-white">
+ <span className="font-black text-[13px] bg-[#0369a1]/90 backdrop-blur-md px-2.5 py-1 rounded text-white">
  {pitchDetails?.pitchTypes?.[0] || pitch?.sportBadge || "Sân bóng đá"}
  </span>
  <p className="font-black text-base sm:text-lg mt-1 text-white break-words">
@@ -485,7 +485,7 @@ export default function PitchDetail({
  alt="Bóng Thi Đấu & Điểm Phát Bóng"
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
  />
- <div className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-xs text-white font-bold">
+ <div className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-[13px] text-white font-bold">
  {venueData.name}
  </div>
  </div>
@@ -495,7 +495,7 @@ export default function PitchDetail({
  alt="Khung Thành & Khu Vực Kỹ Thuật"
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
  />
- <div className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-xs text-white font-bold">
+ <div className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-[13px] text-white font-bold">
  {venueData.name}
  </div>
  </div>
@@ -504,10 +504,10 @@ export default function PitchDetail({
  {/* Quick Amenities Card (2 cols) — đọc từ cột amenities của bảng pitches */}
  <div className="hidden md:flex md:col-span-3 lg:col-span-2 min-w-0 flex-col justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200 ">
  <div>
- <p className="text-xs font-black text-slate-500 mb-2.5 break-words">
+ <p className="text-[13px] font-black text-slate-500 mb-2.5 break-words">
  Tiện ích sân bóng
  </p>
- <div className="space-y-2.5 text-xs font-semibold text-slate-700 ">
+ <div className="space-y-2.5 text-[13px] font-semibold text-slate-700 ">
  {pitchDetails?.amenities?.length ? (
  pitchDetails.amenities.map((a: string) => (
  <div key={a} className="flex items-start space-x-2 min-w-0">
@@ -522,12 +522,12 @@ export default function PitchDetail({
  </div>
 
  <div className="pt-3 border-t border-slate-200 flex flex-col min-w-0">
- <span className="text-xs text-slate-500">Giá ca sân từ:</span>
+ <span className="text-[13px] text-slate-500">Giá ca sân từ:</span>
  <span className="text-lg font-black text-sky-700 font-mono leading-tight break-words">
  {pitchDetails?.avgPricePerHour
  ? pitchDetails.avgPricePerHour.toLocaleString("vi-VN")
  : "—"}
- <span className="text-xs font-normal text-slate-500">đ/ca</span>
+ <span className="text-[13px] font-normal text-slate-500">đ/ca</span>
  </span>
  </div>
  </div>
@@ -545,13 +545,13 @@ export default function PitchDetail({
  <Calendar className="w-5 h-5 text-[#0b4f6c] " />
  <span>Lịch Thi Đấu & Ca Sân Trực Tuyến</span>
  </h2>
- <p className="text-xs text-slate-500 mt-1">
+ <p className="text-[13px] text-slate-500 mt-1">
  Dữ liệu ca sân được đồng bộ thời gian thực từ trung tâm điều hành chủ sân.
  </p>
  </div>
 
  {/* Chú thích màu sắc */}
- <div className="flex items-center space-x-3 text-xs font-bold flex-wrap">
+ <div className="flex items-center space-x-3 text-[13px] font-bold flex-wrap">
  <div className="flex items-center space-x-1.5 text-sky-700 ">
  <span className="w-3 h-3 rounded-full bg-[#0369a1] shadow-xs" />
  <span>Đang chọn</span>
@@ -583,11 +583,11 @@ export default function PitchDetail({
  : "bg-white hover:bg-slate-50 border-slate-200 text-slate-900 "
  }`}
  >
- <span className={`text-[12px] tracking-wider font-extrabold ${selectedDate === d.iso ? "text-white font-black" : "text-slate-500"}`}>
+ <span className={`text-[13px] tracking-wider font-extrabold ${selectedDate === d.iso ? "text-white font-black" : "text-slate-500"}`}>
  {d.label}
  </span>
  <span className="text-sm font-black font-mono">{d.dateFormatted}</span>
- <span className={`text-[12px] px-2 py-0.5 rounded-full mt-1 font-bold ${
+ <span className={`text-[13px] px-2 py-0.5 rounded-full mt-1 font-bold ${
  selectedDate === d.iso 
  ? "bg-white/20 text-white " 
  : d.isWeekend ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-500"
@@ -607,18 +607,18 @@ export default function PitchDetail({
  <div>
  <span className="text-sm font-black text-slate-900 flex items-center gap-1.5">
  <span>Khung Giờ Thi Đấu Cố Định</span>
- <span className="px-2 py-0.5 rounded-md bg-[#0369a1]/10 text-sky-700 text-xs font-bold font-mono border border-[#0369a1]/30">
+ <span className="px-2 py-0.5 rounded-md bg-[#0369a1]/10 text-sky-700 text-[13px] font-bold font-mono border border-[#0369a1]/30">
  {fixedSlotDuration} phút/ca
  </span>
  </span>
- <span className="text-xs text-slate-500">
+ <span className="text-[13px] text-slate-500">
  Lịch ca đấu đã được Chủ Sân chuẩn hóa cố định ({venueData.openTime} - {venueData.closeTime}) để đảm bảo tính liên tục của mặt sân.
  </span>
  </div>
  </div>
 
  <div className="flex items-center space-x-2 shrink-0">
- <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 ">
+ <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-[13px] font-bold text-slate-700 ">
  🔒 Ca đấu cố định
  </span>
  </div>
@@ -636,7 +636,7 @@ export default function PitchDetail({
  <button
  key={cat.id}
  onClick={() => setSelectedCategory(cat.id)}
- className={`px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 transition-all ${
+ className={`px-3.5 py-2 rounded-xl text-[13px] font-bold shrink-0 transition-all ${
  selectedCategory === cat.id
  ? "bg-slate-900 text-white shadow-sm"
  : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
@@ -648,12 +648,12 @@ export default function PitchDetail({
  </div>
 
  <div className="flex items-center space-x-2">
- <span className="text-xs text-slate-500 font-bold">Lọc giờ:</span>
+ <span className="text-[13px] text-slate-500 font-bold">Lọc giờ:</span>
  <select
  aria-label="Lọc giờ đá"
  value={selectedTimeFilter}
  onChange={(e) => setSelectedTimeFilter(e.target.value)}
- className="bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 cursor-pointer"
+ className="bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 cursor-pointer"
  >
  <option value="ALL">Tất Cả Giờ Đá</option>
  <option value="PEAK">⭐ Khung Giờ Vàng (17:30 - 20:30)</option>
@@ -698,11 +698,11 @@ export default function PitchDetail({
  <span className="font-black text-base text-slate-900 ">
  {court.pitchName}
  </span>
- <span className="px-2.5 py-0.5 rounded-lg bg-[#0369a1]/10 text-[#0b4f6c] text-xs font-bold font-mono">
+ <span className="px-2.5 py-0.5 rounded-lg bg-[#0369a1]/10 text-[#0b4f6c] text-[13px] font-bold font-mono">
  {court.type}
  </span>
  </div>
- <div className="text-xs font-mono text-slate-500">
+ <div className="text-[13px] font-mono text-slate-500">
  Giá giờ thường: <strong className="text-slate-900 font-bold">{(court.basePrice / 1000)}k/ca</strong> • Giờ vàng: <strong className="text-amber-700 font-bold">{(court.peakPrice / 1000)}k/ca</strong>
  </div>
  </div>
@@ -722,12 +722,12 @@ export default function PitchDetail({
  type="button"
  className="h-20 rounded-2xl bg-[#0369a1] text-white shadow-lg shadow-sky-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-white/70 btn-shimmer cursor-pointer"
  >
- <div className="absolute top-0 right-0 bg-white text-[#0b4f6c] text-[11px] px-2 py-0.5 font-black rounded-bl shadow-xs">
+ <div className="absolute top-0 right-0 bg-white text-[#0b4f6c] text-[13px] px-2 py-0.5 font-black rounded-bl shadow-xs">
  ĐANG CHỌN ⚽
  </div>
  <span className="font-extrabold text-sm">{slot.time}</span>
  <span className="font-black text-base font-mono mt-0.5">{slot.price}</span>
- <span className="text-[12px] text-cyan-50 font-semibold">{slot.durationMinutes || fixedSlotDuration || 120} phút (2 tiếng)</span>
+ <span className="text-[13px] text-cyan-50 font-semibold">{slot.durationMinutes || fixedSlotDuration || 120} phút (2 tiếng)</span>
  </button>
  );
  }
@@ -740,17 +740,17 @@ export default function PitchDetail({
  className="h-20 rounded-2xl bg-slate-200/70 text-slate-500 flex flex-col items-center justify-center p-2 cursor-not-allowed opacity-75 border border-slate-200 "
  title={isOwner ? `Khách: ${slot.customer || "Khách"} - SĐT: ${slot.phone || "N/A"}` : "Ca đã có khách đặt trước"}
  >
- <span className="font-bold text-xs">{slot.time}</span>
- <div className="flex items-center space-x-1 mt-1 text-rose-600 font-bold text-xs">
+ <span className="font-bold text-[13px]">{slot.time}</span>
+ <div className="flex items-center space-x-1 mt-1 text-rose-600 font-bold text-[13px]">
  <Lock className="w-3.5 h-3.5" />
  <span>Đã Cọc</span>
  </div>
  {isOwner ? (
- <span className="text-[12px] text-slate-600 font-mono truncate max-w-[120px] font-semibold">
+ <span className="text-[13px] text-slate-600 font-mono truncate max-w-[120px] font-semibold">
  {slot.customer || slot.phone || "Khách cọc"}
  </span>
  ) : (
- <span className="text-[12px] text-slate-500 font-medium">
+ <span className="text-[13px] text-slate-500 font-medium">
  Khóa ca
  </span>
  )}
@@ -770,25 +770,25 @@ export default function PitchDetail({
  }`}
  >
  {slot.isGapSlot ? (
- <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 text-[11px] font-black px-1.5 py-0.5 rounded shadow-xs flex items-center gap-0.5">
+ <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 text-[13px] font-black px-1.5 py-0.5 rounded shadow-xs flex items-center gap-0.5">
  <span>⚡ Lọt Khe</span>
  </div>
  ) : isPeak ? (
- <div className="absolute top-1.5 right-1.5 text-amber-700 text-[12px] font-bold">
+ <div className="absolute top-1.5 right-1.5 text-amber-700 text-[13px] font-bold">
  ⭐ Vàng
  </div>
  ) : isResale ? (
- <div className="absolute top-1 right-1 bg-amber-500 text-white text-[11px] font-bold px-1.5 rounded">
+ <div className="absolute top-1 right-1 bg-amber-500 text-white text-[13px] font-bold px-1.5 rounded">
  Pass -40%
  </div>
  ) : null}
- <span className={`font-bold text-xs ${slot.isGapSlot ? "text-amber-700 font-extrabold" : "text-slate-700 group-hover:text-sky-700 "}`}>
+ <span className={`font-bold text-[13px] ${slot.isGapSlot ? "text-amber-700 font-extrabold" : "text-slate-700 group-hover:text-sky-700 "}`}>
  {slot.time}
  </span>
  <span className={`font-black text-sm font-mono mt-0.5 ${slot.isGapSlot ? "text-amber-600 " : "text-sky-700 "}`}>
  {slot.price}
  </span>
- <span className={`text-[12px] font-medium ${slot.isGapSlot ? "text-amber-600/80 font-bold" : "text-slate-500"}`}>
+ <span className={`text-[13px] font-medium ${slot.isGapSlot ? "text-amber-600/80 font-bold" : "text-slate-500"}`}>
  {slot.isGapSlot ? `${slot.durationMinutes}p linh hoạt` : "Còn trống"}
  </span>
  </button>
@@ -811,7 +811,7 @@ export default function PitchDetail({
  <h3 className="font-bold text-sm text-slate-900 ">
  Check-in bằng mã giữ chỗ
  </h3>
- <p className="text-xs text-slate-500 leading-relaxed">
+ <p className="text-[13px] text-slate-500 leading-relaxed">
  Sau khi đặt, hệ thống sinh mã đơn. Chủ sân nhập mã này tại tab Ma trận để
  check-in cho bạn khi tới sân.
  </p>
@@ -826,7 +826,7 @@ export default function PitchDetail({
  <h3 className="font-bold text-sm text-slate-900 ">
  Cọc & hủy lịch
  </h3>
- <p className="text-xs text-slate-500 leading-relaxed">
+ <p className="text-[13px] text-slate-500 leading-relaxed">
  Bạn chọn cọc 50% hoặc 100% giá ca khi đặt. Chính sách hoàn cọc do từng chủ sân
  quy định — liên hệ số điện thoại của sân để thoả thuận khi cần hủy.
  </p>
@@ -853,7 +853,7 @@ export default function PitchDetail({
  <button
  type="button"
  onClick={() => setSelectedSlot(null)}
- className="text-xs font-bold text-rose-600 hover:text-rose-600 bg-rose-50 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+ className="text-[13px] font-bold text-rose-600 hover:text-rose-600 bg-rose-50 px-2 py-1 rounded-lg transition-colors cursor-pointer"
  title="Bỏ chọn ca này"
  >
  Bỏ chọn ✕
@@ -864,27 +864,27 @@ export default function PitchDetail({
  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
  <div className="flex items-start justify-between">
  <div>
- <span className="text-[12px] text-slate-500 font-extrabold tracking-wider">Cụm sân & Mặt sân</span>
+ <span className="text-[13px] text-slate-500 font-extrabold tracking-wider">Cụm sân & Mặt sân</span>
  <p className="font-black text-sm text-slate-900 ">{selectedSlot.courtName}</p>
- <p className="text-xs text-slate-500 truncate max-w-[220px]">{venueData.name}</p>
+ <p className="text-[13px] text-slate-500 truncate max-w-[220px]">{venueData.name}</p>
  </div>
  <Award className="w-6 h-6 text-emerald-500 shrink-0" />
  </div>
 
- <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 text-xs">
+ <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 text-[13px]">
  <div>
- <span className="text-[12px] text-slate-500 font-bold">Ngày thi đấu:</span>
+ <span className="text-[13px] text-slate-500 font-bold">Ngày thi đấu:</span>
  <p className="font-bold text-slate-900 font-mono">{selectedDate}</p>
  </div>
  <div>
- <span className="text-[12px] text-slate-500 font-bold">Khung giờ:</span>
+ <span className="text-[13px] text-slate-500 font-bold">Khung giờ:</span>
  <p className="font-bold text-sky-700 font-mono">{selectedSlot.time}</p>
  </div>
  </div>
  </div>
 
  {/* Chi Tiết Giá Tiền & Khuyến Mãi */}
- <div className="space-y-2.5 text-xs">
+ <div className="space-y-2.5 text-[13px]">
  <div className="flex justify-between items-center text-slate-600 ">
  <span>Giá ca sân niêm yết ({fixedSlotDuration} phút/ca):</span>
  <span className="font-mono text-slate-900 font-bold">{originalPrice.toLocaleString("vi-VN")}đ</span>
@@ -893,8 +893,8 @@ export default function PitchDetail({
  {/* Tổng thanh toán */}
  <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
  <div>
- <span className="text-[12px] text-slate-500 font-extrabold block">TỔNG TIỀN CA SÂN:</span>
- <span className="text-xs text-sky-700 font-bold">Theo giá niêm yết của sân</span>
+ <span className="text-[13px] text-slate-500 font-extrabold block">TỔNG TIỀN CA SÂN:</span>
+ <span className="text-[13px] text-sky-700 font-bold">Theo giá niêm yết của sân</span>
  </div>
  <div className="text-right">
  <span className="text-2xl font-black text-slate-900 font-mono">
@@ -906,7 +906,7 @@ export default function PitchDetail({
 
  {/* Tùy Chọn Cọc (50% hoặc 100%) */}
  <div className="space-y-2">
- <label className="text-xs font-extrabold tracking-wider text-slate-500 block">
+ <label className="text-[13px] font-extrabold tracking-wider text-slate-500 block">
  Hình thức đặt cọc giữ chỗ:
  </label>
  <div className="grid grid-cols-2 gap-2">
@@ -919,13 +919,13 @@ export default function PitchDetail({
  }`}
  >
  <div className="flex items-center justify-between">
- <span className="font-bold text-xs text-slate-900 ">Cọc 50%</span>
- {depositOption === "50%" && <span className="text-emerald-500 font-black text-xs">✓</span>}
+ <span className="font-bold text-[13px] text-slate-900 ">Cọc 50%</span>
+ {depositOption === "50%" && <span className="text-emerald-500 font-black text-[13px]">✓</span>}
  </div>
  <span className="font-mono text-base font-black text-sky-700 mt-1">
  {Math.round(totalPrice * 0.5).toLocaleString("vi-VN")}đ
  </span>
- <span className="text-[12px] text-slate-500">Trả phần còn lại ở quầy</span>
+ <span className="text-[13px] text-slate-500">Trả phần còn lại ở quầy</span>
  </div>
 
  <div
@@ -937,20 +937,20 @@ export default function PitchDetail({
  }`}
  >
  <div className="flex items-center justify-between">
- <span className="font-bold text-xs text-slate-900 ">Thanh toán 100%</span>
- {depositOption === "100%" && <span className="text-emerald-500 font-black text-xs">✓</span>}
+ <span className="font-bold text-[13px] text-slate-900 ">Thanh toán 100%</span>
+ {depositOption === "100%" && <span className="text-emerald-500 font-black text-[13px]">✓</span>}
  </div>
  <span className="font-mono text-base font-black text-slate-900 mt-1">
  {totalPrice.toLocaleString("vi-VN")}đ
  </span>
- <span className="text-[12px] text-slate-500">Tặng +50 Điểm Thưởng</span>
+ <span className="text-[13px] text-slate-500">Tặng +50 Điểm Thưởng</span>
  </div>
  </div>
  </div>
 
  {/* Widget Dự Toán Chia Tiền (Split Bill) Cho Cả Đội */}
  <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-200 space-y-2">
- <span className="text-xs font-bold text-sky-800 block">
+ <span className="text-[13px] font-bold text-sky-800 block">
  Ước Tính Chia Tiền:
  </span>
  <div className="flex items-center justify-between gap-2">
@@ -962,17 +962,17 @@ export default function PitchDetail({
  value={splitCount}
  onChange={(e) => setSplitCount(Math.max(1, Number(e.target.value) || 1))}
  aria-label="Số người được chia tiền"
- className="w-16 px-2 py-1 rounded-lg border border-sky-200 bg-white text-xs font-mono font-bold text-center"
+ className="w-16 px-2 py-1 rounded-lg border border-sky-200 bg-white text-[13px] font-mono font-bold text-center"
  />
  </div>
  <div className="flex items-center justify-between gap-2">
  <span className="text-[13px] text-slate-500">
- Mỗi người ~ <strong className="text-sky-700 font-mono font-bold text-xs">{splitPerPlayer.toLocaleString("vi-VN")}đ</strong>
+ Mỗi người ~ <strong className="text-sky-700 font-mono font-bold text-[13px]">{splitPerPlayer.toLocaleString("vi-VN")}đ</strong>
  </span>
  <button
  type="button"
  onClick={() => showToast(`💸 Đã sao chép mức chia ${splitPerPlayer.toLocaleString("vi-VN")}đ/người (${splitCount} người)!`)}
- className="px-2.5 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs transition-colors shrink-0 shadow-xs"
+ className="px-2.5 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] transition-colors shrink-0 shadow-xs"
  >
  Chia Tiền
  </button>
@@ -1015,11 +1015,11 @@ export default function PitchDetail({
  <h3 className="font-black text-base text-slate-900 ">
  Chưa Chọn Ca Thi Đấu
  </h3>
- <p className="text-xs text-slate-500 leading-relaxed max-w-[260px] mx-auto">
+ <p className="text-[13px] text-slate-500 leading-relaxed max-w-[260px] mx-auto">
  Vui lòng bấm vào một khung giờ <strong>Còn trống</strong> trên sơ đồ bên trái để xem chi tiết giá và mở phiếu đặt chỗ.
  </p>
  </div>
- <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sky-50 text-sky-700 text-xs font-bold">
+ <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sky-50 text-sky-700 text-[13px] font-bold">
  <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-ping inline-block" />
  <span>Sẵn sàng giữ chỗ thời gian thực</span>
  </div>
@@ -1029,17 +1029,17 @@ export default function PitchDetail({
  {/* Card Chủ Sân & Liên Hệ Trực Tiếp */}
  <div className="p-3 sm:p-4 bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between">
  <div className="flex items-center space-x-3">
- <div className="w-10 h-10 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] flex items-center justify-center font-bold text-xs">
+ <div className="w-10 h-10 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] flex items-center justify-center font-bold text-[13px]">
  {venueData.ownerName ? venueData.ownerName.slice(0, 2).toUpperCase() : "CS"}
  </div>
  <div>
- <span className="font-bold text-xs text-slate-900 block">Chủ Sân: {venueData.ownerName}</span>
+ <span className="font-bold text-[13px] text-slate-900 block">Chủ Sân: {venueData.ownerName}</span>
  <span className="text-[13px] text-slate-500 block font-mono">Hotline: {venueData.phone}</span>
  </div>
  </div>
  <a
  href={`tel:${venueData.phone}`}
- className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-sky-700 font-bold text-xs transition-colors flex items-center space-x-1"
+ className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-sky-700 font-bold text-[13px] transition-colors flex items-center space-x-1"
  >
  <PhoneCall className="w-3.5 h-3.5" />
  <span>Gọi Sân</span>
@@ -1064,16 +1064,16 @@ export default function PitchDetail({
  {!paymentDone ? (
  <>
  <div className="text-center space-y-1.5">
- <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-xs font-bold">
+ <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-[13px] font-bold">
  <Clock className="w-3.5 h-3.5" />
  <span>Đơn giữ chỗ đã lưu trong hệ thống</span>
  </div>
  <h3 className="text-2xl font-black text-slate-900 ">Mã Giữ Chỗ Của Bạn</h3>
- <p className="text-xs text-slate-500">Cọc trực tiếp với chủ sân để giữ chỗ. Hệ thống không tự trừ tiền.</p>
+ <p className="text-[13px] text-slate-500">Cọc trực tiếp với chủ sân để giữ chỗ. Hệ thống không tự trừ tiền.</p>
  </div>
 
  {/* Tóm tắt cọc */}
- <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2 text-xs">
+ <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2 text-[13px]">
  <div className="flex justify-between">
  <span className="text-slate-500">Cụm sân:</span>
  <strong className="text-slate-900 ">{venueData.name}</strong>
@@ -1099,7 +1099,7 @@ export default function PitchDetail({
  <div className="w-44 h-44 flex items-center justify-center">
  <QrCode className="w-40 h-40 text-slate-900" />
  </div>
- <div className="text-center mt-2 text-xs text-slate-600">
+ <div className="text-center mt-2 text-[13px] text-slate-600">
  <span>Mã giữ chỗ: </span>
  <strong className="text-[#0b4f6c] font-mono text-sm">{bookingConfirmed?.code || "—"}</strong>
  </div>
@@ -1123,18 +1123,18 @@ export default function PitchDetail({
  </div>
 
  <div>
- <span className="px-3 py-1 rounded-full bg-[#0369a1]/10 text-sky-700 text-xs font-bold border border-[#0369a1]/30">
+ <span className="px-3 py-1 rounded-full bg-[#0369a1]/10 text-sky-700 text-[13px] font-bold border border-[#0369a1]/30">
  Đơn giữ chỗ đã lưu vào CSDL
  </span>
  <h3 className="text-2xl font-black text-slate-900 mt-2">Thẻ Vé Vào Sân Điện Tử</h3>
- <p className="text-xs text-slate-500 mt-1">Cho chủ sân xem mã này khi tới sân để check-in.</p>
+ <p className="text-[13px] text-slate-500 mt-1">Cho chủ sân xem mã này khi tới sân để check-in.</p>
  </div>
 
  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
  <div className="w-36 h-36 bg-white rounded-xl p-2 mx-auto flex items-center justify-center border shadow-xs">
  <QrCode className="w-32 h-32 text-slate-900" />
  </div>
- <div className="text-xs space-y-1 text-slate-600 font-medium">
+ <div className="text-[13px] space-y-1 text-slate-600 font-medium">
  <p className="font-mono text-sky-700 font-black text-sm">
  MÃ VÉ: {bookingConfirmed?.code || "—"}
  </p>
@@ -1147,7 +1147,7 @@ export default function PitchDetail({
  <button
  type="button"
  onClick={() => setShowQrModal(false)}
- className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-bold transition-colors"
+ className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-[13px] font-bold transition-colors"
  >
  Đóng & Xem Lịch Đặt
  </button>

@@ -69,7 +69,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  notify("err", err?.message || "Dọn dữ liệu thất bại.");
  }
  }}
- className="shrink-0 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all active:scale-95"
+ className="shrink-0 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold transition-all active:scale-95"
  >
  Dọn dữ liệu mồ côi
  </button>
@@ -120,14 +120,14 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
   {loading ? (
   <div className="skeleton-shimmer h-16 w-full rounded-xl" />
   ) : monthly.length === 0 ? (
-  <p className="text-xs text-slate-500 text-center py-4">
+  <p className="text-[13px] text-slate-500 text-center py-4">
   Chưa có dữ liệu doanh thu trong khoảng thời gian này.
   </p>
   ) : (
   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
   {monthly.map((m, i) => (
   <div key={i} className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 min-w-0">
-  <p className="text-[12px] font-bold text-slate-500 truncate">{String(m.month).replace(" (Dự kiến)", "*")}</p>
+  <p className="text-[13px] font-bold text-slate-500 truncate">{String(m.month).replace(" (Dự kiến)", "*")}</p>
   <p className="font-mono font-black text-slate-900 text-[13px] truncate">{formatMoney(Number(m.revenue) || 0)}</p>
   </div>
   ))}

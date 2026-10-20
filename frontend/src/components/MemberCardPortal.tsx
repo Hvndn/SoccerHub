@@ -60,7 +60,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <Trophy className="w-10 h-10 text-lime-400" />
  </div>
  </div>
- <span className="absolute -bottom-2 -right-2 bg-[#0369a1] text-white text-[12px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-slate-900">
+ <span className="absolute -bottom-2 -right-2 bg-[#0369a1] text-white text-[13px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-slate-900">
  <ShieldCheck className="w-3 h-3" /> READY
  </span>
  </div>
@@ -70,7 +70,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  Tuyệt Vời,<br />
  <span className="text-emerald-400">Hồ Sơ Đã Sẵn Sàng!</span>
  </h2>
- <p className="hidden sm:block text-xs sm:text-sm text-slate-300 leading-relaxed mt-2">
+ <p className="hidden sm:block text-[13px] sm:text-sm text-slate-300 leading-relaxed mt-2">
  Hồ sơ cầu thủ của bạn đã lưu trong hệ thống — dùng để nhận kèo, tham gia giải và đặt sân.
  </p>
  </div>
@@ -82,7 +82,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <Ticket className="w-4 h-4" />
  </div>
  <div className="min-w-0">
- <p className="text-xs font-bold text-white">Hạng {userLevel} • Sẵn sàng nhận kèo</p>
+ <p className="text-[13px] font-bold text-white">Hạng {userLevel} • Sẵn sàng nhận kèo</p>
  <p className="hidden sm:block text-[13px] text-slate-300">Hồ sơ lưu từ kết quả các giải trong hệ thống</p>
  </div>
  </div>
@@ -92,7 +92,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <Award className="w-4 h-4" />
  </div>
  <div className="min-w-0">
- <p className="text-xs font-bold text-white">Mã thẻ VĐV: {memberId}</p>
+ <p className="text-[13px] font-bold text-white">Mã thẻ VĐV: {memberId}</p>
  <p className="hidden sm:block text-[13px] text-slate-300">Dùng để chủ sân đối chiếu khi nhận sân</p>
  </div>
  </div>
@@ -102,7 +102,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <Activity className="w-4 h-4" />
  </div>
  <div className="min-w-0">
- <p className="text-xs font-bold text-white">Lịch sử thi đấu theo giải</p>
+ <p className="text-[13px] font-bold text-white">Lịch sử thi đấu theo giải</p>
   <p className="hidden sm:block text-[13px] text-slate-300">Kết quả cập nhật khi các giải kết thúc</p>
  </div>
  </div>
@@ -112,14 +112,14 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  {/* Left Footer: Football Pitch Formats Sync */}
  <div className="relative z-10 pt-6 mt-4 border-t border-slate-700/60">
  <div className="flex items-center justify-between text-slate-300 mb-2">
- <span className="text-[12px] font-bold tracking-wider text-slate-500">Đồng bộ toàn bộ quy chuẩn sân</span>
+ <span className="text-[13px] font-bold tracking-wider text-slate-500">Đồng bộ toàn bộ quy chuẩn sân</span>
  <div className="flex items-center gap-1.5 bg-[#0369a1]/20 px-2 py-0.5 rounded-full border border-[#0369a1]/30">
  <span className="w-1.5 h-1.5 rounded-full bg-[#0369a1] animate-pulse"></span>
- <span className="font-mono text-[12px] text-lime-400 font-bold tracking-wide">Đồng bộ trực tiếp</span>
+ <span className="font-mono text-[13px] text-lime-400 font-bold tracking-wide">Đồng bộ trực tiếp</span>
  </div>
  </div>
 
- <div className="flex flex-wrap items-center gap-2 text-xs text-white font-semibold">
+ <div className="flex flex-wrap items-center gap-2 text-[13px] text-white font-semibold">
  <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">⚽ Sân 7 Phủi</span>
  <span className="text-slate-500">•</span>
  <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">👟 Sân 5 Mini Cỏ</span>
@@ -157,7 +157,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <h1 className="text-lg sm:text-3xl font-extrabold text-slate-900 tracking-tight">
  Thẻ Hội Viên Điện Tử Của Bạn
  </h1>
- <p className="hidden sm:block text-xs sm:text-sm text-slate-500 mt-1">
+ <p className="hidden sm:block text-[13px] sm:text-sm text-slate-500 mt-1">
  Hệ thống đã tạo sẵn thẻ định danh và quét 12 cụm sân thể thao gần bạn có ca trống tối nay.
  </p>
  </div>
@@ -181,10 +181,10 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  </div>
  <div>
  <p className="text-sm font-extrabold tracking-tight text-slate-900 ">Turfzone SPORTS PASS</p>
- <p className="text-[12px] text-slate-500 tracking-widest font-mono">Universal Athlete ID</p>
+ <p className="text-[13px] text-slate-500 tracking-widest font-mono">Universal Athlete ID</p>
  </div>
  </div>
- <span className="px-2.5 py-1 rounded bg-lime-500/15 text-sky-800 font-mono text-xs font-black border border-lime-500/40 ">
+ <span className="px-2.5 py-1 rounded bg-lime-500/15 text-sky-800 font-mono text-[13px] font-black border border-lime-500/40 ">
  TIER: PRO-AM
  </span>
  </div>
@@ -193,22 +193,22 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <div className="grid grid-cols-12 gap-3 items-center relative z-10 my-4">
  <div className="col-span-8 space-y-2">
  <div>
- <span className="text-[12px] text-slate-500 font-bold tracking-wider">Họ và Tên Vận Động Viên</span>
+ <span className="text-[13px] text-slate-500 font-bold tracking-wider">Họ và Tên Vận Động Viên</span>
  <div className="flex items-center gap-2">
  <p className="text-lg sm:text-xl font-extrabold text-slate-900 ">{userName}</p>
- <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[12px] font-bold">Phong Trào</span>
+ <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[13px] font-bold">Phong Trào</span>
  </div>
  </div>
 
  <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1">
  <div>
- <span className="text-[12px] text-slate-500 block font-medium">Môn thi đấu</span>
- <span className="text-xs font-bold text-sky-800 ">Bóng Đá Sân 5, 7, 11</span>
+ <span className="text-[13px] text-slate-500 block font-medium">Môn thi đấu</span>
+ <span className="text-[13px] font-bold text-sky-800 ">Bóng Đá Sân 5, 7, 11</span>
  </div>
  <div className="w-px h-6 bg-slate-200 "></div>
  <div>
- <span className="text-[12px] text-slate-500 block font-medium">Chỉ số xếp hạng</span>
- <div className="flex items-center gap-1.5 font-mono text-xs font-bold">
+ <span className="text-[13px] text-slate-500 block font-medium">Chỉ số xếp hạng</span>
+ <div className="flex items-center gap-1.5 font-mono text-[13px] font-bold">
  <span className="text-sky-800 ">{user?.level || "Chưa xếp bậc"}</span>
  <span className="text-slate-500 ">|</span>
  <span className="text-slate-900 ">{userLevel}</span>
@@ -225,7 +225,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  title="Bấm để sao chép mã VĐV"
  >
  <QrCode className="w-14 h-14 text-slate-900" />
- <span className="font-mono text-[11px] text-slate-700 font-black mt-1">
+ <span className="font-mono text-[13px] text-slate-700 font-black mt-1">
  {copiedCode ? "ĐÃ CHÉP MÃ!" : "CHECK-IN CA"}
  </span>
  </div>
@@ -252,8 +252,8 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  </div>
  <div className="min-w-0 flex-1">
  <div className="flex items-center justify-between">
- <p className="text-xs font-bold text-slate-900 group-hover:text-sky-700 transition truncate">Đặt sân gần bạn ngay</p>
- <span className="text-[12px] text-lime-800 font-extrabold bg-[#0369a1]/20 px-1.5 py-0.5 rounded">-50K</span>
+ <p className="text-[13px] font-bold text-slate-900 group-hover:text-sky-700 transition truncate">Đặt sân gần bạn ngay</p>
+ <span className="text-[13px] text-lime-800 font-extrabold bg-[#0369a1]/20 px-1.5 py-0.5 rounded">-50K</span>
  </div>
  <p className="text-[13px] text-slate-500 truncate">Ca đẹp từ 18:30 - 21:00 tối nay</p>
  </div>
@@ -268,8 +268,8 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  </div>
  <div className="min-w-0 flex-1">
  <div className="flex items-center justify-between">
- <p className="text-xs font-bold text-slate-900 group-hover:text-amber-700 transition truncate">Chợ Kèo Khẩn Cấp</p>
- <span className="text-[12px] text-rose-600 font-extrabold bg-rose-500/10 px-1.5 py-0.5 rounded">8 KÈO</span>
+ <p className="text-[13px] font-bold text-slate-900 group-hover:text-amber-700 transition truncate">Chợ Kèo Khẩn Cấp</p>
+ <span className="text-[13px] text-rose-600 font-extrabold bg-rose-500/10 px-1.5 py-0.5 rounded">8 KÈO</span>
  </div>
  <p className="text-[13px] text-slate-500 truncate">Đang thiếu 1-2 chân tối nay</p>
  </div>
@@ -289,14 +289,14 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  </button>
  <button 
  onClick={onBackToHome}
- className="w-full sm:w-auto px-4 h-12 rounded-xl text-slate-600 hover:bg-slate-100 text-xs font-bold transition flex items-center justify-center gap-1.5"
+ className="w-full sm:w-auto px-4 h-12 rounded-xl text-slate-600 hover:bg-slate-100 text-[13px] font-bold transition flex items-center justify-center gap-1.5"
  >
  <ArrowLeft className="w-4 h-4" />
  <span>Quay lại</span>
  </button>
  </div>
 
- <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+ <div className="flex items-center justify-center gap-1.5 text-[13px] text-slate-500">
  <Lock className="w-3.5 h-3.5 text-sky-700" />
  <p>Đồng bộ tự động với tài khoản và ví thể thao.</p>
  </div>

@@ -98,7 +98,7 @@ export default function AdminNotifications({ notify }: { notify: (type: "ok" | "
               placeholder="Nội dung thông báo gửi tới người dùng…"
               className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#0369a1] resize-none"
             />
-            <p className="text-[12px] text-slate-400 mt-1 text-right">{message.length}/500</p>
+            <p className="text-[13px] text-slate-400 mt-1 text-right">{message.length}/500</p>
           </div>
 
           <div>
@@ -116,7 +116,7 @@ export default function AdminNotifications({ notify }: { notify: (type: "ok" | "
             <button
               type="submit"
               disabled={sending || !title.trim() || !message.trim()}
-              className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95 disabled:opacity-40 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-40 flex items-center gap-2"
             >
               {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               Gửi thông báo

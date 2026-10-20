@@ -136,7 +136,7 @@ export default function TeamClubManagement({
  <h2 className="text-xl sm:text-2xl font-black text-slate-900 truncate">
  {primaryTeam.teamName}
  </h2>
- <p className="text-xs text-slate-500 mt-0.5">
+ <p className="text-[13px] text-slate-500 mt-0.5">
  Giải đang tham gia: {primaryTeam.tournament?.title || "—"} •{" "}
  {primaryTeam.tournament?.location || primaryTeam.tournament?.pitchName || "Chưa xếp sân"}
  </p>
@@ -146,19 +146,19 @@ export default function TeamClubManagement({
  <p className="text-lg sm:text-xl font-black text-emerald-500 font-mono">
  {primaryTeam.record ?? "0-0-0"}
  </p>
- <p className="text-[12px] text-slate-500 font-bold">Thành Tích (T-H-B)</p>
+ <p className="text-[13px] text-slate-500 font-bold">Thành Tích (T-H-B)</p>
  </div>
  <div>
  <p className="text-lg sm:text-xl font-black text-slate-900 font-mono">
  {primaryTeam.memberCount ?? "—"}
  </p>
- <p className="text-[12px] text-slate-500 font-bold">Thành Viên</p>
+ <p className="text-[13px] text-slate-500 font-bold">Thành Viên</p>
  </div>
  <div>
  <p className="text-lg sm:text-xl font-black text-slate-900 font-mono">
  {myTeams.length}
  </p>
- <p className="text-[12px] text-slate-500 font-bold">Giải Đã Đăng Ký</p>
+ <p className="text-[13px] text-slate-500 font-bold">Giải Đã Đăng Ký</p>
  </div>
  </div>
  </div>
@@ -167,13 +167,13 @@ export default function TeamClubManagement({
  <p className="text-sm text-slate-600 ">
  Bạn chưa làm đội trưởng của đội nào trong hệ thống.
  </p>
- <p className="text-xs text-slate-500">
+ <p className="text-[13px] text-slate-500">
  Đăng ký đội khi tham gia một giải đấu — số điện thoại của bạn sẽ được dùng để liên kết đội.
  </p>
  <button
  type="button"
  onClick={() => onNavigateTab?.("tournaments")}
- className="px-5 py-2.5 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs inline-flex items-center gap-1.5"
+ className="px-5 py-2.5 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] inline-flex items-center gap-1.5"
  >
  Xem Giải Đấu <ChevronRight className="w-4 h-4" />
  </button>
@@ -188,7 +188,7 @@ export default function TeamClubManagement({
  key={tab.key}
  type="button"
  onClick={() => setActiveSubTab(tab.key)}
- className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
+ className={`px-4 py-2 rounded-xl text-[13px] font-bold whitespace-nowrap transition-colors ${
  activeSubTab === tab.key
  ? "bg-[#0369a1] text-white"
  : "bg-white text-slate-600 border border-slate-200 "
@@ -210,7 +210,7 @@ export default function TeamClubManagement({
  value={searchMember}
  onChange={(e) => setSearchMember(e.target.value)}
  placeholder="Lọc theo tên đội hoặc giải…"
- className="pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs w-full sm:w-72"
+ className="pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] w-full sm:w-72"
  />
  </div>
  </div>
@@ -218,7 +218,7 @@ export default function TeamClubManagement({
  <p className="p-4 sm:p-8 text-center text-sm text-slate-500">Chưa có đội nào.</p>
  ) : (
  <div className="overflow-x-auto">
- <table className="w-full text-xs">
+ <table className="w-full text-[13px]">
  <thead className="bg-slate-50 ">
  <tr className="text-left text-slate-500">
  <th className="p-3 font-bold">Tên Đội</th>
@@ -254,7 +254,7 @@ export default function TeamClubManagement({
  {z.record && z.record !== "0-0-0" ? `${z.record} • ${z.winRate ?? 0}%` : "Tân binh"}
  </td>
  <td className="p-3">
- <span className="px-2 py-1 rounded-full bg-[#0369a1]/10 text-emerald-500 font-bold text-[12px]">
+ <span className="px-2 py-1 rounded-full bg-[#0369a1]/10 text-emerald-500 font-bold text-[13px]">
  {z.registrationStatus === "CONFIRMED"
  ? "Đã Xác Nhận"
  : z.registrationStatus === "PENDING_PAYMENT"
@@ -300,7 +300,7 @@ export default function TeamClubManagement({
  {m.score}
  </p>
  <p
- className={`text-[12px] font-bold ${
+ className={`text-[13px] font-bold ${
  m.status === "DONE" ? "text-emerald-500" : "text-amber-700"
  }`}
  >

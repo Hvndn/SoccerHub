@@ -22,7 +22,7 @@ export default function GuestFeatureBanner({
  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3 sm:p-8 mb-6 sm:mb-8 stadium-shadow relative overflow-hidden animate-fade-in-up">
  <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
  <div className="space-y-3 max-w-2xl">
- <div className="hidden sm:inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0369a1]/15 text-[#0b4f6c] text-xs font-bold">
+ <div className="hidden sm:inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0369a1]/15 text-[#0b4f6c] text-[13px] font-bold">
  <Sparkles className="w-3.5 h-3.5 text-[#0b4f6c] " />
  <span>Giới Thiệu Chức Năng</span>
  </div>
@@ -34,11 +34,11 @@ export default function GuestFeatureBanner({
  {title}
  </h2>
  </div>
- <p className="hidden sm:block text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+ <p className="hidden sm:block text-[13px] sm:text-sm text-slate-600 leading-relaxed font-medium">
  {description}
  </p>
 
- <div className="hidden sm:flex flex-wrap gap-4 pt-1 text-xs font-bold text-slate-700 ">
+ <div className="hidden sm:flex flex-wrap gap-4 pt-1 text-[13px] font-bold text-slate-700 ">
  {features.map((feat, idx) => (
  <span key={idx} className="flex items-center space-x-1.5">
  <CheckCircle2 className="w-4 h-4 text-[#0b4f6c] shrink-0" />
@@ -52,14 +52,14 @@ export default function GuestFeatureBanner({
  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full lg:w-auto pt-2 lg:pt-0">
  <button
  onClick={() => onOpenAuth("login")}
- className="px-5 py-3 rounded-2xl bg-white hover:bg-slate-100 text-[#0b4f6c] font-bold text-xs border border-[#0369a1]/30 shadow-sm transition-all flex items-center justify-center space-x-2 active:scale-95"
+ className="px-5 py-3 rounded-2xl bg-white hover:bg-slate-100 text-[#0b4f6c] font-bold text-[13px] border border-[#0369a1]/30 shadow-sm transition-all flex items-center justify-center space-x-2 active:scale-95"
  >
  <LogIn className="w-4 h-4 text-[#0b4f6c] " />
  <span>Đăng Nhập Ngay</span>
  </button>
  <button
  onClick={() => onOpenAuth("register")}
- className="px-5 py-3 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
+ className="px-5 py-3 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
  >
  <UserPlus className="w-4 h-4 text-white" />
  <span>Đăng Ký Tài Khoản</span>

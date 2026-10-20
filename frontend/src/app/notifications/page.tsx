@@ -65,7 +65,7 @@ export default function NotificationsPage() {
               <h1 className="text-lg sm:text-xl font-black text-slate-900 leading-tight">
                 Trung Tâm Thông Báo
               </h1>
-              <p className="text-xs text-slate-500">
+              <p className="text-[13px] text-slate-500">
                 {loading && notifications.length === 0
                   ? "Đang tải thông báo…"
                   : `${notifications.length} thông báo`}
@@ -77,7 +77,7 @@ export default function NotificationsPage() {
           </div>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
           >
             <ArrowLeft className="w-4 h-4 shrink-0" />
             Về trang chủ
@@ -95,7 +95,7 @@ export default function NotificationsPage() {
               <LogIn className="w-8 h-8 text-[#0b4f6c]" />
             </div>
             <h2 className="text-xl font-black">Bạn chưa đăng nhập</h2>
-            <p className="text-xs sm:text-sm text-slate-500">
+            <p className="text-[13px] sm:text-sm text-slate-500">
               Đăng nhập để xem toàn bộ thông báo đặt sân, giải đấu và hệ thống của bạn.
             </p>
             <button

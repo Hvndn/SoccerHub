@@ -74,7 +74,7 @@ export default function AvatarUploader({ onUploaded, label = "Chọn ảnh từ 
           e.preventDefault();
           fileInputRef.current?.click();
         }}
-        className={`inline-flex items-center gap-2 rounded-xl border border-sky-300 bg-sky-50 text-sky-800 font-bold text-xs hover:bg-sky-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all active:scale-95 cursor-pointer ${
+        className={`inline-flex items-center gap-2 rounded-xl border border-sky-300 bg-sky-50 text-sky-800 font-bold text-[13px] hover:bg-sky-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all active:scale-95 cursor-pointer ${
           compact ? "px-3 py-1.5" : "px-4 py-2.5"
         }`}
         title="Chọn ảnh từ máy (JPG/PNG/WEBP, tối đa 10MB)"

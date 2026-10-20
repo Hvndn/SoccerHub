@@ -40,7 +40,7 @@ export default function RealtimeClockBar() {
  <span className="text-base sm:text-lg font-extrabold text-pitch-emerald tracking-tight">
  Hiện tại: <span className="text-lg sm:text-xl font-black font-mono tracking-wider">{timeStr}</span>
  </span>
- <span className="text-xs sm:text-sm font-bold text-slate-700 mt-0.5">
+ <span className="text-[13px] sm:text-sm font-bold text-slate-700 mt-0.5">
  {dayName}, {dateStr}
  </span>
  </div>

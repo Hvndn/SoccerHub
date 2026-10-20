@@ -102,7 +102,7 @@ export default function NotificationsCenter({
               key={f.id}
               type="button"
               onClick={() => setFilter(f.id)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-all ${
                 filter === f.id
                   ? "bg-[#0369a1] text-white shadow-md"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -110,7 +110,7 @@ export default function NotificationsCenter({
             >
               {f.label}
               {f.id === "unread" && unread > 0 && (
-                <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-white/25 text-[12px] font-black">
+                <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-white/25 text-[13px] font-black">
                   {unread}
                 </span>
               )}
@@ -121,7 +121,7 @@ export default function NotificationsCenter({
           <button
             type="button"
             onClick={onMarkAllRead}
-            className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-[#0b4f6c] hover:bg-sky-50 transition-colors shrink-0"
+            className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[13px] font-bold text-[#0b4f6c] hover:bg-sky-50 transition-colors shrink-0"
           >
             <CheckCircle2 className="w-4 h-4" />
             Đã đọc hết
@@ -163,12 +163,12 @@ export default function NotificationsCenter({
                       <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] mt-1 shrink-0" />
                     )}
                   </div>
-                  <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-medium break-words">
+                  <p className="text-[13px] sm:text-[13px] text-slate-600 leading-relaxed font-medium break-words">
                     {n.message}
                   </p>
                   {n.type === "BOOKING_CANCELLED" && n.cancelReason && (
                     <div className="mt-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200">
-                      <p className="text-xs font-bold text-rose-700">
+                      <p className="text-[13px] font-bold text-rose-700">
                         📋 Lý do: <span className="font-normal">{n.cancelReason}</span>
                       </p>
                     </div>
@@ -222,11 +222,11 @@ export default function NotificationsCenter({
           <button
             type="button"
             onClick={onClearAll}
-            className="text-xs font-bold text-slate-500 hover:text-rose-600 transition-colors"
+            className="text-[13px] font-bold text-slate-500 hover:text-rose-600 transition-colors"
           >
             Xóa tất cả thông báo
           </button>
-          <span className="text-xs font-semibold text-slate-500">
+          <span className="text-[13px] font-semibold text-slate-500">
             {filtered.length}/{notifications.length} hiển thị
           </span>
         </div>
