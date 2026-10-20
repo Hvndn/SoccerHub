@@ -11,6 +11,7 @@ import {
   updateTournament,
   fetchTournamentFinance,
   fillSimulatedTeams,
+  drawTournamentBracket,
   fetchTournaments,
   subscribeTournaments,
   type TournamentFinance,
@@ -277,6 +278,8 @@ export default function TournamentOrganizerPortal({
       if (!newTournamentId) throw new Error('Không lấy được ID giải mới');
 
       await fillSimulatedTeams(newTournamentId);
+      // fill-teams reset bracketJson -> phai boc tham that moi co nhanh dau
+      await drawTournamentBracket(newTournamentId);
 
 // Chọn luôn giải vừa tạo để BTC thấy ngay nhánh đấu vừa bốc.
 setSelectedTournamentId(Number(newTournamentId));
@@ -293,6 +296,15 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
   // ---- SỬA THÔNG TIN GIẢI (trước đây BTC tạo xong không sửa được gì) ----
   const [showEditModal, setShowEditModal] = useState(false);
+
+ // Form sửa giải hiện INLINE (không popup) nằm cuối trang -> tự cuộn tới khi mở.
+ useEffect(() => {
+  if (!showEditModal) return;
+  const raf = requestAnimationFrame(() => {
+   document.getElementById("edit-tournament-inline")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  return () => cancelAnimationFrame(raf);
+ }, [showEditModal]);
  // Thêm đội thủ công (BTC nhập tay, không qua form đăng ký của cầu thủ)
  // Quyền tham gia giải: ai cũng tham gia / chỉ mời qua email
  const [joinMode, setJoinMode] = useState<"PUBLIC" | "INVITE_ONLY">("PUBLIC");
@@ -1982,13 +1994,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  {/* MODAL SỬA THÔNG TIN GIẢI ĐẤU */}
  {showEditModal && (
- <div
- className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
- onClick={(e) => {
- if (e.target === e.currentTarget) setShowEditModal(false);
- }}
- >
- <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl my-8 border border-slate-200 overflow-hidden">
+ <div id="edit-tournament-inline" className="w-full animate-fade-in">
+ <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl mx-auto border border-slate-200 overflow-hidden">
  <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
  <div className="flex items-center gap-2.5">
  <Pencil className="w-5 h-5 text-[#0369a1]" />
