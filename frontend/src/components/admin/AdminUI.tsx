@@ -11,6 +11,7 @@ export function ConfirmModal({
  confirmLabel = "Xác nhận",
  danger = true,
  busy = false,
+ inline = false,
  onCancel,
  onConfirm,
 }: {
@@ -20,6 +21,8 @@ export function ConfirmModal({
  confirmLabel?: string;
  danger?: boolean;
  busy?: boolean;
+ /** true = hien inline trong trang (khong che popup) — theo quy tac UI cua Turfzone. */
+ inline?: boolean;
  onCancel: () => void;
  onConfirm: () => void;
 }) {
@@ -35,16 +38,24 @@ export function ConfirmModal({
  if (!open) return null;
  return (
  <div
- className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in overflow-y-auto"
+ className={
+ inline
+ ? "w-full animate-fade-in"
+ : "fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in overflow-y-auto"
+ }
  onMouseDown={(e) => {
- if (e.target === e.currentTarget) onCancel();
+ if (!inline && e.target === e.currentTarget) onCancel();
  }}
  >
  <div
  role="alertdialog"
- aria-modal="true"
+ aria-modal={inline ? undefined : "true"}
  aria-label={title}
- className="animate-modal-pop w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-2xl p-4 sm:p-6 space-y-3 sm:space-y-4 my-auto max-h-[92vh] overflow-y-auto"
+ className={
+ inline
+ ? "w-full rounded-2xl bg-white border border-slate-200 shadow-xl p-4 space-y-3"
+ : "animate-modal-pop w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-2xl p-4 sm:p-6 space-y-3 sm:space-y-4 my-auto max-h-[92vh] overflow-y-auto"
+ }
  >
  <div className="flex items-start gap-3">
  <div

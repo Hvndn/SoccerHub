@@ -43,6 +43,7 @@ import {
  confirmTeamPayment,
  saveMatchResult,
  registeredCount,
+ refreshTournamentInCache,
  isFull as isTournamentFull,
  fillPercent,
  formatDate,
@@ -88,7 +89,16 @@ const [addCount, setAddCount] = useState("4");
  const [statsOpen, setStatsOpen] = useState<Record<string, boolean>>({});
  const [confirmDraw, setConfirmDraw] = useState(false);
  const [confirmUndo, setConfirmUndo] = useState<BracketMatch | null>(null);
+
  const [confirmSimulate, setConfirmSimulate] = useState(false);
+ // Tu cuon toi hop xac nhan inline de BTC khong phai tim (xac nhan hien ngay duoi hang nut).
+ useEffect(() => {
+ if (!confirmDraw && !confirmSimulate && confirmUndo === null) return;
+ const raf = requestAnimationFrame(() => {
+  document.getElementById("confirm-inline-box")?.scrollIntoView({ behavior: "smooth", block: "center" });
+ });
+ return () => cancelAnimationFrame(raf);
+ }, [confirmDraw, confirmSimulate, confirmUndo]);
  const [simulateBusy, setSimulateBusy] = useState(false);
  const [lottery, setLottery] = useState<{ pairs: { matchId: string; teamA: string; teamB: string }[]; byes: string[] } | null>(null);
  const [activeTab, setActiveTab] = useState<"bracket" | "var_referee" | "standings" | "esheet">("bracket");
@@ -255,6 +265,8 @@ const [addCount, setAddCount] = useState("4");
  try {
  setFillBusy(true);
  const res = await fillSimulatedTeams(selected.id, count);
+ // Lam moi giai vua thay doi (so doi, danh sach doi, reset nhanh dau) trong cache
+ await refreshTournamentInCache(selected.id);
  triggerToast(res.message);
  } catch (err: any) {
  triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để giả lập.");
@@ -268,6 +280,7 @@ const [addCount, setAddCount] = useState("4");
  try {
  setClearBusy(true);
  const res = await clearSimulatedTeams(selected.id);
+ await refreshTournamentInCache(selected.id);
  triggerToast(res.message);
  } catch (err: any) {
  triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để dọn đội Test.");
@@ -281,6 +294,8 @@ const [addCount, setAddCount] = useState("4");
  try {
  setSimulateBusy(true);
  const res = await simulateTournamentResults(selected.id);
+ // Tai lai giai de ket qua gia lap hien ngay tren cay nhanh dau
+ await refreshTournamentInCache(selected.id);
  triggerToast(res.message);
  setConfirmSimulate(false);
  } catch (err: any) {
@@ -302,6 +317,8 @@ const [addCount, setAddCount] = useState("4");
  const byes = r1.filter((m) => m.status === "BYE" && m.bye).map((m) => m.bye!.name);
  setLottery({ pairs, byes });
  setConfirmDraw(false);
+ // Tai lai giai de cay nhanh dau (bracketJson moi) hien ngay, khong can F5
+ await refreshTournamentInCache(selected.id);
  } catch (err: any) {
  triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để bốc thăm.");
  } finally {
@@ -328,6 +345,8 @@ const [addCount, setAddCount] = useState("4");
  triggerToast(res.message);
  setShowScheduleForm(false);
  setActiveTab("bracket");
+ // Tai lai giai de lich da sinh hien ngay tren cay nhanh dau
+ await refreshTournamentInCache(selected.id);
  } catch (err: any) {
  triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để xếp lịch.");
  } finally {
@@ -882,6 +901,74 @@ const [addCount, setAddCount] = useState("4");
  </p>
  )}
 
+  {/* Xac nhan inline (khong popup) — hien ngay duoi hang nut quan tri */}
+  <div id="confirm-inline-box" className="w-full space-y-3">
+ <ConfirmModal
+ open={confirmDraw}
+ inline
+ title="Bốc thăm lại?"
+ message={
+ <>
+ Giải <strong>“{selected?.title}”</strong> đã có nhánh đấu. Bốc thăm lại sẽ{" "}
+ <strong>ghi đè toàn bộ nhánh cũ</strong>.
+ </>
+ }
+ confirmLabel="Bốc thăm lại"
+ danger={false}
+ busy={drawBusy}
+ onCancel={() => setConfirmDraw(false)}
+ onConfirm={startDraw}
+ />
+
+ {/* Xác nhận giả lập kết quả toàn giải */}
+ <ConfirmModal
+ open={confirmSimulate}
+ inline
+ title="Giả lập kết quả cả giải?"
+ message={
+ <>
+ Hệ thống sẽ <strong>tự random tỷ số</strong> cho mọi trận chưa đá của giải{" "}
+ <strong>“{selected?.title}”</strong> (kèm cầu thủ ghi bàn ngẫu nhiên), đội thắng đi
+ tiếp, giải có nhà vô địch. Trận đã có kết quả được giữ nguyên.
+ </>
+ }
+ confirmLabel="Giả lập ngay"
+ danger={false}
+ busy={simulateBusy}
+ onCancel={() => setConfirmSimulate(false)}
+ onConfirm={startSimulate}
+ />
+
+ {/* Xác nhận huỷ kết quả (xoá bản ghi + cầu thủ ghi bàn, phong độ tự tính lại) */}
+ <ConfirmModal
+ open={confirmUndo !== null}
+ inline
+ title="Huỷ kết quả trận đấu?"
+ message={
+ confirmUndo ? (
+ <>
+ Trận <strong>{confirmUndo.matchId}</strong> (
+ <strong>
+ {confirmUndo.teamA?.name} {confirmUndo.scoreA ?? 0}-{confirmUndo.scoreB ?? 0}{" "}
+ {confirmUndo.teamB?.name}
+ </strong>
+ ) sẽ được mở lại. Hệ thống sẽ <strong>mở lại trận</strong> và{" "}
+ <strong>xoá danh sách cầu thủ ghi bàn</strong> của trận này (phong độ tính lại từ các trận còn lại).
+ </>
+ ) : null
+ }
+ confirmLabel="Huỷ kết quả"
+ danger
+ busy={savingMatch !== null}
+ onCancel={() => setConfirmUndo(null)}
+ onConfirm={async () => {
+ const m = confirmUndo;
+ setConfirmUndo(null);
+ if (m) await handleUndoScore(m);
+ }}
+ />
+
+  </div>
  {/* Form tham số xếp lịch */}
  {showScheduleForm && bracket && (
  <div className="rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/30 p-3 space-y-3">
@@ -1612,68 +1699,6 @@ const [addCount, setAddCount] = useState("4");
  />
  )}
 
- {/* Xác nhận bốc thăm lại (ghi đè nhánh cũ) */}
- <ConfirmModal
- open={confirmDraw}
- title="Bốc thăm lại?"
- message={
- <>
- Giải <strong>“{selected?.title}”</strong> đã có nhánh đấu. Bốc thăm lại sẽ{" "}
- <strong>ghi đè toàn bộ nhánh cũ</strong>.
- </>
- }
- confirmLabel="Bốc thăm lại"
- danger={false}
- busy={drawBusy}
- onCancel={() => setConfirmDraw(false)}
- onConfirm={startDraw}
- />
-
- {/* Xác nhận giả lập kết quả toàn giải */}
- <ConfirmModal
- open={confirmSimulate}
- title="Giả lập kết quả cả giải?"
- message={
- <>
- Hệ thống sẽ <strong>tự random tỷ số</strong> cho mọi trận chưa đá của giải{" "}
- <strong>“{selected?.title}”</strong> (kèm cầu thủ ghi bàn ngẫu nhiên), đội thắng đi
- tiếp, giải có nhà vô địch. Trận đã có kết quả được giữ nguyên.
- </>
- }
- confirmLabel="Giả lập ngay"
- danger={false}
- busy={simulateBusy}
- onCancel={() => setConfirmSimulate(false)}
- onConfirm={startSimulate}
- />
-
- {/* Xác nhận huỷ kết quả (xoá bản ghi + cầu thủ ghi bàn, phong độ tự tính lại) */}
- <ConfirmModal
- open={confirmUndo !== null}
- title="Huỷ kết quả trận đấu?"
- message={
- confirmUndo ? (
- <>
- Trận <strong>{confirmUndo.matchId}</strong> (
- <strong>
- {confirmUndo.teamA?.name} {confirmUndo.scoreA ?? 0}-{confirmUndo.scoreB ?? 0}{" "}
- {confirmUndo.teamB?.name}
- </strong>
- ) sẽ được mở lại. Hệ thống sẽ <strong>mở lại trận</strong> và{" "}
- <strong>xoá danh sách cầu thủ ghi bàn</strong> của trận này (phong độ tính lại từ các trận còn lại).
- </>
- ) : null
- }
- confirmLabel="Huỷ kết quả"
- danger
- busy={savingMatch !== null}
- onCancel={() => setConfirmUndo(null)}
- onConfirm={async () => {
- const m = confirmUndo;
- setConfirmUndo(null);
- if (m) await handleUndoScore(m);
- }}
- />
  </div>
  );
 }
