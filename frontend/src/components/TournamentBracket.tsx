@@ -1083,7 +1083,7 @@ const [addCount, setAddCount] = useState("4");
  </div>
 
  {/* Console Nav Tabs */}
- <div className="flex items-center space-x-2 mt-6 pt-6 border-t border-slate-800 overflow-x-auto">
+ <div className="flex items-center gap-2 mt-6 pt-6 border-t border-slate-800 overflow-x-auto no-scrollbar">
  <button
  onClick={() => setActiveTab("bracket")}
  className={`px-4 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center space-x-2 ${
@@ -1093,7 +1093,7 @@ const [addCount, setAddCount] = useState("4");
  }`}
  >
  <Trophy className="w-4 h-4" />
- <span>Cây Nhánh Đấu Interactive</span>
+ <span>Cây Nhánh Đấu</span>
  </button>
 
  <button
@@ -1105,7 +1105,7 @@ const [addCount, setAddCount] = useState("4");
  }`}
  >
  <Video className="w-4 h-4 text-red-400" />
- <span>Bàn Trọng Tài Live VAR</span>
+ <span>Bàn VAR</span>
  <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[13px] font-mono">TRỰC TIẾP</span>
  </button>
 
@@ -1118,7 +1118,7 @@ const [addCount, setAddCount] = useState("4");
  }`}
  >
  <ListOrdered className="w-4 h-4" />
- <span>Bảng Xếp Hạng & Phong Độ Thi Đấu</span>
+ <span>Bảng Xếp Hạng</span>
  </button>
 
  <button
@@ -1130,7 +1130,7 @@ const [addCount, setAddCount] = useState("4");
  }`}
  >
  <FileText className="w-4 h-4" />
- <span>Biên Bản Điện Tử & Ký QR</span>
+ <span>Biên Bản & QR</span>
  </button>
  </div>
  </div>

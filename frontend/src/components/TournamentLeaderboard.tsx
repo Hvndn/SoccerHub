@@ -1298,7 +1298,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  ) : (
  <Link
  href={`/tournaments/register?tournamentId=${t.id}`}
- className="px-4 py-2 rounded-lg text-[13px] font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0369a1] bg-[#0369a1] hover:bg-[#075985] text-white active:scale-95"
+ className="px-4 py-2 rounded-lg text-[13px] font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0369a1] bg-[#0369a1] hover:bg-[#075985] text-white active:scale-95 whitespace-nowrap"
  >
  + Nộp Danh Sách Đội Tham Gia
  </Link>
