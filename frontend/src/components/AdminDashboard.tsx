@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { createPortal } from "react-dom";
 import { apiRequest } from "@/lib/api";
 import { simulateBookings } from "@/lib/adminService";
 import BusinessContacts from "@/components/BusinessContacts";
@@ -174,6 +173,18 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
 
 // Sửa hồ sơ cụm sân (trước đây chỉ sửa được giá + giờ mở cửa)
 const [showEditInfoModal, setShowEditInfoModal] = useState(false);
+
+ // Cac form quan tri (Sua ho so / Them san / Dat ca / Gio mo cua) hien INLINE o cuoi trang
+ // -> tu cuon toi khi mo de chu san khong phai tim.
+ useEffect(() => {
+  const open = showEditInfoModal || showAddPitchModal || showOfflineModal || selectedSlotForAction || showHoursModal || showCancelModal;
+  if (!open) return;
+  const raf = requestAnimationFrame(() => {
+   const el = document.querySelector('[id^="admin-inline-"]');
+   el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  return () => cancelAnimationFrame(raf);
+ }, [showEditInfoModal, showAddPitchModal, showOfflineModal, selectedSlotForAction, showHoursModal, showCancelModal]);
 const [isSavingInfo, setIsSavingInfo] = useState(false);
 const [infoName, setInfoName] = useState("");
 const [infoAddress, setInfoAddress] = useState("");
@@ -1739,13 +1750,8 @@ setIsSavingInfo(false);
  )}
 
  {/* MODAL 0: SỬA HỒ SƠ CỤM SÂN (tên, địa chỉ, SĐT, bộ môn, tiện ích, ảnh, mô tả) */}
-  {mounted && showEditInfoModal && typeof document !== "undefined" && createPortal(
-  <div
-  className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
-  onClick={(e) => {
-  if (e.target === e.currentTarget) setShowEditInfoModal(false);
-  }}
-  >
+  {showEditInfoModal && (
+  <div id="admin-inline-edit-info" className="w-full animate-fade-in">
   <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl my-8 border border-slate-200 overflow-hidden">
   <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
   <div className="flex items-center gap-2.5">
@@ -1898,18 +1904,12 @@ setIsSavingInfo(false);
   </div>
   </form>
   </div>
-  </div>,
-  document.body
+  </div>
   )}
 
   {/* MODAL 1: ADD NEW PITCH (Thêm Sân Con Mới) */}
- {mounted && showAddPitchModal && typeof document !== "undefined" && createPortal(
- <div 
- className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
- onClick={(e) => {
- if (e.target === e.currentTarget) setShowAddPitchModal(false);
- }}
- >
+ {showAddPitchModal && (
+  <div id="admin-inline-add-pitch" className="w-full animate-fade-in">
  <div 
  className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
@@ -2013,18 +2013,12 @@ setIsSavingInfo(false);
  </div>
  </form>
  </div>
- </div>,
- document.body
- )}
+  </div>
+  )}
 
  {/* MODAL 2: CREATE OFFLINE BOOKING FOR WALK-IN CUSTOMERS */}
- {mounted && showOfflineModal && typeof document !== "undefined" && createPortal(
- <div 
- className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
- onClick={(e) => {
- if (e.target === e.currentTarget) setShowOfflineModal(false);
- }}
- >
+ {showOfflineModal && (
+  <div id="admin-inline-offline" className="w-full animate-fade-in">
  <div 
  className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
@@ -2178,18 +2172,12 @@ setIsSavingInfo(false);
  </div>
  </form>
  </div>
- </div>,
- document.body
- )}
+  </div>
+  )}
 
  {/* MODAL 3: CHECK-IN & NO-SHOW MANAGEMENT ACTION */}
- {mounted && selectedSlotForAction && typeof document !== "undefined" && createPortal(
- <div 
- className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
- onClick={(e) => {
- if (e.target === e.currentTarget) setSelectedSlotForAction(null);
- }}
- >
+ {selectedSlotForAction && (
+  <div id="admin-inline-slot-action" className="w-full animate-fade-in">
  <div 
  className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
@@ -2262,18 +2250,12 @@ setIsSavingInfo(false);
  </button>
  </div>
  </div>
- </div>,
- document.body
- )}
+  </div>
+  )}
 
  {/* MODAL 4: CÀI ĐẶT THỜI GIAN HOẠT ĐỘNG & THỜI LƯỢNG CA SÂN */}
- {mounted && showHoursModal && typeof document !== "undefined" && createPortal(
- <div 
- className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
- onClick={(e) => {
- if (e.target === e.currentTarget) setShowHoursModal(false);
- }}
- >
+ {showHoursModal && (
+  <div id="admin-inline-hours" className="w-full animate-fade-in">
  <div 
  className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
@@ -2355,21 +2337,13 @@ setIsSavingInfo(false);
  </div>
  </form>
  </div>
- </div>,
- document.body
- )}
+  </div>
+  )}
  {/* MODAL HỦY CA ĐẶT SÂN KÈM LÝ DO THÔNG BÁO TỚI KHÁCH HÀNG */}
- {mounted && showCancelModal && typeof document !== "undefined" && createPortal(
+ {showCancelModal && (
  <div 
- className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
- onClick={(e) => {
- if (e.target === e.currentTarget) {
- setShowCancelModal(false);
- setSlotToCancel(null);
- setCancelReasonInput("");
- }
- }}
- >
+  id="admin-inline-cancel" className="w-full animate-fade-in"
+  >
  <div 
  className="relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-modal-pop my-auto"
  onClick={(e) => e.stopPropagation()}
@@ -2474,8 +2448,7 @@ setIsSavingInfo(false);
  </button>
  </div>
  </div>
- </div>,
- document.body
+ </div>
  )}
  </div>
  );
