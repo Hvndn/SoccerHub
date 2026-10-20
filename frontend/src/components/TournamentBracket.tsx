@@ -999,7 +999,7 @@ const [addCount, setAddCount] = useState("4");
  >
  <Video className="w-4 h-4 text-red-400" />
  <span>Bàn Trọng Tài Live VAR</span>
- <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[13px] font-mono">LIVE</span>
+ <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[13px] font-mono">TRỰC TIẾP</span>
  </button>
 
  <button
@@ -1409,7 +1409,7 @@ const [addCount, setAddCount] = useState("4");
  </td>
  <td className="py-3.5 px-2 sm:px-4 text-right">
  {row.simulated ? (
- <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-800 text-[13px] font-black">TEST</span>
+ <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-800 text-[13px] font-black">Thử nghiệm</span>
  ) : (
  <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-900 text-[13px] font-black">Chính thức</span>
  )}

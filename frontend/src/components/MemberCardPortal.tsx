@@ -61,7 +61,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  </div>
  </div>
  <span className="absolute -bottom-2 -right-2 bg-[#0369a1] text-white text-[13px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-slate-900">
- <ShieldCheck className="w-3 h-3" /> READY
+ <ShieldCheck className="w-3 h-3" /> Sẵn sàng
  </span>
  </div>
 
@@ -180,12 +180,12 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <Sparkles className="w-4 h-4" />
  </div>
  <div>
- <p className="text-sm font-extrabold tracking-tight text-slate-900 ">Turfzone SPORTS PASS</p>
- <p className="text-[13px] text-slate-500 tracking-widest font-mono">Universal Athlete ID</p>
+ <p className="text-sm font-extrabold tracking-tight text-slate-900 ">Thẻ Thể Thao Turfzone</p>
+ <p className="text-[13px] text-slate-500 tracking-widest font-mono">Mã Định Danh VĐV</p>
  </div>
  </div>
  <span className="px-2.5 py-1 rounded bg-lime-500/15 text-sky-800 font-mono text-[13px] font-black border border-lime-500/40 ">
- TIER: PRO-AM
+ Bậc: PRO-AM
  </span>
  </div>
 
@@ -226,7 +226,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  >
  <QrCode className="w-14 h-14 text-slate-900" />
  <span className="font-mono text-[13px] text-slate-700 font-black mt-1">
- {copiedCode ? "ĐÃ CHÉP MÃ!" : "CHECK-IN CA"}
+ {copiedCode ? "Đã chép mã!" : "Quét tại quầy"}
  </span>
  </div>
  </div>
@@ -236,7 +236,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <div className="pt-3 border-t border-slate-200 flex items-center justify-between relative z-10 text-[13px]">
  <span className="font-mono text-slate-500 tracking-wider">{memberId} • Turfzone</span>
  <span className="flex items-center gap-1.5 text-sky-800 font-bold">
- <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> ĐÃ KÍCH HOẠT THÀNH CÔNG
+ <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Đã kích hoạt thành công
  </span>
  </div>
  </div>

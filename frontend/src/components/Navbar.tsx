@@ -533,7 +533,7 @@ const mobileNav: MobileNavItem[] =
  <div className="flex items-center space-x-2">
  <span className="px-2.5 py-1 rounded-full bg-sky-50 text-[13px] text-sky-700 font-bold flex items-center space-x-1.5 border border-sky-200 ">
  <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-pulse inline-block" />
- <span>Live Realtime</span>
+ <span>Trực Tiếp</span>
  </span>
  </div>
  </div>

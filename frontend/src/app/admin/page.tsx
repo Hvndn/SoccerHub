@@ -124,7 +124,7 @@ function AdminConsole() {
  <h1 className="text-xl font-black">Truy cập bị từ chối</h1>
  <p className="text-[13px] sm:text-sm text-slate-500">
  Tài khoản <strong>{user.fullName || user.email}</strong> (vai trò {String(user.role)}) không có
- quyền quản trị hệ thống. Chỉ tài khoản <strong>ADMIN</strong> được vào khu vực này.
+ quyền quản trị hệ thống. Chỉ tài khoản <strong>Quản Trị</strong> được vào khu vực này.
  </p>
  <Link
  href="/"

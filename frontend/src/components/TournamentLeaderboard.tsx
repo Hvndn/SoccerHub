@@ -1564,7 +1564,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  </div>
  <div className="flex items-start gap-2.5">
  <CheckCircle2 className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
- <span><strong>Smart Bracket Algorithm:</strong> Bốc thăm minh bạch, không ưu tiên hạt giống.</span>
+ <span><strong>Thuật toán chia nhánh:</strong> Bốc thăm minh bạch, không ưu tiên hạt giống.</span>
  </div>
  <div className="flex items-start gap-2.5">
  <CheckCircle2 className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
@@ -1577,7 +1577,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   <ChevronRight className="w-3.5 h-3.5" />
   </summary>
   <div className="mt-2.5 pt-2.5 border-t border-slate-200 space-y-2 text-[13px] text-slate-600 leading-relaxed">
-  <p><strong className="text-slate-800">FairPlay:</strong> mọi cầu thủ được đánh giá 1 lần mỗi đội mỗi kèo trên thang 5 sao (đúng giờ, fair-play, thể thức). Điểm uy tín = 60% điểm sao + 40% tỉ lệ trận fair-play.</p>
+  <p><strong className="text-slate-800">Chơi đẹp:</strong> mọi cầu thủ được đánh giá 1 lần mỗi đội mỗi kèo trên thang 5 sao (đúng giờ, fair-play, thể thức). Điểm uy tín = 60% điểm sao + 40% tỉ lệ trận fair-play.</p>
   <p><strong className="text-slate-800">Trọng tài:</strong> do BTC bốc thăm ngẫu nhiên trước mỗi trận, không thuộc đội thi đấu. Kết quả trận do trọng tài ký xác nhận mới được tính vào bảng xếp hạng.</p>
   <p><strong className="text-slate-800">Khiếu nại:</strong> mở kênh "Khiêu Nại & Góp Ý" trong Cộng đồng kèm mã trận. Ban tổ chức phản hồi trong 24 giờ.</p>
   </div>
