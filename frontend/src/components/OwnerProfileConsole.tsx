@@ -451,7 +451,7 @@ export default function OwnerProfileConsole({
           <ul className="space-y-3 text-xs text-slate-600 leading-relaxed">
             <li className="flex items-start gap-2">
               <ArrowRight className="w-4 h-4 text-[#0369a1] shrink-0 mt-0.5" />
-              <span>Họ tên chủ sân dùng làm tên công khai trên tất cả cụm sân bạn đang sở hữu và trong phiếu đặt ca của khách.</span>
+              <span>Tên hiển thị công khai khi khách đặt ca.</span>
             </li>
             <li className="flex items-start gap-2">
               <ArrowRight className="w-4 h-4 text-[#0369a1] shrink-0 mt-0.5" />
@@ -459,7 +459,7 @@ export default function OwnerProfileConsole({
             </li>
             <li className="flex items-start gap-2">
               <ArrowRight className="w-4 h-4 text-[#0369a1] shrink-0 mt-0.5" />
-              <span>Email đăng nhập đổi được ngay tại đây. Sau khi đổi, phiên hiện tại vẫn hoạt động (hệ thống tự cấp lại phiên) nhưng lần đăng nhập sau phải dùng email mới.</span>
+              <span>Đổi được ngay tại đây. Phiên hiện tại vẫn hoạt động, lần sau dùng email mới.</span>
             </li>
           </ul>
         </div>

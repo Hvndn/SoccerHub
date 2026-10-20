@@ -298,7 +298,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
 
  <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
  <Lock className="w-3.5 h-3.5 text-sky-700" />
- <p>Thẻ hội viên đã được đồng bộ tự động với tài khoản và ví thể thao của bạn.</p>
+ <p>Đồng bộ tự động với tài khoản và ví thể thao.</p>
  </div>
  </div>
  </div>

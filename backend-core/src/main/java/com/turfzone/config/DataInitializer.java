@@ -165,7 +165,7 @@ private void seedUsers() {
                     .status("OPEN")
                     .bannerUrl("https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80")
                     .teams(new ArrayList<>(List.of(
-                            TournamentTeamEntry.builder().teamName("FC Saigon Warriors").captainName("Nguyễn Văn Hùng").captainPhone("0909111222").memberCount(14).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(3)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Đà Nẵng Warriors").captainName("Nguyễn Văn Hùng").captainPhone("0909111222").memberCount(14).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(3)).build(),
                             TournamentTeamEntry.builder().teamName("FC Hoàng Nam Q7").captainName("Trần Tuấn Anh").captainPhone("0909333444").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
                             TournamentTeamEntry.builder().teamName("FC Lộc Phát").captainName("Phạm Đăng Khoa").captainPhone("0908555666").memberCount(13).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(1)).build()
                     )))
@@ -549,11 +549,11 @@ private void seedUsers() {
                     .build();
 
             Pitch s7 = Pitch.builder()
-                    .name("Sân Mỹ Đình Futsal Center")
-                    .address("Khu liên hợp Thể thao Mỹ Đình, Nam Từ Liêm")
+                    .name("Sân Futsal Ngũ Hành Sơn")
+                    .address("Khu liên hợp Thể thao Ngũ Hành Sơn, Đà Nẵng")
                     .area("Quận Liên Chiểu, Đà Nẵng")
                     .phone("0988111222")
-                    .ownerName("Mỹ Đình Futsal Center")
+                    .ownerName("Futsal Ngũ Hành Sơn")
                     .latitude(21.0200).longitude(105.7650)
                     .avgPricePerHour(300000).peakPricePerHour(400000)
                     .rating(4.7).openTime("06:00").closeTime("23:00")
@@ -565,7 +565,7 @@ private void seedUsers() {
 
             Pitch s8 = Pitch.builder()
                     .name("Sân Bóng Trung Tâm Cần Thơ")
-                    .address("200 Đường 3 Tháng 2, Ninh Kiều")
+                    .address("200 Đường 3 Tháng 2, Quận Hải Châu")
                     .area("Ninh Kiều, Cần Thơ")
                     .phone("0979333444")
                     .ownerName("Cần Thơ Sport Arena")
@@ -580,7 +580,7 @@ private void seedUsers() {
 
             Pitch s9 = Pitch.builder()
                     .name("Sân Đà Nẵng Beachside Futsal")
-                    .address("12 Trần Phú, Lộc Thọ")
+                    .address("12 Trần Phú, Quận Sơn Trà")
                     .area("Quận Sơn Trà, Đà Nẵng")
                     .phone("0984555666")
                     .ownerName("Beachside Futsal")
@@ -634,7 +634,7 @@ private void seedUsers() {
                     .build();
 
             MatchmakingPost p3 = MatchmakingPost.builder()
-                    .teamName("FC Saigon Warriors")
+                    .teamName("FC Đà Nẵng Warriors")
                     .captainName("Vũ Minh Tuấn")
                     .captainPhone("0933 888 999")
                     .reputationScore(99)
@@ -654,7 +654,7 @@ private void seedUsers() {
                     .captainName("Bùi Trọng Nhân")
                     .captainPhone("0901 222 333")
                     .reputationScore(92)
-                    .pitchName("Sân Bóng Thảo Điền Mini")
+                    .pitchName("Sân Bóng Hải Châu Mini")
                     .address("Quận 2, Đà Nẵng")
                     .matchTime("19:00 Thứ Sáu tuần này")
                     .pitchType("SAN_5")
@@ -670,7 +670,7 @@ private void seedUsers() {
                     .captainName("Ngô Thành Đạt")
                     .captainPhone("0902 333 444")
                     .reputationScore(96)
-                    .pitchName("Sân Mỹ Đình Futsal Center")
+                    .pitchName("Sân Futsal Ngũ Hành Sơn")
                     .address("Quận Liên Chiểu, Đà Nẵng")
                     .matchTime("20:30 Tối nay")
                     .pitchType("FUTSAL")
@@ -682,12 +682,12 @@ private void seedUsers() {
                     .build();
 
             MatchmakingPost p6 = MatchmakingPost.builder()
-                    .teamName("FC Ninh Thuận Bình Minh")
+                    .teamName("FC Hải Châu Bình Minh")
                     .captainName("Hoàng Minh Tuấn")
                     .captainPhone("0903 444 555")
                     .reputationScore(94)
-                    .pitchName("Sân Thanh Niên Bình Minh")
-                    .address("TP. Phan Rang - Tháp Chàm, Ninh Thuận")
+                    .pitchName("Sân Thanh Niên Hải Châu")
+                    .address("Quận Hải Châu, Đà Nẵng")
                     .matchTime("07:00 Sáng Chủ Nhật")
                     .pitchType("SAN_7")
                     .paymentModel("LOSER_PAYS")

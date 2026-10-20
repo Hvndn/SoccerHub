@@ -60,7 +60,7 @@ export default function MatchmakingCard({
             }`}
           >
             <Flame className="w-4 h-4 text-rose-600" />
-            <span>{isMatched ? "ĐÃ CÓ ĐỐI THỦ NHẬN KÈO" : "KÈO ĐANG MỞ CHỜ ĐỐI"}</span>
+            <span>{isMatched ? "Đã có đối thủ" : "Kèo đang mở"}</span>
           </span>
           <span className={`px-2.5 py-1 rounded-lg font-bold text-xs border ${skill.tone}`}>
             {skill.label}

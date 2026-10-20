@@ -1240,7 +1240,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  className="bg-amber-50 p-3 rounded-xl border border-amber-300 text-xs flex items-center justify-between"
  >
  <span className="font-bold text-amber-900 truncate">{m.bye.name}</span>
- <span className="text-[11px] font-black text-amber-600 shrink-0">MIỄN VÒNG</span>
+ <span className="text-[11px] font-black text-amber-600 shrink-0">Miễn vòng</span>
  </div>
  );
  }

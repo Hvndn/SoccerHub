@@ -435,7 +435,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  </>
  ) : (
  <>
- <span className="font-mono text-xs font-bold text-slate-900 ">CHƯA CÓ KQ</span>
+ <span className="font-mono text-xs font-bold text-slate-900 ">Chưa có KQ</span>
  <span className="text-xs text-slate-500 truncate max-w-xs sm:max-w-md font-medium">
  BTC chưa nhập kết quả trận nào. Bấm vào giải để xem nhánh đấu.
  </span>
@@ -1560,15 +1560,15 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  <div className="flex flex-col gap-2.5 text-xs text-slate-600 ">
  <div className="flex items-start gap-2.5">
  <CheckCircle2 className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
- <span><strong>100% Trọng tài</strong> có chứng chỉ liên đoàn và kiểm duyệt độc lập trước trận.</span>
+ <span><strong>100% Trọng tài</strong> có chứng chỉ liên đoàn, kiểm duyệt trước trận.</span>
  </div>
  <div className="flex items-start gap-2.5">
  <CheckCircle2 className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
- <span><strong>Smart Bracket Algorithm:</strong> Bốc thăm minh bạch tự động, chống ghép cặp ưu tiên hạt giống.</span>
+ <span><strong>Smart Bracket Algorithm:</strong> Bốc thăm minh bạch, không ưu tiên hạt giống.</span>
  </div>
  <div className="flex items-start gap-2.5">
  <CheckCircle2 className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
- <span><strong>Ký quỹ giải thưởng an toàn:</strong> Tiền thưởng được ký gửi ký quỹ ngân hàng, giải ngân trong 24h.</span>
+ <span><strong>Ký quỹ giải thưởng an toàn:</strong> Tiền thưởng ký gửi ký quỹ ngân hàng, giải ngân 24h.</span>
  </div>
  </div>
   <details className="pt-2">

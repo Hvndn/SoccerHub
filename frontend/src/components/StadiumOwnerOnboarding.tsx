@@ -485,8 +485,8 @@ export default function StadiumOwnerOnboarding({
  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Gợi ý khai báo cho khách hàng</span>
  <div className="space-y-2 text-[13px] text-slate-600 ">
  <p>• Ghi rõ mức cọc (nếu có) và chính sách hoàn cọc trong phần <strong>Mô tả sân</strong> ở Bước 1 hoặc tab quản lý.</p>
- <p>• Đăng số tài khoản nhận tiền ở phần mô tả sân để khách tự chuyển khi đặt giúp bạn.</p>
- <p>• Ca giờ vàng (chiều/tối) nên để giá cao hơn giờ thường — chỉnh trực tiếp ở tab "Quản Lý Cụm Sân &amp; Doanh Thu".</p>
+ <p>• Đăng số tài khoản nhận tiền ở phần mô tả sân.</p>
+ <p>• Ca giờ vàng nên để giá cao hơn giờ thường.</p>
  </div>
  <p className="text-[13px] text-sky-700 font-bold pt-2 border-t border-slate-100 ">
  Mọi thay đổi giá và cọc được lưu ngay vào CSDL.

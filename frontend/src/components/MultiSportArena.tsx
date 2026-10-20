@@ -292,7 +292,7 @@ export default function MultiSportArena({
  <div>
  <h2 className="text-xl font-bold text-slate-900 flex items-center space-x-2">
  <Activity className="w-5 h-5 text-emerald-500" />
- <span>Trạng Thái Các Sân Bóng Trực Tiếp (Live Football Pitch Matrix)</span>
+ <span>Trạng Thái Các Sân Bóng Trực Tiếp</span>
  </h2>
  <p className="text-xs sm:text-sm text-slate-500 mt-1 hidden sm:block">
  Danh sách cụm sân đọc từ bảng pitches — bấm “Đặt Ca” để tạo đơn giữ chỗ thật trong CSDL
@@ -457,7 +457,7 @@ export default function MultiSportArena({
  <div>
  <h2 className="text-xl font-bold text-slate-900 flex items-center space-x-2">
  <Zap className="w-5 h-5 text-amber-700" />
- <span>Sàn Ghép Kèo Đội Bóng Đá Phủi (Football Matchmaking Queue)</span>
+ <span>Sàn Ghép Kèo Đội Bóng Đá Phủi</span>
  </h2>
  <p className="text-xs sm:text-sm text-slate-500 mt-1 hidden sm:block">
  Gia nhập các kèo bóng đá đang thiếu cầu thủ, tự động chia tiền sân theo đầu người qua VietQR
@@ -622,8 +622,8 @@ export default function MultiSportArena({
 
  <div className="bg-slate-50 p-3 rounded-xl text-xs text-slate-500 space-y-1">
  <div className="font-semibold text-slate-700 ">ℹ️ Quy trình đặt ca:</div>
- <div>• Chọn ngày & khung giờ tại tab Đặt Sân để hệ thống sinh đơn giữ chỗ.</div>
- <div>• Cọc 50% giá ca (hoặc 100%) qua VietQR; chính sách hoàn cọc theo từng sân.</div>
+ <div>• Chọn ngày & khung giờ ở tab Đặt Sân.</div>
+ <div>• Cọc 50% giá ca qua VietQR; hoàn cọc theo từng sân.</div>
  </div>
 
  <div className="flex space-x-3 pt-2">

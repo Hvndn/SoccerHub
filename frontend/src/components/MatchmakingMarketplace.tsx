@@ -595,7 +595,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  : "bg-rose-500/10 text-rose-600 border-rose-500/30 animate-pulse"
  }`}>
  <Flame className="w-4 h-4 text-rose-600" />
- <span>{isMatched ? "ĐÃ CÓ ĐỐI THỦ NHẬN KÈO" : "KÈO ĐANG MỞ CHỜ ĐỐI"}</span>
+ <span>{isMatched ? "Đã có đối thủ" : "Kèo đang mở"}</span>
  </span>
  <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs">
  {post.pitchType === "SAN_7" ? "Sân 7 Cỏ Nhân Tạo" : post.pitchType === "SAN_5" ? "Sân 5 Mini" : "Sân 11 FIFA"}

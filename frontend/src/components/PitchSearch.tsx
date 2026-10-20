@@ -480,7 +480,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  AI Gợi Ý Sân Cho Bạn
  </h2>
  <p className="text-[13px] sm:text-xs text-slate-500 mt-0.5">
- Chấm điểm tương thích theo ngân sách {maxBudget.toLocaleString("vi-VN")}đ, thể thức và đánh giá sân.
+ Chấm điểm theo ngân sách {maxBudget.toLocaleString("vi-VN")}đ và thể thức đang lọc.
  </p>
  </div>
  <button
@@ -808,7 +808,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="flex items-center space-x-2">
  <span className="px-2.5 py-1 bg-[#0369a1] text-white font-black text-[12px] rounded-lg flex items-center tracking-wider shadow-xs">
  <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-300 " />
- AI SMART RECOMMENDATION
+ GỢI Ý SÂN THÔNG MINH
  </span>
  <span className="font-mono text-xs font-extrabold text-sky-700 flex items-center">
  <Zap className="w-3.5 h-3.5 mr-0.5" />

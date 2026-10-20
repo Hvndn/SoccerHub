@@ -1159,7 +1159,7 @@ setIsSavingInfo(false);
  <BarChart2 className="w-5.5 h-5.5 text-[#0b4f6c] " />
  <div>
  <h2 className="text-xl font-black text-slate-900 ">
- Sơ Đồ Ca Sân Thời Gian Thực (Owner Live Grid Matrix)
+ Sơ Đồ Ca Sân Thời Gian Thực
  </h2>
  <span className="hidden sm:block text-xs text-slate-500 mt-0.5">
  Giờ mở cửa: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca thi đấu 2 tiếng (120 phút) • Tự động chống trùng lịch
@@ -1392,7 +1392,7 @@ setIsSavingInfo(false);
  {pitch.slots.length === 0 ? (
  <div className="col-span-full py-6 sm:py-8 text-center text-sm text-slate-500 bg-white/40 rounded-xl border border-dashed border-slate-200 flex items-center justify-center space-x-2">
  <AlertCircle className="w-5 h-5 text-slate-500" />
- <span>Không có ca đá nào phù hợp với bộ lọc khung giờ / hình thức đã chọn.</span>
+ <span>Không có ca đá nào khớp bộ lọc.</span>
  </div>
  ) : (
  pitch.slots.map((slot: any) => (
@@ -1544,11 +1544,11 @@ setIsSavingInfo(false);
 
  <div className="grid grid-cols-2 gap-3 text-sm font-mono p-3.5 rounded-xl bg-white border border-slate-200 ">
  <div>
- <span className="text-slate-500 block text-xs font-semibold">GIÁ GIỜ THƯỜNG</span>
+ <span className="text-slate-500 block text-xs font-semibold">Giá giờ thường</span>
  <strong className="text-slate-900 font-extrabold text-sm sm:text-base">{pitch.basePrice.toLocaleString("vi-VN")} đ/ca</strong>
  </div>
  <div>
- <span className="text-slate-500 block text-xs font-semibold">GIÁ GIỜ VÀNG</span>
+ <span className="text-slate-500 block text-xs font-semibold">Giá giờ vàng</span>
  <strong className="text-amber-700 font-black text-sm sm:text-base">{pitch.peakPrice.toLocaleString("vi-VN")} đ/ca</strong>
  </div>
  </div>
@@ -2331,7 +2331,7 @@ setIsSavingInfo(false);
  <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-200 space-y-1.5">
  <div className="flex items-center space-x-2 text-sky-800 font-extrabold text-xs">
  <Sparkles className="w-4 h-4 text-emerald-500" />
- <span>Cơ Chế Đặt Sân Linh Hoạt (Do Cầu Thủ & Khách Hàng Chọn)</span>
+ <span>Cơ Chế Đặt Sân Linh Hoạt</span>
  </div>
  <p className="text-[13px] text-slate-600 leading-relaxed">
   Mọi ca thi đấu dùng chung thời lượng <strong className="text-slate-900 font-bold">2 tiếng (120 phút)</strong>. Hệ thống tự động tính tiền và phân ca theo thời gian thực tế.

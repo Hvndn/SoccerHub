@@ -1001,7 +1001,7 @@ export default function PitchDetail({
  </button>
  <div className="flex items-center justify-center space-x-1 text-center text-[13px] text-slate-500">
  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
- <span>Mức cọc do từng sân quy định • Hoàn cọc theo chính sách của sân</span>
+ <span>Mức cọc do từng sân quy định</span>
  </div>
  </div>
  </div>

@@ -529,7 +529,7 @@ const [addCount, setAddCount] = useState("4");
  <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className="animate-fade-in-up bg-amber-50 rounded-2xl border border-amber-300 overflow-hidden text-xs">
  <div className="p-3 flex justify-between items-center gap-2">
  <span className="font-bold text-amber-900 truncate">{match.bye.name}</span>
- <span className="px-2 py-0.5 rounded bg-amber-500 text-white text-[12px] font-black shrink-0">MIỄN VÒNG</span>
+ <span className="px-2 py-0.5 rounded bg-amber-500 text-white text-[12px] font-black shrink-0">Miễn vòng</span>
  </div>
  {match.bye.record && (
  <div className="px-3 pb-2 text-[12px] font-mono text-amber-700 ">Thành tích {match.bye.record} • Hạt giống #{match.bye.seed ?? "—"}</div>
@@ -1411,7 +1411,7 @@ const [addCount, setAddCount] = useState("4");
  {row.simulated ? (
  <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-800 text-[12px] font-black">TEST</span>
  ) : (
- <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-900 text-[12px] font-black">CHÍNH THỨC</span>
+ <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-900 text-[12px] font-black">Chính thức</span>
  )}
  </td>
  </tr>

@@ -1364,7 +1364,7 @@ export default function PlayerProfileConsole({
 
  <div className="p-3 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 flex items-start gap-2">
  <CheckCircle2 className="w-4 h-4 shrink-0 text-sky-700 mt-0.5" />
- <span>Cầu thủ đạt tiêu chuẩn thể lực loại 1, đảm bảo thi đấu cường độ cao không hụt hơi.</span>
+ <span>Đạt tiêu chuẩn thể lực loại 1 — thi đấu cường độ cao.</span>
  </div>
  </div>
 

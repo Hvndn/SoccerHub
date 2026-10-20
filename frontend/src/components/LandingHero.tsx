@@ -259,7 +259,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 ">
  <div className="hidden sm:flex items-center space-x-2 text-[13px] sm:text-xs font-semibold text-slate-600 ">
  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
- <span>Đặt ca theo giá niêm yết • Cọc 50% qua VietQR • Chính sách hoàn cọc theo từng sân</span>
+ <span>Đặt theo giá niêm yết • Cọc 50% qua VietQR</span>
  </div>
 
  <button

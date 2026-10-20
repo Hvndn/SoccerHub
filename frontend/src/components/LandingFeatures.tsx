@@ -329,7 +329,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <div className="relative z-10 max-w-3xl mx-auto text-center space-y-4 sm:space-y-6">
  <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/30 text-sky-700 text-xs font-extrabold uppercase">
  <Trophy className="w-3.5 h-3.5 text-amber-400" />
- <span>Đồ Án Tốt Nghiệp Xuất Sắc • Trải Nghiệm Thực Tế Ngay</span>
+ <span>Đồ Án Tốt Nghiệp • Trải Nghiệm Thực Tế</span>
  </div>
 
  <h2 className="text-2xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
