@@ -251,6 +251,7 @@ public class AuthService {
                 .weight(user.getWeight())
                 .preferredTime(user.getPreferredTime())
                 .currentClub(user.getCurrentClub())
+                .isClubRep(user.getIsClubRep() != null && user.getIsClubRep())
                 .build();
     }
 

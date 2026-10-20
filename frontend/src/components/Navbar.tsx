@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import SafeImage from "@/components/SafeImage";
 import NavbarAvatar from "@/components/NavbarAvatar";
 import {
- Trophy,
+  Trophy,
+  Building2,
  Users,
  ShieldCheck,
  LogIn,
@@ -737,6 +738,18 @@ const mobileNav: MobileNavItem[] =
   >
   <Trophy className="w-4 h-4 text-sky-700" />
   <span>Điều Hành Giải Đấu</span>
+  </button>
+
+  <button
+  type="button"
+  onClick={() => {
+  handleSelectSubTab("community");
+  setShowUserDropdown(false);
+  }}
+  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+  >
+  <Building2 className="w-4 h-4 text-sky-700" />
+  <span>CLB của tôi</span>
   </button>
 
   <button

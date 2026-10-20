@@ -27,6 +27,8 @@ public class UserDto {
     private String weight;
     private String preferredTime;
     private String currentClub;
+    /** Cờ "đại diện CLB" — tài khoản này đại diện cho ít nhất 1 CLB. */
+    private Boolean isClubRep;
     /**
      * Chỉ được điền khi người dùng vừa ĐỔI EMAIL.
      * JWT lấy subject = email nên token đang dùng sẽ hết hiệu lực ngay sau khi đổi;

@@ -18,6 +18,8 @@ export interface UserProfile {
   weight?: string;
   preferredTime?: string;
   currentClub?: string;
+  /** Cờ "đại diện CLB" — tài khoản này đại diện cho ít nhất 1 CLB. */
+  isClubRep?: boolean;
   /**
    * Chỉ có khi vừa đổi email: backend cấp token mới vì JWT gắn với email cũ.
    * FE dùng để thay token đang lưu, không hiển thị cho người dùng.

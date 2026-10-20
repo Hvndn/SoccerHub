@@ -39,7 +39,8 @@ import {
  Shirt,
  Scale,
  Ruler,
- AlertCircle
+  AlertCircle,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { UserProfile } from "@/lib/authService";
@@ -544,6 +545,11 @@ export default function PlayerProfileConsole({
  </div>
  <div className="min-w-0">
  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider truncate">Đội Bóng / CLB</p>
+  {activeUser?.isClubRep && (
+  <span className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-800 text-[9px] font-black uppercase">
+  <Crown className="w-2.5 h-2.5" /> Đại diện CLB
+  </span>
+  )}
  <p className="text-xs font-bold text-slate-800 mt-0.5 truncate" title={editForm.currentClub}>{editForm.currentClub || "Chưa khai báo"}</p>
  </div>
  </div>

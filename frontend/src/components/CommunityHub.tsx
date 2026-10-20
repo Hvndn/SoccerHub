@@ -20,6 +20,7 @@ import {
   AlertCircle,
   Scale,
   ShoppingBag,
+  Building2,
 } from "lucide-react";
 import { apiRequest, ensureLoggedIn } from "@/lib/api";
 import CommunityChat from "./CommunityChat";
@@ -27,6 +28,7 @@ import PageSpinner from "./PageSpinner";
 import GroupChatPanel from "./GroupChatPanel";
 
 import TeamClubManagement from "./TeamClubManagement";
+import ClubManagement from "./ClubManagement";
 
 /* =========================================================
  * CommunityHub — Tab "Cộng đồng" chuẩn Mobile-first
@@ -123,7 +125,7 @@ const FILTERS: { key: Filter; label: string }[] = [
 export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialDmPartner, initialChannel }: CommunityHubProps) {
   const myEmail = (user?.email || "").toLowerCase();
 
-  const [mode, setMode] = useState<"chat" | "clan">("chat");
+  const [mode, setMode] = useState<"chat" | "clan" | "club">("chat");
   const [view, setView] = useState<HubView>({ kind: "home" });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -314,7 +316,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
   };
 
   /** Đổi chế độ Trò chuyện / Đội bóng — có hiệu ứng xoay. */
-  const switchMode = (m: "chat" | "clan") => {
+  const switchMode = (m: "chat" | "clan" | "club") => {
     if (m === mode) return;
     runWithLoader();
     setMode(m);
@@ -528,6 +530,18 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
           <Users className="w-4 h-4 shrink-0" />
           <span>Đội bóng (Clan)</span>
         </button>
+        <button
+          type="button"
+          onClick={() => switchMode("club")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all ${
+            mode === "club"
+              ? "bg-[#0369a1] text-white shadow-md"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <Building2 className="w-4 h-4 shrink-0" />
+          <span>CLB của tôi</span>
+        </button>
       </div>
 
       {/* ===== SEARCH + FILTER CHIPS ===== */}
@@ -718,7 +732,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
             </ul>
           )}
         </div>
-      ) : (
+      ) : mode === "clan" ? (
         /* ===== CLAN MODE ===== */
         user ? (
           <div className="rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-xl">
@@ -742,7 +756,33 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
             </button>
           </div>
         )
+      ) : (
+        /* ===== CLUB MODE: CLB của tôi (người đại diện quản lý CLB + thành viên) ===== */
+        user ? (
+          <div className="rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-xl p-4 sm:p-5">
+            <ClubManagement user={user} onBack={() => switchMode("chat")} />
+          </div>
+        ) : (
+          <div className="rounded-3xl bg-white border border-slate-200 shadow-2xl px-5 py-12 text-center space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-[#0369a1]/10 ring-2 ring-[#0369a1]/40 flex items-center justify-center mx-auto">
+              <Building2 className="w-7 h-7 text-[#0369a1]" />
+            </div>
+            <h3 className="text-sm font-black text-slate-900">CLB của tôi</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+              Đăng nhập để tạo CLB, thêm thành viên và quản lý đội bóng của CLB bạn.
+            </p>
+            <button
+              type="button"
+              onClick={() => onOpenAuth?.("login", "PLAYER")}
+              className="mt-1 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-black transition-all active:scale-95"
+            >
+              Đăng nhập ngay
+            </button>
+          </div>
+        )
       )}
+
+      {/* ===== CLUB MODE: CLB của tôi (người đại diện quản lý CLB + thành viên) ===== */}
 
       {/* Ghi chú nhỏ */}
       <p className="text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5">

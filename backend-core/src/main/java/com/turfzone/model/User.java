@@ -52,6 +52,16 @@ public class User {
     @Builder.Default
     private Boolean enabled = true; // false = tài khoản bị admin khóa, không cho đăng nhập
 
+    /**
+     * Cờ "đại diện CLB" — người dùng này đại diện cho ít nhất 1 CLB (được gán quyền
+     * quản lý thành viên, cấu hình quyền tham gia giải đấu cho CLB).
+     *
+     * <p>Giữ nguyên role chính của tài khoản (PLAYER/OWNER/...); cờ này chỉ bổ sung
+     * thêm vai trò, không tạo role mới.</p>
+     */
+    @Builder.Default
+    private Boolean isClubRep = false;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
