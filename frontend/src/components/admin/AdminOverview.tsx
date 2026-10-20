@@ -13,13 +13,6 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  const [data, setData] = useState<AdminOverview | null>(null);
  const [report, setReport] = useState<any>(null);
  const [loading, setLoading] = useState(true);
- const [chartIn, setChartIn] = useState(false);
-
- useEffect(() => {
- const raf = requestAnimationFrame(() => setChartIn(true));
- return () => cancelAnimationFrame(raf);
- }, []);
-
  useEffect(() => {
  let alive = true;
  (async () => {
@@ -115,39 +108,32 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  ))}
  </div>
 
- <SectionCard>
- <div className="flex items-center justify-between mb-4">
- <h3 className="font-black text-slate-900 text-sm">Doanh thu theo tháng</h3> {report && (
- <span className="text-[13px] font-mono text-slate-500">
- Tổng tháng này: {formatMoney(report.totalRevenueThisMonth)} • Lấp đầy TB: {report.avgOccupancyRate}
- </span>
- )}
- </div>
- {loading ? (
- <div className="skeleton-shimmer h-40 w-full rounded-xl" />
- ) : monthly.length === 0 ? (
- <p className="text-xs text-slate-500 text-center py-6 sm:py-8">
+  <SectionCard>
+  <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+  <h3 className="font-black text-slate-900 text-sm">Tổng quan tháng</h3>
+  {report && (
+  <span className="text-[13px] font-mono text-slate-500">
+  Tổng tháng này: {formatMoney(report.totalRevenueThisMonth)} • Lấp đầy TB: {report.avgOccupancyRate}
+  </span>
+  )}
+  </div>
+  {loading ? (
+  <div className="skeleton-shimmer h-16 w-full rounded-xl" />
+  ) : monthly.length === 0 ? (
+  <p className="text-xs text-slate-500 text-center py-4">
   Chưa có dữ liệu doanh thu trong khoảng thời gian này.
- </p>
- ) : (
- <div className="flex items-end gap-2 h-44" role="img" aria-label="Biểu đồ doanh thu theo tháng">
- {monthly.map((m, i) => (
- <div key={i} className="flex-1 flex flex-col items-center gap-1.5 min-w-0 h-full justify-end">
- <span className="text-[12px] font-mono font-bold text-sky-800 whitespace-nowrap">
- {(Number(m.revenue) / 1000000).toFixed(0)}tr
- </span>
- <div
- className="w-full rounded-t-lg bg-gradient-to-t from-[#0369a1] to-[#075985] transition-all duration-700"
- style={{ height: chartIn ? `${Math.max(4, Math.round((Number(m.revenue) / maxRev) * 100))}%` : "4%", transitionDelay: `${i * 60}ms` }}
- />
- <span className="text-[11px] font-bold text-slate-500 truncate w-full text-center">
- {String(m.month).replace(" (Dự kiến)", "*")}
- </span>
- </div>
- ))}
- </div>
- )}
- </SectionCard>
+  </p>
+  ) : (
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+  {monthly.map((m, i) => (
+  <div key={i} className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 min-w-0">
+  <p className="text-[12px] font-bold text-slate-500 truncate">{String(m.month).replace(" (Dự kiến)", "*")}</p>
+  <p className="font-mono font-black text-slate-900 text-[13px] truncate">{formatMoney(Number(m.revenue) || 0)}</p>
+  </div>
+  ))}
+  </div>
+  )}
+  </SectionCard>
  {/* ===== BIỂU ĐỒ THỐNG KÊ (recharts) ===== */}
  <div className="pt-2">
  <div className="flex items-center gap-2 mb-3">

@@ -79,8 +79,8 @@ function AdminConsole() {
  <span className="text-sky-800 ">Turf</span>
  <span className="text-slate-900 ">Zone</span>
  </Link>
- <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[12px] font-black tracking-wider">
- Super Admin
+ <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[12px] font-black">
+ Quản Trị
  </span>
  </div>
  <Link
