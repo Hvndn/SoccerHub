@@ -234,7 +234,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
       {/* Bát đã rút hết bóng */}
       {done && (
        <div className="absolute inset-x-0 bottom-[70px] text-center">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 text-[10px] font-black text-[#075985] shadow">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 text-[12px] font-black text-[#075985] shadow">
          <Trophy className="w-3 h-3" /> Đã rút hết bóng
         </span>
        </div>
@@ -257,7 +257,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
       type="button"
       onClick={() => setSoundOn((s) => !s)}
       aria-label={soundOn ? "Tắt âm thanh" : "Bật âm thanh"}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
      >
       {soundOn ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
       {soundOn ? "Âm thanh: Bật" : "Âm thanh: Tắt"}
@@ -267,7 +267,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
       <button
        type="button"
        onClick={skipDraw}
-       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black text-[#075985] bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors"
+       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-black text-[#075985] bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors"
       >
        <Zap className="w-3.5 h-3.5" />
        Bỏ qua — xem ngay kết quả
@@ -288,11 +288,11 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
           : "border-slate-200 bg-slate-50 "
         }`}
        >
-        <span className="font-mono text-[10px] font-black text-slate-500 w-12 shrink-0">{p.matchId}</span>
+        <span className="font-mono text-[12px] font-black text-slate-500 w-12 shrink-0">{p.matchId}</span>
         <span className={`flex-1 text-center text-sm font-black truncate ${isLocked ? "text-slate-900 " : "text-slate-500"}`}>
          {shown(i * 2, p.teamA)}
         </span>
-        <span className="text-[10px] font-black text-slate-500 shrink-0">VS</span>
+        <span className="text-[12px] font-black text-slate-500 shrink-0">VS</span>
         <span className={`flex-1 text-center text-sm font-black truncate ${isLocked ? "text-slate-900 " : "text-slate-500"}`}>
          {shown(i * 2 + 1, p.teamB)}
         </span>

@@ -42,7 +42,7 @@ function ChartCard({ title, desc, icon, children, loading }: ChartCardProps) {
         </div>
         <div className="min-w-0">
           <h3 className="font-black text-sm text-slate-900">{title}</h3>
-          <p className="text-[11px] text-slate-500 mt-0.5">{desc}</p>
+          <p className="text-[13px] text-slate-500 mt-0.5">{desc}</p>
         </div>
       </div>
       {loading ? (
@@ -290,7 +290,7 @@ export default function AdminCharts() {
       <div className="flex flex-col gap-3 bg-white rounded-2xl border border-slate-200 p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Khoảng thời gian:</span>
+            <span className="text-[13px] font-bold text-slate-600 tracking-wide">Khoảng thời gian:</span>
             {RANGES.map((r) => (
               <button
                 key={r.days}
@@ -320,7 +320,7 @@ export default function AdminCharts() {
                 ))}
               </select>
             )}
-            <span className="text-[11px] font-mono text-slate-500 ml-1">
+            <span className="text-[13px] font-mono text-slate-500 ml-1">
               Tổng trong {rangeDays} ngày:{" "}
               <strong className="text-[#0369a1]">{revenueInRange.sum.toLocaleString("vi-VN")}đ</strong>
               {" · "}

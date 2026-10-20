@@ -81,7 +81,7 @@ export default function MatchmakingCard({
               className={`w-3.5 h-3.5 ${i <= stars ? "text-amber-500 fill-amber-500" : "text-slate-300"}`}
             />
           ))}
-          <span className="text-[10px] font-bold text-slate-500 ml-1">{post.reputationScore ?? 98}</span>
+          <span className="text-[12px] font-bold text-slate-500 ml-1">{post.reputationScore ?? 98}</span>
         </div>
       </div>
 
@@ -113,7 +113,7 @@ export default function MatchmakingCard({
             {(post.estimatedFee || 50000).toLocaleString("vi-VN")}đ{" "}
             <span className="text-xs font-normal text-slate-500">/người</span>
           </div>
-          <span className="text-[11px] font-bold text-[#0b4f6c]">
+          <span className="text-[13px] font-bold text-[#0b4f6c]">
             {PAYMENT_LABEL[post.paymentModel] || post.paymentModel}
           </span>
         </div>
@@ -134,7 +134,7 @@ export default function MatchmakingCard({
             <span className="font-bold text-sky-900">Đối thủ đã nhận: </span>
             <strong className="text-slate-900">{post.opponentTeamName}</strong> (Cap: {post.opponentCaptainName})
           </div>
-          <span className="text-sky-700 font-mono font-bold text-[11px]">Đã chốt kèo</span>
+          <span className="text-sky-700 font-mono font-bold text-[13px]">Đã chốt kèo</span>
         </div>
       )}
 

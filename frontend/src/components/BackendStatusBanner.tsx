@@ -105,7 +105,7 @@ export default function BackendStatusBanner() {
           </div>
         </div>
 
-        <p className="mt-2.5 flex items-center gap-1.5 border-t border-amber-200 pt-2.5 text-[11px] text-amber-700">
+        <p className="mt-2.5 flex items-center gap-1.5 border-t border-amber-200 pt-2.5 text-[13px] text-amber-700">
           <WifiOff className="h-3.5 w-3.5 shrink-0" />
           Mọi thao tác cần máy chủ (đặt sân, đăng ký giải, nhắn tin) sẽ tạm hoãn cho tới khi kết nối lại.
         </p>
@@ -124,7 +124,7 @@ export function BackendOfflineDot() {
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-black text-amber-800"
+      className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[12px] font-black text-amber-800"
       title={status.message ?? "Mất kết nối máy chủ"}
     >
       <WifiOff className="h-3 w-3" />

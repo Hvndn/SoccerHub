@@ -450,7 +450,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-sm sm:text-base font-black text-slate-900 truncate leading-tight">{title}</h2>
-              <p className="text-[11px] text-slate-500 truncate flex items-center gap-1.5">
+              <p className="text-[13px] text-slate-500 truncate flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 {subtitle}
               </p>
@@ -588,11 +588,11 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Flame className="w-5 h-5 text-white" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-white/90">Matchmaking</span>
+                <span className="text-[12px] font-black tracking-wider text-white/90">Matchmaking</span>
               </div>
               <h3 className="text-base sm:text-lg font-black text-white leading-tight">Bắt Đối Giao Hữu</h3>
-              <p className="text-[11px] sm:text-xs text-white/95 mt-1 leading-relaxed">
-                Tìm đối thủ tương đương phong độ, ghép kèo nhanh chóng.
+              <p className="text-[13px] sm:text-xs text-white/95 mt-1 leading-relaxed">
+                Ghép kèo nhanh theo phong độ.
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
@@ -611,13 +611,13 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Radio className="w-5 h-5 text-white" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-white/90">
+                <span className="text-[12px] font-black tracking-wider text-white/90">
                   Trực tuyến · {onlineCount} thành viên
                 </span>
               </div>
               <h3 className="text-base sm:text-lg font-black text-white leading-tight">Chat Giải Đấu</h3>
-              <p className="text-[11px] sm:text-xs text-white/95 mt-1 leading-relaxed">
-                Thảo luận trực tiếp với BTC, đội bóng và cầu thủ trong giải đấu.
+              <p className="text-[13px] sm:text-xs text-white/95 mt-1 leading-relaxed">
+                Trao đổi với BTC và các đội bóng.
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform shrink-0 mt-1" />
@@ -637,7 +637,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
               <button
                 type="button"
                 onClick={() => { runWithLoader(); setView({ kind: "groups" }); }}
-                className="flex items-center gap-1.5 text-[11px] font-bold text-[#0369a1] hover:text-[#075985] transition-colors"
+                className="flex items-center gap-1.5 text-[13px] font-bold text-[#0369a1] hover:text-[#075985] transition-colors"
               >
                 <Users className="w-3.5 h-3.5" />
                 Nhóm chat
@@ -645,7 +645,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
               <button
                 type="button"
                 onClick={() => openDm()}
-                className="flex items-center gap-1.5 text-[11px] font-bold text-[#0369a1] hover:text-[#075985] transition-colors"
+                className="flex items-center gap-1.5 text-[13px] font-bold text-[#0369a1] hover:text-[#075985] transition-colors"
               >
                 <UserPlus className="w-3.5 h-3.5" />
                 Tin nhắn mới
@@ -711,14 +711,14 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
                             {ch.name}
                           </p>
                         </div>
-                        <p className="text-[11px] text-slate-500 truncate mt-0.5">{ch.preview}</p>
+                        <p className="text-[13px] text-slate-500 truncate mt-0.5">{ch.preview}</p>
                       </div>
 
                       {/* Thời gian + badge chưa đọc */}
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        {ch.time && <span className="text-[10px] text-slate-500 font-semibold">{formatTime(ch.time)}</span>}
+                        {ch.time && <span className="text-[12px] text-slate-500 font-semibold">{formatTime(ch.time)}</span>}
                         {ch.unread > 0 ? (
-                          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#0369a1] text-white text-[10px] font-black flex items-center justify-center">
+                          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#0369a1] text-white text-[12px] font-black flex items-center justify-center">
                             {ch.unread > 9 ? "9+" : ch.unread}
                           </span>
                         ) : (
@@ -785,7 +785,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
       {/* ===== CLUB MODE: CLB của tôi (người đại diện quản lý CLB + thành viên) ===== */}
 
       {/* Ghi chú nhỏ */}
-      <p className="text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5">
+      <p className="text-[13px] text-slate-500 text-center flex items-center justify-center gap-1.5">
         <ShieldCheck className="w-3.5 h-3.5 text-[#0369a1]" />
         Cộng đồng Turfzone — kết nối cầu thủ, chủ sân &amp; ban tổ chức giải đấu
       </p>

@@ -754,7 +754,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  >
  <Users className="w-4 h-4 text-amber-600" />
  <span>Giải đang quản lý</span>
- <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-black flex items-center justify-center">
+ <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[12px] font-black flex items-center justify-center">
  {dbTournaments.length}
  </span>
  </button>
@@ -840,7 +840,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  >
  {String(t.id) === String(activeTournamentId) && (
  <div className="absolute -top-px -right-px z-20">
- <span className="inline-flex items-center gap-1 rounded-bl-xl rounded-tr-2xl bg-[#0369a1] px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-white shadow-sm">
+ <span className="inline-flex items-center gap-1 rounded-bl-xl rounded-tr-2xl bg-[#0369a1] px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-white shadow-sm">
  <CheckCircle2 className="w-3 h-3" />
  Đang thao tác
  </span>
@@ -852,7 +852,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  <div className="space-y-3 sm:space-y-4 relative z-10">
  <div className="flex items-center justify-between gap-2">
- <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase flex items-center gap-1.5 ${
+ <span className={`px-3 py-1 rounded-full text-[12px] font-black tracking-wider flex items-center gap-1.5 ${
  t.status === "live"
  ? "bg-rose-500 text-white animate-pulse"
  : t.status === "active"
@@ -863,7 +863,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {t.sportBadge}
  </span>
 
- <span className="text-[11px] font-mono text-slate-500 font-bold">
+ <span className="text-[13px] font-mono text-slate-500 font-bold">
  {t.courts}
  </span>
  </div>
@@ -879,7 +879,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  {/* Progress Bar */}
  <div className="space-y-1.5">
- <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+ <div className="flex items-center justify-between text-[13px] font-bold text-slate-500">
  <span>Tiến Độ Giải Đấu</span>
  <span>{t.progress}%</span>
  </div>
@@ -913,12 +913,12 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
         <button
           type="button"
           onClick={() => togglePending(Number(t.id))}
-          className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 text-[11px] font-black uppercase transition-all active:scale-95 flex items-center gap-1"
+          className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 text-[13px] font-black transition-all active:scale-95 flex items-center gap-1"
         >
           <Users className="w-3.5 h-3.5" />
           Duyệt đội
           {pendingTeams.length > 0 && pendingFor === Number(t.id) && (
-            <span className="min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-white text-[9px] font-black flex items-center justify-center">
+            <span className="min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-white text-[11px] font-black flex items-center justify-center">
               {pendingTeams.length}
             </span>
           )}
@@ -926,12 +926,12 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
         <button
           type="button"
           onClick={() => toggleReferees(Number(t.id))}
-          className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 text-[11px] font-black uppercase transition-all active:scale-95 flex items-center gap-1"
+          className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 text-[13px] font-black transition-all active:scale-95 flex items-center gap-1"
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           Trọng tài
           {referees.length > 0 && refFor === Number(t.id) && (
-            <span className="min-w-[16px] h-4 px-1 rounded-full bg-sky-500 text-white text-[9px] font-black flex items-center justify-center">
+            <span className="min-w-[16px] h-4 px-1 rounded-full bg-sky-500 text-white text-[11px] font-black flex items-center justify-center">
               {referees.length}
             </span>
           )}
@@ -941,7 +941,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       {/* Panel duyệt đội */}
       {pendingOpenFor === Number(t.id) && (
         <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
-          <p className="text-[11px] font-black uppercase tracking-wider text-amber-700">Đội chờ duyệt</p>
+          <p className="text-[13px] font-black tracking-wider text-amber-700">Đội chờ duyệt</p>
           {pendingLoading ? (
             <p className="text-xs text-slate-500">Đang tải…</p>
           ) : pendingTeams.length === 0 ? (
@@ -952,13 +952,13 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                 <li key={pt.teamName} className="flex items-center gap-2 bg-white rounded-lg border border-amber-100 px-3 py-2">
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-slate-800 truncate">{pt.teamName}</p>
-                    <p className="text-[10px] text-slate-500 truncate">{pt.captainName} · {pt.captainPhone}</p>
+                    <p className="text-[12px] text-slate-500 truncate">{pt.captainName} · {pt.captainPhone}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleApprove(Number(t.id), pt.teamName)}
                     disabled={pendingBusy}
-                    className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-40"
+                    className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-black transition-all active:scale-95 disabled:opacity-40"
                   >
                     Duyệt
                   </button>
@@ -966,7 +966,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                     type="button"
                     onClick={() => handleReject(Number(t.id), pt.teamName)}
                     disabled={pendingBusy}
-                    className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-40"
+                    className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[12px] font-black transition-all active:scale-95 disabled:opacity-40"
                   >
                     Từ chối
                   </button>
@@ -980,7 +980,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       {/* Panel trọng tài */}
       {refOpen === Number(t.id) && (
         <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-2">
-          <p className="text-[11px] font-black uppercase tracking-wider text-sky-700">Trọng tài</p>
+          <p className="text-[13px] font-black tracking-wider text-sky-700">Trọng tài</p>
           {refLoading ? (
             <p className="text-xs text-slate-500">Đang tải…</p>
           ) : referees.length === 0 ? (
@@ -991,13 +991,13 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                 <li key={r.id} className="flex items-center gap-2 bg-white rounded-lg border border-sky-100 px-3 py-2">
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-slate-800 truncate">{r.name}</p>
-                    <p className="text-[10px] text-slate-500 truncate">{r.phone || r.email}</p>
+                    <p className="text-[12px] text-slate-500 truncate">{r.phone || r.email}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveReferee(Number(t.id), r.id)}
                     disabled={refBusy}
-                    className="px-2 py-1 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-40"
+                    className="px-2 py-1 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-[12px] font-black transition-all active:scale-95 disabled:opacity-40"
                   >
                     Xoá
                   </button>
@@ -1022,7 +1022,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
               type="button"
               onClick={() => handleAddReferee(Number(t.id))}
               disabled={refBusy || refName.trim().length < 2}
-              className="px-3 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[10px] font-black uppercase transition-all active:scale-95 disabled:opacity-40"
+              className="px-3 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[12px] font-black transition-all active:scale-95 disabled:opacity-40"
             >
               Thêm
             </button>
@@ -1054,7 +1054,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <span className="text-xs font-black uppercase text-rose-600 tracking-wider">
  Bảng Điều Khiển Trọng Tài
  </span>
- <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[9px] font-black uppercase">
+ <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[11px] font-black uppercase">
  Nguồn: CSDL
  </span>
  </div>
@@ -1105,7 +1105,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <span className="text-sm font-bold text-slate-900 truncate">{umpireMatch?.teamA?.name}</span>
  <span className="text-5xl font-black font-mono text-sky-700 tracking-tighter">{umpireScoreA}</span>
  </div>
- <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between">
+ <div className="mt-3 pt-3 border-t border-slate-100 text-[13px] font-mono text-slate-500 flex items-center justify-between">
  <span>{umpireMatch?.matchDate ?? "Chưa xếp lịch"}</span>
  <span className="text-sky-800 font-bold">Phong độ: {umpireMatch?.teamA?.record ?? umpireMatch?.teamA?.form ?? "—"}</span>
  </div>
@@ -1122,7 +1122,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <span className="text-sm font-bold text-slate-900 truncate">{umpireMatch?.teamB?.name}</span>
  <span className="text-5xl font-black font-mono text-[#0369a1] tracking-tighter">{umpireScoreB}</span>
  </div>
- <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between">
+ <div className="mt-3 pt-3 border-t border-slate-100 text-[13px] font-mono text-slate-500 flex items-center justify-between">
  <span>{umpireMatch?.timeSlot ?? "Chưa xếp giờ"}</span>
  <span className="text-sky-700 font-bold">Phong độ: {umpireMatch?.teamB?.record ?? umpireMatch?.teamB?.form ?? "—"}</span>
  </div>
@@ -1183,7 +1183,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <Video className="w-4 h-4 text-red-500" />
  <span>Mở Tòa VAR &amp; Biên Bản Đầy Đủ</span>
  </button>
- <span className="px-3 py-2 rounded-xl bg-slate-50 text-[11px] text-slate-500 flex items-center">
+ <span className="px-3 py-2 rounded-xl bg-slate-50 text-[13px] text-slate-500 flex items-center">
  Sân: {umpireMatch?.pitchName ?? activeTournament?.pitchName ?? activeTournament?.location ?? "Chưa xếp sân"}
  </span>
  </div>
@@ -1240,7 +1240,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  className="bg-amber-50 p-3 rounded-xl border border-amber-300 text-xs flex items-center justify-between"
  >
  <span className="font-bold text-amber-900 truncate">{m.bye.name}</span>
- <span className="text-[9px] font-black text-amber-600 shrink-0">MIỄN VÒNG</span>
+ <span className="text-[11px] font-black text-amber-600 shrink-0">MIỄN VÒNG</span>
  </div>
  );
  }
@@ -1255,9 +1255,9 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  }`}
  >
  <div className="flex items-center justify-between gap-2">
- <span className="font-mono text-[10px] text-slate-500">{m.matchId}</span>
+ <span className="font-mono text-[12px] text-slate-500">{m.matchId}</span>
  {m.matchDate && (
- <span className="font-mono text-[9px] text-[#0369a1] ">
+ <span className="font-mono text-[11px] text-[#0369a1] ">
  {m.matchDate.split("-").reverse().join("/")} {m.timeSlot ?? ""}
  </span>
  )}
@@ -1280,7 +1280,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  ))}
  {m.status !== "DONE" && m.pitchName && (
- <div className="text-[9px] text-slate-500 truncate">{m.pitchName}</div>
+ <div className="text-[11px] text-slate-500 truncate">{m.pitchName}</div>
  )}
  </div>
  );
@@ -1328,7 +1328,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
-  <p className="text-[11px] text-slate-500">
+  <p className="text-[13px] text-slate-500">
   {activeTournament
   ? `Đang thao tác trên giải: ${activeTournament.title}`
   : "Chưa chọn giải — hãy mở tab “Giải Đấu & BXH” và chọn một giải."}
@@ -1363,7 +1363,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="overflow-x-auto">
  <table className="w-full text-left border-collapse min-w-[620px]">
  <thead>
- <tr className="border-b border-slate-200 text-[11px] font-black uppercase text-slate-500 tracking-wider">
+ <tr className="border-b border-slate-200 text-[13px] font-black text-slate-500 tracking-wider">
  <th className="py-3 px-3">Hạng</th>
  <th className="py-3 px-3">Đội Bóng (FC)</th>
  <th className="py-3 px-3 text-center">Trận</th>
@@ -1455,12 +1455,12 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs"
  >
  <div className="flex items-center gap-2.5 min-w-0">
- <span className="w-6 h-6 rounded-full bg-[#0369a1] text-white font-black text-[10px] flex items-center justify-center shrink-0">
+ <span className="w-6 h-6 rounded-full bg-[#0369a1] text-white font-black text-[12px] flex items-center justify-center shrink-0">
  {idx + 1}
  </span>
  <div className="min-w-0">
  <p className="font-bold text-slate-900 truncate">{s.playerName}</p>
- <p className="text-[10px] text-slate-500 truncate">{s.teamName}</p>
+ <p className="text-[12px] text-slate-500 truncate">{s.teamName}</p>
  </div>
  </div>
  <div className="flex items-center gap-2 font-mono shrink-0">
@@ -1508,12 +1508,12 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div key={card.label} className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
  <div className="flex items-center gap-1.5 text-slate-500">
  <Icon className="w-3.5 h-3.5 shrink-0" />
- <span className="text-[10px] font-black uppercase tracking-wide">{card.label}</span>
+ <span className="text-[12px] font-black tracking-wide">{card.label}</span>
  </div>
  <p className={`text-base sm:text-lg font-black ${card.tone}`}>
  {formatMoney(card.value)}
  </p>
- <p className="text-[10px] text-slate-500">{card.hint}</p>
+ <p className="text-[12px] text-slate-500">{card.hint}</p>
  </div>
  );
  })}
@@ -1537,23 +1537,23 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
  <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
- <span className="block text-slate-500 text-[10px] font-bold">Đã xác nhận</span>
+ <span className="block text-slate-500 text-[12px] font-bold">Đã xác nhận</span>
  <strong className="text-emerald-700 font-black">{finance.confirmedTeams}</strong>
  </div>
  <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200">
- <span className="block text-slate-500 text-[10px] font-bold">Chờ duyệt</span>
+ <span className="block text-slate-500 text-[12px] font-bold">Chờ duyệt</span>
  <strong className="text-amber-700 font-black">{finance.pendingTeams}</strong>
  </div>
  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
- <span className="block text-slate-500 text-[10px] font-bold">Đội giả lập</span>
+ <span className="block text-slate-500 text-[12px] font-bold">Đội giả lập</span>
  <strong className="text-slate-700 font-black">{finance.simulatedTeams}</strong>
  </div>
  <div className="p-2.5 rounded-xl bg-sky-50 border border-sky-200">
- <span className="block text-slate-500 text-[10px] font-bold">Lệ phí/đội</span>
+ <span className="block text-slate-500 text-[12px] font-bold">Lệ phí/đội</span>
  <strong className="text-sky-700 font-black">{formatMoney(finance.entryFee)}</strong>
  </div>
  </div>
- <p className="text-[10px] text-slate-500 leading-relaxed">
+ <p className="text-[12px] text-slate-500 leading-relaxed">
  Đội do nút “Giả lập đội” sinh ra là dữ liệu thử nghiệm nên không tính vào doanh thu thực tế.
  </p>
  </div>
@@ -1610,7 +1610,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <Cpu className="w-5 h-5" />
  </div>
  <div>
- <span className="text-[10px] font-black uppercase text-sky-700 tracking-wider">
+ <span className="text-[12px] font-black text-sky-700 tracking-wider">
  THỐNG KÊ GIẢI ĐẤU
  </span>
  <h4 className="text-base font-black text-slate-900 ">Đăng Ký &amp; Nhánh Đấu</h4>
@@ -1682,7 +1682,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   {showAddTeamForm && (
   <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 p-3.5 space-y-3">
    <div className="flex items-center justify-between gap-2">
-    <span className="text-[11px] font-black uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+    <span className="text-[13px] font-black tracking-wider text-emerald-800 flex items-center gap-1.5">
      <UserPlus className="w-3.5 h-3.5" /> Thêm đội thủ công vào giải
     </span>
     <button
@@ -1728,7 +1728,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
      className="px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
     />
    </div>
-   <p className="text-[10px] text-emerald-800/80 leading-relaxed">
+   <p className="text-[12px] text-emerald-800/80 leading-relaxed">
     Đội thêm tay được đánh dấu <strong>đã đóng lệ phí</strong> nên sẵn sàng bốc thăm. Danh sách đội sẽ đổi — cần bốc thăm lại.
    </p>
    <div className="flex items-center gap-2">
@@ -1769,7 +1769,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       <ShieldCheck className="w-5 h-5" />
      </div>
      <div>
-      <span className="text-[10px] font-black uppercase text-sky-700 tracking-wider">
+      <span className="text-[12px] font-black text-sky-700 tracking-wider">
        QUYỀN THAM GIA
       </span>
       <h4 className="text-sm font-black text-slate-900 ">
@@ -1778,7 +1778,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
      </div>
     </div>
     {activeTournament && (
-     <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border ${
+     <span className={`px-2.5 py-1 rounded-full text-[12px] font-black border ${
       joinMode === "INVITE_ONLY"
        ? "bg-amber-100 text-amber-800 border-amber-300"
        : "bg-emerald-100 text-emerald-800 border-emerald-300"
@@ -1858,13 +1858,13 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
        </div>
 
        {inviteEmails.length === 0 ? (
-        <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+        <p className="text-[13px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
          Chưa có email nào được mời. Cho tới khi có email trong danh sách, không ai đăng ký được vào giải này.
         </p>
        ) : (
         <div className="flex flex-wrap gap-1.5">
          {inviteEmails.map((em) => (
-          <span key={em} className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-[11px] font-mono font-bold">
+          <span key={em} className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-[13px] font-mono font-bold">
            {em}
            <button
             type="button"
@@ -1879,7 +1879,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
          ))}
         </div>
        )}
-       <p className="text-[10px] text-slate-500">
+       <p className="text-[12px] text-slate-500">
         Đã mời {inviteEmails.length} email. Cầu thủ chỉ đăng ký được khi đăng nhập đúng một email trong danh sách này.
        </p>
       </div>
@@ -1895,7 +1895,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <Lock className="w-5 h-5" />
  </div>
  <div>
- <span className="text-[10px] font-black uppercase text-sky-700 tracking-wider">
+ <span className="text-[12px] font-black text-sky-700 tracking-wider">
  QUỸ GIẢI THƯỞNG
  </span>
  <h4 className="text-sm font-black text-slate-900 ">
@@ -1918,12 +1918,12 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <span className="text-xl sm:text-3xl font-black font-mono text-sky-700 tracking-tight">
  {formatMoney(activeTournament.prizePool)}
  </span>
- <span className="text-[10px] text-slate-500 font-bold block pt-1">
+ <span className="text-[12px] text-slate-500 font-bold block pt-1">
  Số tiền do ban tổ chức khai trong hồ sơ giải
  </span>
  </div>
 
- <p className="text-[10px] text-slate-500 leading-relaxed">
+ <p className="text-[12px] text-slate-500 leading-relaxed">
  Hệ thống chưa có bảng phân bổ giải thưởng theo hạng trong CSDL — việc chia tiền do ban tổ chức thực hiện bên ngoài.
  </p>
  </>
@@ -2152,7 +2152,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
- <p className="text-[11px] font-extrabold text-slate-600">
+ <p className="text-[13px] font-extrabold text-slate-600">
  Tài khoản nhận lệ phí (hiển thị cho đội khi đăng ký)
  </p>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

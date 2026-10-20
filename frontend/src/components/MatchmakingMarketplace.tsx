@@ -358,7 +358,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  }`}
  >
  <span>⚽ Bóng Đá Sân 7</span>
- <span className="px-2 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[10px] font-black">
+ <span className="px-2 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[12px] font-black">
  {openKèoBySport.get("SAN_7") ?? 0} kèo mở
  </span>
  </button>
@@ -372,7 +372,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  }`}
  >
  <span>👟 Sân 5 Cỏ Nhân Tạo</span>
- <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[10px]">
+ <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[12px]">
  {openKèoBySport.get("SAN_5") ?? 0} kèo
  </span>
  </button>
@@ -386,7 +386,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  }`}
  >
  <span>🏟️ Bóng Đá Sân 11 FIFA</span>
- <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[10px]">
+ <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[12px]">
  {openKèoBySport.get("SAN_11") ?? 0} kèo
  </span>
  </button>
@@ -400,7 +400,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  }`}
  >
  <span>🥅 Futsal Trong Nhà</span>
- <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[10px]">
+ <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[12px]">
  {openKèoBySport.get("FUTSAL") ?? 0} kèo
  </span>
  </button>
@@ -428,8 +428,8 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  {/* Level / Phong độ */}
  <div className="space-y-1">
  <div className="flex justify-between items-center text-xs">
- <span className="text-slate-500 uppercase font-extrabold text-[10px]">Lọc theo phong độ</span>
- <span className="text-[#0b4f6c] font-bold text-[11px]">
+ <span className="text-slate-500 font-extrabold text-[12px]">Lọc theo phong độ</span>
+ <span className="text-[#0b4f6c] font-bold text-[13px]">
  {selectedLevel === "Tất cả" ? "Mọi trình độ" : selectedLevel}
  </span>
  </div>
@@ -452,7 +452,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* Time Slot */}
  <div className="space-y-1">
- <span className="text-slate-500 uppercase font-extrabold text-[10px] block">Khung giờ</span>
+ <span className="text-slate-500 font-extrabold text-[12px] block">Khung giờ</span>
  <div className="flex items-center space-x-1 pt-0.5">
  <button
  onClick={() => setSelectedTimeSlot("TONIGHT")}
@@ -480,8 +480,8 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  {/* Radius Filter */}
  <div className="space-y-1">
  <div className="flex justify-between items-center text-xs">
- <span className="text-slate-500 uppercase font-extrabold text-[10px]">Bán kính</span>
- <span className="text-slate-600 font-bold text-[11px]">&lt; {radiusKm}km (Q.7, Hải Châu)</span>
+ <span className="text-slate-500 font-extrabold text-[12px]">Bán kính</span>
+ <span className="text-slate-600 font-bold text-[13px]">&lt; {radiusKm}km (Q.7, Hải Châu)</span>
  </div>
  <input
  type="range"
@@ -495,7 +495,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* Format Filter */}
  <div className="space-y-1">
- <span className="text-slate-500 uppercase font-extrabold text-[10px] block">Thể thức thi đấu</span>
+ <span className="text-slate-500 font-extrabold text-[12px] block">Thể thức thi đấu</span>
  <select
  aria-label="Thể thức thi đấu"
  value={matchFormat}
@@ -511,7 +511,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  {/* Payment Model */}
  <div className="space-y-1">
- <span className="text-slate-500 uppercase font-extrabold text-[10px] block">Hình thức tiền sân</span>
+ <span className="text-slate-500 font-extrabold text-[12px] block">Hình thức tiền sân</span>
  <select
  aria-label="Hình thức tiền sân"
  value={paymentModel}
@@ -554,7 +554,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </div>
  </div>
  {aiOffline && aiOrder && (
- <p className="text-[11px] text-amber-600 font-semibold">
+ <p className="text-[13px] text-amber-600 font-semibold">
  AI service chưa phản hồi — đang xếp tạm theo độ tương đồng phong độ với đội của bạn.
  </p>
  )}
@@ -642,7 +642,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="text-xl font-black text-slate-900 font-mono">
  {(post.estimatedFee || 50000).toLocaleString('vi-VN')}đ <span className="text-xs font-normal text-slate-500">/người</span>
  </div>
- <span className="text-[11px] font-bold text-[#0b4f6c] ">
+ <span className="text-[13px] font-bold text-[#0b4f6c] ">
  {post.paymentModel === "SPLIT_EQUAL" ? "Chia đôi tiền sân (50/50)" : post.paymentModel === "LOSER_PAYS" ? "Đội thua trả tiền sân" : "Chủ kèo bao trọn"}
  </span>
  </div>
@@ -663,7 +663,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <span className="font-bold text-sky-900 ">Đối thủ đã nhận: </span>
  <strong className="text-slate-900 ">{post.opponentTeamName}</strong> (Cap: {post.opponentCaptainName})
  </div>
- <span className="text-sky-700 font-mono font-bold text-[11px]">Đã chốt kèo</span>
+ <span className="text-sky-700 font-mono font-bold text-[13px]">Đã chốt kèo</span>
  </div>
  )}
 
@@ -735,19 +735,19 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  <div className="bg-slate-50 rounded-2xl p-3.5 flex items-center justify-between border border-slate-200 ">
  <div className="flex flex-col">
- <span className="text-[10px] text-slate-500 uppercase font-extrabold">Hồ sơ của bạn</span>
+ <span className="text-[12px] text-slate-500 font-extrabold">Hồ sơ của bạn</span>
  <span className="font-bold text-sm text-slate-900 ">{userName}</span>
  </div>
  <div className="text-right font-mono text-xs">
  <div className="font-extrabold text-[#0b4f6c] ">{userTier}</div>
- <div className="text-slate-500 text-[10px]">
+ <div className="text-slate-500 text-[12px]">
  {myTeamPost ? `Phong độ: ${myTeamPost.record ?? myTeamPost.form ?? "—"}` : "Chưa đăng kèo"}
  </div>
  </div>
  </div>
 
  <div className="space-y-2 text-xs">
- <span className="text-[10px] uppercase font-extrabold text-slate-500 block">
+ <span className="text-[12px] font-extrabold text-slate-500 block">
  Kèo đang mở trong CSDL:
  </span>
  {loadingPosts ? (
@@ -764,7 +764,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <span className="truncate pr-2">{recommendedPost.pitchName ?? "Chưa chọn sân"}</span>
  <span className="font-mono shrink-0">{recommendedPost.matchTime ?? "—"}</span>
  </div>
- <p className="text-slate-600 text-[11px] leading-relaxed">
+ <p className="text-slate-600 text-[13px] leading-relaxed">
  {recommendedPost.teamName} mở kèo
  {recommendedPost.record && recommendedPost.record !== "0-0-0"
  ? ` • Thành tích ${recommendedPost.record}`
@@ -801,7 +801,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </div>
 
  <div className="bg-slate-900 text-white rounded-2xl p-4 space-y-1 shadow-md">
- <span className="text-[10px] text-slate-500 uppercase font-extrabold block">Phong độ đội của bạn</span>
+ <span className="text-[12px] text-slate-500 font-extrabold block">Phong độ đội của bạn</span>
  <div className="flex items-baseline justify-between font-mono">
  <FormDots form={myForm} />
  <span className="text-xs text-slate-300 font-bold">
@@ -810,7 +810,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  : user?.level ?? "Chưa xếp bậc"}
  </span>
  </div>
- <p className="text-[11px] text-slate-300 pt-1">
+ <p className="text-[13px] text-slate-300 pt-1">
  {userName ? `${userName} • ${user?.position ?? "Cầu thủ"} • ${user?.area ?? "Chưa cập nhật khu vực"}` : "Đăng nhập để BTC và đội khác thấy hồ sơ của bạn."}
  </p>
  </div>
@@ -830,7 +830,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  {matchableCount}/{openKèoCount}
  </span>
  </div>
- <div className="p-3 rounded-xl bg-slate-50 text-slate-500 text-[11px] flex items-start space-x-2">
+ <div className="p-3 rounded-xl bg-slate-50 text-slate-500 text-[13px] flex items-start space-x-2">
  <Info className="w-4 h-4 text-[#0b4f6c] shrink-0 mt-0.5" />
  <span>
  Tên đội, trình độ và số liệu trên đều đọc trực tiếp từ CSDL — có kèo mới là danh sách tự cập nhật.
@@ -876,7 +876,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </span>
  <div className="min-w-0">
  <p className="font-bold text-slate-900 truncate">{t.teamName}</p>
- <span className="text-[10px] text-slate-500">
+ <span className="text-[12px] text-slate-500">
  {t.count} kèo đang mở • {t.pitchType ?? "Sân 7"}
  </span>
  </div>
@@ -1070,7 +1070,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  />
  </div>
 
- <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1">
+ <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[13px] text-slate-600 space-y-1">
  <div className="flex justify-between">
  <span>Phong độ đội bạn:</span>
  <strong className="text-[#0b4f6c] font-mono font-bold">

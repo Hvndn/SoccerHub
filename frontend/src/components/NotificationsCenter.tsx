@@ -110,7 +110,7 @@ export default function NotificationsCenter({
             >
               {f.label}
               {f.id === "unread" && unread > 0 && (
-                <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-white/25 text-[10px] font-black">
+                <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-white/25 text-[12px] font-black">
                   {unread}
                 </span>
               )}
@@ -174,7 +174,7 @@ export default function NotificationsCenter({
                     </div>
                   )}
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-                    <p className="text-[11px] text-slate-500 font-mono">
+                    <p className="text-[13px] text-slate-500 font-mono">
                       {formatNotifTime(n.time)}
                     </p>
                     <div className="flex items-center gap-1.5">
@@ -182,7 +182,7 @@ export default function NotificationsCenter({
                         <button
                           type="button"
                           onClick={() => openLink(n)}
-                          className="text-[11px] font-bold text-[#0b4f6c] hover:underline flex items-center gap-1"
+                          className="text-[13px] font-bold text-[#0b4f6c] hover:underline flex items-center gap-1"
                         >
                           <span>Xem chi tiết →</span>
                         </button>

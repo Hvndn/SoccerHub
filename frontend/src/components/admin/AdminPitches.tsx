@@ -40,7 +40,7 @@ export default function AdminPitches({ notify }: { notify: (type: "ok" | "err", 
  render: (r) => (
  <div className="max-w-[240px]">
  <p className="font-bold text-slate-900 truncate">{r.name}</p>
- <p className="text-[11px] text-slate-500 truncate">{r.address}</p>
+ <p className="text-[13px] text-slate-500 truncate">{r.address}</p>
  </div>
  ),
  },
@@ -55,7 +55,7 @@ export default function AdminPitches({ notify }: { notify: (type: "ok" | "err", 
  key: "types",
  header: "Loại sân",
  render: (r) => (
- <span className="text-[11px] text-slate-600 ">
+ <span className="text-[13px] text-slate-600 ">
  {(r.pitchTypes ?? []).join(", ") || "—"}
  </span>
  ),
@@ -84,7 +84,7 @@ export default function AdminPitches({ notify }: { notify: (type: "ok" | "err", 
  <SectionCard>
  <div className="flex items-center justify-between mb-4">
  <div>
- <h2 className="font-black text-slate-900 text-sm">Quản lý sân bóng</h2> <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
+ <h2 className="font-black text-slate-900 text-sm">Quản lý sân bóng</h2> <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
  Danh sách cụm sân trong CSDL. Thêm/sửa sân thực hiện ở Bảng điều hành Chủ sân.
  </p>
  </div>

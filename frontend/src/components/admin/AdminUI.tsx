@@ -123,7 +123,7 @@ export function StatusBadge({ tone, children }: { tone: "green" | "amber" | "ros
  slate: "bg-slate-100 text-slate-600 ",
  };
  return (
- <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap ${map[tone]}`}>
+ <span className={`inline-flex px-2 py-0.5 rounded-full text-[13px] font-bold whitespace-nowrap ${map[tone]}`}>
  {children}
  </span>
  );

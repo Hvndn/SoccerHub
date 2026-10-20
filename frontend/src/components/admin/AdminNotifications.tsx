@@ -57,7 +57,7 @@ export default function AdminNotifications({ notify }: { notify: (type: "ok" | "
           </div>
           <div>
             <h2 className="font-black text-slate-900 text-sm">Gửi thông báo hệ thống</h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[13px] text-slate-500 mt-0.5">
               Thông báo sẽ hiện trong chuông của người dùng được chọn.
             </p>
           </div>
@@ -65,7 +65,7 @@ export default function AdminNotifications({ notify }: { notify: (type: "ok" | "
 
         <form onSubmit={handleSend} className="space-y-3">
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">Nhóm nhận</label>
+            <label className="block text-[13px] font-bold text-slate-600 mb-1">Nhóm nhận</label>
             <select
               value={targetRole}
               onChange={(e) => setTargetRole(e.target.value)}
@@ -78,7 +78,7 @@ export default function AdminNotifications({ notify }: { notify: (type: "ok" | "
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">Tiêu đề *</label>
+            <label className="block text-[13px] font-bold text-slate-600 mb-1">Tiêu đề *</label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -89,7 +89,7 @@ export default function AdminNotifications({ notify }: { notify: (type: "ok" | "
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">Nội dung *</label>
+            <label className="block text-[13px] font-bold text-slate-600 mb-1">Nội dung *</label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -98,11 +98,11 @@ export default function AdminNotifications({ notify }: { notify: (type: "ok" | "
               placeholder="Nội dung thông báo gửi tới người dùng…"
               className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#0369a1] resize-none"
             />
-            <p className="text-[10px] text-slate-400 mt-1 text-right">{message.length}/500</p>
+            <p className="text-[12px] text-slate-400 mt-1 text-right">{message.length}/500</p>
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">Liên kết (tuỳ chọn)</label>
+            <label className="block text-[13px] font-bold text-slate-600 mb-1">Liên kết (tuỳ chọn)</label>
             <input
               value={link}
               onChange={(e) => setLink(e.target.value)}
@@ -121,7 +121,7 @@ export default function AdminNotifications({ notify }: { notify: (type: "ok" | "
               {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               Gửi thông báo
             </button>
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[13px] text-slate-500">
               Gửi đến: <strong className="text-slate-700">{TARGET_ROLES.find(r => r.value === targetRole)?.label}</strong>
             </span>
           </div>

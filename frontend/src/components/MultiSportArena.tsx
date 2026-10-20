@@ -382,7 +382,7 @@ export default function MultiSportArena({
  {/* Live score if active */}
  {court.status === 'live' && court.liveScore && (
  <div className="bg-red-950/40 border border-red-500/30 p-2.5 rounded-lg mb-3 text-xs text-red-200 font-mono">
- <div className="flex items-center text-[10px] text-red-400 font-sans mb-1 uppercase tracking-wider font-bold">
+ <div className="flex items-center text-[12px] text-red-400 font-sans mb-1 tracking-wider font-bold">
  <Video className="w-3 h-3 mr-1" /> Trận Đấu Trực Tiếp
  </div>
  {court.liveScore}
@@ -392,12 +392,12 @@ export default function MultiSportArena({
  {/* Features tags */}
  <div className="flex flex-wrap gap-1 mb-4">
  {court.features.length === 0 ? (
- <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded">
+ <span className="text-[12px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded">
  Chưa khai báo tiện ích
  </span>
  ) : (
  court.features.map((feat, i) => (
- <span key={i} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+ <span key={i} className="text-[12px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
  {feat}
  </span>
  ))
@@ -410,7 +410,7 @@ export default function MultiSportArena({
  <div>
  <span className="text-xs text-slate-500">Giá ca:</span>
  <div className="text-sm font-extrabold text-sky-700 ">
- {court.pricePerHour.toLocaleString()}đ<span className="text-[10px] font-normal text-slate-500">/giờ</span>
+ {court.pricePerHour.toLocaleString()}đ<span className="text-[12px] font-normal text-slate-500">/giờ</span>
  </div>
  </div>
 
@@ -496,7 +496,7 @@ export default function MultiSportArena({
  </div>
  <div>
  <div className="flex items-center space-x-2">
- <span className="bg-amber-400/20 text-amber-600 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-400/30">
+ <span className="bg-amber-400/20 text-amber-600 text-[12px] font-bold px-2 py-0.5 rounded border border-amber-400/30">
  {match.category}
  </span>
  <span className="text-xs text-slate-500">

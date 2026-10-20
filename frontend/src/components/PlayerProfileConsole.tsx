@@ -360,7 +360,7 @@ export default function PlayerProfileConsole({
  <div className="relative min-h-[5.5rem] sm:h-32 bg-slate-100 px-4 sm:px-8 py-3 flex items-center justify-between overflow-hidden">
  <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]" />
  <div className="relative z-10 max-w-full">
- <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-[#0369a1]/10 text-sky-800 border border-[#0369a1]/30">
+ <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-[12px] sm:text-xs font-semibold bg-[#0369a1]/10 text-sky-800 border border-[#0369a1]/30">
  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-700 shrink-0" />
  <span className="truncate">HỒ SƠ CẦU THỦ THUỘC HỆ THỐNG</span>
  </span>
@@ -404,10 +404,10 @@ export default function PlayerProfileConsole({
  <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
  {displayFullName}
  </h1>
- <span className="px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200 ">
+ <span className="px-2.5 py-0.5 rounded-full text-[13px] sm:text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200 ">
  {displayRole}
  </span>
- <span className="px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200 ">
+ <span className="px-2.5 py-0.5 rounded-full text-[13px] sm:text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200 ">
  Thành tích {recordStr} (T-H-B)
  </span>
  </div>
@@ -494,7 +494,7 @@ export default function PlayerProfileConsole({
  <Footprints className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
  </div>
  <div className="min-w-0">
- <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider truncate">Chân Thuận</p>
+ <p className="text-[12px] font-semibold text-slate-500 tracking-wider truncate">Chân Thuận</p>
  <p className="text-xs font-bold text-slate-800 mt-0.5 truncate">{editForm.dominantFoot || "Chưa khai báo"}</p>
  </div>
  </div>
@@ -504,7 +504,7 @@ export default function PlayerProfileConsole({
  <Shirt className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
  </div>
  <div className="min-w-0">
- <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider truncate">Số Áo Thích</p>
+ <p className="text-[12px] font-semibold text-slate-500 tracking-wider truncate">Số Áo Thích</p>
  <p className="text-xs font-bold text-slate-800 mt-0.5 truncate">{editForm.jerseyNumber ? `#${editForm.jerseyNumber}` : "—"}</p>
  </div>
  </div>
@@ -514,7 +514,7 @@ export default function PlayerProfileConsole({
  <Ruler className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
  </div>
  <div className="min-w-0">
- <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider truncate">Chiều Cao</p>
+ <p className="text-[12px] font-semibold text-slate-500 tracking-wider truncate">Chiều Cao</p>
  <p className="text-xs font-bold text-slate-800 mt-0.5 truncate">{editForm.height || "Chưa khai báo"}</p>
  </div>
  </div>
@@ -524,7 +524,7 @@ export default function PlayerProfileConsole({
  <Scale className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
  </div>
  <div className="min-w-0">
- <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider truncate">Cân Nặng</p>
+ <p className="text-[12px] font-semibold text-slate-500 tracking-wider truncate">Cân Nặng</p>
  <p className="text-xs font-bold text-slate-800 mt-0.5 truncate">{editForm.weight || "Chưa khai báo"}</p>
  </div>
  </div>
@@ -534,7 +534,7 @@ export default function PlayerProfileConsole({
  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
  </div>
  <div className="min-w-0">
- <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider truncate">Khung Giờ</p>
+ <p className="text-[12px] font-semibold text-slate-500 tracking-wider truncate">Khung Giờ</p>
  <p className="text-xs font-bold text-slate-800 mt-0.5 truncate" title={editForm.preferredTime}>{editForm.preferredTime || "Chưa khai báo"}</p>
  </div>
  </div>
@@ -544,9 +544,9 @@ export default function PlayerProfileConsole({
  <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
  </div>
  <div className="min-w-0">
- <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider truncate">Đội Bóng / CLB</p>
+ <p className="text-[12px] font-semibold text-slate-500 tracking-wider truncate">Đội Bóng / CLB</p>
   {activeUser?.isClubRep && (
-  <span className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-800 text-[9px] font-black uppercase">
+  <span className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-800 text-[11px] font-black uppercase">
   <Crown className="w-2.5 h-2.5" /> Đại diện CLB
   </span>
   )}
@@ -826,7 +826,7 @@ export default function PlayerProfileConsole({
  <div className="bg-[#0369a1] h-full rounded-l-full" style={{ width: currentStat.winRate }} />
  <div className="bg-rose-500 h-full rounded-r-full" style={{ width: `${100 - parseFloat(currentStat.winRate)}%` }} />
  </div>
- <p className="text-[11px] text-slate-500 mt-2">
+ <p className="text-[13px] text-slate-500 mt-2">
  Tỷ lệ chiến thắng: <strong className="text-slate-800 ">{currentStat.winRate}</strong>
  </p>
  </div>
@@ -847,19 +847,19 @@ export default function PlayerProfileConsole({
  <span className="text-3xl font-extrabold text-slate-900 ">
  {currentStat.streak}
  </span>
- <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase">
+ <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-amber-100 text-amber-700 uppercase">
  {currentStat.streakBadge}
  </span>
  </div>
  <div className="flex items-center gap-1.5 mt-3">
  {recentForm.length === 0 ? (
- <span className="text-[11px] text-slate-500">Chưa có trận nào kết thúc</span>
+ <span className="text-[13px] text-slate-500">Chưa có trận nào kết thúc</span>
  ) : (
  recentForm.map((h) => (
  <span
  key={h.id}
  title={`${h.myTeam} ${h.score} ${h.opponent}`}
- className={`w-6 h-6 rounded-md text-white text-[11px] font-bold flex items-center justify-center ${
+ className={`w-6 h-6 rounded-md text-white text-[13px] font-bold flex items-center justify-center ${
  h.result === "win"
  ? "bg-[#0369a1] text-white"
  : h.result === "draw"
@@ -872,7 +872,7 @@ export default function PlayerProfileConsole({
  ))
  )}
  </div>
- <p className="text-[11px] text-slate-500 mt-2">
+ <p className="text-[13px] text-slate-500 mt-2">
  {recentForm.length > 0
  ? "5 trận gần nhất (trái = mới nhất) — tính từ nhánh đấu trong CSDL"
  : "Kết quả sẽ tự cập nhật khi bạn nhập tỷ số các trận"}
@@ -897,7 +897,7 @@ export default function PlayerProfileConsole({
  </span>
  <span className="text-xs text-slate-500">/ {perf.matches} trận</span>
  </div>
- <p className="text-[11px] text-slate-500 mt-3">
+ <p className="text-[13px] text-slate-500 mt-3">
  {perf.matches === 0
  ? "Chưa có trận kết thúc để đếm"
  : `Ghi nhận từ tỷ số các trận đã có kết quả • ${perf.goalsAgainst} bàn thua`}
@@ -934,7 +934,7 @@ export default function PlayerProfileConsole({
  {perf.wins} trận thắng
  </span>
  </div>
- <p className="text-[11px] text-slate-500 mt-2">
+ <p className="text-[13px] text-slate-500 mt-2">
  {perf.myTeamName
  ? `Đội của bạn: ${perf.myTeamName} — vô địch khi thắng ở vòng cuối nhánh đấu`
  : "Bạn chưa là đội trưởng của đội nào trong các giải trên hệ thống"}
@@ -1021,7 +1021,7 @@ export default function PlayerProfileConsole({
  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
  PHONG ĐỘ 5 TRẬN GẦN NHẤT
  </span>
- <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-300 ">
+ <span className="px-2.5 py-0.5 rounded-full text-[12px] font-bold bg-sky-100 text-sky-800 border border-sky-300 ">
  {currentStat.percentile}
  </span>
  </div>
@@ -1060,19 +1060,19 @@ export default function PlayerProfileConsole({
  <div className="grid grid-cols-3 gap-2 mt-4 text-center">
  <div className="p-2.5 rounded-xl bg-white border border-slate-200/60 ">
  <p className="text-xl font-bold text-sky-700 ">{currentStat.goals}</p>
- <p className="text-[10px] text-slate-500 uppercase font-semibold mt-0.5">Bàn Thắng</p>
+ <p className="text-[12px] text-slate-500 font-semibold mt-0.5">Bàn Thắng</p>
  </div>
  <div className="p-2.5 rounded-xl bg-white border border-slate-200/60 ">
  <p className="text-xl font-bold text-blue-600 ">{currentStat.assists}</p>
- <p className="text-[10px] text-slate-500 uppercase font-semibold mt-0.5">Kiến Tạo</p>
+ <p className="text-[12px] text-slate-500 font-semibold mt-0.5">Kiến Tạo</p>
  </div>
  <div className="p-2.5 rounded-xl bg-white border border-slate-200/60 ">
  <p className="text-xl font-bold text-purple-600 ">{currentStat.cleanSheets}</p>
- <p className="text-[10px] text-slate-500 uppercase font-semibold mt-0.5">Giữ Sạch Lưới</p>
+ <p className="text-[12px] text-slate-500 font-semibold mt-0.5">Giữ Sạch Lưới</p>
  </div>
  </div>
 
- <p className="text-[11px] text-slate-500 mt-3 text-center">
+ <p className="text-[13px] text-slate-500 mt-3 text-center">
  Thống kê tự động ghi nhận từ bảng điểm trọng tài & đội trưởng xác nhận
  </p>
  </div>
@@ -1081,7 +1081,7 @@ export default function PlayerProfileConsole({
 
  {/* Thành tích thi đấu từ CSDL — không có bảng chỉ số kỹ thuật riêng */}
  <div className="mt-8 space-y-4">
- <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 ">
+ <h3 className="text-sm font-bold tracking-wider text-slate-700 ">
  Thành Tích Thi Đấu Trong Hệ Thống
  </h3>
 
@@ -1095,7 +1095,7 @@ export default function PlayerProfileConsole({
  <div className="overflow-x-auto">
  <table className="w-full text-left text-xs min-w-[520px]">
  <thead>
- <tr className="border-b border-slate-200 text-[11px] uppercase text-slate-500 font-black tracking-wider">
+ <tr className="border-b border-slate-200 text-[13px] text-slate-500 font-black tracking-wider">
  <th className="py-2.5 px-3">Chỉ số</th>
  <th className="py-2.5 px-3 text-center">Giá trị</th>
  <th className="py-2.5 px-3 text-center">Nguồn</th>
@@ -1117,7 +1117,7 @@ export default function PlayerProfileConsole({
  <tr key={row.k}>
  <td className="py-2.5 px-3 font-semibold text-slate-700 ">{row.k}</td>
  <td className="py-2.5 px-3 text-center font-mono font-black text-slate-900 ">{row.v}</td>
- <td className="py-2.5 px-3 text-center font-mono text-[10px] text-slate-500">{row.src}</td>
+ <td className="py-2.5 px-3 text-center font-mono text-[12px] text-slate-500">{row.src}</td>
  </tr>
  ))}
  </tbody>
@@ -1127,7 +1127,7 @@ export default function PlayerProfileConsole({
  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
  {currentStat.radarPoints.map((pt, i) => (
  <div key={i} className="text-center p-3 rounded-xl bg-slate-50 border border-slate-200/60 ">
- <p className="text-[11px] font-semibold text-slate-500">{pt.label}</p>
+ <p className="text-[13px] font-semibold text-slate-500">{pt.label}</p>
  <p className="text-sm font-bold text-slate-800 mt-0.5">{pt.val}</p>
  </div>
  ))}
@@ -1217,7 +1217,7 @@ export default function PlayerProfileConsole({
  <span>•</span>
  <span className="font-medium text-sky-700 ">{m.format}</span>
  </div>
- <span className="text-[11px] font-mono text-slate-500">ID: {m.id}</span>
+ <span className="text-[13px] font-mono text-slate-500">ID: {m.id}</span>
  </div>
 
  {/* Dòng 2: Tỉ số & Tên hai đội */}
@@ -1254,7 +1254,7 @@ export default function PlayerProfileConsole({
  {/* Kết quả trận & MVP */}
  <div className="flex items-center gap-3 self-end sm:self-center">
  {m.mvp && (
- <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-amber-100 text-amber-700 border border-amber-300 flex items-center gap-1">
+ <span className="px-2.5 py-1 rounded-lg text-[12px] font-black bg-amber-100 text-amber-700 border border-amber-300 flex items-center gap-1">
  <Award className="w-3 h-3" />
  MVP
  </span>
@@ -1289,7 +1289,7 @@ export default function PlayerProfileConsole({
  Xem Highlight Bàn Thắng (AI Replay)
  </button>
  ) : (
- <span className="text-slate-500 text-[11px]">Chưa đăng ký dịch vụ quay AI</span>
+ <span className="text-slate-500 text-[13px]">Chưa đăng ký dịch vụ quay AI</span>
  )}
  </div>
  </div>
@@ -1311,31 +1311,31 @@ export default function PlayerProfileConsole({
  <Heart className="w-4 h-4 text-rose-600" />
  Dữ Liệu Thể Lực Cầu Thủ
  </h3>
- <span className="text-[10px] text-slate-500 font-mono">Đồng bộ Smartwatch</span>
+ <span className="text-[12px] text-slate-500 font-mono">Đồng bộ Smartwatch</span>
  </div>
 
  {/* 2 Card Calo & Nhịp tim */}
  <div className="grid grid-cols-2 gap-3">
  <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200/60 ">
- <span className="text-[10px] font-bold uppercase text-rose-600 tracking-wider">
+ <span className="text-[12px] font-bold text-rose-600 tracking-wider">
  CALO TIÊU HAO / TUẦN
  </span>
  <p className="text-2xl font-black text-slate-900 mt-2">
  3,450 <span className="text-xs font-normal text-slate-500">kcal</span>
  </p>
- <p className="text-[11px] text-sky-700 mt-1 font-semibold flex items-center gap-1">
+ <p className="text-[13px] text-sky-700 mt-1 font-semibold flex items-center gap-1">
  <TrendingUp className="w-3 h-3" /> +12% so với tuần trước
  </p>
  </div>
 
  <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200/60 ">
- <span className="text-[10px] font-bold uppercase text-blue-600 tracking-wider">
+ <span className="text-[12px] font-bold text-blue-600 tracking-wider">
  NHỊP TIM TRUNG BÌNH
  </span>
  <p className="text-2xl font-black text-slate-900 mt-2">
  142 <span className="text-xs font-normal text-slate-500">bpm</span>
  </p>
- <p className="text-[11px] text-slate-500 mt-1">
+ <p className="text-[13px] text-slate-500 mt-1">
  Đỉnh điểm 178 bpm (Phút 72)
  </p>
  </div>
@@ -1436,7 +1436,7 @@ export default function PlayerProfileConsole({
  <h4 className="text-xs sm:text-sm font-bold text-slate-900 ">
  {it.title}
  </h4>
- <p className="text-[11px] text-slate-600 ">{it.sub}</p>
+ <p className="text-[13px] text-slate-600 ">{it.sub}</p>
  </div>
  </div>
  ));

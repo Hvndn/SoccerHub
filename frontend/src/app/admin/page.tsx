@@ -79,7 +79,7 @@ function AdminConsole() {
  <span className="text-sky-800 ">Turf</span>
  <span className="text-slate-900 ">Zone</span>
  </Link>
- <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-black uppercase tracking-wider">
+ <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[12px] font-black tracking-wider">
  Super Admin
  </span>
  </div>
@@ -157,7 +157,7 @@ function AdminConsole() {
  <span className={active ? "text-white" : "text-sky-700 "}>{s.icon}</span>
  <span className="min-w-0">
  <span className="block text-xs font-black whitespace-nowrap">{s.label}</span>
- <span className={`hidden lg:block text-[10px] ${active ? "text-cyan-50" : "text-slate-500"}`}>
+ <span className={`hidden lg:block text-[12px] ${active ? "text-cyan-50" : "text-slate-500"}`}>
  {s.desc}
  </span>
  </span>
@@ -188,7 +188,7 @@ function AdminConsole() {
  </main>
 
  <footer className="border-t border-slate-200 py-4">
- <p className="text-center text-[11px] text-slate-600 ">
+ <p className="text-center text-[13px] text-slate-600 ">
  © 2026 Turfzone — Khu vực quản trị hệ thống (Super Admin).
  </p>
  </footer>

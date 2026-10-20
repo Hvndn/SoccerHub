@@ -125,7 +125,7 @@ export default function AdminAuditLogs({
  sortValue: (r) => r.actionGroup,
  render: (r) => (
  <span
- className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-black border ${
+ className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[12px] font-black border ${
  (GROUP_TONE[r.actionGroup] ?? "slate") === "sky"
  ? "bg-sky-50 text-sky-700 border-sky-200"
  : (GROUP_TONE[r.actionGroup] ?? "slate") === "amber"
@@ -163,7 +163,7 @@ export default function AdminAuditLogs({
  <p className="font-bold text-slate-900 truncate">
  {r.adminName || r.adminEmail || "—"}
  </p>
- <p className="text-[10px] font-mono text-slate-500 truncate">{r.adminEmail}</p>
+ <p className="text-[12px] font-mono text-slate-500 truncate">{r.adminEmail}</p>
  </div>
  ),
  },
@@ -180,7 +180,7 @@ export default function AdminAuditLogs({
  sortable: true,
  sortValue: (r) => r.createdAt ?? "",
  render: (r) => (
- <span className="text-[10px] font-mono text-slate-500 whitespace-nowrap">
+ <span className="text-[12px] font-mono text-slate-500 whitespace-nowrap">
  {fmtDate(r.createdAt)}
  </span>
  ),
@@ -196,7 +196,7 @@ export default function AdminAuditLogs({
  </div>
  <div>
  <h2 className="font-black text-slate-900 text-sm">Nhật ký quản trị</h2>
- <p className="text-[11px] text-slate-500 mt-0.5">
+ <p className="text-[13px] text-slate-500 mt-0.5">
  Ghi lại mọi thao tác của quản trị viên: ai đã làm gì, lên đối tượng nào, lúc nào.
  </p>
  </div>

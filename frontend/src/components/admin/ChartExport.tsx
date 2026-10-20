@@ -101,7 +101,7 @@ export default function ChartExport({
         onClick={doPng}
         disabled={busy !== null}
         title="Tải biểu đồ dạng ảnh PNG"
-        className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#0369a1] transition-all disabled:opacity-40 flex items-center gap-1 text-[11px] font-bold"
+        className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#0369a1] transition-all disabled:opacity-40 flex items-center gap-1 text-[13px] font-bold"
       >
         {busy === "png" ? (
           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -115,7 +115,7 @@ export default function ChartExport({
         onClick={doPdf}
         disabled={busy !== null}
         title="Tải biểu đồ dạng PDF để in"
-        className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#0369a1] transition-all disabled:opacity-40 flex items-center gap-1 text-[11px] font-bold"
+        className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#0369a1] transition-all disabled:opacity-40 flex items-center gap-1 text-[13px] font-bold"
       >
         {busy === "pdf" ? (
           <Loader2 className="w-3.5 h-3.5 animate-spin" />

@@ -479,7 +479,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <Sparkles className="w-4 h-4 text-amber-700" />
  AI Gợi Ý Sân Cho Bạn
  </h2>
- <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+ <p className="text-[13px] sm:text-xs text-slate-500 mt-0.5">
  Chấm điểm tương thích theo ngân sách {maxBudget.toLocaleString("vi-VN")}đ, thể thức và đánh giá sân.
  </p>
  </div>
@@ -507,7 +507,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="skeleton-shimmer h-3 w-2/3 rounded" />
  </div>
  ))}
- <p className="sm:col-span-3 text-[11px] text-slate-500 text-center">
+ <p className="sm:col-span-3 text-[13px] text-slate-500 text-center">
  {aiSlow
  ? "AI đang khởi động máy chủ lần đầy (có thể mất 20–30 giây). Bạn vẫn có thể đặt sân thủ công bên dưới."
  : "Đang gửi yêu cầu tới AI…"}
@@ -526,16 +526,16 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {aiResults.map((r, i) => (
  <div key={r.id} className="rounded-2xl border-2 border-[#0369a1]/50 bg-sky-50/50 p-3.5 space-y-1">
  <div className="flex items-center justify-between gap-2">
- <span className="text-[10px] font-black uppercase tracking-wider text-sky-800 ">
+ <span className="text-[12px] font-black tracking-wider text-sky-800 ">
  Lựa chọn #{i + 1}
  </span>
- <span className="font-mono text-[11px] font-black text-sky-800 ">
+ <span className="font-mono text-[13px] font-black text-sky-800 ">
  {Math.round(r.compatibility_score ?? 0)} điểm
  </span>
  </div>
  <p className="text-xs font-black text-slate-900 truncate">{r.name}</p>
- <p className="text-[11px] text-slate-500 truncate">{r.address || ""}</p>
- <p className="text-[11px] font-mono font-bold text-slate-700 ">
+ <p className="text-[13px] text-slate-500 truncate">{r.address || ""}</p>
+ <p className="text-[13px] font-mono font-bold text-slate-700 ">
  {Number(r.avg_price_per_hour || 0).toLocaleString("vi-VN")}đ/giờ
  </p>
  </div>
@@ -554,15 +554,15 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {/* Cột trái: Thông tin cầu thủ & Lời chào */}
  <div className="flex-1 space-y-4 w-full">
  <div className="flex items-center space-x-2 flex-wrap gap-y-2">
- <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-sky-50 text-sky-800 font-extrabold text-[11px] sm:text-xs uppercase tracking-wider border border-sky-200 ">
+ <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-sky-50 text-sky-800 font-extrabold text-[13px] sm:text-xs tracking-wider border border-sky-200 ">
  <CheckCircle2 className="w-3.5 h-3.5 text-sky-700 " />
  <span>Đã Xác Thực Tài Khoản</span>
  </span>
- <span className="hidden sm:inline-block font-mono text-[11px] sm:text-xs font-bold text-[#0b4f6c] bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200 ">
+ <span className="hidden sm:inline-block font-mono text-[13px] sm:text-xs font-bold text-[#0b4f6c] bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200 ">
  VĐV ID: {user?.id ? `#SH-${user.id}` : "#SH-GH"}
  </span>
  {userMatchesPlayed > 0 ? (
- <span className="hidden sm:inline-flex items-center space-x-1 text-[11px] sm:text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 ">
+ <span className="hidden sm:inline-flex items-center space-x-1 text-[13px] sm:text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 ">
  <Flame className="w-3.5 h-3.5 text-amber-700" />
  <span>Đã đá {userMatchesPlayed} trận</span>
  </span>
@@ -587,7 +587,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </>
  )}
  </h1>
- <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 font-medium mt-0.5 leading-relaxed">
+ <p className="text-[13px] sm:text-xs md:text-sm text-slate-600 font-medium mt-0.5 leading-relaxed">
  Vị trí:{" "}
  <span className="text-[#0b4f6c] font-bold">
  {user?.position ?? "Chưa cập nhật"}
@@ -606,7 +606,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  🏆
  </div>
  <div className="flex flex-col min-w-0">
- <span className="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold">Phong Độ Đội Bạn</span>
+ <span className="text-[12px] text-slate-500 tracking-wider font-extrabold">Phong Độ Đội Bạn</span>
  <div className="flex items-baseline space-x-2">
  <span className="text-xl sm:text-2xl font-black text-[#0b4f6c] font-mono">
  {hasUser ? (myTeamEntry ? myRecord : "—") : "—"}
@@ -615,7 +615,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {myTeamEntry ? `${myTeamEntry.teamName} • Thắng ${myWinRate}%` : (user?.level ?? "Chưa xếp bậc")}
  </span>
  </div>
- <span className="text-[10px] text-slate-500 truncate">
+ <span className="text-[12px] text-slate-500 truncate">
  {userMatchesPlayed > 0
  ? `Đã đá ${userMatchesPlayed} trận trong các giải của hệ thống`
  : "Chưa thi đấu trong giải nào trên hệ thống"}
@@ -628,13 +628,13 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  ⚽
  </div>
  <div className="flex flex-col min-w-0">
- <span className="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold">Môn Thể Thức Yêu Thích</span>
+ <span className="text-[12px] text-slate-500 tracking-wider font-extrabold">Môn Thể Thức Yêu Thích</span>
  <div className="flex items-baseline space-x-2">
  <span className="text-xl sm:text-2xl font-black text-sky-700 font-mono truncate">
  {user?.favoriteSport === "football" ? "Bóng Đá" : user?.favoriteSport ?? "—"}
  </span>
  </div>
- <span className="text-[10px] text-sky-700 font-bold truncate">
+ <span className="text-[12px] text-sky-700 font-bold truncate">
  {realPitches.length} cụm sân đang mở đặt trên hệ thống
  </span>
  </div>
@@ -656,7 +656,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <SlidersHorizontal className="w-4 h-4 text-[#0b4f6c] " />
  Bộ lọc tìm sân
  {activeFilterCount > 0 && (
- <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-[#0369a1] text-white ">
+ <span className="text-[12px] font-black px-1.5 py-0.5 rounded-md bg-[#0369a1] text-white ">
  {activeFilterCount}
  </span>
  )}
@@ -684,7 +684,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <span>{tab.icon}</span>
  <span>{tab.name}</span>
  {tab.badge && (
- <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
+ <span className={`text-[12px] px-1.5 py-0.2 rounded-md ${
  selectedSport === tab.id
  ? "bg-white/20 text-white "
  : "bg-slate-200 text-slate-600 "
@@ -717,7 +717,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="bg-slate-50 rounded-xl px-3.5 py-2 border border-slate-200 flex items-center space-x-2.5">
  <MapPin className="w-4 h-4 text-rose-600 shrink-0" />
  <div className="flex-1 min-w-0">
- <span className="text-[9px] text-slate-500 font-extrabold uppercase block leading-none">Khu Vực Địa Lý</span>
+ <span className="text-[11px] text-slate-500 font-extrabold block leading-none">Khu Vực Địa Lý</span>
  <select
  aria-label="Khu vực địa lý"
  value={selectedDistrict}
@@ -737,7 +737,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="bg-slate-50 rounded-xl px-3.5 py-2 border border-slate-200 flex items-center space-x-2.5">
  <Clock className="w-4 h-4 text-[#0b4f6c] shrink-0" />
  <div className="flex-1 min-w-0">
- <span className="text-[9px] text-slate-500 font-extrabold uppercase block leading-none">Khung Giờ Thi Đấu</span>
+ <span className="text-[11px] text-slate-500 font-extrabold block leading-none">Khung Giờ Thi Đấu</span>
  <select
  aria-label="Khung giờ thi đấu"
  value={selectedTimeSlotFilter}
@@ -756,7 +756,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="bg-slate-50 rounded-xl px-3.5 py-2 border border-slate-200 flex items-center space-x-2.5">
  <Layers className="w-4 h-4 text-emerald-500 shrink-0" />
  <div className="flex-1 min-w-0">
- <span className="text-[9px] text-slate-500 font-extrabold uppercase block leading-none">Quy Mô Sân Con</span>
+ <span className="text-[11px] text-slate-500 font-extrabold block leading-none">Quy Mô Sân Con</span>
  <select
  aria-label="Quy mô sân con"
  value={selectedPitchFormat}
@@ -775,7 +775,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="bg-slate-50 rounded-xl px-3.5 py-2 border border-slate-200 flex items-center space-x-2.5">
  <DollarSign className="w-4 h-4 text-emerald-500 shrink-0" />
  <div className="flex-1 min-w-0">
- <div className="flex items-center justify-between text-[9px] text-slate-500 font-extrabold uppercase leading-none">
+ <div className="flex items-center justify-between text-[11px] text-slate-500 font-extrabold leading-none">
  <span>Ngân Sách Tối Đa</span>
  <span className="text-sky-700 font-mono font-bold">
  {maxBudget.toLocaleString("vi-VN")}đ
@@ -806,7 +806,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="space-y-4">
  <div className="flex flex-wrap items-center justify-between gap-2">
  <div className="flex items-center space-x-2">
- <span className="px-2.5 py-1 bg-[#0369a1] text-white font-black text-[10px] rounded-lg flex items-center uppercase tracking-wider shadow-xs">
+ <span className="px-2.5 py-1 bg-[#0369a1] text-white font-black text-[12px] rounded-lg flex items-center tracking-wider shadow-xs">
  <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-300 " />
  AI SMART RECOMMENDATION
  </span>
@@ -844,33 +844,33 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {/* 3 Thông Số Lấy Từ Hồ Sơ Sân Trong CSDL */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
- <span className="text-[10px] font-bold uppercase text-slate-500">Giờ Mở Cửa</span>
+ <span className="text-[12px] font-bold text-slate-500">Giờ Mở Cửa</span>
  <div className="text-sm font-black text-slate-900 font-mono">
  {featuredPitch.openTime ?? "—"} - {featuredPitch.closeTime ?? "—"}
  </div>
- <span className="text-[11px] font-bold text-[#0b4f6c] block">
+ <span className="text-[13px] font-bold text-[#0b4f6c] block">
  {featuredPitch.timeSlots?.length ?? 0} ca mỗi ngày
  </span>
  </div>
 
  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
- <span className="text-[10px] font-bold uppercase text-slate-500">Loại Sân</span>
+ <span className="text-[12px] font-bold text-slate-500">Loại Sân</span>
  <div className="text-sm font-black text-slate-900 font-mono truncate">
  {featuredPitch.pitchTypes?.filter(Boolean).slice(0, 2).join(" · ") ||
  featuredPitch.type ||
  "Chưa khai báo"}
  </div>
- <span className="text-[11px] font-bold text-sky-700 block truncate">
+ <span className="text-[13px] font-bold text-sky-700 block truncate">
  {featuredPitch.amenities?.[0] ?? "Theo hồ sơ sân"}
  </span>
  </div>
 
  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
- <span className="text-[10px] font-bold uppercase text-slate-500">Giá Mỗi Ca</span>
+ <span className="text-[12px] font-bold text-slate-500">Giá Mỗi Ca</span>
  <div className="text-sm font-black text-slate-900 font-mono truncate">
  {featuredPitch.priceDiscounted?.toLocaleString("vi-VN")}đ
  </div>
- <span className="text-[11px] font-bold text-amber-700 block">
+ <span className="text-[13px] font-bold text-amber-700 block">
  {featuredPitch.rating
  ? `Đánh giá ${featuredPitch.rating} (${featuredPitch.reviewsCount} đánh giá)`
  : "Chưa có đánh giá nào"}
@@ -905,7 +905,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <Lock className="w-[18px] h-[18px] text-amber-700" />
  <span className="font-extrabold text-sm text-slate-900 ">Trạng Thái Ca Sân Hôm Nay</span>
  </div>
- <span className="font-mono text-[10px] font-extrabold px-2.5 py-0.5 bg-sky-50 text-sky-800 border border-sky-200 rounded-full flex items-center">
+ <span className="font-mono text-[12px] font-extrabold px-2.5 py-0.5 bg-sky-50 text-sky-800 border border-sky-200 rounded-full flex items-center">
  <span className="w-1.5 h-1.5 rounded-full bg-[#0369a1] mr-1.5" />
  Đọc từ CSDL
  </span>
@@ -942,19 +942,19 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <span className={`font-bold shrink-0 ${ls.status === 'BOOKED' ? "text-slate-600 " : "text-[#0b4f6c] "}`}>
  {ls.time}
  </span>
- <span className="text-[11px] text-slate-500 font-sans truncate min-w-0 max-w-[100px] sm:max-w-[130px]">
+ <span className="text-[13px] text-slate-500 font-sans truncate min-w-0 max-w-[100px] sm:max-w-[130px]">
  {ls.courtName}
  </span>
  </div>
  {ls.status === 'BOOKED' || ls.status === 'PLAYING' ? (
- <span className="px-2 py-0.5 bg-slate-200 text-slate-700 text-[10px] font-bold rounded font-sans min-w-0 break-words text-right">
+ <span className="px-2 py-0.5 bg-slate-200 text-slate-700 text-[12px] font-bold rounded font-sans min-w-0 break-words text-right">
  Đã Đặt ({ls.customer})
  </span>
  ) : (
  <button
  type="button"
  onClick={() => setSelectedPitchForSlot(featuredPitch)}
- className="px-2.5 sm:px-3 py-1 bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[10px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
+ className="px-2.5 sm:px-3 py-1 bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[12px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
  >
  Chọn Ca
  </button>
@@ -964,7 +964,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  ) : (
  <>
  <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 ">
- <span className="text-[11px] text-slate-500 font-sans">
+ <span className="text-[13px] text-slate-500 font-sans">
  Chưa có dữ liệu ca sân cho sân này trong ngày đã chọn.
  </span>
  </div>
@@ -974,7 +974,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </div>
 
  <div className="hidden sm:block text-right pt-2 border-t border-slate-100 ">
- <span className="font-mono text-[10px] text-slate-500">
+ <span className="font-mono text-[12px] text-slate-500">
  Nguồn: bảng bookings · cập nhật khi tải trang
  </span>
  </div>
@@ -1017,7 +1017,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <h2 className="text-lg sm:text-xl font-black text-slate-900 ">
  Sân Trống Khả Dụng Khung Giờ Tối
  </h2>
- <span className="hidden sm:inline px-2.5 py-0.5 rounded-full bg-[#0369a1]/20 text-emerald-500 text-[10px] font-black uppercase animate-pulse border border-[#0369a1]/30">
+ <span className="hidden sm:inline px-2.5 py-0.5 rounded-full bg-[#0369a1]/20 text-emerald-500 text-[12px] font-black animate-pulse border border-[#0369a1]/30">
  LIVE
  </span>
  <span className="sm:hidden w-2 h-2 rounded-full bg-[#0369a1] animate-pulse" aria-hidden="true" />
@@ -1028,7 +1028,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </div>
 
  <div className="flex items-center space-x-2">
- <span className="text-xs font-bold text-[#0369a1] bg-sky-50 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-sky-200 text-[11px] sm:text-xs">
+ <span className="text-xs font-bold text-[#0369a1] bg-sky-50 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-sky-200 text-[13px] sm:text-xs">
  Gần nhất
  </span>
  </div>
@@ -1071,7 +1071,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-transparent" />
  
  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
- <span className="px-2.5 py-1 rounded-lg bg-slate-900/90 backdrop-blur-md text-white font-extrabold text-[11px] flex items-center space-x-1 border border-slate-700">
+ <span className="px-2.5 py-1 rounded-lg bg-slate-900/90 backdrop-blur-md text-white font-extrabold text-[13px] flex items-center space-x-1 border border-slate-700">
  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
  <span>{pitch.pitchTypes?.[0] ?? pitch.sportBadge}</span>
  </span>
@@ -1082,7 +1082,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
  <span className="truncate max-w-[170px]">{pitch.districtName}</span>
  </div>
- <span className="bg-[#0369a1]/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px]">
+ <span className="bg-[#0369a1]/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[12px]">
  {pitch.openTime} - {pitch.closeTime}
  </span>
  </div>
@@ -1110,7 +1110,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <span className="font-extrabold text-xs text-slate-900 ">
  {pitch.rating}
  </span>
- <span className="text-[10px] text-slate-500">({pitch.reviewsCount})</span>
+ <span className="text-[12px] text-slate-500">({pitch.reviewsCount})</span>
  </div>
  ) : null}
  </div>
@@ -1118,14 +1118,14 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {/* Tiện ích khai báo trong hồ sơ sân */}
  <div className="flex flex-wrap gap-1.5 pt-0.5">
  {(pitch.amenities ?? []).length === 0 ? (
- <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-bold text-[10px]">
+ <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-bold text-[12px]">
  Chủ sân chưa khai báo tiện ích
  </span>
  ) : (
  pitch.amenities.slice(0, 3).map((a: string) => (
  <span
  key={a}
- className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-800 font-bold text-[10px] flex items-center gap-1 border border-sky-200 "
+ className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-800 font-bold text-[12px] flex items-center gap-1 border border-sky-200 "
  >
  <Camera className="w-3 h-3 text-emerald-500" />
  {a}
@@ -1137,7 +1137,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
  {/* Dải ca trống hôm nay từ database */}
  <div className="space-y-1.5">
- <div className="flex items-center justify-between text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+ <div className="flex items-center justify-between text-[12px] font-extrabold text-slate-500 tracking-wider">
  <span>Ca trống hôm nay ({pitch.openTime} - {pitch.closeTime}):</span>
  <span className="text-sky-700 ">120p (2 tiếng)/ca</span>
  </div>
@@ -1166,11 +1166,11 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <span className="text-xl font-black text-sky-700 font-mono">
  {pitch.priceDiscounted.toLocaleString("vi-VN")}đ
  </span>
- <span className="px-1.5 py-0.2 rounded bg-[#0369a1]/15 text-sky-800 text-[9px] font-black uppercase">
+ <span className="px-1.5 py-0.2 rounded bg-[#0369a1]/15 text-sky-800 text-[11px] font-black uppercase">
  {pitch.slotDurationMinutes} phút/ca
  </span>
  </div>
- <p className="hidden sm:block text-[10px] text-slate-500 font-medium">
+ <p className="hidden sm:block text-[12px] text-slate-500 font-medium">
  Giá theo niêm yết của sân · ca giờ vàng tính theo giá peak
  </p>
  </div>
@@ -1247,7 +1247,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2"
  >
  <div className="flex items-center justify-between">
- <span className="px-2 py-0.5 rounded bg-[#0369a1]/20 text-sky-800 font-black text-[10px] uppercase">
+ <span className="px-2 py-0.5 rounded bg-[#0369a1]/20 text-sky-800 font-black text-[12px] uppercase">
  {label}
  </span>
  <span className="font-mono text-xs font-bold text-slate-500">
@@ -1273,7 +1273,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </div>
 
  <div className="flex items-center justify-between pt-2 border-t border-slate-200 ">
- <span className="text-[11px] font-bold text-slate-500 truncate pr-2">
+ <span className="text-[13px] font-bold text-slate-500 truncate pr-2">
  {p.teamName} mở kèo
  </span>
  <button
@@ -1297,7 +1297,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <QrCode className="w-5 h-5 text-amber-700" />
  <h3 className="font-black text-sm text-slate-900 ">Turfzone QuickPass</h3>
  </div>
- <span className="px-2.5 py-0.5 rounded bg-[#0369a1] text-white font-black text-[9px] uppercase">
+ <span className="px-2.5 py-0.5 rounded bg-[#0369a1] text-white font-black text-[11px] uppercase">
  Check-in Không Chạm
  </span>
  </div>
@@ -1312,8 +1312,8 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  </div>
  <div className="flex-1 min-w-0 space-y-1">
  <h4 className="font-black text-xs text-slate-900 truncate">{userName}</h4>
- <p className="font-mono text-[11px] text-[#0b4f6c] ">ID: {user?.id ? `#SH-${user.id}` : "#SH-GH"}</p>
- <div className="flex items-center space-x-2 text-[10px] font-mono text-sky-800 font-bold">
+ <p className="font-mono text-[13px] text-[#0b4f6c] ">ID: {user?.id ? `#SH-${user.id}` : "#SH-GH"}</p>
+ <div className="flex items-center space-x-2 text-[12px] font-mono text-sky-800 font-bold">
  <span>{user?.level ?? "Chưa xếp bậc"}</span>
  <span>•</span>
  <span>{hasUser ? (myTeamEntry ? `Thành tích ${myRecord}` : "Tân binh") : "Chưa đăng nhập"}</span>
@@ -1340,14 +1340,14 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  Đội Phong Độ Cao Nhất
  </h3>
  </div>
- <span className="text-[10px] font-bold text-slate-500">
+ <span className="text-[12px] font-bold text-slate-500">
  {tournaments.length} giải trong CSDL
  </span>
  </div>
 
  <div className="space-y-2">
  {topTeamsByForm.length === 0 ? (
- <p className="text-[11px] text-slate-500 leading-relaxed">
+ <p className="text-[13px] text-slate-500 leading-relaxed">
  Chưa có đội nào trong danh sách đội của các giải. Đăng ký một giải để
  đội bạn xuất hiện ở đây.
  </p>
@@ -1527,7 +1527,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <p className="font-mono text-sm font-black text-sky-700 ">
  {user?.id ? `#SH-${user.id}` : "#SH-GH"} • {userName}
  </p>
- <p className="text-[11px] text-slate-500 max-w-xs">
+ <p className="text-[13px] text-slate-500 max-w-xs">
  Đưa mã này cho chủ sân đối chiếu thông tin của bạn khi tới nhận sân.
  </p>
  </div>

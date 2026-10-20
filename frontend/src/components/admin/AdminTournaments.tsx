@@ -85,7 +85,7 @@ export default function AdminTournaments({ notify }: { notify: (type: "ok" | "er
  render: (r) => (
  <div className="max-w-[260px]">
  <p className="font-bold text-slate-900 truncate">{r.title}</p>
- <p className="text-[11px] text-slate-500">
+ <p className="text-[13px] text-slate-500">
  {sportLabel(r.sportType)} • {registeredCount(r)}/{r.totalTeams ?? "—"} đội
  </p>
  </div>
@@ -121,7 +121,7 @@ export default function AdminTournaments({ notify }: { notify: (type: "ok" | "er
  value={r.status ?? "OPEN"}
  disabled={busyId === r.id}
  onChange={(e) => changeStatus(r, e.target.value)}
- className="pl-2 pr-6 py-1.5 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1] disabled:opacity-50 cursor-pointer"
+ className="pl-2 pr-6 py-1.5 rounded-lg border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1] disabled:opacity-50 cursor-pointer"
  >
  {ALL_STATUS.map((s) => (
  <option key={s} value={s}>
@@ -155,7 +155,7 @@ export default function AdminTournaments({ notify }: { notify: (type: "ok" | "er
  <SectionCard>
  <div className="flex items-center justify-between mb-4">
  <div>
- <h2 className="font-black text-slate-900 text-sm">Quản lý giải đấu</h2> <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
+ <h2 className="font-black text-slate-900 text-sm">Quản lý giải đấu</h2> <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
  Đóng/mở đăng ký và xóa giải rác. Xóa giải sẽ xóa kèm toàn bộ đội đã ghi danh.
  </p>
  </div>

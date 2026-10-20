@@ -182,7 +182,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
             <h2 className="text-base sm:text-lg font-black text-slate-900 leading-tight">
               CLB của tôi
             </h2>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[13px] text-slate-500">
               Bạn là đại diện CLB — thêm thành viên, quản lý danh sách đội của CLB.
             </p>
           </div>
@@ -211,7 +211,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-600">Tên CLB *</label>
+              <label className="text-[13px] font-bold text-slate-600">Tên CLB *</label>
               <input
                 type="text"
                 value={form.name}
@@ -221,7 +221,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-600">Khu vực</label>
+              <label className="text-[13px] font-bold text-slate-600">Khu vực</label>
               <input
                 type="text"
                 value={form.area}
@@ -232,7 +232,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-slate-600">Mô tả</label>
+            <label className="text-[13px] font-bold text-slate-600">Mô tả</label>
             <input
               type="text"
               value={form.description}
@@ -243,7 +243,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-600">Số điện thoại CLB</label>
+              <label className="text-[13px] font-bold text-slate-600">Số điện thoại CLB</label>
               <input
                 type="tel"
                 value={form.phone}
@@ -253,7 +253,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-600">
+              <label className="text-[13px] font-bold text-slate-600">
                 Tối đa thành viên (0 = không giới hạn)
               </label>
               <input
@@ -337,7 +337,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                       {activeClub.description}
                     </p>
                   )}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-slate-500 font-semibold">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[13px] text-slate-500 font-semibold">
                     {activeClub.area && <span>📍 {activeClub.area}</span>}
                     {activeClub.phone && <span>☎ {activeClub.phone}</span>}
                     <span>
@@ -349,7 +349,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                   <button
                     type="button"
                     onClick={() => handleDeleteClub(activeClub)}
-                    className="shrink-0 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-extrabold border border-rose-200 transition-all active:scale-95 flex items-center gap-1.5"
+                    className="shrink-0 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-[13px] font-extrabold border border-rose-200 transition-all active:scale-95 flex items-center gap-1.5"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Xoá CLB
                   </button>
@@ -389,7 +389,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
 
               {/* Danh sách thành viên */}
               <div className="space-y-2">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+                <span className="text-[13px] font-black tracking-wider text-slate-500">
                   Thành viên ({activeClub.memberCount ?? 0})
                 </span>
                 <div className="space-y-1.5">
@@ -399,7 +399,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                       className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 bg-white"
                     >
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-[11px] shrink-0 ${
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-[13px] shrink-0 ${
                           m.isRepresentative
                             ? "bg-amber-100 text-amber-800"
                             : "bg-slate-100 text-slate-600"
@@ -415,12 +415,12 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                         <p className="text-xs font-black text-slate-900 truncate">
                           {m.name || m.email}
                           {m.isRepresentative && (
-                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[9px] font-black uppercase">
+                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[11px] font-black uppercase">
                               Đại diện
                             </span>
                           )}
                           {m.email === myEmail && (
-                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[9px] font-black uppercase">
+                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[11px] font-black uppercase">
                               Bạn
                             </span>
                           )}

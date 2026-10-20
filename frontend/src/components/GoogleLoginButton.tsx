@@ -193,7 +193,7 @@ export default function GoogleLoginButton({
         </div>
 
         {error && (
-          <p role="alert" className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-center animate-fade-in font-medium">
+          <p role="alert" className="text-[13px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-center animate-fade-in font-medium">
             {error}
           </p>
         )}
@@ -223,13 +223,13 @@ export default function GoogleLoginButton({
       </div>
 
       {loading && (
-        <p className="text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5">
+        <p className="text-[13px] text-slate-500 text-center flex items-center justify-center gap-1.5">
           <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0369a1]" />
           Đang xác thực với Google…
         </p>
       )}
       {error && (
-        <p role="alert" className="text-[11px] text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 text-center animate-fade-in font-medium">
+        <p role="alert" className="text-[13px] text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 text-center animate-fade-in font-medium">
           {error}
         </p>
       )}

@@ -208,7 +208,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${pillar.gradient} text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
  <Icon className="w-6 h-6" />
  </div>
- <span className="text-[10px] font-mono uppercase tracking-wider font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 ">
+ <span className="text-[12px] font-mono tracking-wider font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 ">
  {pillar.badge}
  </span>
  </div>
@@ -227,7 +227,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
  <div>
  <strong className="text-xs font-black text-slate-800 block">{pt.title}</strong>
- <p className="text-[11px] text-slate-500 leading-relaxed font-medium mt-0.5">
+ <p className="text-[13px] text-slate-500 leading-relaxed font-medium mt-0.5">
  {pt.desc}
  </p>
  </div>
@@ -274,7 +274,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <p className="text-xs text-slate-500 font-medium">Ghi sổ tay, nhắn tin Zalo, giữ chỗ bằng miệng</p>
  </div>
  </div>
- <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-extrabold text-[10px] uppercase">
+ <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-extrabold text-[12px] uppercase">
  Rủi ro cao
  </span>
  </div>
@@ -285,7 +285,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
  <div>
  <h4 className="text-xs font-extrabold text-slate-900 ">{item.title}</h4>
- <p className="text-[11px] text-slate-500 font-medium mt-0.5 leading-relaxed">{item.desc}</p>
+ <p className="text-[13px] text-slate-500 font-medium mt-0.5 leading-relaxed">{item.desc}</p>
  </div>
  </div>
  ))}
@@ -304,7 +304,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <p className="text-xs text-[#0b4f6c] font-bold">Tự động hóa 100% bằng công nghệ thể thao số</p>
  </div>
  </div>
- <span className="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-extrabold text-[10px] uppercase border border-sky-200 ">
+ <span className="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-extrabold text-[12px] border border-sky-200 ">
  Chuẩn xác 99.9%
  </span>
  </div>
@@ -315,7 +315,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
  <div>
  <h4 className="text-xs font-extrabold text-slate-900 ">{item.title}</h4>
- <p className="text-[11px] text-slate-600 font-medium mt-0.5 leading-relaxed">{item.desc}</p>
+ <p className="text-[13px] text-slate-600 font-medium mt-0.5 leading-relaxed">{item.desc}</p>
  </div>
  </div>
  ))}

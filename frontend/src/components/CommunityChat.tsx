@@ -302,8 +302,8 @@ export default function CommunityChat({
         <div className={`max-w-[82%] sm:max-w-[70%] ${mine ? "items-end" : "items-start"} flex flex-col`}>
           {!mine && (
             <div className="flex items-center gap-1.5 mb-0.5 px-1">
-              <span className={`text-[11px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>{m.senderName}</span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase">{m.senderRole}</span>
+              <span className={`text-[13px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>{m.senderName}</span>
+              <span className="text-[11px] font-bold text-slate-400 uppercase">{m.senderRole}</span>
             </div>
           )}
           <div
@@ -314,19 +314,19 @@ export default function CommunityChat({
             }`}
           >
             {m.pinned && (
-              <div className="flex items-center gap-1 mb-1 text-[10px] font-bold uppercase tracking-wide text-amber-600">
+              <div className="flex items-center gap-1 mb-1 text-[12px] font-bold tracking-wide text-amber-600">
                 <Bookmark className="w-3 h-3" /> Tin ghim
               </div>
             )}
             {quoted && (
-              <div className="mb-1.5 pl-2 border-l-2 border-slate-300 text-[11px] italic text-slate-500 line-clamp-2">
+              <div className="mb-1.5 pl-2 border-l-2 border-slate-300 text-[13px] italic text-slate-500 line-clamp-2">
                 {quoted.senderName}: {quoted.content}
               </div>
             )}
             {m.content}
           </div>
           <div className={`flex items-center gap-1.5 mt-0.5 px-1 ${mine ? "flex-row-reverse" : ""}`}>
-            <span className="text-[9px] text-slate-400">{formatTime(m.createdAt)}</span>
+            <span className="text-[11px] text-slate-400">{formatTime(m.createdAt)}</span>
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
               {mode === "public" && (
                 <>
@@ -396,7 +396,7 @@ export default function CommunityChat({
           <span className="hidden sm:inline">Tin nhắn riêng</span>
           <span className="sm:hidden">Riêng</span>
           {conversations.length > 0 && (
-            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-rose-500 text-white">
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[11px] font-black bg-rose-500 text-white">
               {conversations.length}
             </span>
           )}
@@ -411,8 +411,8 @@ export default function CommunityChat({
             <div className="flex items-start gap-2 px-3 sm:px-4 py-2 bg-amber-50 border-b border-amber-200">
               <Pin className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-amber-700">Tin ghim</p>
-                <p className="text-[11px] text-slate-700 truncate">
+                <p className="text-[12px] font-bold tracking-wide text-amber-700">Tin ghim</p>
+                <p className="text-[13px] text-slate-700 truncate">
                   <span className="font-bold">{pinnedMsg.senderName}: </span>
                   {pinnedMsg.content}
                 </p>
@@ -433,7 +433,7 @@ export default function CommunityChat({
                 <p className="text-xs text-slate-500">
                   Kênh <strong className="text-slate-700">{channelName}</strong> chưa có tin nhắn nào.
                 </p>
-                <p className="text-[11px] text-slate-400 mt-1">{channelDesc}</p>
+                <p className="text-[13px] text-slate-400 mt-1">{channelDesc}</p>
               </div>
             ) : (
               pubMessages.map((m) => renderMessage(m, m.senderEmail === myEmail))
@@ -445,7 +445,7 @@ export default function CommunityChat({
           {replyTo && (
             <div className="flex items-center gap-2 px-3 sm:px-4 py-2 border-t border-slate-200 bg-sky-50">
               <Reply className="w-3.5 h-3.5 text-[#0369a1] shrink-0" />
-              <div className="min-w-0 flex-1 text-[11px] text-slate-600 truncate">
+              <div className="min-w-0 flex-1 text-[13px] text-slate-600 truncate">
                 <span className="font-bold text-slate-800">Trả lời {replyTo.senderName}: </span>
                 {replyTo.content}
               </div>
@@ -525,9 +525,9 @@ export default function CommunityChat({
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-slate-900 truncate">{u.name}</p>
-                      <p className="text-[10px] text-slate-500 truncate">{u.email}</p>
+                      <p className="text-[12px] text-slate-500 truncate">{u.email}</p>
                     </div>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase">{u.role}</span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase">{u.role}</span>
                   </button>
                 ))}
               </div>
@@ -544,7 +544,7 @@ export default function CommunityChat({
                 <div className="text-center py-8 px-3">
                   <MessageCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                   <p className="text-xs text-slate-500">Chưa có hội thoại nào.</p>
-                  <p className="text-[11px] text-slate-400 mt-1">Bấm <UserPlus className="w-3 h-3 inline" /> để tìm và nhắn tin.</p>
+                  <p className="text-[13px] text-slate-400 mt-1">Bấm <UserPlus className="w-3 h-3 inline" /> để tìm và nhắn tin.</p>
                 </div>
               ) : (
                 conversations.map((c) => (
@@ -563,11 +563,11 @@ export default function CommunityChat({
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-slate-900 truncate">{c.partnerName}</p>
-                      <p className="text-[10px] text-slate-500 truncate">
+                      <p className="text-[12px] text-slate-500 truncate">
                         {c.isMine ? "Bạn: " : ""}{c.lastMessage}
                       </p>
                     </div>
-                    <span className="text-[9px] text-slate-400 shrink-0">
+                    <span className="text-[11px] text-slate-400 shrink-0">
                       {formatTime(c.lastTime)}
                     </span>
                   </button>
@@ -595,7 +595,7 @@ export default function CommunityChat({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-black text-slate-900 truncate">{activePartner.partnerName}</p>
-                    <p className="text-[10px] text-slate-500 truncate">{activePartner.partnerEmail}</p>
+                    <p className="text-[12px] text-slate-500 truncate">{activePartner.partnerEmail}</p>
                   </div>
                 </div>
 

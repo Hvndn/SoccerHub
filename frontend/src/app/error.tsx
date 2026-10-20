@@ -35,7 +35,7 @@ export default function GlobalError({
  </p>
 
  {error.digest && (
- <p className="font-mono text-[11px] text-slate-500">Mã lỗi: {error.digest}</p>
+ <p className="font-mono text-[13px] text-slate-500">Mã lỗi: {error.digest}</p>
  )}
 
  <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-1">

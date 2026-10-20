@@ -167,7 +167,7 @@ export default function OwnerReportExport() {
  </div>
  <div>
  <h3 className="font-black text-sm text-slate-900">Xuất báo cáo thống kê</h3>
- <p className="text-[11px] text-slate-500 mt-0.5">
+ <p className="text-[13px] text-slate-500 mt-0.5">
  Tải file CSV (mở bằng Excel). Chỉ gồm dữ liệu của các cụm sân bạn sở hữu.
  </p>
  </div>
@@ -202,7 +202,7 @@ export default function OwnerReportExport() {
  {/* Bộ lọc theo từng loại báo cáo */}
  <div className="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
  <label className="block">
- <span className="block text-[11px] font-bold text-slate-600 mb-1">Số tháng (báo cáo doanh thu)</span>
+ <span className="block text-[13px] font-bold text-slate-600 mb-1">Số tháng (báo cáo doanh thu)</span>
  <select
  value={months}
  onChange={(e) => setMonths(Number(e.target.value))}
@@ -217,7 +217,7 @@ export default function OwnerReportExport() {
  </label>
 
  <label className="block">
- <span className="block text-[11px] font-bold text-slate-600 mb-1">Từ ngày (báo cáo đơn đặt)</span>
+ <span className="block text-[13px] font-bold text-slate-600 mb-1">Từ ngày (báo cáo đơn đặt)</span>
  <input
  type="date"
  value={from}
@@ -228,7 +228,7 @@ export default function OwnerReportExport() {
  </label>
 
  <label className="block">
- <span className="block text-[11px] font-bold text-slate-600 mb-1">Đến ngày / số ngày thống kê</span>
+ <span className="block text-[13px] font-bold text-slate-600 mb-1">Đến ngày / số ngày thống kê</span>
  <div className="flex gap-2">
  <input
  type="date"
@@ -253,7 +253,7 @@ export default function OwnerReportExport() {
  </label>
  </div>
 
- <p className="flex items-start gap-2 text-[11px] text-slate-500 leading-relaxed">
+ <p className="flex items-start gap-2 text-[13px] text-slate-500 leading-relaxed">
  <CalendarRange className="w-3.5 h-3.5 text-[#0369a1] shrink-0 mt-0.5" />
  <span>
  File CSV có BOM UTF-8 nên Excel hiển thị đúng tiếng Việt có dấu.
@@ -269,12 +269,12 @@ export default function OwnerReportExport() {
  </div>
  <div className="min-w-0 flex-1">
  <h4 className="font-black text-xs text-slate-900">Hoặc gửi báo cáo qua email</h4>
- <p className="text-[11px] text-slate-500 mt-0.5">
+ <p className="text-[13px] text-slate-500 mt-0.5">
  File CSV được đính kèm trực tiếp trong email.
  </p>
  </div>
  {mailReady === false && (
- <span className="shrink-0 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black">
+ <span className="shrink-0 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-[12px] font-black">
  SMTP chưa bật
  </span>
  )}
@@ -282,7 +282,7 @@ export default function OwnerReportExport() {
 
  <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_auto] gap-3 items-end">
  <label className="block">
- <span className="block text-[11px] font-bold text-slate-600 mb-1">Email nhận báo cáo</span>
+ <span className="block text-[13px] font-bold text-slate-600 mb-1">Email nhận báo cáo</span>
  <input
  type="email"
  value={mailTo}
@@ -293,7 +293,7 @@ export default function OwnerReportExport() {
  </label>
 
  <label className="block">
- <span className="block text-[11px] font-bold text-slate-600 mb-1">Loại báo cáo</span>
+ <span className="block text-[13px] font-bold text-slate-600 mb-1">Loại báo cáo</span>
  <select
  value={mailType}
  onChange={(e) => setMailType(e.target.value as ReportType)}
@@ -323,7 +323,7 @@ export default function OwnerReportExport() {
  </div>
 
  {mailReady === false && (
- <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 leading-relaxed">
+ <p className="text-[13px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 leading-relaxed">
  Hệ thống chưa cấu hình SMTP nên chưa gửi được email. Quản trị viên cần đặt các biến{" "}
  <code className="font-mono">MAIL_ENABLED=true</code>, <code className="font-mono">MAIL_USERNAME</code>,{" "}
  <code className="font-mono">MAIL_PASSWORD</code> (với Gmail dùng Mật khẩu ứng dụng).

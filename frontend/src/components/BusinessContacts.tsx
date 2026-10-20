@@ -98,21 +98,21 @@ export default function BusinessContacts({ viewerRole, onStartDm }: BusinessCont
             <h3 className="text-sm sm:text-base font-black text-slate-900 truncate">
               Liên hệ {cfg.label}
             </h3>
-            <p className="text-[11px] text-slate-500 truncate">{cfg.hint}</p>
+            <p className="text-[13px] text-slate-500 truncate">{cfg.hint}</p>
           </div>
         </div>
         <button
           type="button"
           onClick={load}
           disabled={loading}
-          className="shrink-0 text-[11px] font-bold text-[#0369a1] hover:underline disabled:opacity-50"
+          className="shrink-0 text-[13px] font-bold text-[#0369a1] hover:underline disabled:opacity-50"
         >
           {loading ? "Đang tải…" : "Tải lại"}
         </button>
       </div>
 
       {error && (
-        <p className="flex items-start gap-1.5 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5">
+        <p className="flex items-start gap-1.5 text-[13px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5">
           <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-px" />
           {error}
         </p>
@@ -137,9 +137,9 @@ export default function BusinessContacts({ viewerRole, onStartDm }: BusinessCont
             >
               <div className="min-w-0">
                 <p className="text-xs font-black text-slate-900 truncate">{c.name}</p>
-                <p className="text-[10px] text-slate-500 truncate">{c.email}</p>
+                <p className="text-[12px] text-slate-500 truncate">{c.email}</p>
                 <span
-                  className={`inline-block mt-1 px-1.5 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-wide ${
+                  className={`inline-block mt-1 px-1.5 py-0.5 rounded-md border text-[11px] font-black uppercase tracking-wide ${
                     ROLE_BADGE[c.role] ?? ROLE_BADGE.PLAYER
                   }`}
                 >

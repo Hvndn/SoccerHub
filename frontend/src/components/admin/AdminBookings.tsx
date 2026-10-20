@@ -99,7 +99,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  render: (r) => (
  <div>
  <p className="font-mono font-bold text-slate-700 ">{r.code || `#${r.id}`}</p>
- <p className="text-[10px] font-mono text-slate-500">{r.createdAt ? String(r.createdAt).slice(0, 16).replace("T", " ") : ""}</p>
+ <p className="text-[12px] font-mono text-slate-500">{r.createdAt ? String(r.createdAt).slice(0, 16).replace("T", " ") : ""}</p>
  </div>
  ),
  },
@@ -111,7 +111,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  render: (r) => (
  <div>
  <p className="font-bold text-slate-900 ">{r.customerName}</p>
- <p className="text-[11px] font-mono text-slate-500">{r.customerPhone}</p>
+ <p className="text-[13px] font-mono text-slate-500">{r.customerPhone}</p>
  </div>
  ),
  },
@@ -123,7 +123,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  render: (r) => (
  <div>
  <p className="font-bold">{r.courtName}</p>
- <p className="text-[11px] text-slate-500 font-mono">
+ <p className="text-[13px] text-slate-500 font-mono">
  {r.bookingDate} • {r.timeSlot}
  </p>
  </div>
@@ -143,7 +143,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  {
  key: "via",
  header: "Kênh",
- render: (r) => <span className="text-[11px] font-bold text-slate-600 ">{r.via || "—"}</span>,
+ render: (r) => <span className="text-[13px] font-bold text-slate-600 ">{r.via || "—"}</span>,
  },
  {
  key: "status",
@@ -163,7 +163,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
  <div>
  <h2 className="font-black text-slate-900 text-sm">Đơn đặt sân & doanh thu</h2>
- <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
+ <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
  100 đơn mới nhất. Tra cứu mã vé hoặc SĐT để soi chi tiết.
  </p>
  </div>
@@ -196,12 +196,12 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  <Sparkles className="w-3.5 h-3.5 text-[#0369a1]" />
  Dữ liệu demo
  </p>
- <p className="text-[11px] text-slate-500 mt-0.5">
+ <p className="text-[13px] text-slate-500 mt-0.5">
  Sinh đơn giả lập 21 ngày (14 ngày trước · 7 ngày sau) để dashboard chủ sân có doanh thu &amp; lịch đầy đủ.
  </p>
  </div>
  <div className="flex items-center gap-2 shrink-0">
- <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+ <label className="flex items-center gap-1.5 text-[13px] font-bold text-slate-500">
  <span className="hidden sm:inline">Đơn/ngày</span>
  <input
  type="number"

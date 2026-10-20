@@ -583,11 +583,11 @@ export default function PitchDetail({
  : "bg-white hover:bg-slate-50 border-slate-200 text-slate-900 "
  }`}
  >
- <span className={`text-[10px] uppercase tracking-wider font-extrabold ${selectedDate === d.iso ? "text-white font-black" : "text-slate-500"}`}>
+ <span className={`text-[12px] tracking-wider font-extrabold ${selectedDate === d.iso ? "text-white font-black" : "text-slate-500"}`}>
  {d.label}
  </span>
  <span className="text-sm font-black font-mono">{d.dateFormatted}</span>
- <span className={`text-[10px] px-2 py-0.5 rounded-full mt-1 font-bold ${
+ <span className={`text-[12px] px-2 py-0.5 rounded-full mt-1 font-bold ${
  selectedDate === d.iso 
  ? "bg-white/20 text-white " 
  : d.isWeekend ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-500"
@@ -722,12 +722,12 @@ export default function PitchDetail({
  type="button"
  className="h-20 rounded-2xl bg-[#0369a1] text-white shadow-lg shadow-sky-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-white/70 btn-shimmer cursor-pointer"
  >
- <div className="absolute top-0 right-0 bg-white text-[#0b4f6c] text-[9px] px-2 py-0.5 font-black rounded-bl uppercase shadow-xs">
+ <div className="absolute top-0 right-0 bg-white text-[#0b4f6c] text-[11px] px-2 py-0.5 font-black rounded-bl uppercase shadow-xs">
  ĐANG CHỌN ⚽
  </div>
  <span className="font-extrabold text-sm">{slot.time}</span>
  <span className="font-black text-base font-mono mt-0.5">{slot.price}</span>
- <span className="text-[10px] text-cyan-50 font-semibold">{slot.durationMinutes || fixedSlotDuration || 120} phút (2 tiếng)</span>
+ <span className="text-[12px] text-cyan-50 font-semibold">{slot.durationMinutes || fixedSlotDuration || 120} phút (2 tiếng)</span>
  </button>
  );
  }
@@ -746,11 +746,11 @@ export default function PitchDetail({
  <span>Đã Cọc</span>
  </div>
  {isOwner ? (
- <span className="text-[10px] text-slate-600 font-mono truncate max-w-[120px] font-semibold">
+ <span className="text-[12px] text-slate-600 font-mono truncate max-w-[120px] font-semibold">
  {slot.customer || slot.phone || "Khách cọc"}
  </span>
  ) : (
- <span className="text-[10px] text-slate-500 font-medium">
+ <span className="text-[12px] text-slate-500 font-medium">
  Khóa ca
  </span>
  )}
@@ -770,15 +770,15 @@ export default function PitchDetail({
  }`}
  >
  {slot.isGapSlot ? (
- <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 text-[9px] font-black px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider flex items-center gap-0.5">
+ <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 text-[11px] font-black px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider flex items-center gap-0.5">
  <span>⚡ Lọt Khe</span>
  </div>
  ) : isPeak ? (
- <div className="absolute top-1.5 right-1.5 text-amber-700 text-[10px] font-bold">
+ <div className="absolute top-1.5 right-1.5 text-amber-700 text-[12px] font-bold">
  ⭐ Vàng
  </div>
  ) : isResale ? (
- <div className="absolute top-1 right-1 bg-amber-500 text-white text-[9px] font-bold px-1.5 rounded">
+ <div className="absolute top-1 right-1 bg-amber-500 text-white text-[11px] font-bold px-1.5 rounded">
  Pass -40%
  </div>
  ) : null}
@@ -788,7 +788,7 @@ export default function PitchDetail({
  <span className={`font-black text-sm font-mono mt-0.5 ${slot.isGapSlot ? "text-amber-600 " : "text-sky-700 "}`}>
  {slot.price}
  </span>
- <span className={`text-[10px] font-medium ${slot.isGapSlot ? "text-amber-600/80 font-bold" : "text-slate-500"}`}>
+ <span className={`text-[12px] font-medium ${slot.isGapSlot ? "text-amber-600/80 font-bold" : "text-slate-500"}`}>
  {slot.isGapSlot ? `${slot.durationMinutes}p linh hoạt` : "Còn trống"}
  </span>
  </button>
@@ -847,7 +847,7 @@ export default function PitchDetail({
  </div>
  <div>
  <h3 className="font-black text-sm text-slate-900 ">Phiếu Đặt Chỗ Sân Bóng</h3>
- <span className="text-[11px] text-slate-500 font-mono">Giữ chỗ qua mã đơn</span>
+ <span className="text-[13px] text-slate-500 font-mono">Giữ chỗ qua mã đơn</span>
  </div>
  </div>
  <button
@@ -864,7 +864,7 @@ export default function PitchDetail({
  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
  <div className="flex items-start justify-between">
  <div>
- <span className="text-[10px] text-slate-500 uppercase font-extrabold tracking-wider">Cụm sân & Mặt sân</span>
+ <span className="text-[12px] text-slate-500 font-extrabold tracking-wider">Cụm sân & Mặt sân</span>
  <p className="font-black text-sm text-slate-900 ">{selectedSlot.courtName}</p>
  <p className="text-xs text-slate-500 truncate max-w-[220px]">{venueData.name}</p>
  </div>
@@ -873,11 +873,11 @@ export default function PitchDetail({
 
  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 text-xs">
  <div>
- <span className="text-[10px] text-slate-500 uppercase font-bold">Ngày thi đấu:</span>
+ <span className="text-[12px] text-slate-500 font-bold">Ngày thi đấu:</span>
  <p className="font-bold text-slate-900 font-mono">{selectedDate}</p>
  </div>
  <div>
- <span className="text-[10px] text-slate-500 uppercase font-bold">Khung giờ:</span>
+ <span className="text-[12px] text-slate-500 font-bold">Khung giờ:</span>
  <p className="font-bold text-sky-700 font-mono">{selectedSlot.time}</p>
  </div>
  </div>
@@ -893,7 +893,7 @@ export default function PitchDetail({
  {/* Tổng thanh toán */}
  <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
  <div>
- <span className="text-[10px] text-slate-500 uppercase font-extrabold block">TỔNG TIỀN CA SÂN:</span>
+ <span className="text-[12px] text-slate-500 font-extrabold block">TỔNG TIỀN CA SÂN:</span>
  <span className="text-xs text-sky-700 font-bold">Theo giá niêm yết của sân</span>
  </div>
  <div className="text-right">
@@ -906,7 +906,7 @@ export default function PitchDetail({
 
  {/* Tùy Chọn Cọc (50% hoặc 100%) */}
  <div className="space-y-2">
- <label className="text-xs font-extrabold uppercase tracking-wider text-slate-500 block">
+ <label className="text-xs font-extrabold tracking-wider text-slate-500 block">
  Hình thức đặt cọc giữ chỗ:
  </label>
  <div className="grid grid-cols-2 gap-2">
@@ -925,7 +925,7 @@ export default function PitchDetail({
  <span className="font-mono text-base font-black text-sky-700 mt-1">
  {Math.round(totalPrice * 0.5).toLocaleString("vi-VN")}đ
  </span>
- <span className="text-[10px] text-slate-500">Trả phần còn lại ở quầy</span>
+ <span className="text-[12px] text-slate-500">Trả phần còn lại ở quầy</span>
  </div>
 
  <div
@@ -943,7 +943,7 @@ export default function PitchDetail({
  <span className="font-mono text-base font-black text-slate-900 mt-1">
  {totalPrice.toLocaleString("vi-VN")}đ
  </span>
- <span className="text-[10px] text-slate-500">Tặng +50 Điểm Thưởng</span>
+ <span className="text-[12px] text-slate-500">Tặng +50 Điểm Thưởng</span>
  </div>
  </div>
  </div>
@@ -954,7 +954,7 @@ export default function PitchDetail({
  Ước Tính Chia Tiền:
  </span>
  <div className="flex items-center justify-between gap-2">
- <span className="text-[11px] text-slate-500">Số người chia:</span>
+ <span className="text-[13px] text-slate-500">Số người chia:</span>
  <input
  type="number"
  min={1}
@@ -966,7 +966,7 @@ export default function PitchDetail({
  />
  </div>
  <div className="flex items-center justify-between gap-2">
- <span className="text-[11px] text-slate-500">
+ <span className="text-[13px] text-slate-500">
  Mỗi người ~ <strong className="text-sky-700 font-mono font-bold text-xs">{splitPerPlayer.toLocaleString("vi-VN")}đ</strong>
  </span>
  <button
@@ -999,7 +999,7 @@ export default function PitchDetail({
  </>
  )}
  </button>
- <div className="flex items-center justify-center space-x-1 text-center text-[11px] text-slate-500">
+ <div className="flex items-center justify-center space-x-1 text-center text-[13px] text-slate-500">
  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
  <span>Mức cọc do từng sân quy định • Hoàn cọc theo chính sách của sân</span>
  </div>
@@ -1034,7 +1034,7 @@ export default function PitchDetail({
  </div>
  <div>
  <span className="font-bold text-xs text-slate-900 block">Chủ Sân: {venueData.ownerName}</span>
- <span className="text-[11px] text-slate-500 block font-mono">Hotline: {venueData.phone}</span>
+ <span className="text-[13px] text-slate-500 block font-mono">Hotline: {venueData.phone}</span>
  </div>
  </div>
  <a
@@ -1103,7 +1103,7 @@ export default function PitchDetail({
  <span>Mã giữ chỗ: </span>
  <strong className="text-[#0b4f6c] font-mono text-sm">{bookingConfirmed?.code || "—"}</strong>
  </div>
- <p className="text-[11px] text-slate-500 mt-1">Liên hệ chủ sân để hoàn tất cọc và xác nhận ca.</p>
+ <p className="text-[13px] text-slate-500 mt-1">Liên hệ chủ sân để hoàn tất cọc và xác nhận ca.</p>
  </div>
 
  <button
@@ -1140,7 +1140,7 @@ export default function PitchDetail({
  </p>
  <p className="font-bold text-slate-900 ">{venueData.name}</p>
  <p>{selectedSlot.courtName} • {selectedSlot.time}</p>
- <p className="text-slate-500 text-[11px]">Ngày đá: {selectedDate}</p>
+ <p className="text-slate-500 text-[13px]">Ngày đá: {selectedDate}</p>
  </div>
  </div>
 

@@ -167,7 +167,7 @@ export default function RefereePanel() {
               </div>
               <div className="flex items-center space-x-2 font-semibold">
                 <span className="text-slate-300 hidden sm:inline">{evt.detail}</span>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-pitch-emerald font-extrabold uppercase text-[10px]">
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-pitch-emerald font-extrabold text-[12px]">
                   {evt.type}
                 </span>
               </div>

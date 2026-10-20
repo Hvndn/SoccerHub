@@ -35,7 +35,7 @@ const STEPS = [
 const inputCls =
  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-[#0369a1] focus:border-emerald-500";
 const labelCls = "block text-xs font-bold text-slate-700 mb-1.5";
-const errCls = "mt-1 text-[11px] font-semibold text-rose-600 ";
+const errCls = "mt-1 text-[13px] font-semibold text-rose-600 ";
 const PHONE_RE = /^0\d{9}$/;
 
 export default function RegisterTeamPage() {
@@ -227,12 +227,12 @@ function RegisterTeamWizard() {
  <span className="block text-sm font-black text-slate-900 truncate">
  {t.title}
  </span>
- <span className="mt-1 block text-[11px] text-slate-500">
+ <span className="mt-1 block text-[13px] text-slate-500">
  {sportLabel(t.sportType)} • Khởi tranh {formatDate(t.startDate)} •{" "}
  {t.registeredTeams ?? 0}/{t.totalTeams ?? "—"} đội
  </span>
   {t.joinMode === "INVITE_ONLY" && (
-  <span className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 border border-amber-300 text-amber-900 text-[10px] font-black">
+  <span className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 border border-amber-300 text-amber-900 text-[12px] font-black">
   🔒 Chỉ mời qua email
   </span>
   )}
@@ -349,7 +349,7 @@ function RegisterTeamWizard() {
  </div>
  </dl>
  </div>
- <p className="flex items-center gap-2 text-[11px] text-slate-500">
+ <p className="flex items-center gap-2 text-[13px] text-slate-500">
  <Trophy className="w-3.5 h-3.5 text-sky-700" />
  Hồ sơ được lưu vào CSDL & giữ chỗ tự động cho đội của bạn.
  </p>
@@ -374,7 +374,7 @@ function RegisterTeamWizard() {
  <ArrowLeft className="w-4 h-4" />
  <span>Quay lại</span>
  </button>
- <span className="text-[11px] font-mono text-slate-600 ">Bước {step + 1}/{STEPS.length}</span>
+ <span className="text-[13px] font-mono text-slate-600 ">Bước {step + 1}/{STEPS.length}</span>
  {step < STEPS.length - 1 ? (
  <button
  type="button"

@@ -77,8 +77,8 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
       render: (r) => (
         <div className="max-w-[180px]">
           <p className="font-bold text-slate-900 truncate">{r.senderName}</p>
-          <p className="text-[10px] font-mono text-slate-500 truncate">{r.senderEmail}</p>
-          <span className="text-[9px] font-bold text-slate-400 uppercase">{r.senderRole}</span>
+          <p className="text-[12px] font-mono text-slate-500 truncate">{r.senderEmail}</p>
+          <span className="text-[11px] font-bold text-slate-400 uppercase">{r.senderRole}</span>
         </div>
       ),
     },
@@ -98,7 +98,7 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
       header: "Nội dung",
       render: (r) => (
         <div className="max-w-[360px]">
-          {r.pinned && <span className="text-[9px] font-bold text-amber-600 uppercase mr-1">[Ghim]</span>}
+          {r.pinned && <span className="text-[11px] font-bold text-amber-600 mr-1">[Ghim]</span>}
           <span className="text-slate-700 break-words">{r.content}</span>
         </div>
       ),
@@ -109,7 +109,7 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
       sortable: true,
       sortValue: (r) => r.createdAt ?? "",
       render: (r) => (
-        <span className="text-[10px] font-mono text-slate-500 whitespace-nowrap">
+        <span className="text-[12px] font-mono text-slate-500 whitespace-nowrap">
           {r.createdAt ? String(r.createdAt).replace("T", " ").slice(0, 16) : "—"}
         </span>
       ),
@@ -137,7 +137,7 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="font-black text-slate-900 text-sm">Kiểm duyệt tin nhắn chat</h2>
-            <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
+            <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
               Xem và gỡ tin vi phạm trong các kênh công khai và nhóm chat.
             </p>
           </div>

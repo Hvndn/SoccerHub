@@ -254,7 +254,7 @@ const mobileNav: MobileNavItem[] =
   <MessageCircle className="w-[18px] h-[18px] text-emerald-400 shrink-0" />
   <span>Cộng Đồng</span>
   {chatUnread > 0 && (
-  <span className="min-w-[16px] h-4 px-1 rounded-full bg-[#0369a1] text-white text-[9px] font-black flex items-center justify-center">
+  <span className="min-w-[16px] h-4 px-1 rounded-full bg-[#0369a1] text-white text-[11px] font-black flex items-center justify-center">
   {chatUnread > 9 ? "9+" : chatUnread}
   </span>
   )}
@@ -283,7 +283,7 @@ const mobileNav: MobileNavItem[] =
  >
  <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-sky-700 shrink-0" />
  <span>Điều Hành Giải Đấu</span>
- <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-[#0369a1] text-white leading-none shadow-xs">
+ <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-[#0369a1] text-white leading-none shadow-xs">
  BTC
  </span>
  </button>
@@ -312,7 +312,7 @@ const mobileNav: MobileNavItem[] =
   >
   <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-rose-500 text-white leading-none shadow-xs">
   HOT
   </span>
   </button>
@@ -357,7 +357,7 @@ const mobileNav: MobileNavItem[] =
   >
   <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-rose-500 text-white leading-none shadow-xs">
   HOT
   </span>
   </button>
@@ -416,7 +416,7 @@ const mobileNav: MobileNavItem[] =
   >
   <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-rose-500 text-white leading-none shadow-xs">
   HOT
   </span>
   </button>
@@ -509,7 +509,7 @@ const mobileNav: MobileNavItem[] =
  >
  <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-[#0b4f6c] " />
  {unreadCount > 0 && (
- <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center px-1.5 ring-2 ring-white animate-pulse">
+ <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-rose-500 text-white text-[12px] font-black flex items-center justify-center px-1.5 ring-2 ring-white animate-pulse">
  {unreadCount > 9 ? "9+" : unreadCount}
  </span>
  )}
@@ -585,7 +585,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  )}
 
- <p className="text-[11px] text-slate-500 font-mono mt-1.5">{formatNotifTime(notif.time)}</p>
+ <p className="text-[13px] text-slate-500 font-mono mt-1.5">{formatNotifTime(notif.time)}</p>
  </div>
 
  {/* Nút xóa */}
@@ -646,7 +646,7 @@ const mobileNav: MobileNavItem[] =
  <div className="text-xs font-extrabold text-slate-900 leading-tight truncate">
  {user.fullName || user.name || "Người Dùng"}
  </div>
- <div className="text-[10px] font-bold text-slate-500 font-mono flex items-center justify-end space-x-1 whitespace-nowrap">
+ <div className="text-[12px] font-bold text-slate-500 font-mono flex items-center justify-end space-x-1 whitespace-nowrap">
  <span className="text-[#0b4f6c] font-extrabold shrink-0">
  {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'BTC' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
  </span>
@@ -659,7 +659,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  </div>
 
- <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0369a1] border-2 border-sky-400 text-white font-extrabold text-[10px] sm:text-xs flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+ <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0369a1] border-2 border-sky-400 text-white font-extrabold text-[12px] sm:text-xs flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
  <NavbarAvatar user={user} />
  </div>
  </div>
@@ -671,11 +671,11 @@ const mobileNav: MobileNavItem[] =
  <p className="font-extrabold text-xs text-slate-900 truncate max-w-[140px]">
  {user.fullName || user.name || "Người Dùng"}
  </p>
- <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#0369a1]/10 text-[#0b4f6c] ">
+ <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded bg-[#0369a1]/10 text-[#0b4f6c] ">
  {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'Ban Tổ Chức' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
  </span>
  </div>
- <p className="text-[10px] font-mono text-slate-500 truncate mt-0.5">
+ <p className="text-[12px] font-mono text-slate-500 truncate mt-0.5">
  {user.email || user.phone || ""}
  </p>
  </div>
@@ -929,7 +929,7 @@ const mobileNav: MobileNavItem[] =
  <p className="font-black text-sm text-slate-900 truncate">
  {user.fullName || user.name || "Cầu Thủ Turfzone"}
  </p>
- <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-sky-50 text-[#0b4f6c] ">
+ <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-extrabold uppercase bg-sky-50 text-[#0b4f6c] ">
  {user.role === "OWNER" ? "Chủ Sân Đối Tác" : user.role === "ORGANIZER" ? "Ban Tổ Chức" : user.role === "ADMIN" ? "Quản Trị Viên" : "VĐV Chuyên Nghiệp"}
  </span>
  </div>
@@ -950,7 +950,7 @@ const mobileNav: MobileNavItem[] =
  <p className="font-extrabold text-xs text-[#0b4f6c] ">
  Gia nhập cộng đồng Turfzone
  </p>
- <p className="text-[11px] text-slate-600 leading-relaxed">
+ <p className="text-[13px] text-slate-600 leading-relaxed">
  Đăng nhập để theo dõi lịch trình, giải đấu và phong độ thi đấu của bạn.
  </p>
  <div className="flex items-center space-x-2 pt-1">
@@ -980,7 +980,7 @@ const mobileNav: MobileNavItem[] =
 
  {/* Danh mục menu điều hướng chính đồng bộ 100% với PC Dropdowns */}
  <div className="space-y-3">
- <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 px-1 block">
+ <span className="text-[12px] font-extrabold tracking-wider text-slate-500 px-1 block">
  Danh Mục Nền Tảng
  </span>
 
@@ -1000,7 +1000,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  <div>
  <div className="text-xs font-extrabold leading-tight">Quản Lý Cụm Sân & Doanh Thu</div>
- <div className={`text-[10px] ${activeTab === "admin" ? "text-white/80 " : "text-slate-500"}`}>Điều hành doanh thu, ca sân & giá cọc</div>
+ <div className={`text-[12px] ${activeTab === "admin" ? "text-white/80 " : "text-slate-500"}`}>Điều hành doanh thu, ca sân & giá cọc</div>
  </div>
  </button>
 
@@ -1018,7 +1018,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  <div>
  <div className="text-xs font-extrabold leading-tight">Sơ Đồ Ca Sân Realtime</div>
- <div className={`text-[10px] ${activeTab === "multi-sport" ? "text-white/80 " : "text-slate-500"}`}>Ma trận slot & trạng thái thi đấu trực tiếp</div>
+ <div className={`text-[12px] ${activeTab === "multi-sport" ? "text-white/80 " : "text-slate-500"}`}>Ma trận slot & trạng thái thi đấu trực tiếp</div>
  </div>
  </button>
 
@@ -1038,14 +1038,14 @@ const mobileNav: MobileNavItem[] =
   <div className="relative w-8 h-8 rounded-xl bg-[#0369a1]/10 flex items-center justify-center shrink-0">
   <MessageCircle className="w-4 h-4 text-[#0369a1]" />
   {chatUnread > 0 && (
-  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#0369a1] text-white text-[9px] font-black flex items-center justify-center border-2 border-white">
+  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#0369a1] text-white text-[11px] font-black flex items-center justify-center border-2 border-white">
   {chatUnread > 9 ? "9+" : chatUnread}
   </span>
   )}
   </div>
   <div className="min-w-0 flex-1">
   <div className="text-xs font-extrabold leading-tight">Cộng Đồng & Nhắn Tin</div>
-  <div className={`text-[10px] truncate ${activeTab === "community" ? "text-white/80 " : "text-slate-500"}`}>
+  <div className={`text-[12px] truncate ${activeTab === "community" ? "text-white/80 " : "text-slate-500"}`}>
   Trao đổi với khách & nhóm chat
   </div>
   </div>
@@ -1069,7 +1069,7 @@ const mobileNav: MobileNavItem[] =
   </div>
   <div className="min-w-0 flex-1">
   <div className="text-xs font-extrabold leading-tight">Hồ Sơ Cá Nhân</div>
-  <div className={`text-[10px] truncate ${activeTab === "profile" ? "text-white/80 " : "text-slate-500"}`}>
+  <div className={`text-[12px] truncate ${activeTab === "profile" ? "text-white/80 " : "text-slate-500"}`}>
   Họ tên, SĐT, khu vực & ảnh đại diện
   </div>
   </div>
@@ -1087,7 +1087,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  <div>
  <div className="text-xs font-extrabold leading-tight">Quản Trị Hệ Thống</div>
- <div className="text-[10px] text-white/80">
+ <div className="text-[12px] text-white/80">
  Tổng quan, người dùng, giải đấu & kiểm duyệt
  </div>
  </div>
@@ -1110,9 +1110,9 @@ const mobileNav: MobileNavItem[] =
  <div>
  <div className="text-xs font-extrabold leading-tight flex items-center gap-1.5">
  <span>Điều Hành Giải Đấu</span>
- <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-[#0369a1] text-white">BTC</span>
+ <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-[#0369a1] text-white">BTC</span>
  </div>
- <div className={`text-[10px] ${activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
+ <div className={`text-[12px] ${activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
  Tạo giải, duyệt đội & bốc thăm
  </div>
  </div>
@@ -1132,7 +1132,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  <div>
  <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
- <div className={`text-[10px] ${activeTab === "tournaments" ? "text-white/80" : "text-slate-500"}`}>
+ <div className={`text-[12px] ${activeTab === "tournaments" ? "text-white/80" : "text-slate-500"}`}>
  Theo dõi nhánh đấu & phong độ thi đấu
  </div>
  </div>
@@ -1149,7 +1149,7 @@ const mobileNav: MobileNavItem[] =
   >
   <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-rose-500 text-white leading-none shadow-xs">
   HOT
   </span>
   </button>
@@ -1184,7 +1184,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  <div>
  <div className="text-xs font-extrabold leading-tight">Đặt Sân Bóng Đá</div>
- <div className={`text-[10px] ${activeTab === "booking" ? "text-white/80" : "text-slate-500"}`}>
+ <div className={`text-[12px] ${activeTab === "booking" ? "text-white/80" : "text-slate-500"}`}>
  Tìm cụm sân gần nhất & giữ chỗ online
  </div>
  </div>
@@ -1202,7 +1202,7 @@ const mobileNav: MobileNavItem[] =
   >
   <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white leading-none shadow-xs">
+  <span className="px-1.5 py-0.5 rounded text-[11px] font-black bg-rose-500 text-white leading-none shadow-xs">
   HOT
   </span>
   </button>
@@ -1235,7 +1235,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  <div>
  <div className="text-xs font-extrabold leading-tight">Giải Đấu & BXH</div>
- <div className={`text-[10px] ${activeTab === "tournaments" || activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
+ <div className={`text-[12px] ${activeTab === "tournaments" || activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
  Đăng ký giải, nhánh đấu & lịch sử thi đấu
  </div>
  </div>
@@ -1257,7 +1257,7 @@ const mobileNav: MobileNavItem[] =
  </div>
  <div>
  <div className="text-xs font-extrabold leading-tight">Thẻ Hội Viên & Ưu Đãi</div>
- <div className={`text-[10px] ${activeTab === "membership" ? "text-white/80" : "text-slate-500"}`}>
+ <div className={`text-[12px] ${activeTab === "membership" ? "text-white/80" : "text-slate-500"}`}>
  Gói Pass tháng, tích điểm MP & quà tặng
  </div>
  </div>
@@ -1267,7 +1267,7 @@ const mobileNav: MobileNavItem[] =
  {/* KHỐI CÁ NHÂN VĐV NẾU ĐÃ LOGIN (LỊCH TRÌNH & HỒ SƠ) */}
  {user && (
  <div className="pt-2 border-t border-slate-200/80 space-y-2">
- <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 px-1 block">
+ <span className="text-[12px] font-extrabold tracking-wider text-slate-500 px-1 block">
  Hồ Sơ & Hoạt Động
  </span>
 
@@ -1370,7 +1370,7 @@ const mobileNav: MobileNavItem[] =
  <Icon className="w-[21px] h-[21px]" />
  <span
   className={`font-bold leading-none tracking-tight ${
-  bottomNavDense ? "text-[8.5px]" : "text-[10px]"
+  bottomNavDense ? "text-[8.5px]" : "text-[12px]"
   }`}
   >
  {item.label}

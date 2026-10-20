@@ -113,7 +113,7 @@ function Field({
  {required && <span className="text-rose-500">*</span>}
  </span>
  {children}
- {hint && <span className="block text-[11px] text-slate-500">{hint}</span>}
+ {hint && <span className="block text-[13px] text-slate-500">{hint}</span>}
  </label>
  );
 }
@@ -240,7 +240,7 @@ export default function PlayerSetup() {
 
  {/* Thanh tiến trình */}
  <div className="pt-1">
- <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 mb-1.5">
+ <div className="flex items-center justify-between text-[13px] font-bold text-slate-600 mb-1.5">
  <span>Tiến độ hoàn tất</span>
  <span className="font-mono text-[#0369a1]">{progress}%</span>
  </div>
@@ -381,7 +381,7 @@ export default function PlayerSetup() {
  )}
 
  <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 pt-4">
- <p className="text-[11px] text-slate-500 leading-relaxed max-w-sm">
+ <p className="text-[13px] text-slate-500 leading-relaxed max-w-sm">
  Bạn có thể sửa lại hồ sơ này bất cứ lúc nào trong mục{" "}
  <strong className="text-slate-700">Hồ Sơ VĐV</strong>.
  </p>
@@ -409,7 +409,7 @@ export default function PlayerSetup() {
  </div>
  </form>
 
- <p className="text-center text-[11px] text-slate-400">
+ <p className="text-center text-[13px] text-slate-400">
  Không có token?{" "}
  <a href="/" className="underline hover:text-slate-600">
  Quay lại trang chủ

@@ -62,7 +62,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  <SectionCard>
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div>
- <h2 className="font-black text-slate-900 text-sm">Bảo trì dữ liệu</h2> <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
+ <h2 className="font-black text-slate-900 text-sm">Bảo trì dữ liệu</h2> <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
  Xóa kết quả trận và bàn thắng mồ côi (giải đã bị xóa).
  </p>
  </div>
@@ -98,7 +98,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  {k.icon}
  </div>
  <div className="min-w-0">
- <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{k.label}</p>
+ <p className="text-[13px] font-bold text-slate-500 tracking-wide">{k.label}</p>
  <p className="font-mono font-black text-lg sm:text-xl text-slate-900 truncate">
  <CountUp
  value={k.value}
@@ -118,7 +118,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  <SectionCard>
  <div className="flex items-center justify-between mb-4">
  <h3 className="font-black text-slate-900 text-sm">Doanh thu theo tháng</h3> {report && (
- <span className="text-[11px] font-mono text-slate-500">
+ <span className="text-[13px] font-mono text-slate-500">
  Tổng tháng này: {formatMoney(report.totalRevenueThisMonth)} • Lấp đầy TB: {report.avgOccupancyRate}
  </span>
  )}
@@ -133,14 +133,14 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  <div className="flex items-end gap-2 h-44" role="img" aria-label="Biểu đồ doanh thu theo tháng">
  {monthly.map((m, i) => (
  <div key={i} className="flex-1 flex flex-col items-center gap-1.5 min-w-0 h-full justify-end">
- <span className="text-[10px] font-mono font-bold text-sky-800 whitespace-nowrap">
+ <span className="text-[12px] font-mono font-bold text-sky-800 whitespace-nowrap">
  {(Number(m.revenue) / 1000000).toFixed(0)}tr
  </span>
  <div
  className="w-full rounded-t-lg bg-gradient-to-t from-[#0369a1] to-[#075985] transition-all duration-700"
  style={{ height: chartIn ? `${Math.max(4, Math.round((Number(m.revenue) / maxRev) * 100))}%` : "4%", transitionDelay: `${i * 60}ms` }}
  />
- <span className="text-[9px] font-bold text-slate-500 truncate w-full text-center">
+ <span className="text-[11px] font-bold text-slate-500 truncate w-full text-center">
  {String(m.month).replace(" (Dự kiến)", "*")}
  </span>
  </div>
@@ -152,7 +152,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  <div className="pt-2">
  <div className="flex items-center gap-2 mb-3">
  <h3 className="font-black text-slate-900 text-sm">Biểu đồ thống kê</h3>
- <span className="text-[11px] text-slate-500">— dữ liệu trực tiếp từ CSDL</span>
+ <span className="text-[13px] text-slate-500">— dữ liệu trực tiếp từ CSDL</span>
  </div>
  <AdminCharts />
  </div>

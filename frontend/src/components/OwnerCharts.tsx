@@ -98,7 +98,7 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
             </div>
             <div className="min-w-0">
               <h3 className="font-black text-sm text-slate-900">Doanh thu theo tháng</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">6 tháng gần nhất · tiền cọc + tiền mặt đã thu</p>
+              <p className="text-[13px] text-slate-500 mt-0.5">6 tháng gần nhất · tiền cọc + tiền mặt đã thu</p>
             </div>
           </div>
           {loading ? (
@@ -147,7 +147,7 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
             </div>
             <div className="min-w-0">
               <h3 className="font-black text-sm text-slate-900">Tỷ lệ lấp đầy theo tháng</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Số ca đã bán / tổng số ca có thể bán</p>
+              <p className="text-[13px] text-slate-500 mt-0.5">Số ca đã bán / tổng số ca có thể bán</p>
             </div>
           </div>
           {loading ? (
@@ -200,7 +200,7 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
           </div>
           <div className="min-w-0">
             <h3 className="font-black text-sm text-slate-900">Nhu cầu theo khung giờ trong ngày</h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[13px] text-slate-500 mt-0.5">
               Giúp chủ sân biết giờ nào hot nhất để tăng giá giờ vàng
               {activePitch?.name ? ` · ${activePitch.name}` : ""}
             </p>

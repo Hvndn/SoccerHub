@@ -236,7 +236,7 @@ export default function StadiumOwnerOnboarding({
  {currentStep > 1 ? <Check className="w-4 h-4 stroke-[3]" /> : "1"}
  </div>
  <div>
- <span className="text-[10px] uppercase font-bold block opacity-80">Bước 1</span>
+ <span className="text-[12px] font-bold block opacity-80">Bước 1</span>
  <span className="text-xs font-extrabold block leading-tight">Hồ Sơ &amp; Địa Chỉ</span>
  </div>
  </button>
@@ -258,7 +258,7 @@ export default function StadiumOwnerOnboarding({
  {currentStep > 2 ? <Check className="w-4 h-4 stroke-[3]" /> : "2"}
  </div>
  <div>
- <span className="text-[10px] uppercase font-bold block opacity-80">Bước 2</span>
+ <span className="text-[12px] font-bold block opacity-80">Bước 2</span>
  <span className="text-xs font-extrabold block leading-tight">Khai Báo Sân & Biểu Giá</span>
  </div>
  </button>
@@ -280,7 +280,7 @@ export default function StadiumOwnerOnboarding({
  {currentStep > 3 ? <Check className="w-4 h-4 stroke-[3]" /> : "3"}
  </div>
  <div>
- <span className="text-[10px] uppercase font-bold block opacity-80">Bước 3</span>
+ <span className="text-[12px] font-bold block opacity-80">Bước 3</span>
  <span className="text-xs font-extrabold block leading-tight">Chính Sách Thanh Toán</span>
  </div>
  </button>
@@ -298,7 +298,7 @@ export default function StadiumOwnerOnboarding({
  4
  </div>
  <div>
- <span className="text-[10px] uppercase font-bold block opacity-80">Bước 4</span>
+ <span className="text-[12px] font-bold block opacity-80">Bước 4</span>
  <span className="text-xs font-extrabold block leading-tight">Kiểm Tra &amp; Mở Cửa</span>
  </div>
  </button>
@@ -347,7 +347,7 @@ export default function StadiumOwnerOnboarding({
  <div className="space-y-1.5">
  <label className="font-extrabold text-slate-700 flex items-center justify-between">
  <span>Tọa Độ GPS (Vĩ Độ - Lat):</span>
- <span className="text-[10px] text-slate-500 font-bold">Tùy chọn</span>
+ <span className="text-[12px] text-slate-500 font-bold">Tùy chọn</span>
  </label>
  <input
  type="text"
@@ -432,7 +432,7 @@ export default function StadiumOwnerOnboarding({
  <td className="p-3 font-mono font-bold text-slate-900 ">{p.normalPrice.toLocaleString()}đ</td>
  <td className="p-3 font-mono font-extrabold text-emerald-500">{p.peakPrice.toLocaleString()}đ</td>
  <td className="p-3">
- <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0369a1]/10 text-emerald-500 border border-sky-400/20">
+ <span className="px-2 py-0.5 rounded-full text-[12px] font-bold bg-[#0369a1]/10 text-emerald-500 border border-sky-400/20">
  Sẵn Sàng
  </span>
  </td>
@@ -476,19 +476,19 @@ export default function StadiumOwnerOnboarding({
  ].map((s) => (
  <div key={s.t} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 ">
  <p className="font-extrabold text-slate-900 ">{s.t}</p>
- <p className="text-[11px] text-slate-500 mt-1">{s.d}</p>
+ <p className="text-[13px] text-slate-500 mt-1">{s.d}</p>
  </div>
  ))}
  </div>
 
  <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-200 space-y-3 text-left">
  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Gợi ý khai báo cho khách hàng</span>
- <div className="space-y-2 text-[11px] text-slate-600 ">
+ <div className="space-y-2 text-[13px] text-slate-600 ">
  <p>• Ghi rõ mức cọc (nếu có) và chính sách hoàn cọc trong phần <strong>Mô tả sân</strong> ở Bước 1 hoặc tab quản lý.</p>
  <p>• Đăng số tài khoản nhận tiền ở phần mô tả sân để khách tự chuyển khi đặt giúp bạn.</p>
  <p>• Ca giờ vàng (chiều/tối) nên để giá cao hơn giờ thường — chỉnh trực tiếp ở tab "Quản Lý Cụm Sân &amp; Doanh Thu".</p>
  </div>
- <p className="text-[11px] text-sky-700 font-bold pt-2 border-t border-slate-100 ">
+ <p className="text-[13px] text-sky-700 font-bold pt-2 border-t border-slate-100 ">
  Mọi thay đổi giá và cọc được lưu ngay vào CSDL.
  </p>
  </div>
@@ -554,7 +554,7 @@ export default function StadiumOwnerOnboarding({
  ← Quay Lại Bước {Math.max(1, currentStep - 1)}
  </button>
 
- <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">Dữ liệu được lưu khi bạn bấm "Lưu &amp; Tiếp Tục"</span>
+ <span className="text-[13px] text-slate-500 font-medium hidden sm:inline">Dữ liệu được lưu khi bạn bấm "Lưu &amp; Tiếp Tục"</span>
 
  <button
  type="button"

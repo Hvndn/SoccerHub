@@ -56,7 +56,7 @@ export default function TournamentProgressChart({ tournament }: { tournament: an
         </div>
         <div className="min-w-0">
           <h3 className="font-black text-sm text-slate-900">Tiến độ giải đấu — số trận thắng theo đội</h3>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+          <p className="text-[13px] text-slate-500 mt-0.5">
             Tính từ nhánh đấu (bracket) · {tournament.title ?? "Giải đấu"}
           </p>
         </div>

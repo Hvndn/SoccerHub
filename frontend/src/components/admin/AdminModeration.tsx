@@ -74,11 +74,11 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  render: (r) => (
  <div className="max-w-[280px]">
  <p className="font-bold text-slate-900 truncate">{r.teamName}</p>
- <p className="text-[11px] text-slate-500 truncate">
+ <p className="text-[13px] text-slate-500 truncate">
  {r.pitchName} • {r.matchTime}
  </p>
  {r.note && (
- <p className="text-[11px] text-slate-500 truncate italic">“{r.note}”</p>
+ <p className="text-[13px] text-slate-500 truncate italic">“{r.note}”</p>
  )}
  </div>
  ),
@@ -89,7 +89,7 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  render: (r) => (
  <div>
  <p className="font-bold">{r.captainName || "—"}</p>
- <p className="text-[11px] font-mono text-slate-500">{r.captainPhone || ""}</p>
+ <p className="text-[13px] font-mono text-slate-500">{r.captainPhone || ""}</p>
  </div>
  ),
  },
@@ -141,7 +141,7 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  <SectionCard>
  <div className="flex items-center justify-between mb-4">
  <div>
- <h2 className="font-black text-slate-900 text-sm">Kiểm duyệt chợ kèo</h2> <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
+ <h2 className="font-black text-slate-900 text-sm">Kiểm duyệt chợ kèo</h2> <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
  Gỡ tin đăng vi phạm (spam, sai sự thật). Hành động không thể hoàn tác.
  </p>
  </div>

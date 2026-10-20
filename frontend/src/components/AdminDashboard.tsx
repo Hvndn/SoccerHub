@@ -786,10 +786,10 @@ setIsSavingInfo(false);
  </div>
  <div className="space-y-1">
  <div className="flex items-center space-x-2">
- <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider shadow-xs">
+ <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[12px] tracking-wider shadow-xs">
  ⚡ ĐƠN ĐẶT SÂN MỚI TỨC THỜI
  </span>
- <span className="text-[11px] font-mono text-sky-800 font-bold">Vừa đặt cọc xong</span>
+ <span className="text-[13px] font-mono text-sky-800 font-bold">Vừa đặt cọc xong</span>
  </div>
  <h3 className="text-base sm:text-lg font-black text-slate-900 ">
  Khách hàng <span className="text-amber-600 underline underline-offset-2">{realtimeAlert.customerName}</span> ({realtimeAlert.customerPhone}) vừa cọc ca thi đấu!
@@ -913,7 +913,7 @@ setIsSavingInfo(false);
  title="Cài đặt khung giờ mở cửa và đóng cửa cụm sân"
  >
  <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
- <span>Giờ Mở Sân: {operatingOpenTime} - {operatingCloseTime} (Linh Hoạt 1h - 2h)</span>
+ <span>Giờ Mở Sân: {operatingOpenTime} - {operatingCloseTime} (Ca 2 tiếng)</span>
  </button>
 
  {onNavigateTab && (
@@ -1035,8 +1035,8 @@ setIsSavingInfo(false);
  <Sparkles className="w-3.5 h-3.5 text-[#0369a1] shrink-0" />
  Cụm sân chưa có đơn nào
  </p>
- <p className="text-[11px] text-slate-500 mt-0.5">
- Tạo dữ liệu demo (14 ngày trước · 7 ngày sau) để doanh thu và tỷ lệ lấp đầy có số liệu khi thuyết trình.
+ <p className="text-[13px] text-slate-500 mt-0.5">
+ Tạo dữ liệu demo 14 ngày trước · 7 ngày sau để có số liệu.
  </p>
  </div>
  <div className="flex items-center gap-2 shrink-0">
@@ -1072,7 +1072,7 @@ setIsSavingInfo(false);
 
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
  <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
- <span className="text-sm font-bold text-slate-500 uppercase tracking-wider block">
+ <span className="text-sm font-bold text-slate-500 tracking-wider block">
  Doanh Thu {matrixDate === upcomingDays[0]?.iso ? "Hôm Nay" : `Ngày ${matrixDate.split("-").reverse().join("/")}`}
  </span>
  <div className="text-2xl sm:text-3xl font-black text-emerald-500 font-mono">
@@ -1084,7 +1084,7 @@ setIsSavingInfo(false);
  </div>
 
  <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
- <span className="text-sm font-bold text-slate-500 uppercase tracking-wider block">Tỷ Lệ Lấp Đầy Ca Sân</span>
+ <span className="text-sm font-bold text-slate-500 tracking-wider block">Tỷ Lệ Lấp Đầy Ca Sân</span>
  <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
  {pitchStats.occupancyRate}%
  </div>
@@ -1094,7 +1094,7 @@ setIsSavingInfo(false);
  </div>
 
  <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
- <span className="text-sm font-bold text-slate-500 uppercase tracking-wider block">Đơn Cọc VietQR Online</span>
+ <span className="text-sm font-bold text-slate-500 tracking-wider block">Đơn Cọc VietQR Online</span>
  <div className="text-2xl sm:text-3xl font-black text-[#0369a1] font-mono">
  {pitchStats.onlineBookings} Ca Online
  </div>
@@ -1102,7 +1102,7 @@ setIsSavingInfo(false);
  </div>
 
  <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
- <span className="text-sm font-bold text-slate-500 uppercase tracking-wider block">Khách Vãng Lai Tại Quầy</span>
+ <span className="text-sm font-bold text-slate-500 tracking-wider block">Khách Vãng Lai Tại Quầy</span>
  <div className="text-2xl sm:text-3xl font-black text-amber-700 font-mono">
  {pitchStats.counterBookings} Ca Trực Tiếp
  </div>
@@ -1277,16 +1277,16 @@ setIsSavingInfo(false);
  {upcomingDays.find(d => d.iso === matrixDate)?.display || `Ngày ${matrixDate.split("-").reverse().join("/")}`}
  </span>
  {matrixDate === upcomingDays[0]?.iso ? (
- <span className="text-[10px] px-2 py-0.5 rounded-md bg-sky-100 text-sky-800 font-extrabold">
+ <span className="text-[12px] px-2 py-0.5 rounded-md bg-sky-100 text-sky-800 font-extrabold">
  🟢 Hôm Nay
  </span>
  ) : (
- <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 font-extrabold">
+ <span className="text-[12px] px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 font-extrabold">
  📅 Ngày Tương Lai
  </span>
  )}
  </div>
- <p className="hidden sm:block text-[11px] text-slate-500 mt-0.5">
+ <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
  Bấm vào các ngày bên dưới để xem sơ đồ ca, khách đã cọc và doanh thu của ngày đó
  </p>
  </div>
@@ -1294,7 +1294,7 @@ setIsSavingInfo(false);
 
  <div className="flex items-center space-x-2 shrink-0">
  <div className="flex items-center space-x-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 ">
- <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">Chọn ngày khác:</span>
+ <span className="text-[13px] font-bold text-slate-500 whitespace-nowrap">Chọn ngày khác:</span>
  <input
  type="date"
  value={matrixDate}
@@ -1332,7 +1332,7 @@ setIsSavingInfo(false);
  }`}
  >
  <span>{day.label}</span>
- <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
+ <span className={`text-[12px] font-mono px-1.5 py-0.2 rounded-md ${
  isSelected 
  ? "bg-white/20 text-white font-bold" 
  : "bg-slate-100 text-slate-500"
@@ -1431,12 +1431,12 @@ setIsSavingInfo(false);
  {slot.customer}
  </p>
  {slot.isContinuation && (
- <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-700 text-[10px] font-black uppercase tracking-wider">
+ <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-700 text-[12px] font-black tracking-wider">
  🔗 Ca Nối Dài
  </span>
  )}
  {slot.isGapSlot && (
- <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 text-[10px] font-black uppercase tracking-wider">
+ <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 text-[12px] font-black tracking-wider">
  ⚡ Khe Trống {slot.durationMinutes}p
  </span>
  )}
@@ -1444,7 +1444,7 @@ setIsSavingInfo(false);
 
  {/* HIỂN THỊ KHUNG GIỜ THỰC TẾ NẾU ĐẶT 2 TIẾNG HOẶC LỆCH GIỜ Ô */}
  {slot.bookingTimeSlot && slot.bookingTimeSlot !== slot.time && (
- <div className="text-[11px] font-bold text-[#0369a1] bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200/60 ">
+ <div className="text-[13px] font-bold text-[#0369a1] bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200/60 ">
  ⏰ Giờ đá thực: <span className="font-mono">{slot.bookingTimeSlot}</span>
  </div>
  )}
@@ -1459,7 +1459,7 @@ setIsSavingInfo(false);
  <span className="block text-rose-600 font-bold">Thu tại quầy: <strong>{slot.cashDue}</strong></span>
  )}
  {slot.isContinuation && (
- <span className="block text-slate-500 text-[11px]">Cùng đơn: #{slot.code}</span>
+ <span className="block text-slate-500 text-[13px]">Cùng đơn: #{slot.code}</span>
  )}
  </div>
 
@@ -1608,13 +1608,13 @@ setIsSavingInfo(false);
  <span className="font-extrabold text-sm text-slate-900 truncate">
  {p.name}
  </span>
- <span className="text-[11px] font-mono text-slate-500 shrink-0">
+ <span className="text-[13px] font-mono text-slate-500 shrink-0">
  {p.openTime ?? "—"} - {p.closeTime ?? "—"}
  </span>
  </div>
  <div className="grid grid-cols-2 gap-3">
  <label className="space-y-1">
- <span className="text-[11px] font-bold text-slate-500">
+ <span className="text-[13px] font-bold text-slate-500">
  Giá thường (đ/ca)
  </span>
  <input
@@ -1631,7 +1631,7 @@ setIsSavingInfo(false);
  />
  </label>
  <label className="space-y-1">
- <span className="text-[11px] font-bold text-slate-500">
+ <span className="text-[13px] font-bold text-slate-500">
  Giá giờ vàng (đ/ca)
  </span>
  <input
@@ -1675,7 +1675,7 @@ setIsSavingInfo(false);
  <span className="font-extrabold text-slate-900 block">
  Cọc khi đặt qua web / app: 50% giá ca
  </span>
- <p className="hidden sm:block text-[11px] text-slate-500">
+ <p className="hidden sm:block text-[13px] text-slate-500">
  Màn thanh toán VietQR hiển thị số cọc = 50% giá ca đã chọn; phần còn lại thu tại quầy
  khi khách check-in.
  </p>
@@ -1685,7 +1685,7 @@ setIsSavingInfo(false);
  <span className="font-extrabold text-slate-900 block">
  Cọc đặt tại quầy: do chủ sân nhập
  </span>
- <p className="hidden sm:block text-[11px] text-slate-500">
+ <p className="hidden sm:block text-[13px] text-slate-500">
  Khi đặt offline, số tiền cọc được nhập cùng đơn và hiển thị trong ma trận
  (đã cọc / còn phải thu).
  </p>
@@ -1695,7 +1695,7 @@ setIsSavingInfo(false);
  <span className="font-extrabold text-amber-700 block">
  Khách không đến (no-show)
  </span>
- <p className="hidden sm:block text-[11px] text-slate-500">
+ <p className="hidden sm:block text-[13px] text-slate-500">
  Hệ thống không tự động phạt cọc. Chủ sân đóng ca tại tab Ma trận với lý do
  “khách không đến”, phần cọc và phạt do hai bên tự thoả thuận ngoài hệ thống.
  </p>
@@ -1730,7 +1730,7 @@ setIsSavingInfo(false);
  <span className="font-extrabold text-xs text-slate-900 ">{item.name}</span>
  <span className="font-mono font-black text-emerald-500 text-xs">{item.price.toLocaleString("vi-VN")}đ</span>
  </div>
- <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+ <div className="flex justify-between text-[13px] text-slate-500 font-mono">
  <span>Đã bán hôm nay: <strong className="text-slate-900 ">{item.soldToday}</strong></span>
  <span>Tồn kho: <strong className="text-[#0369a1]">{item.stock}</strong></span>
  </div>
@@ -2090,7 +2090,7 @@ setIsSavingInfo(false);
  </div>
 
   <div className="rounded-xl bg-sky-50 border border-sky-200 px-3 py-2.5">
-  <span className="text-[11px] font-extrabold text-sky-900 flex items-center gap-1.5">
+  <span className="text-[13px] font-extrabold text-sky-900 flex items-center gap-1.5">
   <Clock className="w-3.5 h-3.5 text-sky-700" />
   Thời lượng ca: <strong className="font-black">2 tiếng (120 phút)</strong> — cố định
   </span>
@@ -2333,7 +2333,7 @@ setIsSavingInfo(false);
  <Sparkles className="w-4 h-4 text-emerald-500" />
  <span>Cơ Chế Đặt Sân Linh Hoạt (Do Cầu Thủ & Khách Hàng Chọn)</span>
  </div>
- <p className="text-[11px] text-slate-600 leading-relaxed">
+ <p className="text-[13px] text-slate-600 leading-relaxed">
   Mọi ca thi đấu dùng chung thời lượng <strong className="text-slate-900 font-bold">2 tiếng (120 phút)</strong>. Hệ thống tự động tính tiền và phân ca theo thời gian thực tế.
  </p>
  </div>
@@ -2384,7 +2384,7 @@ setIsSavingInfo(false);
  </div>
  <div>
  <h3 className="font-extrabold text-base text-rose-700 ">Xác Nhận Hủy Ca Đặt Sân</h3>
- <p className="text-[11px] text-rose-600 font-medium mt-0.5">
+ <p className="text-[13px] text-rose-600 font-medium mt-0.5">
  Ca: <strong>{slotToCancel?.time || slotToCancel?.timeSlot || "Không rõ"}</strong> &bull; Khách: <strong>{slotToCancel?.customer || "Không rõ"}</strong>
  </p>
  </div>
@@ -2421,7 +2421,7 @@ setIsSavingInfo(false);
  key={reason}
  type="button"
  onClick={() => setCancelReasonInput(reason)}
- className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+ className={`px-2.5 py-1 rounded-lg text-[12px] font-bold transition-all border ${
  cancelReasonInput === reason
  ? "bg-rose-600 text-white border-rose-600 shadow-sm"
  : "bg-slate-100 text-slate-600 border-slate-200 hover:border-rose-300 hover:text-rose-600"
@@ -2443,7 +2443,7 @@ setIsSavingInfo(false);
 
  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start space-x-2">
  <span className="text-sm shrink-0">⚠️</span>
- <p className="text-[10px] text-amber-700 font-medium leading-relaxed">
+ <p className="text-[12px] text-amber-700 font-medium leading-relaxed">
  Lý do hủy sẽ được gửi ngay tới thông báo của khách hàng. Khung giờ này sẽ mở lại cho người đặt mới.
  </p>
  </div>
