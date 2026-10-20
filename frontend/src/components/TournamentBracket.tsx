@@ -721,7 +721,7 @@ const [addCount, setAddCount] = useState("4");
  </div>
  ))}
  <div className="flex items-center justify-between">
- <span className="text-[13px] text-slate-500">Cột: tên • đội • bàn • kiến tạo</span>
+ <span className="text-[13px] text-slate-600">Cột: tên • đội • bàn • kiến tạo</span>
  <button
  type="button"
  onClick={() => addScorerRow(match)}
@@ -887,7 +887,7 @@ const [addCount, setAddCount] = useState("4");
  className={`px-3.5 py-2.5 rounded-xl font-extrabold text-[13px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40 ${
  showScheduleForm
  ? "bg-[#0369a1] text-white shadow-lg"
- : "bg-[#0369a1]/20 text-sky-300 hover:bg-[#0369a1]/30 border border-[#0369a1]/40"
+ : "bg-white text-[#0369a1] hover:bg-[#0369a1]/10 border border-[#0369a1]/40"
  }`}
  >
  <Calendar className="w-4 h-4" />
@@ -972,61 +972,61 @@ const [addCount, setAddCount] = useState("4");
  {/* Form tham số xếp lịch */}
  {showScheduleForm && bracket && (
  <div className="rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/30 p-3 space-y-3">
- <p className="text-[13px] font-black text-sky-300 tracking-wider">
+ <p className="text-[13px] font-black text-[#0b4f6c] tracking-wider">
  Tham số xếp lịch
  </p>
  <div className="grid grid-cols-2 gap-2">
  <label className="col-span-2 sm:col-span-1 block">
- <span className="text-[13px] font-bold text-slate-300 block mb-1">
+ <span className="text-[13px] font-bold text-slate-700 block mb-1">
  Ngày thi đấu đầu tiên
  </span>
  <input
  type="date"
  value={scheduleForm.startDate}
  onChange={(e) => setScheduleForm((f) => ({ ...f, startDate: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  {!scheduleForm.startDate && (
- <span className="text-[13px] text-slate-500">
+ <span className="text-[13px] text-slate-600">
  Để trống = dùng ngày khai giải ({prettyDate(selected?.startDate) || "—"}).
  </span>
  )}
  </label>
  <label className="block">
- <span className="text-[13px] font-bold text-slate-300 block mb-1">Trận / ngày</span>
+ <span className="text-[13px] font-bold text-slate-700 block mb-1">Trận / ngày</span>
  <input
  type="number"
  min={1}
  max={12}
  value={scheduleForm.matchesPerDay}
  onChange={(e) => setScheduleForm((f) => ({ ...f, matchesPerDay: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
  <label className="block">
- <span className="text-[13px] font-bold text-slate-300 block mb-1">Cách giữa vòng (ngày)</span>
+ <span className="text-[13px] font-bold text-slate-700 block mb-1">Cách giữa vòng (ngày)</span>
  <input
  type="number"
  min={0}
  max={14}
  value={scheduleForm.daysBetweenRounds}
  onChange={(e) => setScheduleForm((f) => ({ ...f, daysBetweenRounds: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
  <label className="block">
- <span className="text-[13px] font-bold text-slate-300 block mb-1">Giờ bắt đầu</span>
+ <span className="text-[13px] font-bold text-slate-700 block mb-1">Giờ bắt đầu</span>
  <input
  type="number"
  min={0}
  max={23}
  value={scheduleForm.startHour}
  onChange={(e) => setScheduleForm((f) => ({ ...f, startHour: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
  <label className="block">
- <span className="text-[13px] font-bold text-slate-300 block mb-1">Độ dài trận (phút)</span>
+ <span className="text-[13px] font-bold text-slate-700 block mb-1">Độ dài trận (phút)</span>
  <input
  type="number"
  min={30}
@@ -1034,7 +1034,7 @@ const [addCount, setAddCount] = useState("4");
  step={15}
  value={scheduleForm.matchMinutes}
  onChange={(e) => setScheduleForm((f) => ({ ...f, matchMinutes: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-100 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
  </div>
@@ -1469,7 +1469,7 @@ const [addCount, setAddCount] = useState("4");
  <ListOrdered className="w-5 h-5 text-emerald-500" />
  <span>Bảng Xếp Hạng {selected ? `— ${selected.title}` : ""}</span>
  </h2>
- <span className="text-[13px] text-slate-500">
+ <span className="text-[13px] text-slate-600">
  Thắng = 3 điểm • Phong độ cập nhật tự động từ lịch sử sau mỗi trận
  </span>
  </div>
