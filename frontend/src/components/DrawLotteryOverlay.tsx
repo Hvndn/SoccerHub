@@ -30,8 +30,16 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
  const [locked, setLocked] = useState(0);
  const [tick, setTick] = useState(0);
  const [soundOn, setSoundOn] = useState(true);
+ // Ref chứa trạng thái bật/tắt âm thanh: giữ cho các callback (playTone...) và
+ // effect bốc thăm KHÔNG đổi identity theo soundOn — nếu không, bấm nút
+ // "Âm thanh" sẽ chạy lại effect và reset toàn bộ hiệu ứng đang xáo.
+ const soundOnRef = useRef(soundOn);
  const timers = useRef<number[]>([]);
  const audioCtx = useRef<AudioContext | null>(null);
+
+ useEffect(() => {
+  soundOnRef.current = soundOn;
+ }, [soundOn]);
 
  const pool = useMemo(() => {
   const names = [...byes];
@@ -52,7 +60,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
 
  const playTone = useCallback((freq: number, duration: number, gain = 0.12, type: OscillatorType = "sine", startOffset = 0) => {
   const ctx = getCtx();
-  if (!ctx || !soundOn) return;
+  if (!ctx || !soundOnRef.current) return;
   try {
    const osc = ctx.createOscillator();
    const g = ctx.createGain();
@@ -68,7 +76,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
   } catch {
    /* ignore */
   }
- }, [getCtx, soundOn]);
+ }, [getCtx]);
 
  const playDrumRoll = useCallback(() => {
   // Trống rải nhanh trong 1.4s
@@ -105,8 +113,8 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
    timers.current = [];
    setShuffling(false);
    setLocked(pairs.length);
-   if (soundOn) playFinalFanfare();
-  }, [pairs.length, soundOn, playFinalFanfare]);
+   if (soundOnRef.current) playFinalFanfare();
+  }, [pairs.length, playFinalFanfare]);
 
  useEffect(() => {
   if (!open) return;
@@ -122,7 +130,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
   if (reduced || pairs.length === 0) {
    setShuffling(false);
    setLocked(pairs.length);
-   if (soundOn) playFinalFanfare();
+   if (soundOnRef.current) playFinalFanfare();
    return;
   }
   setShuffling(true);
@@ -133,7 +141,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
   timers.current.push(shuffleTimer as unknown as number);
 
   // Trống rải khi bắt đầu xáo
-  if (soundOn) playDrumRoll();
+  if (soundOnRef.current) playDrumRoll();
 
   // Hết xáo -> khóa từng cặp so le
   const stopAt = window.setTimeout(() => {
@@ -142,8 +150,8 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
    pairs.forEach((_, i) => {
     const t = window.setTimeout(() => {
      setLocked(i + 1);
-     if (soundOn) playLockChime(i);
-     if (i === pairs.length - 1 && soundOn) {
+     if (soundOnRef.current) playLockChime(i);
+     if (i === pairs.length - 1 && soundOnRef.current) {
       // Fanfare lớn sau khi khóa cặp cuối
       window.setTimeout(playFinalFanfare, 400);
      }
@@ -159,7 +167,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
    });
    timers.current = [];
   };
- }, [open, pairs, soundOn, playDrumRoll, playLockChime, playFinalFanfare]);
+ }, [open, pairs, playDrumRoll, playLockChime, playFinalFanfare]);
 
   // Vị trí các quả bóng trong cái bát — dao động theo `tick` (mỗi 80ms) tạo cảm giác xáo.
   // Càng nhiều đội thì bát càng đầy, tối đa 14 quả cho nhẹ máy.
@@ -180,7 +188,10 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
 
  const done = !shuffling && locked >= pairs.length;
  const shown = (idx: number, real: string) => {
-  if (idx < locked) return real;
+  // `locked` là SỐ CẶP đã khóa, còn `idx` là chỉ số BÓNG (mỗi cặp chiếm 2:
+  // teamA + teamB). Phải nhân 2 — nếu không, các cặp từ thứ 2 trở đi sẽ hiện
+  // tên ngẫu nhiên thay vì tên thật.
+  if (idx < locked * 2) return real;
   return pool[(tick * 7 + idx * 13) % pool.length];
  };
 

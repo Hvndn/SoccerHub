@@ -100,6 +100,26 @@ export const registeredCount = (t: Tournament): number =>
   // Danh sách đội là nguồn thật — số đếm cache (registeredTeams) có thể lệch seed
   t.teams?.length ?? t.registeredTeams ?? 0;
 
+/**
+ * Số đội THỰC SỰ bốc thăm được.
+ *
+ * Backend (POST /{id}/draw) loại bỏ đội `PENDING_PAYMENT` và chỉ nhận đội
+ * `CONFIRMED` (đã đóng lệ phí) hoặc `SIMULATED` (đội Test). Vì vậy nút "Bốc thăm
+ * ngay" phải đếm theo đúng quy tắc này, nếu không BTC sẽ bấm vào nhận lỗi 400
+ * "Cần ít nhất 2 đội đã đóng lệ phí mới bốc thăm được".
+ */
+export const drawableCount = (t: Tournament): number => {
+  const teams = t.teams ?? [];
+  if (teams.length === 0) {
+    // Chưa nạp được danh sách đội -> fallback về số đã đăng ký trong cache.
+    return t.registeredTeams ?? 0;
+  }
+  return teams.filter((x) => {
+    const st = (x.registrationStatus || "CONFIRMED").toUpperCase();
+    return st === "CONFIRMED" || st === "SIMULATED" || x.simulated === true;
+  }).length;
+};
+
 export const capacity = (t: Tournament): number => t.totalTeams ?? 0;
 
 export const isFull = (t: Tournament): boolean => {

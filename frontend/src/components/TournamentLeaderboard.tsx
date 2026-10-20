@@ -32,6 +32,7 @@ import {
  formatMoney,
  daysUntil,
  registeredCount,
+ drawableCount,
  isFull as isTournamentFull,
  fillPercent,
  type TournamentBracketData,
@@ -85,6 +86,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  // Hiệu ứng bốc thăm (quả bóng + nhạc) + giải vừa bốc thăm
  const [lottery, setLottery] = useState<{ pairs: { matchId: string; teamA: string; teamB: string }[]; byes: string[] } | null>(null);
  const [drawnTournament, setDrawnTournament] = useState<Tournament | null>(null);
+ // Giải vừa bốc thăm — truyền sang tab "Nhánh Đấu" để mở đúng giải, không phải chọn lại.
+ const [bracketTargetId, setBracketTargetId] = useState<number | null>(null);
  const [actionNotice, setActionNotice] = useState<string | null>(null);
 
  /** Giải chưa tới ngày thi đấu -> BTC được bốc thăm trước (không cần chờ tới ngày). */
@@ -124,6 +127,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   const byes = r1.filter((m: any) => m.status === 'BYE' && m.bye).map((m: any) => m.bye.name);
   setDrawnTournament(t);
   setLottery({ pairs, byes });
+  setBracketTargetId(t.id);
   await reloadTournaments(true);
   } catch (err: any) {
   setActionNotice(err?.message || 'Không bốc thăm được. Cần đăng nhập ORGANIZER hoặc ADMIN.');
@@ -875,7 +879,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
  {/* 6. MAIN WORKSPACE — mỗi tab một nội dung riêng (sửa lỗi tab "chạy một chỗ") */}
  {activeTab === 'bracket' ? (
- <TournamentBracket />
+ <TournamentBracket initialTournamentId={bracketTargetId} />
  ) : activeTab === 'rankings' ? (
  /* ---------- TAB: BẢNG XEP HẠNG (tính từ đội đã đăng ký trong CSDL) ---------- */
  <div className="p-5 rounded-2xl bg-white shadow-xs border border-slate-200/80 ">
@@ -1169,6 +1173,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  const percentage = fillPercent(t);
  const full = isTournamentFull(t);
  const reg = registeredCount(t);
+ const drawable = drawableCount(t);
  const cap = t.totalTeams ?? 0;
  const statusLabel =
  t.status === 'ONGOING' ? 'Đang diễn ra'
@@ -1301,13 +1306,13 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   {/* NHANH BTC: giải chưa tới ngày -> bốc thăm luôn; đã bốc thăm -> giả lập kết quả */}
   {t.status !== 'COMPLETED' && canManage && (
   <>
-  {!hasBracket(t) && notStartedYet(t) && reg >= 2 && (
+  {!hasBracket(t) && notStartedYet(t) && drawable >= 2 && (
   <button
   type="button"
   onClick={() => handleQuickDraw(t)}
   disabled={busyTournamentId === t.id}
-  title="Giải chưa tới ngày thi đấu — bấm để bốc thăm ngay, không cần chờ tới ngày"
-  className="px-4 py-2 rounded-lg text-[13px] font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0369a1] bg-amber-500 hover:bg-amber-600 text-white active:scale-95 inline-flex items-center gap-1.5 disabled:opacity-50"
+  title={`Bốc thăm ngay (${drawable} đội đã đóng lệ phí) — giải chưa tới ngày thi đấu, không cần chờ`}
+  className="px-4 py-2 rounded-lg text-[13px] font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0369a1] bg-amber-500 hover:bg-amber-600 text-white active:scale-95 inline-flex items-center gap-1.5 whitespace-nowrap disabled:opacity-50"
   >
   {busyTournamentId === t.id && busyAction === 'draw' ? (
   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -1323,7 +1328,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   onClick={() => handleQuickSimulate(t)}
   disabled={busyTournamentId === t.id}
   title="Giả lập toàn bộ tỷ số + cầu thủ ghi bàn cho giải này (chỉ dùng demo/thuyết trình)"
-  className="px-4 py-2 rounded-lg text-[13px] font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0369a1] bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95 inline-flex items-center gap-1.5 disabled:opacity-50"
+  className="px-4 py-2 rounded-lg text-[13px] font-bold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0369a1] bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95 inline-flex items-center gap-1.5 whitespace-nowrap disabled:opacity-50"
   >
   {busyTournamentId === t.id && busyAction === 'simulate' ? (
   <RefreshCw className="w-3.5 h-3.5 animate-spin" />

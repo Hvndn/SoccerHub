@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import {
  Trophy,
  RefreshCw,
@@ -51,9 +52,19 @@ import {
  type BracketMatch,
 } from "@/lib/tournamentService";
 
-export default function TournamentBracket() {
+export default function TournamentBracket({
+ initialTournamentId,
+}: {
+ /** Mã giải cần mở sẵn (VD: giải vừa bốc thăm xong từ card giải ở tab "Giải đấu"). */
+ initialTournamentId?: number | string | null;
+}) {
  const [tournaments, setTournaments] = useState<Tournament[]>([]);
  const [selectedId, setSelectedId] = useState("");
+
+ // Quyền quản trị giải đấu — backend chỉ cho ADMIN / ORGANIZER / OWNER.
+ const { user: authUser } = useAuth();
+ const canManage =
+  authUser?.role === "ORGANIZER" || authUser?.role === "ADMIN" || authUser?.role === "OWNER";
  const [fillBusy, setFillBusy] = useState(false);
 // Số đội Test muốn thêm vào giải đang chọn (API fill-teams nhận {"count": n}).
 const [addCount, setAddCount] = useState("4");
@@ -126,9 +137,16 @@ const [addCount, setAddCount] = useState("4");
  }, []);
 
  const selected = useMemo(
- () => tournaments.find((t) => String(t.id) === selectedId) ?? null,
- [tournaments, selectedId]
+  () => tournaments.find((t) => String(t.id) === selectedId) ?? null,
+  [tournaments, selectedId]
  );
+
+ // Mở sẵn giải được chỉ định (giải vừa bốc thăm) — không thì tab "Nhánh Đấu" mở ra
+ // sẽ không chọn giải nào và BTC phải tự chọn lại.
+ useEffect(() => {
+  if (initialTournamentId === null || initialTournamentId === undefined || initialTournamentId === "") return;
+  setSelectedId(String(initialTournamentId));
+ }, [initialTournamentId]);
 
  // Nhánh đấu đọc thẳng từ bracketJson trong cache (không request thừa, không 404 console).
  // Sau fill/draw, cache được refresh nên canvas tự đồng bộ.
@@ -757,7 +775,7 @@ const [addCount, setAddCount] = useState("4");
  <div className="flex flex-wrap items-center gap-2">
  <button
  onClick={() => handleFill()}
- disabled={!selected || full || fillBusy}
+ disabled={!canManage || !selected || full || fillBusy}
  title="Sinh đội Test kèm đủ quân số + danh sách thành viên cho đủ sức chứa (chỉ dùng demo)"
  className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
@@ -786,7 +804,7 @@ const [addCount, setAddCount] = useState("4");
   <span className="text-[13px] font-bold text-slate-500 shrink-0">đội</span>
   <button
   onClick={() => handleFill(Number(addCount))}
-  disabled={fillBusy || !Number(addCount)}
+  disabled={fillBusy || !canManage || !Number(addCount)}
   title="Thêm đúng số đội Test đã nhập vào giải đang chọn"
   className="px-2.5 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
   >
@@ -798,7 +816,7 @@ const [addCount, setAddCount] = useState("4");
  {simulatedCount > 0 && (
  <button
  onClick={handleClearSimulated}
- disabled={!selected || clearBusy}
+ disabled={!canManage || !selected || clearBusy}
  title="Xóa đội Test đã giả lập, giữ nguyên đội đăng ký thật"
  className="px-3.5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-extrabold text-[13px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40"
  >
@@ -813,7 +831,7 @@ const [addCount, setAddCount] = useState("4");
 
  <button
  onClick={() => (bracket ? setConfirmDraw(true) : startDraw())}
- disabled={!selected || teamCount < 2 || drawBusy}
+ disabled={!canManage || !selected || teamCount < 2 || drawBusy}
  title="Bốc thăm hạt giống theo thứ tự đăng ký, lưu nhánh đấu vào CSDL"
  className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
@@ -828,7 +846,7 @@ const [addCount, setAddCount] = useState("4");
  {bracket && (
  <button
  onClick={() => setConfirmSimulate(true)}
- disabled={!selected || simulateBusy}
+ disabled={!canManage || !selected || simulateBusy}
  title="Tự random tỷ số + cầu thủ ghi bàn cho mọi trận chưa đá (chỉ dùng demo)"
  className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-md border border-slate-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
@@ -845,7 +863,7 @@ const [addCount, setAddCount] = useState("4");
  {bracket && (
  <button
  onClick={() => setShowScheduleForm((v) => !v)}
- disabled={!selected || scheduleBusy}
+ disabled={!canManage || !selected || scheduleBusy}
  title="Sinh ngày + khung giờ + sân cho từng trận, lưu vào CSDL"
  className={`px-3.5 py-2.5 rounded-xl font-extrabold text-[13px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40 ${
  showScheduleForm
@@ -858,9 +876,11 @@ const [addCount, setAddCount] = useState("4");
  </button>
  )}
  </div>
+ {!canManage && (
  <p className="hidden sm:block text-[13px] text-slate-500">
  Cần đăng nhập ORGANIZER hoặc ADMIN.
  </p>
+ )}
 
  {/* Form tham số xếp lịch */}
  {showScheduleForm && bracket && (
