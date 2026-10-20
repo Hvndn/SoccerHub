@@ -324,7 +324,7 @@ export default function PlayerProfileConsole({
  goals: perf.goalsFor,
  assists: 0,
  cleanSheets: perf.cleanSheets,
- streak: goalDiff > 0 ? `+${goalDiff} hiệu số` : goalDiff === 0 ? "Cân bằng" : `${goalDiff} hiệu số`,
+ streak: goalDiff > 0 ? `+${goalDiff}` : goalDiff === 0 ? "0" : `${goalDiff}`,
  streakBadge: `${perf.goalsFor} bàn thắng / ${perf.goalsAgainst} bàn thua`,
  // Chỉ số kỹ năng & radar cần dữ liệu đo đạc chưa có trong CSDL
  skills: [] as any[],
@@ -847,6 +847,7 @@ export default function PlayerProfileConsole({
  <span className="text-3xl font-extrabold text-slate-900 ">
  {currentStat.streak}
  </span>
+ <span className="text-xs font-semibold text-slate-500">hiệu số</span>
  <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-amber-100 text-amber-700">
  {currentStat.streakBadge}
  </span>
@@ -960,10 +961,10 @@ export default function PlayerProfileConsole({
  <div>
  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
  <Activity className="w-5 h-5 text-emerald-500" />
- Đánh Giá Năng Lực & Kỹ Năng Cầu Thủ
+ Đánh Giá Năng Lực Cầu Thủ
  </h2>
  <p className="text-xs text-slate-500 mt-1">
- Thuật toán tự động đo đạc dựa trên hiệu suất thi đấu, số bàn thắng và phiếu bầu MVP sau mỗi trận.
+ Chấm điểm tự động theo hiệu suất, bàn thắng và phiếu MVP mỗi trận.
  </p>
  </div>
 
