@@ -58,6 +58,17 @@ public class TournamentController {
         if (tournament.getCreatedAt() == null) {
             tournament.setCreatedAt(LocalDateTime.now());
         }
+        // Quyền tham gia: chỉ nhận PUBLIC / INVITE_ONLY, mặc định PUBLIC.
+        String joinMode = tournament.getJoinMode() != null
+                ? tournament.getJoinMode().trim().toUpperCase()
+                : "PUBLIC";
+        if (!Set.of("PUBLIC", "INVITE_ONLY").contains(joinMode)) {
+            joinMode = "PUBLIC";
+        }
+        tournament.setJoinMode(joinMode);
+        if (tournament.getInvitedEmails() == null) {
+            tournament.setInvitedEmails(new ArrayList<>());
+        }
         Tournament saved = tournamentRepository.save(tournament);
         return ResponseEntity.ok(saved);
     }
@@ -1420,6 +1431,22 @@ public class TournamentController {
             return ResponseEntity.badRequest().body(Map.of("error", "Giải đấu đã đủ số lượng đội đăng ký"));
         }
 
+        // Giải kín (chỉ mời qua email): tài khoản đăng nhập phải nằm trong danh sách mời.
+        if ("INVITE_ONLY".equalsIgnoreCase(tournament.getJoinMode())) {
+            String myEmailLower = me.getEmail().trim().toLowerCase();
+            boolean invited = false;
+            for (String invitedEmail : tournament.getInvitedEmails()) {
+                if (invitedEmail != null && invitedEmail.trim().toLowerCase().equals(myEmailLower)) {
+                    invited = true;
+                    break;
+                }
+            }
+            if (!invited) {
+                return ResponseEntity.status(403).body(Map.of(
+                        "error", "Giải đấu này chỉ mời tham gia qua email. Bạn cần được BTC mời trước khi đăng ký đội."));
+            }
+        }
+
         String teamName = req.get("teamName") != null ? req.get("teamName").toString().trim() : "";
         if (teamName.length() < 3 || teamName.length() > 60) {
             return ResponseEntity.badRequest().body(Map.of("error", "Tên đội phải từ 3 đến 60 ký tự."));
@@ -1498,8 +1525,109 @@ public class TournamentController {
         ));
     }
 
+    /** Đọc cấu hình quyền tham gia + danh sách email mời của 1 giải. */
+    @GetMapping("/{id}/access")
+    public ResponseEntity<?> getJoinAccess(@PathVariable Long id) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        return ResponseEntity.ok(Map.of(
+                "joinMode", tournament.getJoinMode() != null ? tournament.getJoinMode() : "PUBLIC",
+                "invitedEmails", tournament.getInvitedEmails() != null ? tournament.getInvitedEmails() : List.of()));
+    }
+
     /**
-     * BTC/ADMIN THÊM ĐỘI THỦ CÔNG vào giải (không qua form đăng ký của cầu thủ).
+     * BTC / chủ sân ĐẶT QUYỀN THAM GIA cho giải + danh sách email được mời.
+     *
+     * <p>Body: {@code {"joinMode": "PUBLIC"|"INVITE_ONLY", "invitedEmails": ["a@b.vn", ...]}}
+     * — truyền {@code invitedEmails} sẽ GHI ĐÈ toàn bộ danh sách mời hiện có.</p>
+     */
+    @PutMapping("/{id}/access")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
+    public ResponseEntity<?> setJoinAccess(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        String mode = String.valueOf(body.getOrDefault("joinMode", "PUBLIC")).trim().toUpperCase();
+        if (!Set.of("PUBLIC", "INVITE_ONLY").contains(mode)) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Quyền tham gia không hợp lệ (PUBLIC hoặc INVITE_ONLY)."));
+        }
+        tournament.setJoinMode(mode);
+        if (body.containsKey("invitedEmails")) {
+            Object raw = body.get("invitedEmails");
+            List<String> cleaned = new ArrayList<>();
+            if (raw instanceof List<?> list) {
+                for (Object o : list) {
+                    if (o == null) continue;
+                    String email = o.toString().trim().toLowerCase();
+                    if (email.isEmpty() || !email.contains("@")) continue;
+                    if (!cleaned.contains(email)) cleaned.add(email);
+                }
+            }
+            tournament.setInvitedEmails(cleaned);
+        }
+        tournamentRepository.save(tournament);
+        return ResponseEntity.ok(Map.of(
+                "message", mode.equals("INVITE_ONLY")
+                        ? "Đã chuyển giải sang chế độ chỉ mời qua email."
+                        : "Đã mở quyền tham gia cho mọi người.",
+                "joinMode", tournament.getJoinMode(),
+                "invitedEmails", tournament.getInvitedEmails()));
+    }
+
+    /** BTC / chủ sân thêm 1 email vào danh sách mời của giải. */
+    @PostMapping("/{id}/invites")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
+    public ResponseEntity<?> addInvite(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        String email = body.get("email") != null ? body.get("email").toString().trim().toLowerCase() : "";
+        if (email.isEmpty() || !email.contains("@")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email không hợp lệ."));
+        }
+        List<String> emails = new ArrayList<>(
+                tournament.getInvitedEmails() != null ? tournament.getInvitedEmails() : List.of());
+        if (!emails.contains(email)) {
+            emails.add(email);
+        }
+        tournament.setInvitedEmails(emails);
+        // Mời email thì chuyển sang chế độ kín nếu đang công khai
+        if (!"INVITE_ONLY".equalsIgnoreCase(tournament.getJoinMode())) {
+            tournament.setJoinMode("INVITE_ONLY");
+        }
+        tournamentRepository.save(tournament);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã mời " + email + " tham gia giải.",
+                "joinMode", tournament.getJoinMode(),
+                "invitedEmails", tournament.getInvitedEmails()));
+    }
+
+    /** BTC / chủ sân xoá 1 email khỏi danh sách mời. */
+    @DeleteMapping("/{id}/invites/{email}")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
+    public ResponseEntity<?> removeInvite(@PathVariable Long id, @PathVariable String email) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        String target = email.trim().toLowerCase();
+        List<String> emails = new ArrayList<>(
+                tournament.getInvitedEmails() != null ? tournament.getInvitedEmails() : List.of());
+        emails.removeIf(e -> e != null && e.trim().toLowerCase().equals(target));
+        tournament.setInvitedEmails(emails);
+        tournamentRepository.save(tournament);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã gỡ lời mời của " + target + ".",
+                "invitedEmails", tournament.getInvitedEmails()));
+    }
+
+    /**
+     * BTC / chủ tổ chức THÊM ĐỘI THỦ CÔNG vào giải (không qua form đăng ký của cầu thủ).
      *
      * <p>Khác với {@code POST /{id}/register} (cầu thủ tự đăng ký, bị chặn trùng
      * captainEmail/captainPhone và bắt buộc đã đóng phí), endpoint này dành cho BTC:

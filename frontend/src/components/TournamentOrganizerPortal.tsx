@@ -19,6 +19,7 @@ import FormDots from "./FormDots";
 import BusinessContacts from "./BusinessContacts";
 import {
   getPendingTeams, approveTeam, rejectTeam, addManualTeam,
+  fetchJoinAccess, setJoinAccess, addTournamentInvite, removeTournamentInvite,
   getReferees, addReferee, removeReferee,
   type PendingTeam, type RefereeInfo
 } from "@/lib/organizerService";
@@ -34,7 +35,7 @@ import {
  Download,
  Plus,
  RefreshCw,
- Lock,
+ Lock, Unlock,
  Award,
  Radio,
  Sparkles,
@@ -293,6 +294,95 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   // ---- SỬA THÔNG TIN GIẢI (trước đây BTC tạo xong không sửa được gì) ----
   const [showEditModal, setShowEditModal] = useState(false);
  // Thêm đội thủ công (BTC nhập tay, không qua form đăng ký của cầu thủ)
+ // Quyền tham gia giải: ai cũng tham gia / chỉ mời qua email
+ const [joinMode, setJoinMode] = useState<"PUBLIC" | "INVITE_ONLY">("PUBLIC");
+ const [inviteEmails, setInviteEmails] = useState<string[]>([]);
+ const [inviteInput, setInviteInput] = useState("");
+ const [accessBusy, setAccessBusy] = useState(false);
+
+ /**
+  * Nạp cấu hình quyền tham gia khi đổi giải.
+  *
+  * <p>accessSeq chống race: nếu người dùng bấm nút đổi quyền TRONG LÚC request GET
+  * đang bay, response cũ (PUBLIC) sẽ ghi đè lựa chọn mới. Mỗi thao tác tăng seq,
+  * response nào có seq cũ hơn sẽ bị bỏ qua.</p>
+  */
+ const accessSeq = React.useRef(0);
+ const loadJoinAccess = useCallback(async (tid: number) => {
+  const seq = ++accessSeq.current;
+  try {
+   const acc = await fetchJoinAccess(tid);
+   if (seq !== accessSeq.current) return;
+   setJoinMode(acc.joinMode);
+   setInviteEmails(acc.invitedEmails);
+  } catch {
+   if (seq !== accessSeq.current) return;
+   setJoinMode("PUBLIC");
+   setInviteEmails([]);
+  }
+ }, []);
+
+ useEffect(() => {
+  const tid = Number(activeTournament?.id);
+  if (tid) loadJoinAccess(tid);
+ }, [activeTournament?.id, loadJoinAccess]);
+
+ /** Lưu quyền tham gia (kèm danh sách email mời hiện tại). */
+ const handleSaveAccess = async (mode: "PUBLIC" | "INVITE_ONLY") => {
+  const tid = Number(activeTournament?.id);
+  if (!tid) return;
+  setAccessBusy(true);
+  try {
+   accessSeq.current++; // vô hiệu hoá response GET đang bay
+   const res = await setJoinAccess(tid, mode, mode === "INVITE_ONLY" ? inviteEmails : []);
+   setJoinMode(res.joinMode);
+   setInviteEmails(res.invitedEmails);
+   setVarNotice("✅ " + (res.message || "Đã lưu quyền tham gia."));
+   await fetchDbTournaments();
+  } catch (err: any) {
+   setVarNotice("❌ " + (err?.message || "Không lưu được quyền tham gia."));
+  } finally {
+   setAccessBusy(false);
+  }
+ };
+
+ /** Thêm 1 email vào danh sách mời. */
+ const handleAddInvite = async () => {
+  const tid = Number(activeTournament?.id);
+  const email = inviteInput.trim().toLowerCase();
+  if (!tid || !email) return;
+  setAccessBusy(true);
+  try {
+   accessSeq.current++;
+   const res = await addTournamentInvite(tid, email);
+   setJoinMode(res.joinMode);
+   setInviteEmails(res.invitedEmails);
+   setInviteInput("");
+   setVarNotice("✅ " + (res.message || "Đã thêm email mời."));
+   await fetchDbTournaments();
+  } catch (err: any) {
+   setVarNotice("❌ " + (err?.message || "Không thêm được email mời."));
+  } finally {
+   setAccessBusy(false);
+  }
+ };
+
+ /** Gỡ 1 email khỏi danh sách mời. */
+ const handleRemoveInvite = async (email: string) => {
+  const tid = Number(activeTournament?.id);
+  if (!tid) return;
+  setAccessBusy(true);
+  try {
+   accessSeq.current++;
+   const res = await removeTournamentInvite(tid, email);
+   setInviteEmails(res.invitedEmails);
+   setVarNotice("✅ " + (res.message || "Đã gỡ email mời."));
+  } catch (err: any) {
+   setVarNotice("❌ " + (err?.message || "Không gỡ được email mời."));
+  } finally {
+   setAccessBusy(false);
+  }
+ };
  const [showAddTeamForm, setShowAddTeamForm] = useState(false); // form inline, KHÔNG popup
  const [addingTeam, setAddingTeam] = useState(false);
  const [addTeamForm, setAddTeamForm] = useState({
@@ -1671,6 +1761,132 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   </button>
   </div>
 
+  {/* ===== QUYỀN THAM GIA GIẢI (ai cũng tham gia / chỉ mời qua email) — hiển thị INLINE ===== */}
+  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-5">
+   <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+    <div className="flex items-center space-x-2.5">
+     <div className="w-9 h-9 rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/30 flex items-center justify-center text-sky-700 shrink-0">
+      <ShieldCheck className="w-5 h-5" />
+     </div>
+     <div>
+      <span className="text-[10px] font-black uppercase text-sky-700 tracking-wider">
+       QUYỀN THAM GIA
+      </span>
+      <h4 className="text-sm font-black text-slate-900 ">
+       {activeTournament ? activeTournament.title : "Chưa chọn giải"}
+      </h4>
+     </div>
+    </div>
+    {activeTournament && (
+     <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border ${
+      joinMode === "INVITE_ONLY"
+       ? "bg-amber-100 text-amber-800 border-amber-300"
+       : "bg-emerald-100 text-emerald-800 border-emerald-300"
+     }`}>
+      {joinMode === "INVITE_ONLY" ? "🔒 Chỉ mời qua email" : "🔓 Ai cũng tham gia"}
+     </span>
+    )}
+   </div>
+
+   {!activeTournament ? (
+    <p className="text-xs text-slate-500">Hãy chọn một giải ở danh sách bên trái để đặt quyền tham gia.</p>
+   ) : (
+    <>
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      {/* Ai cũng tham gia */}
+      <button
+       type="button"
+       onClick={() => handleSaveAccess("PUBLIC")}
+       disabled={accessBusy || joinMode === "PUBLIC"}
+       className={`p-3.5 rounded-2xl border-2 text-left transition-all disabled:opacity-70 ${
+        joinMode === "PUBLIC"
+         ? "border-emerald-400 bg-emerald-50 shadow-xs"
+         : "border-slate-200 bg-white hover:border-emerald-300"
+       }`}
+      >
+       <div className="flex items-center gap-2">
+        <Unlock className={`w-4 h-4 ${joinMode === "PUBLIC" ? "text-emerald-600" : "text-slate-400"}`} />
+        <span className="text-xs font-black text-slate-900">Ai cũng có thể tham gia</span>
+       </div>
+       <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">
+        Mọi người có tài khoản đều đăng ký đội thi được. Phù hợp giải phong trào mở rộng.
+       </p>
+      </button>
+
+      {/* Chỉ mời qua email */}
+      <button
+       type="button"
+       onClick={() => handleSaveAccess("INVITE_ONLY")}
+       disabled={accessBusy || joinMode === "INVITE_ONLY"}
+       className={`p-3.5 rounded-2xl border-2 text-left transition-all disabled:opacity-70 ${
+        joinMode === "INVITE_ONLY"
+         ? "border-amber-400 bg-amber-50 shadow-xs"
+         : "border-slate-200 bg-white hover:border-amber-300"
+       }`}
+      >
+       <div className="flex items-center gap-2">
+        <Lock className={`w-4 h-4 ${joinMode === "INVITE_ONLY" ? "text-amber-700" : "text-slate-400"}`} />
+        <span className="text-xs font-black text-slate-900">Chỉ ai được mời qua email</span>
+       </div>
+       <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">
+        Giải kín — chỉ email trong danh sách bên dưới mới đăng ký thi được.
+       </p>
+      </button>
+     </div>
+
+     {/* Danh sách email mời */}
+     {joinMode === "INVITE_ONLY" && (
+      <div className="space-y-2.5 pt-1">
+       <div className="flex items-center gap-2">
+        <input
+         type="email"
+         value={inviteInput}
+         onChange={(e) => setInviteInput(e.target.value)}
+         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddInvite(); } }}
+         placeholder="Nhập email cầu thủ / đội trưởng rồi Enter"
+         className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-xs"
+        />
+        <button
+         type="button"
+         onClick={handleAddInvite}
+         disabled={accessBusy || !inviteInput.trim()}
+         className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5 whitespace-nowrap"
+        >
+         <Plus className="w-3.5 h-3.5" />
+         Mời
+        </button>
+       </div>
+
+       {inviteEmails.length === 0 ? (
+        <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+         Chưa có email nào được mời. Cho tới khi có email trong danh sách, không ai đăng ký được vào giải này.
+        </p>
+       ) : (
+        <div className="flex flex-wrap gap-1.5">
+         {inviteEmails.map((em) => (
+          <span key={em} className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-[11px] font-mono font-bold">
+           {em}
+           <button
+            type="button"
+            onClick={() => handleRemoveInvite(em)}
+            disabled={accessBusy}
+            aria-label={`Gỡ lời mời ${em}`}
+            className="w-4 h-4 rounded-full hover:bg-amber-300 flex items-center justify-center transition-colors"
+           >
+            <X className="w-3 h-3" />
+           </button>
+          </span>
+         ))}
+        </div>
+       )}
+       <p className="text-[10px] text-slate-500">
+        Đã mời {inviteEmails.length} email. Cầu thủ chỉ đăng ký được khi đăng nhập đúng một email trong danh sách này.
+       </p>
+      </div>
+     )}
+    </>
+   )}
+  </div>
  {/* 2. QUỸ THƯỞNG THẬT (prizePool từ CSDL) */}
  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-6">
  <div className="flex items-center justify-between border-b border-slate-100 pb-4">

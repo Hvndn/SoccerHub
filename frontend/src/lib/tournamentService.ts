@@ -40,6 +40,10 @@ export interface Tournament {
   createdAt?: string;
   teams?: TournamentTeamEntry[];
   bracketJson?: string | null;
+  /** Quyền tham gia: PUBLIC (ai cũng được) | INVITE_ONLY (chỉ email được mời). */
+  joinMode?: "PUBLIC" | "INVITE_ONLY" | null;
+  /** Danh sách email được BTC mời (chỉ có ý nghĩa khi joinMode = INVITE_ONLY). */
+  invitedEmails?: string[] | null;
   bankCode?: string | null;
   bankAccount?: string | null;
   accountName?: string | null;

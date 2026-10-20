@@ -51,6 +51,26 @@ public class Tournament {
 
     private String bannerUrl;
 
+    /**
+     * Quyền tham gia giải do BTC/chủ sân quy định.
+     *
+     * <ul>
+     *   <li>{@code PUBLIC} (mặc định) — ai cũng có thể đăng ký đội tham gia.</li>
+     *   <li>{@code INVITE_ONLY} — chỉ những email trong {@link #invitedEmails} mới
+     *       đăng ký được; dùng cho giải kín, giải phong trào nội bộ.</li>
+     * </ul>
+     */
+    @Builder.Default
+    private String joinMode = "PUBLIC"; // PUBLIC | INVITE_ONLY
+
+    /** Danh sách email được mời tham gia (chỉ dùng khi joinMode = INVITE_ONLY). */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @BatchSize(size = 100)
+    @CollectionTable(name = "tournament_invited_emails", joinColumns = @JoinColumn(name = "tournament_id"))
+    @Column(name = "email", length = 160)
+    @Builder.Default
+    private List<String> invitedEmails = new ArrayList<>();
+
     /** Thông tin nhận lệ phí giải (nullable — BTC điền khi tạo giải, dùng sinh QR VietQR). */
     private String bankCode;
     private String bankAccount;

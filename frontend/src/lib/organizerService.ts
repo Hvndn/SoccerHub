@@ -26,8 +26,7 @@ export interface RefereeInfo {
   assignedAt: string;
 }
 
-/** BTC/ADMIN thêm đội thủ công vào giải (không qua form đăng ký của cầu thủ). */
-export async function addManualTeam(
+/** BTC/ADMIN thêm đội thủ công vào giải (không qua form đăng ký của cầu thủ). */export async function addManualTeam(
   tournamentId: number,
   payload: {
     teamName: string;
@@ -94,4 +93,63 @@ export async function removeReferee(tournamentId: number, refId: number): Promis
 export function reportTournamentError(err: any, fallback: string): void {
   if (!ensureLoggedIn("thao tác với giải đấu")) return;
   toastErr(err?.message || fallback);
+}
+
+/* =========================================================
+ * Quyền tham gia giải (ai cũng tham gia / chỉ mời qua email)
+ * ========================================================= */
+
+export type JoinMode = "PUBLIC" | "INVITE_ONLY";
+
+export interface JoinAccess {
+  joinMode: JoinMode;
+  invitedEmails: string[];
+  message?: string;
+}
+
+/** Đọc cấu hình quyền tham gia của 1 giải. */
+export async function fetchJoinAccess(tournamentId: number): Promise<JoinAccess> {
+  const data = await apiRequest<{ joinMode: JoinMode; invitedEmails: string[] }>(
+    `/api/v1/tournaments/${tournamentId}/access`
+  );
+  return { joinMode: data?.joinMode === "INVITE_ONLY" ? "INVITE_ONLY" : "PUBLIC", invitedEmails: data?.invitedEmails ?? [] };
+}
+
+/** Đặt quyền tham gia (và ghi đè danh sách email mời nếu có truyền). */
+export async function setJoinAccess(
+  tournamentId: number,
+  joinMode: JoinMode,
+  invitedEmails?: string[]
+): Promise<JoinAccess> {
+  const body: Record<string, unknown> = { joinMode };
+  if (invitedEmails) body.invitedEmails = invitedEmails;
+  const data = await apiRequest<{ message: string; joinMode: JoinMode; invitedEmails: string[] }>(
+    `/api/v1/tournaments/${tournamentId}/access`,
+    { method: "PUT", body: JSON.stringify(body) }
+  );
+  return { joinMode: data?.joinMode ?? "PUBLIC", invitedEmails: data?.invitedEmails ?? [], message: data?.message };
+}
+
+/** Thêm 1 email vào danh sách mời (tự chuyển giải sang chế độ kín nếu đang công khai). */
+export async function addTournamentInvite(
+  tournamentId: number,
+  email: string
+): Promise<JoinAccess> {
+  const data = await apiRequest<{ message: string; joinMode: JoinMode; invitedEmails: string[] }>(
+    `/api/v1/tournaments/${tournamentId}/invites`,
+    { method: "POST", body: JSON.stringify({ email }) }
+  );
+  return { joinMode: data?.joinMode ?? "PUBLIC", invitedEmails: data?.invitedEmails ?? [], message: data?.message };
+}
+
+/** Gỡ 1 email khỏi danh sách mời. */
+export async function removeTournamentInvite(
+  tournamentId: number,
+  email: string
+): Promise<JoinAccess> {
+  const data = await apiRequest<{ message: string; invitedEmails: string[] }>(
+    `/api/v1/tournaments/${tournamentId}/invites/${encodeURIComponent(email)}`,
+    { method: "DELETE" }
+  );
+  return { joinMode: "PUBLIC", invitedEmails: data?.invitedEmails ?? [], message: data?.message };
 }

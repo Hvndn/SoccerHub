@@ -2,6 +2,7 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import WizardStepper from "@/components/WizardStepper";
 import WizardPageShell from "@/components/WizardPageShell";
 import {
@@ -93,10 +94,16 @@ function RegisterTeamWizard() {
  }, [presetId]);
 
  const selected = tournaments.find((t) => String(t.id) === tournamentId) ?? null;
+  // Giải kín (chỉ mời qua email): email đang đăng nhập có nằm trong danh sách mời không.
+  const { user } = useAuth();
+  const isInviteOnly = selected?.joinMode === "INVITE_ONLY";
+  const myEmail = (user?.email ?? "").toLowerCase();
+  const amInvited = !isInviteOnly || (selected?.invitedEmails ?? []).some((e) => (e ?? "").toLowerCase() === myEmail);
 
  const validateStep = (s: number): boolean => {
  const e: Record<string, string> = {};
  if (s === 0 && !selected) e.tournament = "Vui lòng chọn một giải đấu đang mở đăng ký.";
+  if (s === 0 && selected && !amInvited) e.tournament = "Giải này chỉ mời tham gia qua email. Bạn cần được BTC mời trước khi đăng ký đội.";
  if (s === 1) {
  if (teamName.trim().length < 3) e.teamName = "Tên đội phải có ít nhất 3 ký tự.";
  if (!Number.isInteger(memberCount) || memberCount < 5 || memberCount > 25)
@@ -224,6 +231,11 @@ function RegisterTeamWizard() {
  {sportLabel(t.sportType)} • Khởi tranh {formatDate(t.startDate)} •{" "}
  {t.registeredTeams ?? 0}/{t.totalTeams ?? "—"} đội
  </span>
+  {t.joinMode === "INVITE_ONLY" && (
+  <span className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 border border-amber-300 text-amber-900 text-[10px] font-black">
+  🔒 Chỉ mời qua email
+  </span>
+  )}
  </span>
  <span className="shrink-0 font-mono text-sm font-black text-sky-800 ">
  {formatMoney(t.entryFee)}
@@ -232,6 +244,11 @@ function RegisterTeamWizard() {
  </button>
  ))
  )}
+  {selected && isInviteOnly && !amInvited && (
+  <p className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-xs font-bold text-amber-900 leading-relaxed">
+  🔒 Giải này chỉ mời tham gia qua email. Bạn cần được Ban Tổ Chức mời trước khi đăng ký đội.
+  </p>
+  )}
  {errors.tournament && <p className={errCls}>{errors.tournament}</p>}
  </div>
  )}

@@ -62,6 +62,8 @@ function NewTournamentWizard() {
  bankCode: "",
  bankAccount: "",
  accountName: "",
+  // Quyền tham gia: PUBLIC (ai cũng đăng ký được) | INVITE_ONLY (chỉ email được mời)
+  joinMode: "PUBLIC" as "PUBLIC" | "INVITE_ONLY",
  });
 
  const set = (k: keyof typeof form, v: string | number) => {
@@ -143,6 +145,7 @@ function NewTournamentWizard() {
  startDate: form.startDate,
  endDate: form.endDate || form.startDate,
  registrationDeadline: form.registrationDeadline || form.startDate,
+  joinMode: form.joinMode,
  status: "OPEN",
  });
  setCreatedId(created?.id ?? null);
@@ -295,6 +298,46 @@ function NewTournamentWizard() {
  </div>
  )}
 
+  <div>
+  <label className={labelCls}>Quyền Tham Gia *</label>
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+  <button
+  type="button"
+  onClick={() => set("joinMode", "PUBLIC")}
+  aria-pressed={form.joinMode === "PUBLIC"}
+  className={`p-3.5 rounded-xl border-2 text-left transition-all ${
+  form.joinMode === "PUBLIC"
+   ? "border-emerald-500 bg-emerald-50"
+   : "border-slate-200 bg-white hover:border-emerald-300"
+  }`}
+  >
+  <span className="block text-xs font-black text-slate-900">🔓 Ai cũng có thể tham gia</span>
+  <span className="block text-[10.5px] text-slate-500 mt-1 leading-relaxed">
+  Mọi người có tài khoản đều đăng ký đội thi được.
+  </span>
+  </button>
+  <button
+  type="button"
+  onClick={() => set("joinMode", "INVITE_ONLY")}
+  aria-pressed={form.joinMode === "INVITE_ONLY"}
+  className={`p-3.5 rounded-xl border-2 text-left transition-all ${
+  form.joinMode === "INVITE_ONLY"
+   ? "border-amber-500 bg-amber-50"
+   : "border-slate-200 bg-white hover:border-amber-300"
+  }`}
+  >
+  <span className="block text-xs font-black text-slate-900">🔒 Chỉ ai được mời qua email</span>
+  <span className="block text-[10.5px] text-slate-500 mt-1 leading-relaxed">
+  Giải kín — BTC sẽ mời từng email sau khi tạo giải.
+  </span>
+  </button>
+  </div>
+  {form.joinMode === "INVITE_ONLY" && (
+  <p className="text-[10.5px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mt-2 leading-relaxed">
+  Sau khi tạo giải, mở tab “Điều Hành Giải Đấu › Quyền Tham Gia” để thêm danh sách email được mời.
+  </p>
+  )}
+  </div>
  {/* STEP 3 */}
  {step === 2 && (
  <div className="space-y-4">
