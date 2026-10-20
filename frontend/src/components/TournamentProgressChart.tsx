@@ -75,7 +75,7 @@ export default function TournamentProgressChart({ tournament }: { tournament: an
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
             <XAxis
               type="number"
-              tick={{ fontSize: 10, fill: "#64748b" }}
+              tick={{ fontSize: 12, fill: "#64748b" }}
               allowDecimals={false}
               axisLine={false}
               tickLine={false}
@@ -83,13 +83,13 @@ export default function TournamentProgressChart({ tournament }: { tournament: an
             <YAxis
               type="category"
               dataKey="team"
-              tick={{ fontSize: 10, fill: "#334155", fontWeight: 700 }}
+              tick={{ fontSize: 12, fill: "#334155", fontWeight: 700 }}
               axisLine={false}
               tickLine={false}
               width={120}
             />
             <Tooltip
-              contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+              contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
               formatter={(v: any, _n: any, p: any) => [`${v} thắng / ${p?.payload?.played ?? 0} trận`, "Thành tích"]}
             />
             <Bar dataKey="wins" fill="#0369a1" radius={[0, 8, 8, 0]} maxBarSize={24} />

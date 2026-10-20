@@ -355,19 +355,19 @@ export default function AdminCharts() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis
                   dataKey="month"
-                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
                   axisLine={{ stroke: "#cbd5e1" }}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
                   tickFormatter={(v) => (v >= 1000000 ? (v / 1000000).toFixed(0) + "tr" : v / 1000 + "k")}
                   axisLine={false}
                   tickLine={false}
                   width={42}
                 />
                 <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
                   formatter={moneyTip}
                   labelFormatter={(l) => "Tháng " + l}
                 />
@@ -399,21 +399,21 @@ export default function AdminCharts() {
                   paddingAngle={3}
                   label={(e: any) => `${e.name}: ${e.value}`}
                   labelLine={false}
-                  style={{ fontSize: 10, fontWeight: 700 }}
+                  style={{ fontSize: 12, fontWeight: 700 }}
                 >
                   {statusData.map((_d, i) => (
                     <Cell key={i} fill={BRAND[i % BRAND.length]} />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
                 />
                 <Legend
                   verticalAlign="bottom"
                   height={28}
                   iconType="circle"
                   iconSize={8}
-                  wrapperStyle={{ fontSize: 11 }}
+                  wrapperStyle={{ fontSize: 13 }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -437,19 +437,19 @@ export default function AdminCharts() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis
                   dataKey="day"
-                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
                   axisLine={{ stroke: "#cbd5e1" }}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
                   allowDecimals={false}
                   axisLine={false}
                   tickLine={false}
                   width={34}
                 />
                 <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
 formatter={countTip}
                   labelFormatter={(l) => {
                     const hit = weekdayData.find((d) => d.day === l);
@@ -491,21 +491,21 @@ formatter={countTip}
                   paddingAngle={3}
                   label={(e: any) => `${e.name}: ${e.value}`}
                   labelLine={false}
-                  style={{ fontSize: 10, fontWeight: 700 }}
+                  style={{ fontSize: 12, fontWeight: 700 }}
                 >
                   {roleData.map((_d, i) => (
                     <Cell key={i} fill={BRAND[i % BRAND.length]} />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
                 />
                 <Legend
                   verticalAlign="bottom"
                   height={28}
                   iconType="circle"
                   iconSize={8}
-                  wrapperStyle={{ fontSize: 11 }}
+                  wrapperStyle={{ fontSize: 13 }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -532,7 +532,7 @@ formatter={countTip}
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
               <XAxis
                 type="number"
-                tick={{ fontSize: 10, fill: "#64748b" }}
+                tick={{ fontSize: 12, fill: "#64748b" }}
                 tickFormatter={(v) => (v >= 1000000 ? (v / 1000000).toFixed(0) + "tr" : v / 1000 + "k")}
                 axisLine={false}
                 tickLine={false}
@@ -540,13 +540,13 @@ formatter={countTip}
               <YAxis
                 type="category"
                 dataKey="name"
-                tick={{ fontSize: 10, fill: "#334155", fontWeight: 700 }}
+                tick={{ fontSize: 12, fill: "#334155", fontWeight: 700 }}
                 axisLine={false}
                 tickLine={false}
                 width={128}
               />
               <Tooltip
-                contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+                contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
                 formatter={moneyTip}
                 labelFormatter={(l) => {
                   const hit = topPitchData.find((p) => p.name === l);

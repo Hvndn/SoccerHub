@@ -117,19 +117,19 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis
                   dataKey="month"
-                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
                   axisLine={{ stroke: "#cbd5e1" }}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
                   tickFormatter={(v) => (v >= 1000000 ? (v / 1000000).toFixed(0) + "tr" : v / 1000 + "k")}
                   axisLine={false}
                   tickLine={false}
                   width={42}
                 />
                 <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
                   formatter={moneyTip}
                 />
                 <Bar dataKey="revenue" fill="url(#ownerRevGrad)" radius={[8, 8, 0, 0]} maxBarSize={40} />
@@ -160,12 +160,12 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis
                   dataKey="month"
-                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
                   axisLine={{ stroke: "#cbd5e1" }}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
                   domain={[0, 100]}
                   unit="%"
                   axisLine={false}
@@ -173,7 +173,7 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
                   width={38}
                 />
                 <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+                  contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
                   formatter={(v: any) => [`${v}%`, "Lấp đầy"]}
                 />
                 <Line
@@ -216,20 +216,20 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
               <XAxis
                 dataKey="hour"
-                tick={{ fontSize: 9, fill: "#64748b" }}
+                tick={{ fontSize: 12, fill: "#64748b" }}
                 axisLine={{ stroke: "#cbd5e1" }}
                 tickLine={false}
                 interval={1}
               />
               <YAxis
-                tick={{ fontSize: 10, fill: "#64748b" }}
+                tick={{ fontSize: 12, fill: "#64748b" }}
                 allowDecimals={false}
                 axisLine={false}
                 tickLine={false}
                 width={28}
               />
               <Tooltip
-                contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+                contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
                 formatter={(v: any) => [`${v} đơn`, "Số đơn"]}
               />
               <Bar dataKey="bookings" fill="#0369a1" radius={[6, 6, 0, 0]} maxBarSize={28} />
