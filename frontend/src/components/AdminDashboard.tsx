@@ -855,9 +855,7 @@ setIsSavingInfo(false);
  <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/20 text-[#0b4f6c] text-sm font-bold mb-2">
  <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
  <span>
- {activePitch 
- ? `${activePitch.name.replace(/đà nẵng/i, "Đà Nẵng").toUpperCase()} — BẢNG ĐIỀU HÀNH CHỦ SÂN` 
- : "BẢNG ĐIỀU HÀNH CHỦ SÂN BÓNG ĐÁ"}
+ Bảng Điều Hành Chủ Sân
  </span>
  </div>
  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
@@ -960,7 +958,7 @@ setIsSavingInfo(false);
  }`}
  >
  <BarChart2 className="w-4 h-4 shrink-0" />
- <span>Sơ Đồ Ca Sân Live Matrix</span>
+ <span>Ma Trận Ca Sân</span>
  </button>
 
  <button
@@ -973,7 +971,7 @@ setIsSavingInfo(false);
  }`}
  >
  <Building className="w-4 h-4 shrink-0" />
- <span>Danh Sách Sân Con ({pitchMatrix.length})</span>
+ <span>Sân Con ({pitchMatrix.length})</span>
  </button>
 
  <button
@@ -986,7 +984,7 @@ setIsSavingInfo(false);
  }`}
  >
  <Sliders className="w-4 h-4 text-amber-400 shrink-0" />
- <span>Giá Thuê Sân &amp; Tiền Cọc</span>
+ <span>Giá &amp; Tiền Cọc</span>
  </button>
 
  <button
@@ -999,7 +997,7 @@ setIsSavingInfo(false);
  }`}
  >
  <Coffee className="w-4 h-4 text-emerald-400 shrink-0" />
- <span>Quản Lý Canteen & Vật Tư</span>
+ <span>Canteen &amp; Vật Tư</span>
  </button>
 
  <button
@@ -1012,7 +1010,7 @@ setIsSavingInfo(false);
  }`}
  >
  <PieChart className="w-4 h-4 text-emerald-400 shrink-0" />
- <span>Doanh Thu & Xuất Báo Cáo</span>
+ <span>Doanh Thu &amp; Báo Cáo</span>
  </button>
  </div>
  </div>

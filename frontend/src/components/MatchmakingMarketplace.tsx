@@ -348,7 +348,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  {/* 2. FILTER CONSOLE & SPORTS SWITCHER */}
  <section className="w-full bg-white p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3 sm:space-y-4">
  {/* Sport Tabs */}
- <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
+ <div className="flex flex-wrap items-center gap-2">
  <button
  onClick={() => setSelectedSport("SAN_7")}
  className={`flex items-center space-x-2 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-bold text-xs shrink-0 transition-all ${
@@ -530,16 +530,16 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 items-start">
  {/* LEFT COLUMN: MATCH LISTINGS (68% WIDTH / 8 COLS) */}
  <main className="lg:col-span-8 space-y-5">
- <div className="flex items-center justify-between">
- <div className="flex items-center space-x-3">
- <h2 className="text-xl font-black text-slate-900 ">
+ <div className="flex flex-wrap items-center justify-between gap-2">
+ <div className="flex flex-wrap items-center gap-2">
+ <h2 className="text-xl font-black text-slate-900 shrink-0">
  Kèo Đang Mở Đăng Ký ({openKèoCount})
  </h2>
- <span className="px-3 py-1 rounded-full bg-[#acf847] text-[#102000] font-mono text-xs font-extrabold">
- {matchableCount}/{openKèoCount} kèo cùng tầm phong độ (±15%)
+ <span className="px-3 py-1 rounded-full bg-[#acf847] text-[#102000] font-mono text-xs font-extrabold whitespace-nowrap">
+ {matchableCount}/{openKèoCount} kèo cùng tầm
  </span>
  </div>
- <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500">
+ <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 shrink-0 whitespace-nowrap">
  <span>Sắp xếp:</span>
  <button
  type="button"
