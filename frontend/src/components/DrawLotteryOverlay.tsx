@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle2, Shuffle, Trophy, Volume2, VolumeX } from "lucide-react";
+import { CheckCircle2, Shuffle, Trophy, Volume2, VolumeX, Zap } from "lucide-react";
 
 export interface DrawPair {
  matchId: string;
@@ -15,6 +15,8 @@ interface DrawLotteryOverlayProps {
  pairs: DrawPair[];
  byes: string[];
  onDone: () => void;
+  /** true = hiển thị inline trong trang (không che popup); false = modal overlay. */
+  inline?: boolean;
 }
 
 /**
@@ -23,7 +25,7 @@ interface DrawLotteryOverlayProps {
  *   - Nhạc hiệu: trống rải khi xáo, fanfare khi khóa từng cặp, fanfare lớn khi hoàn tất
  *   - Tôn trọng prefers-reduced-motion (tắt animation + âm thanh)
  */
-export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes, onDone }: DrawLotteryOverlayProps) {
+export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes, onDone, inline }: DrawLotteryOverlayProps) {
  const [shuffling, setShuffling] = useState(true);
  const [locked, setLocked] = useState(0);
  const [tick, setTick] = useState(0);
@@ -94,6 +96,18 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
   playTone(392.0, 0.6, 0.08, "triangle", 0);
  }, [playTone]);
 
+  /** BỎ QUA: dừng xáo, khóa ngay toàn bộ cặp để xem kết quả tức thì. */
+  const skipDraw = useCallback(() => {
+   timers.current.forEach((t) => {
+    window.clearTimeout(t);
+    window.clearInterval(t);
+   });
+   timers.current = [];
+   setShuffling(false);
+   setLocked(pairs.length);
+   if (soundOn) playFinalFanfare();
+  }, [pairs.length, soundOn, playFinalFanfare]);
+
  useEffect(() => {
   if (!open) return;
   timers.current.forEach((t) => {
@@ -147,6 +161,21 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
   };
  }, [open, pairs, soundOn, playDrumRoll, playLockChime, playFinalFanfare]);
 
+  // Vị trí các quả bóng trong cái bát — dao động theo `tick` (mỗi 80ms) tạo cảm giác xáo.
+  // Càng nhiều đội thì bát càng đầy, tối đa 14 quả cho nhẹ máy.
+  const bowlBalls = useMemo(() => {
+   const count = Math.max(4, Math.min(pool.length, 14));
+   return Array.from({ length: count }, (_, i) => {
+    const s1 = (tick * 7 + i * 31) % 100;
+    const s2 = (tick * 13 + i * 17) % 100;
+    const s3 = (tick * 5 + i * 23) % 100;
+    return { x: 14 + (s1 % 72), y: 6 + (s2 % 74), r: (s3 % 44) - 22 };
+   });
+  }, [pool.length, tick]);
+
+  // Số bóng đã được rút ra khỏi bát (mỗi cặp khóa = 2 bóng).
+  const drawnBalls = locked * 2;
+
  if (!open) return null;
 
  const done = !shuffling && locked >= pairs.length;
@@ -155,34 +184,69 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
   return pool[(tick * 7 + idx * 13) % pool.length];
  };
 
- return (
-  <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+  return (
    <div
-    role="dialog"
-    aria-modal="true"
-    aria-label={`Bốc thăm chia cặp ${tournamentTitle}`}
-    className="animate-modal-pop w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white border border-slate-200 shadow-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 my-auto"
+    className={
+     inline
+      ? "w-full animate-fade-in"
+      : "fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in overflow-y-auto"
+    }
    >
+    <div
+     role="dialog"
+     aria-modal={inline ? undefined : "true"}
+     aria-label={`Bốc thăm chia cặp ${tournamentTitle}`}
+     className={
+      inline
+       ? "w-full rounded-2xl sm:rounded-3xl bg-white border border-slate-200 shadow-xl p-4 sm:p-6 space-y-4 sm:space-y-5"
+       : "animate-modal-pop w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white border border-slate-200 shadow-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 my-auto"
+     }
+    >
     <div className="text-center space-y-1">
-     {/* Quả bóng vàng quay — hiệu ứng Champions League */}
-     <div className="mx-auto w-16 h-16 relative mb-1">
-      <div
-       className={`absolute inset-0 rounded-full bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 shadow-lg border-2 border-amber-200 flex items-center justify-center ${
-        shuffling ? "animate-spin" : "scale-105"
-       }`}
-       style={{ animationDuration: shuffling ? "0.9s" : "0s" }}
-      >
-       <span className="text-2xl select-none" aria-hidden>
-        ⚽
-       </span>
+     {/* ===== CÁI BÁT DỰNG — hiệu ứng bốc thăm kiểu Champions League ===== */}
+     <div className="relative mx-auto w-full max-w-[300px] h-[196px] select-none" aria-hidden>
+      {/* Các quả bóng lăn xáo trong bát */}
+      <div className="absolute inset-x-5 bottom-[44px] h-[118px]">
+       {bowlBalls.map((b, i) => (
+        <span
+         key={i}
+         className="absolute text-[30px] leading-none"
+         style={{
+         left: `${b.x}%`,
+         bottom: `${b.y}%`,
+         transform: `translate(-50%, 50%) rotate(${b.r}deg)`,
+         transition: "left .16s ease-out, bottom .16s ease-out, transform .16s ease-out, opacity .35s ease",
+         opacity: i < drawnBalls ? 0 : 1,
+         filter: "drop-shadow(0 3px 4px rgba(15,23,42,.45))",
+         }}
+        >
+         ⚽
+        </span>
+       ))}
       </div>
-      {/* Vòng hào quang */}
+
+      {/* Thân bát (kính mờ) - vẽ sau bóng để bóng nằm "trong" bát */}
+      <div className="absolute inset-x-0 bottom-0 h-[152px] rounded-b-[74px] rounded-t-[14px] bg-gradient-to-b from-[#0369a1]/35 via-[#0369a1]/55 to-[#075985]/85 border-2 border-[#0369a1]/50 shadow-2xl" />
+      {/* Miệng bát (vành ellipse) */}
+      <div className="absolute inset-x-[-3px] bottom-[134px] h-[34px] rounded-[50%] bg-gradient-to-b from-slate-50 via-[#0b4f6c] to-[#0369a1] border-2 border-[#075985]/60 shadow-lg" />
+      {/* Chân bát */}
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-[-4px] w-[44%] h-[16px] rounded-full bg-gradient-to-b from-[#0369a1] to-[#075985] shadow-xl" />
+      {/* Bát đã rút hết bóng */}
+      {done && (
+       <div className="absolute inset-x-0 bottom-[70px] text-center">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 text-[10px] font-black text-[#075985] shadow">
+         <Trophy className="w-3 h-3" /> Đã rút hết bóng
+        </span>
+       </div>
+      )}
+      {/* Vòng hào quang khi đang xáo */}
       {shuffling && (
-       <div className="absolute inset-0 rounded-full border-2 border-amber-400/40 animate-ping" />
+       <div className="absolute inset-x-4 bottom-[30px] h-[110px] rounded-b-[60px] border-2 border-amber-400/40 animate-pulse" />
       )}
      </div>
-     <h2 className="text-lg font-black text-slate-900 ">
-      {shuffling ? "Đang xáo thăm…" : done ? "Bốc thăm hoàn tất!" : "Đang khóa từng cặp…"}
+
+     <h2 className="text-lg font-black text-slate-900 mt-1 ">
+      {shuffling ? "Đang xáo thăm trong bát…" : done ? "Bốc thăm hoàn tất!" : "Đang rút bóng từ bát…"}
      </h2>
      <p className="text-xs text-slate-500">
       {tournamentTitle} • {pairs.length} cặp đấu
@@ -198,6 +262,17 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
       {soundOn ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
       {soundOn ? "Âm thanh: Bật" : "Âm thanh: Tắt"}
      </button>
+     {/* Bỏ qua — nhảy thẳng tới kết quả không cần chờ xáo */}
+     {!done && (
+      <button
+       type="button"
+       onClick={skipDraw}
+       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black text-[#075985] bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors"
+      >
+       <Zap className="w-3.5 h-3.5" />
+       Bỏ qua — xem ngay kết quả
+      </button>
+     )}
     </div>
 
     {/* Cặp đang bốc */}
@@ -222,7 +297,9 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
          {shown(i * 2 + 1, p.teamB)}
         </span>
         {isLocked ? (
-         <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+         <span className="text-xl leading-none animate-bounce" aria-hidden>
+          ⚽
+         </span>
         ) : (
          <span className="w-5 h-5 rounded-full border-2 border-slate-300 border-t-emerald-500 animate-spin shrink-0" />
         )}

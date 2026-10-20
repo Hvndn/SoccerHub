@@ -4,6 +4,7 @@ import Link from 'next/link';
 import CountUp from './CountUp';
 import FormDots from './FormDots';
 import TournamentBracket from './TournamentBracket';
+import DrawLotteryOverlay from './DrawLotteryOverlay';
 import { 
  Trophy, Award, Flame, Search, Filter, Calendar, MapPin, Users, ChevronRight, 
  PlayCircle, Zap, ArrowUpRight, ShieldCheck, CheckCircle2, UserCheck, PlusCircle,
@@ -81,6 +82,9 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  // Bốc thăm / giả lập nhanh ngay trên card giải (chỉ BTC + ADMIN)
  const [busyTournamentId, setBusyTournamentId] = useState<number | null>(null);
  const [busyAction, setBusyAction] = useState<'draw' | 'simulate' | null>(null);
+ // Hiệu ứng bốc thăm (quả bóng + nhạc) + giải vừa bốc thăm
+ const [lottery, setLottery] = useState<{ pairs: { matchId: string; teamA: string; teamB: string }[]; byes: string[] } | null>(null);
+ const [drawnTournament, setDrawnTournament] = useState<Tournament | null>(null);
  const [actionNotice, setActionNotice] = useState<string | null>(null);
 
  /** Giải chưa tới ngày thi đấu -> BTC được bốc thăm trước (không cần chờ tới ngày). */
@@ -112,6 +116,14 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   try {
   const res = await drawTournamentBracket(t.id);
   setActionNotice(res?.message || `Đã bốc thăm cho giải "${t.title}".`);
+  // Bật hiệu ứng bốc thăm (quả bóng + nhạc) giống nút bốc thăm trong Bảng Điều Hành.
+  const r1 = res?.bracket?.rounds?.[0]?.matches ?? [];
+  const pairs = r1
+  .filter((m: any) => m.status === 'SCHEDULED' && m.teamA && m.teamB)
+  .map((m: any) => ({ matchId: m.matchId, teamA: m.teamA.name, teamB: m.teamB.name }));
+  const byes = r1.filter((m: any) => m.status === 'BYE' && m.bye).map((m: any) => m.bye.name);
+  setDrawnTournament(t);
+  setLottery({ pairs, byes });
   await reloadTournaments(true);
   } catch (err: any) {
   setActionNotice(err?.message || 'Không bốc thăm được. Cần đăng nhập ORGANIZER hoặc ADMIN.');
@@ -763,6 +775,20 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   </button>
   </div>
   )}
+  {/* Overlay hiệu ứng bốc thăm — sau khi xong sẽ nhảy sang tab "Nhánh Đấu" để xem cây nhánh đấu */}
+  <DrawLotteryOverlay
+  open={lottery !== null}
+  inline
+  tournamentTitle={drawnTournament?.title ?? ""}
+  pairs={lottery?.pairs ?? []}
+  byes={lottery?.byes ?? []}
+  onDone={() => {
+  setLottery(null);
+  setDrawnTournament(null);
+  setActionNotice("✅ Nhánh đấu đã lưu vào CSDL. Xem cây nhánh đấu ở tab “Nhánh Đấu”.");
+  changeTab('bracket');
+  }}
+  />
 
  {/* 5. MAIN NAVIGATION TABS — số liệu đếm từ CSDL */}
  <div className="flex items-center gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Khu vực nội dung giải đấu">
