@@ -85,7 +85,8 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
  const [matrixFilterType, setMatrixFilterType] = useState<string>("ALL");
  const [matrixFilterTime, setMatrixFilterTime] = useState<string>("ALL");
  const [matrixFilterMethod, setMatrixFilterMethod] = useState<string>("ALL");
- const [matrixDuration, setMatrixDuration] = useState<number>(120);
+  // Thời lượng ca cố định 2 tiếng (120 phút) — chủ sân không chọn 1h/1.5h nữa.
+  const MATRIX_DURATION = 120;
 
  // Dynamic pricing controls
  // Nháp giá sân đang chỉnh ở tab "Giá Thuê Sân" (đối chiếu với bảng pitches)
@@ -309,7 +310,7 @@ setIsSavingInfo(false);
  return `${year}-${month}-${date}`;
  });
  const [offlinePitchId, setOfflinePitchId] = useState("");
- const [offlineDuration, setOfflineDuration] = useState<number>(90); // 60, 90, 120 phút
+  const OFFLINE_DURATION = 120; // Ca đặt tại quầy cố định 2 tiếng (120 phút)
  const [offlineTime, setOfflineTime] = useState("17:30 - 19:00");
  const [offlineCustomer, setOfflineCustomer] = useState("");
  const [offlinePhone, setOfflinePhone] = useState("");
@@ -320,11 +321,11 @@ setIsSavingInfo(false);
  const [alertsHistory, setAlertsHistory] = useState<RealtimeBookingEvent[]>([]);
  const lastBookedSlotsRef = React.useRef<number>(0);
 
- // Refs để luôn đọc đúng matrixDate và matrixDuration mới nhất trong async callbacks
+ // Refs đọc đồng thời matrixDate và thời lượng ca cố định trong async callbacks
  const matrixDateRef = React.useRef<string>(matrixDate);
  matrixDateRef.current = matrixDate;
- const matrixDurationRef = React.useRef<number>(matrixDuration);
- matrixDurationRef.current = matrixDuration;
+
+
 
  const showToast = (msg: string) => {
  setToastMsg(msg);
@@ -333,7 +334,7 @@ setIsSavingInfo(false);
 
  const loadMatrixAndStats = async (
  pitchId: number | string,
- duration = matrixDurationRef.current,
+ duration = MATRIX_DURATION,
  date = matrixDateRef.current
  ) => {
  try {
@@ -363,7 +364,7 @@ setIsSavingInfo(false);
  setMatrixDate(dateStr);
  matrixDateRef.current = dateStr;
  const currentId = activePitch?.id || 1;
- loadMatrixAndStats(currentId, matrixDuration, dateStr);
+ loadMatrixAndStats(currentId, MATRIX_DURATION, dateStr);
  };
 
  // Fetch real pitch data from backend API & Subscribe Realtime
@@ -385,10 +386,10 @@ setIsSavingInfo(false);
  
  // Cập nhật ma trận ca sân & doanh thu tức thời theo ngày đang xem
  const currentId = activePitch?.id || 1;
- loadMatrixAndStats(currentId, matrixDurationRef.current, matrixDateRef.current);
+ loadMatrixAndStats(currentId, MATRIX_DURATION, matrixDateRef.current);
  } else if (event.type === "BOOKING_CANCELLED") {
  const currentId = activePitch?.id || 1;
- loadMatrixAndStats(currentId, matrixDurationRef.current, matrixDateRef.current);
+ loadMatrixAndStats(currentId, MATRIX_DURATION, matrixDateRef.current);
  }
  });
 
@@ -401,7 +402,7 @@ setIsSavingInfo(false);
  if (lastBookedSlotsRef.current > 0 && statsRes.bookedSlots > lastBookedSlotsRef.current) {
  playNotificationChime();
  showToast(`🔔 Cụm sân vừa nhận thêm đơn đặt cọc mới! Đã tự động cập nhật sơ đồ ca.`);
- loadMatrixAndStats(currentId, matrixDurationRef.current, matrixDateRef.current);
+ loadMatrixAndStats(currentId, MATRIX_DURATION, matrixDateRef.current);
  }
  lastBookedSlotsRef.current = statsRes.bookedSlots;
  }
@@ -503,7 +504,7 @@ setIsSavingInfo(false);
  const targetCourt = pitchMatrix.find(p => p.pitchName === offlinePitchId || p.pitchId === offlinePitchId) || pitchMatrix[0];
  const isPeak = offlineTime.includes("17:30") || offlineTime.includes("19:00");
  const baseHourPrice = isPeak ? (targetCourt?.peakPrice || 600000) : (targetCourt?.basePrice || 350000);
- const hourMultiplier = (offlineDuration || 90) / 60.0;
+ const hourMultiplier = OFFLINE_DURATION / 60.0;
  const price = Math.round(baseHourPrice * hourMultiplier);
  const deposit = offlineDepositType === "PAID_CASH" ? Math.round(price / 2) : 0;
 
@@ -525,7 +526,7 @@ setIsSavingInfo(false);
  // Nếu ngày đặt trùng hoặc chủ sân muốn xem ngày vừa đặt, cập nhật matrix
  setMatrixDate(offlineDate);
  matrixDateRef.current = offlineDate;
- await loadMatrixAndStats(currentId, matrixDuration, offlineDate);
+ await loadMatrixAndStats(currentId, MATRIX_DURATION, offlineDate);
  setShowOfflineModal(false);
  setOfflineCustomer("");
  setOfflinePhone("");
@@ -696,7 +697,7 @@ setIsSavingInfo(false);
 
  const availableTimeSlots: string[] = matrixSlots.length > 0 ? matrixSlots : computedFallbackSlots;
 
- // Tính danh sách ca đặt tại quầy theo thời lượng offlineDuration linh hoạt (60, 90, 120 phút)
+ // Tính danh sách ca đặt tại quầy theo thời lượng cố định 2 tiếng (120 phút)
  const offlineAvailableSlots = useMemo(() => {
  try {
  const parseMinutes = (t: string) => {
@@ -710,7 +711,7 @@ setIsSavingInfo(false);
  };
  const startMin = parseMinutes(operatingOpenTime || "14:00");
  const endMin = parseMinutes(operatingCloseTime || "22:30");
- const dur = offlineDuration || 120;
+ const dur = OFFLINE_DURATION;
  const slots: string[] = [];
  let current = startMin;
  while (current + dur <= endMin) {
@@ -721,7 +722,7 @@ setIsSavingInfo(false);
  } catch {
  return ["14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00", "20:00 - 22:00"];
  }
- }, [operatingOpenTime, operatingCloseTime, offlineDuration]);
+ }, [operatingOpenTime, operatingCloseTime, OFFLINE_DURATION]);
 
  // Filter matrix slots based on state (status, type, time slot, and booking method)
  const filteredMatrix = pitchMatrix
@@ -1161,62 +1162,14 @@ setIsSavingInfo(false);
  Sơ Đồ Ca Sân Thời Gian Thực (Owner Live Grid Matrix)
  </h2>
  <span className="hidden sm:block text-xs text-slate-500 mt-0.5">
- Giờ mở cửa: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca thi đấu linh hoạt (1h - 2h) • Tự động chống trùng lịch
+ Giờ mở cửa: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca thi đấu 2 tiếng (120 phút) • Tự động chống trùng lịch
  </span>
  </div>
  </div>
 
  {/* BỘ LỌC DẠNG DROPDOWN VÀ CHỌN THỜI LƯỢNG TIỆN LỢI */}
  <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
- {/* 0. NÚT CHỌN THỜI LƯỢNG LƯỚI MA TRẬN (1H / 1.5H / 2H) */}
- <div className="flex items-center space-x-1 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 text-sm">
- <span className="text-slate-600 pl-2 text-xs font-bold">Xem theo:</span>
- <button
- type="button"
- onClick={() => {
- setMatrixDuration(60);
- const currentId = activePitch?.id || 1;
- loadMatrixAndStats(currentId, 60);
- }}
- className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
- matrixDuration === 60
- ? "bg-[#0369a1] text-white shadow-xs"
- : "text-slate-600 hover:text-slate-900 "
- }`}
- >
- 1 Tiếng
- </button>
- <button
- type="button"
- onClick={() => {
- setMatrixDuration(90);
- const currentId = activePitch?.id || 1;
- loadMatrixAndStats(currentId, 90);
- }}
- className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
- matrixDuration === 90
- ? "bg-[#0369a1] text-white shadow-xs"
- : "text-slate-600 hover:text-slate-900 "
- }`}
- >
- 1.5 Tiếng
- </button>
- <button
- type="button"
- onClick={() => {
- setMatrixDuration(120);
- const currentId = activePitch?.id || 1;
- loadMatrixAndStats(currentId, 120);
- }}
- className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all ${
- matrixDuration === 120
- ? "bg-[#0369a1] text-white shadow-xs"
- : "text-slate-600 hover:text-slate-900 "
- }`}
- >
- 2 Tiếng
- </button>
- </div>
+  {/* Thời lượng ca cố định 2 tiếng (120 phút) — không còn bộ chọn 1h/1.5h/2h */}
 
  {/* 1. DROPDOWN TRẠNG THÁI CA */}
  <div className="flex items-center space-x-2 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 text-sm">
@@ -2136,36 +2089,12 @@ setIsSavingInfo(false);
  </select>
  </div>
 
- {/* Chọn thời lượng trận đấu linh hoạt cho khách đặt tại quầy */}
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Thời Lượng Ca Đá:</label>
- <div className="grid grid-cols-3 gap-2">
- {[
- { dur: 60, label: "1 Tiếng", sub: "60p" },
- { dur: 90, label: "1.5 Tiếng", sub: "90p" },
- { dur: 120, label: "2 Tiếng", sub: "120p" }
- ].map(item => (
- <button
- key={item.dur}
- type="button"
- onClick={() => {
- setOfflineDuration(item.dur);
- // Cập nhật lại slot mặc định khớp với thời lượng
- const newSlots = offlineAvailableSlots;
- if (newSlots.length > 0) setOfflineTime(newSlots[0]);
- }}
- className={`p-2 rounded-xl text-center font-bold text-xs border transition-all ${
- offlineDuration === item.dur
- ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
- : "bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300"
- }`}
- >
- <span className="block font-black">{item.label}</span>
- <span className={`text-[10px] ${offlineDuration === item.dur ? "text-cyan-50" : "text-slate-500"}`}>({item.sub})</span>
- </button>
- ))}
- </div>
- </div>
+  <div className="rounded-xl bg-sky-50 border border-sky-200 px-3 py-2.5">
+  <span className="text-[11px] font-extrabold text-sky-900 flex items-center gap-1.5">
+  <Clock className="w-3.5 h-3.5 text-sky-700" />
+  Thời lượng ca: <strong className="font-black">2 tiếng (120 phút)</strong> — cố định
+  </span>
+  </div>
 
  <div className="space-y-1.5">
  <label className="font-extrabold text-slate-800 ">Khung Giờ Đặt:</label>
@@ -2366,7 +2295,7 @@ setIsSavingInfo(false);
  </div>
 
  <p className="text-sm text-slate-600 leading-relaxed">
- Chủ sân thiết lập thời gian bắt đầu mở cửa và đóng cửa cụm sân. Khách hàng khi đặt sân có thể <strong className="text-sky-700 font-bold">tự do chọn thời lượng thi đấu linh hoạt</strong> (1 tiếng, 1.5 tiếng hoặc 2 tiếng) tùy nhu cầu từng trận.
+  Chủ sân thiết lập thời gian bắt đầu mở cửa và đóng cửa cụm sân. Mọi ca thi đấu đều dùng chung thời lượng <strong className="text-sky-700 font-bold">2 tiếng (120 phút)</strong>.
  </p>
 
  <form onSubmit={handleUpdateOperatingHours} className="space-y-3 sm:space-y-4 text-sm">
@@ -2405,7 +2334,7 @@ setIsSavingInfo(false);
  <span>Cơ Chế Đặt Sân Linh Hoạt (Do Cầu Thủ & Khách Hàng Chọn)</span>
  </div>
  <p className="text-[11px] text-slate-600 leading-relaxed">
- Cụm sân không ép cứng thời lượng mỗi ca. Người dùng khi đặt sân có thể chọn đá: <strong className="text-slate-900 font-bold">1 Tiếng (60p)</strong>, <strong className="text-slate-900 font-bold">1.5 Tiếng (90p)</strong> hoặc <strong className="text-slate-900 font-bold">2 Tiếng (120p)</strong>. Hệ thống tự động tính tiền và phòng chống trùng giờ thông minh.
+  Mọi ca thi đấu dùng chung thời lượng <strong className="text-slate-900 font-bold">2 tiếng (120 phút)</strong>. Hệ thống tự động tính tiền và phân ca theo thời gian thực tế.
  </p>
  </div>
 
