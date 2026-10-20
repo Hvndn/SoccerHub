@@ -68,6 +68,15 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  const [now, setNow] = useState(() => new Date());
  const [notice, setNotice] = useState<string | null>(null);
  const [selectedMatch, setSelectedMatch] = useState<MatchRow | null>(null);
+
+ // Form hien INLINE (khong popup) -> tu cuon toi khi mo.
+ useEffect(() => {
+  if (!(selectedMatch)) return;
+  const raf = requestAnimationFrame(() => {
+   document.querySelector('#inline-selectedmatch')?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  return () => cancelAnimationFrame(raf);
+ }, [selectedMatch]);
  const [cancellingId, setCancellingId] = useState<number | null>(null);
   /** Vé đang chờ xác nhận hủy (thay cho window.confirm). */
   const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
@@ -663,8 +672,8 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
  {/* MODAL: CHI TIẾT TRẬN */}
  {selectedMatch && (
- <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
- <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-3 sm:space-y-4 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
+ <div id="inline-selectedmatch" className="w-full animate-fade-in">
+ <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-3 sm:space-y-4 shadow-2xl">
  <div className="flex items-center justify-between">
  <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 ">
  <Trophy className="w-5 h-5 text-sky-700" />

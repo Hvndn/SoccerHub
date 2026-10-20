@@ -85,6 +85,15 @@ export default function StadiumOwnerOnboarding({
 
  // New Pitch Modal state
  const [showAddModal, setShowAddModal] = useState(false);
+
+ // Form them san hien INLINE (khong popup) -> tu cuon toi khi mo.
+ useEffect(() => {
+  if (!showAddModal) return;
+  const raf = requestAnimationFrame(() => {
+   document.getElementById("inline-showaddmodal")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  return () => cancelAnimationFrame(raf);
+ }, [showAddModal]);
  const [newPitchName, setNewPitchName] = useState("");
  const [newSport, setNewSport] = useState("Bóng đá 7 người");
  const [newNormalPrice, setNewNormalPrice] = useState(350000);
@@ -585,8 +594,8 @@ export default function StadiumOwnerOnboarding({
 
  {/* ADD NEW PITCH MODAL */}
  {showAddModal && (
- <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
- <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
+ <div id="inline-showaddmodal" className="w-full animate-fade-in">
+ <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl">
  <h3 className="font-extrabold text-base text-slate-900 ">Thêm Sân Mới Vào Cụm</h3>
  <div className="space-y-3 text-[13px]">
  <div className="space-y-1">

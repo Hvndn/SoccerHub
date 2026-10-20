@@ -43,6 +43,15 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   | null
   >(null);
 
+ // Xac nhan hien INLINE -> tu cuon toi.
+ useEffect(() => {
+  if (!confirm) return;
+  const raf = requestAnimationFrame(() => {
+   document.getElementById("admin-users-confirm-inline")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  return () => cancelAnimationFrame(raf);
+ }, [confirm]);
+
   // Phân trang + tìm kiếm (server-side)
   const [page, setPage] = useState(0);
   const [query, setQuery] = useState("");
@@ -323,8 +332,10 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   </div>
   </div>
   )}
+ <div id="admin-users-confirm-inline">
  <ConfirmModal
  open={confirm !== null}
+ inline
  title={
  confirm?.kind === "status"
  ? (confirm.user.enabled ? "Khóa tài khoản?" : "Mở khóa tài khoản?")
@@ -359,6 +370,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
  onCancel={() => setConfirm(null)}
   onConfirm={doConfirm}
   />
+ </div>
 
   {/* === MODAL CHI TIẾT NGƯỜI DÙNG === */}
   {detail && (

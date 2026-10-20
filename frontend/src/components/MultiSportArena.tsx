@@ -64,6 +64,15 @@ export default function MultiSportArena({
  const [activeFilter, setActiveFilter] = useState<'all' | 'san5' | 'san7' | 'san11' | 'futsal'>('all');
  const [bookingCourt, setBookingCourt] = useState<Court | null>(null);
  const [joiningMatch, setJoiningMatch] = useState<MatchQueue | null>(null);
+
+ // Form hien INLINE (khong popup) -> tu cuon toi khi mo.
+ useEffect(() => {
+  if (!bookingCourt && !joiningMatch) return;
+  const raf = requestAnimationFrame(() => {
+   document.querySelector('[id^="inline-bookingcourt"], [id^="inline-joiningmatch"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  return () => cancelAnimationFrame(raf);
+ }, [bookingCourt, joiningMatch]);
  const [successToast, setSuccessToast] = useState<string | null>(null);
 
  // ---- Dữ liệu thật từ CSDL ----
@@ -587,8 +596,8 @@ export default function MultiSportArena({
 
  {/* Court Booking Modal */}
  {bookingCourt && (
- <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
- <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-5 my-auto max-h-[92vh] overflow-y-auto">
+ <div id="inline-bookingcourt" className="w-full animate-fade-in">
+ <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-5">
  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
  <h3 className="font-extrabold text-lg text-slate-900 ">
  Xác Nhận Đặt Ca Sân {bookingCourt.id}
@@ -649,8 +658,8 @@ export default function MultiSportArena({
 
  {/* Match Joining Modal */}
  {joiningMatch && (
- <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
- <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-5 my-auto max-h-[92vh] overflow-y-auto">
+ <div id="inline-joiningmatch" className="w-full animate-fade-in">
+ <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-5">
  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
  <h3 className="font-extrabold text-lg text-slate-900 ">
  Gia Nhập Kèo {joiningMatch.category}
