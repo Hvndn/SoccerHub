@@ -545,6 +545,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
       </div>
 
       {/* ===== SEARCH + FILTER CHIPS ===== */}
+      {mode === "chat" && (
       <div className="space-y-3 p-4 sm:p-5 rounded-3xl bg-white border border-slate-200 shadow-2xl">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#0369a1]/80" />
@@ -573,8 +574,10 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
           ))}
         </div>
       </div>
+      )}
 
       {/* ===== BANNER NỔI BẬT ===== */}
+      {mode === "chat" && (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* BẮT ĐỐI GIAO HỮU (trái) */}
         <button
@@ -616,6 +619,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
           </div>
         </button>
       </div>
+      )}
 
       {/* ===== CHANNEL CARD LIST ===== */}
       {mode === "chat" ? (
