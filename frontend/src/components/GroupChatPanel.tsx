@@ -14,6 +14,13 @@ import {
 import { toastOk } from "@/lib/toast";
 import { useChatPushNotification } from "@/lib/pushNotify";
 
+const ROLE_LABEL: Record<string, string> = {
+  ADMIN: "Quản Trị",
+  ORGANIZER: "Ban Tổ Chức",
+  OWNER: "Chủ Sân",
+  PLAYER: "Cầu Thủ",
+};
+
 const ROLE_COLOR: Record<string, string> = {
   ADMIN: "text-rose-600",
   ORGANIZER: "text-amber-700",
@@ -478,7 +485,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
                       <span className={`text-[13px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>
                         {m.senderName}
                       </span>
-                      <span className="text-[13px] font-bold text-slate-400">{m.senderRole}</span>
+                      <span className="text-[13px] font-bold text-slate-400">{ROLE_LABEL[m.senderRole] ?? m.senderRole}</span>
                     </div>
                   )}
                   <div

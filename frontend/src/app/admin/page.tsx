@@ -107,7 +107,7 @@ function AdminConsole() {
  </div>
  <h1 className="text-xl font-black">Khu vực quản trị hệ thống</h1>
  <p className="text-[13px] sm:text-sm text-slate-500">
- Bạn cần đăng nhập tài khoản <strong>Quản trị viên (ADMIN)</strong> để truy cập.
+ Bạn cần đăng nhập tài khoản <strong>Quản trị viên</strong> để truy cập.
  </p>
  <Link
  href="/"

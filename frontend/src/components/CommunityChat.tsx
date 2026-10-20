@@ -57,6 +57,13 @@ interface UserInfo {
 /** Vòng xoay trong ô chat tối thiểu 500ms để không nháy khi dữ liệu về nhanh. */
 const MIN_SPINNER_MS = 500;
 
+const ROLE_LABEL: Record<string, string> = {
+  ADMIN: "Quản Trị",
+  ORGANIZER: "Ban Tổ Chức",
+  OWNER: "Chủ Sân",
+  PLAYER: "Cầu Thủ",
+};
+
 const ROLE_COLOR: Record<string, string> = {
   ADMIN: "text-rose-600",
   ORGANIZER: "text-amber-700",
@@ -303,7 +310,7 @@ export default function CommunityChat({
           {!mine && (
             <div className="flex items-center gap-1.5 mb-0.5 px-1">
               <span className={`text-[13px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>{m.senderName}</span>
-              <span className="text-[13px] font-bold text-slate-400">{m.senderRole}</span>
+              <span className="text-[13px] font-bold text-slate-400">{ROLE_LABEL[m.senderRole] ?? m.senderRole}</span>
             </div>
           )}
           <div
@@ -527,7 +534,7 @@ export default function CommunityChat({
                       <p className="text-[13px] font-bold text-slate-900 truncate">{u.name}</p>
                       <p className="text-[13px] text-slate-500 truncate">{u.email}</p>
                     </div>
-                    <span className="text-[13px] font-bold text-slate-400">{u.role}</span>
+                    <span className="text-[13px] font-bold text-slate-400">{ROLE_LABEL[u.role] ?? u.role}</span>
                   </button>
                 ))}
               </div>

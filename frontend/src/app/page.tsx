@@ -507,7 +507,7 @@ if (newTab === activeTab) return;
  Truy Cập Bị Từ Chối (403 Forbidden)
  </h2>
  <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
- Trang Bảng Điều Hành và Quản Lý Doanh Thu chỉ dành riêng cho tài khoản <strong>Chủ Sân (OWNER)</strong>. Tài khoản Cầu Thủ hoặc khách chưa đăng nhập không có quyền truy cập khu vực này.
+ Trang Bảng Điều Hành và Quản Lý Doanh Thu chỉ dành riêng cho tài khoản <strong>Chủ Sân</strong>. Tài khoản Cầu Thủ hoặc khách chưa đăng nhập không có quyền truy cập khu vực này.
  </p>
  </div>
  <div className="flex items-center justify-center space-x-3 pt-2">
@@ -618,7 +618,7 @@ if (newTab === activeTab) return;
  <div className="space-y-2">
  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🚫 Truy Cập Bị Từ Chối</h2>
  <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
- Khu vực Điều Hành Giải Đấu chỉ dành cho tài khoản <strong>Ban Tổ Chức (ORGANIZER)</strong>. Liên hệ quản trị để được nâng cấp quyền điều hành.
+ Khu vực Điều Hành Giải Đấu chỉ dành cho tài khoản <strong>Ban Tổ Chức</strong>. Liên hệ quản trị để được nâng cấp quyền điều hành.
  </p>
  </div>
  <button
@@ -637,7 +637,7 @@ if (newTab === activeTab) return;
  <div className="space-y-2">
  <h2 className="text-xl sm:text-2xl font-black text-slate-900">🔒 Yêu Cầu Đăng Nhập với Tài Khoản Ban Tổ Chức</h2>
  <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
- Chức năng Điều Hành Giải Đấu yêu cầu tài khoản <strong>ORGANIZER</strong> có xác thực.
+ Chức năng Điều Hành Giải Đấu yêu cầu tài khoản <strong>Ban Tổ Chức</strong> có xác thực.
  </p>
  </div>
  <button

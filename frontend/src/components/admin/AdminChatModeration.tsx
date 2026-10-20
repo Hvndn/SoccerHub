@@ -21,6 +21,14 @@ interface ChatMsg {
 }
 
 export default function AdminChatModeration({ notify }: { notify: (type: "ok" | "err", text: string) => void }) {
+/** Nhãn vai trò tiếng Việt (tránh lộ mã role ra UI). */
+const ROLE_LABEL: Record<string, string> = {
+  ADMIN: "Quản Trị",
+  ORGANIZER: "Ban Tổ Chức",
+  OWNER: "Chủ Sân",
+  PLAYER: "Cầu Thủ",
+};
+
   const [rows, setRows] = useState<ChatMsg[]>([]);
   const [loading, setLoading] = useState(true);
   const [channel, setChannel] = useState("");
@@ -78,7 +86,7 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
         <div className="max-w-[180px]">
           <p className="font-bold text-slate-900 truncate">{r.senderName}</p>
           <p className="text-[13px] font-mono text-slate-500 truncate">{r.senderEmail}</p>
-          <span className="text-[13px] font-bold text-slate-400">{r.senderRole}</span>
+          <span className="text-[13px] font-bold text-slate-400">{ROLE_LABEL[r.senderRole] ?? r.senderRole}</span>
         </div>
       ),
     },

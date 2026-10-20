@@ -426,7 +426,7 @@ export default function OwnerProfileConsole({
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between gap-3">
               <span className="text-slate-500 text-[13px] font-semibold">Vai trò</span>
-              <span className="font-bold text-sky-800">Chủ Sân (OWNER)</span>
+              <span className="font-bold text-sky-800">Chủ Sân</span>
             </div>
             <div className="flex items-center justify-between gap-3">
               <span className="text-slate-500 text-[13px] font-semibold">Email đăng nhập</span>
