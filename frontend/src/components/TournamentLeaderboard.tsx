@@ -153,25 +153,37 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  // Đăng ký đội đã chuyển sang trang wizard riêng: /tournaments/register (4 bước)
 
  // Fetch real tournaments from API (shared cache + explicit error state)
- const reloadTournaments = useCallback(async (force = false) => {
- try {
- setLoadingTournaments(true);
- setLoadError(null);
- const data = await fetchTournaments(force);
- setTournaments(data);
- } catch (err) {
- console.error("Error loading tournaments:", err);
- setLoadError("Không tải được danh sách giải đấu. Vui lòng kiểm tra Backend (cổng 8080) và thử lại.");
- } finally {
- setLoadingTournaments(false);
- }
- }, []);
+ // `silent` = không hiện skeleton (dùng khi tự retry sau khi backend chết) để
+ // trang không nhấp nháy mỗi 5 giây.
+ const reloadTournaments = useCallback(async (force = false, silent = false) => {
+  try {
+  if (!silent || tournaments.length === 0) setLoadingTournaments(true);
+  if (!silent) setLoadError(null);
+  const data = await fetchTournaments(force);
+  setTournaments(data);
+  } catch (err) {
+  console.error("Error loading tournaments:", err);
+  setLoadError("Không tải được danh sách giải đấu. Vui lòng kiểm tra Backend (cổng 8080) và thử lại.");
+  } finally {
+  if (!silent || tournaments.length === 0) setLoadingTournaments(false);
+  }
+ }, [tournaments.length]);
 
  React.useEffect(() => {
  reloadTournaments();
  // Re-sync if another screen (CommunityForm / registration) refreshes the cache.
  return subscribeTournaments(setTournaments);
  }, [reloadTournaments]);
+ // Tự thử lại khi backend chết (đang restart / quá tải): thay vì để lỗi treo vĩnh viễn,
+ // cứ 5s gọi lại cho tới khi kết nối được. Lỗi sẽ tự biến mất khi backend sống lại.
+ React.useEffect(() => {
+  if (!loadError) return;
+  const timer = window.setInterval(() => {
+   reloadTournaments(true, true).catch(() => {});
+  }, 5000);
+  return () => window.clearInterval(timer);
+ }, [loadError, reloadTournaments]);
+
 
  // Top Vua phá lưới toàn hệ thống — dữ liệu thật từ CSDL (thay hardcode)
  const [topScorers, setTopScorers] = useState<ScorerRow[]>([]);
@@ -592,22 +604,26 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  </div>
  ) : loadError ? (
  <div className="p-5 rounded-2xl bg-rose-50 border border-rose-200 flex flex-col sm:flex-row sm:items-center gap-4">
- <div className="flex items-start gap-3 flex-1">
- <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
- <div>
- <p className="text-sm font-bold text-rose-800 ">Không tải được dữ liệu giải đấu</p>
- <p className="text-xs text-rose-700 mt-0.5">{loadError}</p>
- </div>
- </div>
- <button
- type="button"
- onClick={() => reloadTournaments(true)}
- className="shrink-0 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95"
- >
- <RefreshCw className="w-3.5 h-3.5" />
- <span>Thử lại</span>
- </button>
- </div>
+  <div className="flex items-start gap-3 flex-1">
+  <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+  <div className="min-w-0">
+  <p className="text-sm font-bold text-rose-800 ">Không tải được dữ liệu giải đấu</p>
+  <p className="text-xs text-rose-700 mt-0.5">{loadError}</p>
+  <p className="text-[11px] text-rose-600/90 mt-1 font-semibold flex items-center gap-1.5">
+  <RefreshCw className="w-3 h-3 animate-spin" />
+  Đang tự thử lại mỗi 5 giây — trang sẽ tự hiện dữ liệu ngay khi Backend phản hồi.
+  </p>
+  </div>
+  </div>
+  <button
+  type="button"
+  onClick={() => reloadTournaments(true)}
+  className="shrink-0 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95"
+  >
+  <RefreshCw className="w-3.5 h-3.5" />
+  <span>Thử lại ngay</span>
+  </button>
+  </div>
  ) : featured ? (
  <div className="relative isolate overflow-hidden rounded-2xl bg-white text-slate-900 shadow-sm p-3 sm:p-8 border border-slate-200/90 hover-card-elevate transition-colors">
  {/* Ambient Soft Glow */}

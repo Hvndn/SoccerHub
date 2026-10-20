@@ -1,4 +1,4 @@
-import { API_BASE_URL, apiRequest, fetchWithTimeout } from './api';
+import { API_BASE_URL, apiRequest, fetchWithTimeout, fetchWithStatus } from './api';
 
 /** Shape of Tournament entity returned by GET /api/v1/tournaments */
 export interface TournamentTeamEntry {
@@ -135,7 +135,7 @@ export const subscribeTournaments = (fn: (t: Tournament[]) => void): (() => void
  */
 export async function refreshTournamentInCache(tournamentId: number): Promise<Tournament | null> {
   try {
-    const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}`, {
+    const res = await fetchWithStatus(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}`, {
       cache: 'no-store',
     });
     if (!res.ok) return null;
@@ -159,7 +159,7 @@ export async function fetchTournaments(force = false): Promise<Tournament[]> {
 
   inflight = (async () => {
     try {
-      const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments`, { cache: 'no-store' });
+      const res = await fetchWithStatus(`${API_BASE_URL}/api/v1/tournaments`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: unknown = await res.json();
       cache = Array.isArray(data) ? (data as Tournament[]) : [];
@@ -237,7 +237,7 @@ export async function registerTeam(
   tournamentId: number,
   payload: Record<string, unknown>
 ): Promise<{ message: string; registeredTeams: number }> {
-  const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}/register`, {
+  const res = await fetchWithStatus(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -403,7 +403,7 @@ export interface ScorerRow {
 
 /** BXH Vua phá lưới một giải. */
 export async function fetchTournamentScorers(tournamentId: number): Promise<ScorerRow[]> {
-  const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}/scorers`, { cache: 'no-store' });
+  const res = await fetchWithStatus(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}/scorers`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
@@ -411,7 +411,7 @@ export async function fetchTournamentScorers(tournamentId: number): Promise<Scor
 
 /** Top Vua phá lưới toàn hệ thống (widget trang chủ). */
 export async function fetchTopScorers(limit = 5): Promise<ScorerRow[]> {
-  const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments/scorers/top?limit=${limit}`, { cache: 'no-store' });
+  const res = await fetchWithStatus(`${API_BASE_URL}/api/v1/tournaments/scorers/top?limit=${limit}`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
@@ -530,7 +530,7 @@ export async function undoMatchResult(
 
 /** Lấy nhánh đấu đã bốc thăm (public). Trả null khi giải chưa bốc thăm. */
 export async function fetchTournamentBracket(tournamentId: number): Promise<TournamentBracketData | null> {
-  const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}/bracket`, { cache: 'no-store' });
+  const res = await fetchWithStatus(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}/bracket`, { cache: 'no-store' });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return (await res.json()) as TournamentBracketData;

@@ -52,6 +52,16 @@ export default function BackendStatusBanner() {
     return unsubscribe;
   }, []);
 
+ // Khi backend chết, tự dò lại mỗi 6s — banner tự biến mất ngay khi máy chủ
+ // phản hồi lại, không bắt người dùng phải bấm "Thử lại" thủ công.
+ React.useEffect(() => {
+  if (!status || status.reachable) return;
+  const timer = window.setInterval(() => {
+   probeBackend();
+  }, 6000);
+  return () => window.clearInterval(timer);
+ }, [status]);
+
   if (!status || status.reachable || dismissed) return null;
 
   return (

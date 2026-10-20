@@ -109,7 +109,14 @@ export async function fetchWithTimeout(
   }
 }
 
-async function fetchWithStatus(url: string, options: RequestInit): Promise<Response> {
+/**
+ * fetch + đánh dấu trạng thái backend (reachable / unreachable).
+ *
+ * <p>Dùng thay cho {@link fetchWithTimeout} ở các nơi cần banner "mất kết nối máy chủ"
+ * hiện toàn cục. Mọi lời gọi qua {@link apiRequest} đã tự đánh dấu; các module gọi
+ * fetch trực tiếp (ví dụ danh sách giải đấu dùng response tĩnh) nên dùng hàm này.</p>
+ */
+export async function fetchWithStatus(url: string, options: RequestInit): Promise<Response> {
   let statusMod: typeof import('@/lib/backendStatus');
   try {
     statusMod = await import('@/lib/backendStatus');
