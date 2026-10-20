@@ -33,13 +33,13 @@ const COUNTERPART: Record<string, { role: string; label: string; hint: string; e
   OWNER: {
     role: "ORGANIZER",
     label: "Ban Tổ Chức",
-    hint: "Liên hệ BTC để đề xuất tổ chức giải tại cụm sân của bạn.",
+    hint: "Liên hệ BTC để đề xuất tổ chức giải tại cụm sân.",
     empty: "Chưa có tài khoản Ban Tổ Chức nào trên hệ thống.",
   },
   ORGANIZER: {
     role: "OWNER",
     label: "Chủ Sân",
-    hint: "Liên hệ chủ sân để thuê sân phục vụ giải đấu của bạn.",
+    hint: "Liên hệ chủ sân để thuê sân phục vụ giải đấu.",
     empty: "Chưa có chủ sân nào đăng ký trên hệ thống.",
   },
 };

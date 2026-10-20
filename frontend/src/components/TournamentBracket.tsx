@@ -859,7 +859,7 @@ const [addCount, setAddCount] = useState("4");
  )}
  </div>
  <p className="hidden sm:block text-[12px] text-slate-500">
- Giả lập, bốc thăm & xếp lịch yêu cầu đăng nhập ORGANIZER hoặc ADMIN.
+ Cần đăng nhập ORGANIZER hoặc ADMIN.
  </p>
 
  {/* Form tham số xếp lịch */}

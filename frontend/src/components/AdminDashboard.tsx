@@ -924,7 +924,7 @@ setIsSavingInfo(false);
  title="Khởi tạo hoặc thiết lập cụm sân mới qua Wizard 4 bước"
  >
  <Building className="w-4 h-4 shrink-0" />
- <span>+ Khởi Tạo Cụm Sân Mới</span>
+  <span>+ Cụm Sân Mới</span>
  </button>
  )}
 
@@ -934,7 +934,7 @@ setIsSavingInfo(false);
  className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
  >
  <Plus className="w-4 h-4 shrink-0" />
- <span>Thêm Sân Con</span>
+  <span>Thêm Sân Con</span>
  </button>
 
  <button
@@ -943,7 +943,7 @@ setIsSavingInfo(false);
  className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
  >
  <PhoneCall className="w-4 h-4 shrink-0" />
- <span>Đặt Ca Tại Quầy</span>
+  <span>Đặt Ca Quầy</span>
  </button>
  </div>
  </div>
@@ -1124,7 +1124,7 @@ setIsSavingInfo(false);
  </div>
  <div>
  <span className="text-sm font-black text-slate-900 block">Tra Cứu Mã Vé & Check-in Tiếp Nhận</span>
- <span className="hidden sm:inline text-xs text-slate-500">Nhập mã vé đặt cọc hoặc Số Điện Thoại khách để check-in mở đèn</span>
+ <span className="hidden sm:inline text-xs text-slate-500">Nhập mã vé hoặc SĐT khách để check-in</span>
  </div>
  </div>
 

@@ -1069,7 +1069,7 @@ export default function PitchDetail({
  <span>Đơn giữ chỗ đã lưu trong hệ thống</span>
  </div>
  <h3 className="text-2xl font-black text-slate-900 ">Mã Giữ Chỗ Của Bạn</h3>
- <p className="text-xs text-slate-500">Bắt đầu cọc trực tiếp với chủ sân để chắc chắn giữ được ca. Hệ thống không tự trừ tiền.</p>
+ <p className="text-xs text-slate-500">Cọc trực tiếp với chủ sân để giữ chỗ. Hệ thống không tự trừ tiền.</p>
  </div>
 
  {/* Tóm tắt cọc */}

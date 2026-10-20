@@ -787,7 +787,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
       {/* Ghi chú nhỏ */}
       <p className="text-[13px] text-slate-500 text-center flex items-center justify-center gap-1.5">
         <ShieldCheck className="w-3.5 h-3.5 text-[#0369a1]" />
-        Cộng đồng Turfzone — kết nối cầu thủ, chủ sân &amp; ban tổ chức giải đấu
+        Cộng đồng Turfzone — kết nối cầu thủ, chủ sân &amp; ban tổ chức
       </p>
     </div>
   );

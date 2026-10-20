@@ -103,7 +103,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  </div>
  <div className="min-w-0">
  <p className="text-xs font-bold text-white">Lịch sử thi đấu theo giải</p>
- <p className="hidden sm:block text-[13px] text-slate-300">Kết quả tự cập nhật khi các giải trong hệ thống kết thúc</p>
+  <p className="hidden sm:block text-[13px] text-slate-300">Kết quả cập nhật khi các giải kết thúc</p>
  </div>
  </div>
  </div>

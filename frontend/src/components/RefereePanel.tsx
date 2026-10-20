@@ -42,10 +42,10 @@ export default function RefereePanel() {
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold mb-2">
               <Radio className="w-4 h-4 animate-pulse" />
               <span className="sm:hidden">Biên Bản Trọng Tài Realtime</span>
-              <span className="hidden sm:inline">Biên Bản Trọng Tài & Điều Khiển Trận Đấu Realtime (WebSocket Active)</span>
+              <span className="hidden sm:inline">Biên Bản Trọng Tài &amp; Điều Khiển Trận Realtime</span>
             </div>
             <h1 className="text-xl sm:text-3xl font-extrabold text-white">Bảng Điều Khiển Trận Đấu Trực Tiếp</h1>
-            <p className="text-slate-500 text-xs mt-1 hidden sm:block">Cập nhật tỷ số, thẻ phạt, bàn thắng tức thì đến khán giả và hệ thống tự động tính BXH.</p>
+            <p className="text-slate-500 text-xs mt-1 hidden sm:block">Cập nhật tỷ số, thẻ phạt, bàn thắng tức thì. Hệ thống tự tính BXH.</p>
           </div>
 
           <div className="flex items-center space-x-3">

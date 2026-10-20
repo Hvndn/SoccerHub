@@ -1789,7 +1789,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
    </div>
 
    {!activeTournament ? (
-    <p className="text-xs text-slate-500">Hãy chọn một giải ở danh sách bên trái để đặt quyền tham gia.</p>
+    <p className="text-xs text-slate-500">Chọn một giải ở danh sách bên trái để đặt quyền tham gia.</p>
    ) : (
     <>
      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
