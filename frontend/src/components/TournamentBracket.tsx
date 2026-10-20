@@ -1056,15 +1056,15 @@ const [addCount, setAddCount] = useState("4");
  {/* Duyệt lệ phí: đội PENDING chờ BTC xác nhận đã thu tiền */}
  {pendingTeams.length > 0 && (
  <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 space-y-2">
- <p className="text-[13px] font-black text-amber-300 tracking-wider">
+ <p className="text-[13px] font-black text-amber-800 tracking-wider">
  Chờ xác nhận lệ phí ({pendingTeams.length})
  </p>
  <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
  {pendingTeams.map((t) => (
  <div key={t.teamName} className="flex items-center justify-between gap-2 text-[13px]">
- <span className="text-slate-200 font-bold truncate">
+ <span className="text-slate-800 font-bold truncate">
  {t.teamName}
- <span className="text-slate-500 font-medium"> • {t.captainPhone || "—"}</span>
+ <span className="text-slate-600 font-medium"> • {t.captainPhone || "—"}</span>
  </span>
  <button
  type="button"
@@ -1083,13 +1083,13 @@ const [addCount, setAddCount] = useState("4");
  </div>
 
  {/* Console Nav Tabs */}
- <div className="flex items-center gap-2 mt-6 pt-6 border-t border-slate-800 overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-2 mt-6 pt-6 border-t border-slate-200 overflow-x-auto no-scrollbar">
  <button
  onClick={() => setActiveTab("bracket")}
  className={`px-4 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center space-x-2 ${
  activeTab === "bracket"
  ? "bg-[#0369a1] text-white shadow-md"
- : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
+ : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
  <Trophy className="w-4 h-4" />
@@ -1101,7 +1101,7 @@ const [addCount, setAddCount] = useState("4");
  className={`px-4 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center space-x-2 ${
  activeTab === "var_referee"
  ? "bg-[#0369a1] text-white shadow-md"
- : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
+ : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
  <Video className="w-4 h-4 text-red-400" />
@@ -1114,7 +1114,7 @@ const [addCount, setAddCount] = useState("4");
  className={`px-4 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center space-x-2 ${
  activeTab === "standings"
  ? "bg-[#0369a1] text-white shadow-md"
- : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
+ : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
  <ListOrdered className="w-4 h-4" />
@@ -1126,7 +1126,7 @@ const [addCount, setAddCount] = useState("4");
  className={`px-4 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center space-x-2 ${
  activeTab === "esheet"
  ? "bg-[#0369a1] text-white shadow-md"
- : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
+ : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
  <FileText className="w-4 h-4" />
@@ -1166,12 +1166,12 @@ const [addCount, setAddCount] = useState("4");
 
  {!selected ? (
  <div className="p-4 sm:p-8 text-center">
- <Trophy className="w-8 h-8 text-slate-300 mx-auto" />
+ <Trophy className="w-8 h-8 text-slate-400 mx-auto" />
  <p className="mt-3 text-sm text-slate-500">Chưa có giải đấu nào trong CSDL.</p>
  </div>
  ) : !bracket ? (
  <div className="p-4 sm:p-8 text-center rounded-2xl border border-dashed border-slate-300 ">
- <Shuffle className="w-8 h-8 text-slate-300 mx-auto" />
+ <Shuffle className="w-8 h-8 text-slate-400 mx-auto" />
  <p className="mt-3 text-sm font-bold text-slate-700 ">
  Giải “{selected.title}” chưa bốc thăm chia cặp
  </p>
@@ -1222,7 +1222,7 @@ const [addCount, setAddCount] = useState("4");
 
  {!varMatch ? (
  <div className="p-10 text-center">
- <Video className="w-8 h-8 text-slate-300 mx-auto" />
+ <Video className="w-8 h-8 text-slate-400 mx-auto" />
  <p className="mt-3 text-sm text-slate-500">
  {playableMatches.length
  ? "Chưa chọn trận nào."
@@ -1476,7 +1476,7 @@ const [addCount, setAddCount] = useState("4");
 
  {tableRows.length === 0 ? (
  <div className="p-4 sm:p-8 text-center">
- <Users className="w-8 h-8 text-slate-300 mx-auto" />
+ <Users className="w-8 h-8 text-slate-400 mx-auto" />
  <p className="mt-3 text-sm text-slate-500">
  {selected ? "Giải chưa có đội nào ghi danh." : "Chưa chọn giải đấu."}
  </p>
@@ -1569,7 +1569,7 @@ const [addCount, setAddCount] = useState("4");
 
  {!varMatch ? (
  <div className="p-10 text-center">
- <FileText className="w-8 h-8 text-slate-300 mx-auto" />
+ <FileText className="w-8 h-8 text-slate-400 mx-auto" />
  <p className="mt-3 text-sm text-slate-500">
  Chưa có trận nào đủ 2 đội thật để lập biên bản. Bốc thăm giải trước đã.
  </p>
