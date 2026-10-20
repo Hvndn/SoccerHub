@@ -642,7 +642,7 @@ const mobileNav: MobileNavItem[] =
  }}
  className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer pl-1 py-1 rounded-2xl hover:bg-slate-100 transition-colors"
  >
- <div className="text-right hidden sm:block max-w-[130px] md:max-w-[170px]">
+ <div className="text-right hidden sm:block max-w-[130px] md:max-w-[170px] overflow-hidden">
  <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">
  {user.fullName || user.name || "Người Dùng"}
  </div>
@@ -651,9 +651,9 @@ const mobileNav: MobileNavItem[] =
  {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'BTC' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
  </span>
  {user.role === 'OWNER' ? (
- <span className="shrink-0 text-emerald-500 font-bold">• {user.area || "Chưa cập nhật khu vực"}</span>
+ <span className="truncate text-emerald-500 font-bold">• {user.area || "Chưa cập nhật khu vực"}</span>
  ) : (
- <span className="shrink-0">• {user.level || "Phong trào"}</span>
+ <span className="truncate">• {user.level || "Phong trào"}</span>
  )}
  <ChevronDown className={`w-3 h-3 text-slate-500 shrink-0 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`} />
  </div>
