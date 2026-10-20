@@ -190,7 +190,7 @@ export default function OwnerProfileConsole({
           <div className="relative z-10 min-w-0">
             <span className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-[12px] sm:text-xs font-semibold bg-[#0369a1]/10 text-sky-800 border border-[#0369a1]/30">
               <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-700 shrink-0" />
-              <span className="truncate">HỒ SƠ CÁ NHÂN CHỦ SÂN</span>
+              <span className="truncate">Hồ Sơ Cá Nhân Chủ Sân</span>
             </span>
           </div>
           <div className="hidden md:flex items-center gap-3 text-xs text-slate-500 font-mono shrink-0">

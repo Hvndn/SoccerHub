@@ -482,7 +482,7 @@ export default function StadiumOwnerOnboarding({
  </div>
 
  <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-200 space-y-3 text-left">
- <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Gợi ý khai báo cho khách hàng</span>
+ <span className="text-xs font-bold text-slate-500 block">Gợi ý khai báo cho khách hàng</span>
  <div className="space-y-2 text-[13px] text-slate-600 ">
  <p>• Ghi rõ mức cọc (nếu có) và chính sách hoàn cọc trong phần <strong>Mô tả sân</strong> ở Bước 1 hoặc tab quản lý.</p>
  <p>• Đăng số tài khoản nhận tiền ở phần mô tả sân.</p>

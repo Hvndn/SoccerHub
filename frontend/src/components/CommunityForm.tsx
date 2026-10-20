@@ -91,7 +91,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  <Cpu className={`w-4 h-4 ${subTab === "organizer" ? "text-sky-100" : "text-[#0369a1]"}`} />
  <span className="sm:hidden">Điều Hành</span>
  <span className="hidden sm:inline">Điều Hành Giải Đấu</span>
- <span className="px-1.5 py-0.2 rounded-full text-[12px] bg-sky-100 text-sky-800 font-black border border-sky-200">BTC PRO</span>
+ <span className="px-1.5 py-0.2 rounded-full text-[12px] bg-sky-100 text-sky-800 font-black border border-sky-200">BTC Pro</span>
  </button>
 
  <button

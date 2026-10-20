@@ -671,7 +671,7 @@ const mobileNav: MobileNavItem[] =
  <p className="font-extrabold text-xs text-slate-900 truncate max-w-[140px]">
  {user.fullName || user.name || "Người Dùng"}
  </p>
- <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded bg-[#0369a1]/10 text-[#0b4f6c] ">
+ <span className="text-[11px] font-black px-1.5 py-0.5 rounded bg-[#0369a1]/10 text-[#0b4f6c] ">
  {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'Ban Tổ Chức' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
  </span>
  </div>
@@ -929,7 +929,7 @@ const mobileNav: MobileNavItem[] =
  <p className="font-black text-sm text-slate-900 truncate">
  {user.fullName || user.name || "Cầu Thủ Turfzone"}
  </p>
- <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-extrabold uppercase bg-sky-50 text-[#0b4f6c] ">
+ <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-sky-50 text-[#0b4f6c] ">
  {user.role === "OWNER" ? "Chủ Sân Đối Tác" : user.role === "ORGANIZER" ? "Ban Tổ Chức" : user.role === "ADMIN" ? "Quản Trị Viên" : "VĐV Chuyên Nghiệp"}
  </span>
  </div>

@@ -629,7 +629,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
       {mode === "chat" ? (
         <div className="rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
           <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-200">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">
+            <h3 className="text-xs font-black text-slate-500 flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-[#0369a1]" />
               Kênh trò chuyện
             </h3>

@@ -415,12 +415,12 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                         <p className="text-xs font-black text-slate-900 truncate">
                           {m.name || m.email}
                           {m.isRepresentative && (
-                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[11px] font-black uppercase">
+                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[11px] font-black">
                               Đại diện
                             </span>
                           )}
                           {m.email === myEmail && (
-                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[11px] font-black uppercase">
+                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[11px] font-black">
                               Bạn
                             </span>
                           )}

@@ -128,7 +128,7 @@ export function BackendOfflineDot() {
       title={status.message ?? "Mất kết nối máy chủ"}
     >
       <WifiOff className="h-3 w-3" />
-      MẤT KẾT NỐI
+      Mất kết nối
     </span>
   );
 }

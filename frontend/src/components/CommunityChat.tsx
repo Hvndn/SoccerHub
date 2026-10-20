@@ -303,7 +303,7 @@ export default function CommunityChat({
           {!mine && (
             <div className="flex items-center gap-1.5 mb-0.5 px-1">
               <span className={`text-[13px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>{m.senderName}</span>
-              <span className="text-[11px] font-bold text-slate-400 uppercase">{m.senderRole}</span>
+              <span className="text-[11px] font-bold text-slate-400">{m.senderRole}</span>
             </div>
           )}
           <div
@@ -527,7 +527,7 @@ export default function CommunityChat({
                       <p className="text-xs font-bold text-slate-900 truncate">{u.name}</p>
                       <p className="text-[12px] text-slate-500 truncate">{u.email}</p>
                     </div>
-                    <span className="text-[11px] font-bold text-slate-400 uppercase">{u.role}</span>
+                    <span className="text-[11px] font-bold text-slate-400">{u.role}</span>
                   </button>
                 ))}
               </div>

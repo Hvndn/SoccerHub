@@ -840,7 +840,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  >
  {String(t.id) === String(activeTournamentId) && (
  <div className="absolute -top-px -right-px z-20">
- <span className="inline-flex items-center gap-1 rounded-bl-xl rounded-tr-2xl bg-[#0369a1] px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-white shadow-sm">
+ <span className="inline-flex items-center gap-1 rounded-bl-xl rounded-tr-2xl bg-[#0369a1] px-2.5 py-1 text-[11px] font-black text-white shadow-sm">
  <CheckCircle2 className="w-3 h-3" />
  Đang thao tác
  </span>
@@ -1051,10 +1051,10 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  <div className="min-w-0">
  <div className="flex items-center space-x-2">
- <span className="text-xs font-black uppercase text-rose-600 tracking-wider">
+ <span className="text-xs font-black text-rose-600">
  Bảng Điều Khiển Trọng Tài
  </span>
- <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[11px] font-black uppercase">
+ <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[11px] font-black">
  Nguồn: CSDL
  </span>
  </div>
@@ -1132,7 +1132,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {/* Điều khiển */}
  {umpireMatch && umpireMatch.status !== "DONE" && (
  <div className="mt-6 space-y-3">
- <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+ <span className="text-xs font-bold text-slate-500 block">
  Điều Khiển Tỷ Số:
  </span>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1193,7 +1193,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
  <div className="min-w-0">
- <span className="text-xs font-black uppercase text-[#0b4f6c] tracking-wider">
+ <span className="text-xs font-black text-[#0b4f6c]">
  BRACKET ENGINE — NGUỒN CSDL
  </span>
  <h3 className="text-xl font-black text-slate-900 tracking-tight truncate">
@@ -1223,7 +1223,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {activeBracket.rounds.map((r: any, ri: number) => (
  <div key={ri} className="min-w-[240px] flex-1 space-y-3 sm:space-y-4">
  <div
- className={`text-xs font-black uppercase tracking-wider text-center border-b pb-2 ${
+ className={`text-xs font-black text-center border-b pb-2 ${
  ri === activeBracket.rounds.length - 1
  ? "text-amber-600 border-amber-300 "
  : "text-slate-500 border-slate-200 "
@@ -1413,7 +1413,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {bottomTab === "var_logs" && activeBracket && (
  <div className="space-y-3 sm:space-y-4">
  <div>
- <p className="text-xs font-black uppercase text-slate-500 tracking-wider mb-2">
+ <p className="text-xs font-black text-slate-500 mb-2">
  Kết quả đã ghi nhận ({doneMatches.length})
  </p>
  {doneMatches.length === 0 ? (
@@ -1439,7 +1439,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  <div>
- <p className="text-xs font-black uppercase text-slate-500 tracking-wider mb-2">
+ <p className="text-xs font-black text-slate-500 mb-2">
  Vua phá lưới giải ({topScorers.length})
  </p>
  {topScorers.length === 0 ? (
@@ -1611,7 +1611,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  <div>
  <span className="text-[12px] font-black text-sky-700 tracking-wider">
- THỐNG KÊ GIẢI ĐẤU
+ Thống kê giải đấu
  </span>
  <h4 className="text-base font-black text-slate-900 ">Đăng Ký &amp; Nhánh Đấu</h4>
  </div>
@@ -1770,7 +1770,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
      </div>
      <div>
       <span className="text-[12px] font-black text-sky-700 tracking-wider">
-       QUYỀN THAM GIA
+       Quyền tham gia
       </span>
       <h4 className="text-sm font-black text-slate-900 ">
        {activeTournament ? activeTournament.title : "Chưa chọn giải"}
@@ -1896,7 +1896,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  <div>
  <span className="text-[12px] font-black text-sky-700 tracking-wider">
- QUỸ GIẢI THƯỞNG
+ Quỹ giải thưởng
  </span>
  <h4 className="text-sm font-black text-slate-900 ">
  {activeTournament ? activeTournament.title : "Chưa chọn giải"}
@@ -1912,8 +1912,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  ) : (
  <>
  <div className="text-center bg-slate-50 p-3 sm:p-5 rounded-2xl border border-slate-200 space-y-1">
- <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
- TỔNG GIẢI THƯỞNG
+ <span className="text-xs font-bold text-slate-500 block">
+ Tổng giải thưởng
  </span>
  <span className="text-xl sm:text-3xl font-black font-mono text-sky-700 tracking-tight">
  {formatMoney(activeTournament.prizePool)}
@@ -1932,7 +1932,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  {/* 3. THÔNG TIN SÂN & THỜI GIAN THI ĐẤU (thật) */}
  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
- <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider">
+ <h4 className="text-xs font-black text-slate-500">
  Thông Tin Giải Từ CSDL
  </h4>
 

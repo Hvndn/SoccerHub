@@ -386,7 +386,7 @@ export default function PitchDetail({
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
  <div className="space-y-2">
  <div className="flex flex-wrap items-center gap-2">
- <span className="bg-[#0369a1] text-white text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider inline-flex items-center space-x-1 shadow-xs">
+ <span className="bg-[#0369a1] text-white text-xs font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
  <ShieldCheck className="w-3.5 h-3.5" />
  <span>{pitchDetails?.pitchTypes?.[0] || "Sân cỏ nhân tạo"}</span>
  </span>
@@ -467,7 +467,7 @@ export default function PitchDetail({
  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
  <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
  <div>
- <span className="font-black text-xs bg-[#0369a1]/90 backdrop-blur-md px-2.5 py-1 rounded text-white uppercase tracking-wider">
+ <span className="font-black text-xs bg-[#0369a1]/90 backdrop-blur-md px-2.5 py-1 rounded text-white">
  {pitchDetails?.pitchTypes?.[0] || pitch?.sportBadge || "Sân bóng đá"}
  </span>
  <p className="font-black text-base sm:text-lg mt-1 text-white break-words">
@@ -504,7 +504,7 @@ export default function PitchDetail({
  {/* Quick Amenities Card (2 cols) — đọc từ cột amenities của bảng pitches */}
  <div className="hidden md:flex md:col-span-3 lg:col-span-2 min-w-0 flex-col justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200 ">
  <div>
- <p className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2.5 break-words">
+ <p className="text-xs font-black text-slate-500 mb-2.5 break-words">
  Tiện ích sân bóng
  </p>
  <div className="space-y-2.5 text-xs font-semibold text-slate-700 ">
@@ -722,7 +722,7 @@ export default function PitchDetail({
  type="button"
  className="h-20 rounded-2xl bg-[#0369a1] text-white shadow-lg shadow-sky-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-white/70 btn-shimmer cursor-pointer"
  >
- <div className="absolute top-0 right-0 bg-white text-[#0b4f6c] text-[11px] px-2 py-0.5 font-black rounded-bl uppercase shadow-xs">
+ <div className="absolute top-0 right-0 bg-white text-[#0b4f6c] text-[11px] px-2 py-0.5 font-black rounded-bl shadow-xs">
  ĐANG CHỌN ⚽
  </div>
  <span className="font-extrabold text-sm">{slot.time}</span>
@@ -770,7 +770,7 @@ export default function PitchDetail({
  }`}
  >
  {slot.isGapSlot ? (
- <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 text-[11px] font-black px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider flex items-center gap-0.5">
+ <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 text-[11px] font-black px-1.5 py-0.5 rounded shadow-xs flex items-center gap-0.5">
  <span>⚡ Lọt Khe</span>
  </div>
  ) : isPeak ? (
@@ -1123,8 +1123,8 @@ export default function PitchDetail({
  </div>
 
  <div>
- <span className="px-3 py-1 rounded-full bg-[#0369a1]/10 text-sky-700 text-xs font-bold uppercase tracking-wider border border-[#0369a1]/30">
- ĐƠN GIỮ CHỖ ĐÃ LƯU VÀO CSDL
+ <span className="px-3 py-1 rounded-full bg-[#0369a1]/10 text-sky-700 text-xs font-bold border border-[#0369a1]/30">
+ Đơn giữ chỗ đã lưu vào CSDL
  </span>
  <h3 className="text-2xl font-black text-slate-900 mt-2">Thẻ Vé Vào Sân Điện Tử</h3>
  <p className="text-xs text-slate-500 mt-1">Cho chủ sân xem mã này khi tới sân để check-in.</p>

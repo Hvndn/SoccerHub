@@ -1270,7 +1270,7 @@ setIsSavingInfo(false);
  </div>
  <div>
  <div className="flex items-center space-x-2">
- <span className="text-xs font-black uppercase text-slate-700 tracking-wider">
+ <span className="text-xs font-black text-slate-700">
  Lịch Đặt Ca Ngày:
  </span>
  <span className="px-2.5 py-0.5 rounded-lg bg-[#0369a1] text-white font-black text-xs font-mono shadow-xs">
@@ -1538,7 +1538,7 @@ setIsSavingInfo(false);
  </div>
 
  <span className="px-3 py-1 rounded-full bg-[#0369a1]/10 text-emerald-500 text-xs font-bold border border-[#0369a1]/20">
- ĐANG HOẠT ĐỘNG
+ Đang hoạt động
  </span>
  </div>
 

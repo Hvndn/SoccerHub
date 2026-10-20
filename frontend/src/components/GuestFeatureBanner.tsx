@@ -22,7 +22,7 @@ export default function GuestFeatureBanner({
  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3 sm:p-8 mb-6 sm:mb-8 stadium-shadow relative overflow-hidden animate-fade-in-up">
  <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
  <div className="space-y-3 max-w-2xl">
- <div className="hidden sm:inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0369a1]/15 text-[#0b4f6c] text-xs font-bold uppercase tracking-wider">
+ <div className="hidden sm:inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0369a1]/15 text-[#0b4f6c] text-xs font-bold">
  <Sparkles className="w-3.5 h-3.5 text-[#0b4f6c] " />
  <span>Giới Thiệu Chức Năng</span>
  </div>

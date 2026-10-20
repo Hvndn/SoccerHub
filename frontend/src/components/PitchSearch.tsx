@@ -808,7 +808,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="flex items-center space-x-2">
  <span className="px-2.5 py-1 bg-[#0369a1] text-white font-black text-[12px] rounded-lg flex items-center tracking-wider shadow-xs">
  <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-300 " />
- GỢI Ý SÂN THÔNG MINH
+ Gợi ý sân thông minh
  </span>
  <span className="font-mono text-xs font-extrabold text-sky-700 flex items-center">
  <Zap className="w-3.5 h-3.5 mr-0.5" />
@@ -1166,7 +1166,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <span className="text-xl font-black text-sky-700 font-mono">
  {pitch.priceDiscounted.toLocaleString("vi-VN")}đ
  </span>
- <span className="px-1.5 py-0.2 rounded bg-[#0369a1]/15 text-sky-800 text-[11px] font-black uppercase">
+ <span className="px-1.5 py-0.2 rounded bg-[#0369a1]/15 text-sky-800 text-[11px] font-black">
  {pitch.slotDurationMinutes} phút/ca
  </span>
  </div>
@@ -1247,7 +1247,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2"
  >
  <div className="flex items-center justify-between">
- <span className="px-2 py-0.5 rounded bg-[#0369a1]/20 text-sky-800 font-black text-[12px] uppercase">
+ <span className="px-2 py-0.5 rounded bg-[#0369a1]/20 text-sky-800 font-black text-[12px]">
  {label}
  </span>
  <span className="font-mono text-xs font-bold text-slate-500">
@@ -1297,7 +1297,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <QrCode className="w-5 h-5 text-amber-700" />
  <h3 className="font-black text-sm text-slate-900 ">Turfzone QuickPass</h3>
  </div>
- <span className="px-2.5 py-0.5 rounded bg-[#0369a1] text-white font-black text-[11px] uppercase">
+ <span className="px-2.5 py-0.5 rounded bg-[#0369a1] text-white font-black text-[11px]">
  Check-in Không Chạm
  </span>
  </div>
@@ -1336,7 +1336,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="flex items-center justify-between">
  <div className="flex items-center space-x-2">
  <Trophy className="w-4 h-4 text-amber-700" />
- <h3 className="font-black text-slate-900 text-xs uppercase tracking-wider">
+ <h3 className="font-black text-slate-900 text-xs">
  Đội Phong Độ Cao Nhất
  </h3>
  </div>
@@ -1508,7 +1508,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
  <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-sm w-full border border-slate-200 shadow-2xl text-center space-y-4 animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
  <div className="flex items-center justify-between pb-2 border-b border-slate-100 ">
- <span className="text-xs font-black text-slate-900 uppercase tracking-wider">
+ <span className="text-xs font-black text-slate-900">
  Thẻ Hội Viên QR
  </span>
  <button

@@ -257,7 +257,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  <h1 className="text-lg sm:text-3xl font-extrabold text-slate-900 tracking-tight">
  Lịch Trình & Vé Thi Đấu
  </h1>
- <span className="px-2.5 py-0.5 rounded-full bg-[#0369a1] text-white font-black text-xs uppercase tracking-wide">
+ <span className="px-2.5 py-0.5 rounded-full bg-[#0369a1] text-white font-black text-xs">
  {tournaments.length} giải trong CSDL
  </span>
  </div>
@@ -373,7 +373,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  return (
  <div key={i} className="p-3 rounded-lg bg-slate-50 flex flex-col gap-1.5 border border-slate-200/60 ">
  <div className="flex items-center justify-between text-[12px] font-bold text-slate-500">
- <span className="uppercase tracking-wider">
+ <span className=" tracking-wider">
  {i === 0 ? "ĐỘI A" : "ĐỘI B"}
  </span>
  <span className={`font-mono ${i === 0 ? "text-sky-800 " : ""}`}>

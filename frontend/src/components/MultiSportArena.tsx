@@ -222,7 +222,7 @@ export default function MultiSportArena({
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
  <div>
  <div className="flex items-center space-x-3 mb-3">
- <span className="bg-[#0369a1]/10 text-sky-800 border border-[#0369a1]/30 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+ <span className="bg-[#0369a1]/10 text-sky-800 border border-[#0369a1]/30 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
  <ShieldCheck className="w-3.5 h-3.5" /> Danh sách đọc từ CSDL
  </span>
  <span className="bg-[#0369a1]/10 text-sky-700 border border-[#0369a1]/30 text-xs font-bold px-3 py-1 rounded-full">

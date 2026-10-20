@@ -223,7 +223,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
     return (
       <div className="rounded-3xl bg-white border border-slate-200 shadow-xl overflow-hidden">
         <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-100">
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">
+          <h3 className="text-xs font-black text-slate-500 flex items-center gap-2">
             <Users className="w-3.5 h-3.5 text-[#0369a1]" />
             Nhóm chat của tôi
           </h3>
@@ -385,7 +385,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
       {/* Panel thành viên */}
       {showMembers && detail && (
         <div className="px-4 sm:px-5 py-4 bg-slate-50 border-b border-slate-200 space-y-3">
-          <p className="text-xs font-black uppercase tracking-wider text-slate-500">Thành viên</p>
+          <p className="text-xs font-black text-slate-500">Thành viên</p>
           <ul className="space-y-1.5">
             {(detail.members || []).map((m) => (
               <li key={m.email} className="flex items-center gap-2.5">
@@ -478,7 +478,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
                       <span className={`text-[13px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>
                         {m.senderName}
                       </span>
-                      <span className="text-[11px] font-bold text-slate-400 uppercase">{m.senderRole}</span>
+                      <span className="text-[11px] font-bold text-slate-400">{m.senderRole}</span>
                     </div>
                   )}
                   <div

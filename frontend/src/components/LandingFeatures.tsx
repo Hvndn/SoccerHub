@@ -179,7 +179,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  {/* --- SECTION 1: 4 TRỤ CỘT ĐỀ TÀI (BENTO GRID) --- */}
  <section className="space-y-5 sm:space-y-8">
  <div className="text-center max-w-3xl mx-auto space-y-3">
- <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] text-xs font-black uppercase tracking-wider">
+ <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] text-xs font-black">
  <Sparkles className="w-3.5 h-3.5" />
  <span>Bốn Trụ Cột Đột Phá Của Đề Tài</span>
  </div>
@@ -214,7 +214,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  </div>
 
  <div>
- <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{pillar.title}</span>
+ <span className="text-xs font-bold text-slate-500">{pillar.title}</span>
  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
  {pillar.subtitle}
  </h3>
@@ -253,7 +253,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  {/* --- SECTION 2: DIRECT COMPARISON (TRUYỀN THỐNG VS Turfzone) --- */}
  <section className="w-full bg-slate-100/90 p-4 sm:p-10 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-5 sm:space-y-8">
  <div className="text-center max-w-2xl mx-auto space-y-2">
- <span className="text-xs font-extrabold text-[#0b4f6c] uppercase tracking-wider block">
+ <span className="text-xs font-extrabold text-[#0b4f6c] block">
  So Sánh Đột Phá
  </span>
  <h2 className="text-xl sm:text-4xl font-black text-slate-900 tracking-tight">
@@ -274,7 +274,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <p className="text-xs text-slate-500 font-medium">Ghi sổ tay, nhắn tin Zalo, giữ chỗ bằng miệng</p>
  </div>
  </div>
- <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-extrabold text-[12px] uppercase">
+ <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-extrabold text-[12px]">
  Rủi ro cao
  </span>
  </div>
@@ -327,7 +327,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  {/* --- SECTION 3: FINAL CALL TO ACTION BANNER --- */}
  <section className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white text-slate-900 p-5 sm:p-14 border border-slate-200 shadow-2xl">
  <div className="relative z-10 max-w-3xl mx-auto text-center space-y-4 sm:space-y-6">
- <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/30 text-sky-700 text-xs font-extrabold uppercase">
+ <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/30 text-sky-700 text-xs font-extrabold">
  <Trophy className="w-3.5 h-3.5 text-amber-400" />
  <span>Đồ Án Tốt Nghiệp • Trải Nghiệm Thực Tế</span>
  </div>

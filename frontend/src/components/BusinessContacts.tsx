@@ -139,7 +139,7 @@ export default function BusinessContacts({ viewerRole, onStartDm }: BusinessCont
                 <p className="text-xs font-black text-slate-900 truncate">{c.name}</p>
                 <p className="text-[12px] text-slate-500 truncate">{c.email}</p>
                 <span
-                  className={`inline-block mt-1 px-1.5 py-0.5 rounded-md border text-[11px] font-black uppercase tracking-wide ${
+                  className={`inline-block mt-1 px-1.5 py-0.5 rounded-md border text-[11px] font-black ${
                     ROLE_BADGE[c.role] ?? ROLE_BADGE.PLAYER
                   }`}
                 >

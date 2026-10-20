@@ -47,8 +47,8 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  Turfzone 4.0
  </span>
  <span className="w-1.5 h-1.5 rounded-full bg-[#0369a1]"></span>
- <span className="text-[13px] tracking-wide text-slate-300 font-bold uppercase">
- HỆ SINH THÁI BÓNG ĐÁ THÔNG MINH
+ <span className="text-[13px] text-slate-300 font-bold">
+ Hệ sinh thái bóng đá thông minh
  </span>
  </div>
 
@@ -115,7 +115,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <span className="text-[12px] font-bold tracking-wider text-slate-500">Đồng bộ toàn bộ quy chuẩn sân</span>
  <div className="flex items-center gap-1.5 bg-[#0369a1]/20 px-2 py-0.5 rounded-full border border-[#0369a1]/30">
  <span className="w-1.5 h-1.5 rounded-full bg-[#0369a1] animate-pulse"></span>
- <span className="font-mono text-[12px] text-lime-400 font-bold tracking-wide">LIVE SYNC</span>
+ <span className="font-mono text-[12px] text-lime-400 font-bold tracking-wide">Đồng bộ trực tiếp</span>
  </div>
  </div>
 
@@ -139,7 +139,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <div className="flex items-center justify-between gap-3">
  <div className="flex items-center gap-2">
  <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[13px] font-bold tracking-wider">
- HOÀN TẤT THIẾT LẬP
+ Hoàn tất thiết lập
  </span>
  <span className="px-2.5 py-1 rounded-full bg-[#0369a1]/10 text-sky-800 text-[13px] font-extrabold flex items-center gap-1 border border-[#0369a1]/20">
  <CheckCircle2 className="w-3.5 h-3.5" /> Bước 3/3
@@ -225,7 +225,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  title="Bấm để sao chép mã VĐV"
  >
  <QrCode className="w-14 h-14 text-slate-900" />
- <span className="font-mono text-[11px] text-slate-700 font-black mt-1 uppercase">
+ <span className="font-mono text-[11px] text-slate-700 font-black mt-1">
  {copiedCode ? "ĐÃ CHÉP MÃ!" : "CHECK-IN CA"}
  </span>
  </div>

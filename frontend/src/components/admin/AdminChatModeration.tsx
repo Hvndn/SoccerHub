@@ -78,7 +78,7 @@ export default function AdminChatModeration({ notify }: { notify: (type: "ok" | 
         <div className="max-w-[180px]">
           <p className="font-bold text-slate-900 truncate">{r.senderName}</p>
           <p className="text-[12px] font-mono text-slate-500 truncate">{r.senderEmail}</p>
-          <span className="text-[11px] font-bold text-slate-400 uppercase">{r.senderRole}</span>
+          <span className="text-[11px] font-bold text-slate-400">{r.senderRole}</span>
         </div>
       ),
     },

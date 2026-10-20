@@ -556,7 +556,7 @@ const [addCount, setAddCount] = useState("4");
  aria-label={`Huỷ kết quả trận ${match.matchId}`}
  disabled={savingMatch === match.matchId}
  onClick={() => setConfirmUndo(match)}
- className="px-1.5 py-0.5 rounded-md border border-rose-300 text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all text-[11px] font-black uppercase tracking-wide disabled:opacity-40 active:scale-95"
+ className="px-1.5 py-0.5 rounded-md border border-rose-300 text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all text-[11px] font-black disabled:opacity-40 active:scale-95"
  >
  {savingMatch === match.matchId ? "…" : "Huỷ KQ"}
  </button>
@@ -999,7 +999,7 @@ const [addCount, setAddCount] = useState("4");
  >
  <Video className="w-4 h-4 text-red-400" />
  <span>Bàn Trọng Tài Live VAR</span>
- <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[11px] uppercase font-mono">LIVE</span>
+ <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[11px] font-mono">LIVE</span>
  </button>
 
  <button
@@ -1078,7 +1078,7 @@ const [addCount, setAddCount] = useState("4");
  <div key={bracket.drawnAt} className="flex gap-3 sm:gap-6 pb-2 items-start overflow-x-auto">
  {bracket.rounds.map((round, ri) => (
  <div key={ri} className="min-w-[250px] flex-1 space-y-3 sm:space-y-4">
- <div className={`text-center text-xs font-extrabold uppercase tracking-wider py-2 rounded-xl border ${
+ <div className={`text-center text-xs font-extrabold py-2 rounded-xl border ${
  ri === bracket.rounds.length - 1
  ? "text-amber-600 bg-amber-500/10 border-amber-500/30"
  : "text-sky-700 bg-slate-100 border-slate-200 "
@@ -1132,7 +1132,7 @@ const [addCount, setAddCount] = useState("4");
  )}
 
  <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 text-slate-900 text-center shadow-2xl space-y-3 sm:space-y-4">
- <div className="flex items-center justify-center space-x-3 text-xs text-slate-500 uppercase font-mono tracking-widest font-bold">
+ <div className="flex items-center justify-center space-x-3 text-xs text-slate-500 font-monost font-bold">
  <Clock className="w-4 h-4 text-sky-700 " />
  <span>
  {varMatch.status === "DONE" ? "ĐÃ KẾT THÚC" : "ĐANG ĐIỀU KHIỂN"} • TỶ SỐ THỜI GIAN THỰC
@@ -1473,7 +1473,7 @@ const [addCount, setAddCount] = useState("4");
  <div className="text-center space-y-1 pb-4 border-b border-slate-200 print:border-slate-400">
  <p className="text-[13px] font-black tracking-widest text-slate-500">Cộng Hòa Xã Hội Chủ Nghĩa Việt Nam</p>
  <p className="text-[12px] font-bold text-slate-500">Độc lập – Tự do – Hạnh phúc</p>
- <h3 className="text-base font-black text-slate-900 uppercase">
+ <h3 className="text-base font-black text-slate-900">
  Biên Bản Trận Đấu — {selected ? sportLabel(selected.sportType) : "Bóng Đá Sân 7 Phủi"}
  </h3>
  <p className="text-[12px] font-mono text-slate-500">
