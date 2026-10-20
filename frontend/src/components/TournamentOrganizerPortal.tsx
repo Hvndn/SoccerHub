@@ -117,8 +117,8 @@ export default function TournamentOrganizerPortal({
  return {
  id: String(t.id),
  sport: t.sportType ?? "SAN_7",
- sportBadge: `${sportLabel(t.sportType).toUpperCase()} • ${
- st === "ONGOING" ? "ĐANG DIỄN RA" : st === "COMPLETED" ? "ĐÃ KẾT THÚC" : "ĐANG MỞ"
+ sportBadge: `${sportLabel(t.sportType)} • ${
+ st === "ONGOING" ? "Đang diễn ra" : st === "COMPLETED" ? "Đã kết thúc" : "Đang mở"
  }`,
  title: t.title,
  subtitle: `${teams.length}${cap ? `/${cap}` : ""} đội • ${formatLabel(t.format)} • Thưởng ${formatMoney(
@@ -713,7 +713,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <Award className="w-8 h-8 text-amber-700 shrink-0 hidden sm:inline-block" />
  </h1>
  <p className="text-sm text-slate-600 max-w-2xl font-medium leading-relaxed hidden sm:block">
- Trung tâm điều hành giải đấu bóng đá tập trung: nhập tỷ số trọng tài, bốc thăm nhánh đấu, giải thưởng và sơ đồ nhánh đấu knockout thời gian thực.
+ Nhập tỷ số trọng tài, bốc thăm nhánh đấu, giải thưởng và sơ đồ knockout thời gian thực.
  </p>
  </div>
 
@@ -773,10 +773,10 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {/* Form tạo giải đã chuyển sang trang wizard riêng: /tournaments/new (4 bước) */}
 
  {/* SPORT CATEGORY FILTERS */}
- <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between gap-3 sm:gap-4 overflow-x-auto no-scrollbar">
- <div className="flex items-center space-x-2">
- <span className="text-xs font-bold text-slate-500 mr-2 flex items-center gap-1.5">
- <Filter className="w-3.5 h-3.5 text-slate-500" /> Bộ Lọc Môn:
+ <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+ <div className="flex flex-wrap items-center gap-2">
+ <span className="text-xs font-bold text-slate-500 mr-2 flex items-center gap-1.5 whitespace-nowrap">
+ <Filter className="w-3.5 h-3.5 text-slate-500" /> Môn:
  </span>
  {SPORT_FILTERS.map(item => (
  <button

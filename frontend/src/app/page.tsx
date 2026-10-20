@@ -33,7 +33,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function Home() {
  const router = useRouter();
  const [activeTab, setActiveTab] = useState("booking");
- const { user: authUser, logout: authLogout } = useAuth();
+ const { user: authUser, logout: authLogout, isLoading: authLoading } = useAuth();
  const [localUser, setLocalUser] = useState<any | null>(null);
 
  // Transition & Loading States
@@ -114,6 +114,10 @@ export default function Home() {
  // Role Guard: Tự động điều hướng và bảo vệ phân quyền nhất quán khi role thay đổi
  React.useEffect(() => {
 if (!currentUser) {
+  // Đang xác thực phiên (đọc cache + gọi /auth/me): chưa kết luận được là khách
+  // hay người dùng. Nếu chặn tab lúc này thì deep-link ?tab=organizer (hay ?tab=admin)
+  // bị đẩy về "booking" trước khi AuthContext kịp set user.
+  if (authLoading) return;
   // Khách chưa đăng nhập: chỉ chặn tab thật sự cần đăng nhập.
   // PHẢI dùng OWNER_MANAGE_TABS (khớp với handleTabChange), KHÔNG dùng
   // OWNER_TABS — vì OWNER_TABS còn chứa "community" và "matchmaking" là những

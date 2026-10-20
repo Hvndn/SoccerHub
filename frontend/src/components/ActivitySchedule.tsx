@@ -475,7 +475,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  ? "bg-sky-100 text-sky-800 "
  : "bg-rose-100 text-rose-700 "
  }`}>
- {m.status === "DONE" ? "ĐÃ ĐÁ" : m.roundName.toUpperCase()}
+ {m.status === "DONE" ? "Đã đá" : m.roundName}
  </span>
  <span className="text-sm font-bold text-slate-900 ">{m.tournamentTitle}</span>
  </div>
