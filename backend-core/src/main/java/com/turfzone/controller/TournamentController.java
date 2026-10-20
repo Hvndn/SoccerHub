@@ -1499,6 +1499,89 @@ public class TournamentController {
     }
 
     /**
+     * BTC/ADMIN THÊM ĐỘI THỦ CÔNG vào giải (không qua form đăng ký của cầu thủ).
+     *
+     * <p>Khác với {@code POST /{id}/register} (cầu thủ tự đăng ký, bị chặn trùng
+     * captainEmail/captainPhone và bắt buộc đã đóng phí), endpoint này dành cho BTC:
+     * nhập tay tên đội + đội trưởng + SĐT, đội được đánh dấu CONFIRMED ngay nên
+     * sẵn sàng bốc thăm.</p>
+     */
+    @PostMapping("/{id}/teams/manual")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
+    public ResponseEntity<?> addManualTeam(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        String teamName = body.get("teamName") != null ? body.get("teamName").toString().trim() : "";
+        if (teamName.length() < 3 || teamName.length() > 60) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Tên đội phải từ 3 đến 60 ký tự."));
+        }
+        List<TournamentTeamEntry> teams = tournament.getTeams() != null
+                ? new ArrayList<>(tournament.getTeams())
+                : new ArrayList<>();
+        for (TournamentTeamEntry existing : teams) {
+            if (teamName.equalsIgnoreCase(existing.getTeamName())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Tên đội đã tồn tại trong giải này."));
+            }
+        }
+        Integer cap = tournament.getTotalTeams();
+        if (cap != null && cap > 0 && teams.size() >= cap) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Giải đã đủ số lượng đội (" + cap + " đội)."));
+        }
+        String captainName = body.get("captainName") != null
+                ? body.get("captainName").toString().trim()
+                : "";
+        String captainPhone = body.get("captainPhone") != null
+                ? body.get("captainPhone").toString().trim()
+                : "";
+        String memberNames = body.get("memberNames") != null
+                ? body.get("memberNames").toString().trim()
+                : "";
+        int memberCount = 12;
+        if (body.get("memberCount") != null) {
+            try {
+                memberCount = Integer.parseInt(body.get("memberCount").toString());
+            } catch (NumberFormatException ignored) {
+                memberCount = 12;
+            }
+        }
+        memberCount = Math.max(1, Math.min(30, memberCount));
+        // Không có danh sách cầu thủ thì suy ra từ số người để BTC không phải gõ tay
+        if (memberNames.isEmpty()) {
+            List<String> names = new ArrayList<>();
+            for (int i = 1; i <= memberCount; i++) {
+                names.add("Cầu thủ " + i);
+            }
+            memberNames = String.join(",", names);
+        }
+        TournamentTeamEntry entry = TournamentTeamEntry.builder()
+                .teamName(teamName)
+                .captainName(captainName.isEmpty() ? "Đội trưởng " + teamName : captainName)
+                .captainEmail(null) // đội thêm tay: không gắn tài khoản nào
+                .captainPhone(captainPhone)
+                .subCaptainPhone(body.get("subCaptainPhone") != null
+                        ? body.get("subCaptainPhone").toString().trim() : "")
+                .memberCount(memberCount)
+                .memberNames(memberNames)
+                .registrationStatus("CONFIRMED") // BTC thêm tay -> đã xác nhận, sẵn sàng bốc thăm
+                .simulated(false)
+                .registeredAt(LocalDateTime.now())
+                .build();
+        teams.add(entry);
+        tournament.setTeams(teams);
+        tournament.setRegisteredTeams(teams.size());
+        // Đội mới làm danh sách đổi -> cần bốc thăm lại
+        tournament.setBracketJson(null);
+        tournamentRepository.save(tournament);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã thêm đội \"" + teamName + "\" vào giải.",
+                "team", entry,
+                "registeredTeams", teams.size()));
+    }
+
+    /**
      * BTC xác nhận đã thu lệ phí của một đội → CONFIRMED (mới được bốc thăm).
      */
     @PostMapping("/{id}/teams/confirm-payment")

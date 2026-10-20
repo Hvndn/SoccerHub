@@ -18,7 +18,7 @@ import {
 import FormDots from "./FormDots";
 import BusinessContacts from "./BusinessContacts";
 import {
-  getPendingTeams, approveTeam, rejectTeam,
+  getPendingTeams, approveTeam, rejectTeam, addManualTeam,
   getReferees, addReferee, removeReferee,
   type PendingTeam, type RefereeInfo
 } from "@/lib/organizerService";
@@ -42,7 +42,7 @@ import {
  X,
  Pencil,
  Wallet,
- Users2,
+ Users2, UserPlus,
  AlertCircle
 } from "lucide-react";
 
@@ -292,6 +292,47 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
   // ---- SỬA THÔNG TIN GIẢI (trước đây BTC tạo xong không sửa được gì) ----
   const [showEditModal, setShowEditModal] = useState(false);
+ // Thêm đội thủ công (BTC nhập tay, không qua form đăng ký của cầu thủ)
+ const [showAddTeamForm, setShowAddTeamForm] = useState(false); // form inline, KHÔNG popup
+ const [addingTeam, setAddingTeam] = useState(false);
+ const [addTeamForm, setAddTeamForm] = useState({
+  teamName: "",
+  captainName: "",
+  captainPhone: "",
+  memberCount: 12,
+ });
+
+ /** Gửi yêu cầu thêm đội thủ công vào giải đang chọn. */
+ const handleAddManualTeam = async () => {
+
+  const tid = Number(activeTournament?.id);
+  if (!tid) {
+   setVarNotice("❌ Hãy chọn giải đấu trước khi thêm đội.");
+   return;
+  }
+  if (addTeamForm.teamName.trim().length < 3) {
+   setVarNotice("❌ Tên đội phải có ít nhất 3 ký tự.");
+   return;
+  }
+  setAddingTeam(true);
+  try {
+   const res = await addManualTeam(tid, {
+    teamName: addTeamForm.teamName.trim(),
+    captainName: addTeamForm.captainName.trim() || undefined,
+    captainPhone: addTeamForm.captainPhone.trim() || undefined,
+    memberCount: Number(addTeamForm.memberCount) || 12,
+   });
+   setVarNotice("✅ " + (res?.message || "Đã thêm đội vào giải."));
+   setAddTeamForm({ teamName: "", captainName: "", captainPhone: "", memberCount: 12 });
+   setShowAddTeamForm(false);
+   await fetchDbTournaments();
+   await loadPendingTeams(tid);
+  } catch (err: any) {
+   setVarNotice("❌ " + (err?.message || "Không thêm được đội. Vui lòng thử lại."));
+  } finally {
+   setAddingTeam(false);
+  }
+ };
   const [savingEdit, setSavingEdit] = useState(false);
   const [editForm, setEditForm] = useState({
     title: '',
@@ -1536,6 +1577,90 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <span>Mở Bảng Điều Hành Bốc Thăm</span>
  </button>
  
+  {/* Thêm đội thủ công — BTC nhập tay đội vào giải (không qua form đăng ký của cầu thủ) */}
+  <button
+  type="button"
+  onClick={() => setShowAddTeamForm((v) => !v)}
+  disabled={!activeTournament}
+  className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+  title="Nhập tay một đội bóng vào giải (đội trưởng, SĐT, số cầu thủ) — đội được đánh dấu đã đóng phí nên sẵn sàng bốc thăm"
+  >
+  <UserPlus className="w-4 h-4" />
+  <span>Thêm Đội Thủ Công</span>
+  </button>
+  {/* FORM THÊM ĐỘI THỦ CÔNG — hiển thị INLINE tại chỗ (KHÔNG dùng popup/modal) */}
+  {showAddTeamForm && (
+  <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 p-3.5 space-y-3">
+   <div className="flex items-center justify-between gap-2">
+    <span className="text-[11px] font-black uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+     <UserPlus className="w-3.5 h-3.5" /> Thêm đội thủ công vào giải
+    </span>
+    <button
+     type="button"
+     onClick={() => setShowAddTeamForm(false)}
+     className="text-emerald-700 hover:text-emerald-900 p-0.5"
+     aria-label="Đóng form thêm đội"
+    >
+     <X className="w-3.5 h-3.5" />
+    </button>
+   </div>
+
+   <input
+    type="text"
+    value={addTeamForm.teamName}
+    onChange={(e) => setAddTeamForm((f) => ({ ...f, teamName: e.target.value }))}
+    placeholder="Tên đội * — VD: FC Đại Việt Đà Nẵng"
+    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+   />
+   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+    <input
+     type="text"
+     value={addTeamForm.captainName}
+     onChange={(e) => setAddTeamForm((f) => ({ ...f, captainName: e.target.value }))}
+     placeholder="Đội trưởng"
+     className="px-3 py-2 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+    />
+    <input
+     type="tel"
+     value={addTeamForm.captainPhone}
+     onChange={(e) => setAddTeamForm((f) => ({ ...f, captainPhone: e.target.value }))}
+     placeholder="Số điện thoại"
+     className="px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+    />
+    <input
+     type="number"
+     min={1}
+     max={30}
+     value={addTeamForm.memberCount}
+     onChange={(e) => setAddTeamForm((f) => ({ ...f, memberCount: Number(e.target.value) }))}
+     placeholder="Số cầu thủ"
+     aria-label="Số cầu thủ"
+     className="px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+    />
+   </div>
+   <p className="text-[10px] text-emerald-800/80 leading-relaxed">
+    Đội thêm tay được đánh dấu <strong>đã đóng lệ phí</strong> nên sẵn sàng bốc thăm. Danh sách đội sẽ đổi — cần bốc thăm lại.
+   </p>
+   <div className="flex items-center gap-2">
+    <button
+     type="button"
+     onClick={() => setShowAddTeamForm(false)}
+     className="px-3 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-extrabold border border-slate-200 transition-all active:scale-95"
+    >
+     Hủy
+    </button>
+    <button
+     type="button"
+     onClick={handleAddManualTeam}
+     disabled={addingTeam}
+     className="flex-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5"
+    >
+     {addingTeam ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
+     {addingTeam ? "Đang thêm…" : "Thêm vào giải"}
+    </button>
+   </div>
+  </div>
+  )}
   <button
     onClick={handleCreateRandomTournament}
     className="w-full py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border-2 border-dashed border-slate-300 transition-all flex items-center justify-center space-x-2 active:scale-95"

@@ -26,6 +26,24 @@ export interface RefereeInfo {
   assignedAt: string;
 }
 
+/** BTC/ADMIN thêm đội thủ công vào giải (không qua form đăng ký của cầu thủ). */
+export async function addManualTeam(
+  tournamentId: number,
+  payload: {
+    teamName: string;
+    captainName?: string;
+    captainPhone?: string;
+    memberCount?: number;
+    memberNames?: string;
+  }
+): Promise<{ message: string; registeredTeams: number }> {
+  const data = await apiRequest<{ message: string; registeredTeams: number }>(
+    `/api/v1/tournaments/${tournamentId}/teams/manual`,
+    { method: "POST", body: JSON.stringify(payload) }
+  );
+  return data;
+}
+
 /** Danh sách đội chờ duyệt của một giải. */
 export async function getPendingTeams(tournamentId: number): Promise<PendingTeam[]> {
   const data = await apiRequest<PendingTeam[]>(`/api/v1/tournaments/${tournamentId}/teams/pending`);
