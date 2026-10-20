@@ -239,7 +239,7 @@ export default function MultiSportArena({
  </span>
  </div>
  <h1 className="text-xl sm:text-4xl font-extrabold tracking-tight text-slate-900 ">
- Ma Trận Sơ Đồ Cụm Sân Bóng Đá Real-Time
+ Ma Trận Cụm Sân Bóng Đá
  </h1>
  <p className="mt-2 text-slate-600 text-sm sm:text-base max-w-2xl hidden sm:block">
  Đặt ca sân 5, sân 7, sân 11 và Futsal trong nhà tự động 24/7. Tìm đối thủ ghép trận theo phong độ, giữ chỗ tức thì qua mã đặt chỗ.
@@ -271,21 +271,21 @@ export default function MultiSportArena({
  </div>
 
  {/* Quick Stats Strip — số liệu đếm trực tiếp từ CSDL */}
- <div className="mt-6 pt-6 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
- <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
- <div className="text-lg sm:text-2xl font-bold text-emerald-400">{courts.length} Sân</div>
- <div className="text-[13px] text-slate-500 mt-0.5 break-words">Trong bảng pitches</div>
+ <div className="mt-6 pt-6 border-t border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
+ <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 min-w-0">
+ <div className="text-lg sm:text-2xl font-bold text-emerald-600">{courts.length} Sân</div>
+ <div className="text-[13px] text-slate-500 mt-0.5 break-words">Đang hoạt động</div>
  </div>
- <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
- <div className="text-lg sm:text-2xl font-bold text-sky-400">{matchQueues.length} Kèo Mở</div>
- <div className="text-[13px] text-slate-500 mt-0.5 break-words">Bảng matchmaking_posts</div>
+ <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 min-w-0">
+ <div className="text-lg sm:text-2xl font-bold text-sky-700">{matchQueues.length} Kèo Mở</div>
+ <div className="text-[13px] text-slate-500 mt-0.5 break-words">Chờ ghép đối thủ</div>
  </div>
- <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
- <div className="text-lg sm:text-2xl font-bold text-cyan-400">Sân 5 · 7 · 11</div>
+ <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 min-w-0">
+ <div className="text-lg sm:text-2xl font-bold text-cyan-700">5 · 7 · 11</div>
  <div className="text-[13px] text-slate-500 mt-0.5 break-words">Loại mặt sân đang khai thác</div>
  </div>
- <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 min-w-0">
- <div className="text-lg sm:text-2xl font-bold text-amber-400">Cọc 50%</div>
+ <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 min-w-0">
+ <div className="text-lg sm:text-2xl font-bold text-amber-600">Cọc 50%</div>
  <div className="text-[13px] text-slate-500 mt-0.5 break-words">Thanh toán qua VietQR khi đặt</div>
  </div>
  </div>
@@ -304,7 +304,7 @@ export default function MultiSportArena({
  <span>Trạng Thái Các Sân Bóng Trực Tiếp</span>
  </h2>
  <p className="text-[13px] sm:text-sm text-slate-500 mt-1 hidden sm:block">
- Danh sách cụm sân đọc từ bảng pitches — bấm “Đặt Ca” để tạo đơn giữ chỗ thật trong CSDL
+ Danh sách cụm sân trực tiếp từ hệ thống. Bấm “Đặt Ca” để giữ chỗ thật.
  </p>
  </div>
  </div>
