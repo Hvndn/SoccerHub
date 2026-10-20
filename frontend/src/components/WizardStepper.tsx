@@ -76,7 +76,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
  </span>
  <span className="min-w-0">
  <span
- className={`block truncate text-[13px] font-black sm:text-[13px] ${
+ className={`block line-clamp-2 text-[13px] font-black ${
  active
  ? "text-sky-900 "
  : "text-slate-700 "
@@ -85,7 +85,7 @@ export default function WizardStepper({ steps, current, maxReached, onGo }: Wiza
  {step.label}
  </span>
  {step.hint && (
- <span className="hidden truncate text-[13px] text-slate-500 sm:block">
+ <span className="hidden line-clamp-1 text-[13px] text-slate-500 sm:block">
  {step.hint}
  </span>
  )}
