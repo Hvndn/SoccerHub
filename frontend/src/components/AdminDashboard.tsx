@@ -1126,7 +1126,7 @@ setIsSavingInfo(false);
  </div>
 
  <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
- <span className="text-sm font-bold text-slate-500 tracking-wider block">Khách Vãng Lai Tại Quầy</span>
+ <span className="text-sm font-bold text-slate-500 tracking-wider block">Khách Vàng Lai Tại Quầy</span>
  <div className="text-2xl sm:text-3xl font-black text-amber-700 font-mono">
  {pitchStats.counterBookings} Ca Trực Tiếp
  </div>
@@ -1186,7 +1186,7 @@ setIsSavingInfo(false);
  Sơ Đồ Ca Sân Thời Gian Thực
  </h2>
  <span className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
- Giờ mở: <strong className="font-mono text-indigo-500 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca 2 tiếng (120 phút)
+ Giờ mở: <strong className="font-mono text-indigo-700 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca 2 tiếng (120 phút)
  </span>
  </div>
  </div>
@@ -1200,6 +1200,7 @@ setIsSavingInfo(false);
  <span className="text-slate-600 pl-2.5 text-sm font-bold">Trạng thái:</span>
  <select
  value={matrixFilterStatus}
+  aria-label="Lọc ca theo trạng thái"
  onChange={(e) => setMatrixFilterStatus(e.target.value)}
  className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer shadow-xs"
  >
@@ -1216,6 +1217,7 @@ setIsSavingInfo(false);
  <span className="text-slate-600 pl-2.5 text-sm font-bold">Loại sân:</span>
  <select
  value={matrixFilterType}
+  aria-label="Lọc ca theo loại sân"
  onChange={(e) => setMatrixFilterType(e.target.value)}
  className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer shadow-xs"
  >
@@ -1234,6 +1236,7 @@ setIsSavingInfo(false);
  </span>
  <select
  value={matrixFilterTime}
+  aria-label="Lọc ca theo khung giờ"
  onChange={(e) => setMatrixFilterTime(e.target.value)}
  className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] font-mono cursor-pointer shadow-xs"
  >
@@ -1255,12 +1258,13 @@ setIsSavingInfo(false);
  </span>
  <select
  value={matrixFilterMethod}
+  aria-label="Lọc ca theo hình thức đặt sân"
  onChange={(e) => setMatrixFilterMethod(e.target.value)}
  className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer shadow-xs"
  >
  <option value="ALL">Tất cả hình thức</option>
  <option value="ONLINE">📱 Đặt qua Website Turfzone</option>
- <option value="OFFLINE">☎️ Tạo Tại Quầy (Vãng Lai)</option>
+ <option value="OFFLINE">☎️ Tạo Tại Quầy (Vàng Lai)</option>
  <option value="RESALE">🔄 Sàn Nhượng Ca Gấp</option>
  <option value="EMPTY">⚪ Ca Trống Chưa Đặt</option>
  </select>
@@ -1322,6 +1326,7 @@ setIsSavingInfo(false);
  <input
  type="date"
  value={matrixDate}
+  aria-label="Chọn ngày xem lịch đặt ca"
  onChange={(e) => {
  if (e.target.value) handleSelectDate(e.target.value);
  }}
@@ -1358,8 +1363,8 @@ setIsSavingInfo(false);
  <span>{day.label}</span>
  <span className={`text-[13px] font-mono px-1.5 py-0.2 rounded-md ${
  isSelected 
- ? "bg-white/20 text-white font-bold" 
- : "bg-slate-100 text-slate-500"
+ ? "bg-slate-900/40 text-white font-bold" 
+ : "bg-slate-100 text-slate-600"
  }`}>
  {day.dateFormatted}
  </span>

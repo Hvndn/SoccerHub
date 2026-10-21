@@ -651,7 +651,7 @@ const mobileNav: MobileNavItem[] =
  {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'BTC' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
  </span>
  {user.role === 'OWNER' ? (
- <span className="truncate text-emerald-500 font-bold">• {user.area || "Chưa cập nhật khu vực"}</span>
+ <span className="truncate text-emerald-700 font-bold">• {user.area || "Chưa cập nhật khu vực"}</span>
  ) : (
  <span className="truncate">• {user.level || "Phong trào"}</span>
  )}

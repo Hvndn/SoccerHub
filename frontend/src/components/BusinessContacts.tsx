@@ -95,9 +95,9 @@ export default function BusinessContacts({ viewerRole, onStartDm }: BusinessCont
             <Handshake className="w-5 h-5 text-[#0b4f6c]" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm sm:text-base font-black text-slate-900 truncate">
+            <h2 className="text-sm sm:text-base font-black text-slate-900 truncate">
               Liên hệ {cfg.label}
-            </h3>
+            </h2>
             <p className="text-[13px] text-slate-500 truncate">{cfg.hint}</p>
           </div>
         </div>
