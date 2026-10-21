@@ -233,6 +233,18 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  };
 
  const postPassesFormFilter = (p: any) => {
+  // Bộ lọc: môn, khung giờ, hình thức tiền sân — trước đây các state này chỉ đổi UI
+  // mà không hề được áp dụng vào danh sách kèo.
+  if (selectedSport !== "ALL" && p.pitchType !== selectedSport) return false;
+  if (paymentModel !== "ALL" && p.paymentModel !== paymentModel) return false;
+  if (selectedTimeSlot === "TONIGHT") {
+    const mt = String(p.matchTime ?? "");
+    const hour = Number.parseInt(mt.split(":")[0] ?? "0", 10) || 0;
+    // Tối nay: buổi tối hôm nay (không phải "mai").
+    if (!/mai/i.test(mt) && hour < 17) return false;
+  } else if (selectedTimeSlot === "TOMORROW") {
+    if (!/mai/i.test(String(p.matchTime ?? ""))) return false;
+  }
  const form: string = p.form ?? "";
  const winRate: number = p.winRate ?? 50;
  if (selectedLevel === "Có lịch sử") return form !== "";
@@ -462,7 +474,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  {/* Sport Tabs */}
  <div className="flex flex-wrap items-center gap-2">
  <button
- onClick={() => setSelectedSport("SAN_7")}
+ onClick={() => { setSelectedSport("SAN_7"); setMatchFormat("SAN_7"); }}
  className={`flex items-center space-x-2 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-bold text-[13px] shrink-0 transition-all ${
  selectedSport === "SAN_7"
  ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
@@ -476,7 +488,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </button>
 
  <button
- onClick={() => setSelectedSport("SAN_5")}
+ onClick={() => { setSelectedSport("SAN_5"); setMatchFormat("SAN_5"); }}
  className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-[13px] shrink-0 transition-all ${
  selectedSport === "SAN_5"
  ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
@@ -490,7 +502,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </button>
 
  <button
- onClick={() => setSelectedSport("SAN_11")}
+ onClick={() => { setSelectedSport("SAN_11"); setMatchFormat("SAN_11"); }}
  className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-[13px] shrink-0 transition-all ${
  selectedSport === "SAN_11"
  ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
@@ -504,7 +516,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </button>
 
  <button
- onClick={() => setSelectedSport("FUTSAL")}
+ onClick={() => { setSelectedSport("FUTSAL"); setMatchFormat("FUTSAL"); }}
  className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-[13px] shrink-0 transition-all ${
  selectedSport === "FUTSAL"
  ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
@@ -611,7 +623,10 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <select
  aria-label="Thể thức thi đấu"
  value={matchFormat}
- onChange={(e) => setMatchFormat(e.target.value)}
+ onChange={(e) => {
+    setMatchFormat(e.target.value);
+    if (e.target.value !== "SOLO_SLOT") setSelectedSport(e.target.value);
+  }}
  className="w-full py-2 px-3 rounded-xl bg-white border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none"
  >
  <option value="SAN_7">Kèo Bóng Đá Sân 7</option>

@@ -44,7 +44,7 @@ import {
 
 import PitchDetail from "./PitchDetail";
 import { getAllPitchesApi } from "@/lib/pitchService";
-import { pitchTypeLabel } from "@/lib/pitchLabels";
+import { pitchTypeLabel, isPeakSlot } from "@/lib/pitchLabels";
 import { API_BASE_URL, apiRequest, ensureLoggedIn, fetchWithTimeout } from '@/lib/api';
 import { todayLocal } from "@/lib/dateUtils";
 import { fetchTournaments } from "@/lib/tournamentService";
@@ -358,6 +358,26 @@ const toSportTabs = (types?: string[] | null): string[] =>
   if (selectedSport !== "ALL" && !(p.sportList ?? [p.sport]).includes(selectedSport)) return false;
  if (selectedDistrict !== "ALL" && p.district !== selectedDistrict) return false;
  if (p.priceDiscounted > maxBudget) return false;
+  // Khung giờ (Ca Vàng / Ca Chiều / Ca Đêm)
+  if (selectedTimeSlotFilter !== "ALL") {
+    const slots: any[] = p.timeSlots ?? [];
+    const hit = slots.some((s: any) => {
+      if (selectedTimeSlotFilter === "PEAK") return isPeakSlot(s.time);
+      if (selectedTimeSlotFilter === "AFTERNOON") return /^(14|16):/.test(s.time);
+      if (selectedTimeSlotFilter === "NIGHT") return /^(20|22):/.test(s.time);
+      return true;
+    });
+    if (!hit) return false;
+  }
+  // Quy mô sân con (mã trong CSDL: SAN_5/SAN_7/SAN_11)
+  if (selectedPitchFormat !== "ALL" && !(p.pitchTypes ?? []).includes(selectedPitchFormat)) return false;
+  // Chỉ xem cụm sân còn ca trống tối nay
+  if (onlyAvailableTonight) {
+    const openTonight = (p.timeSlots ?? []).some(
+      (s: any) => s.status === "AVAILABLE" && /^(17|18|19|20|21|22):/.test(s.time)
+    );
+    if (!openTonight) return false;
+  }
  return true;
  });
 

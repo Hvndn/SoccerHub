@@ -1267,7 +1267,7 @@ setIsSavingInfo(false);
  >
  <option value="ALL">Tất cả hình thức</option>
  <option value="ONLINE">📱 Đặt qua Website Turfzone</option>
- <option value="OFFLINE">☎️ Tạo Tại Quầy (Vàng Lai)</option>
+ <option value="OFFLINE">☎️ Tạo Tại Quầy</option>
  <option value="RESALE">🔄 Sàn Nhượng Ca Gấp</option>
  <option value="EMPTY">⚪ Ca Trống Chưa Đặt</option>
  </select>
