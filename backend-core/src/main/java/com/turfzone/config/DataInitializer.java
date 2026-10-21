@@ -286,7 +286,7 @@ private void seedUsers() {
         final String A = "FC Đại Nắng";
         final String B = "FC Phù Đổng Hải Châu";
         final String C = "FC Thanh Đa";
-        final String D = "FC Bình Thạnh";
+        final String D = "FC Bình Hiên";
 
         String pitch = "Cụm Sân 11 Ngôi Sao, Hải Châu";
 
