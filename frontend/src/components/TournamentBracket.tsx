@@ -428,22 +428,22 @@ const [addCount, setAddCount] = useState("4");
  setScorerOpen((o) => {
  const next = { ...o };
  delete next[m.matchId];
-  setMatchStats((prev) => {
-    const next = { ...prev };
-    delete next[m.matchId];
-    return next;
-  });
  return next;
+ });
+ setMatchStats((prev) => {
+  const next = { ...prev };
+  delete next[m.matchId];
+  return next;
  });
  setScorerRows((prev) => {
  const next = { ...prev };
  delete next[m.matchId];
-  setMatchStats((prev) => {
-    const next = { ...prev };
-    delete next[m.matchId];
-    return next;
-  });
  return next;
+ });
+ setMatchStats((prev) => {
+  const next = { ...prev };
+  delete next[m.matchId];
+  return next;
  });
  } catch (err: any) {
  triggerToast(err?.message || "Huỷ kết quả thất bại.");

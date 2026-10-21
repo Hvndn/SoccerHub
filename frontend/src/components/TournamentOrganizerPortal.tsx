@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { API_BASE_URL, apiRequest, fetchWithTimeout } from '@/lib/api';
 import {
+  confirmedCount,
   sportLabel,
   formatLabel,
   formatMoney,
@@ -113,7 +114,7 @@ export default function TournamentOrganizerPortal({
  dbTournaments.map((t: any) => {
  const teams = t.teams ?? [];
  const cap = t.totalTeams ?? 0;
- const progress = cap ? Math.min(100, Math.round((teams.length / cap) * 100)) : 0;
+ const progress = cap ? Math.min(100, Math.round((confirmedCount(t) / cap) * 100)) : 0;
  const st = t.status ?? "OPEN";
  return {
  id: String(t.id),

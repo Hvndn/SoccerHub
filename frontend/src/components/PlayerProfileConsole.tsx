@@ -277,7 +277,7 @@ export default function PlayerProfileConsole({
  (m.teamA?.name === myTeam.teamName || m.teamB?.name === myTeam.teamName)
  )
  );
- const finalMatch = lastRound?.matches?.find((m: any) => m.status !== "BYE");
+ const finalMatch = lastRound?.matches?.find((m: any) => m.status !== "BYE" && (m.teamA?.name === myTeam.teamName || m.teamB?.name === myTeam.teamName));
  if (finalMatch?.status === "DONE" && finalMatch.winner === myTeam.teamName) {
  result.titles += 1;
  }
@@ -1398,7 +1398,7 @@ export default function PlayerProfileConsole({
  cls: "bg-blue-600",
  title: `Đội trưởng ${perf.myTeamName}`,
  sub: `Tham gia ${myTournaments.length} giải: ${myTournaments
- .map((t: any) => t.name)
+ .map((t: any) => t.title)
  .join(" • ")}`,
  });
  }

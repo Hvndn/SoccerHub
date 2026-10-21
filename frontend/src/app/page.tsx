@@ -165,7 +165,7 @@ if (!currentUser) {
   // SUPER ADMIN: được phép xem trang chủ như mọi tài khoản khác (nút quản trị nằm
   // trên Navbar). Trước đây bị đẩy cứng về /admin -> vòng lặp, không về tới trang chủ được.
  }
- }, [currentUser, activeTab]);
+ }, [currentUser, activeTab, authLoading]);
 
 const handleTabChange = (newTab: string) => {
   // SUPER ADMIN: được duyệt các khu vực của trang chủ như mọi tài khoản khác.
