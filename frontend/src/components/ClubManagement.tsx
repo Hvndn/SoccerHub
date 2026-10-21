@@ -226,7 +226,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                 type="text"
                 value={form.area}
                 onChange={(e) => setForm((f) => ({ ...f, area: e.target.value }))}
-                placeholder="VD: Quận 7, Đà Nẵng"
+                placeholder="VD: Quận Hải Châu, Đà Nẵng"
                 className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
               />
             </div>

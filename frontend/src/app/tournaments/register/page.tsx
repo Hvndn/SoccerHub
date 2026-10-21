@@ -263,7 +263,7 @@ function RegisterTeamWizard() {
  type="text"
  value={teamName}
  onChange={(e) => setTeamName(e.target.value)}
- placeholder="Ví dụ: FC Saigon Warriors"
+ placeholder="Ví dụ: FC Đại Nắng United"
  className={inputCls}
  />
  {errors.teamName && <p className={errCls}>{errors.teamName}</p>}

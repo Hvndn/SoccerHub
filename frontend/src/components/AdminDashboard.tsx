@@ -1804,7 +1804,7 @@ setIsSavingInfo(false);
   type="text"
   value={infoArea}
   onChange={(e) => setInfoArea(e.target.value)}
-  placeholder="VD: Quận 7, Đà Nẵng"
+  placeholder="VD: Quận Hải Châu, Đà Nẵng"
   className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
   />
   </div>

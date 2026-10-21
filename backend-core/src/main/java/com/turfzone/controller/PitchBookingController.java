@@ -1057,9 +1057,9 @@ Booking saved = bookingRepository.save(booking);
             "Yến Nhi", "Đình Trọng", "Kim Ngân", "Quang Huy", "Thùy Dung", "Hữu Phước"
     };
     private static final String[] SIM_TEAMS = {
-            "FC Saigon Warriors", "FC Hoàng Nom Q7", "FC Lộc Phát", "Đội bóng Hải Phòng",
+            "FC Đại Nắng United", "FC Hoàng Ngọc Hải Châu", "FC Lộc Thủy", "Đội bóng Hải Châu",
             "Team Đà Nẵng", "Đà Nẵng United", "Đà Nẵng City FC", "Đà Nẵng Đông Á",
-            "Đại Việt Youth", "Hải Châu Football", "Thanh Trì FC", "Quận 8 Đà Nẵng"
+            "Đại Việt Youth", "Hải Châu Football", "Thanh Khê FC", "Quận 8 Đà Nẵng"
     };
 
     /**

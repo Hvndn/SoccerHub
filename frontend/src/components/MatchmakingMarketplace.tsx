@@ -1062,7 +1062,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  required 
  value={acceptOpponentTeam}
  onChange={(e) => setAcceptOpponentTeam(e.target.value)}
- placeholder="Ví dụ: FC Saigon Warriors"
+ placeholder="Ví dụ: FC Đại Nắng United"
  className="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-[#006c49]"
  />
  </div>
