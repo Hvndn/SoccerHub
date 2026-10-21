@@ -26,6 +26,20 @@ const inputCls =
 const labelCls = "block text-[13px] font-bold text-slate-700 mb-1.5";
 const errCls = "mt-1 text-[13px] font-semibold text-rose-600 ";
 
+/** "2026-11-28" -> "28/11/2026" (định dạng ngày kiểu Việt Nam). */
+/** "190020262035" -> "1900 2026 2035" (nhóm 4 số kiểu Việt Nam). */
+function formatAccountNumber(v?: string) {
+  const d = (v ?? "").replace(/\D/g, "");
+  if (!d) return "";
+  return d.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+}
+
+function fmtDate(iso?: string) {
+  if (!iso) return "—";
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+}
+
 function isValidDate(s: string) {
  return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(new Date(s + "T00:00:00").getTime());
 }
@@ -294,11 +308,9 @@ function NewTournamentWizard() {
  >
  <option value={8}>8 đội (Tứ kết loại trực tiếp)</option>
  <option value={16}>16 đội (Vòng bảng + loại trực tiếp)</option>
- <option value={32}>32 đội (Open Cup đại quy mô)</option>
+ <option value={32}>32 đội (Giải mở rộng quy mô)</option>
  </select>
  </div>
- </div>
- )}
 
   <div>
   <label className={labelCls}>Quyền Tham Gia *</label>
@@ -340,6 +352,8 @@ function NewTournamentWizard() {
   </p>
   )}
   </div>
+  </div>
+  )}
  {/* STEP 3 */}
  {step === 2 && (
  <div className="space-y-4">
@@ -473,7 +487,8 @@ function NewTournamentWizard() {
  type="text"
  inputMode="numeric"
  value={form.bankAccount}
- onChange={(e) => set("bankAccount", e.target.value.replace(/\D/g, ""))}
+  onChange={(e) => set("bankAccount", e.target.value.replace(/[^\d\s]/g, ""))}
+  onBlur={() => set("bankAccount", formatAccountNumber(form.bankAccount))}
  placeholder="VD: 0909123456"
  className={`${inputCls} font-mono`}
  />
@@ -506,9 +521,10 @@ function NewTournamentWizard() {
  <div><dt className="inline text-slate-500">Thể thức: </dt><dd className="inline font-bold">{sportLabel(form.sportType)} • {formatLabel(form.format)}</dd></div>
  <div><dt className="inline text-slate-500">Quy mô: </dt><dd className="inline font-bold">{form.totalTeams} đội</dd></div>
  <div><dt className="inline text-slate-500">Địa điểm: </dt><dd className="inline font-bold">{form.pitchName || "—"} — {form.location || "—"}</dd></div>
- <div><dt className="inline text-slate-500">Thời gian: </dt><dd className="inline font-bold">{form.startDate || "—"} → {form.endDate || form.startDate || "—"}</dd></div>
+  <div><dt className="inline text-slate-500">Thời gian: </dt><dd className="inline font-bold">{fmtDate(form.startDate)} → {fmtDate(form.endDate || form.startDate)}</dd></div>
  <div><dt className="inline text-slate-500">Quỹ thưởng: </dt><dd className="inline font-mono font-bold text-sky-800 ">{Number(form.prizePool).toLocaleString("vi-VN")}đ</dd></div>
  <div><dt className="inline text-slate-500">Lệ phí: </dt><dd className="inline font-mono font-bold">{Number(form.entryFee).toLocaleString("vi-VN")}đ/đội</dd></div>
+  <div><dt className="inline text-slate-500">Hạn đăng ký: </dt><dd className="inline font-bold">{fmtDate(form.registrationDeadline)}</dd></div>
  </dl>
  </div>
 
