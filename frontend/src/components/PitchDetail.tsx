@@ -41,6 +41,7 @@ import {
  X
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
+import { pitchTypeLabel } from "@/lib/pitchLabels";
 import { broadcastBookingEvent, subscribeToBookingEvents } from "@/lib/realtimeService";
 
 interface PitchDetailProps {
@@ -1160,15 +1161,4 @@ export default function PitchDetail({
  );
 }
 
-/** Nhan loai san tieng Viet (tranh lo ma ky thuat SAN_5/SAN_7/SAN_11 ra UI). */
-const PITCH_TYPE_LABEL: Record<string, string> = {
- SAN_5: "Sân 5",
- SAN_7: "Sân 7",
- SAN_11: "Sân 11",
- FUTSAL: "Futsal",
-};
-const pitchTypeLabel = (v?: string | null) => {
- if (!v) return "";
- return PITCH_TYPE_LABEL[String(v).toUpperCase()] ?? String(v);
-};
 

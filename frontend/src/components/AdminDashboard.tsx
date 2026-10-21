@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { apiRequest } from "@/lib/api";
+import { pitchTypeLabel } from "@/lib/pitchLabels";
 import { simulateBookings } from "@/lib/adminService";
 import BusinessContacts from "@/components/BusinessContacts";
 import OwnerReportExport from "@/components/OwnerReportExport";
@@ -1387,9 +1388,9 @@ setIsSavingInfo(false);
  <div key={pitch.pitchId} className="p-3 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5">
  <div className="flex justify-between items-center text-sm">
  <div className="flex items-center space-x-2.5">
- <span className="font-black text-slate-900 text-base">{pitch.pitchName}</span>
+  <span className="font-black text-slate-900 text-base">{pitchTypeLabel(pitch.pitchName) || pitch.pitchName}</span>
  <span className="px-2.5 py-0.5 rounded-lg bg-slate-200 text-[13px] font-mono text-slate-700 font-bold">
- {pitch.type}
+ {pitchTypeLabel(pitch.type)}
  </span>
  </div>
  <div className="text-[13px] font-mono text-slate-500">
@@ -1540,7 +1541,7 @@ setIsSavingInfo(false);
  <div className="flex items-center space-x-2.5">
  <h3 className="font-black text-lg text-slate-900 ">{pitch.pitchName}</h3>
  <span className="px-2.5 py-0.5 rounded-lg bg-[#0369a1]/10 text-[#0b4f6c] text-[13px] font-mono font-bold">
- {pitch.type}
+ {pitchTypeLabel(pitch.type)}
  </span>
  </div>
  <span className="text-[13px] text-slate-500 font-medium mt-0.5 block">Mã sân: {pitch.pitchId}</span>
