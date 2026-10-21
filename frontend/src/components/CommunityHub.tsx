@@ -214,7 +214,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
   }, [conversations, tick]);
 
   const onlineCount = useMemo(() => {
-    return channels.find((c) => c.slug === "general")?.memberCount ?? 0;
+    return channels.find((c) => c.slug === TOURNAMENT_CHANNEL)?.memberCount ?? 0;
   }, [channels]);
 
   // ---- Điều hướng ----

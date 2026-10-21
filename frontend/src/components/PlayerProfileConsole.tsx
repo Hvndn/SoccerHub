@@ -282,7 +282,17 @@ export default function PlayerProfileConsole({
  result.titles += 1;
  }
  }
- result.history.sort((a: any, b: any) => (b.date + b.time).localeCompare(a.date + a.time));
+ result.history.sort((a: any, b: any) => {
+  // Sắp xếp theo thời gian thật — trước đây ghép chuỗi date+time nên các
+  // trận chưa có lịch (date = "") bị xếp sai.
+  const ts = (m: any) => {
+    if (!m?.date) return -1;
+    const d = new Date(`${m.date}T${(m.time || "00:00").split(" - ")[0] || "00:00"}`);
+    const n = d.getTime();
+    return Number.isNaN(n) ? -1 : n;
+  };
+  return ts(b) - ts(a);
+});
  return result;
  }, [tournaments, activeUser?.phone]);
 

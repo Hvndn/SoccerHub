@@ -625,7 +625,7 @@ export default function MultiSportArena({
  <span className="font-medium">{bookingCourt.surface}</span>
  </div>
  <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-extrabold text-slate-900 ">
- <span>Tổng tiền cọc VietQR:</span>
+ <span>Giá thuê mỗi giờ:</span>
  <span className="text-emerald-500">{bookingCourt.pricePerHour.toLocaleString()}đ</span>
  </div>
  </div>

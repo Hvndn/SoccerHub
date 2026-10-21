@@ -187,7 +187,7 @@ export default function PitchDetail({
  phone: pitchDetails?.phone || pitch?.phone || "Chưa khai báo số điện thoại",
  openTime: pitchDetails?.openTime || pitch?.openTime || "—",
  closeTime: pitchDetails?.closeTime || pitch?.closeTime || "—",
- slotDuration: pitchDetails?.slotDurationMinutes || pitch?.slotDurationMinutes || 90,
+ slotDuration: pitchDetails?.slotDurationMinutes || pitch?.slotDurationMinutes || 120,
  rating: pitchDetails?.rating ?? pitch?.rating ?? null,
  reviewsCount: pitchDetails?.reviewsCount ?? pitch?.reviewsCount ?? 0,
  ownerName: pitchDetails?.ownerName || pitch?.ownerName || "Chưa khai báo",
@@ -1070,7 +1070,7 @@ export default function PitchDetail({
  <span>Đơn giữ chỗ đã lưu trong hệ thống</span>
  </div>
  <h3 className="text-2xl font-black text-slate-900 ">Mã Giữ Chỗ Của Bạn</h3>
- <p className="text-[13px] text-slate-500">Cọc trực tiếp với chủ sân để giữ chỗ. Hệ thống không tự trừ tiền.</p>
+ <p className="text-[13px] text-slate-500">Cọc trực tiếp với chủ sân để giữ chỗ. Hệ thống ghi nhận tiền cọc khi bạn đặt ca (đã tính vào doanh thu của chủ sân) và không tự trừ tiền từ tài khoản của bạn.</p>
  </div>
 
  {/* Tóm tắt cọc */}
