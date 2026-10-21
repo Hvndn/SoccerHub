@@ -362,7 +362,7 @@ if (newTab === activeTab) return;
 
  {/* Main Content Body */}
  <main className={`flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] pb-12 lg:pb-14 space-y-5 sm:space-y-12 ${!currentUser && activeTab === "booking" ? "pt-0" : "pt-3 sm:pt-4"} ${showBottomNav ? "pb-28 lg:pb-14" : ""}`}>
- <AnimatePresence mode="wait">
+ <AnimatePresence>
  <motion.div
  key={activeTab}
  initial={{ y: 12 }}

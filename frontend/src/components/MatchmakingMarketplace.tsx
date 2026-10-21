@@ -300,6 +300,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
     const list = Array.isArray(data) ? data : [];
     setPosts(list.filter((p: any) => p.status === "OPEN"));
     setMatchedPosts(list.filter((p: any) => p.status === "MATCHED"));
+    console.log("[DBG] fetchPosts len=" + list.length + " matched=" + list.filter((p: any) => p.status === "MATCHED").length + " statuses=" + JSON.stringify(list.map((p: any) => p.status)));
  }
  } catch (err) {
  console.error("Error fetching matchmaking posts:", err);
@@ -719,44 +720,6 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  )}
 
 
-{/* KÈO ĐÃ GHÉP — giữ lại để các đội thấy thông tin đối thủ và QR thanh toán tiền sân */}
-{matchedPosts.length > 0 && (
-  <section className="w-full bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
-    <div className="flex items-center justify-between gap-2 flex-wrap">
-      <h3 className="font-black text-slate-900 text-sm flex items-center gap-2">
-        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-        Kèo Đã Ghép ({matchedPosts.length})
-      </h3>
-      <span className="text-[13px] text-slate-500">Xem đối thủ, quy tắc và QR thanh toán tiền sân</span>
-    </div>
-
-    <div className="space-y-2.5">
-      {matchedPosts.map((post: any) => (
-        <div
-          key={post.id}
-          className="p-3 sm:p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2.5"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="font-black text-slate-900 truncate">
-                {post.teamName}
-                <span className="font-normal text-slate-500 text-[13px]"> vs </span>
-                <span className="text-[#0b4f6c]">{post.opponentTeamName || "Đã ghép"}</span>
-              </p>
-              <p className="text-[13px] text-slate-500 truncate">
-                {post.pitchName} • {post.matchTime}
-              </p>
-            </div>
-            <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-black text-[13px] shrink-0">
-              Đã chốt kèo
-            </span>
-          </div>
-          <KeoPaymentInfo post={post} pitch={findPitchByName(post.pitchName)} />
-        </div>
-      ))}
-    </div>
-  </section>
-)}
  </div>
  <div className="flex items-center space-x-1.5 text-[#0b4f6c] font-mono font-bold text-[13px]">
  <ShieldCheck className="w-4 h-4 text-[#0b4f6c] " />
@@ -868,6 +831,62 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  );
  })
  )}
+
+{/* KÈO ĐÃ GHÉP — giữ lại để các đội thấy thông tin đối thủ và QR thanh toán tiền sân */}
+{matchedPosts.length > 0 && (
+  <section className="w-full bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
+    <div className="flex items-center justify-between gap-2 flex-wrap">
+      <h3 className="font-black text-slate-900 text-sm flex items-center gap-2">
+        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        Kèo Đã Ghép ({matchedPosts.length})
+      </h3>
+      <span className="text-[13px] text-slate-500">Xem đối thủ, quy tắc và QR thanh toán tiền sân</span>
+    </div>
+
+    <div className="space-y-2.5">
+      {matchedPosts.map((post: any) => (
+        <div
+          key={post.id}
+          className="p-3 sm:p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2.5"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="font-black text-slate-900 truncate">
+                {post.teamName}
+                <span className="font-normal text-slate-500 text-[13px]"> vs </span>
+                <span className="text-[#0b4f6c]">{post.opponentTeamName || "Đã ghép"}</span>
+              </p>
+              <p className="text-[13px] text-slate-500 truncate">
+                {post.pitchName} • {post.matchTime}
+              </p>
+            </div>
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-black text-[13px] shrink-0">
+              Đã chốt kèo
+            </span>
+          </div>
+          <KeoPaymentInfo post={post} pitch={findPitchByName(post.pitchName)} />
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => {
+              setReviewPost(post);
+              setReviewStars(5);
+              setReviewOnTime(true);
+              setReviewFairPlay(true);
+              setReviewSportsmanship(true);
+              setReviewComment("");
+            }}
+            className="px-3 py-2 rounded-xl bg-[#0369a1]/10 hover:bg-[#0369a1]/20 text-[#0369a1] text-[13px] font-bold transition-all flex items-center gap-1.5 border border-[#0369a1]/30"
+          >
+            <Star className="w-3.5 h-3.5" />
+            <span>Đánh giá Fair-play</span>
+          </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
  </div>
  </main>
 
