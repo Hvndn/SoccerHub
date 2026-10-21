@@ -140,6 +140,10 @@ public class PitchService {
 
         if (body.containsKey("area")) pitch.setArea(str(body.get("area")));
         if (body.containsKey("phone")) pitch.setPhone(str(body.get("phone")));
+        // Thông tin nhận tiền (chủ sân khai báo) — dùng sinh QR VietQR cho kèo 50/50.
+        if (body.containsKey("bankCode")) pitch.setBankCode(str(body.get("bankCode")));
+        if (body.containsKey("bankAccount")) pitch.setBankAccount(str(body.get("bankAccount")));
+        if (body.containsKey("accountName")) pitch.setAccountName(str(body.get("accountName")));
         if (body.containsKey("description")) pitch.setDescription(str(body.get("description")));
         if (body.containsKey("imageUrl")) {
             String img = str(body.get("imageUrl"));

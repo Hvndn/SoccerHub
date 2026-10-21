@@ -189,6 +189,9 @@ const [showEditInfoModal, setShowEditInfoModal] = useState(false);
  }, [showEditInfoModal, showAddPitchModal, showOfflineModal, selectedSlotForAction, showHoursModal, showCancelModal]);
 const [isSavingInfo, setIsSavingInfo] = useState(false);
 const [infoName, setInfoName] = useState("");
+  const [infoBankCode, setInfoBankCode] = useState("");
+  const [infoBankAccount, setInfoBankAccount] = useState("");
+  const [infoAccountName, setInfoAccountName] = useState("");
 const [infoAddress, setInfoAddress] = useState("");
 const [infoArea, setInfoArea] = useState("");
 const [infoPhone, setInfoPhone] = useState("");
@@ -217,6 +220,9 @@ setInfoName(p?.name ?? "");
 setInfoAddress(p?.address ?? "");
 setInfoArea(p?.area ?? "");
 setInfoPhone(p?.phone ?? "");
+  setInfoBankCode(p?.bankCode ?? "");
+  setInfoBankAccount(p?.bankAccount ?? "");
+  setInfoAccountName(p?.accountName ?? "");
 setInfoImageUrl(p?.imageUrl ?? "");
 setInfoDescription(p?.description ?? "");
 setInfoPitchTypes(Array.isArray(p?.pitchTypes) ? [...p.pitchTypes] : []);
@@ -257,6 +263,9 @@ name: infoName.trim(),
 address: infoAddress.trim(),
 area: infoArea.trim(),
 phone: infoPhone.trim(),
+  bankCode: infoBankCode.trim(),
+  bankAccount: infoBankAccount.trim(),
+  accountName: infoAccountName.trim(),
 imageUrl: infoImageUrl.trim(),
 description: infoDescription.trim(),
 pitchTypes: infoPitchTypes,
@@ -1826,6 +1835,48 @@ setIsSavingInfo(false);
   />
   </div>
 
+  {/* Thong tin nhan tien — dung de sinh QR VietQR cho keo giao luu 50/50 */}
+  <div className="sm:col-span-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+  <div className="flex items-center gap-2">
+  <QrCode className="w-4 h-4 text-[#0b4f6c]" />
+  <label className="font-extrabold text-slate-800 text-sm">Tài khoản nhận tiền (VietQR)</label>
+  <span className="text-[13px] text-slate-500">Dùng để đội giao lưu chuyển tiền sân</span>
+  </div>
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+  <div className="space-y-1.5">
+  <label className="font-bold text-slate-600 text-[13px]">Mã ngân hàng</label>
+  <input
+  type="text"
+  value={infoBankCode}
+  onChange={(e) => setInfoBankCode(e.target.value)}
+  placeholder="VD: 970436 (MBBank)"
+  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[13px]"
+  />
+  </div>
+  <div className="space-y-1.5">
+  <label className="font-bold text-slate-600 text-[13px]">Số tài khoản</label>
+  <input
+  type="text"
+  value={infoBankAccount}
+  onChange={(e) => setInfoBankAccount(e.target.value)}
+  placeholder="VD: 1900 2026 2026"
+  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[13px]"
+  />
+  </div>
+  <div className="space-y-1.5">
+  <label className="font-bold text-slate-600 text-[13px]">Tên chủ tài khoản</label>
+  <input
+  type="text"
+  value={infoAccountName}
+  onChange={(e) => setInfoAccountName(e.target.value)}
+  placeholder="VD: CUM SAN BONG DA DAI NAM"
+  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[13px]"
+  />
+  </div>
+  </div>
+  <p className="text-[13px] text-slate-500">Bỏ trống nếu chưa muốn hiện QR — hệ thống sẽ chỉ hiện số tiền và hotline để liên hệ trực tiếp.</p>
+  </div>
+
   <div className="space-y-1.5 sm:col-span-2">
   <label className="font-extrabold text-slate-800 text-sm">Ảnh cụm sân (URL)</label>
   <input
@@ -1854,7 +1905,7 @@ setIsSavingInfo(false);
   : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
   }`}
   >
-  {t}
+  {pitchTypeLabel(t) || t}
   </button>
   ))}
   </div>

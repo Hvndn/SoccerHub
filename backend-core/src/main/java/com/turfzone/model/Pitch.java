@@ -29,15 +29,28 @@ public class Pitch {
 
     private String phone;
 
+    /**
+     * Thông tin nhận tiền của cụm sân (chủ sân khai báo).
+     *
+     * <p>Dùng để sinh QR VietQR cho kèo giao lưu 50/50: đội nhận kèo chuyển
+     * tiền sân về đúng STK của cụm sân. Có thể để trống — khi đó hệ thống chỉ hiện
+     * số tiền và số hotline để liên hệ trực tiếp.</p>
+     */
+    private String bankCode;
+
+    private String bankAccount;
+
+    private String accountName;
+
     private Long ownerId;
 
     private String ownerName;
 
     @Builder.Default
-    private Double latitude = 10.7412;
+    private Double latitude = 16.0544;
 
     @Builder.Default
-    private Double longitude = 106.7123;
+    private Double longitude = 108.2022;
 
     @Column(nullable = false)
     private Integer avgPricePerHour;

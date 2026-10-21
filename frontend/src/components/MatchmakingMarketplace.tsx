@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { matchmakingAi } from "@/lib/aiService";
 import { pitchTypeLabel } from "@/lib/pitchLabels";
+import { buildVietQrUrl } from "@/lib/tournamentService";
+import { getAllPitchesApi } from "@/lib/pitchService";
 import {
  Sparkles,
  MapPin,
@@ -43,6 +45,73 @@ interface MatchmakingMarketplaceProps {
  onCreateMatch?: () => void;
 }
 
+/**
+ * Khối thanh toán tiền sân cho một kèo đã ghép.
+ *
+ * <p>Kèo "Chia đôi 50/50" thì mỗi đội chuyển một nửa tiền sân. Nếu cụm sân đã
+ * khai báo tài khoản nhận tiền (STK) thì hệ thống sinh QR VietQR để quét chuyển
+ * khoản; chưa khai báo thì chỉ hiện số tiền cùng hotline để liên hệ trực tiếp.</p>
+ */
+function KeoPaymentInfo({ post, pitch }: { post: any; pitch: any }) {
+  const fee = Number(post?.estimatedFee ?? 50000);
+  const rule =
+    post?.paymentModel === "SPLIT_EQUAL"
+      ? "Chia đôi tiền sân 50/50 giữa hai đội"
+      : post?.paymentModel === "LOSER_PAYS"
+      ? "Đội thua chịu toàn bộ tiền sân"
+      : "Chủ kèo bao trọn tiền sân";
+
+  const qr = pitch
+    ? buildVietQrUrl({
+        bankCode: pitch.bankCode,
+        bankAccount: pitch.bankAccount,
+        accountName: pitch.accountName,
+        entryFee: fee,
+        addInfo: `Kèo ${(post?.pitchName ?? "").slice(0, 18)}`.slice(0, 25),
+      })
+    : null;
+
+  return (
+    <div className="rounded-xl bg-white border border-sky-200 p-3 flex flex-col sm:flex-row gap-3">
+      <div className="space-y-1.5 min-w-0 flex-1">
+        <div className="font-black text-slate-900 text-[13px]">Thanh toán tiền sân</div>
+        <p className="text-slate-600 text-[13px]">{rule}.</p>
+        <p className="text-slate-900 font-black font-mono text-[15px]">
+          {fee.toLocaleString("vi-VN")}đ
+          <span className="font-normal text-slate-500 text-[13px]"> / người</span>
+        </p>
+        {qr ? (
+          <div className="space-y-1">
+            <img
+              src={qr}
+              alt={`QR chuyển khoản tiền sân ${fee.toLocaleString("vi-VN")}đ`}
+              className="w-[132px] h-[132px] rounded-lg border border-slate-200 bg-white"
+            />
+            <p className="text-[13px] text-slate-500 leading-relaxed">
+              Quét mã để chuyển khoản. Nội dung chuyển khoản ghi tên kèo để chủ sân đối chiếu.
+            </p>
+          </div>
+        ) : (
+          <p className="text-[13px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+            Cụm sân chưa khai báo tài khoản nhận tiền — liên hệ trực tiếp chủ sân
+            {pitch?.phone ? ` (hotline ${pitch.phone})` : ""} để thỏa thuận.
+          </p>
+        )}
+      </div>
+      {qr && (
+        <div className="flex sm:flex-col items-center justify-center gap-1.5 text-[13px] text-slate-500 sm:w-[150px]">
+          <span className="font-bold text-slate-700">Chuyển khoản VietQR</span>
+          <span className="text-center leading-relaxed">
+            {pitch?.accountName || "Tài khoản của cụm sân"}
+            {pitch?.bankAccount ? ` · ${pitch.bankAccount}` : ""}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 export default function MatchmakingMarketplace({
  user,
  onSelectMatch,
@@ -55,6 +124,8 @@ export default function MatchmakingMarketplace({
  const [matchFormat, setMatchFormat] = useState("DOUBLES_MALE");
  const [paymentModel, setPaymentModel] = useState("SPLIT_EQUAL");
  const [joinedMatches, setJoinedMatches] = useState<string[]>([]);
+  // Danh sach cum san: dung de tra thong tin nhan tien (STK) khi sinh QR VietQR cho keo 50/50.
+  const [pitches, setPitches] = useState<any[]>([]);
 
 // Fair-play rating modal
 const [reviewPost, setReviewPost] = useState<any>(null);
@@ -69,6 +140,8 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  // Dữ liệu kèo thật từ MySQL Backend
  const [posts, setPosts] = useState<any[]>([]);
+  // Keo da ghep (MATCHED): van hien de cac doi thay thong tin va QR thanh toan tien san.
+  const [matchedPosts, setMatchedPosts] = useState<any[]>([]);
  const [loadingPosts, setLoadingPosts] = useState(true);
 
  // Modal tạo kèo mới
@@ -224,9 +297,9 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  if (res.ok) {
  const data = await res.json();
  // Chỉ hiển thị kèo còn MỞ — kèo đã ghép (MATCHED) không nhận được nữa.
- setPosts(
- Array.isArray(data) ? data.filter((p: any) => p.status === "OPEN") : []
- );
+    const list = Array.isArray(data) ? data : [];
+    setPosts(list.filter((p: any) => p.status === "OPEN"));
+    setMatchedPosts(list.filter((p: any) => p.status === "MATCHED"));
  }
  } catch (err) {
  console.error("Error fetching matchmaking posts:", err);
@@ -238,6 +311,34 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  React.useEffect(() => {
  fetchPosts();
  }, []);
+
+  // Tai danh sach cum san (de lay STK cua chu san cho QR).
+  React.useEffect(() => {
+    let alive = true;
+    getAllPitchesApi()
+      .then((list) => {
+        if (alive) setPitches(Array.isArray(list) ? list : []);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  /** Tra cum san theo ten trong bai dang keo (ten co the them/bot tien to "Cum San"). */
+  const findPitchByName = (name?: string | null) => {
+    const n = (name ?? '').trim().toLowerCase();
+    if (!n) return null;
+    const norm = (s: string) =>
+      s.toLowerCase().replace(/\(.*?\)/g, ' ').replace(/[^a-z0-9à-ỹ]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const target = norm(n);
+    return (
+      pitches.find((p) => norm(String(p.name)) === target) ||
+      pitches.find((p) => norm(String(p.name)).includes(target)) ||
+      pitches.find((p) => target.includes(norm(String(p.name)))) ||
+      null
+    );
+  };
 
  // Submit tạo kèo mới lên CSDL MySQL
  const handleCreatePost = async (e: React.FormEvent) => {
@@ -616,6 +717,46 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <span>{aiOffline ? "Hợp phong độ nhất" : "AI đề xuất"}</span>
  </span>
  )}
+
+
+{/* KÈO ĐÃ GHÉP — giữ lại để các đội thấy thông tin đối thủ và QR thanh toán tiền sân */}
+{matchedPosts.length > 0 && (
+  <section className="w-full bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3">
+    <div className="flex items-center justify-between gap-2 flex-wrap">
+      <h3 className="font-black text-slate-900 text-sm flex items-center gap-2">
+        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        Kèo Đã Ghép ({matchedPosts.length})
+      </h3>
+      <span className="text-[13px] text-slate-500">Xem đối thủ, quy tắc và QR thanh toán tiền sân</span>
+    </div>
+
+    <div className="space-y-2.5">
+      {matchedPosts.map((post: any) => (
+        <div
+          key={post.id}
+          className="p-3 sm:p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2.5"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="font-black text-slate-900 truncate">
+                {post.teamName}
+                <span className="font-normal text-slate-500 text-[13px]"> vs </span>
+                <span className="text-[#0b4f6c]">{post.opponentTeamName || "Đã ghép"}</span>
+              </p>
+              <p className="text-[13px] text-slate-500 truncate">
+                {post.pitchName} • {post.matchTime}
+              </p>
+            </div>
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-black text-[13px] shrink-0">
+              Đã chốt kèo
+            </span>
+          </div>
+          <KeoPaymentInfo post={post} pitch={findPitchByName(post.pitchName)} />
+        </div>
+      ))}
+    </div>
+  </section>
+)}
  </div>
  <div className="flex items-center space-x-1.5 text-[#0b4f6c] font-mono font-bold text-[13px]">
  <ShieldCheck className="w-4 h-4 text-[#0b4f6c] " />
@@ -667,15 +808,18 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  )}
 
  {/* Opponent matched info if any */}
- {isMatched && (
- <div className="p-3 bg-sky-50 border border-[#0369a1]/30 rounded-xl text-[13px] flex items-center justify-between">
- <div>
- <span className="font-bold text-sky-900 ">Đối thủ đã nhận: </span>
- <strong className="text-slate-900 ">{post.opponentTeamName}</strong> (Cap: {post.opponentCaptainName})
- </div>
- <span className="text-sky-700 font-mono font-bold text-[13px]">Đã chốt kèo</span>
- </div>
- )}
+  {isMatched && (
+  <div className="p-3 bg-sky-50 border border-[#0369a1]/30 rounded-xl text-[13px] space-y-2.5">
+  <div className="flex flex-wrap items-center justify-between gap-2">
+  <div>
+  <span className="font-bold text-sky-900 ">Đối thủ đã nhận: </span>
+  <strong className="text-slate-900 ">{post.opponentTeamName}</strong> (Cap: {post.opponentCaptainName})
+  </div>
+  <span className="text-sky-700 font-mono font-bold text-[13px]">Đã chốt kèo</span>
+  </div>
+  <KeoPaymentInfo post={post} pitch={findPitchByName(post.pitchName)} />
+  </div>
+  )}
 
  {/* Action Bottom */}
  <div className="flex items-center justify-between pt-2 border-t border-slate-100 ">
