@@ -388,7 +388,7 @@ export default function PitchDetail({
  <div className="flex flex-wrap items-center gap-2">
  <span className="bg-[#0369a1] text-white text-[13px] font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
  <ShieldCheck className="w-3.5 h-3.5" />
- <span>{pitchDetails?.pitchTypes?.[0] || "Sân cỏ nhân tạo"}</span>
+ <span>{pitchTypeLabel(pitchDetails?.pitchTypes?.[0]) || "Sân cỏ nhân tạo"}</span>
  </span>
  <span className="bg-[#0369a1] text-white text-[13px] font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
  <Zap className="w-3.5 h-3.5" />
@@ -422,7 +422,7 @@ export default function PitchDetail({
  </span>
  <span className="text-slate-500">•</span>
  <span className="bg-[#0369a1]/10 text-sky-700 border border-[#0369a1]/20 px-2.5 py-0.5 rounded-lg text-[13px] font-bold font-mono">
- Mở cửa: {venueData.openTime} - {venueData.closeTime} (Linh hoạt 1h - 2h)
+ Mở cửa: {venueData.openTime} - {venueData.closeTime} • Ca 2 tiếng
  </span>
  </div>
  </div>
@@ -468,7 +468,7 @@ export default function PitchDetail({
  <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
  <div>
  <span className="font-black text-[13px] bg-[#0369a1]/90 backdrop-blur-md px-2.5 py-1 rounded text-white">
- {pitchDetails?.pitchTypes?.[0] || pitch?.sportBadge || "Sân bóng đá"}
+ {pitchTypeLabel(pitchDetails?.pitchTypes?.[0]) || pitch?.sportBadge || "Sân bóng đá"}
  </span>
  <p className="font-black text-base sm:text-lg mt-1 text-white break-words">
  {pitchDetails?.description || venueData.address}
@@ -699,7 +699,7 @@ export default function PitchDetail({
  {court.pitchName}
  </span>
  <span className="px-2.5 py-0.5 rounded-lg bg-[#0369a1]/10 text-[#0b4f6c] text-[13px] font-bold font-mono">
- {court.type}
+  {pitchTypeLabel(court.type)}
  </span>
  </div>
  <div className="text-[13px] font-mono text-slate-500">
@@ -1080,7 +1080,7 @@ export default function PitchDetail({
  </div>
  <div className="flex justify-between">
  <span className="text-slate-500">Mặt sân & Khung giờ:</span>
- <strong className="text-sky-700 ">{selectedSlot.courtName} • {selectedSlot.time}</strong>
+  <strong className="text-sky-700 ">{pitchTypeLabel(selectedSlot.courtName) || selectedSlot.courtName} • {selectedSlot.time}</strong>
  </div>
  <div className="flex justify-between">
  <span className="text-slate-500">Mã vé đặt:</span>
@@ -1159,3 +1159,16 @@ export default function PitchDetail({
  </div>
  );
 }
+
+/** Nhan loai san tieng Viet (tranh lo ma ky thuat SAN_5/SAN_7/SAN_11 ra UI). */
+const PITCH_TYPE_LABEL: Record<string, string> = {
+ SAN_5: "Sân 5",
+ SAN_7: "Sân 7",
+ SAN_11: "Sân 11",
+ FUTSAL: "Futsal",
+};
+const pitchTypeLabel = (v?: string | null) => {
+ if (!v) return "";
+ return PITCH_TYPE_LABEL[String(v).toUpperCase()] ?? String(v);
+};
+
