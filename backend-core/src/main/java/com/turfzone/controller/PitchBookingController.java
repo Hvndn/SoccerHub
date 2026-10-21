@@ -545,7 +545,42 @@ public class PitchBookingController {
         stats.put("closeTime", pitch.getCloseTime());
         stats.put("slotDurationMinutes", pitch.getSlotDurationMinutes());
 
+        // Nhu cau theo khung gio trong ngay (dung cho bieu do "gio nao hot nhat" cua chu san).
+        // Gom don theo gio bat dau cua ca, bo qua don da huy.
+        Map<Integer, Integer> byHour = new java.util.TreeMap<>();
+        for (Booking b : bookings) {
+            Integer h = parseStartHour(b.getTimeSlot());
+            if (h == null) continue;
+            byHour.merge(h, 1, Integer::sum);
+        }
+        List<Map<String, Object>> hourlyBookings = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> e : byHour.entrySet()) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("hour", e.getKey());
+            row.put("count", e.getValue());
+            hourlyBookings.add(row);
+        }
+        stats.put("hourlyBookings", hourlyBookings);
+
         return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * Lay gio bat dau cua ca tu chuoi khoang gio trong CSDL.
+     * VD: "17:00 - 19:00" -> 17 ; "16:00" -> 16 ; khong hieu -> null.
+     */
+    private static Integer parseStartHour(String timeSlot) {
+        if (timeSlot == null || timeSlot.trim().isEmpty()) return null;
+        String head = timeSlot.trim().split("-")[0].trim();
+        int colon = head.indexOf(':');
+        if (colon <= 0) return null;
+        try {
+            int h = Integer.parseInt(head.substring(0, colon).trim());
+            if (h < 0 || h > 23) return null;
+            return h;
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /**

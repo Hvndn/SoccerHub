@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
+  Cell,
   LineChart,
   Line,
   XAxis,
@@ -204,6 +205,10 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
               Giúp chủ sân biết giờ nào hot nhất để tăng giá giờ vàng
               {activePitch?.name ? ` · ${activePitch.name}` : ""}
             </p>
+            <span className="inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[13px] font-bold">
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
+            Giờ vàng (17h–21h) — nên tăng giá
+            </span>
           </div>
         </div>
         {loading ? (
@@ -231,8 +236,22 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
               <Tooltip
                 contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
                 formatter={(v: any) => [`${v} đơn`, "Số đơn"]}
+                labelFormatter={(l: any) => `Khung giờ ${l}`}
               />
-              <Bar dataKey="bookings" fill="#0369a1" radius={[6, 6, 0, 0]} maxBarSize={28} />
+              <Bar dataKey="bookings" radius={[6, 6, 0, 0]} maxBarSize={28}>
+              {/* Gio vang (17h-21h) to mau dam hon de chu san tang gia gio vang */}
+              {hourData.map((d, i) => {
+                const h = parseInt(d.hour, 10);
+                const isGolden = h >= 17 && h <= 21;
+                return (
+                <Cell
+                key={`cell-${i}`}
+                fill={isGolden ? "#f59e0b" : "#0369a1"}
+                opacity={isGolden ? 1 : 0.85}
+                />
+                );
+              })}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (
