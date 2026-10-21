@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 /**
  * Nhật ký thao tác của Quản Trị viên (Super Admin).
  *
- * <p>Mỗi khi admin khóa/mở khoá tài khoản, đổi vai trò, xoá người dùng, xoá giải đấu,
+ * <p>Mỗi khi admin khóa/mở khóa tài khoản, đổi vai trò, xóa người dùng, xóa giải đấu,
  * gỡ tin nhắn hay gửi thông báo hệ thống... đều được ghi lại để truy vết và đối chiếu.
  * Đây là cơ chế "ai đã làm gì, vào lúc nào" — yêu cầu cơ bản của một hệ thống quản trị.</p>
  */

@@ -16,6 +16,6 @@ public interface ChatReactionRepository extends JpaRepository<ChatReaction, Long
     /** Reaction của user đó với emoji đó trên tin đó (để toggle). */
     Optional<ChatReaction> findByMessageIdAndUserEmailAndEmoji(Long messageId, String userEmail, String emoji);
 
-    /** Xoá reaction của user với emoji đó trên tin đó. */
+    /** Xóa reaction của user với emoji đó trên tin đó. */
     void deleteByMessageIdAndUserEmailAndEmoji(Long messageId, String userEmail, String emoji);
 }

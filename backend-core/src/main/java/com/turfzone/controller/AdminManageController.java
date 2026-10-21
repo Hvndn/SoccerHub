@@ -183,7 +183,7 @@ public class AdminManageController {
                 ? req.get("reason").toString().trim()
                 : "Quản trị viên huỷ đơn do khiếu nại từ khách";
 
-        // Đánh dấu huỷ (không xoá cứng) để giữ dữ liệu thống kê & đối chiếu.
+        // Đánh dấu huỷ (không xóa cứng) để giữ dữ liệu thống kê & đối chiếu.
         b.setStatus("CANCELLED");
         b.setCancelReason(reason);
         b.setCancelledBy("ADMIN");

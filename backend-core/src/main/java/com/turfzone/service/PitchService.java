@@ -120,7 +120,7 @@ public class PitchService {
      *
      * <p>Chỉ nhận các field thực sự có trong body; field vắng mặt giữ nguyên giá trị cũ
      * nên gọi PATCH cũng cho kết quả đúng. Bộ môn/tiện ích gửi list rỗng sẽ bị bỏ qua
-     * (để tránh xoá sạch chỉ vì frontend gửi mảng rỗng do chưa chọn gì).</p>
+     * (để tránh xóa sạch chỉ vì frontend gửi mảng rỗng do chưa chọn gì).</p>
      */
     public Pitch updatePitchInfo(Long id, Map<String, Object> body, User actor) {
         Pitch pitch = getPitchById(id);

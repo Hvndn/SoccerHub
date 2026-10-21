@@ -39,7 +39,7 @@ export function formatNotifTime(date: Date): string {
 /**
  * Nguồn dữ liệu thông báo dùng chung cho Navbar (chuông) và trang /notifications.
  * Gồm: cache localStorage theo tài khoản, poll server mỗi 60s, nhận sự kiện
- * đặt sân realtime, và các thao tác đánh dấu đã đọc / xoá.
+ * đặt sân realtime, và các thao tác đánh dấu đã đọc / xóa.
  */
 export function useNotifications(user: { email?: string | null } | null | undefined) {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);

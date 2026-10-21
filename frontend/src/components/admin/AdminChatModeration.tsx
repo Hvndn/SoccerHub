@@ -59,11 +59,11 @@ const ROLE_LABEL: Record<string, string> = {
     try {
       setBusyId(confirmDelete.id);
       await apiRequest(`/api/v1/chat/messages/${confirmDelete.id}`, { method: "DELETE" });
-      notify("ok", "Đã xoá tin nhắn.");
+      notify("ok", "Đã xóa tin nhắn.");
       setConfirmDelete(null);
       await load();
     } catch (err: any) {
-      notify("err", err?.message || "Xoá thất bại. Cần đăng nhập ADMIN.");
+      notify("err", err?.message || "Xóa thất bại. Cần đăng nhập ADMIN.");
     } finally {
       setBusyId(null);
     }
@@ -128,7 +128,7 @@ const ROLE_LABEL: Record<string, string> = {
       render: (r) => (
         <button
           type="button"
-          title="Xoá tin nhắn"
+          title="Xóa tin nhắn"
           disabled={busyId === r.id}
           onClick={() => setConfirmDelete(r)}
           className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all disabled:opacity-50"
@@ -194,13 +194,13 @@ const ROLE_LABEL: Record<string, string> = {
 
       <ConfirmModal
         open={!!confirmDelete}
-        title="Xoá tin nhắn"
+        title="Xóa tin nhắn"
         message={
           confirmDelete
-            ? `Xoá tin nhắn #${confirmDelete.id} của ${confirmDelete.senderName}?\n\n"${confirmDelete.content.slice(0, 80)}${confirmDelete.content.length > 80 ? "…" : ""}"`
+            ? `Xóa tin nhắn #${confirmDelete.id} của ${confirmDelete.senderName}?\n\n"${confirmDelete.content.slice(0, 80)}${confirmDelete.content.length > 80 ? "…" : ""}"`
             : ""
         }
-        confirmLabel="Xoá"
+        confirmLabel="Xóa"
         danger
         busy={busyId === confirmDelete?.id}
         onConfirm={doDelete}

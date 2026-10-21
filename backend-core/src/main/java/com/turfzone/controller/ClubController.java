@@ -259,7 +259,7 @@ public class ClubController {
                 "club", toDto(saved, norm(u.getEmail()))));
     }
 
-    /** Xoá CLB — chỉ đại diện. */
+    /** Xóa CLB — chỉ đại diện. */
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteClub(@PathVariable Long id, @AuthenticationPrincipal User me) {
@@ -269,12 +269,12 @@ public class ClubController {
             return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy CLB"));
         }
         if (!isRepresentative(id, norm(u.getEmail()))) {
-            return ResponseEntity.status(403).body(Map.of("message", "Chỉ đại diện CLB mới xoá được CLB."));
+            return ResponseEntity.status(403).body(Map.of("message", "Chỉ đại diện CLB mới xóa được CLB."));
         }
         clubMemberRepository.deleteByClubId(id);
         clubRepository.deleteById(id);
         refreshClubRepFlag(u.getEmail());
-        return ResponseEntity.ok(Map.of("message", "Đã xoá CLB \"" + club.getName() + "\"."));
+        return ResponseEntity.ok(Map.of("message", "Đã xóa CLB \"" + club.getName() + "\"."));
     }
 
     /** Thêm thành viên bằng email — chỉ đại diện. */

@@ -203,7 +203,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
       setMessages([]);
       await loadGroups();
     } catch (e: any) {
-      reportGroupError(e, "Không xoá được nhóm.");
+      reportGroupError(e, "Không xóa được nhóm.");
     } finally {
       setBusyMember(false);
     }
@@ -451,7 +451,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
                 disabled={busyMember}
                 className="w-full px-3 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-[13px] font-black transition-all active:scale-95 disabled:opacity-40"
               >
-                Xoá nhóm này
+                Xóa nhóm này
               </button>
             </>
           ) : (

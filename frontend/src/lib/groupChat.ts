@@ -135,10 +135,10 @@ export async function removeGroupMember(id: number, email: string): Promise<void
   toastOk("Đã gỡ thành viên khỏi nhóm.");
 }
 
-/** Xoá nhóm (chỉ chủ nhóm). */
+/** Xóa nhóm (chỉ chủ nhóm). */
 export async function deleteGroup(id: number): Promise<void> {
   await apiRequest(`/api/v1/chat-groups/${id}`, { method: "DELETE" });
-  toastOk("Đã xoá nhóm.");
+  toastOk("Đã xóa nhóm.");
 }
 
 /** Reaction (emoji) cho tin nhắn nhóm. */

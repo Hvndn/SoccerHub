@@ -94,7 +94,7 @@ public class TournamentEmailController {
         for (TournamentTeamEntry e : t.getTeams()) {
             if (e.getTeamName() != null && e.getTeamName().equals(teamName)) { to = e.getCaptainEmail(); break; }
         }
-        // Nếu không tìm được trong giải (đã xoá) thì bỏ qua
+        // Nếu không tìm được trong giải (đã xóa) thì bỏ qua
         if (!EmailService.isValidEmail(to)) {
             return ResponseEntity.ok(Map.of("message", "Đội không có email hợp lệ — không gửi được thông báo."));
         }

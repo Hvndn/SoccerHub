@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(currentUser);
           writeCachedUser(currentUser);
         } else if (!getAuthToken()) {
-          // Máy chủ đã từ chối phiên (token bị xoá) -> đăng xuất và bỏ cache.
+          // Máy chủ đã từ chối phiên (token bị xóa) -> đăng xuất và bỏ cache.
           writeCachedUser(null);
           setUser(null);
         }

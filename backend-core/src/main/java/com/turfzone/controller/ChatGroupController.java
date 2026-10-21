@@ -25,7 +25,7 @@ import java.util.*;
  *   POST   /api/v1/chat-groups/{id}/messages   → gửi tin trong nhóm
  *   POST   /api/v1/chat-groups/{id}/members    → thêm thành viên (chỉ chủ nhóm)
  *   DELETE /api/v1/chat-groups/{id}/members/{email} → gỡ thành viên (chỉ chủ nhóm)
- *   DELETE /api/v1/chat-groups/{id}            → xoá nhóm (chỉ chủ nhóm)
+ *   DELETE /api/v1/chat-groups/{id}            → xóa nhóm (chỉ chủ nhóm)
  *   POST   /api/v1/chat-groups/{id}/read       → đánh dấu đã đọc
  */
 @RestController
@@ -347,6 +347,6 @@ public class ChatGroupController {
         memberRepository.deleteAll(memberRepository.findByGroupId(id));
         messageRepository.deleteAll(messageRepository.findTopMessagesByGroupId(id));
         groupRepository.deleteById(id);
-        return ResponseEntity.ok(Map.of("message", "Đã xoá nhóm.", "id", id));
+        return ResponseEntity.ok(Map.of("message", "Đã xóa nhóm.", "id", id));
     }
 }

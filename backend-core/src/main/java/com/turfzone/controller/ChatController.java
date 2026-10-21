@@ -37,7 +37,7 @@ import java.util.UUID;
  *   GET    /api/v1/chat/messages?with={email}        → tin nhắn trực tiếp với user đó
  *   POST   /api/v1/chat/messages                     → gửi tin (kênh / DM / reply)
  *   POST   /api/v1/chat/messages/{id}/pin?value=true → ghim tin nhắn của chính mình
- *   DELETE /api/v1/chat/messages/{id}                → xoá tin nhắn của chính mình
+ *   DELETE /api/v1/chat/messages/{id}                → xóa tin nhắn của chính mình
  *   GET    /api/v1/chat/conversations                 → danh sách người đã nhắn tin cùng
  *   GET    /api/v1/chat/users?query=                 → tìm người dùng để nhắn
  */
@@ -167,7 +167,7 @@ public class ChatController {
         return ResponseEntity.ok(chatMessageRepository.save(msg));
     }
 
-    /** Xoá tin nhắn của chính mình (trong kênh công khai). */
+    /** Xóa tin nhắn của chính mình (trong kênh công khai). */
     @DeleteMapping("/messages/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> delete(@PathVariable Long id, @AuthenticationPrincipal User me) {
@@ -175,7 +175,7 @@ public class ChatController {
         ChatMessage msg = chatMessageRepository.findById(id).orElse(null);
         if (msg == null) return ResponseEntity.status(404).body(Map.of("message", "Không tìm thấy tin nhắn."));
         if (me.getEmail() == null || !me.getEmail().equalsIgnoreCase(msg.getSenderEmail())) {
-            return ResponseEntity.status(403).body(Map.of("message", "Chỉ tác giả mới xoá được tin nhắn."));
+            return ResponseEntity.status(403).body(Map.of("message", "Chỉ tác giả mới xóa được tin nhắn."));
         }
         chatMessageRepository.delete(msg);
         return ResponseEntity.ok(Map.of("deleted", true));
@@ -305,7 +305,7 @@ public class ChatController {
         return ResponseEntity.ok(saved);
     }
     // ============================================================
-    // MODERATION (ADMIN): xem / xoá tin nhắn trong các kênh công khai
+    // MODERATION (ADMIN): xem / xóa tin nhắn trong các kênh công khai
     // ============================================================
 
     /**
@@ -327,7 +327,7 @@ public class ChatController {
         return ResponseEntity.ok(all);
     }
 
-    /** Admin xoá tin nhắn bất kỳ (không giới hạn người gửi). */
+    /** Admin xóa tin nhắn bất kỳ (không giới hạn người gửi). */
     @DeleteMapping("/admin/messages/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> adminDeleteMessage(@PathVariable Long id) {
@@ -336,7 +336,7 @@ public class ChatController {
             return ResponseEntity.status(404).body(Map.of("message", "Không tìm thấy tin nhắn."));
         }
         chatMessageRepository.delete(msg);
-        return ResponseEntity.ok(Map.of("message", "Đã xoá tin nhắn.", "id", id));
+        return ResponseEntity.ok(Map.of("message", "Đã xóa tin nhắn.", "id", id));
     }
 
 

@@ -390,7 +390,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   </div>
   <div className="flex items-center gap-2 shrink-0">
   <StatusBadge tone={detail.user.enabled ? "green" : "rose"}>
-  {detail.user.enabled ? "Hoạt động" : "Đã khoá"}
+  {detail.user.enabled ? "Hoạt động" : "Đã khóa"}
   </StatusBadge>
   <button
   type="button"

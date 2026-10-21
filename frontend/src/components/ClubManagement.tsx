@@ -151,10 +151,10 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
   const handleDeleteClub = async (club: Club) => {
     try {
       const res = await deleteClub(club.id);
-      toastOk(res?.message || "Đã xoá CLB.");
+      toastOk(res?.message || "Đã xóa CLB.");
       await load();
     } catch (err: any) {
-      toastErr(err?.message || "Không xoá được CLB.");
+      toastErr(err?.message || "Không xóa được CLB.");
     }
   };
 
@@ -351,7 +351,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                     onClick={() => handleDeleteClub(activeClub)}
                     className="shrink-0 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-[13px] font-extrabold border border-rose-200 transition-all active:scale-95 flex items-center gap-1.5"
                   >
-                    <Trash2 className="w-3.5 h-3.5" /> Xoá CLB
+                    <Trash2 className="w-3.5 h-3.5" /> Xóa CLB
                   </button>
                 )}
               </div>

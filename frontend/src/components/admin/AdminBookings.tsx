@@ -189,7 +189,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  </form>
  </div>
 
- {/* Bộ công cụ dữ liệu demo — mọi đơn sinh ra đều có mã bắt đầu bằng "SIM-" nên xoá sạch được */}
+ {/* Bộ công cụ dữ liệu demo — mọi đơn sinh ra đều có mã bắt đầu bằng "SIM-" nên xóa sạch được */}
  <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2.5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-3">
  <div className="flex-1 min-w-0">
  <p className="text-[13px] font-black text-slate-700 flex items-center gap-1.5">
@@ -229,7 +229,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold transition-all active:scale-95 disabled:opacity-50"
  >
  <Eraser className="w-3.5 h-3.5" />
- {simBusy === "clear" ? "Đang xoá…" : "Dọn dữ liệu demo"}
+ {simBusy === "clear" ? "Đang xóa…" : "Dọn dữ liệu demo"}
  </button>
  </div>
  </div>

@@ -83,10 +83,10 @@ export async function addReferee(
   toastOk(`Đã thêm trọng tài ${input.name}.`);
 }
 
-/** Xoá trọng tài khỏi giải. */
+/** Xóa trọng tài khỏi giải. */
 export async function removeReferee(tournamentId: number, refId: number): Promise<void> {
   await apiRequest(`/api/v1/tournaments/${tournamentId}/referees/${refId}`, { method: "DELETE" });
-  toastOk("Đã xoá trọng tài.");
+  toastOk("Đã xóa trọng tài.");
 }
 
 /** Bọc lỗi thành toast. */

@@ -777,7 +777,7 @@ Booking saved = bookingRepository.save(booking);
     /**
      * Chống IDOR: người gọi phải là chủ sân của đơn đặt đó, hoặc ADMIN.
      * Trước đây chỉ kiểm tra role OWNER/ADMIN nên bất kỳ chủ sân nào cũng check-in /
-     * huỷ / xoá được đơn của cụm sân khác — thậm chí đặt cashDue = 0 (mất tiền thật).
+     * huỷ / xóa được đơn của cụm sân khác — thậm chí đặt cashDue = 0 (mất tiền thật).
      */
     private void assertOwnsBooking(Booking b, com.turfzone.model.User me) {
         if (me == null) {
@@ -1005,7 +1005,7 @@ Booking saved = bookingRepository.save(booking);
                 : "Chủ sân hủy ca đặt";
 
         return bookingRepository.findById(bookingId).map(b -> {
-            // Chống IDOR: chỉ chủ sân của đơn này (hoặc ADMIN) mới được xoá.
+            // Chống IDOR: chỉ chủ sân của đơn này (hoặc ADMIN) mới được xóa.
             try {
                 assertOwnsBooking(b, me);
             } catch (IllegalArgumentException e) {
@@ -1193,7 +1193,7 @@ Booking saved = bookingRepository.save(booking);
         return ResponseEntity.ok(result);
     }
 
-    /** Xoá toàn bộ đơn giả lập (mã bắt đầu bằng "SIM-") — đơn thật của khách giữ nguyên. */
+    /** Xóa toàn bộ đơn giả lập (mã bắt đầu bằng "SIM-") — đơn thật của khách giữ nguyên. */
     @DeleteMapping("/simulate-bookings")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
     public ResponseEntity<?> clearSimulatedBookings() {
@@ -1201,7 +1201,7 @@ Booking saved = bookingRepository.save(booking);
         bookingRepository.deleteAll(sims);
         return ResponseEntity.ok(Map.of(
                 "deleted", sims.size(),
-                "message", "Đã xoá " + sims.size() + " đơn giả lập."));
+                "message", "Đã xóa " + sims.size() + " đơn giả lập."));
     }
 
     private String simulateVia(Random rnd) {

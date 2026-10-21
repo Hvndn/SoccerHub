@@ -83,8 +83,8 @@ public class DataInitializer implements CommandLineRunner {
 
 private void seedUsers() {
         // QUAN TRỌNG: chỉ tạo tài khoản admin mặc định khi hệ thống CHƯA CÓ admin nào.
-        // Nếu kiểm tra theo existsByEmail thì khi quản trị xoá acc demo, lần khởi động sau
-        // acc đó sẽ tự hồi sinh với mật khẩu admin123 -> lưng backdoor không xoá được.
+        // Nếu kiểm tra theo existsByEmail thì khi quản trị xóa acc demo, lần khởi động sau
+        // acc đó sẽ tự hồi sinh với mật khẩu admin123 -> lưng backdoor không xóa được.
         if (userRepository.countByRole(UserRole.ADMIN) == 0 && !userRepository.existsByEmail("admin@Turfzone.vn")) {
             User admin = User.builder()
                     .fullName("Quản Trị Hệ Thống")
@@ -108,7 +108,7 @@ private void seedUsers() {
                     .phone("0912345678")
                     .password(passwordEncoder.encode("player123"))
                     .role(UserRole.PLAYER)
-                    .area("Quận 7, Đà Nẵng")
+                    .area("Quận Hải Châu, Đà Nẵng")
                     .level("Trung bình")
                     .position("Tiền đạo")
                     .enabled(true)
@@ -123,7 +123,7 @@ private void seedUsers() {
                     .phone("0987654321")
                     .password(passwordEncoder.encode("owner123"))
                     .role(UserRole.OWNER)
-                    .area("Quận 7, Đà Nẵng")
+                    .area("Quận Hải Châu, Đà Nẵng")
                     .level("Chủ cụm sân")
                     .enabled(true)
                     .build());
@@ -137,7 +137,7 @@ private void seedUsers() {
                     .phone("0909876543")
                     .password(passwordEncoder.encode("organizer123"))
                     .role(UserRole.ORGANIZER)
-                    .area("Quận 10, Đà Nẵng")
+                    .area("Quận Cẩm Lệ, Đà Nẵng")
                     .level("Trưởng BTC giải")
                     .enabled(true)
                     .build());
@@ -153,8 +153,8 @@ private void seedUsers() {
                     .description("Giải bóng đá sân 7 phủi uy tín nhất khu vực Đà Nẵng tranh Cúp Vàng, lưu lịch sử thi đấu và chuỗi phong độ.")
                     .sportType("SAN_7")
                     .format("KNOCKOUT")
-                    .pitchName("Cụm Sân Đà Nẵng, Q.7")
-                    .location("Quận 7, Đà Nẵng")
+                    .pitchName("Cụm Sân Bóng Đá Đại Nắng")
+                    .location("Quận Hải Châu, Đà Nẵng")
                     .totalTeams(16)
                     .registeredTeams(14)
                     .prizePool(35000000L)
@@ -166,7 +166,7 @@ private void seedUsers() {
                     .bannerUrl("https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80")
                     .teams(new ArrayList<>(List.of(
                             TournamentTeamEntry.builder().teamName("FC Đà Nẵng Warriors").captainName("Nguyễn Văn Hùng").captainPhone("0909111222").memberCount(14).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(3)).build(),
-                            TournamentTeamEntry.builder().teamName("FC Hoàng Nam Q7").captainName("Trần Tuấn Anh").captainPhone("0909333444").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Hoàng Nam Hải Châu").captainName("Trần Tuấn Anh").captainPhone("0909333444").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(2)).build(),
                             TournamentTeamEntry.builder().teamName("FC Lộc Phát").captainName("Phạm Đăng Khoa").captainPhone("0908555666").memberCount(13).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(1)).build()
                     )))
                     .build();
@@ -176,8 +176,8 @@ private void seedUsers() {
                     .description("Sân chơi giao lưu rèn luyện thể lực và kỹ chiến thuật cho các trường Đại học và Cao đẳng toàn thành phố.")
                     .sportType("SAN_5")
                     .format("KNOCKOUT")
-                    .pitchName("Cụm Sân 5A Tân Hưng, Q.7")
-                    .location("Quận 7, Đà Nẵng")
+                    .pitchName("Cụm Sân 5 Hòa Xuân")
+                    .location("Quận Hải Châu, Đà Nẵng")
                     .totalTeams(8)
                     .registeredTeams(8)
                     .prizePool(20000000L)
@@ -198,8 +198,8 @@ private void seedUsers() {
                     .description("Giải đấu bóng đá sân 11 người mặt cỏ tự nhiên chuẩn quốc gia dành cho các tổ chức và doanh nghiệp lớn.")
                     .sportType("SAN_11")
                     .format("ROUND_ROBIN")
-                    .pitchName("Sân Vận Động Thống Nhất / Phú Thọ")
-                    .location("Quận 10, Đà Nẵng")
+                    .pitchName("Sân Vận Động Hòa Xuân")
+                    .location("Quận Cẩm Lệ, Đà Nẵng")
                     .totalTeams(6)
                     .registeredTeams(4)
                     .prizePool(50000000L)
@@ -220,7 +220,7 @@ private void seedUsers() {
                     .sportType("FUTSAL")
                     .format("ROUND_ROBIN")
                     .pitchName("Sân Cẩm Lệ Futsal & Sân 5")
-                    .location("Quận 1, Đà Nẵng")
+                    .location("Quận Thanh Khê, Đà Nẵng")
                     .totalTeams(8)
                     .registeredTeams(6)
                     .prizePool(12000000L)
@@ -238,12 +238,12 @@ private void seedUsers() {
                     .build();
 
             Tournament t5 = Tournament.builder()
-                    .title("Giải Phủi Khu Vực Quận 7 - Mùa 2 (Đã Kết Thúc)")
-                    .description("Giải phủi khu vực Q.7 đã kết thúc, dùng để minh chứng tính năng lưu kết quả, BXH và chuỗi phong độ tự động.")
+                    .title("Giải Phủi Khu Vực Hải Châu - Mùa 2 (Đã Kết Thúc)")
+                    .description("Giải phủi khu vực Hải Châu đã kết thúc, dùng để minh chứng tính năng lưu kết quả, BXH và chuỗi phong độ tự động.")
                     .sportType("SAN_7")
                     .format("KNOCKOUT")
                     .pitchName("Cụm Sân Bóng Đá Đại Nắng")
-                    .location("Quận 7, Đà Nẵng")
+                    .location("Quận Hải Châu, Đà Nẵng")
                     .totalTeams(8)
                     .registeredTeams(8)
                     .prizePool(8000000L)
@@ -254,7 +254,7 @@ private void seedUsers() {
                     .status("COMPLETED")
                     .bannerUrl("https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1200&q=80")
                     .teams(new ArrayList<>(List.of(
-                            TournamentTeamEntry.builder().teamName("FC Phù Đổng Q7").captainName("Nguyễn Văn An").captainPhone("0908123456").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(90)).build(),
+                            TournamentTeamEntry.builder().teamName("FC Phù Đổng Hải Châu").captainName("Nguyễn Văn An").captainPhone("0908123456").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(90)).build(),
                             TournamentTeamEntry.builder().teamName("FC Đại Nắng").captainName("Võ Thanh Tâm").captainPhone("0908777888").memberCount(12).registrationStatus("CONFIRMED").registeredAt(LocalDateTime.now().minusDays(88)).build()
                     )))
                     .build();
@@ -284,11 +284,11 @@ private void seedUsers() {
         }
 
         final String A = "FC Đại Nắng";
-        final String B = "FC Phù Đổng Q7";
+        final String B = "FC Phù Đổng Hải Châu";
         final String C = "FC Thanh Đa";
         final String D = "FC Bình Thạnh";
 
-        String pitch = "Cụm Sân 11 Ngôi Sao, Q.7";
+        String pitch = "Cụm Sân 11 Ngôi Sao, Hải Châu";
 
         // ---- Nhánh đấu: bán kết + chung kết, tất cả đã có tỷ số ----
         Map<String, Object> semi1 = new LinkedHashMap<>();
@@ -349,7 +349,7 @@ private void seedUsers() {
                 .sportType("SAN_7")
                 .format("KNOCKOUT")
                 .pitchName(pitch)
-                .location("Quận 7, Đà Nẵng")
+                .location("Quận Hải Châu, Đà Nẵng")
                 .totalTeams(4)
                 .registeredTeams(4)
                 .prizePool(12000000L)
@@ -460,11 +460,11 @@ private void seedUsers() {
         if (pitchRepository.count() == 0) {
             Pitch s1 = Pitch.builder()
                     .name("Cụm Sân Bóng Đá Đại Nắng")
-                    .address("154 Nguyễn Lương Bằng, P. Tân Phú, Quận 7")
-                    .area("Quận 7, Đà Nẵng")
+                    .address("12 Phan Đăng Lưu, P. Hòa Cường Nam, Quận Hải Châu")
+                    .area("Quận Hải Châu, Đà Nẵng")
                     .phone("0908123456")
                     .ownerName("Sân Đại Nắng")
-                    .latitude(10.7290).longitude(106.7210)
+                    .latitude(16.0350).longitude(108.2180)
                     .avgPricePerHour(280000).peakPricePerHour(360000)
                     .rating(4.8).openTime("14:00").closeTime("23:00")
                     .pitchTypes(new ArrayList<>(List.of("SAN_5", "SAN_7")))
@@ -479,7 +479,7 @@ private void seedUsers() {
                     .area("Q. Hải Châu, Đà Nẵng")
                     .phone("0912345678")
                     .ownerName("Arena Hải Châu")
-                    .latitude(10.7990).longitude(106.6860)
+                    .latitude(16.0390).longitude(108.2140)
                     .avgPricePerHour(240000).peakPricePerHour(300000)
                     .rating(4.5).openTime("06:00").closeTime("22:30")
                     .pitchTypes(new ArrayList<>(List.of("SAN_5")))
@@ -494,7 +494,7 @@ private void seedUsers() {
                     .area("Huyện Ngũ Hành Sơn, Đà Nẵng")
                     .phone("0933888999")
                     .ownerName("Đà Nẵng Sport")
-                    .latitude(10.6830).longitude(106.7440)
+                    .latitude(16.0120).longitude(108.2280)
                     .avgPricePerHour(320000).peakPricePerHour(420000)
                     .rating(4.9).openTime("15:00").closeTime("23:30")
                     .pitchTypes(new ArrayList<>(List.of("SAN_7", "SAN_11")))
@@ -534,12 +534,12 @@ private void seedUsers() {
                     .build();
 
             Pitch s6 = Pitch.builder()
-                    .name("Sân 11 Thống Nhất Sport Complex")
-                    .address("Số 1 Nguyễn Kim, Q. 10")
-                    .area("Quận 10, Đà Nẵng")
+                    .name("Sân 11 Hải Châu Sport Complex")
+                    .address("Số 1 Nguyễn Kim, Quận Hải Châu")
+                    .area("Quận Hải Châu, Đà Nẵng")
                     .phone("0977888999")
-                    .ownerName("Thống Nhất Complex")
-                    .latitude(10.7720).longitude(106.6680)
+                    .ownerName("Hải Châu Complex")
+                    .latitude(16.0620).longitude(108.1950)
                     .avgPricePerHour(450000).peakPricePerHour(600000)
                     .rating(5.0).openTime("06:00").closeTime("22:00")
                     .pitchTypes(new ArrayList<>(List.of("SAN_11")))
@@ -551,10 +551,10 @@ private void seedUsers() {
             Pitch s7 = Pitch.builder()
                     .name("Sân Futsal Ngũ Hành Sơn")
                     .address("Khu liên hợp Thể thao Ngũ Hành Sơn, Đà Nẵng")
-                    .area("Quận Liên Chiểu, Đà Nẵng")
+                    .area("Quận Ngũ Hành Sơn, Đà Nẵng")
                     .phone("0988111222")
                     .ownerName("Futsal Ngũ Hành Sơn")
-                    .latitude(21.0200).longitude(105.7650)
+                    .latitude(16.0530).longitude(108.2530)
                     .avgPricePerHour(300000).peakPricePerHour(400000)
                     .rating(4.7).openTime("06:00").closeTime("23:00")
                     .pitchTypes(new ArrayList<>(List.of("FUTSAL", "SAN_5")))
@@ -584,7 +584,7 @@ private void seedUsers() {
                     .area("Quận Sơn Trà, Đà Nẵng")
                     .phone("0984555666")
                     .ownerName("Beachside Futsal")
-                    .latitude(12.2380).longitude(109.1960)
+                    .latitude(16.0760).longitude(108.2280)
                     .avgPricePerHour(260000).peakPricePerHour(340000)
                     .rating(4.6).openTime("07:00").closeTime("23:00")
                     .pitchTypes(new ArrayList<>(List.of("FUTSAL", "SAN_7")))
@@ -602,12 +602,12 @@ private void seedUsers() {
         // 2. Khởi tạo các bài đăng tìm đối giao lưu bóng đá thật nếu chưa có
         if (matchmakingPostRepository.count() == 0) {
             MatchmakingPost p1 = MatchmakingPost.builder()
-                    .teamName("FC Phù Đổng Q7")
+                    .teamName("FC Phù Đổng Hải Châu")
                     .captainName("Nguyễn Văn An")
                     .captainPhone("0908 123 456")
                     .reputationScore(98)
                     .pitchName("Cụm Sân Bóng Đá Đại Nắng (Sân 7A)")
-                    .address("Số 154 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7")
+                    .address("Số 12 Phan Đăng Lưu, Phường Hòa Cường Nam, Quận Hải Châu")
                     .matchTime("20:00 Tối nay")
                     .pitchType("SAN_7")
                     .paymentModel("SPLIT_EQUAL")
@@ -650,12 +650,12 @@ private void seedUsers() {
                     .build();
 
             MatchmakingPost p4 = MatchmakingPost.builder()
-                    .teamName("FC Quận 2 Brothers")
+                    .teamName("FC Thanh Khê Brothers")
                     .captainName("Bùi Trọng Nhân")
                     .captainPhone("0901 222 333")
                     .reputationScore(92)
                     .pitchName("Sân Bóng Hải Châu Mini")
-                    .address("Quận 2, Đà Nẵng")
+                    .address("Quận Thanh Khê, Đà Nẵng")
                     .matchTime("19:00 Thứ Sáu tuần này")
                     .pitchType("SAN_5")
                     .paymentModel("SPLIT_EQUAL")

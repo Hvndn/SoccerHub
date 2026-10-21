@@ -19,17 +19,17 @@ interface AuditRow {
 
 /** Nhãn tiếng Việt cho từng hành động quản trị. */
 const ACTION_LABEL: Record<string, string> = {
- LOCK_USER: "Khoá tài khoản",
- UNLOCK_USER: "Mở khoá tài khoản",
+ LOCK_USER: "Khóa tài khoản",
+ UNLOCK_USER: "Mở khóa tài khoản",
  CHANGE_ROLE: "Đổi vai trò",
- DELETE_USER: "Xoá tài khoản",
+ DELETE_USER: "Xóa tài khoản",
  DELETE_POST: "Gỡ tin chợ kèo",
  BROADCAST: "Gửi thông báo",
- DELETE_NOTIFICATION: "Xoá thông báo",
- DELETE_TOURNAMENT: "Xoá giải đấu",
+ DELETE_NOTIFICATION: "Xóa thông báo",
+ DELETE_TOURNAMENT: "Xóa giải đấu",
  SET_TOURNAMENT_STATUS: "Đổi trạng thái giải",
  CLEAN_ORPHANS: "Dọn dữ liệu mồ côi",
- DELETE_CHAT_MESSAGE: "Xoá tin nhắn",
+ DELETE_CHAT_MESSAGE: "Xóa tin nhắn",
 };
 
 const GROUP_LABEL: Record<string, string> = {
@@ -125,7 +125,7 @@ export default function AdminAuditLogs({
  sortValue: (r) => r.actionGroup,
  render: (r) => (
  <span
- className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[13px] font-black border ${
+ className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[13px] font-black border whitespace-nowrap ${
  (GROUP_TONE[r.actionGroup] ?? "slate") === "sky"
  ? "bg-sky-50 text-sky-700 border-sky-200"
  : (GROUP_TONE[r.actionGroup] ?? "slate") === "amber"
@@ -217,7 +217,7 @@ export default function AdminAuditLogs({
  <button
  type="button"
  onClick={load}
- className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all flex items-center gap-1.5"
+ className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
  >
  <RefreshCw className="w-3.5 h-3.5" /> Tải lại
  </button>

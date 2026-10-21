@@ -126,7 +126,7 @@ export default function GoogleLoginButton({
     const g = (window as any).google;
     if (!g?.accounts?.id) return;
     try {
-      // Xoá nút cũ (nếu re-render)
+      // Xóa nút cũ (nếu re-render)
       buttonRef.current.innerHTML = "";
       g.accounts.id.renderButton(buttonRef.current, {
         type: "standard",

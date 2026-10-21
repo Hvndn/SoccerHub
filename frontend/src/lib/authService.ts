@@ -77,9 +77,9 @@ export async function getCurrentUserApi(): Promise<UserProfile | null> {
     });
     return user;
   } catch (error: any) {
-    // CHỈ xoá token khi máy chủ nói phiên không hợp lệ (401/403). Nếu lỗi do
+    // CHỈ xóa token khi máy chủ nói phiên không hợp lệ (401/403). Nếu lỗi do
     // mạng/máy chủ chậm (timeout) thì giữ token để lần sau khôi phục lại — trước
-    // đây xoá token ở mọi lỗi khiến người dùng bị đăng xuất oan khi backend chết.
+    // đây xóa token ở mọi lỗi khiến người dùng bị đăng xuất oan khi backend chết.
     if (error?.status === 401 || error?.status === 403) {
       removeAuthToken();
     }

@@ -32,6 +32,6 @@ public interface MatchResultRepository extends JpaRepository<MatchResult, Long> 
     List<MatchResult> findByTeamAInIgnoreCaseOrTeamBInIgnoreCaseOrderByPlayedAtDesc(
             Collection<String> teamA, Collection<String> teamB);
 
-    /** Bản ghi mới nhất của một trận — dùng để xoá khi BTC huỷ kết quả. */
+    /** Bản ghi mới nhất của một trận — dùng để xóa khi BTC huỷ kết quả. */
     Optional<MatchResult> findFirstByTournamentIdAndMatchIdOrderByPlayedAtDesc(Long tournamentId, String matchId);
 }

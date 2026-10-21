@@ -184,7 +184,7 @@ export async function apiRequest<T = any>(
     const errorMessage =
       data?.message || data?.error || `Lỗi yêu cầu: ${response.status} ${response.statusText}`;
     // Gắn mã HTTP vào Error để tầng gọi phân biệt "máy chủ từ chối phiên" (401/403)
-    // với "không kết nối được" (timeout/mất mạng) — tránh xoá token oan khi backend chết.
+    // với "không kết nối được" (timeout/mất mạng) — tránh xóa token oan khi backend chết.
     const err: any = new Error(errorMessage);
     err.status = response.status;
     throw err;

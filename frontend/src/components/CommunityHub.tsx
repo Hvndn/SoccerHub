@@ -136,7 +136,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
   const [loading, setLoading] = useState(false);
 
   // Mở thẳng DM khi bên ngoài yêu cầu (nút "Nhắn tin" ở kênh liên lạc B2B của
-  // chủ sân / ban tổ chức). Xoá yêu cầu sau khi dùng để không mở lại khi back về.
+  // chủ sân / ban tổ chức). Xóa yêu cầu sau khi dùng để không mở lại khi back về.
   useEffect(() => {
     if (!initialDmPartner?.partnerEmail) return;
     setMode("chat");

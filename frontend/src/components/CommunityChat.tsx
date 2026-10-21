@@ -201,14 +201,14 @@ export default function CommunityChat({
     }
   };
 
-  // ---- Xoá tin nhắn của chính mình ----
+  // ---- Xóa tin nhắn của chính mình ----
   const handleDelete = async (m: ChatMessage) => {
     try {
       await apiRequest(`/api/v1/chat/messages/${m.id}`, { method: "DELETE" });
-      toastOk("Đã xoá tin nhắn.");
+      toastOk("Đã xóa tin nhắn.");
       await fetchPublic(true);
     } catch (err: any) {
-      toastErr(err?.message || "Không xoá được tin nhắn.");
+      toastErr(err?.message || "Không xóa được tin nhắn.");
     }
   };
 
@@ -361,8 +361,8 @@ export default function CommunityChat({
                         type="button"
                         onClick={() => handleDelete(m)}
                         className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition-colors"
-                        title="Xoá tin nhắn"
-                        aria-label="Xoá tin nhắn"
+                        title="Xóa tin nhắn"
+                        aria-label="Xóa tin nhắn"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

@@ -11,7 +11,7 @@ type SafeImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
 /**
  * <img> có ảnh dự phòng.
  *
- * Trước đây mọi ảnh đều render thẳng; khi URL hỏng (ảnh sân bị xoá trên hosting,
+ * Trước đây mọi ảnh đều render thẳng; khi URL hỏng (ảnh sân bị xóa trên hosting,
  * link Unsplash hết hạn, mạng yếu) trình duyệt hiện đúng biểu tượng "ảnh vỡ" —
  * trông như lỗi ứng dụng khi thực ra chỉ là ảnh không tải được.
  */

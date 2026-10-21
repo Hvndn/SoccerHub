@@ -193,8 +193,8 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
  >
  <option value="dn">Đà Nẵng — Toàn thành phố</option>
- <option value="dn-hai-chau">Đà Nẵng — Quận Hải Châu, Quận 1, Quận 7</option>
- <option value="dn-cam-le">Đà Nẵng — Quận Cẩm Lệ, Quận 2, Quận 3, Quận 10</option>
+ <option value="dn-hai-chau">Đà Nẵng — Quận Hải Châu, Thanh Khê, Sơn Trà</option>
+ <option value="dn-cam-le">Đà Nẵng — Quận Cẩm Lệ, Liên Chiểu, Ngũ Hành Sơn</option>
  <option value="dn-lien-chieu">Đà Nẵng — Liên Chiểu, Ngũ Hành Sơn, Sơn Trà, Thanh Khê</option>
  </select>
  </div>

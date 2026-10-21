@@ -490,7 +490,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="space-y-1">
  <div className="flex justify-between items-center text-[13px]">
  <span className="text-slate-500 font-extrabold text-[13px]">Bán kính</span>
- <span className="text-slate-600 font-bold text-[13px]">&lt; {radiusKm}km (Q.7, Hải Châu)</span>
+ <span className="text-slate-600 font-bold text-[13px]">&lt; {radiusKm}km (Hải Châu, Cẩm Lệ)</span>
  </div>
  <input
  type="range"
@@ -924,7 +924,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  required 
  value={createTeamName}
  onChange={(e) => setCreateTeamName(e.target.value)}
- placeholder="Ví dụ: FC Phù Đổng Q7"
+ placeholder="Ví dụ: FC Phù Đổng Hải Châu"
  className="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-[#006c49]"
  />
  </div>

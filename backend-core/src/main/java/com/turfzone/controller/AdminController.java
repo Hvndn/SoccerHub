@@ -134,8 +134,8 @@ public class AdminController {
         }
         Object raw = body.get("enabled");
         if (raw == null) {
-            // Thiếu trường "enabled" -> KHÔNG tự mặc định thành false (sẽ vô tình khoá tài khoản).
-            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu trường 'enabled' (true = mở khoá, false = khoá)."));
+            // Thiếu trường "enabled" -> KHÔNG tự mặc định thành false (sẽ vô tình khóa tài khoản).
+            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu trường 'enabled' (true = mở khóa, false = khóa)."));
         }
         boolean enabled = raw instanceof Boolean b ? b : Boolean.parseBoolean(String.valueOf(raw));
         user.setEnabled(enabled);

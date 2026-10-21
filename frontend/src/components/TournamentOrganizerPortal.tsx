@@ -1011,7 +1011,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                     disabled={refBusy}
                     className="px-2 py-1 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-[13px] font-black transition-all active:scale-95 disabled:opacity-40"
                   >
-                    Xoá
+                    Xóa
                   </button>
                 </li>
               ))}

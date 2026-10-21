@@ -182,7 +182,7 @@ export async function simulateBookings(opts?: {
   return apiRequest('/api/v1/pitches/simulate-bookings?' + qs.toString(), { method: 'POST' });
 }
 
-/** Xoá toàn bộ đơn giả lập — đơn thật của khách giữ nguyên. */
+/** Xóa toàn bộ đơn giả lập — đơn thật của khách giữ nguyên. */
 export async function clearSimulatedBookings(): Promise<{ deleted: number; message: string }> {
   return apiRequest('/api/v1/pitches/simulate-bookings', { method: 'DELETE' });
 }

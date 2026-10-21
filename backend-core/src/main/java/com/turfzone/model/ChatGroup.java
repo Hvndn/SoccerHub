@@ -30,7 +30,7 @@ public class ChatGroup {
     @Column(length = 200)
     private String description;
 
-    /** Email người tạo nhóm (chủ sở hữu, không thể bị xoá khỏi nhóm nếu còn thành viên khác). */
+    /** Email người tạo nhóm (chủ sở hữu, không thể bị xóa khỏi nhóm nếu còn thành viên khác). */
     @Column(nullable = false, length = 120)
     private String ownerEmail;
 

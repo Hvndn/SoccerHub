@@ -87,7 +87,7 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  key: "captain",
  header: "Liên hệ",
  render: (r) => (
- <div>
+  <div className="whitespace-nowrap">
  <p className="font-bold">{r.captainName || "—"}</p>
  <p className="text-[13px] font-mono text-slate-500">{r.captainPhone || ""}</p>
  </div>

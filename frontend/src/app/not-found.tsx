@@ -17,7 +17,7 @@ export default function NotFound() {
  <h1 className="text-xl sm:text-2xl font-black tracking-tight">Không tìm thấy trang này</h1>
  <p className="text-[13px] sm:text-sm text-slate-500 leading-relaxed">
  Đường dẫn bạn mở không tồn tại hoặc đã được chuyển đi. Có thể bạn gõ nhầm địa chỉ,
- hoặc sân / giải đấu đó đã bị xoá.
+ hoặc sân / giải đấu đó đã bị xóa.
  </p>
 
  <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-1">

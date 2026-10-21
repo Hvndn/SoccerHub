@@ -365,7 +365,7 @@ export default function PlayerSetup() {
  <input
  value={form.currentClub}
  onChange={set("currentClub")}
- placeholder="VD: FC Phù Đổng Q7 (không bắt buộc)"
+ placeholder="VD: FC Phù Đổng Hải Châu (không bắt buộc)"
  className={inputCls}
  />
  </Field>

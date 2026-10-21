@@ -353,7 +353,7 @@ function MainApp() {
             {
               id: 'm1',
               team: 'FC Chiến Hữu Đà Nẵng',
-              pitch: 'Cụm Sân Đại Nắng - Q.7',
+              pitch: 'Cụm Sân Đại Nắng - Hải Châu',
               time: 'Tối nay 19:30 - 21:00',
               level: 'Kèo Nhẹ Dưỡng Sinh',
               need: 'Cần tìm 1 đối giao lưu 5-5',

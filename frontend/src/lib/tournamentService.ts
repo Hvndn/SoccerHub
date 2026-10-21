@@ -549,7 +549,7 @@ export async function saveMatchResult(
 }
 
 /**
- * Huỷ kết quả một trận đã đánh: xoá bản ghi + cầu thủ ghi bàn,
+ * Huỷ kết quả một trận đã đánh: xóa bản ghi + cầu thủ ghi bàn,
  * mở lại trận để BTC nhập kết quả mới — cần ORGANIZER/ADMIN.
  * Phong độ tính live nên tự đúng, không cần hoàn điểm.
  */

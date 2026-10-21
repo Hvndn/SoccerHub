@@ -75,7 +75,7 @@ export async function updateClub(
   });
 }
 
-/** Xoá CLB (chỉ đại diện). */
+/** Xóa CLB (chỉ đại diện). */
 export async function deleteClub(clubId: number): Promise<{ message: string }> {
   return apiRequest<{ message: string }>(`/api/v1/clubs/${clubId}`, { method: "DELETE" });
 }

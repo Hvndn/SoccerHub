@@ -411,7 +411,7 @@ const [addCount, setAddCount] = useState("4");
  .sort((x, y) => y.points - x.points || y.diff - x.diff || (y.winRate ?? 0) - (x.winRate ?? 0));
  }, [selected, bracket]);
 
- /** Huỷ kết quả để nhập lại — backend xoá bản ghi và cầu thủ ghi bàn, phong độ tự tính lại. */
+ /** Huỷ kết quả để nhập lại — backend xóa bản ghi và cầu thủ ghi bàn, phong độ tự tính lại. */
  const handleUndoScore = async (m: BracketMatch) => {
  if (!selected) return;
  try {
@@ -419,7 +419,7 @@ const [addCount, setAddCount] = useState("4");
  const res = await undoMatchResult(selected.id, m.matchId);
  triggerToast(
  `${res.message}` +
- (res.goalEventsRemoved ? ` • Đã xoá ${res.goalEventsRemoved} dòng cầu thủ ghi bàn.` : "")
+ (res.goalEventsRemoved ? ` • Đã xóa ${res.goalEventsRemoved} dòng cầu thủ ghi bàn.` : "")
  );
  setScorerOpen((o) => {
  const next = { ...o };
@@ -943,7 +943,7 @@ const [addCount, setAddCount] = useState("4");
  onConfirm={startSimulate}
  />
 
- {/* Xác nhận huỷ kết quả (xoá bản ghi + cầu thủ ghi bàn, phong độ tự tính lại) */}
+ {/* Xác nhận huỷ kết quả (xóa bản ghi + cầu thủ ghi bàn, phong độ tự tính lại) */}
  <ConfirmModal
  open={confirmUndo !== null}
  inline
@@ -957,7 +957,7 @@ const [addCount, setAddCount] = useState("4");
  {confirmUndo.teamB?.name}
  </strong>
  ) sẽ được mở lại. Hệ thống sẽ <strong>mở lại trận</strong> và{" "}
- <strong>xoá danh sách cầu thủ ghi bàn</strong> của trận này (phong độ tính lại từ các trận còn lại).
+ <strong>xóa danh sách cầu thủ ghi bàn</strong> của trận này (phong độ tính lại từ các trận còn lại).
  </>
  ) : null
  }

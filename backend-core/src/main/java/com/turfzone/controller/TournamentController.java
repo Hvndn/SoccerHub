@@ -86,7 +86,7 @@ public class TournamentController {
     /**
      * Ban tổ chức sửa giải sau khi đã đăng.
      *
-     * <p>Trước đây chỉ có POST (tạo) và DELETE (xoá) — BTC tạo giải xong không đổi được
+     * <p>Trước đây chỉ có POST (tạo) và DELETE (xóa) — BTC tạo giải xong không đổi được
      * tên, thể thức, thưởng, lệ phí, hạn đăng ký hay sân thi đấu. Chỉ nhận các field có mặt
      * trong body (null = giữ nguyên), và cố tình KHÔNG cho sửa các field do hệ thống quản lý:
      * registeredTeams, teams, bracketJson, status, createdAt.</p>
@@ -428,7 +428,7 @@ public class TournamentController {
                 }
             }
             if (name == null) {
-                name = "FC Phủi " + String.format("%02d", autoIdx++);
+                name = "FC Sân Phủi " + String.format("%02d", autoIdx++);
                 if (existing.contains(name.toLowerCase())) continue;
             }
             existing.add(name.toLowerCase());
@@ -937,7 +937,7 @@ public class TournamentController {
     }
 
     /**
-     * Huỷ kết quả một trận đã đánh: xoá bản ghi kết quả và cầu thủ ghi bàn,
+     * Huỷ kết quả một trận đã đánh: xóa bản ghi kết quả và cầu thủ ghi bàn,
      * đưa trận về trạng thái SCHEDULED để BTC nhập lại. Phong độ tính live từ
      * các trận còn lại nên tự đúng, không cần hoàn điểm.
      * Chỉ cho phép khi các trận vòng sau chưa có kết quả (để không phá nhánh đấu).
@@ -1004,12 +1004,12 @@ public class TournamentController {
         String nameB = teamB != null ? String.valueOf(teamB.get("name")) : "?";
         String oldScore = target.get("scoreA") + "-" + target.get("scoreB");
 
-        // 1. Xoá bản ghi kết quả trận này (nếu có). Phong độ tính live nên tự đúng.
+        // 1. Xóa bản ghi kết quả trận này (nếu có). Phong độ tính live nên tự đúng.
         matchResultRepository
                 .findFirstByTournamentIdAndMatchIdOrderByPlayedAtDesc(tournament.getId(), matchId)
                 .ifPresent(matchResultRepository::delete);
 
-        // 2. Xoá cầu thủ ghi bàn của trận này.
+        // 2. Xóa cầu thủ ghi bàn của trận này.
         int goalsRemoved = goalEventRepository.findByTournamentIdAndMatchId(tournament.getId(), matchId).size();
         goalEventRepository.deleteAll(goalEventRepository.findByTournamentIdAndMatchId(tournament.getId(), matchId));
 
@@ -1606,7 +1606,7 @@ public class TournamentController {
                 "invitedEmails", tournament.getInvitedEmails()));
     }
 
-    /** BTC / chủ sân xoá 1 email khỏi danh sách mời. */
+    /** BTC / chủ sân xóa 1 email khỏi danh sách mời. */
     @DeleteMapping("/{id}/invites/{email}")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> removeInvite(@PathVariable Long id, @PathVariable String email) {
@@ -1799,7 +1799,7 @@ public class TournamentController {
         return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội chờ duyệt: " + teamName));
     }
 
-    /** Từ chối đội (xoá khỏi danh sách đăng ký). */
+    /** Từ chối đội (xóa khỏi danh sách đăng ký). */
     @PostMapping("/{id}/teams/{teamName}/reject")
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> rejectTeam(@PathVariable Long id, @PathVariable String teamName) {
@@ -1876,7 +1876,7 @@ public class TournamentController {
         return ResponseEntity.ok(Map.of("message", "Đã thêm trọng tài " + name + ".", "id", saved.getId()));
     }
 
-    /** Xoá trọng tài khỏi giải. */
+    /** Xóa trọng tài khỏi giải. */
     @DeleteMapping("/{id}/referees/{refId}")
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> removeReferee(@PathVariable Long id, @PathVariable Long refId) {
@@ -1884,6 +1884,6 @@ public class TournamentController {
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         refereeRepository.deleteByIdAndTournamentId(refId, id);
-        return ResponseEntity.ok(Map.of("message", "Đã xoá trọng tài.", "id", refId));
+        return ResponseEntity.ok(Map.of("message", "Đã xóa trọng tài.", "id", refId));
     }
 }
