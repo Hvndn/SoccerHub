@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SafeImage from "@/components/SafeImage";
 import Link from 'next/link';
 import CountUp from './CountUp';
@@ -45,6 +45,8 @@ interface TournamentLeaderboardProps {
  onSelectTournament?: (id: string) => void;
  /** Mở modal đăng nhập (dùng cho trạng thái khách) */
  onRequestLogin?: () => void;
+  /** Giải cần mở sẵn khi BTC bấm "Mở Nhánh Đấu" từ danh sách quản lý. */
+  initialTournamentId?: number | null;
 }
 
 /** Sport ribbon tabs — keys are the real `sportType` values stored in MySQL. */
@@ -63,7 +65,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  user,
  onBackToHome,
  onSelectTournament,
- onRequestLogin
+  onRequestLogin,
+  initialTournamentId,
 }) => {
  const [activeSport, setActiveSport] = useState<SportType | 'all'>('all');
   // BTC (ORGANIZER) hoặc ADMIN mới được bốc thăm / giả lập kết quả.
@@ -89,6 +92,14 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  const [drawnTournament, setDrawnTournament] = useState<Tournament | null>(null);
  // Giải vừa bốc thăm — truyền sang tab "Nhánh Đấu" để mở đúng giải, không phải chọn lại.
  const [bracketTargetId, setBracketTargetId] = useState<number | null>(null);
+
+  // BTC bấm "Mở Nhánh Đấu" ở một giải cụ thể -> mở đúng giải đó (không phải giải mặc định).
+  useEffect(() => {
+    if (initialTournamentId) {
+      setBracketTargetId(initialTournamentId);
+      setActiveTab('bracket');
+    }
+  }, [initialTournamentId]);
  const [actionNotice, setActionNotice] = useState<string | null>(null);
 
  /** Giải chưa tới ngày thi đấu -> BTC được bốc thăm trước (không cần chờ tới ngày). */

@@ -26,6 +26,8 @@ export default function CommunityForm({ user, onSelectSlot, onStartDm, defaultSu
 // chưa đọc/riêng tư/bạn bè, danh sách kênh) nằm ở tab "Cộng Đồng" (CommunityHub).
 // Trang Ban Tổ Chức chỉ lo phần giải đấu + điều hành + phong độ để tránh lặp UI.
 const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer" | "formboard">(defaultSubTab as any);
+  // Giải được yêu cầu mở nhánh đấu từ Bảng Điều Hành (null = không mở sẵn giải nào).
+  const [pendingBracketId, setPendingBracketId] = useState<number | null>(null);
  const [tournamentCount, setTournamentCount] = useState<number | null>(null);
  const [formBoard, setFormBoard] = useState<any[]>([]);
 
@@ -118,6 +120,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  user={user}
  onBackToHome={() => onNavigateTab?.("matchmaking")}
  onRequestLogin={onOpenAuth ? () => onOpenAuth("login", "PLAYER") : undefined}
+  initialTournamentId={pendingBracketId}
  />
  )}
 
@@ -127,7 +130,10 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
   onNavigateTab={onNavigateTab}
   onStartDm={onStartDm}
   onOpenTournamentChat={onOpenTournamentChat}
-  onOpenBracket={() => setSubTab("tournaments")}
+   onOpenBracket={(tournamentId) => {
+   setPendingBracketId(tournamentId ? Number(tournamentId) : null);
+   setSubTab("tournaments");
+   }}
   />
  )}
 

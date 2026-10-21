@@ -135,6 +135,9 @@ const [addCount, setAddCount] = useState("4");
  if (!alive) return;
  setTournaments(list);
  setSelectedId((prev) => {
+   // List chưa về (cache rỗng) -> giữ lựa chọn hiện tại, không reset về ""
+   // (nếu reset, <select> sẽ hiển thị option đầu tiên dù state đang trỏ giải khác).
+   if (!list.length) return prev;
  if (prev && list.some((t) => String(t.id) === prev)) return prev;
  const open = list.find((t) => (t.status ?? "OPEN") === "OPEN");
  return open ? String(open.id) : list.length ? String(list[0].id) : "";
@@ -157,7 +160,7 @@ const [addCount, setAddCount] = useState("4");
  useEffect(() => {
   if (initialTournamentId === null || initialTournamentId === undefined || initialTournamentId === "") return;
   setSelectedId(String(initialTournamentId));
- }, [initialTournamentId]);
+  }, [initialTournamentId, tournaments]);
 
  // Nhánh đấu đọc thẳng từ bracketJson trong cache (không request thừa, không 404 console).
  // Sau fill/draw, cache được refresh nên canvas tự đồng bộ.
