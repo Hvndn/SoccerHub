@@ -159,6 +159,20 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  );
  }
 
+  // API /pitches KHÔNG có field "type" — chỉ có pitchTypes (mã SAN_5/SAN_7/SAN_11/FUTSAL).
+  // Trước đây đọc item.type nên mọi sân đều bị coi là SAN7 và bộ lọc Sân 5 / Sân 11 / Futsal luôn rỗng.
+  const sportTabs: string[] = toSportTabs(item.pitchTypes);
+  const sport: string =
+    sportTabs.includes("FUTSAL") && /futsal/i.test(String(item.name || ""))
+      ? "FUTSAL"
+      : sportTabs.includes("SAN11") && /sân 11|11 người/i.test(String(item.name || ""))
+      ? "SAN11"
+      : sportTabs.includes("SAN7")
+      ? "SAN7"
+      : sportTabs.includes("SAN5")
+      ? "SAN5"
+      : sportTabs[0] || "SAN7";
+
  return {
  id: item.id || `pitch-db-${rawId}`,
  numericId: Number(rawId) || 1,
@@ -173,8 +187,8 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  openTime: openTime,
  closeTime: closeTime,
  slotDurationMinutes: slotDur,
- sport: item.type?.includes("5") ? "SAN5" : item.type?.includes("11") ? "SAN11" : item.type?.includes("Futsal") ? "FUTSAL" : "SAN7",
- sportBadge: item.type || "⚽ Bóng Đá Sân 7 Chuẩn VFF",
+  sportList: sportTabs,
+  sportBadge: pitchTypeLabel(sport) || "⚽ Bóng Đá Sân 7 Chuẩn VFF",
  // Khoảng cách chỉ có thật nếu dùng vị trí GPS; không thì để trống.
  distanceKm: null,
  rating: item.rating ?? null,
@@ -310,6 +324,18 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  return played;
  }, [tournaments, userPhone]);
 
+/** Mã loại sân trong CSDL (SAN_5/SAN_7/SAN_11/FUTSAL) -> id của tab bộ lọc. */
+const SPORT_CODE_TO_TAB: Record<string, string> = {
+  SAN_5: "SAN5",
+  SAN_7: "SAN7",
+  SAN_11: "SAN11",
+  FUTSAL: "FUTSAL",
+};
+
+/** Quy đổi danh sách mã loại sân của 1 cụm sân sang id tab bộ lọc. */
+const toSportTabs = (types?: string[] | null): string[] =>
+  (types ?? []).map((t) => SPORT_CODE_TO_TAB[String(t).trim().toUpperCase()] ?? String(t).trim().toUpperCase());
+
  const sportsTabs = [
  { id: "ALL", name: "Tất Cả Sân Bóng", icon: "⚽" },
  { id: "SAN7", name: "Sân 7 Cỏ Nhân Tạo", icon: "🏆", badge: "Chuẩn VFF" },
@@ -329,7 +355,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
  // Lọc danh sách sân theo các tiêu chí thực tế
  const filteredPitches = realPitches.filter((p) => {
- if (selectedSport !== "ALL" && p.sport !== selectedSport) return false;
+  if (selectedSport !== "ALL" && !(p.sportList ?? [p.sport]).includes(selectedSport)) return false;
  if (selectedDistrict !== "ALL" && p.district !== selectedDistrict) return false;
  if (p.priceDiscounted > maxBudget) return false;
  return true;
