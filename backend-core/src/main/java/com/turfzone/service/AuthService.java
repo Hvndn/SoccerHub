@@ -123,7 +123,9 @@ public class AuthService {
                 .or(() -> userRepository.findByEmail(input + "@phone.Turfzone.vn"));
 
         if (userOpt.isEmpty()) {
-            throw new IllegalArgumentException("Tài khoản '" + input + "' chưa được đăng ký trong hệ thống. Vui lòng bấm Đăng Ký Mới.");
+            // Trả CHUNG một thông báo cho cả "chưa đăng ký" lẫn "sai mật khẩu" —
+            // phân biệt hai trường hợp giúp kẻ xấu dò email nào đã có tài khoản.
+            throw new IllegalArgumentException("Email hoặc số điện thoại không đúng, hoặc mật khẩu chưa chính xác.");
         }
 
         User user = userOpt.get();
@@ -133,7 +135,7 @@ public class AuthService {
         }
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Mật khẩu không chính xác. Vui lòng kiểm tra và thử lại.");
+            throw new IllegalArgumentException("Email hoặc số điện thoại không đúng, hoặc mật khẩu chưa chính xác.");
         }
 
         String token = tokenProvider.generateToken(user.getEmail(), user.getRole().name());

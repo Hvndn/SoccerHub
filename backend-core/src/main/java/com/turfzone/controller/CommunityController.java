@@ -72,7 +72,15 @@ public class CommunityController {
 
         String pitchType = str(req.get("pitchType"));
         String paymentModel = str(req.get("paymentModel"));
-        Long estimatedFee = req.get("estimatedFee") != null ? Long.parseLong(req.get("estimatedFee").toString()) : null;
+        Long estimatedFee = null;
+        if (req.get("estimatedFee") != null) {
+            try {
+                estimatedFee = Long.parseLong(req.get("estimatedFee").toString().trim());
+            } catch (NumberFormatException e) {
+                // Trước đây NumberFormatException nổi lên -> HTTP 500 thay vì 400.
+                return ResponseEntity.badRequest().body(Map.of("error", "Phí dự kiến không hợp lệ."));
+            }
+        }
         String note = str(req.get("note"));
 
         MatchmakingPost post = MatchmakingPost.builder()

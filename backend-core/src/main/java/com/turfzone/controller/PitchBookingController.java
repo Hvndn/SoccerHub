@@ -494,7 +494,8 @@ public class PitchBookingController {
     @GetMapping("/{id}/stats")
     public ResponseEntity<?> getPitchRealStats(
             @PathVariable Long id,
-            @RequestParam(required = false) String date
+            @RequestParam(required = false) String date,
+            @AuthenticationPrincipal com.turfzone.model.User me
     ) {
         Pitch pitch = pitchService.getPitchById(id);
         String targetDate = (date != null && !date.trim().isEmpty()) 
@@ -538,7 +539,12 @@ public class PitchBookingController {
         stats.put("pitchId", id);
         stats.put("pitchName", pitch.getName());
         stats.put("date", targetDate);
-        stats.put("totalRevenue", totalRevenue);
+        // Doanh thu là dữ liệu nhạy cảm — chỉ chủ sân của cụm sân này (hoặc ADMIN) mới thấy.
+        boolean isAdmin = me != null && "ADMIN".equals(me.getRole().name());
+        boolean isOwner = me != null && pitch.getOwnerId() != null && pitch.getOwnerId().equals(me.getId());
+        if (isAdmin || isOwner) {
+            stats.put("totalRevenue", totalRevenue);
+        }
         stats.put("occupancyRate", occupancyRate);
         stats.put("totalSlots", totalSlots);
         stats.put("bookedSlots", bookedSlots);
