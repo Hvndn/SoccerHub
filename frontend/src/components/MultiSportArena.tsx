@@ -598,7 +598,7 @@ export default function MultiSportArena({
  {/* Court Booking Modal */}
  {bookingCourt && (
  <div id="inline-bookingcourt" className="w-full animate-fade-in">
- <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-5">
+ <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-5">
  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
  <h3 className="font-extrabold text-lg text-slate-900 ">
  Xác Nhận Đặt Ca Sân {bookingCourt.id}
@@ -660,7 +660,7 @@ export default function MultiSportArena({
  {/* Match Joining Modal */}
  {joiningMatch && (
  <div id="inline-joiningmatch" className="w-full animate-fade-in">
- <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-5">
+ <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-5">
  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
  <h3 className="font-extrabold text-lg text-slate-900 ">
  Gia Nhập Kèo {joiningMatch.category}

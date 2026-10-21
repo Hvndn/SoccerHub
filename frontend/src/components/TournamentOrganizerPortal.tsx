@@ -1995,7 +1995,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {/* MODAL SỬA THÔNG TIN GIẢI ĐẤU */}
  {showEditModal && (
  <div id="edit-tournament-inline" className="w-full animate-fade-in">
- <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl mx-auto border border-slate-200 overflow-hidden">
+ <div className="bg-white rounded-3xl shadow-sm w-full max-w-2xl mx-auto border border-slate-200 overflow-hidden">
  <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
  <div className="flex items-center gap-2.5">
  <Pencil className="w-5 h-5 text-[#0369a1]" />

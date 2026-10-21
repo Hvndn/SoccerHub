@@ -1405,7 +1405,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {/* MODAL TẠO KÈO MỚI */}
  {showCreateMatchModal && (
  <div id="ps-inline-create-match" className="w-full animate-fade-in">
- <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-md w-full border border-slate-200 shadow-2xl space-y-4">
+ <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-md w-full border border-slate-200 shadow-sm space-y-4">
  <div className="flex items-center justify-between pb-3 border-b border-slate-100 ">
  <div className="flex items-center space-x-2">
  <div className="w-8 h-8 rounded-xl bg-[#0369a1]/20 text-emerald-500 flex items-center justify-center font-bold">

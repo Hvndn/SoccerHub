@@ -903,7 +903,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  {/* MODAL 1: TẠO KÈO GIAO LƯU BÓNG ĐÁ MỚI */}
  {showCreateModal && (
  <div id="mm-inline-create" className="w-full animate-fade-in">
- <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-2xl text-slate-900">
+ <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-sm text-slate-900">
  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
  <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 ">
  <PlusCircle className="w-5 h-5 text-[#0b4f6c] " />
@@ -1031,7 +1031,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  {/* MODAL 2: XÁC NHẬN BẮT KÈO ĐỐI THỦ */}
  {acceptingPost && (
  <div id="mm-inline-accept" className="w-full animate-fade-in">
- <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-md w-full p-4 sm:p-6 space-y-4 shadow-2xl text-slate-900">
+ <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl max-w-md w-full p-4 sm:p-6 space-y-4 shadow-sm text-slate-900">
  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
  <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 ">
  <Zap className="w-5 h-5 text-[#0b4f6c] " />
@@ -1117,7 +1117,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
   {/* Fair-play rating modal */}
   {reviewPost && (
   <div id="mm-inline-review" className="w-full animate-fade-in">
-  <div className="bg-white max-w-md w-full rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-4 border border-slate-200 shadow-2xl">
+  <div className="bg-white max-w-md w-full rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-4 border border-slate-200 shadow-sm">
   <div className="flex items-center justify-between">
   <h3 className="font-black text-slate-900 text-base">Đánh giá Fair-play</h3>
   <button type="button" onClick={() => setReviewPost(null)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors" aria-label="Đóng">✕</button>

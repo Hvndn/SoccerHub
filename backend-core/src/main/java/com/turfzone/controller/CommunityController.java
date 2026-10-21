@@ -2,6 +2,8 @@ package com.turfzone.controller;
 
 import com.turfzone.model.MatchmakingPost;
 import com.turfzone.model.TeamReview;
+import com.turfzone.repository.UserRepository;
+import com.turfzone.service.NotificationService;
 import com.turfzone.repository.MatchmakingPostRepository;
 import com.turfzone.repository.TeamReviewRepository;
 import com.turfzone.repository.TournamentRepository;
@@ -29,6 +31,8 @@ public class CommunityController {
     private final TeamReviewRepository teamReviewRepository;
     private final TournamentRepository tournamentRepository;
     private final TeamFormService teamFormService;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     // =====================================================================
     // CHỢ KẸO GIAO HỮU
@@ -119,6 +123,20 @@ public class CommunityController {
         post.setMatchedAt(LocalDateTime.now());
 
         matchmakingPostRepository.save(post);
+
+        // Báo cho chủ kèo biết có đội đã nhận kèo của mình (tra email từ SĐT trong bài đăng).
+        String ownerMail = post.getCaptainPhone() != null
+                ? userRepository.findByPhone(post.getCaptainPhone().replaceAll("\\s+", ""))
+                        .map(u -> u.getEmail())
+                        .orElse(null)
+                : null;
+        if (ownerMail != null) {
+            notificationService.notify("PLAYER", ownerMail,
+                    "Có đội đã nhận kèo của bạn: " + post.getTeamName(),
+                    opponentTeamName + " (Cap: " + post.getOpponentCaptainName() + ") đã nhận kèo "
+                            + post.getPitchName() + " lúc " + post.getMatchTime() + ".",
+                    "MATCHMAKING", null);
+        }
 
         return ResponseEntity.ok(Map.of(
                 "message", "Ghép kèo thành công! Chúc hai đội thi đấu Fairplay.",

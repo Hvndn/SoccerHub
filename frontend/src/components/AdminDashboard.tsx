@@ -1758,7 +1758,7 @@ setIsSavingInfo(false);
  {/* MODAL 0: SỬA HỒ SƠ CỤM SÂN (tên, địa chỉ, SĐT, bộ môn, tiện ích, ảnh, mô tả) */}
   {showEditInfoModal && (
   <div id="admin-inline-edit-info" className="w-full animate-fade-in">
-  <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl my-8 border border-slate-200 overflow-hidden">
+  <div className="bg-white rounded-3xl shadow-sm w-full max-w-2xl my-8 border border-slate-200 overflow-hidden">
   <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
   <div className="flex items-center gap-2.5">
   <Pencil className="w-5 h-5 text-[#0369a1]" />
@@ -1917,7 +1917,7 @@ setIsSavingInfo(false);
  {showAddPitchModal && (
   <div id="admin-inline-add-pitch" className="w-full animate-fade-in">
  <div 
- className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+ className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
@@ -2026,7 +2026,7 @@ setIsSavingInfo(false);
  {showOfflineModal && (
   <div id="admin-inline-offline" className="w-full animate-fade-in">
  <div 
- className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+ className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
@@ -2185,7 +2185,7 @@ setIsSavingInfo(false);
  {selectedSlotForAction && (
   <div id="admin-inline-slot-action" className="w-full animate-fade-in">
  <div 
- className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+ className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
@@ -2263,7 +2263,7 @@ setIsSavingInfo(false);
  {showHoursModal && (
   <div id="admin-inline-hours" className="w-full animate-fade-in">
  <div 
- className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+ className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
@@ -2351,7 +2351,7 @@ setIsSavingInfo(false);
   id="admin-inline-cancel" className="w-full animate-fade-in"
   >
  <div 
- className="relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-modal-pop my-auto"
+ className="relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden animate-modal-pop my-auto"
  onClick={(e) => e.stopPropagation()}
  >
  {/* Header */}

@@ -596,7 +596,7 @@ export default function StadiumOwnerOnboarding({
  {/* ADD NEW PITCH MODAL */}
  {showAddModal && (
  <div id="inline-showaddmodal" className="w-full animate-fade-in">
- <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-2xl">
+ <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm">
  <h3 className="font-extrabold text-base text-slate-900 ">Thêm Sân Mới Vào Cụm</h3>
  <div className="space-y-3 text-[13px]">
  <div className="space-y-1">
