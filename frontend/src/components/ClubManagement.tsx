@@ -427,7 +427,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                               </span>
                             )}
                           </div>
-                        <p className="text-[12px] font-mono text-slate-500 truncate">
+                        <p className="text-[13px] font-mono text-slate-500 truncate">
                           {m.email}
                           {m.phone ? ` · ${m.phone}` : ""}
                         </p>

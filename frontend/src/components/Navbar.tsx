@@ -1110,7 +1110,7 @@ const mobileNav: MobileNavItem[] =
  <div>
  <div className="text-[13px] font-extrabold leading-tight flex items-center gap-1.5">
  <span>Điều Hành Giải Đấu</span>
- <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-[#0369a1] text-white">BTC</span>
+ <span className="px-2 py-0.5 rounded text-[13px] font-black bg-[#0369a1] text-white">BTC</span>
  </div>
  <div className={`text-[13px] ${activeTab === "organizer" ? "text-white/80" : "text-slate-500"}`}>
  Tạo giải, duyệt đội & bốc thăm

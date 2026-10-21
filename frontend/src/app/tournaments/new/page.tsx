@@ -312,7 +312,7 @@ function NewTournamentWizard() {
   }`}
   >
   <span className="block text-[13px] font-black text-slate-900">🔓 Ai cũng có thể tham gia</span>
-  <span className="block text-[12px] text-slate-500 mt-1 leading-relaxed">
+  <span className="block text-[13px] text-slate-500 mt-1 leading-relaxed">
   Mọi người có tài khoản đều đăng ký đội thi được.
   </span>
   </button>
@@ -327,13 +327,13 @@ function NewTournamentWizard() {
   }`}
   >
   <span className="block text-[13px] font-black text-slate-900">🔒 Chỉ ai được mời qua email</span>
-  <span className="block text-[12px] text-slate-500 mt-1 leading-relaxed">
+  <span className="block text-[13px] text-slate-500 mt-1 leading-relaxed">
   Giải kín — BTC sẽ mời từng email sau khi tạo giải.
   </span>
   </button>
   </div>
   {form.joinMode === "INVITE_ONLY" && (
-  <p className="text-[12px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mt-2 leading-relaxed">
+  <p className="text-[13px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mt-2 leading-relaxed">
   Sau khi tạo giải, mở tab “Điều Hành Giải Đấu › Quyền Tham Gia” để thêm danh sách email được mời.
   </p>
   )}
