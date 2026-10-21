@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { matchmakingAi } from "@/lib/aiService";
+import { pitchTypeLabel } from "@/lib/pitchLabels";
 import {
  Sparkles,
  MapPin,
@@ -607,7 +608,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <span>{isMatched ? "Đã có đối thủ" : "Kèo đang mở"}</span>
  </span>
  <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-[13px]">
- {post.pitchType === "SAN_7" ? "Sân 7 Cỏ Nhân Tạo" : post.pitchType === "SAN_5" ? "Sân 5 Mini" : "Sân 11 FIFA"}
+  {post.pitchType === "SAN_7" ? "Sân 7 Cỏ Nhân Tạo" : post.pitchType === "SAN_5" ? "Sân 5 Mini" : post.pitchType === "FUTSAL" ? "Futsal Trong Nhà" : "Sân 11 FIFA"}
  </span>
  {isAiTop && (
  <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-black text-[13px] flex items-center gap-1">
@@ -886,7 +887,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="min-w-0">
  <p className="font-bold text-slate-900 truncate">{t.teamName}</p>
  <span className="text-[13px] text-slate-500">
- {t.count} kèo đang mở • {t.pitchType ?? "Sân 7"}
+  {t.count} kèo đang mở • {pitchTypeLabel(t.pitchType) || "Sân 7"}
  </span>
  </div>
  </div>
