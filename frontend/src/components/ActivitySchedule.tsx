@@ -220,7 +220,10 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  switch (filter) {
  case "upcoming":
  case "tournaments":
- return upcoming;
+      return allMatches;
+    case "matchmaking":
+    case "cancelled":
+      return [];
  case "history":
  return doneMatches;
  default:
@@ -229,6 +232,10 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  };
 
  const visibleMatches = listFor(activeFilter);
+  // Hai tab keo co du lieu rieng (keo da ghep / keo da huy) — truoc day listFor tra []
+  // nen badge co so nhung danh sach luon rong.
+  const visibleKeo: any[] =
+    activeFilter === "matchmaking" ? matchedPosts : activeFilter === "cancelled" ? cancelledPosts : [];
 
  const filterTabs: { id: typeof activeFilter; label: string; count: number; tone: string }[] = [
  { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-[#0369a1] text-white" },
@@ -449,13 +456,32 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  <div className="flex flex-col gap-3 sm:gap-4">
  <div className="flex items-center justify-between">
  <h3 className="text-base font-bold text-slate-900 ">
- {activeFilter === "history" ? "Kết Quả Các Trận Đã Đánh" : "Các Trận Sắp Tới"}
- <span className="ml-2 font-mono text-[13px] text-slate-500">({visibleMatches.length})</span>
+  activeFilter === "history" ? "Kết Quả Các Trận Đã Đánh" : activeFilter === "matchmaking" ? "Kèo Đã Ghép" : activeFilter === "cancelled" ? "Kèo Đã Hủy" : activeFilter === "tournaments" ? "Lịch Đấu Giải" : "Các Trận Sắp Tới"
+  <span className="ml-2 font-mono text-[13px] text-slate-500">({(visibleKeo.length || visibleMatches.length)})</span>
  </h3>
  <span className="text-[13px] text-slate-500 font-medium">Sắp xếp theo thời gian</span>
  </div>
 
- {visibleMatches.length === 0 ? (
+  {visibleKeo.length > 0 ? (
+  <div className="space-y-2.5">
+  {visibleKeo.map((p: any) => (
+  <div key={p.id} className="w-full rounded-xl bg-white shadow-xs p-3 sm:p-4 border border-slate-200/80">
+  <div className="flex flex-wrap items-center justify-between gap-2">
+  <div className="min-w-0">
+  <p className="font-black text-slate-900 truncate">{p.teamName}</p>
+  <p className="text-[13px] text-slate-500 truncate">
+  {p.opponentTeamName ? `vs ${p.opponentTeamName} • ` : ""}
+  {p.pitchName} • {p.matchTime}
+  </p>
+  </div>
+  <span className={`px-2.5 py-1 rounded-lg text-[13px] font-black shrink-0 ${activeFilter === "cancelled" ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-800"}`}>
+  {activeFilter === "cancelled" ? "Đã hủy" : "Đã ghép"}
+  </span>
+  </div>
+  </div>
+  ))}
+  </div>
+  ) : visibleMatches.length === 0 ? (
  <div className="rounded-xl bg-white border border-dashed border-slate-300 p-4 sm:p-8 text-center">
  <p className="text-sm text-slate-500">
  {activeFilter === "history"
