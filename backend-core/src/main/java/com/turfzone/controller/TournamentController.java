@@ -1733,6 +1733,20 @@ public class TournamentController {
         if (found == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội " + teamName + " trong giải."));
         }
+        // Khong cho duyet them khi giai da du cho (truoc day co the vuot suc chua -> "9/8 doi")
+        int cap = tournament.getTotalTeams() != null ? tournament.getTotalTeams() : 0;
+        if (cap > 0) {
+            int daVaoGiai = 0;
+            for (TournamentTeamEntry t : tournament.getTeams()) {
+                if (t == found) continue;
+                String st = t.getRegistrationStatus() == null ? "CONFIRMED" : t.getRegistrationStatus().toUpperCase();
+                if ("CONFIRMED".equals(st) || "SIMULATED".equals(st) || Boolean.TRUE.equals(t.getSimulated())) daVaoGiai++;
+            }
+            if (daVaoGiai >= cap) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Giải đã đủ " + cap + " đội. Hãy tăng sức chứa hoặc bỏ bớt đội trước khi duyệt thêm."));
+            }
+        }
         found.setRegistrationStatus("CONFIRMED");
         tournamentRepository.save(tournament);
         return ResponseEntity.ok(Map.of(

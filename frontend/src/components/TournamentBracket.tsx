@@ -43,6 +43,7 @@ import {
  confirmTeamPayment,
  saveMatchResult,
  registeredCount,
+ confirmedCount,
  refreshTournamentInCache,
  isFull as isTournamentFull,
  fillPercent,
@@ -170,7 +171,8 @@ const [addCount, setAddCount] = useState("4");
  }
  }, [selected]);
 
- const teamCount = selected ? registeredCount(selected) : 0;
+ // Chi dem doi DA VAO GIAI (da cong le phi) — doi cho phep phi chua duoc tinh vao suc chua
+ const teamCount = selected ? confirmedCount(selected) : 0;
  const teamCap = selected?.totalTeams ?? 0;
  const full = selected ? isTournamentFull(selected) : false;
  const simulatedCount = selected?.teams?.filter((t) => t.simulated).length ?? 0;
@@ -252,6 +254,8 @@ const [addCount, setAddCount] = useState("4");
  try {
  setConfirmingTeam(teamName);
  const res = await confirmTeamPayment(selected.id, teamName);
+  // Lam moi giai de panel "cho xac nhan le phi" va so doi cap nhat ngay
+  await refreshTournamentInCache(selected.id);
  triggerToast(res.message);
  } catch (err: any) {
  triggerToast(err?.message || "Xác nhận thất bại.");
@@ -786,7 +790,7 @@ const [addCount, setAddCount] = useState("4");
  {tournaments.length === 0 && <option value="">Chưa có giải đấu</option>}
  {tournaments.map((t) => (
  <option key={t.id} value={t.id}>
- {t.title} ({registeredCount(t)}/{t.totalTeams ?? "—"} đội • {t.status})
+ {t.title} ({confirmedCount(t)}/{t.totalTeams ?? "—"} đội • {t.status})
  </option>
  ))}
  </select>
@@ -1069,10 +1073,11 @@ const [addCount, setAddCount] = useState("4");
  <button
  type="button"
  onClick={() => handleConfirmPayment(t.teamName)}
- disabled={confirmingTeam === t.teamName}
+   disabled={confirmingTeam === t.teamName || (teamCap > 0 && teamCount >= teamCap)}
+   title={teamCap > 0 && teamCount >= teamCap ? "Giải đã đủ " + teamCap + " đội — hãy tăng sức chứa trước khi duyệt thêm" : "Xác nhận đã thu lệ phí của đội này"}
  className="shrink-0 px-2.5 py-1 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-50"
  >
- {confirmingTeam === t.teamName ? "…" : "Đã thu ✓"}
+ {confirmingTeam === t.teamName ? "…" : "Đã thu phí"}
  </button>
  </div>
  ))}

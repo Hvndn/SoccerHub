@@ -101,6 +101,21 @@ export const registeredCount = (t: Tournament): number =>
   t.teams?.length ?? t.registeredTeams ?? 0;
 
 /**
+ * Số đội ĐÃ VÀO GIẢI (đã đóng lệ phí `CONFIRMED` hoặc đội Test `SIMULATED`).
+ *
+ * <p>Đội đang chờ chuyển khoản (`PENDING_PAYMENT`) chưa chiếm suất thi đấu nên
+ * không tính vào sức chứa — nếu tính thì giải 8 chỗ sẽ hiện "9/8 đội".</p>
+ */
+export const confirmedCount = (t: Tournament): number => {
+  const teams = t.teams ?? [];
+  if (teams.length === 0) return t.registeredTeams ?? 0;
+  return teams.filter((x) => {
+    const st = (x.registrationStatus || "CONFIRMED").toUpperCase();
+    return st === "CONFIRMED" || st === "SIMULATED" || x.simulated === true;
+  }).length;
+};
+
+/**
  * Số đội THỰC SỰ bốc thăm được.
  *
  * Backend (POST /{id}/draw) loại bỏ đội `PENDING_PAYMENT` và chỉ nhận đội
@@ -130,7 +145,8 @@ export const isFull = (t: Tournament): boolean => {
 export const fillPercent = (t: Tournament): number => {
   const cap = capacity(t);
   if (!cap) return 0;
-  return Math.min(100, Math.round((registeredCount(t) / cap) * 100));
+  // Tính trên số đội đã vào giải (đội chờ cọc chưa chiếm suất)
+  return Math.min(100, Math.round((confirmedCount(t) / cap) * 100));
 };
 
 // ---------------------------------------------------------------------------

@@ -32,6 +32,7 @@ import {
  formatMoney,
  daysUntil,
  registeredCount,
+ confirmedCount,
  drawableCount,
  isFull as isTournamentFull,
  fillPercent,
@@ -279,7 +280,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
  const featured = useMemo(() => pickFeatured(tournaments), [tournaments]);
  const featuredPct = featured ? fillPercent(featured) : 0;
- const featuredRegistered = featured ? registeredCount(featured) : 0;
+ const featuredRegistered = featured ? confirmedCount(featured) : 0;
  const featuredCapacity = featured?.totalTeams ?? 0;
  const featuredSlotsLeft = Math.max(0, featuredCapacity - featuredRegistered);
  const deadlineDays = featured ? daysUntil(featured.registrationDeadline) : null;
@@ -1172,7 +1173,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  {visibleTournaments.map((t, cardIdx) => {
  const percentage = fillPercent(t);
  const full = isTournamentFull(t);
- const reg = registeredCount(t);
+ const reg = confirmedCount(t);
  const drawable = drawableCount(t);
  const cap = t.totalTeams ?? 0;
  const statusLabel =
