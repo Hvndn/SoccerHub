@@ -72,7 +72,7 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  sortable: true,
  sortValue: (r) => r.teamName ?? "",
  render: (r) => (
- <div className="max-w-[280px]">
+ <div className="max-w-[240px]">
  <p className="font-bold text-slate-900 truncate">{r.teamName}</p>
  <p className="text-[13px] text-slate-500 truncate">
  {r.pitchName} • {r.matchTime}
@@ -90,24 +90,11 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
   <div className="whitespace-nowrap">
  <p className="font-bold">{r.captainName || "—"}</p>
  <p className="text-[13px] font-mono text-slate-500">{r.captainPhone || ""}</p>
+ <p className="text-[13px] font-bold text-slate-600">
+ {r.record && r.record !== "0-0-0" ? `${r.record} • ${r.winRate ?? 0}%` : "Tân binh"}
+ </p>
  </div>
  ),
- },
- {
- key: "form",
- header: "Phong độ",
- sortable: true,
- sortValue: (r) => r.winRate ?? 0,
- render: (r) => (
- <span className="font-mono font-bold">
- {r.record && r.record !== "0-0-0" ? `${r.record} • ${r.winRate ?? 0}%` : "Tân binh"}
- </span>
- ),
- },
- {
- key: "fee",
- header: "Phí dự kiến",
- render: (r) => <span className="font-mono font-bold">{formatMoney((r as any).estimatedFee)}</span>,
  },
  {
  key: "status",
@@ -115,9 +102,14 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  sortable: true,
  sortValue: (r) => r.status ?? "",
  render: (r) => (
+ <div className="whitespace-nowrap">
  <StatusBadge tone={STATUS_TONE[r.status ?? ""] ?? "slate"}>
  {STATUS_LABEL[r.status ?? ""] ?? r.status}
  </StatusBadge>
+ <p className="text-[13px] font-mono font-bold text-slate-600 mt-1">
+ {formatMoney((r as any).estimatedFee)}
+ </p>
+ </div>
  ),
  },
  {
@@ -148,7 +140,7 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  <button
  type="button"
  onClick={load}
- className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all"
+ className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all whitespace-nowrap shrink-0"
  >
  Tải lại
  </button>

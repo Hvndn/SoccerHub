@@ -97,7 +97,7 @@ export default function AdminTable<T>({
  </div>
 
  <div className="overflow-x-auto -mx-1 px-1 rounded-xl border border-slate-200 ">
- <table className="w-full text-[13px] border-collapse min-w-[720px] bg-white ">
+ <table className="w-full text-[13px] border-collapse min-w-[520px] bg-white ">
  <thead>
  <tr className="text-left text-[13px] tracking-wider text-slate-500 border-b border-slate-200 bg-slate-50/60 ">
  {columns.map((col, ci) => (
