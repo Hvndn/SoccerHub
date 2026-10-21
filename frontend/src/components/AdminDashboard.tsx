@@ -323,7 +323,7 @@ setIsSavingInfo(false);
  });
  const [offlinePitchId, setOfflinePitchId] = useState("");
   const OFFLINE_DURATION = 120; // Ca đặt tại quầy cố định 2 tiếng (120 phút)
- const [offlineTime, setOfflineTime] = useState("17:30 - 19:00");
+  const [offlineTime, setOfflineTime] = useState("");
  const [offlineCustomer, setOfflineCustomer] = useState("");
  const [offlinePhone, setOfflinePhone] = useState("");
  const [offlineDepositType, setOfflineDepositType] = useState<"PAID_CASH" | "TRUST">("PAID_CASH");
@@ -949,7 +949,7 @@ setIsSavingInfo(false);
 
  <button
  type="button"
- onClick={() => setShowOfflineModal(true)}
+  onClick={() => { setOfflineTime(offlineAvailableSlots[0] ?? ""); setShowOfflineModal(true); }}
  className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
  >
  <PhoneCall className="w-4 h-4 shrink-0" />
@@ -2027,7 +2027,7 @@ setIsSavingInfo(false);
  <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
  <div className="flex items-center space-x-2.5">
  <Plus className="w-5.5 h-5.5 text-emerald-500" />
- <h3 className="font-black text-lg text-slate-900 ">Tạo Đặt Ca Vãng Lai (Hotline/Quầy)</h3>
+ <h3 className="font-black text-lg text-slate-900 ">Tạo Đơn Tại Quầy</h3>
  </div>
  <button 
  type="button"
@@ -2077,7 +2077,7 @@ setIsSavingInfo(false);
  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
  >
  {pitchMatrix.map(p => (
- <option key={p.pitchId} value={p.pitchId}>{p.pitchName}</option>
+ <option key={p.pitchId} value={p.pitchId}>{pitchTypeLabel(p.pitchName) || p.pitchName}</option>
  ))}
  </select>
  </div>
@@ -2111,7 +2111,7 @@ setIsSavingInfo(false);
  required
  value={offlineCustomer}
  onChange={(e) => setOfflineCustomer(e.target.value)}
- placeholder="VD: Anh Cường FC Phủ Diễn"
+ placeholder="VD: Anh Cường FC Hải Châu"
  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
  />
  </div>
@@ -2168,7 +2168,7 @@ setIsSavingInfo(false);
  type="submit"
  className="flex-1 py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-colors"
  >
- Xác Nhận Khóa Slot
+ Xác Nhận Giữ Ca
  </button>
  </div>
  </form>
