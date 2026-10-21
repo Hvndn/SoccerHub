@@ -129,9 +129,9 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  // Vé của chính mình: tra theo SĐT trong tài khoản (API search bookings)
  const phone = (user?.phone ?? "").toString().replace(/\s/g, "");
  if (phone.length >= 8) {
- const bs = await fetchWithTimeout(`${API_BASE_URL}/api/v1/pitches/bookings/search?query=${encodeURIComponent(phone)}`)
- .then((r) => (r.ok ? r.json() : []))
- .catch(() => [] as any[]);
+  const bs = await apiRequest<any[]>(`/api/v1/pitches/bookings/search?query=${encodeURIComponent(phone)}`)
+  .then((r) => (Array.isArray(r) ? r : []))
+  .catch(() => [] as any[]);
  setMyBookings(Array.isArray(bs) ? bs : []);
  } else {
  setMyBookings([]);
@@ -456,7 +456,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  <div className="flex flex-col gap-3 sm:gap-4">
  <div className="flex items-center justify-between">
  <h3 className="text-base font-bold text-slate-900 ">
-  activeFilter === "history" ? "Kết Quả Các Trận Đã Đánh" : activeFilter === "matchmaking" ? "Kèo Đã Ghép" : activeFilter === "cancelled" ? "Kèo Đã Hủy" : activeFilter === "tournaments" ? "Lịch Đấu Giải" : "Các Trận Sắp Tới"
+  {activeFilter === "history" ? "Kết Quả Các Trận Đã Đánh" : activeFilter === "matchmaking" ? "Kèo Đã Ghép" : activeFilter === "cancelled" ? "Kèo Đã Hủy" : activeFilter === "tournaments" ? "Lịch Đấu Giải" : "Các Trận Sắp Tới"}
   <span className="ml-2 font-mono text-[13px] text-slate-500">({(visibleKeo.length || visibleMatches.length)})</span>
  </h3>
  <span className="text-[13px] text-slate-500 font-medium">Sắp xếp theo thời gian</span>
