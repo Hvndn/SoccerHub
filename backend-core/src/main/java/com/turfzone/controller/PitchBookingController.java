@@ -710,14 +710,21 @@ public class PitchBookingController {
         // GIÁ LUÔN TÍNH Ở SERVER — không nhận totalPrice/depositPaid từ client
         // (client có thể tự khai giá 1đ làm sai số liệu doanh thu của chủ sân).
         boolean isPeak = isPeakStart(timeSlot);
-        int hourPrice = isPeak
-                ? (ownerPitch.getPeakPricePerHour() != null ? ownerPitch.getPeakPricePerHour() : 500000)
-                : (ownerPitch.getAvgPricePerHour() != null ? ownerPitch.getAvgPricePerHour() : 350000);
+        // Tính giá ĐÚNG theo công thức của ma trận: giá giờ × hệ số loại sân con × thời lượng ca.
+        // (Sân 11 = ×2, Sân 7 = ×1, Sân 5 = ×0.75) — trước đây lệch với giá hiển thị.
+        int baseHour = ownerPitch.getAvgPricePerHour() != null ? ownerPitch.getAvgPricePerHour() : 350000;
+        int peakHour = ownerPitch.getPeakPricePerHour() != null ? ownerPitch.getPeakPricePerHour() : 500000;
+        String cn = courtName != null ? courtName.toLowerCase() : "";
+        int courtBase = cn.contains("11") ? Math.round(baseHour * 2f)
+                : cn.contains("7") ? baseHour : Math.round(baseHour * 0.75f);
+        int courtPeak = cn.contains("11") ? Math.round(peakHour * 2f)
+                : cn.contains("7") ? peakHour : Math.round(peakHour * 0.75f);
+        int hourPrice = isPeak ? courtPeak : courtBase;
         int durationMin = (ownerPitch.getSlotDurationMinutes() != null && ownerPitch.getSlotDurationMinutes() > 0)
                 ? ownerPitch.getSlotDurationMinutes() : 120;
-        Integer totalPrice = (int) Math.round(hourPrice * (durationMin / 60.0));
+        Integer totalPrice = Math.round(hourPrice * (durationMin / 60.0f));
         // Cọc tối đa 50% giá ca (đúng chính sách hiển thị ở giao diện).
-        Integer depositPaid = Math.min((int) Math.round(totalPrice * 0.5), totalPrice);
+        Integer depositPaid = Math.min(Math.round(totalPrice * 0.5f), totalPrice);
         Integer cashDue = totalPrice - depositPaid;
 
         if (courtName == null || timeSlot == null || customerName == null || customerPhone == null) {
