@@ -564,12 +564,12 @@ private void seedUsers() {
                     .build();
 
             Pitch s8 = Pitch.builder()
-                    .name("Sân Bóng Trung Tâm Cần Thơ")
+                    .name("Sân Bóng Trung Tâm Hải Châu")
                     .address("200 Đường 3 Tháng 2, Quận Hải Châu")
-                    .area("Ninh Kiều, Cần Thơ")
+                    .area("Quận Hải Châu, Đà Nẵng")
                     .phone("0979333444")
-                    .ownerName("Cần Thơ Sport Arena")
-                    .latitude(10.0340).longitude(105.7880)
+                    .ownerName("Hải Châu Sport Arena")
+                    .latitude(16.0544).longitude(108.2022)
                     .avgPricePerHour(220000).peakPricePerHour(280000)
                     .rating(4.5).openTime("05:30").closeTime("22:30")
                     .pitchTypes(new ArrayList<>(List.of("SAN_5", "SAN_7")))
