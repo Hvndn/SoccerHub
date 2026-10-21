@@ -6,6 +6,7 @@ import {
  QrCode, Video, MessageSquare, CheckCircle2, RefreshCw, XCircle, PlayCircle, FileText
 } from "lucide-react";
 import { API_BASE_URL, apiRequest, fetchWithTimeout } from '@/lib/api';
+import { pitchTypeLabel } from "@/lib/pitchLabels";
 import { todayLocal, isPastDay } from "@/lib/dateUtils";
 import {
  fetchTournaments, sportLabel, formatLabel,
@@ -545,7 +546,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  <div key={b.id} className="rounded-xl bg-white border border-slate-200/80 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3">
  <div className="min-w-0">
  <p className="text-sm font-bold text-slate-900 ">
- {b.courtName ?? b.courtType ?? "Sân"} · {b.timeSlot}
+ {pitchTypeLabel(b.courtName) || b.courtType || "Sân"} · {b.timeSlot}
  </p>
  <p className="text-[13px] text-slate-500">
  {b.bookingDate} · Mã vé <span className="font-mono font-bold">{b.code}</span> · Tổng {money(b.totalPrice)} (cọc {money(b.depositPaid)})

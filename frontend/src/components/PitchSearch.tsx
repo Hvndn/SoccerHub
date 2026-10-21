@@ -44,6 +44,7 @@ import {
 
 import PitchDetail from "./PitchDetail";
 import { getAllPitchesApi } from "@/lib/pitchService";
+import { pitchTypeLabel } from "@/lib/pitchLabels";
 import { API_BASE_URL, apiRequest, ensureLoggedIn, fetchWithTimeout } from '@/lib/api';
 import { todayLocal } from "@/lib/dateUtils";
 import { fetchTournaments } from "@/lib/tournamentService";
@@ -867,7 +868,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
  <span className="text-[13px] font-bold text-slate-500">Loại Sân</span>
  <div className="text-sm font-black text-slate-900 font-mono truncate">
- {featuredPitch.pitchTypes?.filter(Boolean).slice(0, 2).join(" · ") ||
+ {featuredPitch.pitchTypes?.filter(Boolean).slice(0, 2).map(pitchTypeLabel).join(" · ") ||
  featuredPitch.type ||
  "Chưa khai báo"}
  </div>
@@ -954,7 +955,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  {ls.time}
  </span>
  <span className="text-[13px] text-slate-500 font-sans truncate min-w-0 max-w-[100px] sm:max-w-[130px]">
- {ls.courtName}
+ {pitchTypeLabel(ls.courtName) || ls.courtName}
  </span>
  </div>
  {ls.status === 'BOOKED' || ls.status === 'PLAYING' ? (
@@ -1084,7 +1085,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
  <span className="px-2.5 py-1 rounded-lg bg-slate-900/90 backdrop-blur-md text-white font-extrabold text-[13px] flex items-center space-x-1 border border-slate-700">
  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
- <span>{pitch.pitchTypes?.[0] ?? pitch.sportBadge}</span>
+ <span>{pitch.pitchTypes?.[0] ? pitchTypeLabel(pitch.pitchTypes[0]) : pitch.sportBadge}</span>
  </span>
  </div>
 

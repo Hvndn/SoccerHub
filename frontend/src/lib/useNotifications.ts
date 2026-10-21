@@ -7,6 +7,7 @@ import {
   type RealtimeBookingEvent,
 } from "@/lib/realtimeService";
 import { listMyNotifications, markNotificationRead } from "@/lib/adminService";
+import { pitchTypeLabel } from "@/lib/pitchLabels";
 
 /** Một thông báo trong Trung Tâm Thông Báo (server + realtime + cache local). */
 export interface AppNotification {
@@ -141,7 +142,7 @@ export function useNotifications(user: { email?: string | null } | null | undefi
           id: `booking-${event.bookingId || Date.now()}`,
           type: "BOOKING_CREATED",
           title: "✅ Đặt Sân Thành Công!",
-          message: `Ca ${event.timeSlot || ""} tại ${event.courtName || "sân"} đã được xác nhận. Mã: ${event.code || "--"}.`,
+          message: `Ca ${event.timeSlot || ""} tại ${pitchTypeLabel(event.courtName) || "sân"} đã được xác nhận. Mã: ${event.code || "--"}.`,
           time: new Date(event.timestamp),
           read: false,
         };
@@ -150,7 +151,7 @@ export function useNotifications(user: { email?: string | null } | null | undefi
           id: `cancel-${event.bookingId || Date.now()}`,
           type: "BOOKING_CANCELLED",
           title: "❌ Ca Đặt Sân Bị Hủy",
-          message: `Ca ${event.timeSlot || ""} tại ${event.courtName || "sân"} đã bị hủy bởi chủ sân.`,
+          message: `Ca ${event.timeSlot || ""} tại ${pitchTypeLabel(event.courtName) || "sân"} đã bị hủy bởi chủ sân.`,
           time: new Date(event.timestamp),
           read: false,
           cancelReason: event.cancelReason,
@@ -160,7 +161,7 @@ export function useNotifications(user: { email?: string | null } | null | undefi
           id: `checkin-${event.bookingId || Date.now()}`,
           type: "BOOKING_CHECKED_IN",
           title: "🏟️ Check-in Xác Nhận!",
-          message: `Bạn đã check-in thành công ca ${event.timeSlot || ""} tại ${event.courtName || "sân"}.`,
+          message: `Bạn đã check-in thành công ca ${event.timeSlot || ""} tại ${pitchTypeLabel(event.courtName) || "sân"}.`,
           time: new Date(event.timestamp),
           read: false,
         };

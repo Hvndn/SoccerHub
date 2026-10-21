@@ -131,7 +131,7 @@ function NewTournamentWizard() {
  title: form.title.trim(),
  description:
  form.description.trim() ||
- `Giải đấu bóng đá phong trào ${form.sportType} tổ chức tại ${form.pitchName.trim()}.`,
+ `Giải đấu bóng đá phong trào ${sportLabel(form.sportType)} tổ chức tại ${form.pitchName.trim()}.`,
  sportType: form.sportType,
  format: form.format,
  pitchName: form.pitchName.trim(),

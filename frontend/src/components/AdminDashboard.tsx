@@ -395,7 +395,7 @@ setIsSavingInfo(false);
  const dateLabel = event.bookingDate 
  ? (event.bookingDate === matrixDateRef.current ? "Hôm nay" : event.bookingDate)
  : "Hôm nay";
- showToast(`⚡ CÓ ĐƠN ĐẶT SÂN MỚI! Khách ${event.customerName} (${event.customerPhone}) vừa cọc ca [${event.timeSlot}] ngày [${dateLabel}] của [${event.courtName}]!`);
+ showToast(`⚡ CÓ ĐƠN ĐẶT SÂN MỚI! Khách ${event.customerName} (${event.customerPhone}) vừa cọc ca [${event.timeSlot}] ngày [${dateLabel}] của [${pitchTypeLabel(event.courtName) || event.courtName}]!`);
  
  // Cập nhật ma trận ca sân & doanh thu tức thời theo ngày đang xem
  const currentId = activePitch?.id || 1;
@@ -812,7 +812,7 @@ setIsSavingInfo(false);
  Khách hàng <span className="text-amber-600 underline underline-offset-2">{realtimeAlert.customerName}</span> ({realtimeAlert.customerPhone}) vừa cọc ca thi đấu!
  </h3>
  <p className="text-[13px] text-sky-800 font-medium flex flex-wrap items-center gap-x-2">
- <span>🏟️ {realtimeAlert.courtName}</span>
+ <span>🏟️ {pitchTypeLabel(realtimeAlert.courtName) || realtimeAlert.courtName}</span>
  <span>•</span>
  <span>⏰ Ca: <strong className="text-slate-900 font-mono">{realtimeAlert.timeSlot}</strong></span>
  <span>•</span>

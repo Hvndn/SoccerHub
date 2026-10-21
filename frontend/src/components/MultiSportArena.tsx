@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 
 import { API_BASE_URL, apiRequest, ensureLoggedIn, fetchWithTimeout } from '@/lib/api';
+import { pitchTypeLabel } from "@/lib/pitchLabels";
 
 interface Court {
  id: string;
@@ -110,7 +111,7 @@ export default function MultiSportArena({
  name: p.name || `Cụm sân #${p.id}`,
  fieldType: kind,
  fieldLabel: FIELD_LABEL[kind],
- surface: p.pitchTypes?.length ? p.pitchTypes.join(' · ') : 'Chưa khai báo loại mặt sân',
+ surface: p.pitchTypes?.length ? p.pitchTypes.map(pitchTypeLabel).join(' · ') : 'Chưa khai báo loại mặt sân',
  status: 'available',
  pricePerHour: p.avgPricePerHour ?? 0,
  features: p.amenities?.length ? p.amenities : [],

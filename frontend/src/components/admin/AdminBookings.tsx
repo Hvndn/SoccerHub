@@ -5,6 +5,7 @@ import { Search, Sparkles, Eraser } from "lucide-react";
 import AdminTable, { type AdminColumn } from "./AdminTable";
 import { SectionCard, StatusBadge } from "./AdminUI";
 import { listAdminBookings, simulateBookings, clearSimulatedBookings, type AdminBooking } from "@/lib/adminService";
+import { pitchTypeLabel } from "@/lib/pitchLabels";
 import { apiRequest } from "@/lib/api";
 
 const STATUS_TONE: Record<string, "green" | "amber" | "rose" | "sky" | "slate"> = {
@@ -122,7 +123,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  sortValue: (r) => `${r.bookingDate ?? ""} ${r.timeSlot ?? ""}`,
  render: (r) => (
  <div>
- <p className="font-bold">{r.courtName}</p>
+ <p className="font-bold">{pitchTypeLabel(r.courtName) || r.courtName}</p>
  <p className="text-[13px] text-slate-500 font-mono">
  {r.bookingDate} • {r.timeSlot}
  </p>

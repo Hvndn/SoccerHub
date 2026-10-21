@@ -866,7 +866,7 @@ export default function PitchDetail({
  <div className="flex items-start justify-between">
  <div>
  <span className="text-[13px] text-slate-500 font-extrabold tracking-wider">Cụm sân & Mặt sân</span>
- <p className="font-black text-sm text-slate-900 ">{selectedSlot.courtName}</p>
+ <p className="font-black text-sm text-slate-900 ">{pitchTypeLabel(selectedSlot.courtName) || selectedSlot.courtName}</p>
  <p className="text-[13px] text-slate-500 truncate max-w-[220px]">{venueData.name}</p>
  </div>
  <Award className="w-6 h-6 text-emerald-500 shrink-0" />
@@ -1140,7 +1140,7 @@ export default function PitchDetail({
  MÃ VÉ: {bookingConfirmed?.code || "—"}
  </p>
  <p className="font-bold text-slate-900 ">{venueData.name}</p>
- <p>{selectedSlot.courtName} • {selectedSlot.time}</p>
+ <p>{pitchTypeLabel(selectedSlot.courtName) || selectedSlot.courtName} • {selectedSlot.time}</p>
  <p className="text-slate-500 text-[13px]">Ngày đá: {selectedDate}</p>
  </div>
  </div>

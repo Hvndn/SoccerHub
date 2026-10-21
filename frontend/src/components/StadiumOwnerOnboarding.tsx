@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toastErr } from "@/lib/toast";
+import { pitchTypeLabel } from "@/lib/pitchLabels";
 import {
  ShieldCheck,
  CheckCircle2,
@@ -65,7 +66,7 @@ export default function StadiumOwnerOnboarding({
  const mapped = data.map((item: any) => ({
  id: item.id,
  name: item.name,
- sport: item.pitchTypes?.[0] || "Chưa khai báo bộ môn",
+ sport: item.pitchTypes?.[0] ? pitchTypeLabel(item.pitchTypes[0]) : "Chưa khai báo bộ môn",
  surface: item.amenities?.[0] ? `Tiện ích: ${item.amenities[0]}` : "Chưa khai báo mặt sân",
  normalPrice: item.avgPricePerHour || item.pricePerHour || 0,
  peakPrice: item.peakPricePerHour || item.avgPricePerHour || 0,
@@ -116,7 +117,7 @@ export default function StadiumOwnerOnboarding({
  {
  id: created.id || Date.now(),
  name: created.name,
- sport: created.pitchTypes?.[0] || "Chưa khai báo bộ môn",
+ sport: created.pitchTypes?.[0] ? pitchTypeLabel(created.pitchTypes[0]) : "Chưa khai báo bộ môn",
  surface: "Tiện ích: Chưa khai báo",
  normalPrice: created.avgPricePerHour || created.pricePerHour || newNormalPrice,
  peakPrice: created.peakPricePerHour || newPeakPrice,
