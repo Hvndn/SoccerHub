@@ -560,6 +560,7 @@ public class TournamentController {
      * Kết quả lưu vào bracketJson. Phong độ mỗi đội lấy live từ lịch sử thi đấu.
      */
     @PostMapping("/{id}/draw")
+    @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> drawBracket(@PathVariable Long id) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
@@ -743,6 +744,7 @@ public class TournamentController {
      * (đẩy đội thắng vào vòng sau). Phong độ hai đội tự cập nhật từ lịch sử.
      */
     @PostMapping("/{id}/matches")
+    @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> saveMatchResult(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
@@ -943,6 +945,7 @@ public class TournamentController {
      * Chỉ cho phép khi các trận vòng sau chưa có kết quả (để không phá nhánh đấu).
      */
     @DeleteMapping("/{id}/matches/{matchId}")
+    @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> undoMatchResult(@PathVariable Long id, @PathVariable String matchId) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);

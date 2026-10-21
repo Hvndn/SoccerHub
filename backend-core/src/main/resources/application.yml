@@ -47,7 +47,10 @@ ai-service:
   url: ${AI_SERVICE_URL:http://localhost:8000}
 
 jwt:
-  secret: TurfzoneSuperSecretKeyForJWTAuthentication2026PitchManagement
+  # BẮT BUỘC đặt biến môi trường JWT_SECRET (>= 32 ký tự) khi chạy production.
+  # Secret nằm cứng trong repo = ai đọc mã nguồn cũng tự ký được token ADMIN.
+  # Để trống thì ứng dụng dùng secret dự phòng cho local và in cảnh báo rõ ràng.
+  secret: ${JWT_SECRET:}
   expiration: 86400000
 
 # ============================================================================
