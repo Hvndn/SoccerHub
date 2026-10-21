@@ -179,7 +179,10 @@ export async function apiRequest<T = any>(
   }
 
   if (!response.ok) {
-    const errorMessage = data?.message || `Lỗi yêu cầu: ${response.status} ${response.statusText}`;
+    // Backend trả "message" ở hầu hết endpoint, nhưng một số endpoint (đăng ký đội,
+    // duyệt lệ phí...) dùng key "error" -> đọc cả hai để không mất thông điệp gốc.
+    const errorMessage =
+      data?.message || data?.error || `Lỗi yêu cầu: ${response.status} ${response.statusText}`;
     // Gắn mã HTTP vào Error để tầng gọi phân biệt "máy chủ từ chối phiên" (401/403)
     // với "không kết nối được" (timeout/mất mạng) — tránh xoá token oan khi backend chết.
     const err: any = new Error(errorMessage);

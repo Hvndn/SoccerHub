@@ -277,15 +277,16 @@ export async function registerTeam(
   tournamentId: number,
   payload: Record<string, unknown>
 ): Promise<{ message: string; registeredTeams: number }> {
-  const res = await fetchWithStatus(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  const body = await res.json().catch(() => null);
-  if (!res.ok) {
-    throw new Error(body?.error || 'Đăng ký không thành công, vui lòng thử lại.');
-  }
+  // PHẢI dùng apiRequest (tự gắn Bearer token) — gọi fetchWithStatus trực tiếp sẽ
+  // không có token nên backend trả 403 "Forbidden" dù người dùng đã đăng nhập.
+  const body = await apiRequest<{ message: string; registeredTeams: number }>(
+    `/api/v1/tournaments/${tournamentId}/register`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }
+  );
   await refreshTournamentInCache(tournamentId); // chỉ làm mới giải vừa đăng ký đội
   return body;
 }
