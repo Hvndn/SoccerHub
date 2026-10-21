@@ -429,7 +429,7 @@ export default function PlayerProfileConsole({
 
  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 pt-0.5 text-[13px] text-slate-500">
  <span className="font-semibold text-slate-700 ">
- Vị trí: <span className="text-sky-700 font-bold">{displayPosition}</span>
+ Vị trí chơi: <span className="text-sky-700 font-bold">{displayPosition}</span>
  </span>
  <span className="hidden sm:inline">•</span>
  <span>Trình độ: <strong className="text-slate-800 ">{displayLevel}</strong></span>

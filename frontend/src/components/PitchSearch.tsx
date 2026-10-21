@@ -597,7 +597,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  )}
  </h1>
  <p className="text-[13px] sm:text-[13px] md:text-sm text-slate-600 font-medium mt-0.5 leading-relaxed">
- Vị trí:{" "}
+ Vị trí chơi:{" "}
  <span className="text-[#0b4f6c] font-bold">
  {user?.position ?? "Chưa cập nhật"}
  </span>{" "}
