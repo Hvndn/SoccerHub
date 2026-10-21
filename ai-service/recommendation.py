@@ -22,10 +22,10 @@ def score_pitch_cluster(cluster: Dict[str, Any], user_pref: Dict[str, Any]) -> f
     - Average user rating & popularity (15% weight)
     """
     # 1. Distance Score
-    user_lat = user_pref.get("latitude", 10.7769)
-    user_lon = user_pref.get("longitude", 106.7009)
-    pitch_lat = cluster.get("latitude", 10.7769)
-    pitch_lon = cluster.get("longitude", 106.7009)
+    user_lat = user_pref.get("latitude", 16.0544)
+    user_lon = user_pref.get("longitude", 108.2022)
+    pitch_lat = cluster.get("latitude", 16.0544)
+    pitch_lon = cluster.get("longitude", 108.2022)
     
     dist_km = haversine_distance(user_lat, user_lon, pitch_lat, pitch_lon)
     # Max distance threshold 20km
@@ -62,12 +62,12 @@ def score_pitch_cluster(cluster: Dict[str, Any], user_pref: Dict[str, Any]) -> f
 def recommend_pitches(clusters: List[Dict[str, Any]], user_pref: Dict[str, Any], top_n: int = 5) -> List[Dict[str, Any]]:
     """Return top N recommended pitches sorted by compatibility score."""
     scored_list = []
-    user_lat = user_pref.get("latitude", 10.7769)
-    user_lon = user_pref.get("longitude", 106.7009)
+    user_lat = user_pref.get("latitude", 16.0544)
+    user_lon = user_pref.get("longitude", 108.2022)
     
     for cluster in clusters:
         score = score_pitch_cluster(cluster, user_pref)
-        dist = haversine_distance(user_lat, user_lon, cluster.get("latitude", 10.7769), cluster.get("longitude", 106.7009))
+        dist = haversine_distance(user_lat, user_lon, cluster.get("latitude", 16.0544), cluster.get("longitude", 108.2022))
         
         item = dict(cluster)
         item["compatibility_score"] = score

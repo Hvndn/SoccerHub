@@ -26,8 +26,8 @@ app.add_middleware(
 
 # --- Data Schemas ---
 class UserPreferenceRequest(BaseModel):
-    latitude: float = 10.7769
-    longitude: float = 106.7009
+    latitude: float = 16.0544
+    longitude: float = 108.2022
     max_budget: float = 500000.0
     pitch_type: str = "PITCH_7"
     top_n: int = 5
