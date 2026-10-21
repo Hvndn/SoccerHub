@@ -68,7 +68,26 @@ export const sportLabel = (sportType?: string | null): string => {
 };
 
 export const formatLabel = (format?: string | null): string =>
-  format === 'KNOCKOUT' ? 'Loại Trực Tiếp (Knockout)' : 'Vòng Tròn Tính Điểm';
+  format === 'KNOCKOUT' ? 'Loại Trực Tiếp' : 'Vòng Tròn Tính Điểm';
+
+/**
+ * Rút gọn tên giải cho mã biên bản.
+ *
+ * <p>Cắt tại ranh giới từ để không bị cụt giữa chữ (slice thẳng cho ra
+ * "Turfzone Grandmast").</p>
+ */
+export const shortTournamentCode = (title?: string | null): string => {
+  const t = (title ?? '').trim();
+  if (!t) return 'SH';
+  const words = t.split(/\s+/);
+  let out = '';
+  for (const w of words) {
+    const next = out ? `${out} ${w}` : w;
+    if (next.length > 20) break;
+    out = next;
+  }
+  return out || words[0].slice(0, 20);
+};
 
 /** Short chip code used on tight media overlays (e.g. the featured banner). */
 export const formatShort = (format?: string | null): string =>

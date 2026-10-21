@@ -50,6 +50,7 @@ import {
  formatDate,
  sportLabel,
  formatLabel,
+  shortTournamentCode,
  type TournamentBracketData,
  type BracketMatch,
 } from "@/lib/tournamentService";
@@ -462,7 +463,7 @@ const [addCount, setAddCount] = useState("4");
  }
  const isLeague = selected.format === "ROUND_ROBIN";
  if (scoreA === scoreB && !isLeague) {
- triggerToast("Vòng Knockout cần phân thắng bại, không nhận tỷ số hòa.");
+ triggerToast("Vòng loại trực tiếp cần phân thắng bại, không nhận tỷ số hòa.");
  return;
  }
  const rows = (scorerRows[m.matchId] ?? [])
@@ -538,7 +539,7 @@ const [addCount, setAddCount] = useState("4");
  if (!selected || !varMatch) return;
  const isLeague = selected.format === "ROUND_ROBIN";
  if (varScoreA === varScoreB && !isLeague) {
- triggerToast("Vòng Knockout cần phân thắng bại, không nhận tỷ số hòa.");
+ triggerToast("Vòng loại trực tiếp cần phân thắng bại, không nhận tỷ số hòa.");
  return;
  }
  if (varMatch.status === "DONE") {
@@ -1451,7 +1452,7 @@ const [addCount, setAddCount] = useState("4");
  <h4 className="font-bold text-sm">Biên Bản Trận Đấu</h4>
  <p className="text-[13px] text-slate-600 ">
  {varMatch
- ? `Mã biên bản: ${selected?.title ? selected.title.slice(0, 18) : "SH"}-${varMatch.matchId}-${(varMatch.matchDate ?? "").replace(/-/g, "") || "CHUALICH"}`
+ ? `Mã biên bản: ${shortTournamentCode(selected?.title)}-${varMatch.matchId}-${(varMatch.matchDate ?? "").replace(/-/g, "") || "CHUALICH"}`
  : "Chọn trận để tạo biên bản"}
  </p>
  </div>
@@ -1592,7 +1593,7 @@ const [addCount, setAddCount] = useState("4");
  Biên Bản Trận Đấu — {selected ? sportLabel(selected.sportType) : "Bóng Đá Sân 7 Phủi"}
  </h3>
  <p className="text-[13px] font-mono text-slate-500">
- Mã biên bản: {(selected?.title ?? "SH").slice(0, 20)}-{varMatch.matchId}-
+ Mã biên bản: {shortTournamentCode(selected?.title)}-{varMatch.matchId}-
  {(varMatch.matchDate ?? "").replace(/-/g, "") || "CHUALICH"}
  </p>
  </div>

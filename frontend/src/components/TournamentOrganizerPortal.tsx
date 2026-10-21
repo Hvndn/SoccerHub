@@ -675,7 +675,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  if (!activeTournamentId || !umpireMatch) return;
  const isLeague = activeTournament?.format === "ROUND_ROBIN";
  if (umpireScoreA === umpireScoreB && !isLeague) {
- setUmpireMsg("Vòng Knockout cần phân thắng bại, không nhận hòa.");
+ setUmpireMsg("Vòng loại trực tiếp cần phân thắng bại, không nhận hòa.");
  return;
  }
  if (umpireMatch.status === "DONE") {
@@ -1766,7 +1766,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   <button
     onClick={handleCreateRandomTournament}
     className="w-full py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-[13px] border-2 border-dashed border-slate-300 transition-all flex items-center justify-center space-x-2 active:scale-95"
-    title="Tự động tạo giải Test (16 đội, Knockout, sân ngẫu nhiên) + fill teams + bốc thăm ngay"
+    title="Tự động tạo giải thử (16 đội, loại trực tiếp, sân ngẫu nhiên) + bốc thăm ngay"
   >
     <RefreshCw className="w-4 h-4" />
     <span>Tạo giải Test ngẫu nhiên & Bốc thăm</span>
@@ -2046,7 +2046,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  onChange={(e) => setEditForm((f) => ({ ...f, format: e.target.value }))}
  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
  >
- <option value="KNOCKOUT">Loại trực tiếp (Knockout)</option>
+ <option value="KNOCKOUT">Loại trực tiếp</option>
  <option value="ROUND_ROBIN">Đấu vòng tròn</option>
  </select>
  </div>

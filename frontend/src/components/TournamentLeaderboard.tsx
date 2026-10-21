@@ -1347,7 +1347,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   ) : (
   <Dices className="w-3.5 h-3.5" />
   )}
-  {t.format === 'ROUND_ROBIN' ? 'Giả Lập Vòng Tròn' : 'Giả Lập Knockout'}
+  {t.format === 'ROUND_ROBIN' ? 'Giả Lập Vòng Tròn' : 'Giả Lập Loại Trực Tiếp'}
   </button>
   )}
   </>

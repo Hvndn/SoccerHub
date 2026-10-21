@@ -15,7 +15,7 @@ import {
 
 const STEPS = [
  { label: "Thông tin cơ bản", hint: "Tên giải & môn thi đấu" },
- { label: "Thể thức & quy mô", hint: "Knockout / vòng tròn" },
+ { label: "Thể thức & quy mô", hint: "Loại trực tiếp / vòng tròn" },
  { label: "Thời gian & địa điểm", hint: "Ngày đấu & sân đăng cai" },
  { label: "Giải thưởng & xác nhận", hint: "Duyệt & công bố" },
 ];
@@ -292,8 +292,8 @@ function NewTournamentWizard() {
  onChange={(e) => set("totalTeams", Number(e.target.value))}
  className={inputCls}
  >
- <option value={8}>8 đội (Tứ kết Knockout)</option>
- <option value={16}>16 đội (Vòng bảng + Knockout)</option>
+ <option value={8}>8 đội (Tứ kết loại trực tiếp)</option>
+ <option value={16}>16 đội (Vòng bảng + loại trực tiếp)</option>
  <option value={32}>32 đội (Open Cup đại quy mô)</option>
  </select>
  </div>
