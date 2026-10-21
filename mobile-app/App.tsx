@@ -15,8 +15,34 @@ import {
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 
-// Backend API URL - trỏ trực tiếp đến máy chủ hoặc IP mạng LAN
-const API_URL = 'http://10.100.19.142:8080/api/v1';
+/**
+ * Backend API URL.
+ *
+ * Ưu tiên suy ra IP của máy đang chạy Expo (qua expo-constants) để app luôn gọi
+ * đúng backend ở máy phát triển, không cần sửa code mỗi khi đổi mạng.
+ * Nếu không lấy được (chạy bản build standalone) thì lùi về IP cố định.
+ */
+const FALLBACK_API_URL = 'http://10.100.19.142:8080/api/v1';
+
+function resolveApiUrl(): string {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Constants = require('expo-constants').default;
+    const hostUri =
+      Constants?.expoConfig?.hostUri ||
+      Constants?.manifest2?.extra?.expoGo?.developer?.host ||
+      null;
+    if (hostUri) {
+      const ip = String(hostUri).split(':')[0];
+      if (ip && ip !== 'localhost') return `http://${ip}:8080/api/v1`;
+    }
+  } catch {
+    // Không có expo-constants -> dùng IP cố định bên dưới.
+  }
+  return FALLBACK_API_URL;
+}
+
+const API_URL = resolveApiUrl();
 
 interface Pitch {
   id: number;
@@ -590,11 +616,11 @@ const styles = StyleSheet.create({
   },
   proText: {
     color: '#ffffff',
-    fontSize: 10,
+    fontSize: 13,
     fontWeight: '800',
   },
   brandSubtitle: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#64748b',
     fontWeight: '500',
   },
@@ -664,7 +690,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#10b981',
   },
   heroTagText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '800',
     color: '#0369a1',
     letterSpacing: 0.5,
@@ -702,7 +728,7 @@ const styles = StyleSheet.create({
     color: '#0369a1',
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#64748b',
     marginTop: 2,
   },
@@ -780,7 +806,7 @@ const styles = StyleSheet.create({
     color: '#0f172a',
   },
   sectionBadge: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     color: '#10b981',
     backgroundColor: '#ecfdf5',
@@ -838,7 +864,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   ratingPillText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     color: '#b45309',
   },
@@ -861,12 +887,12 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   amenityTagText: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#475569',
     fontWeight: '600',
   },
   openTimeTag: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#0369a1',
     fontWeight: '600',
   },
@@ -880,7 +906,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f8fafc',
   },
   priceLabel: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#64748b',
   },
   priceAmount: {
@@ -889,7 +915,7 @@ const styles = StyleSheet.create({
     color: '#0369a1',
   },
   priceUnit: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '400',
     color: '#64748b',
   },
@@ -932,7 +958,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   tourBadgeText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
   },
   tourInfoRow: {
@@ -981,7 +1007,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   levelBadgeText: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#0369a1',
     fontWeight: '700',
   },
@@ -1044,7 +1070,7 @@ const styles = StyleSheet.create({
     color: '#0f172a',
   },
   profileRole: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#64748b',
     marginTop: 2,
   },
@@ -1066,7 +1092,7 @@ const styles = StyleSheet.create({
     color: '#0369a1',
   },
   pStatSub: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#64748b',
     marginTop: 2,
   },
@@ -1096,7 +1122,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   bStatusText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
     color: '#047857',
   },
@@ -1105,7 +1131,7 @@ const styles = StyleSheet.create({
     color: '#475569',
   },
   bPriceText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#64748b',
     marginTop: 6,
   },
@@ -1141,7 +1167,7 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   navLabel: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '600',
     color: '#64748b',
   },
@@ -1228,7 +1254,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   modalSlotSub: {
-    fontSize: 10,
+    fontSize: 13,
     color: '#64748b',
     marginTop: 2,
   },
@@ -1241,7 +1267,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9',
   },
   mPriceSub: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#64748b',
   },
   mPriceVal: {

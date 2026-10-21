@@ -2413,7 +2413,7 @@ setIsSavingInfo(false);
  <textarea
  value={cancelReasonInput}
  onChange={(e) => setCancelReasonInput(e.target.value)}
- placeholder="Hoặc nhập lý do cụ thể... (bắt buộc)"
+ placeholder="Hoặc nhập lý do cụ thể... (tuỳ chọn)"
  rows={3}
  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 font-medium placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none"
  />
