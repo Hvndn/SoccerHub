@@ -1,5 +1,8 @@
 package com.turfzone.controller;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import jakarta.servlet.http.HttpServletRequest;
 import com.turfzone.dto.AuthResponse;
 import com.turfzone.dto.LoginRequest;
 import com.turfzone.dto.RegisterRequest;
@@ -26,6 +29,52 @@ public class AuthController {
     private final GoogleAuthService googleAuthService;
     private final JwtTokenProvider tokenProvider;
 
+    // ---- Chống brute-force đăng nhập ----
+    // Đếm số lần đăng nhập SAI theo (email + IP) trong cửa sổ 5 phút.
+    // Quá 5 lần -> trả 429 để kẻ xấu không thể dò mật khẩu bằng vũ lực.
+    private static final int MAX_LOGIN_FAILS = 5;
+    private static final long LOGIN_WINDOW_MS = 5 * 60 * 1000L;
+    private final Map<String, int[]> loginFails = new ConcurrentHashMap<>();
+    private final Map<String, Long> loginFailAt = new ConcurrentHashMap<>();
+
+    private String loginAttemptKey(LoginRequest request, HttpServletRequest httpReq) {
+        String email = request.getEmail() == null ? "" : request.getEmail().trim().toLowerCase();
+        String ip = "";
+        if (httpReq != null) {
+            String fwd = httpReq.getHeader("X-Forwarded-For");
+            ip = (fwd != null && !fwd.isBlank()) ? fwd.split(",")[0].trim() : httpReq.getRemoteAddr();
+        }
+        return email + "|" + ip;
+    }
+
+    private boolean isLoginBlocked(String key) {
+        Long at = loginFailAt.get(key);
+        if (at == null) return false;
+        if (System.currentTimeMillis() - at > LOGIN_WINDOW_MS) {
+            loginFails.remove(key);
+            loginFailAt.remove(key);
+            return false;
+        }
+        int[] counter = loginFails.get(key);
+        return counter != null && counter[0] >= MAX_LOGIN_FAILS;
+    }
+
+    private void recordLoginFail(String key) {
+        long now = System.currentTimeMillis();
+        Long at = loginFailAt.get(key);
+        if (at == null || now - at > LOGIN_WINDOW_MS) {
+            loginFailAt.put(key, now);
+            loginFails.put(key, new int[] { 1 });
+            return;
+        }
+        loginFails.computeIfAbsent(key, k -> new int[] { 0 })[0]++;
+    }
+
+    private void clearLoginFails(String key) {
+        loginFails.remove(key);
+        loginFailAt.remove(key);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
@@ -39,11 +88,21 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpReq) {
+        String attemptKey = loginAttemptKey(request, httpReq);
         try {
             AuthResponse response = authService.login(request);
+            clearLoginFails(attemptKey);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
+            recordLoginFail(attemptKey);
+            if (isLoginBlocked(attemptKey)) {
+                // Đã sai quá nhiều lần -> chặn, nhưng vẫn trả cùng một thông báo chung
+                // để không tiết lộ thông tin (người dùng thật gõ đúng vẫn vào được ở nhánh try).
+                return ResponseEntity.status(429).body(Map.of(
+                        "message", "Bạn đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 5 phút."
+                ));
+            }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Đã xảy ra lỗi hệ thống: " + e.getMessage()));
