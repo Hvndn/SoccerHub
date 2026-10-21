@@ -234,6 +234,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
             <Users className="w-3.5 h-3.5 text-[#0369a1]" />
             Nhóm chat của tôi
           </h3>
+          {groups.length > 0 && (
           <button
             type="button"
             onClick={() => setShowCreate(true)}
@@ -242,6 +243,7 @@ export default function GroupChatPanel({ user, myEmail }: { user?: any; myEmail?
             <Plus className="w-3.5 h-3.5" />
             Tạo nhóm
           </button>
+          )}
         </div>
 
         {showCreate && (
