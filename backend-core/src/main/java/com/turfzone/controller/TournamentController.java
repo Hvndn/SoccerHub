@@ -333,13 +333,12 @@ public class TournamentController {
     // ------------------------------------------------------------------
     private static final List<String> SIM_TEAM_POOL = List.of(
             "FC Sông Hàn", "FC Hải Châu", "FC Cẩm Lệ", "FC Ngũ Hành Sơn",
-            "FC Liên Chiểu", "FC Thanh Khê", "FC Sơn Trà", "FC Hòa Vang",
-            "FC Điện Bàn", "FC Đà Nẵng", "FC Tam Kỳ", "FC Cố Đô Huế",
-            "FC Đông Hà", "FC Đồng Hới", "FC Vinh City", "FC Thanh Hóa",
-            "FC Hải Phòng", "FC Quảng Ninh", "FC Hà Đông", "FC Tây Hồ",
-            "FC Quận 2", "FC Bình Thạnh ĐN", "FC Hải Châu", "FC Tân Bình ĐN",
-            "FC Bình Tân ĐN", "FC Ngũ Hành Sơn", "FC Cẩm Lệ", "FC Sơn Trà",
-            "FC Vũng Tàu", "FC Cần Thơ", "FC Rạch Giá", "FC Cà Mau");
+        "FC Liên Chiểu", "FC Thanh Khê", "FC Sơn Trà", "FC Hòa Vang",
+        "FC Điện Bàn", "FC Đà Nẵng", "FC Tam Kỳ", "FC An Hương",
+        "FC Mỹ Khê", "FC Đồng Sơn", "FC Bình Thạnh ĐN", "FC Thanh Khê",
+        "FC Hải Châu", "FC Quận Hai", "FC Tân Bình ĐN", "FC Bình Tân ĐN",
+        "FC Ngũ Hành Sơn", "FC Cẩm Lệ", "FC Sơn Trà", "FC Hòa Cưng",
+        "FC Thanh Hưng", "FC Dương Kinh", "FC Nam Sơn Trà", "FC Hòa Vang");
 
     private static final List<String> SIM_FAMILY = List.of(
             "Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ",
