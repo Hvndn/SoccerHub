@@ -311,7 +311,7 @@ public class PitchBookingController {
 
             for (int sIdx = 0; sIdx < standardSlots.size(); sIdx++) {
                 String timeSlot = standardSlots.get(sIdx);
-                boolean isPeakHour = timeSlot.contains("17:") || timeSlot.contains("18:") || timeSlot.contains("19:");
+                boolean isPeakHour = isPeakStart(timeSlot);
                 int slotPrice = isPeakHour ? courtPeakForDuration : courtBaseForDuration;
 
                 // Kiểm tra xem khung giờ này có bị giao với booking nào đã đặt không
@@ -436,7 +436,7 @@ public class PitchBookingController {
                                 .anyMatch(s -> gapSlotTime.equalsIgnoreCase((String) s.get("time")));
 
                         if (!alreadyExists) {
-                            boolean isPeakHour = gapSlotTime.contains("17:") || gapSlotTime.contains("18:") || gapSlotTime.contains("19:");
+                            boolean isPeakHour = isPeakStart(gapSlotTime);
                             float durMultiplier = targetDur / 60.0f;
                             int gapPrice = Math.round((isPeakHour ? courtPeak : courtBase) * durMultiplier);
 
@@ -569,6 +569,24 @@ public class PitchBookingController {
      * Lay gio bat dau cua ca tu chuoi khoang gio trong CSDL.
      * VD: "17:00 - 19:00" -> 17 ; "16:00" -> 16 ; khong hieu -> null.
      */
+    /**
+     * Ca giờ vàng (cao điểm): xét theo GIỜ BẮT ĐẦU của ca.
+     *
+     * <p>Trước đây dùng {@code contains("17:")} nên ca "16:00 - 18:00" cũng bị tính
+     * giá vàng (vì chuỗi có "18:"). Nay chỉ ca bắt đầu 17h/18h/19h mới là giờ vàng —
+     * khớp với tiêu chí hiển thị ở giao diện.</p>
+     */
+    private static boolean isPeakStart(String timeSlot) {
+        if (timeSlot == null) return false;
+        String head = timeSlot.trim().split("-")[0].trim();
+        try {
+            int hour = Integer.parseInt(head.split(":")[0].trim());
+            return hour >= 17 && hour <= 19;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private static Integer parseStartHour(String timeSlot) {
         if (timeSlot == null || timeSlot.trim().isEmpty()) return null;
         String head = timeSlot.trim().split("-")[0].trim();

@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { apiRequest } from "@/lib/api";
-import { pitchTypeLabel } from "@/lib/pitchLabels";
+import { pitchTypeLabel, isPeakSlot } from "@/lib/pitchLabels";
+import { getMyPitchesApi } from "@/lib/pitchService";
 import { formatMoney } from "@/lib/tournamentService";
 import { simulateBookings } from "@/lib/adminService";
 import BusinessContacts from "@/components/BusinessContacts";
@@ -465,7 +466,9 @@ setIsSavingInfo(false);
  const fetchRealData = async () => {
  setIsLoadingBackend(true);
  try {
- const pitches = await apiRequest<any[]>("/api/v1/pitches");
+    // Chỉ lấy CỤM SÂN CỦA CHỦ SÂN này — dùng /pitches sẽ nạp sân của người khác
+    // và các thao tác ghi (giờ mở cửa, đặt ca tại quầy, thêm sân con) sẽ rơi vào sân #1.
+    const pitches = await getMyPitchesApi();
  if (pitches && pitches.length > 0) {
  setRealPitches(pitches);
  const current = pitches[0];
@@ -524,7 +527,7 @@ setIsSavingInfo(false);
  const currentId = activePitch?.id || 1;
  try {
  const targetCourt = pitchMatrix.find(p => p.pitchName === offlinePitchId || p.pitchId === offlinePitchId) || pitchMatrix[0];
- const isPeak = offlineTime.includes("17:30") || offlineTime.includes("19:00");
+ const isPeak = isPeakSlot(offlineTime);
  const baseHourPrice = isPeak ? (targetCourt?.peakPrice || 600000) : (targetCourt?.basePrice || 350000);
  const hourMultiplier = OFFLINE_DURATION / 60.0;
  const price = Math.round(baseHourPrice * hourMultiplier);
@@ -765,10 +768,10 @@ setIsSavingInfo(false);
  // 2. Lọc theo khoảng thời gian (Khung giờ)
  if (matrixFilterTime === "PEAK") {
  // Giờ vàng chiều tối (17:30 - 20:30)
- if (!s.time.includes("17:30") && !s.time.includes("19:00")) return false;
+ if (!isPeakSlot(s.time)) return false;
  } else if (matrixFilterTime === "OFF_PEAK") {
  // Giờ thường và ca đêm (16:00 - 17:30 và 20:30 - 22:00)
- if (s.time.includes("17:30") || s.time.includes("19:00")) return false;
+ if (isPeakSlot(s.time)) return false;
  } else if (matrixFilterTime !== "ALL") {
  if (s.time !== matrixFilterTime) return false;
  }

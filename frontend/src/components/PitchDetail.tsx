@@ -41,7 +41,7 @@ import {
  X
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
-import { pitchTypeLabel } from "@/lib/pitchLabels";
+import { pitchTypeLabel, isPeakSlot } from "@/lib/pitchLabels";
 import { broadcastBookingEvent, subscribeToBookingEvents } from "@/lib/realtimeService";
 
 interface PitchDetailProps {
@@ -657,7 +657,7 @@ export default function PitchDetail({
  className="bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-800 cursor-pointer"
  >
  <option value="ALL">Tất Cả Giờ Đá</option>
- <option value="PEAK">⭐ Khung Giờ Vàng (17:30 - 20:30)</option>
+ <option value="PEAK">⭐ Khung Giờ Vàng (17:00 - 20:00)</option>
  <option value="OFF_PEAK">🌙 Giờ Thường / Đêm Mát</option>
  </select>
  </div>
@@ -679,10 +679,10 @@ export default function PitchDetail({
  filteredCourts.map((court) => {
  const courtSlots = (court.slots || []).filter((s: any) => {
  if (selectedTimeFilter === "PEAK") {
- return s.time.includes("17:30") || s.time.includes("18:") || s.time.includes("19:00");
+ return isPeakSlot(s.time);
  }
  if (selectedTimeFilter === "OFF_PEAK") {
- return !s.time.includes("17:30") && !s.time.includes("18:") && !s.time.includes("19:00");
+ return !isPeakSlot(s.time);
  }
  return true;
  });
@@ -714,7 +714,7 @@ export default function PitchDetail({
  const isSelected = selectedSlot?.courtName === court.pitchName && selectedSlot?.time === slot.time;
  const isBooked = slot.status === "booked" || slot.status === "playing";
  const isResale = slot.status === "resale";
- const isPeak = slot.time.includes("17:") || slot.time.includes("18:") || slot.time.includes("19:");
+ const isPeak = isPeakSlot(slot.time);
 
  if (isSelected) {
  return (
