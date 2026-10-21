@@ -1531,8 +1531,10 @@ setIsSavingInfo(false);
  <div className="flex flex-wrap items-center gap-2">
  <button
  type="button"
- onClick={openEditInfoModal}
- className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-extrabold text-sm shadow-sm transition-all flex items-center space-x-2 active:scale-95"
+  onClick={openEditInfoModal}
+  disabled={!activePitch?.name}
+  title={activePitch?.name ? "Sửa hồ sơ cụm sân" : "Chờ tải xong dữ liệu cụm sân"}
+ className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-extrabold text-sm shadow-sm transition-all flex items-center space-x-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
  >
  <Pencil className="w-4 h-4 text-[#0b4f6c]" />
  <span>Sửa Hồ Sơ Cụm Sân</span>
