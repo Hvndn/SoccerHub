@@ -1196,8 +1196,8 @@ setIsSavingInfo(false);
  >
  <option value="ALL">Tất cả trạng thái</option>
  <option value="BOOKED">🟢 Đã Cọc</option>
- <option value="PLAYING">🔴 Đang Đá (IN_USE)</option>
- <option value="EMPTY">⚪ Ca Trống (AVAILABLE)</option>
+ <option value="PLAYING">🔴 Đang Đá</option>
+ <option value="EMPTY">⚪ Ca Trống</option>
  <option value="RESALE">🟡 Sàn Nhượng Gấp</option>
  </select>
  </div>
@@ -1368,7 +1368,7 @@ setIsSavingInfo(false);
  </span>
  <span className="flex items-center space-x-2 text-rose-600">
  <span className="w-3.5 h-3.5 rounded-full bg-rose-500 shadow-xs shrink-0" />
- <span>Đã Check-in Đá (IN_USE)</span>
+ <span>Đã Check-in Đá</span>
  </span>
  <span className="flex items-center space-x-2 text-amber-700">
  <span className="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-xs shrink-0" />
@@ -1376,7 +1376,7 @@ setIsSavingInfo(false);
  </span>
  <span className="flex items-center space-x-2 text-slate-500">
  <span className="w-3.5 h-3.5 rounded-full bg-slate-300 shrink-0" />
- <span>Ca Trống (AVAILABLE)</span>
+ <span>Ca Trống</span>
  </span>
  </div>
 

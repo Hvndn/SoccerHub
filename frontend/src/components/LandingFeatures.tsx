@@ -123,7 +123,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  },
  {
  title: "Chợ Kèo Đăng & Nhận Đối Thủ",
- desc: "Đội thiếu người đăng kèo lên chợ; đội khác bấm nhận, hệ thống chuyển trạng thái MATCHED ngay trong CSDL."
+ desc: "Đội thiếu người đăng kèo lên chợ; đội khác bấm nhận, hệ thống chuyển sang trạng thái đã ghép ngay trong CSDL."
  },
  {
  title: "Hồ Sơ & Thống Kê Cầu Thủ",

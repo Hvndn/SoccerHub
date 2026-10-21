@@ -113,7 +113,7 @@ const [addCount, setAddCount] = useState("4");
 
  const [varStatus, setVarStatus] = useState<string | null>(null);
  const [toastMessage, setToastMessage] = useState<string | null>(null);
- const [selectedCameraAngle, setSelectedCameraAngle] = useState<string>("Cam 1 - Direct Baseline");
+ const [selectedCameraAngle, setSelectedCameraAngle] = useState<string>("Cam 1 - Góc Chính");
 
  const triggerToast = (msg: string) => {
  setToastMessage(msg);
@@ -1244,7 +1244,7 @@ const [addCount, setAddCount] = useState("4");
  )}
 
  <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 text-slate-900 text-center shadow-2xl space-y-3 sm:space-y-4">
- <div className="flex items-center justify-center space-x-3 text-[13px] text-slate-500 font-monost font-bold">
+ <div className="flex items-center justify-center space-x-3 text-[13px] text-slate-500 font-mono font-bold">
  <Clock className="w-4 h-4 text-sky-700 " />
  <span>
  {varMatch.status === "DONE" ? "ĐÃ KẾT THÚC" : "ĐANG ĐIỀU KHIỂN"} • TỶ SỐ THỜI GIAN THỰC
@@ -1351,11 +1351,11 @@ const [addCount, setAddCount] = useState("4");
  <div className="space-y-3">
  <h3 className="font-bold text-sm text-slate-900 flex items-center space-x-2">
  <Video className="w-4 h-4 text-red-500" />
- <span>Xem Lại VAR — Camera Multi-Angle</span>
+ <span>Xem Lại VAR — Nhiều Góc Camera</span>
  </h3>
 
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
- {["Cam 1 - Direct Baseline", "Cam 2 - Kitchen Line", "Cam 3 - Overhead Angle", "Cam 4 - AI Line Check"].map((cam) => (
+ {["Cam 1 - Góc Chính", "Cam 2 - Góc Vỉa Cầu", "Cam 3 - Góc Từ Trên Cao", "Cam 4 - Kiểm Tra Vạch AI"].map((cam) => (
  <button
  key={cam}
  onClick={() => setSelectedCameraAngle(cam)}
@@ -1376,22 +1376,22 @@ const [addCount, setAddCount] = useState("4");
  </div>
  <div className="flex flex-wrap gap-2">
  <button
- onClick={() => handleVarCheck("Bóng trong sân (In-Bounds)", "ok")}
+ onClick={() => handleVarCheck("Bóng trong sân", "ok")}
  className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold px-3 py-2 rounded-lg transition"
  >
  ✅ Bóng Trong Sân
  </button>
  <button
- onClick={() => handleVarCheck("Bóng ngoài sân (Out-of-Bounds)", "bad")}
+ onClick={() => handleVarCheck("Bóng ngoài sân", "bad")}
  className="bg-rose-600 hover:bg-rose-700 text-white text-[13px] font-bold px-3 py-2 rounded-lg transition"
  >
- ❌ Bóng Out
+ ❌ Bóng Ra Ngoài
  </button>
  <button
- onClick={() => handleVarCheck("Lỗi chân vạch Kitchen", "warn")}
+ onClick={() => handleVarCheck("Lỗi chân vạch", "warn")}
  className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold px-3 py-2 rounded-lg transition"
  >
- ⚠️ Lỗi Kitchen
+ ⚠️ Lỗi Chân Vạch
  </button>
  </div>
  <p className="hidden sm:block text-[13px] text-slate-500 leading-relaxed">

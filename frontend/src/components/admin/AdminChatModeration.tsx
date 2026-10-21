@@ -157,7 +157,7 @@ const ROLE_LABEL: Record<string, string> = {
             >
               <option value="">Tất cả kênh</option>
               <option value="general">Phòng Chat Chung</option>
-              <option value="vang-lai">Bắt Kèo Vãng Lai</option>
+              <option value="vang-lai">Bắt Kèo Vàng Lai</option>
               <option value="bu-thieu-nguoi">Bù Thiếu Người</option>
               <option value="doi-30p">Tìm Đối 30 Phút</option>
               <option value="tinh-trang-san">Tình Trạng Sân</option>

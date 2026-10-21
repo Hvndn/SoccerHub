@@ -237,7 +237,7 @@ const handleTabChange = (newTab: string) => {
  // 4b. Tab điều hành giải => Yêu cầu đăng nhập ORGANIZER
  if (ORGANIZER_TABS.includes(newTab)) {
  setPendingTab(newTab);
- showRoleWarning("🔒 Chức năng Điều Hành Giải Đấu yêu cầu tài khoản Ban Tổ Chức (ORGANIZER). Vui lòng đăng nhập!");
+ showRoleWarning("🔒 Chức năng Điều Hành Giải Đấu yêu cầu tài khoản Ban Tổ Chức. Vui lòng đăng nhập!");
  handleOpenAuth("login", "ORGANIZER");
  return;
  }

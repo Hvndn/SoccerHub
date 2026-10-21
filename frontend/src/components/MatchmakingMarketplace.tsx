@@ -515,7 +515,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <option value="SAN_7">Kèo Bóng Đá Sân 7</option>
  <option value="SAN_5">Kèo Futsal / Sân 5 Người</option>
  <option value="SAN_11">Kèo Sân 11 Chuẩn VFF</option>
- <option value="SOLO_SLOT">Ghép Slot Lẻ / Tuyển Thủ Môn</option>
+ <option value="SOLO_SLOT">Ghép Người Lẻ / Tuyển Thủ Môn</option>
  </select>
  </div>
 

@@ -73,7 +73,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  >
  <Trophy className={`w-4 h-4 ${subTab === "tournaments" ? "text-amber-200" : "text-amber-700"}`} />
  <span className="sm:hidden">Giải Đấu</span>
- <span className="hidden sm:inline">Danh Sách Giải Đấu &amp; Nhánh Bracket</span>
+ <span className="hidden sm:inline">Danh Sách Giải Đấu &amp; Cây Nhánh Đấu</span>
  <span className="px-1.5 py-0.2 rounded-full text-[13px] bg-sky-100 text-sky-900 font-black border border-sky-200">
  {tournamentCount === null ? "…" : `${tournamentCount} GIẢI`}
  </span>
