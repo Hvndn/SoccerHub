@@ -617,7 +617,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <div className="flex flex-col min-w-0">
  <span className="text-[13px] text-slate-500 tracking-wider font-extrabold">Phong Độ Đội Bạn</span>
  <div className="flex items-baseline space-x-2">
- <span className="text-xl sm:text-2xl font-black text-[#0b4f6c] font-mono">
+ <span className="text-xl sm:text-2xl font-black text-[#0b4f6c] font-mono whitespace-nowrap shrink-0">
  {hasUser ? (myTeamEntry ? myRecord : "—") : "—"}
  </span>
  <span className="text-[13px] text-slate-700 font-bold truncate">
