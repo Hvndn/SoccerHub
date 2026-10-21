@@ -412,20 +412,22 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[13px] font-black text-slate-900 truncate">
-                          {m.name || m.email}
-                          {m.isRepresentative && (
-                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[13px] font-black">
-                              Đại diện
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-[13px] font-black text-slate-900 truncate">
+                              {m.name || m.email}
                             </span>
-                          )}
-                          {m.email === myEmail && (
-                            <span className="ml-1.5 px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[13px] font-black">
-                              Bạn
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-[10.5px] font-mono text-slate-500 truncate">
+                            {m.isRepresentative && (
+                              <span className="shrink-0 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[13px] font-black">
+                                Đại diện
+                              </span>
+                            )}
+                            {m.email === myEmail && (
+                              <span className="shrink-0 px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[13px] font-black">
+                                Bạn
+                              </span>
+                            )}
+                          </div>
+                        <p className="text-[12px] font-mono text-slate-500 truncate">
                           {m.email}
                           {m.phone ? ` · ${m.phone}` : ""}
                         </p>

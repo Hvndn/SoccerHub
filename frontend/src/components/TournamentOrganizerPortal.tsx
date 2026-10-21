@@ -1820,7 +1820,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
         <Unlock className={`w-4 h-4 ${joinMode === "PUBLIC" ? "text-emerald-600" : "text-slate-400"}`} />
         <span className="text-[13px] font-black text-slate-900">Ai cũng có thể tham gia</span>
        </div>
-       <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">
+       <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
         Mọi người có tài khoản đều đăng ký đội thi được. Phù hợp giải phong trào mở rộng.
        </p>
       </button>
@@ -1840,7 +1840,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
         <Lock className={`w-4 h-4 ${joinMode === "INVITE_ONLY" ? "text-amber-700" : "text-slate-400"}`} />
         <span className="text-[13px] font-black text-slate-900">Chỉ ai được mời qua email</span>
        </div>
-       <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">
+       <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
         Giải kín — chỉ email trong danh sách bên dưới mới đăng ký thi được.
        </p>
       </button>

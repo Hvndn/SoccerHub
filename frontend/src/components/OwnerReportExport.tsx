@@ -194,7 +194,7 @@ export default function OwnerReportExport() {
  )}
  </div>
  <p className="font-black text-[13px] text-slate-900 leading-tight">{r.label}</p>
- <p className="text-[10.5px] text-slate-500 mt-1 leading-relaxed">{r.desc}</p>
+ <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">{r.desc}</p>
  </button>
  ))}
  </div>
