@@ -479,6 +479,8 @@ export default function CommunityChat({
             />
             <button
               type="submit"
+            aria-label="Gửi tin nhắn"
+            title="Gửi tin nhắn"
               disabled={!user || pubSending || !pubInput.trim()}
               className="shrink-0 w-10 h-10 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white flex items-center justify-center transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -636,6 +638,8 @@ export default function CommunityChat({
                   />
                   <button
                     type="submit"
+                  aria-label="Gửi tin nhắn"
+                  title="Gửi tin nhắn"
                     disabled={dmSending || !dmInput.trim()}
                     className="shrink-0 w-10 h-10 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white flex items-center justify-center transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
