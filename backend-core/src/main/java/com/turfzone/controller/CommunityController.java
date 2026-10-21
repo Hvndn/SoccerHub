@@ -251,6 +251,11 @@ public class CommunityController {
         if (req.get("matchmakingPostId") != null) {
             try { postId = Long.parseLong(req.get("matchmakingPostId").toString()); } catch (NumberFormatException ignored) { }
         }
+        // Bắt buộc gắn với 1 bài đăng: nếu không, kiểm tra trùng bị bỏ qua và có thể
+        // chấm 5* vô hạn lần để tự nâng uy tín đội.
+        if (postId == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Thiếu mã bài đăng kèo giao lưu."));
+        }
 
         // Mỗi đội chỉ chấm 1 lần cho mỗi bài đăng
         if (postId != null && teamReviewRepository.existsByMatchmakingPostIdAndReviewerTeamName(postId, reviewerTeam)) {

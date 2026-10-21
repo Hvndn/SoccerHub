@@ -1413,6 +1413,7 @@ public class TournamentController {
      * không tin tên/SĐT do client gửi lên - tránh việc khách vãng lai đăng ký hộ
      * và đẩy dữ liệu rác vào giải.
      */
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/register")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> registerTeam(@PathVariable Long id,
@@ -1426,8 +1427,29 @@ public class TournamentController {
             return ResponseEntity.badRequest().body(Map.of("error", "Giải đấu không tồn tại"));
         }
 
-        if (tournament.getTotalTeams() != null && tournament.getRegisteredTeams() >= tournament.getTotalTeams()) {
+        // Sức chứa tính theo DANH SÁCH đội (trường registeredTeams có thể lệch với list do seed).
+        int totalTeams = tournament.getTotalTeams() != null ? tournament.getTotalTeams() : 0;
+        if (totalTeams > 0 && tournament.getTeams().size() >= totalTeams) {
             return ResponseEntity.badRequest().body(Map.of("error", "Giải đấu đã đủ số lượng đội đăng ký"));
+        }
+
+        // Chỉ giải đang mở đăng ký mới nhận đội — trước đây đăng ký vào giải đã
+        // COMPLETED vẫn được (đội 'ma' lọt vào giải đã bốc thăm/nhập kết quả).
+        String st = tournament.getStatus() == null ? "OPEN" : tournament.getStatus().toUpperCase();
+        if (!"OPEN".equals(st)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Giải đấu không còn mở đăng ký."));
+        }
+
+        // Hạn đăng ký có lưu trong CSDL nhưng trước đây KHÔNG nơi nào đọc tới.
+        String deadline = tournament.getRegistrationDeadline();
+        if (deadline != null && !deadline.isBlank()) {
+            try {
+                if (LocalDate.parse(deadline.trim()).isBefore(LocalDate.now())) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Đã qua hạn đăng ký của giải đấu."));
+                }
+            } catch (Exception ignored) {
+                // Ngày không đọc được thì bỏ qua kiểm tra hạn.
+            }
         }
 
         // Giải kín (chỉ mời qua email): tài khoản đăng nhập phải nằm trong danh sách mời.
@@ -1791,6 +1813,15 @@ public class TournamentController {
         for (TournamentTeamEntry team : t.getTeams()) {
             if (team.getTeamName() != null && team.getTeamName().equals(teamName)
                     && "PENDING_PAYMENT".equals(team.getRegistrationStatus())) {
+                // Không duyệt vượt sức chứa của giải (confirmTeamPayment đã có check này,
+                // approveTeam thì không -> giải có thể vượt số đội).
+                int cap = t.getTotalTeams() != null ? t.getTotalTeams() : 0;
+                long confirmed = t.getTeams().stream()
+                        .filter(x -> "CONFIRMED".equals(x.getRegistrationStatus()) || "SIMULATED".equals(x.getRegistrationStatus()))
+                        .count();
+                if (cap > 0 && confirmed >= cap) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu đã đủ số đội (" + cap + ")."));
+                }
                 team.setRegistrationStatus("CONFIRMED");
                 tournamentRepository.save(t);
                 return ResponseEntity.ok(Map.of("message", "Đã duyệt đội " + teamName + " vào giải."));

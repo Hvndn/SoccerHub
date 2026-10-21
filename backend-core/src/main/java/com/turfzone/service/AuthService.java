@@ -76,7 +76,9 @@ public class AuthService {
         UserRole requested = req.getRole() != null ? req.getRole() : UserRole.PLAYER;
         // KHÔNG BAO GIỜ cho phép tự đăng ký role ADMIN — chỉ cấp qua /admin/users/{id}/role.
         // Nếu client gửi role=ADMIN thì hạ xuống PLAYER (coi như client cố ý leo thang).
-        UserRole role = (requested == UserRole.ADMIN) ? UserRole.PLAYER : requested;
+        // Đăng ký tự chọn role ORGANIZER/OWNER là leo thang đặc quyền (ORGANIZER quản lý
+        // được MỌI giải của hệ thống). Role thật chỉ cấp qua /admin/users/{id}/role.
+        UserRole role = UserRole.PLAYER;
         String position = req.getPosition() != null ? req.getPosition() : 
                 (role == UserRole.PLAYER ? "Cầu Thủ Pro" : role == UserRole.OWNER ? "Chủ Cụm Sân" : "Ban Tổ Chức");
 

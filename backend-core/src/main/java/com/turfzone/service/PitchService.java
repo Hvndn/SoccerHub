@@ -208,9 +208,10 @@ public class PitchService {
 
     public void deletePitch(Long id, User owner) {
         Pitch pitch = getPitchById(id);
-        if (pitch.getOwnerId() != null && owner != null && !owner.getId().equals(pitch.getOwnerId()) && !owner.getRole().name().equals("ADMIN")) {
-            throw new IllegalArgumentException("Bạn không có quyền xóa cụm sân này.");
-        }
+        // Dùng chung quy tắc với assertCanManage: cụm sân CHƯA có chủ sở hữu
+        // chỉ Quản Trị viên được xoá (trước đây điều kiện bị bỏ qua khi ownerId = null
+        // nên mọi OWNER đều xoá được).
+        assertCanManage(pitch, owner);
         pitchRepository.delete(pitch);
     }
 

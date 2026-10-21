@@ -259,9 +259,13 @@ public class PitchBookingController {
     public ResponseEntity<?> getPitchMatrix(
             @PathVariable Long id,
             @RequestParam(required = false) String date,
-            @RequestParam(required = false) Integer duration
+            @RequestParam(required = false) Integer duration,
+            @AuthenticationPrincipal com.turfzone.model.User me
     ) {
         Pitch pitch = pitchService.getPitchById(id);
+        // Chỉ chủ sân của cụm sân này (hoặc ADMIN) mới xem được SĐT đầy đủ của khách.
+        boolean fullAccess = me != null && ("ADMIN".equals(me.getRole().name())
+                || (pitch.getOwnerId() != null && pitch.getOwnerId().equals(me.getId())));
         String targetDate = (date != null && !date.trim().isEmpty()) 
                 ? date.trim() 
                 : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -333,7 +337,7 @@ public class PitchBookingController {
                     slotObj.put("isContinuation", isContinuation);
                     slotObj.put("status", b.getStatus().toLowerCase()); // booked, playing, resale
                     slotObj.put("customer", b.getCustomerName());
-                    slotObj.put("phone", b.getCustomerPhone());
+                    slotObj.put("phone", fullAccess ? b.getCustomerPhone() : maskPhone(b.getCustomerPhone()));
                     slotObj.put("via", b.getVia());
                     slotObj.put("code", b.getCode());
 
@@ -685,7 +689,8 @@ public class PitchBookingController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> bookOfflineSlot(
             @PathVariable Long id,
-            @RequestBody Map<String, Object> req
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal com.turfzone.model.User me
     ) {
         String courtName = (String) req.get("courtName");
         String timeSlot = (String) req.get("timeSlot");
@@ -693,12 +698,26 @@ public class PitchBookingController {
         String customerPhone = (String) req.get("customerPhone");
         String bookingDate = (String) req.getOrDefault("bookingDate", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
         
-        Integer totalPrice = req.get("totalPrice") != null 
-                ? (int) Math.round(Double.parseDouble(req.get("totalPrice").toString())) 
-                : 500000;
-        Integer depositPaid = req.get("depositPaid") != null 
-                ? (int) Math.round(Double.parseDouble(req.get("depositPaid").toString())) 
-                : 250000;
+        // Chỉ chủ sân của cụm sân này mới được tạo đơn tại quầy — trước đây mọi tài
+        // khoản đăng nhập đều đặt được vào cụm sân của người khác (IDOR ghi).
+        Pitch ownerPitch = pitchService.getPitchById(id);
+        try {
+            assertOwnsPitch(ownerPitch, me);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+
+        // GIÁ LUÔN TÍNH Ở SERVER — không nhận totalPrice/depositPaid từ client
+        // (client có thể tự khai giá 1đ làm sai số liệu doanh thu của chủ sân).
+        boolean isPeak = isPeakStart(timeSlot);
+        int hourPrice = isPeak
+                ? (ownerPitch.getPeakPricePerHour() != null ? ownerPitch.getPeakPricePerHour() : 500000)
+                : (ownerPitch.getAvgPricePerHour() != null ? ownerPitch.getAvgPricePerHour() : 350000);
+        int durationMin = (ownerPitch.getSlotDurationMinutes() != null && ownerPitch.getSlotDurationMinutes() > 0)
+                ? ownerPitch.getSlotDurationMinutes() : 120;
+        Integer totalPrice = (int) Math.round(hourPrice * (durationMin / 60.0));
+        // Cọc tối đa 50% giá ca (đúng chính sách hiển thị ở giao diện).
+        Integer depositPaid = Math.min((int) Math.round(totalPrice * 0.5), totalPrice);
         Integer cashDue = totalPrice - depositPaid;
 
         if (courtName == null || timeSlot == null || customerName == null || customerPhone == null) {
@@ -735,10 +754,17 @@ public class PitchBookingController {
                 .build();
 
 Booking saved = bookingRepository.save(booking);
-        notificationService.notify("OWNER",
-                "Đơn đặt sân mới: " + customerName,
-                customerName + " (" + customerPhone + ") vừa đặt " + courtName + " ca " + timeSlot + " ngày " + bookingDate + ". Mã: " + code + ".",
-                "BOOKING", null);
+        // Gửi cho CHÍNH chủ sân của cụm sân này. Trước đây targetRole="OWNER" khiến
+        // mọi chủ sân trong hệ thống đều thấy SĐT + tên khách của cụm sân khác.
+        String ownerEmail = ownerPitch.getOwnerId() != null
+                ? userRepository.findById(ownerPitch.getOwnerId()).map(u -> u.getEmail()).orElse(null)
+                : null;
+        if (ownerEmail != null) {
+            notificationService.notify("OWNER", ownerEmail,
+                    "Đơn đặt sân mới: " + customerName,
+                    customerName + " vừa đặt " + courtName + " ca " + timeSlot + " ngày " + bookingDate + ". Mã: " + code + ".",
+                    "BOOKING", null);
+        }
 
         // Gửi email xác nhận cho KHÁCH + báo cho CHỦ SÂN (nếu đã bật SMTP).
         // Lỗi email KHÔNG làm hỏng việc tạo đơn — đơn đã lưu ở trên.
@@ -896,6 +922,10 @@ Booking saved = bookingRepository.save(booking);
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
             }
+            // Đơn đã hủy không được check-in lại (làm sai dấu vết huỷ + cộng sai doanh thu).
+            if ("CANCELLED".equalsIgnoreCase(b.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Đơn này đã hủy, không thể check-in."));
+            }
             b.setStatus("PLAYING");
             b.setCashDue(0); // Đã thu đủ tại quầy
             bookingRepository.save(b);
@@ -916,9 +946,8 @@ Booking saved = bookingRepository.save(booking);
         String reason = (req != null && req.get("reason") != null && !req.get("reason").toString().trim().isEmpty())
                 ? req.get("reason").toString().trim()
                 : "Chủ sân thông báo bảo trì hoặc thời tiết không đảm bảo";
-        String cancelledBy = (req != null && req.get("cancelledBy") != null)
-                ? req.get("cancelledBy").toString().trim()
-                : "OWNER";
+        // Server quyết định ai hủy — không tin giá trị từ client (trước đây client tự khai "ADMIN").
+        String cancelledBy = (me != null && "ADMIN".equals(me.getRole().name())) ? "ADMIN" : "OWNER";
 
         return bookingRepository.findById(bookingId).map(b -> {
             // Chống IDOR: chỉ chủ sân của đơn này (hoặc ADMIN) mới được huỷ.
@@ -1091,16 +1120,38 @@ Booking saved = bookingRepository.save(booking);
      * API Tra Cứu Mã Vé Hoặc Số Điện Thoại
      */
     @GetMapping("/bookings/search")
-    public ResponseEntity<?> searchBooking(@RequestParam String query) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> searchBooking(@RequestParam String query,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
         if (query == null || query.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập mã vé hoặc số điện thoại."));
         }
         String clean = query.trim();
+        // Chỉ trả đơn thuộc cụm sân của chủ sân này (ADMIN thấy tất cả).
+        // Trả entity thô sẽ lộ SĐT + tiền của khách cho bất kỳ ai gọi endpoint.
+        // Chỉ trả đơn mà người gọi có quyền xem:
+        //  - ADMIN: tất cả.
+        //  - Chủ sân: đơn trong cụm sân của họ.
+        //  - Cầu thủ: đơn có SĐT khớp chính mình.
+        // Trước đây endpoint công khai nên ai cũng dò được SĐT + tiền của khách.
+        String myPhone = me != null && me.getPhone() != null
+                ? me.getPhone().replaceAll("\\s+", "") : "";
+        boolean isAdmin = me != null && "ADMIN".equals(me.getRole().name());
+        java.util.function.Predicate<Booking> mine = b -> {
+            if (isAdmin) return true;
+            if (!myPhone.isEmpty() && b.getCustomerPhone() != null
+                    && myPhone.equals(b.getCustomerPhone().replaceAll("\\s+", ""))) return true;
+            if (b.getPitchId() == null || me == null) return false;
+            Pitch p = pitchRepository.findById(b.getPitchId()).orElse(null);
+            return p != null && p.getOwnerId() != null && p.getOwnerId().equals(me.getId());
+        };
         Optional<Booking> byCode = bookingRepository.findByCode(clean);
-        if (byCode.isPresent()) {
+        if (byCode.isPresent() && mine.test(byCode.get())) {
             return ResponseEntity.ok(List.of(byCode.get()));
         }
-        List<Booking> byPhone = bookingRepository.findByCustomerPhoneContaining(clean);
+        List<Booking> byPhone = bookingRepository.findByCustomerPhoneContaining(clean).stream()
+                .filter(mine)
+                .collect(java.util.stream.Collectors.toList());
         return ResponseEntity.ok(byPhone);
     }
 

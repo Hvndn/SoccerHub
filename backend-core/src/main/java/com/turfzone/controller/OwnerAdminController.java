@@ -1,5 +1,6 @@
 package com.turfzone.controller;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.turfzone.model.Booking;
 import com.turfzone.model.Pitch;
 import com.turfzone.repository.BookingRepository;
@@ -63,9 +64,16 @@ public class OwnerAdminController {
     }
 
     @GetMapping("/revenue-report")
-    public ResponseEntity<Map<String, Object>> getRevenueReport() {
-        List<Pitch> pitches = pitchRepository.findAll();
-        List<Booking> bookings = bookingRepository.findAll();
+    public ResponseEntity<Map<String, Object>> getRevenueReport(@AuthenticationPrincipal com.turfzone.model.User me) {
+        // Chỉ lấy cụm sân của chủ sân này (ADMIN thấy tất cả) — trước đây gộp
+        // doanh thu TOÀN HỆ THỐNG cho mọi chủ sân.
+        boolean isAdmin = me != null && "ADMIN".equals(me.getRole().name());
+        List<Pitch> pitches = isAdmin ? pitchRepository.findAll()
+                : pitchRepository.findByOwnerId(me != null ? me.getId() : -1L);
+        java.util.Set<Long> myPitchIds = pitches.stream().map(Pitch::getId).collect(java.util.stream.Collectors.toSet());
+        List<Booking> bookings = bookingRepository.findAll().stream()
+                .filter(b -> b.getPitchId() != null && myPitchIds.contains(b.getPitchId()))
+                .collect(java.util.stream.Collectors.toList());
 
         YearMonth current = YearMonth.now();
 
@@ -149,7 +157,8 @@ public class OwnerAdminController {
      * Trước đây chỉ trả về thông báo chứ không lưu gì — nay ghi giá thật vào CSDL.
      */
     @PostMapping("/dynamic-pricing")
-    public ResponseEntity<?> configDynamicPricing(@RequestBody Map<String, Object> config) {
+    public ResponseEntity<?> configDynamicPricing(@RequestBody Map<String, Object> config,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
         Object pitchIdRaw = config.get("pitchId");
         if (pitchIdRaw == null) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -173,6 +182,16 @@ public class OwnerAdminController {
             return ResponseEntity.status(404).body(Map.of(
                     "status", "ERROR",
                     "message", "Không tìm thấy cụm sân #" + pitchId + "."
+            ));
+        }
+
+        // Chỉ chủ sân của cụm sân này (hoặc ADMIN) mới được sửa giá — trước đây
+        // bất kỳ chủ sân nào cũng gửi pitchId của người khác để phá giá được.
+        if (me == null || (!"ADMIN".equals(me.getRole().name())
+                && (pitch.getOwnerId() == null || !pitch.getOwnerId().equals(me.getId())))) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "status", "ERROR",
+                    "message", "Bạn không có quyền sửa giá cụm sân này."
             ));
         }
 
