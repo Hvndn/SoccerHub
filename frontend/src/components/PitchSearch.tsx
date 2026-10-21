@@ -954,7 +954,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <span className={`font-bold shrink-0 ${ls.status === 'BOOKED' ? "text-slate-600 " : "text-[#0b4f6c] "}`}>
  {ls.time}
  </span>
- <span className="text-[13px] text-slate-500 font-sans truncate min-w-0 max-w-[100px] sm:max-w-[130px]">
+ <span className="text-[13px] text-slate-600 font-sans truncate min-w-0 max-w-[100px] sm:max-w-[130px]">
  {pitchTypeLabel(ls.courtName) || ls.courtName}
  </span>
  </div>
@@ -1029,7 +1029,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  <h2 className="text-lg sm:text-xl font-black text-slate-900 ">
  Sân Trống Khả Dụng Khung Giờ Tối
  </h2>
- <span className="hidden sm:inline px-2.5 py-0.5 rounded-full bg-[#0369a1]/20 text-emerald-500 text-[13px] font-black animate-pulse border border-[#0369a1]/30">
+ <span className="hidden sm:inline px-2.5 py-0.5 rounded-full bg-[#0369a1] text-white text-[13px] font-black">
  LIVE
  </span>
  <span className="sm:hidden w-2 h-2 rounded-full bg-[#0369a1] animate-pulse" aria-hidden="true" />

@@ -40,9 +40,11 @@ const PHONE_RE = /^0\d{9}$/;
 
 export default function RegisterTeamPage() {
  return (
- <Suspense fallback={<div className="p-4 sm:p-8 text-sm text-slate-500">Đang tải…</div>}>
+  <Suspense fallback={<div className="p-4 sm:p-8 text-sm text-slate-500">Đang tải…</div>}>
+  <main>
  <RegisterTeamWizard />
- </Suspense>
+  </main>
+  </Suspense>
  );
 }
 

@@ -32,9 +32,11 @@ function isValidDate(s: string) {
 
 export default function NewTournamentPage() {
  return (
- <Suspense fallback={<div className="p-4 sm:p-8 text-sm text-slate-500">Đang tải…</div>}>
+  <Suspense fallback={<div className="p-4 sm:p-8 text-sm text-slate-500">Đang tải…</div>}>
+  <main>
  <NewTournamentWizard />
- </Suspense>
+  </main>
+  </Suspense>
  );
 }
 

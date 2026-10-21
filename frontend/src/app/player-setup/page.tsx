@@ -6,8 +6,8 @@ import PlayerSetup from "@/components/PlayerSetup";
 
 export default function PlayerSetupPage() {
  return (
- <AuthProvider>
+ <main>
  <PlayerSetup />
- </AuthProvider>
+ </main>
  );
 }
