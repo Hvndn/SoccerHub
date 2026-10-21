@@ -265,7 +265,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   type="search"
   value={query}
   onChange={(e) => setQuery(e.target.value)}
-  placeholder="Tìm tên, email, SĐT…"
+  placeholder="Tìm nhanh trong danh sách…"
   aria-label="Tìm kiếm người dùng"
   className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] w-48"
   />

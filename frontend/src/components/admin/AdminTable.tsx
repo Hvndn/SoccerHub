@@ -29,7 +29,7 @@ export default function AdminTable<T>({
  rows,
  columns,
  rowKey,
- searchPlaceholder = "Tìm kiếm…",
+ searchPlaceholder = "Lọc trong bảng…",
  searchFilter,
  pageSize = 10,
  emptyTitle,
