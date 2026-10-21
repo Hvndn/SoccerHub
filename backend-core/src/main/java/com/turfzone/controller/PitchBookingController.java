@@ -779,6 +779,14 @@ Booking saved = bookingRepository.save(booking);
      * Trước đây chỉ kiểm tra role OWNER/ADMIN nên bất kỳ chủ sân nào cũng check-in /
      * huỷ / xóa được đơn của cụm sân khác — thậm chí đặt cashDue = 0 (mất tiền thật).
      */
+    /** Định dạng số tiền kiểu Việt Nam: 175000 -> "175.000đ". */
+    private String formatVnd(Number amount) {
+        if (amount == null) return "0đ";
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0",
+                new java.text.DecimalFormatSymbols(new java.util.Locale("vi", "VN")));
+        return df.format(amount) + "đ";
+    }
+
     private void assertOwnsBooking(Booking b, com.turfzone.model.User me) {
         if (me == null) {
             throw new IllegalArgumentException("Cần đăng nhập để quản lý đơn đặt sân.");
@@ -904,12 +912,34 @@ Booking saved = bookingRepository.save(booking);
             b.setStatus("CANCELLED");
             b.setCancelReason(reason);
             b.setCancelledBy(cancelledBy);
-            
-            // Xóa để giải phóng slot trống cho khách khác
-            bookingRepository.delete(b);
+
+            // Giữ lại đơn ở trạng thái CANCELLED thay vì xóa hẳn:
+            // - Khách còn xem được lịch sử đặt/hủy của mình.
+            // - Chủ sân còn đối chiếu được tiền cọc đã hoàn.
+            // Các API ma trận ca / thống kê / báo cáo đều đã lọc bỏ đơn CANCELLED
+            // nên ca vẫn trống cho người khác đặt.
+            bookingRepository.save(b);
+
+            // Gửi thông báo cho khách đặt sân (kèm email nếu tra được tài khoản).
+            String customerMail = resolveCustomerEmail(b.getCustomerPhone());
+            boolean notified = customerMail != null;
+            if (notified) {
+                notificationService.notify("PLAYER", customerMail,
+                        "Ca đặt " + (b.getCode() != null ? b.getCode() : "") + " đã bị hủy",
+                        "Cụm sân đã hủy ca " + b.getTimeSlot() + " ngày " + b.getBookingDate()
+                                + ". Lý do: " + reason
+                                + (b.getDepositPaid() != null && b.getDepositPaid() > 0
+                                        ? ". Tiền cọc " + formatVnd(b.getDepositPaid()) + " đã được hoàn lại."
+                                        : "."),
+                        "BOOKING", null);
+            }
+
+            int refund = b.getDepositPaid() != null ? b.getDepositPaid() : 0;
 
             Map<String, Object> resp = new HashMap<>();
-            resp.put("message", "Đã hủy ca đặt thành công và gửi thông báo tới người đặt sân.");
+            resp.put("message", "Đã hủy ca đặt"
+                    + (notified ? " và đã gửi thông báo cho khách."
+                            : " (khách chưa có tài khoản để nhận thông báo)."));
             resp.put("bookingId", bookingId);
             resp.put("code", b.getCode() != null ? b.getCode() : "—");
             resp.put("customerName", b.getCustomerName());
@@ -919,7 +949,8 @@ Booking saved = bookingRepository.save(booking);
             resp.put("bookingDate", b.getBookingDate());
             resp.put("cancelReason", reason);
             resp.put("cancelledBy", cancelledBy);
-            resp.put("refundDeposit", b.getDepositPaid() != null ? b.getDepositPaid() : 0);
+            resp.put("refundDeposit", refund);
+            resp.put("notified", notified);
 
             return ResponseEntity.ok((Object) resp);
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy đơn đặt này.")));
@@ -1011,7 +1042,24 @@ Booking saved = bookingRepository.save(booking);
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
             }
-            bookingRepository.delete(b);
+            // Giữ đơn ở trạng thái CANCELLED (không xóa hẳn) để khách còn xem lịch sử
+            // và chủ sân đối chiếu được tiền cọc đã hoàn.
+            b.setStatus("CANCELLED");
+            b.setCancelReason(cancelReason);
+            b.setCancelledBy("OWNER");
+            bookingRepository.save(b);
+
+            String customerMail = resolveCustomerEmail(b.getCustomerPhone());
+            if (customerMail != null) {
+                notificationService.notify("PLAYER", customerMail,
+                        "Ca đặt " + (b.getCode() != null ? b.getCode() : "") + " đã bị hủy",
+                        "Cụm sân đã hủy ca " + b.getTimeSlot() + " ngày " + b.getBookingDate()
+                                + ". Lý do: " + cancelReason
+                                + (b.getDepositPaid() != null && b.getDepositPaid() > 0
+                                        ? ". Tiền cọc " + formatVnd(b.getDepositPaid()) + " đã được hoàn lại."
+                                        : "."),
+                        "BOOKING", null);
+            }
             return ResponseEntity.ok(Map.of(
                     "message", "Đã hủy ca đặt thành công. Khung giờ đã sẵn sàng cho khách khác.",
                     "bookingId", bookingId,

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { apiRequest } from "@/lib/api";
 import { pitchTypeLabel } from "@/lib/pitchLabels";
+import { formatMoney } from "@/lib/tournamentService";
 import { simulateBookings } from "@/lib/adminService";
 import BusinessContacts from "@/components/BusinessContacts";
 import OwnerReportExport from "@/components/OwnerReportExport";
@@ -610,26 +611,30 @@ setIsSavingInfo(false);
  return;
  }
  try {
- // Try new cancel-with-reason endpoint first
- try {
- await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}/cancel`, {
- method: "POST",
- body: JSON.stringify({
- reason: cancelReasonInput.trim(),
- cancelledBy: "OWNER"
- })
- });
- } catch {
- // Fallback to DELETE if new endpoint not ready
- await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}`, { method: "DELETE" });
- }
+  // Dùng endpoint hủy kèm lý do (giữ đơn ở trạng thái CANCELLED + báo khách).
+  let cancelRes: any = null;
+  try {
+  cancelRes = await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}/cancel`, {
+  method: "POST",
+  body: JSON.stringify({
+  reason: cancelReasonInput.trim(),
+  cancelledBy: "OWNER"
+  })
+  });
+  } catch (e: any) {
+  // Chỉ fallback khi backend cũ chưa có endpoint (404). Mọi lỗi khác (403, 400...)
+  // phải ném ra để không xóa nhầm đơn của cụm sân khác.
+  if (e?.status !== 404) throw e;
+  await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}`, { method: "DELETE" });
+  }
 
  await loadMatrixAndStats(activePitch?.id || 1);
  setSelectedSlotForAction(null);
  setShowCancelModal(false);
  setSlotToCancel(null);
  setCancelReasonInput("");
- showToast("🗑️ Đã hủy ca đặt và thông báo lý do tới khách hàng.");
+  const refundMsg = cancelRes?.refundDeposit ? ` Nhớ hoàn lại ${formatMoney(cancelRes.refundDeposit)} tiền cọc cho khách.` : "";
+  showToast(`🗑️ ${cancelRes?.message || "Đã hủy ca đặt."}${refundMsg}`);
 
  // Broadcast event with reason so customer's Navbar gets notified
  broadcastBookingEvent({
