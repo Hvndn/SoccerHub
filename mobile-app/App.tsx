@@ -305,7 +305,7 @@ function MainApp() {
             },
             {
               id: 't2',
-              title: 'Giải Bóng Đá Doanh Nghiệp Sài Gòn',
+              title: 'Giải Bóng Đá Doanh Nghiệp Đà Nẵng',
               prize: '15.000.000 đ',
               teams: '8 Đội',
               status: 'Vòng Tứ Kết',
@@ -352,7 +352,7 @@ function MainApp() {
           {[
             {
               id: 'm1',
-              team: 'FC Chiến Hữu Sài Gòn',
+              team: 'FC Chiến Hữu Đà Nẵng',
               pitch: 'Cụm Sân Đại Nắng - Q.7',
               time: 'Tối nay 19:30 - 21:00',
               level: 'Kèo Nhẹ Dưỡng Sinh',
