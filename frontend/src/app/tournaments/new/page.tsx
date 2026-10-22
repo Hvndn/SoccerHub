@@ -136,10 +136,21 @@ function NewTournamentWizard() {
  };
 
  const handleSubmit = async () => {
- if (!validateStep(0) || !validateStep(2) || !validateStep(3)) {
- setStep(!form.title.trim() || form.title.trim().length < 6 ? 0 : 2);
- return;
- }
+  // Validate TUNG BUOC theo thu tu va nhay ve DUNG buoc dang loi — truoc day goi
+  // nhieu validateStep() lien nhau nen setErrors bi ghi de va buoc nhay sai
+  // (buoc 3 loi nhung nhay ve buoc 2) => nguoi dung khong thay thong bao loi nao.
+  if (!validateStep(0)) {
+  setStep(0);
+  return;
+  }
+  if (!validateStep(2)) {
+  setStep(2);
+  return;
+  }
+  if (!validateStep(3)) {
+  setStep(3);
+  return;
+  }
  try {
  setSubmitting(true);
  setSubmitError(null);

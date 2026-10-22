@@ -32,6 +32,10 @@ export interface AiTeam {
   id: string;
   name: string;
   win_rate: number;
+  /** Số trận đã đá: 0 = chưa có dữ liệu (khác với 0% thắng). */
+  played?: number;
+  /** Thành tích T-H-B, ví dụ "3-1-2". */
+  record?: string;
   recent_form?: string;
   reputation_score?: number;
   preferred_pitch_type?: string;
@@ -130,7 +134,7 @@ export async function recommendPitches(
       latitude: preference.latitude ?? 16.0544,
       longitude: preference.longitude ?? 108.2022,
       max_budget: preference.max_budget ?? 500000,
-      pitch_type: preference.pitch_type ?? "PITCH_7",
+      pitch_type: preference.pitch_type ?? "SAN_7",
       top_n: preference.top_n ?? 3,
     },
     clusters,

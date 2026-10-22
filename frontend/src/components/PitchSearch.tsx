@@ -505,18 +505,23 @@ const toSportTabs = (types?: string[] | null): string[] =>
  latitude: Number(p.latitude ?? 16.0544),
  longitude: Number(p.longitude ?? 108.2022),
  avg_price_per_hour: Number(p.priceDiscounted ?? 350000),
- pitch_types: [p.sport === "SAN5" ? "PITCH_5" : p.sport === "SAN11" ? "PITCH_11" : "PITCH_7"],
+ // Gui MA LOAI SAN THAT tu CSDL (pitchTypes) — truoc day doan ma tu ten san nen
+ // sân có cả Sân 5 lại bi coi la chi co Sân 7 (AI tru diem 12 diem).
+ pitch_types: (p.pitchTypes && p.pitchTypes.length > 0 ? p.pitchTypes : [p.sport === "SAN5" ? "SAN_5" : p.sport === "SAN11" ? "SAN_11" : "SAN_7"]) as any,
  rating: Number(p.rating ?? 4.5),
  image_url: p.imageUrl ?? null,
  address: p.address ?? null,
  }));
- const sportMap: Record<string, string> = { SAN7: "PITCH_7", SAN5: "PITCH_5", SAN11: "PITCH_11", FUTSAL: "PITCH_7", ALL: "PITCH_7" };
+ // Ma loai san chuan cua backend (SAN_*).
+ const sportMap: Record<string, string> = { SAN7: "SAN_7", SAN5: "SAN_5", SAN11: "SAN_11", FUTSAL: "FUTSAL", ALL: "SAN_7" };
  const res = await recommendPitches(clusters, {
  max_budget: maxBudget,
- pitch_type: sportMap[selectedSport] ?? "PITCH_7",
+ pitch_type: sportMap[selectedSport] ?? "SAN_7",
  top_n: 3,
  });
- setAiResults(res ? res.recommendations : []);
+ // res co the la {status:'ERROR'} (AI loi) -> khong co recommendations -> undefined
+ // se lam aiResults.length nem loi va lam trang trong "find san" BI TRANG.
+ setAiResults(Array.isArray(res?.recommendations) ? res.recommendations : []);
  } finally {
  clearTimeout(slowTimer);
  }

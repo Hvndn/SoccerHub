@@ -25,7 +25,7 @@ import {
  Trash2,
  Loader2
 } from "lucide-react";
-import { createPitchApi, getMyPitchesApi, deletePitchApi } from "@/lib/pitchService";
+import { createPitchApi, getMyPitchesApi, deletePitchApi, updatePitchApi } from "@/lib/pitchService";
 
 interface StadiumOwnerOnboardingProps {
  onComplete?: () => void;
@@ -62,7 +62,7 @@ export default function StadiumOwnerOnboarding({
  setLoadingPitches(true);
  try {
  const data = await getMyPitchesApi();
- if (Array.isArray(data) && data.length > 0) {
+ if (Array.isArray(data)) {
  const mapped = data.map((item: any) => ({
  id: item.id,
  name: item.name,
@@ -97,6 +97,14 @@ export default function StadiumOwnerOnboarding({
  }, [showAddModal]);
  const [newPitchName, setNewPitchName] = useState("");
  const [newSport, setNewSport] = useState("Bóng đá 7 người");
+  // Backend luu ma loai san chuan (SAN_5/SAN_7/SAN_11/FUTSAL) — chuyen de "Bong da 7 nguoi" thanh ma dung, nguoc lai se khong co san con nao.
+  const newSportCode = (() => {
+    const s = newSport.toLowerCase();
+    if (s.includes("11")) return "SAN_11";
+    if (s.includes("5")) return "SAN_5";
+    if (s.includes("futsal")) return "FUTSAL";
+    return "SAN_7";
+  })();
  const [newNormalPrice, setNewNormalPrice] = useState(350000);
  const [newPeakPrice, setNewPeakPrice] = useState(600000);
 
@@ -105,6 +113,9 @@ export default function StadiumOwnerOnboarding({
  setSubmittingPitch(true);
  try {
  const created = await createPitchApi({
+  // PHẢI gửi bộ môn: trước đây payload không có pitchTypes nên backend tạo
+  // cụm sân KHÔNG có sân con nào (bảng hiện "Chưa khai báo bộ môn").
+  pitchTypes: [newSportCode],
  name: newPitchName,
  avgPricePerHour: newNormalPrice,
  peakPricePerHour: newPeakPrice,
@@ -148,6 +159,23 @@ export default function StadiumOwnerOnboarding({
  let ok = false;
  try {
  const [openT, closeT] = (stadiumProfile.openHours || "").split("-").map((s) => s.trim());
+  // Đã tạo cụm sân ở Bước 2 thì BƯỚC CUỐI chỉ cập nhật thông tin cụm sân đó —
+  // trước đây tạo thêm 1 cụm sân thứ 2 cho cùng một sân vật.
+  if (pitches.length > 0 && pitches[0]?.id) {
+  const [openT2, closeT2] = (stadiumProfile.openHours || "").split("-").map((s) => s.trim());
+  await updatePitchApi(pitches[0].id, {
+  name: stadiumProfile.name,
+  address: stadiumProfile.address,
+  phone: stadiumProfile.phone || undefined,
+  latitude: stadiumProfile.lat ? Number(stadiumProfile.lat) : undefined,
+  longitude: stadiumProfile.lng ? Number(stadiumProfile.lng) : undefined,
+  openTime: openT2 || undefined,
+  closeTime: closeT2 || undefined,
+  });
+  ok = true;
+  await fetchMyPitches();
+  return;
+  }
  const created = await createPitchApi({
  name: stadiumProfile.name,
  address: stadiumProfile.address,

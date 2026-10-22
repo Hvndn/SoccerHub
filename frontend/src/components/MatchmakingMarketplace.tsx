@@ -204,11 +204,15 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  setAiSorting(true);
  setAiOffline(false);
  const res = await matchmakingAi(
- { id: "me", name: myTeamName, win_rate: myWinRate, recent_form: myForm },
+ { id: "me", name: myTeamName, win_rate: myWinRate, played: myTeamPost?.played ?? 0, record: myTeamPost?.record ?? "", recent_form: myForm },
  posts.map((p: any) => ({
  id: String(p.id),
  name: p.teamName || "Kèo",
+ // Backend LUON gan winRate (0 khi chua da gi) nen `?? 50` khong bao gio chay —
+ // phai gui them played de AI phan biet "chua co du lieu" voi "0% thang".
  win_rate: p.winRate ?? 50,
+ played: p.played ?? 0,
+ record: p.record ?? "",
  recent_form: p.form ?? "",
  contact_phone: p.captainPhone ?? null,
  }))

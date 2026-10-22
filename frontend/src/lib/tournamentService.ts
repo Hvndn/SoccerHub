@@ -1,4 +1,4 @@
-import { API_BASE_URL, apiRequest, fetchWithTimeout, fetchWithStatus } from './api';
+import { API_BASE_URL, apiRequest, fetchWithTimeout, fetchWithStatus, getAuthToken } from './api';
 
 /** Shape of Tournament entity returned by GET /api/v1/tournaments */
 export interface TournamentTeamEntry {
@@ -218,7 +218,14 @@ export async function fetchTournaments(force = false): Promise<Tournament[]> {
 
   inflight = (async () => {
     try {
-      const res = await fetchWithStatus(`${API_BASE_URL}/api/v1/tournaments`, { cache: 'no-store' });
+      // PHẢI gửi token: backend che captainPhone/captainEmail khi không có
+      // @AuthenticationPrincipal (gọi ẩn danh). Thiếu token => "Đội của tôi" LUÔN
+      // rỗng vì SĐT bị che thành 0912****678 không khớp SĐT của tôi.
+      const token = getAuthToken();
+      const res = await fetchWithStatus(`${API_BASE_URL}/api/v1/tournaments`, {
+        cache: 'no-store',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: unknown = await res.json();
       cache = Array.isArray(data) ? (data as Tournament[]) : [];

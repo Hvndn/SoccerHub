@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { todayLocalPlus } from "@/lib/dateUtils";
 import { FileSpreadsheet, Download, Loader2, BarChart3, CalendarRange, ClipboardList } from "lucide-react";
 import { API_BASE_URL, getAuthToken, fetchWithTimeout } from '@/lib/api';
 import { toastOk, toastErr } from "@/lib/toast";
@@ -38,10 +39,10 @@ const REPORTS: {
  },
 ];
 
+// Ngay theo gio VIET NAM (UTC+7). toISOString() la UTC -> sau 17:00 se tra ve
+// ngay hom truoc, khung bao cao mac dinh lech 1 ngay.
 function today(offsetDays = 0) {
- const d = new Date();
- d.setDate(d.getDate() + offsetDays);
- return d.toISOString().slice(0, 10);
+  return todayLocalPlus(offsetDays);
 }
 
 /** Tải file CSV từ endpoint báo cáo (cần gửi Authorization vì backend chặn khách). */
@@ -103,8 +104,11 @@ export default function OwnerReportExport() {
  }, [loadMailStatus]);
 
  const sendMail = async () => {
- const to = mailTo.trim();
- if (!to) {
+ // Tách tên biến: `to` là NGÀY KẾT THÚC báo cáo, không phải email nhận.
+ // Trước đây `const to = mailTo.trim()` che mất ngày → backend parse
+ // "chusan@gmail.com" thành ngày → báo cáo luôn kết thúc ở hôm nay.
+ const mailToAddr = mailTo.trim();
+ if (!mailToAddr) {
  toastErr("Vui lòng nhập email nhận báo cáo.");
  return;
  }
@@ -118,7 +122,7 @@ export default function OwnerReportExport() {
  ...(token ? { Authorization: `Bearer ${token}` } : {}),
  },
  body: JSON.stringify({
- toEmail: to,
+ toEmail: mailToAddr,
  type: mailType,
  months,
  days,

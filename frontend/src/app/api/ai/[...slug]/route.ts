@@ -54,7 +54,15 @@ export async function POST(
       );
     }
 
-    // Body quá lớn -> tu choi (tranh proxy bị lạm dụng).
+    // Body quá lớn -> tu choi TRƯỚC khi đọc hết (đọc hết rồi mới check thì vẫn
+    // dùng bộ nhớ tạm cho payload lớn -> không chặn được lạm dụng).
+    const declaredLength = Number(request.headers.get('content-length') || '0');
+    if (declaredLength > MAX_BODY_BYTES) {
+      return NextResponse.json(
+        { status: 'ERROR', message: 'Dữ liệu gửi lên quá lớn.' },
+        { status: 413, headers: CORS_HEADERS }
+      );
+    }
     const rawBody = await request.text();
     if (rawBody.length > MAX_BODY_BYTES) {
       return NextResponse.json(
@@ -72,28 +80,39 @@ export async function POST(
       );
     }
 
-    // Forward request to AI service
+    // Forward request to AI service (giữ nguyên query string của client).
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 55000); // 55s cho cold start
+    const search = request.nextUrl.search || '';
 
-    const response = await fetch(`${aiBaseUrl}/api/v1/ai${path}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${aiBaseUrl}/api/v1/ai${path}${search}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } finally {
+      // clearTimeout phải ở finally — nếu fetch ném lỗi thì timer 55s vẫn treo.
+      clearTimeout(timeoutId);
+    }
 
-    clearTimeout(timeoutId);
-
-    // AI có thể trả về JSON hoặc text (VD trang lỗi) -> đọc an toàn
+    // AI có thể trả về JSON hoặc text (VD trang lỗi/bảo trì) -> đọc an toàn
     const raw = await response.text();
     let data: unknown;
     try {
       data = JSON.parse(raw);
     } catch {
-      data = { status: 'ERROR', message: raw.slice(0, 300) };
+      // Trả 502 thay vì 200: nếu forward nguyên trang HTML lỗi với status 200, giao diện
+      // sẽ tưởng là thành công rồi đọc `recommendations` (không có) -> undefined -> vỡ trang.
+      console.error('[AI Proxy] Upstream trả về body không phải JSON:', raw.slice(0, 300));
+      return NextResponse.json(
+        { status: 'ERROR', message: 'AI service trả về dữ liệu không hợp lệ.' },
+        { status: 502, headers: CORS_HEADERS }
+      );
     }
 
     return NextResponse.json(data, {

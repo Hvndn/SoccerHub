@@ -39,11 +39,91 @@ public class TournamentController {
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Che thong tin ca nhan khi tra giai cho nguoi xem khong phai BTC.
+     *
+     * <p>GET /tournaments va GET /tournaments/{id} la endpoint CONG KHAI (permitAll) nhung
+     * truoc day tra nguyen entity → lộ danh sách email được mời và email/SĐT của từng đội
+     * trưởng. Nay:
+     * - người có quyền (ORGANIZER/OWNER/ADMIN) thấy đầy đủ;
+     * - người khác chỉ thấy email mời CỦA CHÍNH MÌNH (để giao diện biết mình có được
+     *   mời hay không) và liên hệ đội trưởng đã che.</p>
+     */
+    private Map<String, Object> sanitizeTournament(Tournament t, com.turfzone.model.User me) {
+        Map<String, Object> map = objectMapper.convertValue(t,
+                new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() { });
+        boolean privileged = me != null && me.getRole() != null
+                && ("ADMIN".equals(me.getRole().name())
+                || "ORGANIZER".equals(me.getRole().name())
+                || "OWNER".equals(me.getRole().name()));
+        if (privileged) return map;
+
+        String myEmail = (me != null && me.getEmail() != null) ? me.getEmail().trim().toLowerCase() : "";
+        List<String> mine = new ArrayList<>();
+        if (t.getInvitedEmails() != null) {
+            for (String e : t.getInvitedEmails()) {
+                if (e != null && e.trim().toLowerCase().equals(myEmail)) mine.add(e);
+            }
+        }
+        map.put("invitedEmails", mine);
+
+        Object teamsObj = map.get("teams");
+        if (teamsObj instanceof List) {
+            String myPhone = (me != null && me.getPhone() != null) ? me.getPhone().trim() : "";
+            for (Object o : (List<?>) teamsObj) {
+                if (o instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tm = (Map<String, Object>) o;
+                    // Đội trưởng phải thấy SĐT/email CỦA CHÍNH MÌNH (để "Đội của tôi"
+                    // nhận ra đội mình làm trưởng) — người khác vẫn được che.
+                    boolean isMine = (!myPhone.isEmpty()
+                            && myPhone.equalsIgnoreCase(String.valueOf(tm.get("captainPhone"))))
+                            || (!myEmail.isEmpty()
+                            && myEmail.equalsIgnoreCase(String.valueOf(tm.get("captainEmail"))));
+                    if (!isMine) {
+                        tm.put("captainEmail", maskEmail(tm.get("captainEmail")));
+                        tm.put("captainPhone", maskPhone(tm.get("captainPhone")));
+                        tm.put("subCaptainPhone", maskPhone(tm.get("subCaptainPhone")));
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+    /** Che email: a***@d***.vn */
+    private static String maskEmail(Object raw) {
+        if (raw == null) return null;
+        String s = String.valueOf(raw).trim();
+        int at = s.indexOf('@');
+        if (at <= 0 || at == s.length() - 1) return "***";
+        String name = s.substring(0, at);
+        String domain = s.substring(at + 1);
+        int dot = domain.indexOf('.');
+        String dHead = dot > 0 ? domain.substring(0, dot) : domain;
+        String dTail = dot > 0 ? domain.substring(dot) : "";
+        String maskedName = name.isEmpty() ? "***" : name.charAt(0) + "***";
+        String maskedDomain = dHead.isEmpty() ? "***" : dHead.charAt(0) + "***";
+        return maskedName + "@" + maskedDomain + dTail;
+    }
+
+    /** Che SĐT: 0912345678 -> 0912****678 */
+    private static String maskPhone(Object raw) {
+        if (raw == null) return null;
+        String s = String.valueOf(raw).trim();
+        if (s.length() <= 7) return "*******";
+        return s.substring(0, 4) + "****" + s.substring(s.length() - 3);
+    }
+
     @GetMapping
-    public ResponseEntity<List<Tournament>> getTournaments() {
+    public ResponseEntity<List<Map<String, Object>>> getTournaments(@AuthenticationPrincipal com.turfzone.model.User me) {
         List<Tournament> tournaments = tournamentRepository.findAll();
         attachForms(tournaments); // 1 lần truy vấn phong độ cho toàn bộ đội, không N+1
-        return ResponseEntity.ok(tournaments);
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (Tournament t : tournaments) {
+            out.add(sanitizeTournament(t, me));
+        }
+        return ResponseEntity.ok(out);
     }
 
     @PostMapping
@@ -74,11 +154,11 @@ public class TournamentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTournamentById(@PathVariable Long id) {
+    public ResponseEntity<?> getTournamentById(@PathVariable Long id, @AuthenticationPrincipal com.turfzone.model.User me) {
         return tournamentRepository.findById(id)
                 .map(t -> {
                     attachForm(t);
-                    return ResponseEntity.ok(t);
+                    return ResponseEntity.ok(sanitizeTournament(t, me));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

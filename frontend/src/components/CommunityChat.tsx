@@ -233,11 +233,14 @@ export default function CommunityChat({
 
   // ---- Fetch DM messages ----
   const fetchDm = useCallback(async (partnerEmail: string, silent = false) => {
+    if (!silent) setDmLoading(true);
     try {
       const data = await apiRequest<ChatMessage[]>(`/api/v1/chat/messages?with=${encodeURIComponent(partnerEmail)}`);
       setDmMessages(Array.isArray(data) ? data : []);
     } catch (e: any) {
       if (!silent) toastErr(e?.message || "Không tải được tin nhắn.");
+    } finally {
+      if (!silent) setDmLoading(false);
     }
   }, []);
 

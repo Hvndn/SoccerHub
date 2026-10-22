@@ -170,7 +170,11 @@ export default function AdminCharts() {
       if (ym.length !== 7) continue;
       const cur = map.get(ym) ?? { revenue: 0, bookings: 0 };
       if (b.status !== "CANCELLED") {
-        const amount = (b.depositPaid ?? 0) + (b.cashDue ?? 0);
+        // Giong backend (RevenueUtil.settledRevenue): tien mat chi tinh khi don da
+    // PLAYING/COMPLETED. Truoc day tinh ca tien con phai tra o ca don BOOKED ->
+    // bieu do doanh thu lon hon muc /admin/overview va /admin/revenue-report.
+    const cash = (b.status === "PLAYING" || b.status === "COMPLETED") ? (b.cashDue ?? 0) : 0;
+    const amount = (b.depositPaid ?? 0) + cash;
         cur.revenue += amount;
         cur.bookings += 1;
       }
@@ -261,7 +265,8 @@ export default function AdminCharts() {
       if (b.status === "CANCELLED") continue;
       const dow = d.getDay(); // 0 = Chủ Nhật
       counts[dow] += 1;
-      revenue[dow] += (b.totalPrice ?? b.depositPaid ?? 0) + (b.cashDue ?? 0);
+      // totalPrice da = deposit + cash nen cong them cash se dem TRUNG.
+    revenue[dow] += (b.depositPaid ?? 0) + ((b.status === "PLAYING" || b.status === "COMPLETED") ? (b.cashDue ?? 0) : 0);
     }
     return names.map((n, i) => ({
       day: shortLabels[i],

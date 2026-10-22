@@ -2,6 +2,22 @@ import math
 import numpy as np
 from typing import List, Dict, Any
 
+# Alias PITCH_* -> ma chuan cua backend (SAN_*)
+_PITCH_TYPE_ALIASES = {
+    "PITCH_5": "SAN_5",
+    "PITCH_7": "SAN_7",
+    "PITCH_11": "SAN_11",
+    "PITCH_FUTSAL": "FUTSAL",
+    "FUTSAL": "FUTSAL",
+}
+
+
+def _norm_type(value) -> str:
+    """Chuan hoa ma loai san ve dung backend (SAN_5/SAN_7/SAN_11/FUTSAL)."""
+    t = str(value or "").strip().upper()
+    return _PITCH_TYPE_ALIASES.get(t, t)
+
+
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculate distance in kilometers between two GPS coordinates."""
     R = 6371.0  # Earth radius in kilometers
@@ -34,16 +50,22 @@ def score_pitch_cluster(cluster: Dict[str, Any], user_pref: Dict[str, Any]) -> f
     # 2. Budget Score
     budget = user_pref.get("max_budget", 500000)
     avg_price = cluster.get("avg_price_per_hour", 300000)
-    if avg_price <= budget:
+    if not budget or budget <= 0:
+        # Chia cho 0 -> ZeroDivisionError (HTTP 500)
+        budget_score = 0.0
+    elif avg_price <= budget:
         budget_score = 100.0
     else:
         diff_ratio = (avg_price - budget) / budget
-        budget_score = max(0.0, 100.0 * (1.0 - diff_ratio))
-        
+        # Clamp ca tren va duoi: truoc day budget am lam score bay len 7.000.106
+        budget_score = min(100.0, max(0.0, 100.0 * (1.0 - diff_ratio)))
+
     # 3. Pitch Type Score (5-a-side, 7-a-side, 11-a-side)
-    pref_type = user_pref.get("pitch_type", "PITCH_7")
-    types_available = cluster.get("pitch_types", ["PITCH_7"])
-    type_score = 100.0 if pref_type in types_available else 40.0
+    # Ma loai san: backend dung SAN_5/SAN_7/SAN_11/FUTSAL, FE cu dung PITCH_*.
+    # Chuan hoa ve ma backend de hai ben khop (truoc day lech 12 diem diem tuong thich).
+    pref_type = _norm_type(user_pref.get("pitch_type", "SAN_7"))
+    types_available = cluster.get("pitch_types", ["SAN_7"])
+    type_score = 100.0 if pref_type in {_norm_type(t) for t in types_available} else 40.0
     
     # 4. Rating & Quality Score
     rating = cluster.get("rating", 4.5)

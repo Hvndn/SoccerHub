@@ -207,11 +207,9 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  </div>
  <div className="w-px h-6 bg-slate-200 "></div>
  <div>
- <span className="text-[13px] text-slate-500 block font-medium">Chỉ số xếp hạng</span>
+ <span className="text-[13px] text-slate-500 block font-medium">Bậc thi đấu</span>
  <div className="flex items-center gap-1.5 font-mono text-[13px] font-bold">
- <span className="text-sky-800 ">{user?.level || "Chưa xếp bậc"}</span>
- <span className="text-slate-500 ">|</span>
- <span className="text-slate-900 ">{userLevel}</span>
+ <span className="text-sky-800 ">{userLevel}</span>
  </div>
  </div>
  </div>

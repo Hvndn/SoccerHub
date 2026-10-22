@@ -106,7 +106,18 @@ export async function fetchWithTimeout(
   }
 
   try {
-    return await fetch(url, { ...options, signal: controller.signal });
+    // Tự gắn token nếu có (trừ khi caller đã tự truyền Authorization).
+    // Backend che captainPhone/captainEmail/email mời khi request không có token
+    // (@AuthenticationPrincipal = null) → gọi fetch trực tiếp mà không token sẽ khiến
+    // "Đội của tôi" / "kèo của tôi" LUÔN rỗng vì SĐT bị che thành 0912****678.
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      ...((options.headers as Record<string, string>) || {}),
+    };
+    if (token && !headers.Authorization && !headers.authorization) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return await fetch(url, { ...options, headers, signal: controller.signal });
   } catch (e: any) {
     if (e?.name === 'AbortError') {
       throw new Error(

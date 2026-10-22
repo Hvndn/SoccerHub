@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from recommendation import recommend_pitches
 from form_matchmaking import find_matchmaking_opponents
@@ -28,9 +28,10 @@ app.add_middleware(
 class UserPreferenceRequest(BaseModel):
     latitude: float = 16.0544
     longitude: float = 108.2022
-    max_budget: float = 500000.0
-    pitch_type: str = "PITCH_7"
-    top_n: int = 5
+    # gt=0: max_budget = 0 se gay ZeroDivisionError o recommendation.py (HTTP 500)
+    max_budget: float = Field(default=500000.0, gt=0, le=100_000_000)
+    pitch_type: str = "SAN_7"  # ma chuan cua backend (SAN_5/SAN_7/SAN_11/FUTSAL)
+    top_n: int = Field(default=5, ge=1, le=50)  # -1 se lam mat 1 ket qua
 
 class PitchClusterItem(BaseModel):
     id: str
@@ -51,9 +52,12 @@ class TeamItem(BaseModel):
     id: str
     name: str
     win_rate: float = 50.0
+    # So tran da da: 0 = CHUA DA gi (khac voi 0% thang)
+    played: int = 0
+    record: str = ""
     recent_form: str = ""
     reputation_score: float = 95.0
-    preferred_pitch_type: str = "PITCH_7"
+    preferred_pitch_type: str = "SAN_7"
     contact_phone: Optional[str] = None
 
 class MatchmakingRequest(BaseModel):

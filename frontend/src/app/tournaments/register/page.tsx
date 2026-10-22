@@ -97,7 +97,7 @@ function RegisterTeamWizard() {
 
  const selected = tournaments.find((t) => String(t.id) === tournamentId) ?? null;
   // Giải kín (chỉ mời qua email): email đang đăng nhập có nằm trong danh sách mời không.
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const isInviteOnly = selected?.joinMode === "INVITE_ONLY";
   const myEmail = (user?.email ?? "").toLowerCase();
   const amInvited = !isInviteOnly || (selected?.invitedEmails ?? []).some((e) => (e ?? "").toLowerCase() === myEmail);
@@ -142,10 +142,23 @@ function RegisterTeamWizard() {
  try {
  setSubmitting(true);
  setSubmitError(null);
+  // Backend lấy tên/SĐT đội trưởng TỪ TOKEN (hồ sơ tài khoản), KHÔNG lấy từ body —
+  // nên nếu người dùng gõ khác hồ sơ thì đơn lưu sai (hoặc bị từ chối vì hồ sơ
+  // chưa có SĐT). Cập nhật hồ sơ trước khi nộp để hai nơi khớp nhau.
+  const profileName = (user?.fullName || "").trim();
+  const profilePhone = (user?.phone || "").trim();
+  const typedName = captainName.trim();
+  const typedPhone = captainPhone.trim();
+  if ((typedName && typedName !== profileName) || (typedPhone && typedPhone !== profilePhone)) {
+  await updateProfile({
+  ...(typedName ? { fullName: typedName } : {}),
+  ...(typedPhone ? { phone: typedPhone } : {}),
+  });
+  }
  await registerTeam(selected.id, {
  teamName: teamName.trim(),
- captainName: captainName.trim(),
- captainPhone: captainPhone.trim(),
+  captainName: typedName,
+  captainPhone: typedPhone,
  subCaptainPhone: subCaptainPhone.trim(),
  memberCount,
  });

@@ -25,6 +25,11 @@ export interface AppNotification {
 /** Cache tách riêng theo từng tài khoản (tránh lẫn thông báo khi đổi user chung máy). */
 const NOTIFS_KEY_BASE = "Turfzone_user_notifications";
 
+/** Danh sách ID thông báo (server) đã bị người dùng xoá — giữ lại để lần poll sau
+ *  KHÔNG làm thông báo đã xoá hiện lại (trước đây xoá chỉ ở local nên sau ≤60s
+ *  thông báo bị poll về và hiện lại, người dùng tưởng chức năng xoá hỏng). */
+const NOTIFS_DELETED_KEY_BASE = "Turfzone_user_notifications_deleted";
+
 /** Hiển thị thời gian tương đối: "Vừa xong" / "x phút trước" / ngày. */
 export function formatNotifTime(date: Date): string {
   const d = date instanceof Date ? date : new Date(date);
@@ -47,6 +52,28 @@ export function useNotifications(user: { email?: string | null } | null | undefi
   const [loading, setLoading] = useState(true);
   const notificationsRef = useRef<AppNotification[]>([]);
   const userEmailRef = useRef<string | null>(null);
+  // ID thông báo server đã bị xoá (giữ qua các lần poll).
+  const deletedServerIdsRef = useRef<Set<number>>(new Set());
+  const deletedKey = useCallback(
+    () => NOTIFS_DELETED_KEY_BASE + (userEmailRef.current ? "_" + userEmailRef.current : "_guest"),
+    []
+  );
+  const loadDeletedIds = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(deletedKey());
+      const arr = raw ? (JSON.parse(raw) as number[]) : [];
+      deletedServerIdsRef.current = new Set(Array.isArray(arr) ? arr : []);
+    } catch {
+      deletedServerIdsRef.current = new Set();
+    }
+  }, [deletedKey]);
+  const persistDeletedIds = useCallback(() => {
+    try {
+      localStorage.setItem(deletedKey(), JSON.stringify(Array.from(deletedServerIdsRef.current)));
+    } catch {
+      /* ignore */
+    }
+  }, [deletedKey]);
   userEmailRef.current = user?.email ?? null;
 
   const notifKey = useCallback(
@@ -72,6 +99,8 @@ export function useNotifications(user: { email?: string | null } | null | undefi
 
   // Load cache của đúng tài khoản đang đăng nhập (đổi user -> nạp lại, logout -> rỗng)
   useEffect(() => {
+    // Nạp danh sách ID thông báo đã xoá (theo tài khoản) trước khi nạp cache.
+    loadDeletedIds();
     try {
       const saved = localStorage.getItem(
         NOTIFS_KEY_BASE + (user?.email ? "_" + user.email : "_guest")
@@ -116,7 +145,9 @@ export function useNotifications(user: { email?: string | null } | null | undefi
           read: !!r.read,
           link: r.link ?? null,
         }));
-        const merged = [...mapped, ...localOnly].slice(0, 25);
+        // Lo bỏ thông báo đã bị người dùng xoá (nếu không nó sẽ hiện lại sau mỗi lần poll).
+        const kept = mapped.filter((m) => m.serverId == null || !deletedServerIdsRef.current.has(m.serverId));
+        const merged = [...kept, ...localOnly].slice(0, 25);
         setNotifications(merged);
         saveNotifications(merged);
       } catch {
@@ -191,42 +222,47 @@ export function useNotifications(user: { email?: string | null } | null | undefi
     notificationsRef.current
       .filter((n) => n.serverId != null && !n.read)
       .forEach((n) => markNotificationRead(n.serverId as number).catch(() => {}));
-    setNotifications((prev) => {
-      const updated = prev.map((n) => ({ ...n, read: true }));
-      saveNotifications(updated);
-      return updated;
-    });
+    // Tính ra NGOÀI updater: updater phải PURE (React có thể gọi lại nhiều lần
+    // ở StrictMode) → ghi localStorage bên trong sẽ ghi trùng.
+    const updated = notificationsRef.current.map((n) => ({ ...n, read: true }));
+    setNotifications(updated);
+    saveNotifications(updated);
   }, [saveNotifications]);
 
   /** Đánh dấu một thông báo đã đọc (có sync server nếu là thông báo từ server). */
   const markSingleRead = useCallback(
     (id: string) => {
-      setNotifications((prev) => {
-        const notif = prev.find((n) => n.id === id);
-        if (notif?.serverId != null && !notif.read) {
-          markNotificationRead(notif.serverId as number).catch(() => {});
-        }
-        const updated = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
-        saveNotifications(updated);
-        return updated;
-      });
+      // Side effect (gọi server + ghi localStorage) đưa ra ngoài updater.
+      const notif = notificationsRef.current.find((n) => n.id === id);
+      if (notif?.serverId != null && !notif.read) {
+        markNotificationRead(notif.serverId as number).catch(() => {});
+      }
+      const updated = notificationsRef.current.map((n) => (n.id === id ? { ...n, read: true } : n));
+      setNotifications(updated);
+      saveNotifications(updated);
     },
     [saveNotifications]
   );
 
   const removeNotification = useCallback(
     (id: string) => {
-      setNotifications((prev) => {
-        const updated = prev.filter((n) => n.id !== id);
-        saveNotifications(updated);
-        return updated;
-      });
+      // Ghi lại ID thông báo server đã xoá để lần poll sau không lấy lại.
+      const target = notificationsRef.current.find((n) => n.id === id);
+      if (target?.serverId != null) {
+        deletedServerIdsRef.current.add(target.serverId);
+        persistDeletedIds();
+      }
+      const updated = notificationsRef.current.filter((n) => n.id !== id);
+      setNotifications(updated);
+      saveNotifications(updated);
     },
     [saveNotifications]
   );
 
   const clearAllNotifications = useCallback(() => {
     setNotifications([]);
+    deletedServerIdsRef.current = new Set();
+    persistDeletedIds();
     saveNotifications([]);
   }, [saveNotifications]);
 

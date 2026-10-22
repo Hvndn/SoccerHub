@@ -58,7 +58,10 @@ const ROLE_LABEL: Record<string, string> = {
     if (!confirmDelete) return;
     try {
       setBusyId(confirmDelete.id);
-      await apiRequest(`/api/v1/chat/messages/${confirmDelete.id}`, { method: "DELETE" });
+      // Endpoint DUYET (admin): /chat/admin/messages/{id}.
+      // /chat/messages/{id} là xóa tin nhắn CỦA CHÍNH MÌNH nên admin không
+      // xóa được tin của người khác (luôn trả 403).
+      await apiRequest(`/api/v1/chat/admin/messages/${confirmDelete.id}`, { method: "DELETE" });
       notify("ok", "Đã xóa tin nhắn.");
       setConfirmDelete(null);
       await load();

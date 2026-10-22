@@ -298,6 +298,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   columns={columns}
   rowKey={(r) => r.id}
   loading={loading}
+  pageSize={PAGE_SIZE}
   emptyTitle={total === 0 ? "Không tìm thấy người dùng nào." : "Chưa có người dùng nào."}
   emptyHint="Danh sách lấy trực tiếp từ bảng users trong CSDL, phân trang phía server."
   />
