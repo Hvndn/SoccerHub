@@ -146,8 +146,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return profile;
     } catch (err) {
       console.error("Lỗi khi cập nhật hồ sơ:", err);
-      // fallback local update if backend API fails or offline
-      setUser(prev => prev ? { ...prev, ...data } : null);
+      // Fallback local khi backend lỗi/offline — CHỈ cập nhật các trường hồ sơ,
+      // KHÔNG ghi đè email: đổi email làm JWT (subject = email) cũ mất hiệu lực,
+      // nên ghi email mới vào state sẽ khiến các API sau đó trả 401.
+      setUser(prev => {
+        if (!prev) return null;
+        const { email: _ignoredEmail, ...safePatch } = data as any;
+        return { ...prev, ...safePatch };
+      });
       throw err;
     } finally {
       setIsLoading(false);

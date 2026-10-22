@@ -204,7 +204,7 @@ export default function PitchDetail({
  // Không áp voucher/điểm ảo: tổng = giá ca sân theo ma trận CSDL
  const totalPrice = originalPrice;
  const depositAmount = depositOption === "50%" ? Math.round(totalPrice * 0.5) : totalPrice;
- const splitPerPlayer = Math.round(totalPrice / Math.max(1, splitCount));
+  const splitPerPlayer = Math.round(totalPrice / Math.max(1, splitCount));
 
  // Chọn ca sân trên ma trận
  const handleSelectSlot = (court: any, slot: any) => {
@@ -962,7 +962,7 @@ export default function PitchDetail({
  min={1}
  max={40}
  value={splitCount}
- onChange={(e) => setSplitCount(Math.max(1, Number(e.target.value) || 1))}
+  onChange={(e) => setSplitCount(Math.min(40, Math.max(1, Number(e.target.value) || 1)))}
  aria-label="Số người được chia tiền"
  className="w-16 px-2 py-1 rounded-lg border border-sky-200 bg-white text-[13px] font-mono font-bold text-center"
  />

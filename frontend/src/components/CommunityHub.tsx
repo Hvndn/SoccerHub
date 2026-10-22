@@ -171,17 +171,26 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
   }, []);
 
   // ---- Tải dữ liệu xem trước (chỉ khi đã đăng nhập) ----
+  // Khoa in-flight + so thu tu response: request 5s truoc chua xong se bi bo qua,
+  // tranh tinh trang cu bi response cu (cham) ghi de.
+  const refreshSeqRef = React.useRef(0);
+  const refreshingRef = React.useRef(false);
   const refresh = useCallback(async () => {
     if (!user) return;
+    if (refreshingRef.current) return; // request truoc chua xong -> bo qua vong nay
+    refreshingRef.current = true;
+    const seq = ++refreshSeqRef.current;
     try {
       const [chans, convos] = await Promise.all([
         apiRequest<ChannelInfo[]>("/api/v1/chat/channels").catch(() => [] as ChannelInfo[]),
         apiRequest<Conversation[]>("/api/v1/chat/conversations").catch(() => [] as Conversation[]),
       ]);
+      if (seq !== refreshSeqRef.current) return; // response cu hon -> bo
       setChannels(Array.isArray(chans) ? chans : []);
       setConversations(Array.isArray(convos) ? convos : []);
     } finally {
-      setLoading(false);
+      refreshingRef.current = false;
+      if (seq === refreshSeqRef.current) setLoading(false);
     }
   }, [user]);
 

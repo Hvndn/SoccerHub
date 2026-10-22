@@ -145,11 +145,17 @@ const [addCount, setAddCount] = useState("4");
  });
  })
  .catch(() => {});
- return subscribeTournaments((list) => {
- if (!alive) return;
- setTournaments(list);
- });
- }, []);
+  // Cleanup: phai SET alive = false truoc khi huy subscription, neu khong
+  // setState sau unmount van chay (canh bao React + memory leak).
+  const unsubscribe = subscribeTournaments((list) => {
+   if (!alive) return;
+   setTournaments(list);
+  });
+  return () => {
+   alive = false;
+   unsubscribe();
+  };
+  }, []);
 
  const selected = useMemo(
   () => tournaments.find((t) => String(t.id) === selectedId) ?? null,
@@ -439,11 +445,6 @@ const [addCount, setAddCount] = useState("4");
  const next = { ...prev };
  delete next[m.matchId];
  return next;
- });
- setMatchStats((prev) => {
-  const next = { ...prev };
-  delete next[m.matchId];
-  return next;
  });
  } catch (err: any) {
  triggerToast(err?.message || "Huỷ kết quả thất bại.");

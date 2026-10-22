@@ -102,22 +102,23 @@ export function useNotifications(user: { email?: string | null } | null | undefi
       try {
         const rows = await listMyNotifications();
         if (!alive) return;
-        setNotifications((prev) => {
-          const localOnly = prev.filter((n) => n.serverId == null);
-          const mapped: AppNotification[] = rows.map((r) => ({
-            id: `srv-${r.id}`,
-            serverId: r.id,
-            type: r.type || "SYSTEM",
-            title: r.title,
-            message: r.message || "",
-            time: r.createdAt ? new Date(r.createdAt) : new Date(),
-            read: !!r.read,
-            link: r.link ?? null,
-          }));
-          const merged = [...mapped, ...localOnly].slice(0, 25);
-          saveNotifications(merged);
-          return merged;
-        });
+        // Ghep du lieu server voi thong bao local TRUOC khi setState.
+        // Khong ghi localStorage ben trong updater (React co the goi updater
+        // nhieu lan o StrictMode -> ghi trung + updater phai pure).
+        const localOnly = notificationsRef.current.filter((n) => n.serverId == null);
+        const mapped: AppNotification[] = rows.map((r) => ({
+          id: `srv-${r.id}`,
+          serverId: r.id,
+          type: r.type || "SYSTEM",
+          title: r.title,
+          message: r.message || "",
+          time: r.createdAt ? new Date(r.createdAt) : new Date(),
+          read: !!r.read,
+          link: r.link ?? null,
+        }));
+        const merged = [...mapped, ...localOnly].slice(0, 25);
+        setNotifications(merged);
+        saveNotifications(merged);
       } catch {
         // backend chưa chạy / chưa đăng nhập xong — giữ thông báo local
       } finally {

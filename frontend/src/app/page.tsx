@@ -88,12 +88,19 @@ export default function Home() {
  // Lưu tab đang cố truy cập để sau khi đăng nhập xong thì tự chuyển về
  const [pendingTab, setPendingTab] = useState<string | null>(null);
 
- const showRoleWarning = (msg: string) => {
- setRoleWarning(msg);
- setTimeout(() => setRoleWarning(null), 5500);
- };
+  // Timer cua thong bao phan quyen — phai clear khi unmount va khi co warning moi
+  // (truoc day 2 warning lien tie se bi tat nham + setState sau unmount).
+  const roleWarningTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
- // ============================================================
+  const showRoleWarning = (msg: string) => {
+  setRoleWarning(msg);
+  if (roleWarningTimerRef.current) clearTimeout(roleWarningTimerRef.current);
+  roleWarningTimerRef.current = setTimeout(() => setRoleWarning(null), 5500);
+  };
+
+  React.useEffect(() => () => {
+  if (roleWarningTimerRef.current) clearTimeout(roleWarningTimerRef.current);
+  }, []);
  // MA TRẬN PHÂN QUYỀN TAB (RBAC)
  // ============================================================
  // Tab chỉ dành cho OWNER (Chủ sân)

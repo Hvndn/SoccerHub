@@ -118,7 +118,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  setLoadError(null);
  try {
  const [ts, ps] = await Promise.all([
- fetchTournaments(true).catch(() => [] as Tournament[]),
+ fetchTournaments().catch(() => [] as Tournament[]),
  fetchWithTimeout(`${API_BASE_URL}/api/v1/community/matchmaking-posts`)
  .then((r) => (r.ok ? r.json() : []))
  .catch(() => [] as any[]),

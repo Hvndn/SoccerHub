@@ -39,8 +39,18 @@ export function setAuthToken(token: string, role?: string) {
 
 export function removeAuthToken(role?: string) {
   if (typeof window !== 'undefined') {
-    const key = role ? `Turfzone_token_${role}` : 'Turfzone_token';
-    sessionStorage.removeItem(key);
+    if (role) {
+      sessionStorage.removeItem(`Turfzone_token_${role}`);
+      return;
+    }
+    // Dang xuat: xoá TOAN BO key token (mac dinh + theo vai tro) — truoc day chi
+    // xoá 'Turfzone_token', cac key Turfzone_token_ADMIN/OWNER/... van con lai.
+    const keys: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k && k.startsWith('Turfzone_token')) keys.push(k);
+    }
+    keys.forEach((k) => sessionStorage.removeItem(k));
   }
 }
 
