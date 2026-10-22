@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import {
+  listCanteenItems, createCanteenItem, updateCanteenItem, sellCanteenItem, deleteCanteenItem,
+} from "@/lib/canteenService";
 import { apiRequest } from "@/lib/api";
 import { pitchTypeLabel, isPeakSlot } from "@/lib/pitchLabels";
 import { getMyPitchesApi } from "@/lib/pitchService";
@@ -140,13 +143,80 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
  const [pitchMatrix, setPitchMatrix] = useState<any[]>([]);
 
  // Canteen Sales Inventory State
- const [canteenItems, setCanteenItems] = useState([
- { id: "c1", name: "Nước Điện Giải Revive 500ml", price: 15000, soldToday: 48, stock: 120 },
- { id: "c2", name: "Nước Khoáng Lavie 500ml", price: 10000, soldToday: 65, stock: 200 },
- { id: "c3", name: "Thuê Giày Đã Bóng đinh TF (Đôi)", price: 40000, soldToday: 12, stock: 35 },
- { id: "c4", name: "Thuê Bộ Áo Bib Tập Luyện (Bộ 10 Áo)", price: 30000, soldToday: 18, stock: 40 },
- { id: "c5", name: "Bóng Động Lực FIFA Size 5", price: 45000, soldToday: 10, stock: 15 }
- ]);
+  // Canteen: dữ liệu THẬT từ CSDL (trước đây là mảng cứng + nút Lưu chỉ hiện toast).
+  const [canteenItems, setCanteenItems] = useState<any[]>([]);
+  const [canteenLoading, setCanteenLoading] = useState(false);
+  const [canteenBusy, setCanteenBusy] = useState(false);
+  const [canteenForm, setCanteenForm] = useState({ name: "", price: "", stock: "", unit: "" });
+  const [canteenEditingId, setCanteenEditingId] = useState<number | null>(null);
+
+  const loadCanteen = async (pid?: number | null) => {
+  setCanteenLoading(true);
+  try {
+  setCanteenItems(await listCanteenItems(pid ?? activePitch?.id ?? null));
+  } catch (e: any) {
+  console.warn('Lỗi tải danh sách canteen:', e?.message);
+  setCanteenItems([]);
+  } finally {
+  setCanteenLoading(false);
+  }
+  };
+
+  const saveCanteenItem = async () => {
+  const name = canteenForm.name.trim();
+  const price = Number(canteenForm.price);
+  if (!name) { showToast("❌ Vui lòng nhập tên món."); return; }
+  if (!price || price <= 0) { showToast("❌ Giá bán phải lớn hơn 0."); return; }
+  const pitchId = activePitch?.id;
+  if (!pitchId) { showToast("❌ Vui lòng chọn cụm sân trước."); return; }
+  setCanteenBusy(true);
+  try {
+  if (canteenEditingId) {
+  await updateCanteenItem(canteenEditingId, {
+  name,
+  price,
+  stock: Number(canteenForm.stock) || 0,
+  unit: canteenForm.unit.trim() || undefined,
+  });
+  showToast("✅ Đã cập nhật món trong kho canteen!");
+  } else {
+  await createCanteenItem({
+  pitchId,
+  name,
+  price,
+  stock: Number(canteenForm.stock) || 0,
+  unit: canteenForm.unit.trim() || undefined,
+  });
+  showToast("🎉 Đã thêm món vào kho canteen!");
+  }
+  setCanteenForm({ name: "", price: "", stock: "", unit: "" });
+  setCanteenEditingId(null);
+  await loadCanteen(pitchId);
+  } catch (e: any) {
+  showToast("❌ Lỗi: " + (e?.message || "không lưu được món."));
+  } finally {
+  setCanteenBusy(false);
+  }
+  };
+
+  const removeCanteenItem = async (id: number) => {
+  try {
+  await deleteCanteenItem(id);
+  showToast("🗑️ Đã xoá món khỏi kho.");
+  await loadCanteen();
+  } catch (e: any) {
+  showToast("❌ Lỗi: " + (e?.message || "không xoá được."));
+  }
+  };
+
+  const sellOneCanteenItem = async (id: number) => {
+  try {
+  await sellCanteenItem(id, 1);
+  await loadCanteen();
+  } catch (e: any) {
+  showToast("❌ Lỗi: " + (e?.message || "không bán được."));
+  }
+  };
 
  // Modals state
  const [showOfflineModal, setShowOfflineModal] = useState(false);
@@ -497,6 +567,8 @@ setIsSavingInfo(false);
  };
 
  const handleSelectPitch = async (pitch: any) => {
+  // Đổi cụm sân thì kho canteen cũng phải đổi theo.
+  if (activeSubTab === "canteen") loadCanteen(pitch.id);
  setActivePitch(pitch);
  await loadMatrixAndStats(pitch.id);
  showToast(`🏟️ Đã kết nối cụm sân: [${pitch.name}]`);
@@ -1034,7 +1106,7 @@ setIsSavingInfo(false);
 
  <button
  type="button"
- onClick={() => setActiveSubTab("canteen")}
+  onClick={() => { setActiveSubTab("canteen"); loadCanteen(); }}
  className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap ${
  activeSubTab === "canteen"
  ? "bg-[#0369a1] text-white shadow-md"
@@ -1756,39 +1828,106 @@ setIsSavingInfo(false);
  )}
 
  {/* --- SUB-TAB CONTENT 4: CANTEEN POS --- */}
- {activeSubTab === "canteen" && (
- <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-5">
- <div className="flex items-center justify-between border-b border-slate-100 pb-4">
- <div className="flex items-center space-x-2">
- <Coffee className="w-5 h-5 text-amber-700" />
- <h2 className="text-lg font-extrabold text-slate-900 ">
- Quản Lý Dịch Vụ Canteen & Cho Thuê Vật Tư Tại Quầy
- </h2>
- </div>
- <button
- onClick={() => showToast("🎉 Đã lưu tồn kho Canteen!")}
- className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-sm shadow-xs transition-all active:scale-95"
- >
- Lưu Kho Canteen
- </button>
- </div>
+  {activeSubTab === "canteen" && (
+  <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-5">
+  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+  <div className="flex items-center space-x-2">
+  <Coffee className="w-5 h-5 text-amber-700" />
+  <h2 className="text-lg font-extrabold text-slate-900 ">
+  Canteen & Cho Thuê Vật Tư Tại Quầy
+  </h2>
+  </div>
+  <button
+  onClick={() => loadCanteen()}
+  className="px-3 py-2 rounded-xl border border-slate-200 text-slate-700 text-[13px] font-bold hover:bg-slate-100 transition-all"
+  >
+  Tải lại
+  </button>
+  </div>
 
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
- {canteenItems.map((item) => (
- <div key={item.id} className="p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
- <div className="flex justify-between items-start">
- <span className="font-extrabold text-[13px] text-slate-900 ">{item.name}</span>
- <span className="font-mono font-black text-emerald-500 text-[13px]">{item.price.toLocaleString("vi-VN")}đ</span>
- </div>
- <div className="flex justify-between text-[13px] text-slate-500 font-mono">
- <span>Đã bán hôm nay: <strong className="text-slate-900 ">{item.soldToday}</strong></span>
- <span>Tồn kho: <strong className="text-[#0369a1]">{item.stock}</strong></span>
- </div>
- </div>
- ))}
- </div>
- </div>
- )}
+  {/* FORM THÊM / SỬA MÓN — ghi xuống CSDL (trước đây nút Lưu chỉ hiện toast) */}
+  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+  <input
+  value={canteenForm.name}
+  onChange={(e) => setCanteenForm((f) => ({ ...f, name: e.target.value }))}
+  placeholder="Tên món (VD: Nước Revive 500ml)"
+  className="col-span-2 sm:col-span-1 px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+  />
+  <input
+  value={canteenForm.price}
+  onChange={(e) => setCanteenForm((f) => ({ ...f, price: e.target.value }))}
+  placeholder="Giá bán"
+  className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+  />
+  <input
+  value={canteenForm.stock}
+  onChange={(e) => setCanteenForm((f) => ({ ...f, stock: e.target.value }))}
+  placeholder="Tồn kho"
+  className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+  />
+  <button
+  onClick={saveCanteenItem}
+  disabled={canteenBusy}
+  className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black shadow-xs transition-all active:scale-95 disabled:opacity-50"
+  >
+  {canteenBusy ? "Đang lưu..." : canteenEditingId ? "Cập Nhật" : "Thêm Món"}
+  </button>
+  </div>
+  {canteenEditingId ? (
+  <button
+  onClick={() => { setCanteenEditingId(null); setCanteenForm({ name: "", price: "", stock: "", unit: "" }); }}
+  className="text-[13px] font-bold text-slate-500 hover:text-slate-700 mt-1"
+  >
+  Hủy sửa
+  </button>
+  ) : null}
+
+  {canteenLoading ? (
+  <p className="text-[13px] text-slate-500">Đang tải kho canteen...</p>
+  ) : canteenItems.length === 0 ? (
+  <p className="text-[13px] text-slate-500">
+  Chưa khai món nào. Thêm món ở ô bên trên để quản lý kho và doanh thu quầy.
+  </p>
+  ) : (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+  {canteenItems.map((item: any) => (
+  <div key={item.id} className="p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+  <div className="flex justify-between items-start gap-2">
+  <span className="font-extrabold text-[13px] text-slate-900 flex-1">{item.name}</span>
+  <span className="font-mono font-black text-emerald-600 text-[13px] shrink-0">
+  {Number(item.price ?? 0).toLocaleString("vi-VN")}đ
+  </span>
+  </div>
+  <div className="flex justify-between text-[13px] text-slate-500 font-mono">
+  <span>Đã bán hôm nay: <strong className="text-slate-900 ">{item.soldToday ?? 0}</strong></span>
+  <span>Tồn kho: <strong className="text-[#0369a1]">{item.stock ?? 0}</strong></span>
+  </div>
+  <div className="flex items-center gap-2 pt-1">
+  <button
+  onClick={() => sellOneCanteenItem(item.id)}
+  className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[13px] font-bold hover:bg-emerald-100 transition-colors"
+  >
+  Bán 1
+  </button>
+  <button
+  onClick={() => { setCanteenEditingId(item.id); setCanteenForm({ name: item.name ?? "", price: String(item.price ?? ""), stock: String(item.stock ?? 0), unit: item.unit ?? "" }); }}
+  className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[13px] font-bold hover:bg-slate-200 transition-colors"
+  >
+  Sửa
+  </button>
+  <button
+  onClick={() => removeCanteenItem(item.id)}
+  className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 text-[13px] font-bold hover:bg-rose-100 transition-colors"
+  >
+  Xoá
+  </button>
+  </div>
+  </div>
+  ))}
+  </div>
+  )}
+  </div>
+  )}
 
  {/* MODAL 0: SỬA HỒ SƠ CỤM SÂN (tên, địa chỉ, SĐT, bộ môn, tiện ích, ảnh, mô tả) */}
   {showEditInfoModal && (
