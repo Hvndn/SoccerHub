@@ -54,6 +54,11 @@ public class PitchBookingController {
         }
         try {
             Pitch createdPitch = pitchService.createPitch(request, currentUser);
+            // Đã có cụm sân -> chủ sân hoàn tất bước khởi tạo (hết bị ép vào onboarding).
+            if (currentUser.getProfileCompleted() == null || !currentUser.getProfileCompleted()) {
+                currentUser.setProfileCompleted(true);
+                userRepository.save(currentUser);
+            }
             return ResponseEntity.status(HttpStatus.CREATED).body(createdPitch);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));

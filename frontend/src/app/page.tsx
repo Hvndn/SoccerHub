@@ -148,7 +148,7 @@ if (!currentUser) {
 
  if (currentUser.role === "OWNER") {
  // CHỦ SÂN: Nếu là chủ sân mới (chưa tạo sân) thì giữ ở onboarding
- if (currentUser.isNewOwner && activeTab !== "owner-onboarding") {
+ if (currentUser.role === "OWNER" && currentUser.profileCompleted === false && activeTab !== "owner-onboarding") {
  setActiveTab("owner-onboarding");
  // Chu san cung to chuc giai tai cum san cua ho -> cho phep tab "organizer"
  // (Navbar da co nut mo tab nay cho OWNER).
@@ -197,7 +197,7 @@ const handleTabChange = (newTab: string) => {
  // da co nut mo tab nay cho OWNER.
  if (!OWNER_TABS.includes(newTab) && !ORGANIZER_TABS.includes(newTab)) {
   showRoleWarning("⚠️ Tài khoản Chủ Sân không thể truy cập khu vực Cầu Thủ. Vui lòng dùng Bảng Điều Hành hoặc Cộng đồng & Nhắn tin.");
- setActiveTab(currentUser.isNewOwner ? "owner-onboarding" : "admin");
+ setActiveTab(currentUser.role === "OWNER" && currentUser.profileCompleted === false ? "owner-onboarding" : "admin");
  return;
  }
  }
@@ -311,7 +311,7 @@ if (newTab === activeTab) return;
  if (userData?.role === "ADMIN") {
  window.location.assign("/admin");
  } else if (userData?.role === "OWNER") {
- setActiveTab(userData?.isNewOwner ? "owner-onboarding" : "admin");
+ setActiveTab(userData?.role === "OWNER" && userData?.profileCompleted === false ? "owner-onboarding" : "admin");
  } else if (userData?.role === "ORGANIZER") {
  setActiveTab("tournaments");
  } else {
@@ -422,7 +422,9 @@ if (newTab === activeTab) return;
  <StadiumOwnerOnboarding
  onComplete={() => {
  if (currentUser) {
- setLocalUser((prev: any) => ({ ...prev, isNewOwner: false }));
+ // Đã tạo cụm sân -> backend đặt profileCompleted = true. Cập nhật lại hồ sơ
+ // để không bị ép vào lại trang khởi tạo.
+ setLocalUser((prev: any) => ({ ...prev, profileCompleted: true, isNewOwner: false }));
  }
  handleTabChange("admin");
  }}

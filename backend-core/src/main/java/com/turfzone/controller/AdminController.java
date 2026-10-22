@@ -171,6 +171,14 @@ public class AdminController {
             return ResponseEntity.badRequest().body(Map.of("message", "Vai trò không hợp lệ: " + roleName));
         }
         user.setRole(role);
+        // Chủ sân MỚI (vừa được nâng role) phải khai tạo cụm sân của mình.
+        // Dùng chung cờ profileCompleted: false = chưa hoàn tất onboarding.
+        if (role == UserRole.OWNER) {
+            user.setProfileCompleted(false);
+        } else if (role == UserRole.PLAYER) {
+            // Chuyển về cầu thủ: hồ sơ đã có, không bị ép khởi tạo lại.
+            user.setProfileCompleted(true);
+        }
         userRepository.save(user);
         audit(me, "USER", "CHANGE_ROLE", user.getEmail(),
                 "Đổi vai trò " + user.getEmail() + ": " + (me == null ? "?" : me.getEmail())
