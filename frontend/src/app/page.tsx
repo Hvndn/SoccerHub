@@ -138,7 +138,7 @@ if (!currentUser) {
   }
 
   // PLAYER mới đăng ký: bắt hoàn tất trang "Khởi tạo hồ sơ cầu thủ" trước khi dùng app
-  if (currentUser.role === "PLAYER" && isPlayerSetupPending(currentUser.email || "")) {
+ if (currentUser.role === "PLAYER" && currentUser.profileCompleted === false) {
   // Điều hướng client (không reload cả trang) để giữ nguyên phiên đã đăng nhập,
   // tránh phải gọi lại /auth/me và chờ mạng — trước đây dùng window.location.assign
   // nên phải nạp lại toàn bộ trang rồi mới hiện được form.
@@ -183,7 +183,7 @@ const handleTabChange = (newTab: string) => {
   // ================================================================
   if (
   currentUser?.role === "PLAYER" &&
-  isPlayerSetupPending(currentUser.email || "")
+  currentUser.profileCompleted === false
   ) {
   router.replace("/player-setup");
   return;

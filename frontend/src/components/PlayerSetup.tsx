@@ -144,10 +144,13 @@ export default function PlayerSetup() {
  // Không còn cờ "chưa khởi tạo" và hồ sơ đã có dữ liệu -> không cần vào lại trang này
  const pending = isPlayerSetupPending(user.email || "");
  const hasProfile = !!(user.position || user.dominantFoot || user.jerseyNumber);
- if (!pending && hasProfile) {
- router.replace("/");
- return;
- }
+  // Chi redirect khi ho so DA hoan tat khoi tao (profileCompleted khac false).
+  // Dung co DB (khong phu thuoc localStorage) de nguoi dung moi dang ky tren
+  // thiet bi khac / sau khi xoa cache van duoc yeu cau khoi tao ho so.
+  if (user.profileCompleted !== false) {
+  router.replace("/");
+  return;
+  }
  setForm({
  position: user.position || "",
  dominantFoot: user.dominantFoot || "Phải",
@@ -199,6 +202,7 @@ export default function PlayerSetup() {
  area: form.area.trim(),
  level: form.level,
  favoriteSport: form.favoriteSport,
+  profileCompleted: true,
  });
  setUser(updated);
  clearPlayerSetupPending(user.email || "");

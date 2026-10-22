@@ -229,7 +229,7 @@ function RegisterTeamWizard() {
  <span className="block text-sm font-black text-slate-900 truncate">
  {t.title}
  </span>
- <span className="mt-1 block text-[13px] text-slate-500">
+ <span className="mt-1 block text-[13px] text-slate-600">
  {sportLabel(t.sportType)} • Khởi tranh {formatDate(t.startDate)} •{" "}
  {t.registeredTeams ?? 0}/{t.totalTeams ?? "—"} đội
  </span>

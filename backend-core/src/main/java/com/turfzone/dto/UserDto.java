@@ -29,6 +29,8 @@ public class UserDto {
     private String currentClub;
     /** Cờ "đại diện CLB" — tài khoản này đại diện cho ít nhất 1 CLB. */
     private Boolean isClubRep;
+    /** null = da hoan tat khoi tao ho so; false = moi dang ky, can khoi tao. */
+    private Boolean profileCompleted;
     /**
      * Chỉ được điền khi người dùng vừa ĐỔI EMAIL.
      * JWT lấy subject = email nên token đang dùng sẽ hết hiệu lực ngay sau khi đổi;

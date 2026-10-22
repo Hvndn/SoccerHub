@@ -20,6 +20,8 @@ export interface UserProfile {
   currentClub?: string;
   /** Cờ "đại diện CLB" — tài khoản này đại diện cho ít nhất 1 CLB. */
   isClubRep?: boolean;
+  /** null = da hoan tat khoi tao ho so; false = moi dang ky, can khoi tao. */
+  profileCompleted?: boolean | null;
   /**
    * Chỉ có khi vừa đổi email: backend cấp token mới vì JWT gắn với email cũ.
    * FE dùng để thay token đang lưu, không hiển thị cho người dùng.

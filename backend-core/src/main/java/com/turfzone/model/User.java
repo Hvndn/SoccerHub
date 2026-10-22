@@ -50,6 +50,14 @@ public class User {
     private String weight;
     private String preferredTime;
     private String currentClub;
+    /**
+     * Da hoan tat buoc khoi tao ho so cau thu?
+     * <p>null = tai khoan cu (khong can khoi tao), false = vua dang ky, can
+     * hoan thanh trang "Khoi tao ho so cau thu". Truoc day giao dien phu thuoc
+     * vao co localStorage -> mat co khi xoa cache / doi thiet bi thi nguoi dung
+     * khong bao gio duoc yeu cau khoi tao ho so.</p>
+     */
+    private Boolean profileCompleted;
 
     @Builder.Default
     private Boolean enabled = true; // false = tài khoản bị admin khóa, không cho đăng nhập

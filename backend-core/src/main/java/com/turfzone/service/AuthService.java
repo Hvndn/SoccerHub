@@ -93,6 +93,8 @@ public class AuthService {
                 .favoriteSport(req.getFavoriteSport() != null ? req.getFavoriteSport() : "football")
                 .level(req.getLevel() != null ? req.getLevel() : "Nghiệp dư")
                 .avatar(getInitials(req.getFullName()))
+                // Tai khoan moi: chua hoan tat khoi tao ho so cau thu.
+                .profileCompleted(false)
                 .build();
 
         userRepository.save(user);
@@ -192,6 +194,10 @@ public class AuthService {
             user.setPosition(req.getPosition().trim());
         }
         if (req.getArea() != null) {
+        // Client danh dau "da hoan tat khoi tao ho so" (chi cho phep TRUE, khong cho false).
+        if (Boolean.TRUE.equals(req.getProfileCompleted())) {
+            user.setProfileCompleted(true);
+        }
             user.setArea(req.getArea().trim());
         }
         if (req.getFavoriteSport() != null) {
@@ -256,6 +262,7 @@ public class AuthService {
                 .preferredTime(user.getPreferredTime())
                 .currentClub(user.getCurrentClub())
                 .isClubRep(user.getIsClubRep() != null && user.getIsClubRep())
+                .profileCompleted(user.getProfileCompleted())
                 .build();
     }
 

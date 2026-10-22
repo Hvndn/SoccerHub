@@ -24,4 +24,6 @@ public class UpdateProfileRequest {
     private String weight;
     private String preferredTime;
     private String currentClub;
+    /** Client gui true sau khi nguoi dung hoan tat man hinh khoi tao ho so. */
+    private Boolean profileCompleted;
 }
