@@ -482,7 +482,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
   }`}
   >
   <span>🎯 Tất cả</span>
-  <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[13px] font-black">
+  <span className="px-2 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[13px] font-black">
   {posts.length} kèo
   </span>
   </button>
