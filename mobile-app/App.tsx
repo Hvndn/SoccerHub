@@ -14,17 +14,20 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-
 /**
  * Backend API URL.
  *
- * Ưu tiên suy ra IP của máy đang chạy Expo (qua expo-constants) để app luôn gọi
- * đúng backend ở máy phát triển, không cần sửa code mỗi khi đổi mạng.
- * Nếu không lấy được (chạy bản build standalone) thì lùi về IP cố định.
+ * Thu tu tu suy ra dia chi may chay Expo (expo-constants) de app luon goi dung
+ * backend o may phat trien, khong can sua code moi khi doi mang.
+ *
+ * - EXPO_PUBLIC_API_URL (env) -> dung cho ban build that (Render/Vercel).
+ * - hostUri cua Expo: '192.168.x.x:8081' -> lay IP; 'https://xxx.exp.direct' (tunnel)
+ *   -> lay hostname. Truoc day tach theo ':' lay duoc 'https' -> URL sai.
+ * - simulator iOS / Expo Go tren cung may -> localhost.
  */
-const FALLBACK_API_URL = 'http://10.100.19.142:8080/api/v1';
-
 function resolveApiUrl(): string {
+  const fromEnv = (process.env.EXPO_PUBLIC_API_URL || '').trim();
+  if (fromEnv) return fromEnv.replace(/\/+$/, '');
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const Constants = require('expo-constants').default;
@@ -33,16 +36,52 @@ function resolveApiUrl(): string {
       Constants?.manifest2?.extra?.expoGo?.developer?.host ||
       null;
     if (hostUri) {
-      const ip = String(hostUri).split(':')[0];
-      if (ip && ip !== 'localhost') return `http://${ip}:8080/api/v1`;
+      const raw = String(hostUri);
+      // Tunnel: https://abc.exp.direct -> lay hostname (khong phai 'https').
+      const host = raw.startsWith('http') ? new URL(raw).hostname : raw.split(':')[0];
+      if (host && host !== 'localhost' && host !== '127.0.0.1') {
+        return `http://${host}:8080/api/v1`;
+      }
     }
   } catch {
-    // Không có expo-constants -> dùng IP cố định bên dưới.
+    // Khong co expo-constants -> dung localhost.
   }
-  return FALLBACK_API_URL;
+  return 'http://localhost:8080/api/v1';
 }
 
 const API_URL = resolveApiUrl();
+
+/** Ngay hom nay theo gio VIET NAM (UTC+7) — khong dung toISOString() (UTC). */
+function todayLocal(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** Mot ca san trong ma tran (chi lay ca con TRONG). */
+interface FreeSlot {
+  time: string;
+  courtName: string;
+  courtType: string;
+  price: number;
+  peak: boolean;
+}
+
+interface MatrixCourt {
+  pitchId?: string | number;
+  pitchName: string;
+  type?: string;
+  slots: { time: string; status: string; priceValue?: number; price?: string; note?: string }[];
+}
+
+interface AuthUser {
+  id?: number;
+  fullName?: string;
+  email: string;
+  phone?: string;
+  role?: string;
+  level?: string;
+}
 
 interface Pitch {
   id: number;
@@ -61,6 +100,86 @@ interface Pitch {
   description?: string;
 }
 
+/**
+ * Man hinh dang nhap — BAT BUOC de dat san (backend yeu cau token).
+ * Truoc day app khong co dang nhap: bam "Xac Nhan Giu Cho" chi hien mot Alert
+ * gia ma (khong goi API) nguoi dung tin rang da giu cho.
+ */
+function LoginScreen({
+  email, setEmail, password, setPassword, busy, error, onLogin, insets,
+}: {
+  email: string;
+  setEmail: (v: string) => void;
+  password: string;
+  setPassword: (v: string) => void;
+  busy: boolean;
+  error: string | null;
+  onLogin: () => void;
+  insets: { top: number; bottom: number };
+}) {
+  return (
+    <View style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={{ padding: 20, gap: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+          <View style={styles.logoBadge}>
+            <Text style={styles.logoIcon}>⚽</Text>
+          </View>
+          <View>
+            <Text style={styles.brandTitle}>TURFZONE</Text>
+            <Text style={styles.brandSubtitle}>Đăng nhập để đặt sân</Text>
+          </View>
+        </View>
+
+        <Text style={{ fontSize: 13, fontWeight: '700', color: '#334155' }}>Email</Text>
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          placeholder="ban@Turfzone.vn"
+          style={{
+            borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 12, paddingHorizontal: 14,
+            paddingVertical: 12, fontSize: 14, color: '#0f172a', backgroundColor: '#fff',
+          }}
+        />
+
+        <Text style={{ fontSize: 13, fontWeight: '700', color: '#334155' }}>Mật khẩu</Text>
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          placeholder="••••••••"
+          style={{
+            borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 12, paddingHorizontal: 14,
+            paddingVertical: 12, fontSize: 14, color: '#0f172a', backgroundColor: '#fff',
+          }}
+        />
+
+        {error ? (
+          <Text style={{ color: '#b91c1c', fontSize: 13, fontWeight: '700' }}>{error}</Text>
+        ) : null}
+
+        <TouchableOpacity
+          onPress={onLogin}
+          disabled={busy}
+          style={{
+            backgroundColor: '#0369a1', borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+            opacity: busy ? 0.6 : 1,
+          }}
+        >
+          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>
+            {busy ? 'Đang đăng nhập...' : 'Đăng Nhập'}
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={{ fontSize: 12, color: '#64748b', lineHeight: 18 }}>
+          Tài khoản demo: player@Turfzone.vn / player123 — chủ sân: owner@Turfzone.vn / owner123
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 function MainApp() {
   const insets = useSafeAreaInsets();
 
@@ -72,10 +191,110 @@ function MainApp() {
   const [selectedSport, setSelectedSport] = useState<string>('ALL');
   const [pitches, setPitches] = useState<Pitch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  // Đăng nhập: token JWT giữ trong bộ nhớ của app (đặt sân cần xác thực).
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loginBusy, setLoginBusy] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginEmail, setLoginEmail] = useState('player@Turfzone.vn');
+  const [loginPassword, setLoginPassword] = useState('player123');
+
+  // Ma tran ca that cu cum san dang chon + ca dang chon
+  const [freeSlots, setFreeSlots] = useState<FreeSlot[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [bookingBusy, setBookingBusy] = useState(false);
+  const [bookingResult, setBookingResult] = useState<{ code: string; total: number } | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+
+  // Du lieu THAT tu backend (thay cho du lieu gia nham).
+  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [keoPosts, setKeoPosts] = useState<any[]>([]);
+  const [myBookings, setMyBookings] = useState<any[]>([]);
+  const [tabBusy, setTabBusy] = useState(false);
+
+  const authHeaders = () => (token ? { Authorization: `Bearer ${token}` } : {});
+
+  const fetchTournaments = async () => {
+    try {
+      const res = await fetch(`${API_URL}/tournaments`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setTournaments(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.log('Lỗi tải giải đấu:', e?.message);
+    }
+  };
+
+  const fetchKeo = async () => {
+    try {
+      const res = await fetch(`${API_URL}/community/matchmaking-posts`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setKeoPosts(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.log('Lỗi tải chợ kèo:', e?.message);
+    }
+  };
+
+  const fetchMyBookings = async () => {
+    if (!token) {
+      setMyBookings([]);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/pitches/bookings/search`, {
+        headers: { ...authHeaders() },
+      });
+      if (!res.ok) {
+        setMyBookings([]);
+        return;
+      }
+      const data = await res.json();
+      setMyBookings(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.log('Lỗi tải đơn của tôi:', e?.message);
+    }
+  };
+
+  // Nhan keo that (backend ghi doi truong + phong do).
+  const acceptKeo = async (post: any) => {
+    if (!token) {
+      Alert.alert('Cần đăng nhập', 'Vui lòng đăng nhập để nhận kèo.');
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/community/matchmaking-posts/${post.id}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({
+          opponentTeamName: `FC ${user?.fullName || user?.email || 'Khách'}`,
+          opponentCaptainName: user?.fullName || user?.email || 'Khách',
+          opponentCaptainPhone: user?.phone || '',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        Alert.alert('Không nhận được kèo', data?.message || 'Vui lòng thử lại.');
+        return;
+      }
+      Alert.alert('Thành công', data?.message || 'Đã nhận kèo thành công!');
+      fetchKeo();
+    } catch (e: any) {
+      Alert.alert('Lỗi', 'Không kết nối được máy chủ.');
+    }
+  };
+
+  // Nap du lieu theo tab + sau khi dang nhap.
+  useEffect(() => {
+    if (!token) return;
+    setTabBusy(true);
+    Promise.all([fetchTournaments(), fetchKeo(), fetchMyBookings()]).finally(() => setTabBusy(false));
+  }, [token, activeTab]);
 
   // Detail Modal / Booking Modal State
   const [selectedPitch, setSelectedPitch] = useState<Pitch | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<string>('18:00 - 19:30');
+  const [selectedSlot, setSelectedSlot] = useState<FreeSlot | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
 
   // Fetch real pitch data from Spring Boot backend (như web)
@@ -84,33 +303,167 @@ function MainApp() {
   }, []);
 
   const fetchPitches = async () => {
-    setLoading(true);
+  setLoading(true);
+  setError(null);
+  try {
+  // Timeout 12s: tranh spinner vo han khi backend treo.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+  const res = await fetch(`${API_URL}/pitches`, { signal: controller.signal });
+  if (!res.ok) throw new Error(`Máy chủ trả về ${res.status}`);
+  const data = await res.json();
+  if (Array.isArray(data)) {
+  setPitches(data);
+  return;
+  }
+  setError('Máy chủ trả về dữ liệu không hợp lệ.');
+  } finally {
+  clearTimeout(timer);
+  }
+  } catch (e: any) {
+  console.log('Lỗi tải danh sách sân:', e?.message);
+  setError(
+  e?.name === 'AbortError'
+  ? 'Máy chủ phản hồi quá chậm. Kiểm tra kết nối rồi thử lại.'
+  : 'Không kết nối được máy chủ dữ liệu sân.'
+  );
+  setPitches([]);
+  } finally {
+  setLoading(false);
+  }
+  };
+  // Lọc sân theo tìm kiếm và môn thể thao
+  // Nap ma tran that cu cum san va lay danh sach ca CON TRONG.
+  const loadFreeSlots = async (pitchId: number) => {
+    setSlotsLoading(true);
+    setFreeSlots([]);
     try {
-      const res = await fetch(`${API_URL}/pitches`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setPitches(data);
-          return;
-        }
-      }
-    } catch (e) {
-      console.log('Using offline pitches fallback');
+      const res = await fetch(`${API_URL}/pitches/${pitchId}/matrix?date=${todayLocal()}`);
+      if (!res.ok) throw new Error(`Máy chủ trả về ${res.status}`);
+      const courts = (await res.json()) as MatrixCourt[];
+      const list: FreeSlot[] = [];
+      (Array.isArray(courts) ? courts : []).forEach((c) => {
+        (c.slots || []).forEach((s) => {
+          if (s.status !== 'empty') return;
+          const startHour = Number(String(s.time).split(':')[0]);
+          list.push({
+            time: s.time,
+            courtName: c.pitchName,
+            courtType: c.type || 'Sân 7',
+            price: Number(s.priceValue ?? 0),
+            peak: startHour === 17 || startHour === 18 || startHour === 19,
+          });
+        });
+      });
+      setFreeSlots(list);
+    } catch (e: any) {
+      console.log('Lỗi tải ma trận ca:', e?.message);
+      setError('Không tải được lịch ca sân. Thử lại sau.');
     } finally {
-      setLoading(false);
+      setSlotsLoading(false);
     }
   };
 
-  // Lọc sân theo tìm kiếm và môn thể thao
+  // Đăng nhập: lấy JWT từ backend.
+  const doLogin = async () => {
+    if (!loginEmail.trim() || !loginPassword) {
+      setLoginError('Vui lòng nhập email và mật khẩu.');
+      return;
+    }
+    setLoginBusy(true);
+    setLoginError(null);
+    try {
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setLoginError(data?.message || 'Đăng nhập không thành công.');
+        return;
+      }
+      setToken(data.token);
+      setUser(data.user ?? null);
+    } catch (e: any) {
+      setLoginError('Không kết nối được máy chủ. Kiểm tra kết nối rồi thử lại.');
+    } finally {
+      setLoginBusy(false);
+    }
+  };
+
+  // Đặt sân THẬT: gọi POST /pitches/{id}/book (server tự tính giá + cọc).
+  const confirmBooking = async () => {
+    if (!selectedPitch || !selectedSlot) {
+      setBookingError('Vui lòng chọn một khung giờ còn trống.');
+      return;
+    }
+    if (!token) {
+      setBookingError('Bạn cần đăng nhập để đặt sân.');
+      return;
+    }
+    if (!user?.phone) {
+      setBookingError('Tài khoản chưa có số điện thoại — hãy cập nhật hồ sơ trước khi đặt sân.');
+      return;
+    }
+    setBookingBusy(true);
+    setBookingError(null);
+    try {
+      const res = await fetch(`${API_URL}/pitches/${selectedPitch.id}/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          courtName: selectedSlot.courtName,
+          courtType: selectedSlot.courtType,
+          timeSlot: selectedSlot.time,
+          bookingDate: todayLocal(),
+          customerName: user?.fullName || user?.email || 'Khách',
+          customerPhone: user?.phone,
+          depositPercent: 50,
+          via: 'Đặt qua Website',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setLoginError(null);
+        setBookingError(data?.message || 'Không đặt được ca này. Vui lòng chọn giờ khác.');
+        return;
+      }
+      setBookingResult({ code: data.code || '', total: Number(data.totalPrice ?? 0) });
+      await fetchPitches();
+    } catch (e: any) {
+      setBookingError('Không kết nối được máy chủ. Thử lại sau.');
+    } finally {
+      setBookingBusy(false);
+    }
+  };
+
   const filteredPitches = pitches.filter((p) => {
-    const matchName = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      p.address.toLowerCase().includes(searchQuery.toLowerCase());
-    if (selectedSport === 'ALL') return matchName;
+    const q = searchQuery.toLowerCase();
+    const matchName = (p.name ?? '').toLowerCase().includes(q) ||
+                      (p.address ?? '').toLowerCase().includes(q);
     if (selectedSport === 'SAN_5') return matchName && p.pitchTypes?.includes('SAN_5');
     if (selectedSport === 'SAN_7') return matchName && p.pitchTypes?.includes('SAN_7');
     if (selectedSport === 'FUTSAL') return matchName && p.pitchTypes?.includes('FUTSAL');
     return matchName;
   });
+
+  // Chua dang nhap -> chi hien man hinh dang nhap (dat san can token).
+  if (!token) {
+  return (
+  <LoginScreen
+  email={loginEmail}
+  setEmail={setLoginEmail}
+  password={loginPassword}
+  setPassword={setLoginPassword}
+  busy={loginBusy}
+  error={loginError}
+  onLogin={doLogin}
+  insets={insets}
+  />
+  );
+  }
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -171,7 +524,7 @@ function MainApp() {
             {/* Live Stats Row */}
             <View style={styles.heroStatsRow}>
               <View style={styles.statBox}>
-                <Text style={styles.statNumber}>{pitches.length || 9}+</Text>
+                {pitches.length}+
                 <Text style={styles.statLabel}>Cụm sân</Text>
               </View>
               <View style={styles.statDivider} />
@@ -240,6 +593,18 @@ function MainApp() {
             <Text style={styles.sectionBadge}>{filteredPitches.length} sân</Text>
           </View>
 
+          {error ? (
+            <View style={{
+              backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fecaca',
+              borderRadius: 14, padding: 12, marginBottom: 12,
+            }}>
+              <Text style={{ color: '#b91c1c', fontSize: 13, fontWeight: '700' }}>{error}</Text>
+              <TouchableOpacity onPress={fetchPitches} style={{ marginTop: 8 }}>
+                <Text style={{ color: '#0369a1', fontSize: 13, fontWeight: '800' }}>Thử lại</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
+
           {loading ? (
             <View style={styles.loadingBox}>
               <ActivityIndicator size="large" color="#0369a1" />
@@ -251,6 +616,10 @@ function MainApp() {
                 key={item.id}
                 onPress={() => {
                   setSelectedPitch(item);
+                  setSelectedSlot(null);
+                  setBookingError(null);
+                  setBookingResult(null);
+                  loadFreeSlots(item.id);
                   setShowBookingModal(true);
                 }}
                 style={({ pressed }) => [styles.pitchCard, pressed && { opacity: 0.92, transform: [{ scale: 0.99 }] }]}
@@ -267,7 +636,7 @@ function MainApp() {
                       {item.name}
                     </Text>
                     <View style={styles.ratingPill}>
-                      <Text style={styles.ratingPillText}>⭐ {item.rating.toFixed(1)}</Text>
+                      <Text style={styles.ratingPillText}>⭐ {Number(item.rating ?? 0).toFixed(1)}</Text>
                     </View>
                   </View>
 
@@ -320,43 +689,49 @@ function MainApp() {
             </Text>
           </View>
 
-          {[
-            {
-              id: 't1',
-              title: 'Cúp Vô Địch TurfZone Championship 2026',
-              prize: '25.000.000 đ',
-              teams: '16 Đội',
-              status: 'Đang mở đăng ký',
-              badgeColor: '#10b981',
-            },
-            {
-              id: 't2',
-              title: 'Giải Bóng Đá Doanh Nghiệp Đà Nẵng',
-              prize: '15.000.000 đ',
-              teams: '8 Đội',
-              status: 'Vòng Tứ Kết',
-              badgeColor: '#f59e0b',
-            },
-          ].map((tour) => (
-            <View key={tour.id} style={styles.tourCard}>
-              <View style={styles.tourHeader}>
-                <Text style={styles.tourTitle}>{tour.title}</Text>
-                <View style={[styles.tourBadge, { backgroundColor: tour.badgeColor + '20' }]}>
-                  <Text style={[styles.tourBadgeText, { color: tour.badgeColor }]}>{tour.status}</Text>
+          {tournaments.length === 0 ? (
+            <Text style={styles.heroDesc}>
+              {tabBusy ? 'Đang tải giải đấu...' : 'Chưa có giải đấu nào trên hệ thống.'}
+            </Text>
+          ) : (
+            tournaments.map((tour: any) => (
+              <View key={tour.id} style={styles.tourCard}>
+                <View style={styles.tourHeader}>
+                  <Text style={styles.tourTitle}>{tour.title}</Text>
+                  <View
+                    style={[
+                      styles.tourBadge,
+                      { backgroundColor: (tour.status === 'OPEN' ? '#10b981' : '#f59e0b') + '20' },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.tourBadgeText,
+                        { color: tour.status === 'OPEN' ? '#10b981' : '#f59e0b' },
+                      ]}
+                    >
+                      {tour.status === 'OPEN' ? 'Đang mở' : tour.status === 'ONGOING' ? 'Đang diễn ra' : 'Đã kết thúc'}
+                    </Text>
+                  </View>
                 </View>
+                <View style={styles.tourInfoRow}>
+                  <Text style={styles.tourInfoItem}>
+                    💰 Thưởng:{' '}
+                    <Text style={{ fontWeight: '700', color: '#0369a1' }}>
+                      {Number(tour.prizePool ?? 0).toLocaleString('vi-VN')} đ
+                    </Text>
+                  </Text>
+                  <Text style={styles.tourInfoItem}>
+                    👥 Quy mô:{' '}
+                    <Text style={{ fontWeight: '700' }}>{tour.totalTeams ?? 0} đội</Text>
+                  </Text>
+                </View>
+                <Text style={styles.tourInfoItem}>
+                  📍 {tour.pitchName || tour.location || 'Chưa chọn sân'}
+                </Text>
               </View>
-              <View style={styles.tourInfoRow}>
-                <Text style={styles.tourInfoItem}>💰 Tổng thưởng: <Text style={{ fontWeight: '700', color: '#0369a1' }}>{tour.prize}</Text></Text>
-                <Text style={styles.tourInfoItem}>👥 Quy mô: <Text style={{ fontWeight: '700' }}>{tour.teams}</Text></Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => Alert.alert('Thông báo', 'Đã ghi nhận đăng ký tham dự giải đấu!')}
-                style={styles.tourActionBtn}
-              >
-                <Text style={styles.tourActionBtnText}>Xem Nhánh Đấu &amp; Đăng Ký</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+            ))
+          )}
         </ScrollView>
       )}
 
@@ -375,43 +750,37 @@ function MainApp() {
             </Text>
           </View>
 
-          {[
-            {
-              id: 'm1',
-              team: 'FC Chiến Hữu Đà Nẵng',
-              pitch: 'Cụm Sân Đại Nắng - Hải Châu',
-              time: 'Tối nay 19:30 - 21:00',
-              level: 'Kèo Nhẹ Dưỡng Sinh',
-              need: 'Cần tìm 1 đối giao lưu 5-5',
-            },
-            {
-              id: 'm2',
-              team: 'Bình Thạnh United',
-              pitch: 'Sân Lam Sơn - Quận 5',
-              time: 'Thứ 4: 20:00 - 21:30',
-              level: 'Trình Độ Trung Bình Khá',
-              need: 'Chia tiền sân 50/50',
-            },
-          ].map((item) => (
-            <View key={item.id} style={styles.matchCard}>
-              <View style={styles.matchHeader}>
-                <Text style={styles.matchTeam}>{item.team}</Text>
-                <View style={styles.levelBadge}>
-                  <Text style={styles.levelBadgeText}>{item.level}</Text>
+          {keoPosts.length === 0 ? (
+            <Text style={styles.heroDesc}>
+              {tabBusy ? 'Đang tải chợ kèo...' : 'Chưa có kèo nào đang mở trên sàn.'}
+            </Text>
+          ) : (
+            keoPosts.map((post: any) => (
+              <View key={post.id} style={styles.matchCard}>
+                <View style={styles.matchHeader}>
+                  <Text style={styles.matchTeam}>{post.teamName || 'Kèo giao lưu'}</Text>
+                  <View style={styles.levelBadge}>
+                    <Text style={styles.levelBadgeText}>
+                      {post.pitchType === 'SAN_5' ? 'Sân 5' : post.pitchType === 'SAN_11' ? 'Sân 11' : post.pitchType === 'FUTSAL' ? 'Futsal' : 'Sân 7'}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-              <Text style={styles.matchPitch}>📍 {item.pitch}</Text>
-              <Text style={styles.matchTime}>⏰ {item.time}</Text>
-              <Text style={styles.matchNeed}>💬 {item.need}</Text>
+                <Text style={styles.matchPitch}>📍 {post.pitchName || 'Chưa chọn sân'}</Text>
+                <Text style={styles.matchTime}>⏰ {post.matchTime || 'Thỏa thuận'}</Text>
+                <Text style={styles.matchNeed}>
+                  💬 {post.paymentModel === 'LOSER_PAYS' ? 'Đội thua chịu sân' : post.paymentModel === 'HOST_COVER' ? 'Chủ kèo bao trọn gói' : 'Chia tiền sân 50/50'}
+                  {post.estimatedFee ? ` • ${Number(post.estimatedFee).toLocaleString('vi-VN')}đ/người` : ''}
+                </Text>
 
-              <TouchableOpacity
-                onPress={() => Alert.alert('Thành công', 'Đã gửi lời mời nhận kèo thi đấu!')}
-                style={styles.matchAcceptBtn}
-              >
-                <Text style={styles.matchAcceptBtnText}>Nhận Kèo Giao Lưu ➜</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+                <TouchableOpacity
+                  onPress={() => acceptKeo(post)}
+                  style={styles.matchAcceptBtn}
+                >
+                  <Text style={styles.matchAcceptBtnText}>Nhận Kèo Giao Lưu ➜</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          )}
         </ScrollView>
       )}
 
@@ -425,22 +794,30 @@ function MainApp() {
         >
           <View style={styles.profileHeaderCard}>
             <View style={styles.avatarLarge}>
-              <Text style={styles.avatarLargeText}>TU</Text>
+              <Text style={styles.avatarLargeText}>
+                {(user?.fullName || user?.email || 'T').trim().charAt(0).toUpperCase()}
+              </Text>
             </View>
-            <Text style={styles.profileName}>Cầu Thủ TurfZone Pro</Text>
-            <Text style={styles.profileRole}>Vai trò: CẦU THỦ • Hạng Bạc VIP</Text>
+            <Text style={styles.profileName}>{user?.fullName || user?.email || 'Cầu Thủ'}</Text>
+            <Text style={styles.profileRole}>
+              Vai trò: {(user?.role || 'PLAYER').toUpperCase()} • {user?.level || 'Chưa xếp bậc'}
+            </Text>
             <View style={styles.profileStats}>
               <View style={styles.pStatItem}>
-                <Text style={styles.pStatVal}>12</Text>
-                <Text style={styles.pStatSub}>Trận đã đá</Text>
+                <Text style={styles.pStatVal}>{myBookings.length}</Text>
+                <Text style={styles.pStatSub}>Đơn đã đặt</Text>
               </View>
               <View style={styles.pStatItem}>
-                <Text style={styles.pStatVal}>83%</Text>
-                <Text style={styles.pStatSub}>Tỉ lệ thắng</Text>
+                <Text style={styles.pStatVal}>
+                  {myBookings.reduce((s: number, b: any) => s + Number(b.depositPaid ?? 0), 0).toLocaleString('vi-VN')}
+                </Text>
+                <Text style={styles.pStatSub}>Tổng tiền cọc</Text>
               </View>
               <View style={styles.pStatItem}>
-                <Text style={styles.pStatVal}>9.8</Text>
-                <Text style={styles.pStatSub}>Điểm Uy Tín</Text>
+                <Text style={styles.pStatVal}>
+                  {myBookings.filter((b: any) => b.status === 'PLAYING' || b.status === 'COMPLETED').length}
+                </Text>
+                <Text style={styles.pStatSub}>Đã vào sân</Text>
               </View>
             </View>
           </View>
@@ -449,16 +826,33 @@ function MainApp() {
             <Text style={styles.sectionTitle}>Lịch Đặt Sân Sắp Tới</Text>
           </View>
 
-          <View style={styles.bookingItemCard}>
-            <View style={styles.bCardHeader}>
-              <Text style={styles.bPitchName}>Cụm Sân Bóng Đá Đại Nắng</Text>
-              <View style={styles.bStatusBadge}>
-                <Text style={styles.bStatusText}>Đã xác nhận</Text>
+          {myBookings.length === 0 ? (
+            <Text style={styles.heroDesc}>
+              {tabBusy ? 'Đang tải đơn...' : 'Bạn chưa có đơn đặt sân nào.'}
+            </Text>
+          ) : (
+            myBookings.map((b: any) => (
+              <View key={b.id} style={styles.bookingItemCard}>
+                <View style={styles.bCardHeader}>
+                  <Text style={styles.bPitchName}>{b.courtName || 'Cụm sân'}</Text>
+                  <View style={styles.bStatusBadge}>
+                    <Text style={styles.bStatusText}>
+                      {b.status === 'BOOKED' ? 'Đã đặt' : b.status === 'PLAYING' ? 'Đang đá' : b.status === 'COMPLETED' ? 'Hoàn tất' : b.status}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.bDetailText}>
+                  📅 {b.bookingDate} • {b.timeSlot}
+                </Text>
+                <Text style={styles.bPriceText}>
+                  Đã cọc: {Number(b.depositPaid ?? 0).toLocaleString('vi-VN')} đ
+                  {Number(b.cashDue ?? 0) > 0
+                    ? ` (Còn ${Number(b.cashDue).toLocaleString('vi-VN')} đ tại quầy)`
+                    : ' (Đã thanh toán đủ)'}
+                </Text>
               </View>
-            </View>
-            <Text style={styles.bDetailText}>📅 Hôm nay • 18:00 - 19:30 (Sân số 2 - Cỏ 7)</Text>
-            <Text style={styles.bPriceText}>Đã đặt cọc: 100.000 đ (Chờ thanh toán nốt tại sân)</Text>
-          </View>
+            ))
+          )}
         </ScrollView>
       )}
 
@@ -511,42 +905,70 @@ function MainApp() {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.slotPickerTitle}>Chọn Khung Giờ Thi Đấu Hôm Nay:</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slotPickerScroll}>
-              {['16:00 - 17:30', '17:30 - 19:00', '19:00 - 20:30', '20:30 - 22:00'].map((slot, index) => {
-                const isSelected = selectedSlot === slot;
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => setSelectedSlot(slot)}
-                    style={[styles.modalSlotPill, isSelected && styles.modalSlotPillActive]}
-                  >
-                    <Text style={[styles.modalSlotText, isSelected && styles.modalSlotTextActive]}>{slot}</Text>
-                    <Text style={[styles.modalSlotSub, isSelected && { color: '#e0f2fe' }]}>
-                      {index === 1 || index === 2 ? '⭐ Ca Vàng' : 'Ca Thường'}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-
-            <View style={styles.modalPricingCard}>
-              <View>
-                <Text style={styles.mPriceSub}>Tạm tính (1 ca 90 phút)</Text>
-                <Text style={styles.mPriceVal}>
-                  {((selectedPitch?.avgPricePerHour || 250000) * 1.5).toLocaleString('vi-VN')} đ
-                </Text>
+            <Text style={styles.slotPickerTitle}>Chọn Khung Giờ Trống Hôm Nay:</Text>
+            {slotsLoading ? (
+              <View style={styles.loadingBox}>
+                <ActivityIndicator color="#0369a1" />
+                <Text style={styles.loadingText}>Đang tải lịch ca sân...</Text>
               </View>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowBookingModal(false);
-                  Alert.alert('Thành Công', `Đã giữ chỗ thành công tại ${selectedPitch?.name} vào khung giờ ${selectedSlot}!`);
-                }}
-                style={styles.modalConfirmBtn}
-              >
-                <Text style={styles.modalConfirmText}>Xác Nhận Giữ Chỗ</Text>
-              </TouchableOpacity>
-            </View>
+            ) : freeSlots.length === 0 ? (
+              <Text style={styles.modalSub}>Hôm nay cụm sân này đã kín ca. Vui lòng thử ngày khác.</Text>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slotPickerScroll}>
+                {freeSlots.map((slot, index) => {
+                  const isSelected = selectedSlot?.time === slot.time && selectedSlot?.courtName === slot.courtName;
+                  return (
+                    <TouchableOpacity
+                      key={`${slot.courtName}-${slot.time}-${index}`}
+                      onPress={() => { setSelectedSlot(slot); setBookingError(null); }}
+                      style={[styles.modalSlotPill, isSelected && styles.modalSlotPillActive]}
+                    >
+                      <Text style={[styles.modalSlotText, isSelected && styles.modalSlotTextActive]}>{slot.time}</Text>
+                      <Text style={[styles.modalSlotSub, isSelected && { color: '#e0f2fe' }]}>
+                        {slot.peak ? '⭐ Ca Vàng' : 'Ca Thường'}
+                      </Text>
+                      <Text style={[styles.modalSlotSub, isSelected && { color: '#e0f2fe' }]}>
+                        {slot.price.toLocaleString('vi-VN')}đ
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            )}
+
+            {bookingError ? (
+              <Text style={{ color: '#b91c1c', fontSize: 13, fontWeight: '700', marginTop: 8 }}>{bookingError}</Text>
+            ) : null}
+
+            {bookingResult ? (
+              <View style={[styles.modalPricingCard, { marginTop: 10 }]}>
+                <View>
+                  <Text style={styles.mPriceSub}>Đã giữ chỗ thành công</Text>
+                  <Text style={styles.mPriceVal}>Mã {bookingResult.code}</Text>
+                  <Text style={styles.mPriceSub}>Tổng tiền ca: {bookingResult.total.toLocaleString('vi-VN')}đ</Text>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.modalPricingCard}>
+                <View>
+                  <Text style={styles.mPriceSub}>
+                    {selectedSlot ? `Giá ca (${selectedSlot.courtName})` : 'Chọn khung giờ để xem giá'}
+                  </Text>
+                  <Text style={styles.mPriceVal}>
+                    {selectedSlot ? `${selectedSlot.price.toLocaleString('vi-VN')} đ` : '—'}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={confirmBooking}
+                  disabled={bookingBusy || !selectedSlot}
+                  style={[styles.modalConfirmBtn, (bookingBusy || !selectedSlot) && { opacity: 0.55 }]}
+                >
+                  <Text style={styles.modalConfirmText}>
+                    {bookingBusy ? 'Đang giữ chỗ...' : 'Xác Nhận Giữ Chỗ'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       </Modal>
