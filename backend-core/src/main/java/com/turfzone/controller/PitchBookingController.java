@@ -1533,7 +1533,8 @@ Booking saved = bookingRepository.save(booking);
                     boolean peak = TimeSlotUtil.isPeakStart(slot);
                     int hourPrice = peak && pitch.getPeakPricePerHour() != null && pitch.getPeakPricePerHour() > 0
                             ? pitch.getPeakPricePerHour() : basePrice;
-                    int total = hourPrice * (duration / 60 > 0 ? duration / 60 : 2);
+                    // Chia nguyên duration/60 => ca 90 phut bi tinh 1 gio (thieu 50%), ca 45 phut bi tinh 2 gio.
+                    int total = (int) Math.round(hourPrice * (duration / 60.0));
                     int deposit = (int) Math.round(total * 0.5 / 1000.0) * 1000;
                     int cash = total - deposit;
 

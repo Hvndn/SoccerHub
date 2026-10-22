@@ -149,6 +149,19 @@ public class TournamentController {
         if (tournament.getInvitedEmails() == null) {
             tournament.setInvitedEmails(new ArrayList<>());
         }
+        // KHÔNG cho client gửi id: nếu không, save() sẽ MERGE (ghi đè) giải đấu
+        // của người khác — xoá cả danh sách đội, kết quả và trạng thái.
+        tournament.setId(null);
+        tournament.setRegisteredTeams(0);
+        tournament.setBracketJson(null);
+        tournament.setTeams(new ArrayList<>());
+        // Thể thức phải hợp lệ (trước đây create không kiểm tra, update thì có).
+        String fmt = tournament.getFormat() != null ? tournament.getFormat().trim().toUpperCase() : "KNOCKOUT";
+        if (!Set.of("KNOCKOUT", "ROUND_ROBIN").contains(fmt)) {
+            fmt = "KNOCKOUT";
+        }
+        tournament.setFormat(fmt);
+
         Tournament saved = tournamentRepository.save(tournament);
         return ResponseEntity.ok(saved);
     }
@@ -958,11 +971,17 @@ public class TournamentController {
                     Map<String, Object> node = (Map<String, Object>) m.get(side);
                     if (node != null && Boolean.TRUE.equals(node.get("tbd"))
                             && slot.equals(node.get("name"))) {
+                        node.put("fromMatchId", matchId); // để "Huỷ kết quả" tìm lại được ô này
                         node.put("name", winner);
                         // Danh dau o nay den tu tran nao -> undo tim lai duoc o (truoc day
                         // undo tim theo ten "Thang {matchId}" nhung ten da bi ghi de
+                        promoteMatchIfReady(m, side);
                         // bang ten doi thang -> o vong sau giu nguyen doi cu, bang chinh sai).
                         node.put("fromMatchId", matchId);
+                        // Trận cha đã đủ 2 đội thì phải chuyển sang SCHEDULED để BTC nhập
+                        // tỷ số được — trước đây nó kẹt ở TBD nên bán chung kết KHÔNG
+                        // bao giờ nhập tay được (chỉ mở nút "Giả lập kết quả").
+                        promoteMatchIfReady(m, side);
                         TeamFormService.FormRecord wf = winner.equals(nameA) ? beforeA : beforeB;
                         node.put("form", wf.form());
                         node.put("record", wf.record());
@@ -1074,18 +1093,20 @@ public class TournamentController {
             return ResponseEntity.badRequest().body(Map.of("message", "Trận này chưa có kết quả để huỷ."));
         }
         // Chặn huỷ khi vòng sau đã có kết quả — nhánh đấu đã đi tiếp thì không tháo ngược an toàn.
-        for (int ri = targetRoundIdx + 1; ri < rounds.size(); ri++) {
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> matches = (List<Map<String, Object>>) rounds.get(ri).get("matches");
-            for (Map<String, Object> m : matches) {
-                if ("DONE".equals(m.get("status"))) {
-                    return ResponseEntity.badRequest().body(Map.of("message",
-                            "Không thể huỷ vì trận " + m.get("matchId")
-                                    + " ở vòng sau đã có kết quả. Hãy huỷ từ vòng sau trở đi trước."));
+        // Vòng tròn: các vòng độc lập nhau nên vẫn sửa được kết quả vòng trước.
+        if (!"ROUND_ROBIN".equals(tournament.getFormat())) {
+            for (int ri = targetRoundIdx + 1; ri < rounds.size(); ri++) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> laterMatches = (List<Map<String, Object>>) rounds.get(ri).get("matches");
+                for (Map<String, Object> m : laterMatches) {
+                    if ("DONE".equals(m.get("status"))) {
+                        return ResponseEntity.badRequest().body(Map.of("message",
+                                "Không thể huỷ vì trận " + m.get("matchId")
+                                        + " ở vòng sau đã có kết quả. Hãy huỷ từ vòng sau trở đi trước."));
+                    }
                 }
             }
         }
-
         @SuppressWarnings("unchecked")
         Map<String, Object> teamA = (Map<String, Object>) target.get("teamA");
         @SuppressWarnings("unchecked")
@@ -1650,6 +1671,21 @@ public class TournamentController {
      * confirm/approve lại đếm đội đã xác nhận → giao diện hiện "0% đầy" nhưng API lại báo
      * "đã đủ số đội", và BTC vẫn duyệt thêm được đội vượt chỉ tiêu.</p>
      */
+    /**
+     * Khi cả hai đội của một trận đã xác định thì chuyển trận đó sang SCHEDULED
+     * để BTC nhập tỷ số tay (nếu không, trận kẹt ở TBD vô ích).
+     */
+    @SuppressWarnings("unchecked")
+    private void promoteMatchIfReady(Map<String, Object> match, String side) {
+        Map<String, Object> na = (Map<String, Object>) match.get("teamA");
+        Map<String, Object> nb = (Map<String, Object>) match.get("teamB");
+        boolean aReady = na != null && !Boolean.TRUE.equals(na.get("tbd")) && na.get("name") != null;
+        boolean bReady = nb != null && !Boolean.TRUE.equals(nb.get("tbd")) && nb.get("name") != null;
+        if (aReady && bReady && "TBD".equals(match.get("status"))) {
+            match.put("status", "SCHEDULED");
+        }
+    }
+
     private int countConfirmedTeams(Tournament tournament) {
         if (tournament == null || tournament.getTeams() == null) return 0;
         return (int) tournament.getTeams().stream()

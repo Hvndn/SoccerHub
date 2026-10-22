@@ -1,5 +1,8 @@
 package com.turfzone.config;
 
+import com.turfzone.model.Booking;
+import com.turfzone.repository.BookingRepository;
+import com.turfzone.util.TimeSlotUtil;
 import com.turfzone.model.MatchResult;
 import com.turfzone.model.MatchmakingPost;
 import com.turfzone.model.Pitch;
@@ -38,6 +41,7 @@ public class DataInitializer implements CommandLineRunner {
     private final TournamentRepository tournamentRepository;
     private final MatchmakingPostRepository matchmakingPostRepository;
     private final MatchResultRepository matchResultRepository;
+    private final BookingRepository bookingRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -75,6 +79,12 @@ public class DataInitializer implements CommandLineRunner {
 
         try {
             seedMatchmaking();
+
+        try {
+            seedDemoBookings();
+        } catch (Exception e) {
+            log.warn("[DataInitializer] Bỏ qua seed đơn đặt sân mẫu do lỗi: {}", e.getMessage());
+        }
         } catch (Exception e) {
             log.warn("[DataInitializer] Bỏ qua seed bài đăng tìm đối do lỗi: {}", e.getMessage());
         }
@@ -623,6 +633,99 @@ private void seedUsers() {
             pitchRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6, s7, s8, s9));
             log.info("Seeded 9 real football pitches successfully.");
         }
+    }
+
+    /**
+     * Seed đơn đặt sân mẫu cho MỌI cụm sân (14 ngày trước + 7 ngày sau).
+     *
+     * <p>Trước đây bảng điều khiển chủ sân, báo cáo doanh thu và biểu đồ của cụm sân
+     * thứ 2 trở đi đều trống vì dữ liệu mẫu chỉ có ở 1 cụm sân. Giá tính đúng
+     * công thức ma trận (giờ × hệ số loại sân × thời lượng ca) và mã đơn bắt đầu bằng
+     * "SIM-" để nút "Xoá đơn giả lập" dọn được.</p>
+     */
+    private void seedDemoBookings() {
+        if (bookingRepository.count() > 0) {
+            return; // đã có dữ liệu -> không seed trùng
+        }
+        List<Pitch> pitches = pitchRepository.findAll();
+        if (pitches.isEmpty()) {
+            return;
+        }
+        String[] families = { "Nguyễn Văn A", "Trần Quốc B", "Lê Hoàng C", "Phạm Quốc D",
+                "Vũ Thị E", "Đặng Minh F", "Hoàng Gia G", "Bùi Đức H", "Đỗ Thu Hà I", "Trịnh Bảo K" };
+        String[] givens = { "An", "Bình", "Cường", "Dũng", "Giang", "Hà", "Hùng", "Khánh", "Long", "Nam" };
+        String[] vias = { "Đặt qua Website", "Tạo Tại Quầy (Đã Cọc)", "VietQR" };
+        java.util.Random rnd = new java.util.Random(20261022L);
+        LocalDate today = LocalDate.now();
+        int created = 0;
+        for (Pitch pitch : pitches) {
+            List<String> courts = (pitch.getPitchTypes() != null && !pitch.getPitchTypes().isEmpty())
+                    ? pitch.getPitchTypes() : List.of("Sân 1", "Sân 2");
+            int duration = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0)
+                    ? pitch.getSlotDurationMinutes() : 120;
+            List<String> slots = TimeSlotUtil.generate(pitch.getOpenTime(), pitch.getCloseTime(), duration);
+            if (slots.isEmpty()) {
+                continue;
+            }
+            int basePrice = (pitch.getAvgPricePerHour() != null && pitch.getAvgPricePerHour() > 0)
+                    ? pitch.getAvgPricePerHour() : 180000;
+            int peakPrice = (pitch.getPeakPricePerHour() != null && pitch.getPeakPricePerHour() > 0)
+                    ? pitch.getPeakPricePerHour() : (int) Math.round(basePrice * 1.3);
+
+            for (int offset = -14; offset <= 7; offset++) {
+                LocalDate day = today.plusDays(offset);
+                String dateStr = day.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE);
+                int wanted = 3 + rnd.nextInt(4);
+                List<String> used = new ArrayList<>();
+                for (int i = 0; i < wanted; i++) {
+                    String court = courts.get(rnd.nextInt(courts.size()));
+                    String slot = slots.get(rnd.nextInt(slots.size()));
+                    String key = court + "|" + slot;
+                    if (used.contains(key)) {
+                        continue;
+                    }
+                    used.add(key);
+
+                    boolean peak = TimeSlotUtil.isPeakStart(slot);
+                    int hourPrice = peak ? peakPrice : basePrice;
+                    String cn = court.toLowerCase();
+                    double courtFactor = cn.contains("11") ? 2.0 : cn.contains("7") ? 1.0 : 0.75;
+                    int total = (int) Math.round(hourPrice * courtFactor * (duration / 60.0));
+                    int deposit = (int) Math.round(total * 0.5 / 1000.0) * 1000;
+                    int cash = total - deposit;
+
+                    String status;
+                    if (offset < 0) {
+                        int roll = rnd.nextInt(100);
+                        status = roll < 80 ? "COMPLETED" : (roll < 92 ? "BOOKED" : "CANCELLED");
+                    } else if (offset == 0) {
+                        int roll = rnd.nextInt(100);
+                        status = roll < 30 ? "COMPLETED" : (roll < 55 ? "PLAYING" : (roll < 94 ? "BOOKED" : "CANCELLED"));
+                    } else {
+                        status = rnd.nextInt(100) < 80 ? "BOOKED" : "CANCELLED";
+                    }
+
+                    String family = families[rnd.nextInt(families.length)];
+                    String given = givens[rnd.nextInt(givens.length)];
+                    bookingRepository.save(Booking.builder()
+                            .pitchId(pitch.getId())
+                            .courtName(court)
+                            .courtType(court)
+                            .bookingDate(dateStr)
+                            .timeSlot(slot)
+                            .customerName(family + " " + given)
+                            .customerPhone("09" + String.format("%08d", rnd.nextInt(100_000_000)))
+                            .totalPrice(total)
+                            .depositPaid(deposit)
+                            .cashDue(cash)
+                            .status(status)
+                            .via(vias[rnd.nextInt(vias.length)])
+                            .code("SIM-" + pitch.getId() + "-" + String.format("%05d", created++))
+                            .build());
+                }
+            }
+        }
+        log.info("[DataInitializer] Đã seed {} đơn đặt sân mẫu cho {} cụm sân.", created, pitches.size());
     }
 
     private void seedMatchmaking() {

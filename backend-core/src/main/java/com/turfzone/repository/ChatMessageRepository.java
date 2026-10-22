@@ -12,18 +12,18 @@ import java.util.Optional;
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
     /** 50 tin nhắn công khai mới nhất của kênh "general" (phòng chat chung), mới nhất đầu tiên. */
-    @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL " +
+    @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL AND m.groupId IS NULL " +
            "AND (m.channel IS NULL OR m.channel = 'general') " +
            "ORDER BY m.createdAt DESC")
     List<ChatMessage> findTop50General();
 
     /** 50 tin nhắn công khai mới nhất của TẤT CẢ kênh (dùng cho admin kiểm duyệt). */
-    @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL " +
+    @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL AND m.groupId IS NULL " +
            "ORDER BY m.createdAt DESC")
     List<ChatMessage> findTop50AllPublic();
 
     /** 50 tin nhắn công khai mới nhất của 1 kênh, mới nhất đầu tiên. */
-    @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL " +
+    @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL AND m.groupId IS NULL " +
            "AND m.channel = ?1 " +
            "ORDER BY m.createdAt DESC")
     List<ChatMessage> findTop50ByChannel(String channel);
@@ -41,7 +41,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
                            String myEmail);
 
     /** Tin ghim của kênh (tối đa 1). */
-    @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL " +
+    @Query("SELECT m FROM ChatMessage m WHERE m.recipientEmail IS NULL AND m.groupId IS NULL " +
            "AND m.channel = ?1 AND m.pinned = true " +
            "ORDER BY m.createdAt DESC")
     List<ChatMessage> findPinnedByChannel(String channel);

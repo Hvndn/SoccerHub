@@ -23,6 +23,7 @@ public interface ChatGroupMemberRepository extends JpaRepository<ChatGroupMember
 
     long countByGroupId(Long groupId);
 
+    @Transactional
     void deleteByGroupIdAndMemberEmail(Long groupId, String memberEmail);
 
     /** Đánh dấu đã đọc tới thời điểm này. Cần @Modifying + @Transactional vì đây là câu UPDATE. */

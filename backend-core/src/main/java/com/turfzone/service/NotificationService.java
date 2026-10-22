@@ -40,9 +40,15 @@ public class NotificationService {
         String role = me.getRole() != null ? me.getRole().name() : "PLAYER";
         String email = me.getEmail() != null ? me.getEmail().toLowerCase() : "";
         return notificationRepository.findTop50ByOrderByIdDesc().stream()
-                .filter(n -> "ALL".equals(n.getTargetRole())
-                        || role.equals(n.getTargetRole())
-                        || (n.getTargetEmail() != null && n.getTargetEmail().equalsIgnoreCase(email)))
+                // CÓ đích danh email -> CHỈ người đó thấy (trước đây điều kiện được OR
+                // nên thông báo cá nhân bị gửi cho cả nhóm vai trò).
+                .filter(n -> {
+                    String target = n.getTargetEmail();
+                    if (target != null && !target.isBlank()) {
+                        return target.equalsIgnoreCase(email);
+                    }
+                    return "ALL".equals(n.getTargetRole()) || role.equals(n.getTargetRole());
+                })
                 .limit(25)
                 .collect(Collectors.toList());
     }

@@ -1,5 +1,6 @@
 package com.turfzone.repository;
 
+import org.springframework.transaction.annotation.Transactional;
 import com.turfzone.model.ClubMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -22,7 +23,9 @@ public interface ClubMemberRepository extends JpaRepository<ClubMember, Long> {
 
     long countByClubIdAndIsRepresentativeTrue(Long clubId);
 
+    @Transactional
     void deleteByClubIdAndMemberEmail(Long clubId, String memberEmail);
 
+    @Transactional
     void deleteByClubId(Long clubId);
 }
