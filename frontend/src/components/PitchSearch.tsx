@@ -137,14 +137,23 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  const address = item.address || item.area || "Chưa khai báo địa chỉ";
  const pitchName = item.name || "Cụm sân chưa đặt tên";
 
- // Sinh khung giờ 2 tiếng chuẩn theo openTime và closeTime thật của sân
+ // Sinh khung giờ theo ĐÚNG thời lượng ca của cụm sân (slotDurationMinutes) — trước đây
+ // hardcode 2 tiếng nên với sân 90 phút hiển thị lệch hoàn toàn với ma trận backend.
  const startH = parseInt(openTime.split(":")[0]) || 14;
  const endH = parseInt(closeTime.split(":")[0]) || 22;
  const dynamicSlots: any[] = [];
- for (let h = startH; h + 2 <= endH; h += 2) {
- const isPeak = h >= 16 && h < 20;
+ const stepMin = slotDur > 0 ? slotDur : 120;
+ const openMin = startH * 60;
+ const closeMin = endH * 60;
+ for (let m = openMin; m + stepMin <= closeMin; m += stepMin) {
+ const h = Math.floor(m / 60);
+ const mm = m % 60;
+ const endTotal = m + stepMin;
+ const timeLabel = `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")} - ${String(Math.floor(endTotal / 60)).padStart(2, "0")}:${String(endTotal % 60).padStart(2, "0")}`;
+ // Quy tắc ca GIỜ VÀNG giống backend: bắt đầu 17h/18h/19h (không phải 16-19).
+ const isPeak = isPeakSlot(timeLabel);
  dynamicSlots.push({
- time: `${String(h).padStart(2, '0')}:00 - ${String(h + 2).padStart(2, '0')}:00`,
+ time: timeLabel,
  price: `${Math.round((isPeak ? peakPrice : basePrice) / 1000)}k`,
  status: "AVAILABLE",
  tag: isPeak ? "⭐ Ca Vàng" : "Ca Thường"
@@ -153,8 +162,8 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  if (dynamicSlots.length === 0) {
  dynamicSlots.push(
  { time: "14:00 - 16:00", price: `${Math.round(basePrice / 1000)}k`, status: "AVAILABLE", tag: "Chiều Sớm" },
- { time: "16:00 - 18:00", price: `${Math.round(peakPrice / 1000)}k`, status: "AVAILABLE", tag: "⭐ Ca Vàng" },
- { time: "18:00 - 20:00", price: `${Math.round(peakPrice / 1000)}k`, status: "AVAILABLE", tag: "🔥 Kèo Đỉnh" },
+ { time: "16:00 - 18:00", price: `${Math.round(peakPrice / 1000)}k`, status: "AVAILABLE", tag: "Ca Thường" },
+ { time: "18:00 - 20:00", price: `${Math.round(peakPrice / 1000)}k`, status: "AVAILABLE", tag: "⭐ Ca Vàng" },
  { time: "20:00 - 22:00", price: `${Math.round(basePrice / 1000)}k`, status: "AVAILABLE", tag: "Đêm Mát" }
  );
  }

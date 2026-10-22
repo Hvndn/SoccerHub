@@ -38,10 +38,9 @@ export const viewport: Viewport = {
  initialScale: 1,
  maximumScale: 5,
  viewportFit: "cover",
- themeColor: [
- { media: "(prefers-color-scheme: light)", color: "#ffffff" },
- { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
- ],
+ // Giao diện SÁNG HOÀN TOÀN: không khai báo theme-color cho prefers-color-scheme: dark
+ // để thanh trình duyệt / mobile không đổi nền tối khi hệ điều hành ở chế độ tối.
+ themeColor: "#ffffff",
 };
 
 export default function RootLayout({

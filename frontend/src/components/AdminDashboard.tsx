@@ -542,8 +542,6 @@ setIsSavingInfo(false);
  try {
  const targetCourt = pitchMatrix.find(p => p.pitchName === offlinePitchId || p.pitchId === offlinePitchId) || pitchMatrix[0];
  const isPeak = isPeakSlot(offlineTime);
- const baseHourPrice = isPeak ? (targetCourt?.peakPrice || 600000) : (targetCourt?.basePrice || 350000);
- const hourMultiplier = OFFLINE_DURATION / 60.0;
   // basePrice/peakPrice trong ma tran DA la gia cho ca 120 phut (slotDuration).
   // Khong nhan them hourMultiplier — truoc day gia bi nhan 2 lan.
   const price = isPeak ? (targetCourt?.peakPrice ?? 0) : (targetCourt?.basePrice ?? 0);

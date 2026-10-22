@@ -16,7 +16,11 @@ a, button, input, select, textarea, [role="button"] {
 
 /* --- BASE STYLES --- */
 html {
-  color-scheme: light dark;
+  /* Giao diện SÁNG HOÀN TOÀN: khai báo "light" (không phải "light dark") để các
+     control của trình duyệt (input, select, textarea, thanh cuộn) LUÔN hiển thị
+     nền sáng — nếu để "light dark" thì khi hệ điều hành ở chế độ tối, các ô
+     nhập sẽ nền tối trong khi giao diện vẫn sáng → lệch màu rõ rệt. */
+  color-scheme: light;
 }
 
 body {
