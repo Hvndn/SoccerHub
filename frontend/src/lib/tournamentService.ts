@@ -497,14 +497,17 @@ export function buildVietQrUrl(t: {
   entryFee?: number | null;
   addInfo?: string;
 }): string | null {
-  if (!t.bankCode || !t.bankAccount) return null;
+    if (!t.bankCode || !t.bankAccount) return null;
+    // So tai khoan ngan hang khong chua khoang trang: VietQR dung STK nguyen ban de
+    // ma QR -> khoang trang lam QR sai (khong quet duoc) va chuyen khoan that bi loi.
+    const bankAccount = String(t.bankAccount).replace(/\s+/g, "");
   const amount = Math.max(0, Math.round(t.entryFee ?? 0));
   const params = new URLSearchParams({
     amount: String(amount),
     addInfo: (t.addInfo ?? "").slice(0, 25),
     accountName: (t.accountName ?? "").slice(0, 50),
   });
-  return `https://api.vietqr.io/image/${t.bankCode}-${t.bankAccount}-compact2.png?${params.toString()}`;
+    return `https://api.vietqr.io/image/${t.bankCode}-${bankAccount}-compact2.png?${params.toString()}`;
 }
 
 export interface TeamFormSnapshot {

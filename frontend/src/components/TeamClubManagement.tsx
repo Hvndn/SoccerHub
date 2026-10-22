@@ -143,7 +143,7 @@ export default function TeamClubManagement({
  </div>
  <div className="grid grid-cols-3 gap-3 sm:gap-6 text-center">
  <div>
- <p className="text-lg sm:text-xl font-black text-emerald-500 font-mono">
+ <p className="text-lg sm:text-xl font-black text-emerald-600 font-mono">
  {primaryTeam.record ?? "0-0-0"}
  </p>
  <p className="text-[13px] text-slate-500 font-bold">Thành Tích (T-H-B)</p>
@@ -250,11 +250,11 @@ export default function TeamClubManagement({
  </td>
  <td className="p-3 text-slate-500">{z.tournament?.title || "—"}</td>
  <td className="p-3 font-mono">{z.memberCount ?? "—"}</td>
- <td className="p-3 font-mono text-emerald-500">
+ <td className="p-3 font-mono text-emerald-700">
  {z.record && z.record !== "0-0-0" ? `${z.record} • ${z.winRate ?? 0}%` : "Tân binh"}
  </td>
  <td className="p-3">
- <span className="px-2 py-1 rounded-full bg-[#0369a1]/10 text-emerald-500 font-bold text-[13px]">
+ <span className="px-2 py-1 rounded-full bg-[#0369a1]/10 text-emerald-700 font-bold text-[13px]">
  {z.registrationStatus === "CONFIRMED"
  ? "Đã Xác Nhận"
  : z.registrationStatus === "PENDING_PAYMENT"

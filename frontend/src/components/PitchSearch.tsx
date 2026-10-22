@@ -1432,7 +1432,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  <span
  className={`font-mono font-bold shrink-0 ${
  idx === 0
- ? "text-amber-600 "
+ ? "text-amber-700 "
  : "text-slate-500"
  }`}
  >

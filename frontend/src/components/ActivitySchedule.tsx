@@ -455,10 +455,10 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  {/* DANH SÁCH TRẬN THEO BỘ LỌC */}
  <div className="flex flex-col gap-3 sm:gap-4">
  <div className="flex items-center justify-between">
- <h3 className="text-base font-bold text-slate-900 ">
+ <h2 className="text-base font-bold text-slate-900 ">
   {activeFilter === "history" ? "Kết Quả Các Trận Đã Đánh" : activeFilter === "matchmaking" ? "Kèo Đã Ghép" : activeFilter === "cancelled" ? "Kèo Đã Hủy" : activeFilter === "tournaments" ? "Lịch Đấu Giải" : "Các Trận Sắp Tới"}
   <span className="ml-2 font-mono text-[13px] text-slate-500">({(visibleKeo.length || visibleMatches.length)})</span>
- </h3>
+ </h2>
  <span className="text-[13px] text-slate-500 font-medium">Sắp xếp theo thời gian</span>
  </div>
 
@@ -500,9 +500,9 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  >
  <div className="flex items-start gap-3 sm:gap-4">
  <div className="w-14 h-14 rounded-xl bg-slate-100 flex flex-col items-center justify-center shrink-0 text-center border border-slate-200 ">
- <span className="text-[13px] font-bold text-slate-500">{db.top}</span>
+  <span className="text-[13px] font-bold text-slate-600">{db.top}</span>
  <span className="text-lg leading-none text-sky-800 font-black">{db.num}</span>
- <span className="text-[13px] text-slate-500 font-bold">{db.bot}</span>
+  <span className="text-[13px] text-slate-600 font-bold">{db.bot}</span>
  </div>
  <div className="flex flex-col gap-1 min-w-0">
  <div className="flex flex-wrap items-center gap-2">
@@ -551,10 +551,10 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
 
  {/* VÉ ĐẶT SÂN CỦA TÔI (tra theo SĐT trong tài khoản) */}
  <div className="flex flex-col gap-3">
- <h3 className="text-base font-bold text-slate-900 ">
+ <h2 className="text-base font-bold text-slate-900 ">
  Vé Đặt Sân Của Tôi
  <span className="ml-2 font-mono text-[13px] text-slate-500">({myBookings.length})</span>
- </h3>
+ </h2>
  {myBookings.length === 0 ? (
  <p className="rounded-xl bg-white border border-slate-200/80 p-3 sm:p-5 text-[13px] text-slate-500">
  {user?.phone
@@ -651,7 +651,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  <div key={p.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 ">
  <div className="flex items-center justify-between gap-2">
  <span className="text-[13px] font-bold text-slate-900 truncate">{p.teamName}</span>
- <span className="font-mono text-[13px] font-bold text-amber-600 shrink-0">
+  <span className="font-mono text-[13px] font-bold text-amber-700 shrink-0">
  {p.record && p.record !== "0-0-0" ? `${p.record}` : "Tân binh"}
  </span>
  </div>

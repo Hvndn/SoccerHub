@@ -417,7 +417,7 @@ export default function PlayerProfileConsole({
  <span className="px-2.5 py-0.5 rounded-full text-[13px] sm:text-[13px] font-semibold bg-sky-50 text-sky-800 border border-sky-200 ">
  {displayRole}
  </span>
- <span className="px-2.5 py-0.5 rounded-full text-[13px] sm:text-[13px] font-bold bg-amber-50 text-amber-600 border border-amber-200 ">
+ <span className="px-2.5 py-0.5 rounded-full text-[13px] sm:text-[13px] font-bold bg-amber-50 text-amber-700 border border-amber-200 ">
  Thành tích {recordStr} (T-H-B)
  </span>
  </div>
@@ -1179,7 +1179,7 @@ export default function PlayerProfileConsole({
  className={`px-2.5 py-1 rounded-lg whitespace-nowrap transition-all ${
  historyFilter === "win"
  ? "bg-white text-sky-700 shadow-sm"
- : "text-slate-500 hover:text-slate-900 "
+ : "text-slate-600 hover:text-slate-900 "
  }`}
  >
  Thắng
@@ -1189,7 +1189,7 @@ export default function PlayerProfileConsole({
  className={`px-2.5 py-1 rounded-lg whitespace-nowrap transition-all ${
  historyFilter === "loss"
  ? "bg-white text-rose-600 shadow-sm"
- : "text-slate-500 hover:text-slate-900 "
+ : "text-slate-600 hover:text-slate-900 "
  }`}
  >
  Bại
@@ -1199,7 +1199,7 @@ export default function PlayerProfileConsole({
  className={`px-2.5 py-1 rounded-lg whitespace-nowrap transition-all ${
  historyFilter === "ai_video"
  ? "bg-white text-blue-600 shadow-sm"
- : "text-slate-500 hover:text-slate-900 "
+ : "text-slate-600 hover:text-slate-900 "
  }`}
  >
  Có Video AI
@@ -1328,11 +1328,11 @@ export default function PlayerProfileConsole({
  {/* 2 Card Calo & Nhịp tim */}
  <div className="grid grid-cols-2 gap-3">
  <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200/60 ">
- <span className="text-[13px] font-bold text-rose-600 tracking-wider">
+  <span className="text-[13px] font-bold text-rose-700 tracking-wider">
  Calo tiêu hao / tuần
  </span>
  <p className="text-2xl font-black text-slate-900 mt-2">
- 3,450 <span className="text-[13px] font-normal text-slate-500">kcal</span>
+ 3,450 <span className="text-[13px] font-normal text-slate-600">kcal</span>
  </p>
  <p className="text-[13px] text-sky-700 mt-1 font-semibold flex items-center gap-1">
  <TrendingUp className="w-3 h-3" /> +12% so với tuần trước
@@ -1344,9 +1344,9 @@ export default function PlayerProfileConsole({
  Nhịp tim trung bình
  </span>
  <p className="text-2xl font-black text-slate-900 mt-2">
- 142 <span className="text-[13px] font-normal text-slate-500">bpm</span>
+ 142 <span className="text-[13px] font-normal text-slate-600">bpm</span>
  </p>
- <p className="text-[13px] text-slate-500 mt-1">
+ <p className="text-[13px] text-slate-600 mt-1">
  Đỉnh điểm 178 bpm (Phút 72)
  </p>
  </div>

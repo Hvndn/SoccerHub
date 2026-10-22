@@ -85,7 +85,7 @@ function KeoPaymentInfo({ post, pitch }: { post: any; pitch: any }) {
             <img
               src={qr}
               alt={`QR chuyển khoản tiền sân ${fee.toLocaleString("vi-VN")}đ`}
-              className="w-[132px] h-[132px] rounded-lg border border-slate-200 bg-white"
+              className="w-[132px] h-auto object-contain rounded-lg border border-slate-200 bg-white"
             />
             <p className="text-[13px] text-slate-500 leading-relaxed">
               Quét mã để chuyển khoản. Nội dung chuyển khoản ghi tên kèo để chủ sân đối chiếu.
@@ -719,9 +719,9 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <span className={`flex items-center space-x-1 px-3 py-1 rounded-lg font-extrabold text-[13px] border ${
  isMatched 
  ? "bg-slate-100 text-slate-500 border-slate-200 " 
- : "bg-rose-500/10 text-rose-600 border-rose-500/30 animate-pulse"
+ : "bg-rose-500/10 text-rose-700 border-rose-500/30"
  }`}>
- <Flame className="w-4 h-4 text-rose-600" />
+ <Flame className="w-4 h-4 text-rose-600 animate-pulse" />
  <span>{isMatched ? "Đã có đối thủ" : "Kèo đang mở"}</span>
  </span>
  <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-[13px]">
@@ -989,9 +989,9 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </div>
 
  <div className="bg-slate-900 text-white rounded-2xl p-4 space-y-1 shadow-md">
- <span className="text-[13px] text-slate-500 font-extrabold block">Phong độ đội của bạn</span>
+  <span className="text-[13px] text-slate-300 font-extrabold block">Phong độ đội của bạn</span>
  <div className="flex items-baseline justify-between font-mono">
- <FormDots form={myForm} />
+  <FormDots form={myForm} emptyClassName="text-[13px] font-bold text-slate-300" />
  <span className="text-[13px] text-slate-300 font-bold">
  {myTeamPost
  ? `${myTeamPost.record ?? "0-0-0"} • Thắng ${myWinRate}%`

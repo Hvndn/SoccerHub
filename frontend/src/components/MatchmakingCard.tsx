@@ -56,10 +56,10 @@ export default function MatchmakingCard({
             className={`flex items-center gap-1 px-3 py-1 rounded-lg font-extrabold text-[13px] border ${
               isMatched
                 ? "bg-slate-100 text-slate-500 border-slate-200"
-                : "bg-rose-500/10 text-rose-600 border-rose-500/30 animate-pulse"
+                : "bg-rose-500/10 text-rose-700 border-rose-500/30"
             }`}
           >
-            <Flame className="w-4 h-4 text-rose-600" />
+            <Flame className="w-4 h-4 text-rose-600 animate-pulse" />
             <span>{isMatched ? "Đã có đối thủ" : "Kèo đang mở"}</span>
           </span>
           <span className={`px-2.5 py-1 rounded-lg font-bold text-[13px] border ${skill.tone}`}>

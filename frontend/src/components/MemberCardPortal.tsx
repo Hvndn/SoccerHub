@@ -112,7 +112,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  {/* Left Footer: Football Pitch Formats Sync */}
  <div className="relative z-10 pt-6 mt-4 border-t border-slate-700/60">
  <div className="flex items-center justify-between text-slate-300 mb-2">
- <span className="text-[13px] font-bold tracking-wider text-slate-500">Đồng bộ toàn bộ quy chuẩn sân</span>
+ <span className="text-[13px] font-bold tracking-wider text-slate-300">Đồng bộ toàn bộ quy chuẩn sân</span>
  <div className="flex items-center gap-1.5 bg-[#0369a1]/20 px-2 py-0.5 rounded-full border border-[#0369a1]/30">
  <span className="w-1.5 h-1.5 rounded-full bg-[#0369a1] animate-pulse"></span>
  <span className="font-mono text-[13px] text-lime-400 font-bold tracking-wide">Đồng bộ trực tiếp</span>
@@ -269,7 +269,7 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
  <div className="min-w-0 flex-1">
  <div className="flex items-center justify-between">
  <p className="text-[13px] font-bold text-slate-900 group-hover:text-amber-700 transition truncate">Chợ Kèo Khẩn Cấp</p>
- <span className="text-[13px] text-rose-600 font-extrabold bg-rose-500/10 px-1.5 py-0.5 rounded">8 KÈO</span>
+ <span className="text-[13px] text-rose-700 font-extrabold bg-rose-500/10 px-1.5 py-0.5 rounded">8 KÈO</span>
  </div>
  <p className="text-[13px] text-slate-500 truncate">Đang thiếu 1-2 chân tối nay</p>
  </div>
