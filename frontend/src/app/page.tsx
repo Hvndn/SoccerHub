@@ -698,9 +698,9 @@ if (newTab === activeTab) return;
  <div className="w-full max-w-full mx-auto px-4 sm:px-6 lg:px-10 text-center text-[13px] text-slate-500 space-y-1.5">
  <p>
  © 2026 <strong>Turfzone</strong>
- <span className="hidden sm:inline"> — Nền Tảng Đặt Sân &amp; Quản Lý Bóng Đá Thông Minh. Đồ Án Tốt Nghiệp: Hệ thống quản lý cụm sân bóng đá mini cỏ nhân tạo (Sân 5, Sân 7, Sân 11), giải đấu phủi và kết nối đối thủ AI.</span>
+ <span className="hidden sm:inline"> — Đồ Án Tốt Nghiệp: Hệ thống quản lý cụm sân bóng đá và giải đấu phủi.</span>
  </p>
- <p className="hidden sm:block text-[#0b4f6c] font-semibold">Công nghệ: Spring Boot, MySQL, Next.js 14, Python FastAPI (lịch sử & phong độ thi đấu), QR VietQR sinh từ STK báo cáo giải.</p>
+ <p className="hidden sm:block text-[#0b4f6c] font-semibold">Spring Boot · MySQL · Next.js 14 · FastAPI · VietQR</p>
  </div>
  </footer>
  </div>

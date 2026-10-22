@@ -36,23 +36,23 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  {
  id: "booking",
  title: "Cầu Thủ & Đội Bóng",
- subtitle: "Đặt Sân 1 Chạm & Chống Trùng Ca",
- badge: "Hệ Sinh Thái Cầu Thủ",
+ subtitle: "Đặt Sân & Chống Trùng Ca",
+ badge: "Cầu Thủ",
  icon: Users,
  gradient: "from-[#0369a1] to-[#075985]",
  accentColor: "text-sky-400",
  points: [
  {
  title: "Tìm sân theo khu vực & khung giờ",
- desc: "Lọc theo khu vực, loại sân và ngày — ca trống lấy trực tiếp từ CSDL."
+ desc: "Ca trống cập nhật trực tiếp từ CSDL."
  },
  {
  title: "Chống trùng ca khi đặt",
- desc: "Ca đã có đơn sẽ chuyển sang Đã Đặt, không ai đặt trùng khung giờ."
+ desc: "Ca có đơn chuyển sang Đã Đặt."
  },
  {
  title: "Cọc 50% hoặc 100% qua VietQR",
- desc: "Chọn mức cọc khi đặt; chính sách hoàn cọc hiển thị rõ trước khi xác nhận."
+ desc: "Chính sách hoàn cọc hiển thị trước khi xác nhận."
  }
  ],
  metricLabel: "Luồng đặt sân:",
@@ -61,23 +61,23 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  {
  id: "iot",
  title: "Chủ Sân & Quản Lý Doanh Thu",
- subtitle: "Quản Lý Ca Sân, Giá Thuê & Tiền Cọc",
- badge: "Bảng Điều Hành Chủ Sân",
+ subtitle: "Ca Sân, Giá Thuê & Tiền Cọc",
+ badge: "Chủ Sân",
  icon: ShieldCheck,
  gradient: "from-emerald-700 to-teal-600",
  accentColor: "text-emerald-400",
  points: [
  {
  title: "Nhập giá ca sân & tiền cọc",
- desc: "Chủ sân tự đặt giá trung bình và giá giờ cao điểm ngay trên dashboard."
+ desc: "Chủ sân tự đặt giá theo khung giờ."
  },
  {
  title: "Nhãn giờ vàng theo khung giờ cao điểm",
- desc: "Gắn nhãn giờ vàng cho ca chiều/tối để chủ sân điều chỉnh giá."
+ desc: "Để chủ sân điều chỉnh giá ca chiều/tối."
  },
  {
  title: "Bảng doanh thu & sổ cọc",
- desc: "Thống kê doanh thu từ đơn đặt thật, đối soát tiền cọc khi check-in."
+ desc: "Thống kê từ đơn đặt thật, đối soát cọc khi check-in."
  }
  ],
  metricLabel: "Giá & tiền cọc:",
@@ -86,23 +86,23 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  {
  id: "tournament",
  title: "Ban Tổ Chức Giải Đấu",
- subtitle: "Quản Lý Giải Đấu Số Hóa Chuẩn VFF",
- badge: "Trung Tâm Giải Đấu VFF",
+ subtitle: "Giải Đấu Số Hóa Chuẩn VFF",
+ badge: "Giải Đấu VFF",
  icon: Trophy,
  gradient: "from-amber-600 to-orange-600",
  accentColor: "text-amber-400",
  points: [
  {
- title: "Tự Động Xếp Lịch & Cây Nhánh Loại Trực Tiếp",
- desc: "BTC nhập đội, hệ thống sinh bảng đấu và nhánh knock-out lưu ngay trong hồ sơ giải."
+ title: "Tự Động Xếp Lịch & Nhánh Loại",
+ desc: "Nhập đội, hệ thống tự sinh bảng đấu và nhánh loại."
  },
  {
  title: "Cập nhật tỷ số & Vua Phá Lưới",
- desc: "BTC nhập tỷ số từng trận, hệ thống tự cập nhật bảng xếp hạng, danh sách ghi bàn và vị trí trong nhánh."
+ desc: "Nhập tỷ số, hệ thống tự cập nhật BXH và danh sách ghi bàn."
  },
  {
  title: "Lệ phí đội & quy định phạt minh bạch",
- desc: "Khai báo lệ phí tham dự, quy định phạt thẻ cùng giải đấu, mọi thông tin lưu chung trong CSDL."
+ desc: "Khai báo lệ phí và quy định phạt thẻ trong hồ sơ giải."
  }
  ],
  metricLabel: "Khởi tạo một giải:",
@@ -112,22 +112,22 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  id: "ai-form",
  title: "Chợ Kèo & Phong Độ Thi Đấu",
  subtitle: "Ghép Đối Thủ Theo Trình Độ",
- badge: "Cộng Đồng Bóng Đá",
+ badge: "Cộng Đồng",
  icon: BrainCircuit,
  gradient: "from-purple-700 to-indigo-600",
  accentColor: "text-purple-400",
  points: [
  {
  title: "Lịch Sử Thi Đấu Theo Từng Trận",
- desc: "Kết quả các giải trong hệ thống tự tổng hợp thành chuỗi phong độ 5 trận, hiển thị công khai trên hồ sơ cầu thủ và thứ hạng đội."
+ desc: "Kết quả giải tự tổng hợp thành chuỗi phong độ 5 trận."
  },
  {
  title: "Chợ Kèo Đăng & Nhận Đối Thủ",
- desc: "Đội thiếu người đăng kèo lên chợ; đội khác bấm nhận, hệ thống chuyển sang trạng thái đã ghép ngay trong CSDL."
+ desc: "Đăng kèo lên chợ, đội khác bấm nhận là khớp."
  },
  {
  title: "Hồ Sơ & Thống Kê Cầu Thủ",
- desc: "Theo dõi phong độ, bậc, số trận đã đá và lịch sử thi đấu của bạn ngay trên trang hồ sơ."
+ desc: "Theo dõi phong độ, bậc và lịch sử thi đấu."
  }
  ],
  metricLabel: "Nguồn phong độ:",
@@ -138,39 +138,39 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  // Direct Comparison (Traditional vs Turfzone)
  const traditionalIssues = [
  {
- title: "Ghi chép sổ tay & Nhắn tin Zalo dễ trùng giờ",
- desc: "Chủ sân dễ ghi nhầm ca khi có nhiều khách gọi cùng lúc, dẫn tới xung đột tranh sân giữa 2 đội bóng."
+ title: "Sổ tay & nhắn Zalo dễ trùng giờ",
+ desc: "Chủ sân ghi nhầm ca khi nhiều khách gọi cùng lúc."
  },
  {
- title: "Dàn đèn bật lãng phí hoặc nhân viên quên tắt",
- desc: "Đèn sáng trước cả tiếng hoặc quên tắt sau ca muộn, gây thất thoát từ 2 - 5 triệu đồng tiền điện mỗi tháng."
+ title: "Đèn bật lãng phí, quên tắt",
+ desc: "Thất thoát 2–5 triệu tiền điện mỗi tháng."
  },
  {
- title: "Tìm đối thủ giao hữu lệch trình độ (bị out trình)",
- desc: "Đá giao hữu không biết trình đối thủ, tỷ số chênh lệch 10-0 gây ức chế, mất đi tinh thần thể thao đẹp."
+ title: "Giao hữu lệch trình độ (bị out)",
+ desc: "Không biết trình đối thủ, dễ thua 10-0 và mất tinh thần."
  },
  {
- title: "Tổ chức giải đấu mất nhiều ngày vẽ nhánh & tính điểm",
- desc: "Trưởng ban tổ chức phải cộng điểm hiệu số bằng file Excel thủ công, dễ sai sót và khiếu nại tranh chấp."
+ title: "Vẽ nhánh & tính điểm mất nhiều ngày",
+ desc: "Cộng điểm hiệu số bằng Excel, dễ sai và khiếu nại."
  }
  ];
 
  const platformAdvantages = [
  {
  title: "Đơn giữ chỗ lưu ngay trong CSDL",
- desc: "Khi tạo đơn, trạng thái ca sân chuyển sang Đã Đặt trên hệ thống — hai khách không thể đặt cùng một khung giờ."
+ desc: "Không ai đặt trùng khung giờ."
  },
  {
  title: "Tiền cọc theo chính sách của từng sân",
- desc: "Chọn cọc 50% hoặc 100% giá ca qua VietQR; chính sách hoàn cọc do chủ sân quy định và hiển thị trước khi đặt."
+ desc: "Cọc 50% hoặc 100% qua VietQR, xem chính sách hoàn cọc trước."
  },
  {
  title: "Bảng điều hành tập trung cho chủ sân",
- desc: "Quản lý sân con, ca sân, giá thuê, tiện ích và danh sách cọc cần đối soát ngay trên một màn hình duy nhất."
+ desc: "Sân con, ca sân, giá thuê và sổ cọc trong một màn hình."
  },
  {
  title: "Chợ kèo ghép đội theo phong độ",
- desc: "Đăng kèo khi thiếu người, đội nhận kèo được ghi thẳng vào bảng matchmaking_posts và chuyển trạng thái MATCHED."
+ desc: "Đội nhận kèo được ghi thẳng vào hệ thống."
  }
  ];
 
@@ -181,7 +181,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <div className="text-center max-w-3xl mx-auto space-y-3">
  <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] text-[13px] font-black">
  <Sparkles className="w-3.5 h-3.5" />
- <span>Bốn Trụ Cột Đột Phá Của Đề Tài</span>
+ <span>Bốn Trụ Cột Đề Tài</span>
  </div>
  <h2 className="text-2xl sm:text-5xl font-black text-slate-900 tracking-tight">
  Giải Pháp Toàn Diện Cho Thể Thao Số
@@ -208,7 +208,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${pillar.gradient} text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
  <Icon className="w-6 h-6" />
  </div>
- <span className="text-[13px] font-mono tracking-wider font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 ">
+ <span className="text-[13px] font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 ">
  {pillar.badge}
  </span>
  </div>
@@ -239,7 +239,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  {/* Bottom Metric Strip */}
  <div className="pt-3 sm:pt-4 border-t border-slate-100 flex items-center justify-between text-[13px] font-bold">
  <span className="text-slate-500">{pillar.metricLabel}</span>
- <span className="font-mono text-sky-700 font-black text-sm">
+ <span className="text-sky-700 font-black text-sm">
  {pillar.metricValue}
  </span>
  </div>
@@ -257,7 +257,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  So Sánh Đột Phá
  </span>
  <h2 className="text-xl sm:text-4xl font-black text-slate-900 tracking-tight">
- Tại Sao Chọn Turfzone Thay Vì Sổ Tay &amp; Gọi Điện Thoại?
+ Vì Sao Chọn Turfzone?
  </h2>
  </div>
 
@@ -301,7 +301,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  </div>
  <div>
  <h3 className="font-extrabold text-slate-900 text-base">Hệ Thống Thông Minh Turfzone</h3>
- <p className="text-[13px] text-[#0b4f6c] font-bold">Tự động hóa 100% bằng công nghệ thể thao số</p>
+ <p className="text-[13px] text-[#0b4f6c] font-bold">Tự động hóa bằng công nghệ thể thao số</p>
  </div>
  </div>
  <span className="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-extrabold text-[13px] border border-sky-200 ">
@@ -333,11 +333,11 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  </div>
 
  <h2 className="text-2xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
- Sẵn Sàng Nâng Tầm Trải Nghiệm Thể Thao Của Bạn?
+ Sẵn Sàng Trải Nghiệm Thể Thao Số?
  </h2>
 
  <p className="hidden sm:block text-[13px] sm:text-sm text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
- Hòa mình vào hệ sinh thái quản lý sân bóng và giải đấu Turfzone. Đặt sân tức thì, theo dõi doanh thu và tổ chức giải đấu chuyên nghiệp.
+ Đặt sân tức thì, theo dõi doanh thu và tổ chức giải đấu chuyên nghiệp.
  </p>
 
  <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-3.5">
@@ -356,7 +356,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
  className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-black text-[13px] sm:text-sm shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
  >
  <Store className="w-4 h-4 text-[#0b4f6c] " />
- <span>Dành Cho Chủ Sân (Quản Lý Cụm Sân)</span>
+ <span>Dành Cho Chủ Sân</span>
  </button>
 
  <button

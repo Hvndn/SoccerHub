@@ -642,7 +642,7 @@ const mobileNav: MobileNavItem[] =
  }}
  className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer pl-1 py-1 rounded-2xl hover:bg-slate-100 transition-colors"
  >
- <div className="text-right hidden sm:block max-w-[130px] md:max-w-[170px] overflow-hidden">
+ <div className="text-right hidden sm:block max-w-[170px] md:max-w-[220px] overflow-hidden">
  <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">
  {user.fullName || user.name || "Người Dùng"}
  </div>

@@ -668,13 +668,13 @@ const toSportTabs = (types?: string[] | null): string[] =>
  {hasUser ? (myTeamEntry ? myRecord : "—") : "—"}
  </span>
  <span className="text-[13px] text-slate-700 font-bold truncate">
- {myTeamEntry ? `${myTeamEntry.teamName} • Thắng ${myWinRate}%` : (user?.level ?? "Chưa xếp bậc")}
+ {myTeamEntry ? myTeamEntry.teamName : (user?.level ?? "Chưa xếp bậc")}
  </span>
  </div>
  <span className="text-[13px] text-slate-500 truncate">
  {userMatchesPlayed > 0
- ? `Đã đá ${userMatchesPlayed} trận trong các giải của hệ thống`
- : "Chưa thi đấu trong giải nào trên hệ thống"}
+ ? `Đã đá ${userMatchesPlayed} trận trên hệ thống`
+ : "Chưa thi đấu trong giải nào"}
  </span>
  </div>
  </div>
@@ -684,14 +684,14 @@ const toSportTabs = (types?: string[] | null): string[] =>
  ⚽
  </div>
  <div className="flex flex-col min-w-0">
- <span className="text-[13px] text-slate-500 tracking-wider font-extrabold">Môn Thể Thức Yêu Thích</span>
+ <span className="text-[13px] text-slate-500 tracking-wider font-extrabold">Môn Yêu Thích</span>
  <div className="flex items-baseline space-x-2">
  <span className="text-xl sm:text-2xl font-black text-sky-700 font-mono truncate">
  {user?.favoriteSport === "football" ? "Bóng Đá" : user?.favoriteSport ?? "—"}
  </span>
  </div>
  <span className="text-[13px] text-sky-700 font-bold truncate">
- {realPitches.length} cụm sân đang mở đặt trên hệ thống
+ {realPitches.length} cụm sân đang mở đặt
  </span>
  </div>
  </div>
@@ -881,20 +881,18 @@ const toSportTabs = (types?: string[] | null): string[] =>
  </h2>
 
  <p className="hidden sm:block text-[13px] sm:text-sm text-slate-600 font-medium leading-relaxed">
- Gợi ý dựa trên vị trí thật tại{" "}
+ Theo vị trí của bạn tại{" "}
  <strong className="text-slate-900 ">
  {featuredPitch.address ?? featuredPitch.area ?? "khu vực của bạn"}
  </strong>{" "}
- và lịch sử phong độ của đội bạn (
+ và phong độ đội bạn (
  {hasUser ? (
  <>
  {myTeamEntry ? `${myRecord} • Thắng ${myWinRate}%` : "tân binh"}
- {userMatchesPlayed > 0
- ? `, đã đá ${userMatchesPlayed} trận trong hệ thống`
- : ", chưa thi đấu trong giải nào"}
+ {userMatchesPlayed > 0 ? `, đã đá ${userMatchesPlayed} trận` : ""}
  </>
  ) : (
- "đăng nhập để hệ thống lưu lịch sử thi đấu của bạn"
+ "đăng nhập để lưu lịch sử thi đấu"
  )}
  ).
  </p>

@@ -82,8 +82,8 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <div className="lg:col-span-7 space-y-4 sm:space-y-6">
  {/* Main Headline: Đề tài quản lý sân bóng và giải đấu thể thao thông minh */}
  <h1 className="text-[1.7rem] leading-[1.22] sm:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-black text-slate-900 tracking-tight sm:font-display">
- Quản Lý Sân Bóng &amp;{" "}
- <span className="text-[#0b4f6c] ">Giải Đấu Thể Thao Thông Minh</span>
+ Sân Bóng &amp;{" "}
+ <span className="text-[#0b4f6c] ">Giải Đấu Thông Minh</span>
  </h1>
 
  {/* Feature chips — chỉ hiện từ tablet trở lên để tối giản mobile */}
@@ -102,17 +102,14 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-700 fill-sky-700" />
  </div>
  <span className="font-extrabold text-[13px] sm:text-sm text-slate-800 leading-snug">
- Sân 5 · 7 · 11 &amp; Futsal • Giải đấu theo phong độ
+ Sân 5 · 7 · 11 &amp; Futsal
  </span>
  </div>
  </div>
 
  {/* Concise Thesis-Aligned Description (rút gọn trên mobile) */}
  <p className="text-[13px] sm:text-base text-slate-600 font-medium leading-relaxed max-w-2xl pt-1">
- Nền tảng kết nối <strong>Cầu Thủ</strong>, <strong>Chủ Cụm Sân</strong> và <strong>Ban Tổ Chức Giải Đấu</strong>.
- <span className="hidden sm:inline">
- {" "}Đặt sân online, cọc qua <strong>VietQR</strong>, quản lý ca sân và giải đấu loại trực tiếp.
- </span>
+ <strong>Đặt sân online</strong>, cọc <strong>VietQR</strong>, quản lý ca sân và giải đấu.
  </p>
 
  {/* Action Button Strip */}
@@ -167,10 +164,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
  </div>
  <div>
  <span className="text-[13px] sm:text-sm font-black text-slate-900 tracking-wider block">
- Bộ Lọc Tìm Sân Trống
- </span>
- <span className="text-[13px] sm:text-[13px] text-slate-500 font-medium">
- Lọc theo khu vực, loại sân và khung giờ trống trong ngày
+ Tìm Sân Trống
  </span>
  </div>
  </div>

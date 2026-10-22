@@ -1070,7 +1070,7 @@ export default function PitchDetail({
  <span>Đơn giữ chỗ đã lưu trong hệ thống</span>
  </div>
  <h3 className="text-2xl font-black text-slate-900 ">Mã Giữ Chỗ Của Bạn</h3>
- <p className="text-[13px] text-slate-500">Cọc trực tiếp với chủ sân để giữ chỗ. Hệ thống ghi nhận tiền cọc khi bạn đặt ca (đã tính vào doanh thu của chủ sân) và không tự trừ tiền từ tài khoản của bạn.</p>
+ <p className="text-[13px] text-slate-500">Cọc trực tiếp với chủ sân qua VietQR. Hệ thống ghi nhận tiền cọc ngay khi bạn đặt ca.</p>
  </div>
 
  {/* Tóm tắt cọc */}
