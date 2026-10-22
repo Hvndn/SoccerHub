@@ -83,6 +83,38 @@ Ngoài ra seed sẵn **một giải đã kết thúc** kèm nhánh đấu và 3 
 
 ---
 
+## ☁️ Triển Khai Lên Production (Railway + Vercel)
+
+### Bắt buộc: đặt biến môi trường
+
+| Service | Biến | Giá trị | Ghi chú |
+|---|---|---|---|
+| **Backend (Railway)** | `JWT_SECRET` | chuỗi ngẫu nhiên **≥ 32 ký tự** | Bắt buộc. Nếu thiếu, app vẫn chạy nhưng **in cảnh báo bảo mật mỗi lần khởi động** (secret mặc định nằm trong mã nguồn ⇒ ai đọc repo cũng tự ký được token ADMIN). Đổi secret sẽ **vô hiệu hoá các phiên đăng nhập hiện tại** (user phải đăng nhập lại). |
+| **Backend (Railway)** | `SPRING_DATASOURCE_URL` / `_USERNAME` / `_PASSWORD` | do plugin MySQL cấp | Railway tự sinh nếu dùng plugin |
+| **Backend (Railway)** | `MAIL_USERNAME` / `MAIL_PASSWORD` | tài khoản Gmail + *Mật khẩu ứng dụng* | dùng để gửi email xác nhận đặt sân / thông báo BTC |
+| **Frontend (Vercel)** | `NEXT_PUBLIC_API_BASE_URL` | `https://<backend>.up.railway.app` | |
+| **Frontend (Vercel)** | `NEXT_PUBLIC_AI_BASE_URL` | `https://<ai-service>.onrender.com` | không đặt thì production tự dùng URL mặc định |
+
+> Mẫu đầy đủ: `backend-core/.env.example`
+
+### Chạy migration SQL trên DB production
+
+File `backend-core/src/main/resources/db_migration_new.sql` (chạy được nhiều lần, không lỗi):
+- thêm cột `users.profile_completed` (cờ đã hoàn tất khởi tạo hồ sơ),
+- thêm cột `bookings.cash_collected` + khôi phục phần tiền mặt thu tại quầy cho các đơn đã check-in,
+- tạo bảng `pitch_court_base_prices` / `pitch_court_peak_prices` (giá riêng của từng sân con),
+- bỏ khoảng trắng trong số tài khoản ngân hàng (VietQR không sinh được QR nếu STK có khoảng trắng).
+
+> Nếu `DDL_AUTO=update` (mặc định) thì Hibernate tự tạo cột/bảng — file SQL chỉ cần chạy để **bổ sung dữ liệu** (khôi phục tiền mặt, sửa STK).
+
+### Thứ tự triển khai
+1. Đặt `JWT_SECRET` (và các biến khác) trên Railway → **Restart** service.
+2. Chạy `db_migration_new.sql` trên DB production.
+3. Push code → Vercel tự deploy; Railway tự build lại (nếu không, bấm **Redeploy**).
+4. Kiểm tra: `GET https://<backend>.up.railway.app/api/v1/pitches` trả 200 và **log không còn cảnh báo "CẢNH BÁO BẢO MẬT"**.
+
+---
+
 ## 🎯 Các Phân Hệ Chính
 
 | Phân hệ | Mô tả (khớp với code đang chạy) | Giao diện |

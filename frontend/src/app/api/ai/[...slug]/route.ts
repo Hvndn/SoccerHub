@@ -22,6 +22,14 @@ function resolveAiBaseUrl(): string {
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
+/**
+ * Chi cho phep 2 endpoint AI dung cho san (tranh proxy thanh cong dung dich khac).
+ */
+const ALLOWED_PATHS = new Set(['/recommend-pitches', '/matchmaking']);
+
+/** Kich thuoc toi da cho phep gui len AI (du du thua). */
+const MAX_BODY_BYTES = 256 * 1024;
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -37,7 +45,32 @@ export async function POST(
   try {
     const { slug } = await params;
     const path = '/' + slug.join('/');
-    const body = await request.json();
+
+    // Chỉ cho pép 2 endpoint AI hợp lệ.
+    if (!ALLOWED_PATHS.has(path)) {
+      return NextResponse.json(
+        { status: 'ERROR', message: 'Endpoint AI không hợp lệ.' },
+        { status: 404, headers: CORS_HEADERS }
+      );
+    }
+
+    // Body quá lớn -> tu choi (tranh proxy bị lạm dụng).
+    const rawBody = await request.text();
+    if (rawBody.length > MAX_BODY_BYTES) {
+      return NextResponse.json(
+        { status: 'ERROR', message: 'Dữ liệu gửi lên quá lớn.' },
+        { status: 413, headers: CORS_HEADERS }
+      );
+    }
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json(
+        { status: 'ERROR', message: 'Body phải là JSON hợp lệ.' },
+        { status: 400, headers: CORS_HEADERS }
+      );
+    }
 
     // Forward request to AI service
     const controller = new AbortController();
@@ -78,7 +111,7 @@ export async function POST(
     }
 
     return NextResponse.json(
-      { status: 'ERROR', message: 'AI service unavailable', target: aiBaseUrl },
+        { status: 'ERROR', message: 'AI service unavailable' },
       { status: 503, headers: CORS_HEADERS }
     );
   }
