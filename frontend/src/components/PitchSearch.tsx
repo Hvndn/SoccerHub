@@ -934,6 +934,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  <span className="text-[13px] font-bold text-slate-500">Giá Mỗi Ca</span>
  <div className="text-sm font-black text-slate-900 font-mono truncate">
  {featuredPitch.priceDiscounted?.toLocaleString("vi-VN")}đ
+ <span className="text-[13px] font-bold text-slate-500">/giờ</span>
  </div>
  <span className="text-[13px] font-bold text-amber-700 block">
  {featuredPitch.rating
@@ -1230,13 +1231,14 @@ const toSportTabs = (types?: string[] | null): string[] =>
  <div className="flex items-baseline space-x-2 flex-wrap">
  <span className="text-xl font-black text-sky-700 font-mono">
  {pitch.priceDiscounted.toLocaleString("vi-VN")}đ
+ <span className="text-[13px] font-bold text-slate-500">/giờ</span>
  </span>
  <span className="px-1.5 py-0.2 rounded bg-[#0369a1]/15 text-sky-800 text-[13px] font-black">
  {pitch.slotDurationMinutes} phút/ca
  </span>
  </div>
  <p className="hidden sm:block text-[13px] text-slate-500 font-medium">
- Giá theo niêm yết của sân · ca giờ vàng tính theo giá peak
+ Giá theo niêm yết của sân · 1 ca = giá giờ × thời lượng ca × hệ số loại sân
  </p>
  </div>
 
