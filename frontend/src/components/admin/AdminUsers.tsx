@@ -60,6 +60,8 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [countByRole, setCountByRole] = useState<Record<string, number>>({});
+  // TỔNG số user (không lọc) — dùng cho nhãn "Tất cả (N)".
+  const [totalUsers, setTotalUsers] = useState(0);
 
   // Modal chi tiết người dùng
   const [detail, setDetail] = useState<{ user: AdminUser; data: any } | null>(null);
@@ -91,6 +93,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
     setTotal(res.total ?? 0);
     setTotalPages(Math.max(1, res.totalPages ?? 1));
     setCountByRole(res.countByRole || {});
+   setTotalUsers(Number(res.total ?? 0));
   } catch (err: any) {
     notify("err", err?.message || "Không tải được danh sách người dùng. Cần đăng nhập tài khoản ADMIN.");
   } finally {
@@ -276,7 +279,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   aria-label="Lọc theo vai trò"
   className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
   >
-  <option value="">Tất cả ({countByRole.ALL ?? total})</option>
+  <option value="">Tất cả ({totalUsers})</option>
   {ALL_ROLES.map((r) => (
   <option key={r} value={r}>
   {ROLE_LABEL[r]} ({countByRole[r] ?? 0})

@@ -35,6 +35,10 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
  // "Âm thanh" sẽ chạy lại effect và reset toàn bộ hiệu ứng đang xáo.
  const soundOnRef = useRef(soundOn);
  const timers = useRef<number[]>([]);
+  // GIU pairs trong ref: array `pairs` doi identity moi lan render cha ->
+  // effect phu thuoc `pairs` se chay lai lien tuc => animation boc tham chay vo han.
+  const pairsRef = useRef(pairs);
+  pairsRef.current = pairs;
  const audioCtx = useRef<AudioContext | null>(null);
 
  useEffect(() => {
@@ -127,7 +131,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
    typeof window !== "undefined" &&
    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  if (reduced || pairs.length === 0) {
+  if (reduced || pairsRef.current.length === 0) {
    setShuffling(false);
    setLocked(pairs.length);
    if (soundOnRef.current) playFinalFanfare();
@@ -147,13 +151,14 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
   const stopAt = window.setTimeout(() => {
    window.clearInterval(shuffleTimer);
    setShuffling(false);
-   pairs.forEach((_, i) => {
+   pairsRef.current.forEach((_, i) => {
     const t = window.setTimeout(() => {
      setLocked(i + 1);
      if (soundOnRef.current) playLockChime(i);
      if (i === pairs.length - 1 && soundOnRef.current) {
       // Fanfare lớn sau khi khóa cặp cuối
-      window.setTimeout(playFinalFanfare, 400);
+       const fanTimer = window.setTimeout(playFinalFanfare, 400);
+       timers.current.push(fanTimer as unknown as number);
      }
     }, 350 + i * 550);
     timers.current.push(t);
@@ -167,7 +172,7 @@ export default function DrawLotteryOverlay({ open, tournamentTitle, pairs, byes,
    });
    timers.current = [];
   };
- }, [open, pairs, playDrumRoll, playLockChime, playFinalFanfare]);
+  }, [open, pairs.length, playDrumRoll, playLockChime, playFinalFanfare]);
 
   // Vị trí các quả bóng trong cái bát — dao động theo `tick` (mỗi 80ms) tạo cảm giác xáo.
   // Càng nhiều đội thì bát càng đầy, tối đa 14 quả cho nhẹ máy.
