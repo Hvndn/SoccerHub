@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,6 +91,29 @@ public class Pitch {
     @Column(name = "amenity")
     @Builder.Default
     private List<String> amenities = new ArrayList<>();
+
+    /**
+     * Giá giờ riêng của từng sân con (chủ sân tự khai khi thêm sân con mới).
+     *
+     * <p>Trước đây API thêm sân con CHỈ lưu tên sân, còn 2 ô nhập giá của chủ sân bị
+     * bỏ qua — giá sân con mới luôn suy ra từ giá giờ của cụm sân × hệ số loại sân.
+     * Map cho phép chủ sân ghi đè riêng từng sân con.</p>
+     */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @BatchSize(size = 100)
+    @CollectionTable(name = "pitch_court_base_prices", joinColumns = @JoinColumn(name = "pitch_id"))
+    @MapKeyColumn(name = "court_name")
+    @Column(name = "base_price")
+    @Builder.Default
+    private Map<String, Integer> courtBasePrices = new HashMap<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @BatchSize(size = 100)
+    @CollectionTable(name = "pitch_court_peak_prices", joinColumns = @JoinColumn(name = "pitch_id"))
+    @MapKeyColumn(name = "court_name")
+    @Column(name = "peak_price")
+    @Builder.Default
+    private Map<String, Integer> courtPeakPrices = new HashMap<>();
 
     private String imageUrl;
 

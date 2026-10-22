@@ -114,7 +114,8 @@ export async function getAllPitchesApi(): Promise<PitchModel[]> {
     return await apiRequest<PitchModel[]>('/api/v1/pitches', { method: 'GET' });
   } catch (err) {
     console.error('Lỗi lấy danh sách sân:', err);
-    return [];
+    // Nem loi ra ngoai de UI hien bang loi + nut "Thu lai" bi bat.
+    // Nuot loi o day lam giao dien hien "khong tim thay cum san" (nham het backend).
   }
 }
 
@@ -132,7 +133,8 @@ export async function getMyPitchesApi(): Promise<PitchModel[]> {
     return await apiRequest<PitchModel[]>('/api/v1/pitches/my-pitches', { method: 'GET' });
   } catch (err) {
     console.error('Lỗi lấy danh sách sân của tôi:', err);
-    return [];
+    // Nem loi ra ngoai de bang loi + nut "Thu lai" cua chu san hoat dong.
+    throw err;
   }
 }
 

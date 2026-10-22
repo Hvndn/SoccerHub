@@ -463,7 +463,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  paymentModel: "SPLIT_EQUAL",
  estimatedFee:
  picked?.priceDiscounted && picked.priceDiscounted > 0
- ? Math.round(picked.priceDiscounted / 14)
+  ? Math.round((picked.priceDiscounted * ((picked.slotDurationMinutes ?? 120) / 60)) / 14)
  : 25000,
  note: newMatchNeed.trim() || "Tìm kèo giao lưu, tinh thần thể thao vui vẻ.",
  }),

@@ -212,7 +212,9 @@ export default function PitchDetail({
  showToast(`⚠️ Ca [${slot.time}] của ${court.pitchName} đã được cọc trước! Vui lòng chọn ca trống.`);
  return;
  }
- const rawPrice = parseInt((slot.price || "350k").toString().replace(/\D/g, "")) * 1000 || 350000;
+  // Ma tran tra them priceValue (gia so). Dung gia so de bao gia khop thu phi —
+  // parse chuoi "262k" bi lam tron ve 262.000 du gia thu phi la 262.500.
+  const rawPrice = slot.priceValue || parseInt((slot.price || "350k").toString().replace(/\D/g, "")) * 1000 || 350000;
  setSelectedSlot({
  courtId: court.pitchId,
  courtName: court.pitchName,
@@ -252,12 +254,12 @@ export default function PitchDetail({
  bookingDate: selectedDate,
  customerName: customerName,
  customerPhone: customerPhone,
- totalPrice: totalPrice,
- depositPaid: depositAmount,
+  // Server tự tính lại giá + mức cọc (50% hoặc 100%) — client chỉ gửi mức chọn.
+ depositPercent: depositOption === '100%' ? 100 : 50,
  via: "Đặt qua Website"
  };
 
- const res = await apiRequest<any>(`/api/v1/pitches/${pitchId}/book-offline`, {
+  const res = await apiRequest<any>(`/api/v1/pitches/${pitchId}/book`, {
  method: "POST",
  body: JSON.stringify(bookingPayload)
  });
@@ -280,8 +282,7 @@ export default function PitchDetail({
  courtType: selectedSlot.courtType || "Sân 7",
  timeSlot: selectedSlot.time,
  bookingDate: selectedDate,
- totalPrice: totalPrice,
- depositPaid: depositAmount,
+  totalPrice: res.totalPrice ?? totalPrice,
  via: "Đặt qua Website"
  });
  } else {

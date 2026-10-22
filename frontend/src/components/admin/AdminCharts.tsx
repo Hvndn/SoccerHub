@@ -387,8 +387,8 @@ export default function AdminCharts() {
         >
           {statusData.length ? (
             <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie
+              <PieChart role="img" aria-label="Biểu đồ tròn: trạng thái đơn đặt sân">
+                <Pie role="presentation"
                   data={statusData}
                   dataKey="value"
                   nameKey="name"
@@ -479,8 +479,8 @@ formatter={countTip}
         >
           {roleData.length ? (
             <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie
+              <PieChart role="img" aria-label="Biểu đồ tròn: cơ cấu người dùng theo vai trò">
+                <Pie role="presentation"
                   data={roleData}
                   dataKey="value"
                   nameKey="name"

@@ -195,6 +195,7 @@ export default function MultiSportArena({
  method: "POST",
  body: JSON.stringify({
  opponentTeamName: user.fullName || user.name || "Đội của tôi",
+  opponentCaptainName: user.fullName || user.name || "",
  opponentCaptainPhone: user.phone,
  }),
  }

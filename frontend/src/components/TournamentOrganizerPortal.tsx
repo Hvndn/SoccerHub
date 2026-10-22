@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { todayLocalPlus } from "@/lib/dateUtils";
 import Link from "next/link";
 import { API_BASE_URL, apiRequest, fetchWithTimeout } from '@/lib/api';
 import {
@@ -256,8 +257,9 @@ export default function TournamentOrganizerPortal({
   const handleCreateRandomTournament = async () => {
     try {
       const now = new Date();
-      const startDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  // Dung helper local (VN UTC+7). toISOString() tra ve ngay hom truoc neu sau 17:00.
+  const startDate = todayLocalPlus(7);
+  const endDate = todayLocalPlus(30);
 
       const res = await createTournament({
         title: 'Giải Test ' + new Date().toLocaleDateString('vi-VN') + ' ' + now.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}),

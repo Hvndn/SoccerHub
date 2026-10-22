@@ -391,11 +391,25 @@ setIsSavingInfo(false);
  };
 
  // Fetch real pitch data from backend API & Subscribe Realtime
- useEffect(() => {
- setMounted(true);
- fetchRealData();
+  // Danh sach cum san cua chu san: chi tai 1 lan khi mount.
+  // KHONG dat phu thuoc activePitch.id o day — truoc day effect chay lai moi khi
+  // doi cum san va fetchRealData() reset activePitch ve pitches[0], lam chon cum san
+  // thu hai tu nhop ve cum san dau.
+  useEffect(() => {
+  setMounted(true);
+  fetchRealData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
- // 1. Lắng nghe sự kiện Realtime đa tab / đa role (0 mili-giây)
+  // Tai ma tran + thong ke theo cum san dang chon.
+  useEffect(() => {
+  if (!activePitch?.id) return;
+  loadMatrixAndStats(activePitch.id, MATRIX_DURATION, matrixDateRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePitch?.id]);
+
+  useEffect(() => {
+  // 1. Lang nghe su kien Realtime da tab / da role (0 mili-giay)
  const unsubscribe = subscribeToBookingEvents((event) => {
  if (event.type === "BOOKING_CREATED") {
  playNotificationChime();
@@ -471,9 +485,9 @@ setIsSavingInfo(false);
     const pitches = await getMyPitchesApi();
  if (pitches && pitches.length > 0) {
  setRealPitches(pitches);
- const current = pitches[0];
- setActivePitch(current);
- await loadMatrixAndStats(current.id);
+  // Giu cum san chu san dang chon neu van con trong danh sach (truoc day luon reset ve [0]).
+  const current = pitches.find((p) => p.id === activePitch?.id) ?? pitches[0];
+  setActivePitch(current);
  }
  } catch (err: any) {
  console.warn("Backend API sync notice:", err.message);
@@ -530,7 +544,9 @@ setIsSavingInfo(false);
  const isPeak = isPeakSlot(offlineTime);
  const baseHourPrice = isPeak ? (targetCourt?.peakPrice || 600000) : (targetCourt?.basePrice || 350000);
  const hourMultiplier = OFFLINE_DURATION / 60.0;
- const price = Math.round(baseHourPrice * hourMultiplier);
+  // basePrice/peakPrice trong ma tran DA la gia cho ca 120 phut (slotDuration).
+  // Khong nhan them hourMultiplier — truoc day gia bi nhan 2 lan.
+  const price = isPeak ? (targetCourt?.peakPrice ?? 0) : (targetCourt?.basePrice ?? 0);
  const deposit = offlineDepositType === "PAID_CASH" ? Math.round(price / 2) : 0;
 
  await apiRequest(`/api/v1/pitches/${currentId}/book-offline`, {
@@ -544,6 +560,8 @@ setIsSavingInfo(false);
  customerPhone: offlinePhone.trim(),
  totalPrice: price,
  depositPaid: deposit,
+ // Chủ sân chọn mức cọc 50% hoặc 100% — server kiểm tra lại.
+ depositPercent: 50,
  via: offlineDepositType === "PAID_CASH" ? "Tạo Tại Quầy (Đã Cọc)" : "Tạo Tại Quầy (Giữ Ca)"
  })
  });

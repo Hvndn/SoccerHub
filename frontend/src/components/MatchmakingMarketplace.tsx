@@ -117,12 +117,12 @@ export default function MatchmakingMarketplace({
  onSelectMatch,
  onCreateMatch
 }: MatchmakingMarketplaceProps) {
- const [selectedSport, setSelectedSport] = useState("SAN_7");
+  const [selectedSport, setSelectedSport] = useState("ALL");
  const [selectedLevel, setSelectedLevel] = useState("Tất cả");
- const [selectedTimeSlot, setSelectedTimeSlot] = useState("TONIGHT");
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState("ALL");
  const [radiusKm, setRadiusKm] = useState(5);
- const [matchFormat, setMatchFormat] = useState("DOUBLES_MALE");
- const [paymentModel, setPaymentModel] = useState("SPLIT_EQUAL");
+  const [matchFormat, setMatchFormat] = useState("ALL");
+  const [paymentModel, setPaymentModel] = useState("ALL");
  const [joinedMatches, setJoinedMatches] = useState<string[]>([]);
   // Danh sach cum san: dung de tra thong tin nhan tien (STK) khi sinh QR VietQR cho keo 50/50.
   const [pitches, setPitches] = useState<any[]>([]);
@@ -473,6 +473,20 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <section className="w-full bg-white p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm space-y-3 sm:space-y-4">
  {/* Sport Tabs */}
  <div className="flex flex-wrap items-center gap-2">
+  <button
+  onClick={() => { setSelectedSport("ALL"); setMatchFormat("ALL"); }}
+  className={`flex items-center space-x-2 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-bold text-[13px] shrink-0 transition-all ${
+  selectedSport === "ALL"
+  ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
+  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+  }`}
+  >
+  <span>🎯 Tất cả</span>
+  <span className="px-2 py-0.5 rounded-full bg-slate-200 font-mono text-[13px] font-black">
+  {posts.length} kèo
+  </span>
+  </button>
+
  <button
  onClick={() => { setSelectedSport("SAN_7"); setMatchFormat("SAN_7"); }}
  className={`flex items-center space-x-2 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-bold text-[13px] shrink-0 transition-all ${
@@ -578,6 +592,17 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="space-y-1">
  <span className="text-slate-500 font-extrabold text-[13px] block">Khung giờ</span>
  <div className="flex items-center space-x-1 pt-0.5">
+  <button
+  onClick={() => setSelectedTimeSlot("ALL")}
+  className={`flex-1 py-1.5 px-2 rounded-xl text-[13px] font-bold transition-all ${
+  selectedTimeSlot === "ALL"
+  ? "bg-slate-900 text-white "
+  : "bg-white text-slate-700 "
+  }`}
+  >
+  Tất cả
+  </button>
+
  <button
  onClick={() => setSelectedTimeSlot("TONIGHT")}
  className={`flex-1 py-1.5 px-2 rounded-xl text-[13px] font-bold transition-all ${
@@ -625,10 +650,12 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  value={matchFormat}
  onChange={(e) => {
     setMatchFormat(e.target.value);
-    if (e.target.value !== "SOLO_SLOT") setSelectedSport(e.target.value);
+    setMatchFormat(e.target.value);
+    setSelectedSport(e.target.value === "ALL" ? "ALL" : e.target.value);
   }}
  className="w-full py-2 px-3 rounded-xl bg-white border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none"
  >
+  <option value="ALL">Tất cả môn</option>
  <option value="SAN_7">Kèo Bóng Đá Sân 7</option>
  <option value="SAN_5">Kèo Futsal / Sân 5 Người</option>
  <option value="SAN_11">Kèo Sân 11 Chuẩn VFF</option>
@@ -645,6 +672,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  onChange={(e) => setPaymentModel(e.target.value)}
  className="w-full py-2 px-3 rounded-xl bg-white border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none"
  >
+  <option value="ALL">Tất cả</option>
  <option value="SPLIT_EQUAL">Chia đều tự động (~45k-60k)</option>
  <option value="LOSER_PAYS">Đội thua chịu 100% sân</option>
  <option value="HOST_COVER">Chủ kèo bao trọn gói</option>
@@ -660,11 +688,16 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <div className="flex flex-wrap items-center justify-between gap-2">
  <div className="flex flex-wrap items-center gap-2">
  <h2 className="text-xl font-black text-slate-900 shrink-0">
- Kèo Đang Mở Đăng Ký ({openKèoCount})
+  Kèo Đang Mở Đăng Ký ({visiblePosts.length})
  </h2>
  <span className="px-3 py-1 rounded-full bg-[#acf847] text-[#102000] font-mono text-[13px] font-extrabold whitespace-nowrap">
  {matchableCount}/{openKèoCount} kèo cùng tầm
  </span>
+  {visiblePosts.length < openKèoCount && (
+  <span className="text-[13px] font-semibold text-slate-500">
+  ({openKèoCount - visiblePosts.length} kèo bị bộ lọc ẩn)
+  </span>
+  )}
  </div>
  <div className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 shrink-0 whitespace-nowrap">
  <span>Sắp xếp:</span>

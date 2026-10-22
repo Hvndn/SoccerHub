@@ -303,8 +303,13 @@ public class PitchBookingController {
             boolean is11 = courtName.toLowerCase().contains("11");
             String courtType = is7 ? "Sân 7 Người" : is5 ? "Sân 5 Người" : is11 ? "Sân 11" : "Sân Tiêu Chuẩn";
 
-            int courtBase = is11 ? Math.round(base * 2) : is7 ? base : Math.round(base * 0.75f);
-            int courtPeak = is11 ? Math.round(peak * 2) : is7 ? peak : Math.round(peak * 0.75f);
+            // Gia rieng cua chu san (neu co) thi dung gia do; khong co thi suy ra nhu cu.
+            Integer ownBase = pitch.getCourtBasePrices() != null ? pitch.getCourtBasePrices().get(courtName) : null;
+            Integer ownPeak = pitch.getCourtPeakPrices() != null ? pitch.getCourtPeakPrices().get(courtName) : null;
+            int courtBase = ownBase != null ? ownBase
+                    : (is11 ? Math.round(base * 2) : is7 ? base : Math.round(base * 0.75f));
+            int courtPeak = ownPeak != null ? ownPeak
+                    : (is11 ? Math.round(peak * 2) : is7 ? peak : Math.round(peak * 0.75f));
 
             // Tính giá theo thời lượng linh hoạt
             float hourMultiplier = slotDuration / 60.0f;
@@ -350,6 +355,7 @@ public class PitchBookingController {
                     } else {
                         slotObj.put("id", "booking-" + b.getId());
                         slotObj.put("price", (b.getTotalPrice() != null ? (b.getTotalPrice() / 1000) : (slotPrice / 1000)) + "k");
+                        slotObj.put("priceValue", b.getTotalPrice() != null ? b.getTotalPrice() : slotPrice);
                         slotObj.put("depositPaid", (b.getDepositPaid() != null ? (b.getDepositPaid() / 1000) : 0) + "k");
                         slotObj.put("cashDue", (b.getCashDue() != null ? (b.getCashDue() / 1000) : 0) + "k");
                         slotObj.put("note", "Đơn chính (" + b.getTimeSlot() + ")");
@@ -364,6 +370,8 @@ public class PitchBookingController {
                     slotObj.put("customer", "Ca Trống");
                     slotObj.put("phone", "—");
                     slotObj.put("price", (slotPrice / 1000) + "k");
+                    // Gia so chinh xac (khong lam tron ve "k") de FE bao gia khop thu phi.
+                    slotObj.put("priceValue", slotPrice);
                     slotObj.put("depositPaid", "0k");
                     slotObj.put("cashDue", "0k");
                     slotObj.put("via", "Sẵn sàng nhận khách");
@@ -492,6 +500,59 @@ public class PitchBookingController {
      * API Thống Kê Doanh Thu & Công Suất Thực Tế (Real Live Stats)
      */
     @GetMapping("/{id}/stats")
+    /**
+     * Tính giá một ca sân theo ĐÚNG công thức dùng ở ma trận:
+     * giá giờ × hệ số loại sân con (Sân 11 ×2, Sân 7 ×1, Sân 5 ×0.75) × thời lượng ca.
+     * Dùng chung để bảo đảm giá hiển thị và giá thực thu luôn khớp.
+     */
+    /** Đọc giá số từ request (bỏ qua giá trị rỗng / không hợp lệ). */
+    private Integer readPrice(Object raw) {
+        if (raw == null) return null;
+        try {
+            int v = (int) Math.round(Double.parseDouble(raw.toString().trim()));
+            return v > 0 ? v : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private int computeSlotPrice(Pitch pitch, String courtName, String timeSlot) {
+        boolean isPeak = isPeakStart(timeSlot);
+        int baseHour = (pitch.getAvgPricePerHour() != null)
+                ? pitch.getAvgPricePerHour() : 350000;
+        int peakHour = (pitch.getPeakPricePerHour() != null)
+                ? pitch.getPeakPricePerHour() : 500000;
+        String cn = courtName != null ? courtName.toLowerCase() : "";
+        Integer ownBase = pitch.getCourtBasePrices() != null ? pitch.getCourtBasePrices().get(courtName) : null;
+        Integer ownPeak = pitch.getCourtPeakPrices() != null ? pitch.getCourtPeakPrices().get(courtName) : null;
+        int courtBase = ownBase != null ? ownBase
+                : (cn.contains("11") ? Math.round(baseHour * 2f)
+                : cn.contains("7") ? baseHour : Math.round(baseHour * 0.75f));
+        int courtPeak = ownPeak != null ? ownPeak
+                : (cn.contains("11") ? Math.round(peakHour * 2f)
+                : cn.contains("7") ? peakHour : Math.round(peakHour * 0.75f));
+        int hourPrice = isPeak ? courtPeak : courtBase;
+        int durationMin = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0)
+                ? pitch.getSlotDurationMinutes() : 120;
+        return Math.round(hourPrice * (durationMin / 60.0f));
+    }
+
+    /**
+     * Mức cọc do khách chọn (50% hoặc 100%) — server tự kiểm tra, không tin client.
+     */
+    private int computeDeposit(int totalPrice, Object depositPercentRaw) {
+        int pct = 50;
+        if (depositPercentRaw != null) {
+            try {
+                pct = Integer.parseInt(depositPercentRaw.toString().trim());
+            } catch (NumberFormatException ignored) {
+                pct = 50;
+            }
+        }
+        if (pct != 100) pct = 50;
+        return Math.min(Math.round(totalPrice * (pct / 100.0f)), totalPrice);
+    }
+
     public ResponseEntity<?> getPitchRealStats(
             @PathVariable Long id,
             @RequestParam(required = false) String date,
@@ -691,6 +752,74 @@ public class PitchBookingController {
     /**
      * API Tạo Đặt Ca Tại Quầy hoặc Đặt Trực Tuyến (Lưu trực tiếp vào MySQL)
      */
+    /**
+     * API Đặt Sân Trực Tuyến của KHÁCH (khác với book-offline là chủ sân tạo đơn tại quầy).
+     *
+     * <p>QUAN TRỌNG: endpoint này KHÔNG yêu cầu là chủ sân — trước đây giao diện khách cũng
+     * gọi /book-offline nên sau khi siết chống IDOR cho chủ sân, KHÁCH HÀNG KHÔNG ĐẶT ĐƯỢC SÂN.
+     * Giá và mức cọc luôn do server tính lại, client không thể khai giá rẻ hơn thực tế.</p>
+     */
+    @PostMapping("/{id}/book")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> bookSlotOnline(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal com.turfzone.model.User me
+    ) {
+        String courtName = (String) req.get("courtName");
+        String timeSlot = (String) req.get("timeSlot");
+        String customerName = (String) req.get("customerName");
+        String customerPhone = (String) req.get("customerPhone");
+        String bookingDate = (String) req.getOrDefault("bookingDate",
+                LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        if (courtName == null || timeSlot == null || customerName == null || customerPhone == null
+                || courtName.isBlank() || timeSlot.isBlank()
+                || customerName.isBlank() || customerPhone.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập đầy đủ thông tin đặt sân."));
+        }
+
+        Pitch pitch = pitchService.getPitchById(id);
+
+        // Gia + muc coc luon do server tinh lai.
+        int totalPrice = computeSlotPrice(pitch, courtName, timeSlot);
+        int depositPaid = computeDeposit(totalPrice, req.get("depositPercent"));
+        int cashDue = totalPrice - depositPaid;
+
+        // Chong trung gio: don da huy thi ca trong lai.
+        List<Booking> courtBookings = bookingRepository.findByPitchIdAndBookingDate(id, bookingDate).stream()
+                .filter(b -> !"CANCELLED".equals(b.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
+        boolean isConflict = courtBookings.stream()
+                .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()));
+        if (isConflict) {
+            return ResponseEntity.badRequest().body(Map.of("message",
+                    "Khung giờ này đã có đội đặt hoặc bị trùng giờ với một ca thi đấu khác! Vui lòng chọn giờ khác."));
+        }
+
+        String code = "VS-" + id + "-" + (System.currentTimeMillis() % 10000);
+        String via = (String) req.getOrDefault("via", "Đặt qua Website");
+
+        Booking booking = Booking.builder()
+                .pitchId(id)
+                .courtName(courtName)
+                .courtType((String) req.getOrDefault("courtType", "Sân 7"))
+                .bookingDate(bookingDate)
+                .timeSlot(timeSlot)
+                .customerName(customerName)
+                .customerPhone(customerPhone)
+                .totalPrice(totalPrice)
+                .depositPaid(depositPaid)
+                .cashDue(cashDue)
+                .status("BOOKED")
+                .via(via)
+                .code(code)
+                .build();
+        Booking saved = bookingRepository.save(booking);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
     @PostMapping(value = {"/{id}/book-offline", "/{id}/offline-book"})
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> bookOfflineSlot(
@@ -715,22 +844,12 @@ public class PitchBookingController {
 
         // GIÁ LUÔN TÍNH Ở SERVER — không nhận totalPrice/depositPaid từ client
         // (client có thể tự khai giá 1đ làm sai số liệu doanh thu của chủ sân).
-        boolean isPeak = isPeakStart(timeSlot);
-        // Tính giá ĐÚNG theo công thức của ma trận: giá giờ × hệ số loại sân con × thời lượng ca.
-        // (Sân 11 = ×2, Sân 7 = ×1, Sân 5 = ×0.75) — trước đây lệch với giá hiển thị.
-        int baseHour = ownerPitch.getAvgPricePerHour() != null ? ownerPitch.getAvgPricePerHour() : 350000;
-        int peakHour = ownerPitch.getPeakPricePerHour() != null ? ownerPitch.getPeakPricePerHour() : 500000;
-        String cn = courtName != null ? courtName.toLowerCase() : "";
-        int courtBase = cn.contains("11") ? Math.round(baseHour * 2f)
-                : cn.contains("7") ? baseHour : Math.round(baseHour * 0.75f);
-        int courtPeak = cn.contains("11") ? Math.round(peakHour * 2f)
-                : cn.contains("7") ? peakHour : Math.round(peakHour * 0.75f);
-        int hourPrice = isPeak ? courtPeak : courtBase;
-        int durationMin = (ownerPitch.getSlotDurationMinutes() != null && ownerPitch.getSlotDurationMinutes() > 0)
-                ? ownerPitch.getSlotDurationMinutes() : 120;
-        Integer totalPrice = Math.round(hourPrice * (durationMin / 60.0f));
+        // Dung CHUNG cong thuc voi ma tran (gia hien thi = gia thu phi) + ho tro
+        // gia rieng cua chu san cho tung san con.
+        Integer totalPrice = computeSlotPrice(ownerPitch, courtName, timeSlot);
         // Cọc tối đa 50% giá ca (đúng chính sách hiển thị ở giao diện).
-        Integer depositPaid = Math.min(Math.round(totalPrice * 0.5f), totalPrice);
+        // Muc coc: 50% (mac dinh) hoac 100% — server kiem tra, khong tin client.
+        Integer depositPaid = computeDeposit(totalPrice, req.get("depositPercent"));
         Integer cashDue = totalPrice - depositPaid;
 
         if (courtName == null || timeSlot == null || customerName == null || customerPhone == null) {
@@ -913,6 +1032,20 @@ Booking saved = bookingRepository.save(booking);
 
         types.add(courtName.trim());
         pitch.setPitchTypes(types);
+
+        // Luu gia rieng cua san con (chu san nhap) — truoc day 2 o gia bi bo qua hoan toan.
+        Integer courtBasePrice = readPrice(req.get("basePrice"));
+        Integer courtPeakPrice = readPrice(req.get("peakPrice"));
+        if (courtBasePrice != null) {
+            Map<String, Integer> baseMap = new HashMap<>(pitch.getCourtBasePrices());
+            baseMap.put(courtName.trim(), courtBasePrice);
+            pitch.setCourtBasePrices(baseMap);
+        }
+        if (courtPeakPrice != null) {
+            Map<String, Integer> peakMap = new HashMap<>(pitch.getCourtPeakPrices());
+            peakMap.put(courtName.trim(), courtPeakPrice);
+            pitch.setCourtPeakPrices(peakMap);
+        }
         Pitch updated = pitchRepository.save(pitch);
 
         return ResponseEntity.ok(Map.of(

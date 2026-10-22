@@ -980,7 +980,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  {row.tournament.title}
  </td>
  <td className="py-2.5 pr-3 text-right font-mono text-slate-600 ">
- {row.memberCount ?? (roster.length || '—')}
+ {row.memberCount || (roster.length || '—')}
  </td>
  <td className="py-2.5 text-right">
  <FormDots form={row.form} size="sm" />
