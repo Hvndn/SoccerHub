@@ -4,7 +4,7 @@
  * trên bản đã deploy — tránh lỗi "failed to fetch".
  */
 import { toastInfo } from '@/lib/toast';
-const PROD_API_BASE_URL = 'https://soccerhub-backend-core-production.up.railway.app';
+const PROD_API_BASE_URL = 'https://turfzone-core-production.up.railway.app';
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
