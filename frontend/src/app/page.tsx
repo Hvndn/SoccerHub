@@ -8,7 +8,6 @@ import LandingFeatures from "@/components/LandingFeatures";
 import PitchSearch from "@/components/PitchSearch";
 import TournamentBracket from "@/components/TournamentBracket";
 import TournamentLeaderboard from "@/components/TournamentLeaderboard";
-import RefereePanel from "@/components/RefereePanel";
 import CommunityForm from "@/components/CommunityForm";
 import CommunityHub from "@/components/CommunityHub";
 import MatchmakingMarketplace from "@/components/MatchmakingMarketplace";
