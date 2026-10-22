@@ -1,5 +1,6 @@
 package com.turfzone.controller;
 
+import com.turfzone.util.RevenueUtil;
 import com.turfzone.model.User;
 import com.turfzone.model.UserRole;
 import com.turfzone.repository.BookingRepository;
@@ -68,9 +69,10 @@ public class AdminController {
     /** Tổng quan: các con số KPI cho dashboard admin. */
     @GetMapping("/overview")
     public ResponseEntity<Map<String, Object>> getOverview() {
+        // Dung CHUNG cong thuc doanh thu voi cac endpoint khac (truoc day overview chi
+        // tinh tien coc nen bao loi so khac voi /admin/revenue-report).
         long totalRevenue = bookingRepository.findAll().stream()
-                .filter(b -> !"CANCELLED".equals(b.getStatus()))
-                .mapToLong(b -> b.getDepositPaid() != null ? b.getDepositPaid() : 0)
+                .mapToLong(RevenueUtil::settledRevenue)
                 .sum();
         long openTournaments = tournamentRepository.findAll().stream()
                 .filter(t -> "OPEN".equals(t.getStatus()))

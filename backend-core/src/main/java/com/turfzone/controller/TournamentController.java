@@ -382,6 +382,7 @@ public class TournamentController {
      * Mỗi đội có đủ quân số + danh sách thành viên, lưu thật vào CSDL.
      * Body tuỳ chọn {"count": n} để chỉ thêm đúng n đội thay vì lấp đầy.
      */
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/fill-teams")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> fillTeams(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
@@ -876,6 +877,10 @@ public class TournamentController {
                     if (node != null && Boolean.TRUE.equals(node.get("tbd"))
                             && slot.equals(node.get("name"))) {
                         node.put("name", winner);
+                        // Danh dau o nay den tu tran nao -> undo tim lai duoc o (truoc day
+                        // undo tim theo ten "Thang {matchId}" nhung ten da bi ghi de
+                        // bang ten doi thang -> o vong sau giu nguyen doi cu, bang chinh sai).
+                        node.put("fromMatchId", matchId);
                         TeamFormService.FormRecord wf = winner.equals(nameA) ? beforeA : beforeB;
                         node.put("form", wf.form());
                         node.put("record", wf.record());
@@ -1025,9 +1030,15 @@ public class TournamentController {
                 for (String side : List.of("teamA", "teamB")) {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> node = (Map<String, Object>) m.get(side);
-                    if (node != null && slot.equals(node.get("name"))) {
+                    // Tim o theo danh dau fromMatchId (fallback ve ten "Thang ...").
+                    if (node != null && (matchId.equals(node.get("fromMatchId"))
+                            || slot.equals(node.get("name")))) {
                         node.put("name", slot);
                         node.put("tbd", true);
+                        node.remove("fromMatchId");
+                        node.remove("form");
+                        node.remove("record");
+                        node.remove("winRate");
                     }
                 }
             }
@@ -1061,6 +1072,7 @@ public class TournamentController {
      * bàn ngẫu nhiên từ đội hình thật, lưu nhánh đấu. Demo BXH, phong độ, vua phá
      * lưới mà không cần nhập tay. Trận đã DONE giữ nguyên. Vô địch → giải COMPLETED.
      */
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/simulate-results")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> simulateResults(@PathVariable Long id) {
@@ -1432,7 +1444,7 @@ public class TournamentController {
 
         // Sức chứa tính theo DANH SÁCH đội (trường registeredTeams có thể lệch với list do seed).
         int totalTeams = tournament.getTotalTeams() != null ? tournament.getTotalTeams() : 0;
-        if (totalTeams > 0 && tournament.getTeams().size() >= totalTeams) {
+        if (totalTeams > 0 && countConfirmedTeams(tournament) >= totalTeams) {
             return ResponseEntity.badRequest().body(Map.of("error", "Giải đấu đã đủ số lượng đội đăng ký"));
         }
 
@@ -1550,15 +1562,36 @@ public class TournamentController {
     }
 
     /** Đọc cấu hình quyền tham gia + danh sách email mời của 1 giải. */
+    /**
+     * So doi da XAC NHAN (CONFIRMED/SIMULATED) cua mot giai.
+     * <p>Trước đây nơi này dùng teams.size() (đếm cả đội PENDING_PAYMENT) trong khi
+     * confirm/approve lại đếm đội đã xác nhận → giao diện hiện "0% đầy" nhưng API lại báo
+     * "đã đủ số đội", và BTC vẫn duyệt thêm được đội vượt chỉ tiêu.</p>
+     */
+    private int countConfirmedTeams(Tournament tournament) {
+        if (tournament == null || tournament.getTeams() == null) return 0;
+        return (int) tournament.getTeams().stream()
+                .filter(t -> t.getRegistrationStatus() != null
+                        && ("CONFIRMED".equals(t.getRegistrationStatus()) || "SIMULATED".equals(t.getRegistrationStatus())))
+                .count();
+    }
+
     @GetMapping("/{id}/access")
-    public ResponseEntity<?> getJoinAccess(@PathVariable Long id) {
+    public ResponseEntity<?> getJoinAccess(@PathVariable Long id, @AuthenticationPrincipal com.turfzone.model.User me) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
+        boolean isAdmin = me != null && me.getRole() != null && "ADMIN".equals(me.getRole().name());
+        boolean isOrganizer = me != null && me.getRole() != null
+                && ("ORGANIZER".equals(me.getRole().name()) || "OWNER".equals(me.getRole().name()));
+        // Danh sach email moi la PII — chi BTC/Admin/ Chu san moi duoc xem.
+        // Nguoi la danh thuong chi thay che do mo (de man hinh dang ky khong loi).
+        List<String> invited = (isAdmin || isOrganizer) && tournament.getInvitedEmails() != null
+                ? tournament.getInvitedEmails() : List.of();
         return ResponseEntity.ok(Map.of(
                 "joinMode", tournament.getJoinMode() != null ? tournament.getJoinMode() : "PUBLIC",
-                "invitedEmails", tournament.getInvitedEmails() != null ? tournament.getInvitedEmails() : List.of()));
+                "invitedEmails", invited));
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.turfzone.controller;
 
+import com.turfzone.util.RevenueUtil;
 import com.turfzone.model.Booking;
 import com.turfzone.model.MatchmakingPost;
 import com.turfzone.model.User;
@@ -213,9 +214,7 @@ public class AdminManageController {
         Map<Long, Integer> revenueByPitch = new LinkedHashMap<>();
         for (Booking b : bookingRepository.findAll()) {
             if ("CANCELLED".equals(b.getStatus()) || b.getPitchId() == null) continue;
-            int rev = (b.getDepositPaid() != null ? b.getDepositPaid() : 0)
-                    + ("PLAYING".equals(b.getStatus()) || "COMPLETED".equals(b.getStatus())
-                    ? (b.getCashDue() != null ? b.getCashDue() : 0) : 0);
+            int rev = RevenueUtil.settledRevenue(b);
             revenueByPitch.merge(b.getPitchId(), rev, Integer::sum);
         }
 

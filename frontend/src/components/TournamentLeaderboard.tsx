@@ -1377,7 +1377,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'Ban Tổ Chức' : 'Xác Thực Thẻ Cầu Thủ'}
  </span>
  ) : (
- <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[13px] font-bold">
+ <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[13px] font-bold">
  Trạng thái khách
  </span>
  )}

@@ -41,6 +41,12 @@ public class Booking {
     private Integer depositPaid;
 
     private Integer cashDue;
+    /**
+     * Tien mat da thu tai quay (khi check-in).
+     * <p>Truoc day check-in gan cashDue = 0 nen PHAI TIEN con lai bi xoa khoi
+     * doanh thu — chu san chi thay dung mot nua so tien thuoc ve.</p>
+     */
+    private Integer cashCollected;
 
     @Builder.Default
     private String status = "BOOKED"; // BOOKED, PLAYING, RESALE, CANCELLED

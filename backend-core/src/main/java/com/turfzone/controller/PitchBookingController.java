@@ -1,6 +1,7 @@
 package com.turfzone.controller;
 
 import com.turfzone.dto.CreatePitchRequest;
+import com.turfzone.util.RevenueUtil;
 import com.turfzone.model.Booking;
 import com.turfzone.model.Pitch;
 import com.turfzone.model.User;
@@ -173,10 +174,11 @@ public class PitchBookingController {
     ) {
         String openTime = (String) req.get("openTime");
         String closeTime = (String) req.get("closeTime");
+        // KHONG gui thieu -> GIU nguyen thoi luong hien tai (truoc day mac dinh 90 phut
+        // => cap nhat gio mo cua don bi doi ca 120 phut thanh 90 phut, doi gia moi don).
         Integer duration = req.get("slotDurationMinutes") != null
                 ? Integer.valueOf(req.get("slotDurationMinutes").toString())
-                : 90;
-
+                : null;
         try {
             Pitch updated = pitchService.updateOperatingHours(id, openTime, closeTime, duration, me);
             // Sinh ca theo ĐÚNG slotDurationMinutes vừa lưu (trước đây hardcode 90)
@@ -346,7 +348,8 @@ public class PitchBookingController {
                     slotObj.put("bookingTimeSlot", b.getTimeSlot());
                     slotObj.put("isContinuation", isContinuation);
                     slotObj.put("status", b.getStatus().toLowerCase()); // booked, playing, resale
-                    slotObj.put("customer", b.getCustomerName());
+                    // Ten khach la PII — an voi nguoi xem khong phai chu san.
+                    slotObj.put("customer", fullAccess ? b.getCustomerName() : maskName(b.getCustomerName()));
                     slotObj.put("phone", fullAccess ? b.getCustomerPhone() : maskPhone(b.getCustomerPhone()));
                     slotObj.put("via", b.getVia());
                     slotObj.put("code", b.getCode());
@@ -504,7 +507,6 @@ public class PitchBookingController {
     /**
      * API Thống Kê Doanh Thu & Công Suất Thực Tế (Real Live Stats)
      */
-    @GetMapping("/{id}/stats")
     /**
      * Tính giá một ca sân theo ĐÚNG công thức dùng ở ma trận:
      * giá giờ × hệ số loại sân con (Sân 11 ×2, Sân 7 ×1, Sân 5 ×0.75) × thời lượng ca.
@@ -519,6 +521,72 @@ public class PitchBookingController {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    /**
+     * Kiem tra san con co thuoc cum san hay khong.
+     * <p>Trước đây client tu do ten san con bat ky → khach bi tinh tien cho
+     * "Sân 11" tren cum san chi co Sân 5/7, don khong hien thi trong ma tran
+     * nhung van lam thay doanh thu.</p>
+     */
+    /** Che ten khach: "Nguyễn Văn A" -> "N*** A" (giu chu cai + ho). */
+    private static String maskName(String name) {
+        if (name == null || name.isBlank()) return "—";
+        String[] parts = name.trim().split("\\s+");
+        if (parts.length == 1) {
+            String w = parts[0];
+            return w.length() <= 1 ? w : w.charAt(0) + "***";
+        }
+        String first = parts[0];
+        String last = parts[parts.length - 1];
+        return (first.length() <= 1 ? first : first.charAt(0) + "***") + " " + last;
+    }
+
+    /**
+     * Thoi luong cua mot khung gio "HH:mm - HH:mm" (phut). -1 neu khong phan tich duoc.
+     * <p>Dung de tinh gia ca theo DUNG do dai cua ca khach chon: cac ca "ke"
+     * (gap slot) trong ma tran co the ngan hon ca chuan (60 phut) va gia hien thi
+     * cung theo do do — truoc day server luon tinh theo ca chuan 120 phut nen
+     * khach bi thu 2 lan so voi gia nh tren man hinh.</p>
+     */
+    private int durationOfSlot(String timeSlot) {
+        if (timeSlot == null || !timeSlot.contains("-")) return -1;
+        String[] parts = timeSlot.split("-");
+        if (parts.length < 2) return -1;
+        int start = parseTimeToMinutes(parts[0].trim());
+        int end = parseTimeToMinutes(parts[1].trim());
+        if (start < 0 || end <= start) return -1;
+        return end - start;
+    }
+
+    private boolean isCourtOfPitch(Pitch pitch, String courtName) {
+        List<String> courts = pitch.getPitchTypes();
+        if (courts == null || courts.isEmpty() || courtName == null) return false;
+        String want = courtName.trim();
+        return courts.stream().anyMatch(c -> c != null && c.trim().equalsIgnoreCase(want));
+    }
+
+    /** Ngay dat phai la hom nay hoac tuong lai (khong nhan dat cho ngay da qua). */
+    private boolean isBookableDate(String bookingDate) {
+        try {
+            LocalDate d = LocalDate.parse(bookingDate.trim());
+            return !d.isBefore(LocalDate.now());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Khung gio phai nam trong khoang gio mo cua cum san. */
+    private boolean isWithinOpeningHours(Pitch pitch, String timeSlot) {
+        if (pitch.getOpenTime() == null || pitch.getCloseTime() == null) return true;
+        if (timeSlot == null || !timeSlot.contains("-")) return false;
+        String[] parts = timeSlot.split("-");
+        int start = parseTimeToMinutes(parts[0].trim());
+        int end = parseTimeToMinutes(parts[1].trim());
+        if (start < 0 || end < 0) return false;
+        int open = parseTimeToMinutes(pitch.getOpenTime());
+        int close = parseTimeToMinutes(pitch.getCloseTime());
+        return start >= open && end <= close;
     }
 
     private int computeSlotPrice(Pitch pitch, String courtName, String timeSlot) {
@@ -537,8 +605,13 @@ public class PitchBookingController {
                 : (cn.contains("11") ? Math.round(peakHour * 2f)
                 : cn.contains("7") ? peakHour : Math.round(peakHour * 0.75f));
         int hourPrice = isPeak ? courtPeak : courtBase;
-        int durationMin = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0)
-                ? pitch.getSlotDurationMinutes() : 120;
+        // Do dai ca: uu tien do dai cua chinh khung gio khach chon (ca "ke" ngan hon
+        // ca chuan), fallback veo thoi luong ca chuan cua cum san.
+        int durationMin = durationOfSlot(timeSlot);
+        if (durationMin <= 0) {
+            durationMin = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0)
+                    ? pitch.getSlotDurationMinutes() : 120;
+        }
         return Math.round(hourPrice * (durationMin / 60.0f));
     }
 
@@ -558,6 +631,7 @@ public class PitchBookingController {
         return Math.min(Math.round(totalPrice * (pct / 100.0f)), totalPrice);
     }
 
+    @GetMapping("/{id}/stats")
     public ResponseEntity<?> getPitchRealStats(
             @PathVariable Long id,
             @RequestParam(required = false) String date,
@@ -584,11 +658,8 @@ public class PitchBookingController {
         int offlineCounterCount = 0;
 
         for (Booking b : bookings) {
-            int deposit = b.getDepositPaid() != null ? b.getDepositPaid() : 0;
-            int cash = ("PLAYING".equalsIgnoreCase(b.getStatus()) || "COMPLETED".equalsIgnoreCase(b.getStatus())) 
-                    ? (b.getCashDue() != null ? b.getCashDue() : 0) 
-                    : 0;
-            totalRevenue += (deposit + cash);
+            // Dung chung cong thuc doanh thu (coc + tien mat da thu tai quay).
+            totalRevenue += RevenueUtil.settledRevenue(b);
 
             // Ca đặt qua website ("Đặt qua Website") hoặc giá trị cũ (VietQR/Online/MoMo) — còn lại là tại quầy
             String via = b.getVia() != null ? b.getVia() : "";
@@ -700,11 +771,8 @@ public class PitchBookingController {
         m.put("courtType", b.getCourtType());
         m.put("bookingDate", b.getBookingDate());
         m.put("timeSlot", b.getTimeSlot());
-        m.put("customerName", b.getCustomerName());
+        m.put("customerName", maskName(b.getCustomerName()));
         m.put("customerPhone", maskPhone(b.getCustomerPhone()));
-        m.put("totalPrice", b.getTotalPrice());
-        m.put("depositPaid", b.getDepositPaid());
-        m.put("cashDue", b.getCashDue());
         m.put("status", b.getStatus());
         m.put("via", b.getVia());
         m.put("code", b.getCode());
@@ -786,6 +854,22 @@ public class PitchBookingController {
 
         Pitch pitch = pitchService.getPitchById(id);
 
+        // San con phai thuoc dung cum san nao.
+        if (!isCourtOfPitch(pitch, courtName)) {
+            return ResponseEntity.badRequest().body(Map.of("message",
+                    "Sân con không thuộc cụm sân này. Vui lòng chọn ca của sân trong cụm."));
+        }
+        // Ngay dat phai chua qua.
+        if (!isBookableDate(bookingDate)) {
+            return ResponseEntity.badRequest().body(Map.of("message",
+                    "Ngày đặt không hợp lệ hoặc đã qua. Vui lòng chọn ngày từ hôm nay trở đi."));
+        }
+        // Khung gio phai trong gio mo cua cum san.
+        if (!isWithinOpeningHours(pitch, timeSlot)) {
+            return ResponseEntity.badRequest().body(Map.of("message",
+                    "Khung giờ nằm ngoài giờ mở cửa của cụm sân (" + pitch.getOpenTime() + " - " + pitch.getCloseTime() + ")."));
+        }
+
         // Gia + muc coc luon do server tinh lai.
         int totalPrice = computeSlotPrice(pitch, courtName, timeSlot);
         int depositPaid = computeDeposit(totalPrice, req.get("depositPercent"));
@@ -841,6 +925,22 @@ public class PitchBookingController {
         // Chỉ chủ sân của cụm sân này mới được tạo đơn tại quầy — trước đây mọi tài
         // khoản đăng nhập đều đặt được vào cụm sân của người khác (IDOR ghi).
         Pitch ownerPitch = pitchService.getPitchById(id);
+        // San con phai thuoc dung cum san nao (chong dat lien san khong ton tai).
+        if (!isCourtOfPitch(ownerPitch, courtName)) {
+            return ResponseEntity.badRequest().body(Map.of("message",
+                    "Sân con không thuộc cụm sân này. Vui lòng chọn ca của sân trong cụm."));
+        }
+        // Ngay dat phai chua qua.
+        if (!isBookableDate(bookingDate)) {
+            return ResponseEntity.badRequest().body(Map.of("message",
+                    "Ngày đặt không hợp lệ hoặc đã qua. Vui lòng chọn ngày từ hôm nay trở đi."));
+        }
+        // Khung gio phai trong gio mo cua cum san.
+        if (!isWithinOpeningHours(ownerPitch, timeSlot)) {
+            return ResponseEntity.badRequest().body(Map.of("message",
+                    "Khung giờ nằm ngoài giờ mở cửa của cụm sân (" + ownerPitch.getOpenTime() + " - " + ownerPitch.getCloseTime() + ")."));
+        }
+
         try {
             assertOwnsPitch(ownerPitch, me);
         } catch (IllegalArgumentException e) {
@@ -1078,6 +1178,9 @@ Booking saved = bookingRepository.save(booking);
                 return ResponseEntity.badRequest().body(Map.of("message", "Đơn này đã hủy, không thể check-in."));
             }
             b.setStatus("PLAYING");
+            // Giu so tien da thu tai quay thay vi xoa cashDue — doanh thu phai
+            // tinh ca phan coc online + phan mat tai quay.
+            b.setCashCollected(b.getCashDue() != null ? b.getCashDue() : 0);
             b.setCashDue(0); // Đã thu đủ tại quầy
             bookingRepository.save(b);
             return ResponseEntity.ok(Map.of("message", "Check-in thành công! Khách đã vào sân.", "booking", b));
@@ -1206,6 +1309,17 @@ Booking saved = bookingRepository.save(booking);
             b.setCancelReason(reason);
             b.setCancelledBy("CUSTOMER");
             bookingRepository.save(b);
+
+            // Chi thong bao cho CHU SAN cua cum san nay — trước đây gửi role "OWNER"
+            // khiến MỌI chủ sân trong hệ thống đều thấy tên + SĐT của khách.
+            String cancelOwnerEmail = null;
+            if (b.getPitchId() != null) {
+                Pitch cp = pitchRepository.findById(b.getPitchId()).orElse(null);
+                if (cp != null && cp.getOwnerId() != null) {
+                    cancelOwnerEmail = userRepository.findById(cp.getOwnerId())
+                            .map(com.turfzone.model.User::getEmail).orElse(null);
+                }
+            }
 
             notificationService.notify("OWNER",
                     "Khách hủy ca: " + b.getCustomerName(),
@@ -1342,18 +1456,30 @@ Booking saved = bookingRepository.save(booking);
             @RequestParam(required = false) Long pitchId,
             @RequestParam(required = false, defaultValue = "14") int pastDays,
             @RequestParam(required = false, defaultValue = "7") int futureDays,
-            @RequestParam(required = false, defaultValue = "5") int perDay
+            @RequestParam(required = false, defaultValue = "5") int perDay,
+            @AuthenticationPrincipal com.turfzone.model.User me
     ) {
         int past = Math.max(0, Math.min(60, pastDays));
         int future = Math.max(0, Math.min(60, futureDays));
         int per = Math.max(1, Math.min(30, perDay));
 
-        List<Pitch> pitches = (pitchId != null)
-                ? List.of(pitchService.getPitchById(pitchId))
-                : pitchRepository.findAll();
-
-        if (pitches.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Hệ thống chưa có cụm sân nào để sinh đơn."));
+        // CHI ghi don gia lap tren cum san CUA CHINH chu san (truoc day bat ky chu san
+        // nao cung ghi/xoa duoc don cua cum san khac).
+        boolean isAdmin = me != null && me.getRole() != null && "ADMIN".equals(me.getRole().name());
+        List<Pitch> pitches;
+        if (pitchId != null) {
+            Pitch target = pitchService.getPitchById(pitchId);
+            if (!isAdmin) {
+                try {
+                    assertOwnsPitch(target, me);
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+                }
+            }
+            pitches = List.of(target);
+        } else {
+            pitches = isAdmin ? pitchRepository.findAll()
+                    : pitchRepository.findByOwnerId(me != null ? me.getId() : -1L);
         }
 
         Random rnd = new Random();
@@ -1464,8 +1590,14 @@ Booking saved = bookingRepository.save(booking);
     /** Xóa toàn bộ đơn giả lập (mã bắt đầu bằng "SIM-") — đơn thật của khách giữ nguyên. */
     @DeleteMapping("/simulate-bookings")
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
-    public ResponseEntity<?> clearSimulatedBookings() {
-        List<Booking> sims = bookingRepository.findByCodeStartingWith(SIM_PREFIX);
+    public ResponseEntity<?> clearSimulatedBookings(@AuthenticationPrincipal com.turfzone.model.User me) {
+        // CHI xoa don gia lap cua cum san cua chu san (truoc day xoa don gia lap cua MOI cum san).
+        List<Long> myPitchIds = pitchRepository.findByOwnerId(me != null ? me.getId() : -1L).stream()
+                .map(Pitch::getId).collect(java.util.stream.Collectors.toList());
+        boolean isAdmin = me != null && me.getRole() != null && "ADMIN".equals(me.getRole().name());
+        List<Booking> sims = bookingRepository.findByCodeStartingWith(SIM_PREFIX).stream()
+                .filter(b -> isAdmin || (b.getPitchId() != null && myPitchIds.contains(b.getPitchId())))
+                .collect(java.util.stream.Collectors.toList());
         bookingRepository.deleteAll(sims);
         return ResponseEntity.ok(Map.of(
                 "deleted", sims.size(),

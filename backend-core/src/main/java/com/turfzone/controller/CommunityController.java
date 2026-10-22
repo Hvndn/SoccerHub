@@ -9,6 +9,7 @@ import com.turfzone.repository.TeamReviewRepository;
 import com.turfzone.repository.TournamentRepository;
 import com.turfzone.service.TeamFormService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -245,9 +246,13 @@ public class CommunityController {
      */
     @PostMapping("/reviews")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> submitReview(@RequestBody Map<String, Object> req) {
+    public ResponseEntity<?> submitReview(@RequestBody Map<String, Object> req, @AuthenticationPrincipal com.turfzone.model.User me) {
         String reviewedTeam = str(req.get("reviewedTeamName"));
-        String reviewerTeam = str(req.get("reviewerTeamName"));
+        // Danh tinh nguoi danh gia LAY TU TAI KHOAN dang dang nhap — trước day client tu
+        // gui ten doi → doi ten la cham 5* vo han lan de tu nang uy tin doi.
+        String reviewerTeam = (me != null && me.getFullName() != null && !me.getFullName().isBlank())
+                ? me.getFullName().trim()
+                : str(req.get("reviewerTeamName"));
         if (reviewedTeam == null || reviewerTeam == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Thiếu tên đội bị đánh giá / đội đánh giá."));
         }

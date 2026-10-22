@@ -1,6 +1,7 @@
 package com.turfzone.controller;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.turfzone.util.RevenueUtil;
 import com.turfzone.model.Booking;
 import com.turfzone.model.Pitch;
 import com.turfzone.repository.BookingRepository;
@@ -31,14 +32,9 @@ public class OwnerAdminController {
     private final PitchRepository pitchRepository;
 
     /** Doanh thu = tiền cọc + tiền mặt còn lại, chỉ tính đơn đã thu (không tính đơn đã hủy). */
+    /** Doanh thu = tien coc + tien mat da thu tai quay (dung chung cong thuc he thong). */
     private static int settledRevenue(Booking b) {
-        String status = b.getStatus() == null ? "BOOKED" : b.getStatus();
-        if ("CANCELLED".equals(status)) return 0;
-        int deposit = b.getDepositPaid() != null ? b.getDepositPaid() : 0;
-        int cash = ("PLAYING".equals(status) || "COMPLETED".equals(status))
-                ? (b.getCashDue() != null ? b.getCashDue() : 0)
-                : 0;
-        return deposit + cash;
+        return RevenueUtil.settledRevenue(b);
     }
 
     private static YearMonth parseMonth(String dateStr) {
@@ -198,12 +194,37 @@ public class OwnerAdminController {
         Object peakRaw = config.get("peakPricePerHour");
         Object offPeakRaw = config.get("avgPricePerHour");
         Object peakHours = config.get("peakHours");
-        if (peakRaw != null) {
-            pitch.setPeakPricePerHour((int) Math.round(Double.parseDouble(String.valueOf(peakRaw))));
+        // Gia phai la so > 0 va gia gio vang >= gia gio thuong — truoc day nhan gia am
+        // (don gia tien am) va tra 500 khi gui chu khong phai so.
+        Integer newPeak = null;
+        Integer newAvg = null;
+        try {
+            if (peakRaw != null) {
+                double v = Double.parseDouble(String.valueOf(peakRaw).trim());
+                if (v <= 0) {
+                    return ResponseEntity.badRequest().body(Map.of("status", "ERROR",
+                            "message", "Giá giờ vàng phải lớn hơn 0."));
+                }
+                newPeak = (int) Math.round(v);
+            }
+            if (offPeakRaw != null) {
+                double v = Double.parseDouble(String.valueOf(offPeakRaw).trim());
+                if (v <= 0) {
+                    return ResponseEntity.badRequest().body(Map.of("status", "ERROR",
+                            "message", "Giá giờ thường phải lớn hơn 0."));
+                }
+                newAvg = (int) Math.round(v);
+            }
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body(Map.of("status", "ERROR",
+                    "message", "Giá phải là số hợp lệ."));
         }
-        if (offPeakRaw != null) {
-            pitch.setAvgPricePerHour((int) Math.round(Double.parseDouble(String.valueOf(offPeakRaw))));
+        if (newPeak != null && newAvg != null && newPeak < newAvg) {
+            return ResponseEntity.badRequest().body(Map.of("status", "ERROR",
+                    "message", "Giá giờ vàng không được thấp hơn giá giờ thường."));
         }
+        if (newPeak != null) pitch.setPeakPricePerHour(newPeak);
+        if (newAvg != null) pitch.setAvgPricePerHour(newAvg);
         pitchRepository.save(pitch);
 
         Map<String, Object> applied = new LinkedHashMap<>();

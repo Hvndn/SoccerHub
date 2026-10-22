@@ -1,5 +1,6 @@
 package com.turfzone.controller;
 
+import com.turfzone.util.RevenueUtil;
 import com.turfzone.model.Booking;
 import com.turfzone.model.Pitch;
 import com.turfzone.repository.BookingRepository;
@@ -109,15 +110,9 @@ public class OwnerReportController {
         }
     }
 
-    /** Doanh thu đã thu: cọc + tiền mặt còn lại (đơn PLAYING/COMPLETED). */
+    /** Doanh thu đã thu: cọc + tiền mặt đã thu tại quầy (dùng chung công thức hệ thống). */
     private static int settledRevenue(Booking b) {
-        String status = b.getStatus() == null ? "BOOKED" : b.getStatus();
-        if ("CANCELLED".equals(status)) return 0;
-        int deposit = b.getDepositPaid() != null ? b.getDepositPaid() : 0;
-        int cash = ("PLAYING".equals(status) || "COMPLETED".equals(status))
-                ? (b.getCashDue() != null ? b.getCashDue() : 0)
-                : 0;
-        return deposit + cash;
+        return RevenueUtil.settledRevenue(b);
     }
 
     /** Các cụm sân mà người gọi được phép xem (OWNER: của mình; ADMIN: toàn bộ). */
@@ -180,6 +175,8 @@ public class OwnerReportController {
 
         int sumTotal = 0, sumDeposit = 0, sumCash = 0;
         for (Booking b : all) {
+            // Bo don da huy khoi tong (truoc day tong tien bao gom don da huy/refund).
+            if ("CANCELLED".equals(b.getStatus())) continue;
             int total = b.getTotalPrice() != null ? b.getTotalPrice() : 0;
             int dep = b.getDepositPaid() != null ? b.getDepositPaid() : 0;
             int cash = b.getCashDue() != null ? b.getCashDue() : 0;
