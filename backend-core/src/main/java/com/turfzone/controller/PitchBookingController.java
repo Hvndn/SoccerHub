@@ -2,6 +2,7 @@ package com.turfzone.controller;
 
 import com.turfzone.dto.CreatePitchRequest;
 import com.turfzone.util.RevenueUtil;
+import com.turfzone.util.TimeSlotUtil;
 import com.turfzone.model.Booking;
 import com.turfzone.model.Pitch;
 import com.turfzone.model.User;
@@ -719,19 +720,10 @@ public class PitchBookingController {
     /**
      * Ca giờ vàng (cao điểm): xét theo GIỜ BẮT ĐẦU của ca.
      *
-     * <p>Trước đây dùng {@code contains("17:")} nên ca "16:00 - 18:00" cũng bị tính
-     * giá vàng (vì chuỗi có "18:"). Nay chỉ ca bắt đầu 17h/18h/19h mới là giờ vàng —
-     * khớp với tiêu chí hiển thị ở giao diện.</p>
+     * <p>Quy tắc dùng chung với toàn hệ thống: 17h/18h/19h — xem TimeSlotUtil.</p>
      */
     private static boolean isPeakStart(String timeSlot) {
-        if (timeSlot == null) return false;
-        String head = timeSlot.trim().split("-")[0].trim();
-        try {
-            int hour = Integer.parseInt(head.split(":")[0].trim());
-            return hour >= 17 && hour <= 19;
-        } catch (Exception e) {
-            return false;
-        }
+        return TimeSlotUtil.isPeakStart(timeSlot);
     }
 
     private static Integer parseStartHour(String timeSlot) {
@@ -833,6 +825,7 @@ public class PitchBookingController {
      * Giá và mức cọc luôn do server tính lại, client không thể khai giá rẻ hơn thực tế.</p>
      */
     @PostMapping("/{id}/book")
+    @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> bookSlotOnline(
             @PathVariable Long id,
@@ -851,6 +844,10 @@ public class PitchBookingController {
                 || customerName.isBlank() || customerPhone.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập đầy đủ thông tin đặt sân."));
         }
+
+        // KHOÁ dòng sân TRƯỚC khi nạp pitch: nếu nạp trước, JPA trả về entity đã cache
+        // và KHÔNG chạy SELECT ... FOR UPDATE → không có khoá → vẫn bán trùng ca.
+        pitchRepository.findByIdForUpdate(id);
 
         Pitch pitch = pitchService.getPitchById(id);
 
@@ -876,8 +873,9 @@ public class PitchBookingController {
         int cashDue = totalPrice - depositPaid;
 
         // Chong trung gio: don da huy thi ca trong lai.
+        // KHOÁ dòng sân trước khi kiểm tra trùng ca: 2 request đặt cùng lúc (double-click,
+        // 2 tab) nếu không khoá sẽ cùng đọc được danh sách rỗng rồi cùng insert → bán trùng ca.
         List<Booking> courtBookings = bookingRepository.findByPitchIdAndBookingDate(id, bookingDate).stream()
-                .filter(b -> !"CANCELLED".equals(b.getStatus()))
                 .collect(java.util.stream.Collectors.toList());
         boolean isConflict = courtBookings.stream()
                 .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()));
@@ -886,7 +884,7 @@ public class PitchBookingController {
                     "Khung giờ này đã có đội đặt hoặc bị trùng giờ với một ca thi đấu khác! Vui lòng chọn giờ khác."));
         }
 
-        String code = "VS-" + id + "-" + (System.currentTimeMillis() % 10000);
+        String code = "VS-" + id + "-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         String via = (String) req.getOrDefault("via", "Đặt qua Website");
 
         Booking booking = Booking.builder()
@@ -904,12 +902,20 @@ public class PitchBookingController {
                 .via(via)
                 .code(code)
                 .build();
-        Booking saved = bookingRepository.save(booking);
+        Booking saved;
+        try {
+            saved = bookingRepository.save(booking);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // Trùng ràng buộc (ca vừa được người khác đặt) → trả 400 thay vì lỗi 500.
+            return ResponseEntity.badRequest().body(Map.of("message",
+                    "Khung giờ này vừa được đặt. Vui lòng chọn giờ khác."));
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PostMapping(value = {"/{id}/book-offline", "/{id}/offline-book"})
+    @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> bookOfflineSlot(
             @PathVariable Long id,
@@ -924,6 +930,10 @@ public class PitchBookingController {
         
         // Chỉ chủ sân của cụm sân này mới được tạo đơn tại quầy — trước đây mọi tài
         // khoản đăng nhập đều đặt được vào cụm sân của người khác (IDOR ghi).
+        // KHOÁ dòng sân TRƯỚC khi nạp pitch: nếu nạp trước, JPA trả về entity đã cache
+        // và KHÔNG chạy SELECT ... FOR UPDATE → không có khoá → vẫn bán trùng ca.
+        pitchRepository.findByIdForUpdate(id);
+
         Pitch ownerPitch = pitchService.getPitchById(id);
         // San con phai thuoc dung cum san nao (chong dat lien san khong ton tai).
         if (!isCourtOfPitch(ownerPitch, courtName)) {
@@ -963,8 +973,8 @@ public class PitchBookingController {
 
         // Kiểm tra xem ca đã có người đặt chưa (Kiểm tra trùng giờ linh hoạt).
         // Đơn đã hủy thì ca đã trống trở lại nên không tính trùng.
+        // KHOÁ dòng sân trước khi kiểm tra trùng ca (xem /book).
         List<Booking> courtBookings = bookingRepository.findByPitchIdAndBookingDate(id, bookingDate).stream()
-                .filter(b -> !"CANCELLED".equals(b.getStatus()))
                 .collect(java.util.stream.Collectors.toList());
         boolean isConflict = courtBookings.stream()
                 .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()));
@@ -972,7 +982,7 @@ public class PitchBookingController {
             return ResponseEntity.badRequest().body(Map.of("message", "Khung giờ này đã có đội đặt hoặc bị trùng giờ với một ca thi đấu khác! Vui lòng chọn giờ khác."));
         }
 
-        String code = "VS-" + id + "-" + (System.currentTimeMillis() % 10000);
+        String code = "VS-" + id + "-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
 
         Booking booking = Booking.builder()
                 .pitchId(id)
@@ -1520,8 +1530,7 @@ Booking saved = bookingRepository.save(booking);
                     }
 
                     // Ca chiều tối (sau 17:00) đắt hơn — phản ánh thực tế giờ vàng
-                    boolean peak = slot.startsWith("17") || slot.startsWith("18")
-                            || slot.startsWith("19") || slot.startsWith("20");
+                    boolean peak = TimeSlotUtil.isPeakStart(slot);
                     int hourPrice = peak && pitch.getPeakPricePerHour() != null && pitch.getPeakPricePerHour() > 0
                             ? pitch.getPeakPricePerHour() : basePrice;
                     int total = hourPrice * (duration / 60 > 0 ? duration / 60 : 2);

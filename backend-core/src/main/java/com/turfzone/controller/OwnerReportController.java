@@ -1,6 +1,7 @@
 package com.turfzone.controller;
 
 import com.turfzone.util.RevenueUtil;
+import com.turfzone.util.TimeSlotUtil;
 import com.turfzone.model.Booking;
 import com.turfzone.model.Pitch;
 import com.turfzone.repository.BookingRepository;
@@ -93,21 +94,9 @@ public class OwnerReportController {
         }
     }
 
-    /** Số ca bán được trong 1 ngày của 1 sân, theo giờ mở/đóng + độ dài ca. */
+    /** Số ca bán được trong 1 ngày — dùng CHUNG công thức với ma trận (TimeSlotUtil). */
     private static int slotsPerDay(String open, String close, int durationMinutes) {
-        try {
-            if (open == null || close == null) return 0;
-            int oh = Integer.parseInt(open.split(":")[0]);
-            int om = Integer.parseInt(open.split(":")[1]);
-            int ch = Integer.parseInt(close.split(":")[0]);
-            int cm = Integer.parseInt(close.split(":")[1]);
-            int start = oh * 60 + om;
-            int end = ch * 60 + cm;
-            if (end <= start) return 0;
-            return (end - start) / Math.max(30, durationMinutes);
-        } catch (Exception e) {
-            return 0;
-        }
+        return TimeSlotUtil.slotsPerDay(open, close, durationMinutes);
     }
 
     /** Doanh thu đã thu: cọc + tiền mặt đã thu tại quầy (dùng chung công thức hệ thống). */

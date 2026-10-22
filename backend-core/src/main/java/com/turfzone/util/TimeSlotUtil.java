@@ -46,6 +46,33 @@ public final class TimeSlotUtil {
         return slots.isEmpty() ? FALLBACK : slots;
     }
 
+    /**
+     * Ca GIỜ VÀNG (cao điểm): xét theo GIỜ BẮT ĐẦU của ca (17h, 18h, 19h).
+     *
+     * <p>Trước đây quy tắc này bị chép lại ở 4 nơi với 2 định nghĩa khác nhau
+     * (nơi này 17-19, nơi kia 17-20) → dữ liệu mô phỏng tính giá vàng cho ca 20:00
+     * còn đơn thật thì không. Nay gom về MỘT chỗ.</p>
+     */
+    public static boolean isPeakStart(String timeSlot) {
+        if (timeSlot == null) return false;
+        String head = timeSlot.trim().split("-")[0].trim();
+        try {
+            int hour = Integer.parseInt(head.split(":")[0].trim());
+            return hour == 17 || hour == 18 || hour == 19;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Số ca GIỜ VÀNG sinh được trong một ngày (theo giờ mở/đóng + độ dài ca). */
+    public static int peakSlotsPerDay(String openTime, String closeTime, int durationMinutes) {
+        int count = 0;
+        for (String slot : generate(openTime, closeTime, durationMinutes)) {
+            if (isPeakStart(slot)) count++;
+        }
+        return count;
+    }
+
     /** Số khung giờ trong một ngày của cụm sân. */
     public static int slotsPerDay(String openTime, String closeTime, int durationMinutes) {
         return generate(openTime, closeTime, durationMinutes).size();

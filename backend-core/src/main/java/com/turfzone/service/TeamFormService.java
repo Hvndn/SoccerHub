@@ -75,7 +75,9 @@ public class TeamFormService {
             byTeam.computeIfAbsent(lower(trim(r.getTeamB())), k -> new ArrayList<>()).add(r);
         }
         for (Map.Entry<String, String> e : displayName.entrySet()) {
-            out.put(e.getValue(), computeForm(e.getKey(), byTeam.getOrDefault(e.getKey(), List.of())));
+            // Key LUON là lowercase (không phải tên hiển thị) — nếu key theo tên
+            // hiển thị thì 2 đội "FC A" và "fc a" sẽ lệch key → đội thứ 2 mất phong độ.
+            out.put(e.getKey(), computeForm(e.getKey(), byTeam.getOrDefault(e.getKey(), List.of())));
         }
         return out;
     }

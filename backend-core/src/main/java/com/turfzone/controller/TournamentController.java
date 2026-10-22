@@ -281,7 +281,9 @@ public class TournamentController {
     private void applyForms(List<TournamentTeamEntry> entries,
                             Map<String, TeamFormService.FormRecord> forms) {
         for (TournamentTeamEntry e : entries) {
-            TeamFormService.FormRecord f = forms.get(e.getTeamName() == null ? "" : e.getTeamName().trim());
+            // Tra cua theo key lowercase (giong phia ghi trong TeamFormService).
+            String formKey = e.getTeamName() == null ? "" : e.getTeamName().trim().toLowerCase();
+            TeamFormService.FormRecord f = forms.get(formKey);
             if (f == null) f = TeamFormService.FormRecord.empty();
             e.setForm(f.form());
             e.setRecord(f.record());

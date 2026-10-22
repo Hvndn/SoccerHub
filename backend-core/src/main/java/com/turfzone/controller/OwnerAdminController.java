@@ -125,11 +125,20 @@ public class OwnerAdminController {
             YearMonth m = parseMonth(b.getBookingDate());
             if (m == null || !m.equals(current) || "CANCELLED".equals(b.getStatus())) continue;
             String slot = b.getTimeSlot() == null ? "" : b.getTimeSlot();
-            if (slot.startsWith("17") || slot.startsWith("18") || slot.startsWith("19") || slot.startsWith("20")) {
+            if (TimeSlotUtil.isPeakStart(slot)) {
                 peakBooked++;
             }
         }
-        long peakCapacity = totalCapacityOf(current, pitches) / 3 > 0 ? totalCapacityOf(current, pitches) / 3 : 1;
+        // So ca gio vang thuc te cua thang (truoc day chia tong cong suat cho 3 => sai).
+        long peakCapacity = 0;
+        for (Pitch p : pitches) {
+            int dur = (p.getSlotDurationMinutes() != null && p.getSlotDurationMinutes() > 0)
+                    ? p.getSlotDurationMinutes() : 120;
+            int peakPerDay = TimeSlotUtil.peakSlotsPerDay(p.getOpenTime(), p.getCloseTime(), dur);
+            long daysInMonth = current.lengthOfMonth();
+            peakCapacity += (long) peakPerDay * daysInMonth;
+        }
+        if (peakCapacity <= 0) peakCapacity = Math.max(1, totalCapacityOf(current, pitches) / 3);
         int peakRate = (int) Math.min(100, Math.round(peakBooked * 100.0 / peakCapacity));
 
         Map<String, Object> report = new LinkedHashMap<>();
