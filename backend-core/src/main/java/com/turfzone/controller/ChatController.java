@@ -2,9 +2,11 @@ package com.turfzone.controller;
 
 import com.turfzone.model.ChatMessage;
 import com.turfzone.model.ChatReaction;
+import com.turfzone.model.ChatGroupMember;
 import com.turfzone.model.User;
 import com.turfzone.repository.ChatMessageRepository;
 import com.turfzone.repository.ChatReactionRepository;
+import com.turfzone.repository.ChatGroupMemberRepository;
 import com.turfzone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -49,6 +51,7 @@ public class ChatController {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatReactionRepository chatReactionRepository;
     private final UserRepository userRepository;
+    private final ChatGroupMemberRepository chatGroupMemberRepository;
 
     /** Slug kênh hợp lệ, mặc định "general". Chống rác / SQL injection. */
     private static final Set<String> VALID_CHANNELS = Set.of(
@@ -540,8 +543,15 @@ public class ChatController {
         // DM chưa đọc: tin nhắn có recipientEmail = email và readAt = null
         long dmUnread = chatMessageRepository.countByRecipientEmailAndReadAtIsNull(email);
 
-        // Group chưa đọc: cần table riêng — tạm trả 0
+        // Group chưa đọc: tổng số tin nhắn sau mốc lastReadAt của từng nhóm mà user thuộc.
         long groupUnread = 0;
+        List<ChatGroupMember> myGroups = chatGroupMemberRepository.findByMemberEmail(email);
+        if (myGroups != null) {
+            for (ChatGroupMember g : myGroups) {
+                if (g.getGroupId() == null || g.getLastReadAt() == null) continue;
+                groupUnread += chatMessageRepository.countUnreadInGroup(g.getGroupId(), g.getLastReadAt(), email);
+            }
+        }
 
         return ResponseEntity.ok(Map.of(
                 "dm", dmUnread,

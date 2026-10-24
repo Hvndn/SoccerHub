@@ -17,6 +17,8 @@ public interface ChatGroupMemberRepository extends JpaRepository<ChatGroupMember
 
     List<ChatGroupMember> findByGroupId(Long groupId);
 
+    List<ChatGroupMember> findByMemberEmail(String memberEmail);
+
     Optional<ChatGroupMember> findByGroupIdAndMemberEmail(Long groupId, String memberEmail);
 
     boolean existsByGroupIdAndMemberEmail(Long groupId, String memberEmail);

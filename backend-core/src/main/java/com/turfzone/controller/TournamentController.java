@@ -219,6 +219,13 @@ public class TournamentController {
             if (!Set.of("KNOCKOUT", "ROUND_ROBIN").contains(format)) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thể thức giải không hợp lệ: " + format));
             }
+            // Không cho đổi thể thức sau khi giải đã có đội / bốc thăm (lịch + BXH sẽ lệch).
+            boolean hasBracket = t.getBracketJson() != null && !t.getBracketJson().isBlank();
+            boolean hasTeams = t.getTeams() != null && !t.getTeams().isEmpty();
+            if (hasBracket || hasTeams) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Giải đã có đội hoặc lịch thi đấu nên không thể đổi thể thức."));
+            }
             t.setFormat(format);
         }
 
@@ -1987,7 +1994,7 @@ public class TournamentController {
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         for (TournamentTeamEntry team : t.getTeams()) {
-            if (team.getTeamName() != null && team.getTeamName().equals(teamName)
+            if (team.getTeamName() != null && team.getTeamName().equalsIgnoreCase(teamName)
                     && "PENDING_PAYMENT".equals(team.getRegistrationStatus())) {
                 // Không duyệt vượt sức chứa của giải (confirmTeamPayment đã có check này,
                 // approveTeam thì không -> giải có thể vượt số đội).
@@ -2014,7 +2021,7 @@ public class TournamentController {
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         boolean removed = t.getTeams().removeIf(team ->
-                team.getTeamName() != null && team.getTeamName().equals(teamName)
+                team.getTeamName() != null && team.getTeamName().equalsIgnoreCase(teamName)
                         && "PENDING_PAYMENT".equals(team.getRegistrationStatus()));
         if (!removed) {
             return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội chờ duyệt: " + teamName));
