@@ -231,6 +231,11 @@ public class ChatController {
     ) {
         String q = (query == null) ? "" : query.trim().toLowerCase();
         String roleFilter = (role == null) ? "" : role.trim().toUpperCase();
+        // Yeu cau query toi thieu de tranh danh sach toan bo user (phan trang / chinh phu).
+        // (Truoc day endpoint tra ve 20 user dau tien khong loc -> nguy hiem lo du lieu nhat).
+        if (q.isEmpty()) {
+            return ResponseEntity.ok(new ArrayList<Map<String, Object>>());
+        }
         List<User> users = userRepository.findAll();
         List<Map<String, Object>> result = new ArrayList<>();
         for (User u : users) {
@@ -399,7 +404,12 @@ public class ChatController {
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("emoji", e.getKey());
             row.put("count", e.getValue().size());
-            row.put("users", e.getValue().stream().map(r -> r.getUserEmail()).toList());
+            // Khong tra email that cua moi nguoi -> chi so hieu (an toan cho B2B).
+            row.put("users", e.getValue().stream().map(r -> {
+                String em = r.getUserEmail();
+                if (em == null || em.isBlank()) return "";
+                return em.substring(0, Math.min(2, em.length())) + "****";
+            }).toList());
             row.put("meReacted", e.getValue().stream().anyMatch(r -> r.getUserEmail().equals(currentEmail)));
             return row;
         }).toList();

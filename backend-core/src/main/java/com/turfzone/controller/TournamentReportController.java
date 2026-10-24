@@ -38,6 +38,11 @@ public class TournamentReportController {
         if (s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r")) {
             return "\"" + s.replace("\"", "\"\"") + "\"";
         }
+        // Chống CSV/Excel formula injection: dau ky =,+,-,@ -> dat pre xuong ' de an toan.
+        String t = s.trim();
+        if (!t.isEmpty() && "=+-@".indexOf(t.charAt(0)) >= 0) {
+            return "'" + t;
+        }
         return s;
     }
 
