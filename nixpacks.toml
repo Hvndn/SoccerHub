@@ -1,0 +1,10 @@
+# Railway Nixpacks build cho backend-core (không dùng Docker).
+# Hỗ trợ cả khi Root Directory = / (gốc repo) lẫn khi Root Directory = backend-core.
+[variables]
+NIXPACKS_JDK_VERSION = "17"
+
+[phases.build]
+cmds = ["cd backend-core && mvn clean package -DskipTests"]
+
+[start]
+cmd = "java -Xmx384m -Xms128m -XX:+UseG1GC -jar backend-core/target/backend-core-1.0.0.jar"
