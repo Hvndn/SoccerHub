@@ -106,7 +106,7 @@ public class CommunityController {
 
     @PostMapping("/matchmaking-posts/{id}/accept")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> acceptMatchmakingPost(@PathVariable Long id, @RequestBody Map<String, Object> req) {
+    public ResponseEntity<?> acceptMatchmakingPost(@PathVariable Long id, @RequestBody Map<String, Object> req, @AuthenticationPrincipal com.turfzone.model.User me) {
         MatchmakingPost post = matchmakingPostRepository.findById(id).orElse(null);
         if (post == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Kèo giao lưu không tồn tại hoặc đã hủy"));
@@ -114,6 +114,15 @@ public class CommunityController {
 
         if (!"OPEN".equalsIgnoreCase(post.getStatus())) {
             return ResponseEntity.badRequest().body(Map.of("error", "Kèo này đã có đối thủ nhận!"));
+        }
+
+        // Chặn: người tạo kèo không tự nhận kèo của chính mình.
+        if (me != null && post.getCaptainPhone() != null) {
+            String myPhone = me.getPhone() == null ? "" : me.getPhone().replaceAll("\\s+", "");
+            String postPhone = post.getCaptainPhone().replaceAll("\\s+", "");
+            if (!myPhone.isEmpty() && myPhone.equals(postPhone)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Bạn không thể tự nhận kèo của đội mình."));
+            }
         }
 
         String opponentTeamName = str(req.get("opponentTeamName"));

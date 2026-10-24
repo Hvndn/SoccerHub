@@ -448,10 +448,16 @@ private void seedUsers() {
             return;
         }
 
+        // Idempotent: chỉ gán cho tài khoản demo khi họ chưa đủ số cụm sân
+        // (trước đây mỗi lần khởi động lại lại chiếm thêm 3 cụm sân, dần dần nuốt hết sân công cộng).
         List<Pitch> unowned = pitchRepository.findAll().stream()
                 .filter(p -> p.getOwnerId() == null)
-                .limit(DEMO_OWNER_PITCH_COUNT)
                 .toList();
+        if (unowned.size() > DEMO_OWNER_PITCH_COUNT) {
+            unowned = unowned.stream()
+                    .limit(DEMO_OWNER_PITCH_COUNT)
+                    .toList();
+        }
 
         if (unowned.isEmpty()) {
             return;

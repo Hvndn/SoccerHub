@@ -111,6 +111,9 @@ public class ClubController {
     private Map<String, Object> toDto(Club club, String viewerEmail) {
         List<ClubMember> members = clubMemberRepository.findByClubIdOrderByIsRepresentativeDescJoinedAtAsc(club.getId());
         boolean rep = isRepresentative(club.getId(), viewerEmail);
+        // Danh sách thành viên (email + SĐT) chỉ trả cho thành viên / đại diện của CLB.
+        boolean isMember = viewerEmail != null && !viewerEmail.isBlank()
+                && members.stream().anyMatch(x -> viewerEmail.equalsIgnoreCase(x.getMemberEmail()));
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", club.getId());
         m.put("name", club.getName());
@@ -135,6 +138,10 @@ public class ClubController {
         }).toList());
         // Chỉ đại diện mới thấy danh sách đầy đủ; thành viên thường chỉ thấy tên CLB.
         m.put("canManage", rep);
+        // Khi không phải thành viên thì memberList = rỗng để không lộ SĐT + email người ngoài.
+        if (!(isMember || rep)) {
+            m.put("memberList", java.util.Collections.emptyList());
+        }
         return m;
     }
 

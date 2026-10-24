@@ -812,6 +812,8 @@ public class TournamentController {
                 || "SIMULATED".equals(t.getRegistrationStatus()));
         int removed = before - teams.size();
         tournament.setRegisteredTeams(teams.size());
+        // Đội đã đổi -> xoá kết quả cũ trước khi bốc thăm lại.
+        clearTournamentResults(tournament.getId());
         tournament.setBracketJson(null);
         tournamentRepository.save(tournament);
         return ResponseEntity.ok(Map.of(
@@ -975,18 +977,17 @@ public class TournamentController {
                         node.put("name", winner);
                         // Danh dau o nay den tu tran nao -> undo tim lai duoc o (truoc day
                         // undo tim theo ten "Thang {matchId}" nhung ten da bi ghi de
-                        promoteMatchIfReady(m, side);
                         // bang ten doi thang -> o vong sau giu nguyen doi cu, bang chinh sai).
                         node.put("fromMatchId", matchId);
                         // Trận cha đã đủ 2 đội thì phải chuyển sang SCHEDULED để BTC nhập
                         // tỷ số được — trước đây nó kẹt ở TBD nên bán chung kết KHÔNG
                         // bao giờ nhập tay được (chỉ mở nút "Giả lập kết quả").
-                        promoteMatchIfReady(m, side);
                         TeamFormService.FormRecord wf = winner.equals(nameA) ? beforeA : beforeB;
                         node.put("form", wf.form());
                         node.put("record", wf.record());
                         node.put("winRate", wf.winRate());
                         node.remove("tbd");
+                        promoteMatchIfReady(m, side); // sau khi xoa tbd => ca 2 doi da xac dinh
                     }
                 }
             }
@@ -1275,6 +1276,7 @@ public class TournamentController {
                                     node.put("record", wf.record());
                                     node.put("winRate", wf.winRate());
                                     node.remove("tbd");
+                                    promoteMatchIfReady(mm, side); // sau khi xoa tbd => ca 2 doi da xac dinh
                                 }
                             }
                         }
@@ -1686,6 +1688,25 @@ public class TournamentController {
         }
     }
 
+    /**
+     * Xoá toàn bộ kết quả trận + bàn ghi cầu thủ ghi bàn của một giải đấu.
+     * Dùng khi bốc thăm lại hoặc thay đổi danh sách đội — nếu không, các đội vẫn
+     * mang thành tích thắng/thua của những trận không còn nằm trong nhánh đấu
+     * (khiến BXH và phong độ bị mâu thuẫn với nhánh đấu).
+     */
+    private void clearTournamentResults(Long tournamentId) {
+        try {
+            goalEventRepository.deleteAll(goalEventRepository.findByTournamentId(tournamentId));
+        } catch (Exception ignored) {
+            // bảng goal_events có thể chưa tồn tại -> bỏ qua
+        }
+        try {
+            matchResultRepository.deleteAll(matchResultRepository.findByTournamentIdOrderByPlayedAtAsc(tournamentId));
+        } catch (Exception ignored) {
+            // bỏ qua
+        }
+    }
+
     private int countConfirmedTeams(Tournament tournament) {
         if (tournament == null || tournament.getTeams() == null) return 0;
         return (int) tournament.getTeams().stream()
@@ -1876,6 +1897,7 @@ public class TournamentController {
         tournament.setTeams(teams);
         tournament.setRegisteredTeams(teams.size());
         // Đội mới làm danh sách đổi -> cần bốc thăm lại
+        clearTournamentResults(tournament.getId());
         tournament.setBracketJson(null);
         tournamentRepository.save(tournament);
         return ResponseEntity.ok(Map.of(
