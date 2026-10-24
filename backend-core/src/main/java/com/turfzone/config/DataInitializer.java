@@ -79,14 +79,14 @@ public class DataInitializer implements CommandLineRunner {
 
         try {
             seedMatchmaking();
+        } catch (Exception e) {
+            log.warn("[DataInitializer] Bỏ qua seed bài đăng tìm đối do lỗi: {}", e.getMessage());
+        }
 
         try {
             seedDemoBookings();
         } catch (Exception e) {
             log.warn("[DataInitializer] Bỏ qua seed đơn đặt sân mẫu do lỗi: {}", e.getMessage());
-        }
-        } catch (Exception e) {
-            log.warn("[DataInitializer] Bỏ qua seed bài đăng tìm đối do lỗi: {}", e.getMessage());
         }
         log.info("[DataInitializer] Hoàn tất quá trình kiểm tra dữ liệu khởi tạo.");
     }
