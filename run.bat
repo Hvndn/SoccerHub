@@ -10,14 +10,12 @@ echo.
 :: Chay truc tiep tren moi truong Native Windows (Khong dung Docker)
 
 :: Auto detect Maven in PATH or set user fallback path
-where mvn >nul 2>&1
-if %errorlevel% neq 0 (
-    if exist "C:\Users\LAPTOP AK\Downloads\Downloads\apache-maven-3.9.9\bin" (
-        set "PATH=%PATH%;C:\Users\LAPTOP AK\Downloads\Downloads\apache-maven-3.9.9\bin"
-    ) else if exist "%USERPROFILE%\.m2\wrapper\dists\apache-maven-3.9.15\0226a00282e400185496f3b60ec5a3f029cbdc6893912937d4876d57695224e1\bin" (
-        set "PATH=%PATH%;%USERPROFILE%\.m2\wrapper\dists\apache-maven-3.9.15\0226a00282e400185496f3b60ec5a3f029cbdc6893912937d4876d57695224e1\bin"
-    )
+if exist "C:\Users\LAPTOP AK\Downloads\Downloads\apache-maven-3.9.9\bin" (
+    set "PATH=C:\Users\LAPTOP AK\Downloads\Downloads\apache-maven-3.9.9\bin;%PATH%"
+) else if exist "%USERPROFILE%\.m2\wrapper\dists\apache-maven-3.9.15\0226a00282e400185496f3b60ec5a3f029cbdc6893912937d4876d57695224e1\bin" (
+    set "PATH=%USERPROFILE%\.m2\wrapper\dists\apache-maven-3.9.15\0226a00282e400185496f3b60ec5a3f029cbdc6893912937d4876d57695224e1\bin;%PATH%"
 )
+
 
 :: Tu dong giai phong cong 3000, 3001, 8080, 8000 neu con tien trinh Windows cu bi treo
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :3000 ^| findstr LISTENING') do taskkill /F /PID %%a >nul 2>&1

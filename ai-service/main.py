@@ -74,6 +74,10 @@ def root():
         "endpoints": ["/api/v1/ai/recommend-pitches", "/api/v1/ai/matchmaking"]
     }
 
+@app.get("/health")
+def health():
+    return {"status": "ONLINE"}
+
 @app.post("/api/v1/ai/recommend-pitches")
 def api_recommend_pitches(req: PitchRecommendationRequest):
     clusters_dict = [c.model_dump() for c in req.clusters]
