@@ -348,12 +348,17 @@ public class PitchBookingController {
                     slotObj.put("bookingId", b.getId());
                     slotObj.put("bookingTimeSlot", b.getTimeSlot());
                     slotObj.put("isContinuation", isContinuation);
-                    slotObj.put("status", b.getStatus().toLowerCase()); // booked, playing, resale
+                    String bStatus = b.getStatus() != null ? b.getStatus().toUpperCase() : "BOOKED";
+                    boolean isPending = "PENDING_PAYMENT".equals(bStatus);
+                    slotObj.put("status", isPending ? "pending_payment" : bStatus.toLowerCase()); // pending_payment, booked, playing, resale
+                    slotObj.put("isPendingPayment", isPending);
                     // Ten khach la PII — an voi nguoi xem khong phai chu san.
                     slotObj.put("customer", fullAccess ? b.getCustomerName() : maskName(b.getCustomerName()));
                     slotObj.put("phone", fullAccess ? b.getCustomerPhone() : maskPhone(b.getCustomerPhone()));
                     slotObj.put("via", b.getVia());
                     slotObj.put("code", b.getCode());
+                    slotObj.put("isClubBooking", Boolean.TRUE.equals(b.getIsClubBooking()));
+                    slotObj.put("clubName", b.getClubName());
 
                     if (isContinuation) {
                         slotObj.put("id", "booking-" + b.getId() + "-cont-" + sIdx);
@@ -390,104 +395,7 @@ public class PitchBookingController {
                 slotsData.add(slotObj);
             }
 
-            // --- THUẬT TOÁN QUÉT KHE TRỐNG TỰ ĐỘNG (DYNAMIC GAP SLOTS) ---
-            List<int[]> busyIntervals = new ArrayList<>();
-            for (Booking b : dayBookings) {
-                if (b.getCourtName().equalsIgnoreCase(courtName) && b.getTimeSlot() != null && b.getTimeSlot().contains("-")) {
-                    String[] parts = b.getTimeSlot().split("-");
-                    int bStart = parseTimeToMinutes(parts[0]);
-                    int bEnd = parseTimeToMinutes(parts[1]);
-                    if (bEnd > bStart) {
-                        busyIntervals.add(new int[]{bStart, bEnd});
-                    }
-                }
-            }
-
-            // Sắp xếp các khoảng bận theo thời gian bắt đầu
-            busyIntervals.sort(Comparator.comparingInt(a -> a[0]));
-
-            // Hợp nhất các khoảng bận giao nhau (merge intervals)
-            List<int[]> mergedBusy = new ArrayList<>();
-            for (int[] interval : busyIntervals) {
-                if (mergedBusy.isEmpty()) {
-                    mergedBusy.add(interval);
-                } else {
-                    int[] last = mergedBusy.get(mergedBusy.size() - 1);
-                    if (interval[0] <= last[1]) {
-                        last[1] = Math.max(last[1], interval[1]);
-                    } else {
-                        mergedBusy.add(interval);
-                    }
-                }
-            }
-
-            int openMin = parseTimeToMinutes(pitch.getOpenTime() != null ? pitch.getOpenTime() : "13:00");
-            int closeMin = parseTimeToMinutes(pitch.getCloseTime() != null ? pitch.getCloseTime() : "22:30");
-
-            // Tìm các khoảng trống (gaps) giữa giờ mở cửa và giờ đóng cửa
-            List<int[]> freeGaps = new ArrayList<>();
-            int currentCursor = openMin;
-            for (int[] busy : mergedBusy) {
-                if (busy[0] > currentCursor) {
-                    freeGaps.add(new int[]{currentCursor, busy[0]});
-                }
-                currentCursor = Math.max(currentCursor, busy[1]);
-            }
-            if (currentCursor < closeMin) {
-                freeGaps.add(new int[]{currentCursor, closeMin});
-            }
-
-            // Với mỗi khoảng trống, nếu có thể vừa 1 ca đá (tối thiểu 60 phút) và chưa có trong slotsData -> chèn ca lọt khe
-            for (int[] gap : freeGaps) {
-                int gapStart = gap[0];
-                int gapEnd = gap[1];
-                int gapLen = gapEnd - gapStart;
-
-                if (gapLen >= 60) {
-                    int targetDur = (gapLen >= slotDuration) ? slotDuration : (gapLen >= 90 ? 90 : 60);
-                    if (targetDur <= 0) targetDur = 60;
-                    int testStart = gapStart;
-                    int maxGapIterations = 50;
-
-                    while (testStart + targetDur <= gapEnd && maxGapIterations-- > 0) {
-                        String gapSlotTime = formatMinutesToTime(testStart) + " - " + formatMinutesToTime(testStart + targetDur);
-
-                        // Kiểm tra xem slot này đã tồn tại trong slotsData chưa
-                        boolean alreadyExists = slotsData.stream()
-                                .anyMatch(s -> gapSlotTime.equalsIgnoreCase((String) s.get("time")));
-
-                        if (!alreadyExists) {
-                            boolean isPeakHour = isPeakStart(gapSlotTime);
-                            float durMultiplier = targetDur / 60.0f;
-                            int gapPrice = Math.round((isPeakHour ? courtPeak : courtBase) * durMultiplier);
-
-                            Map<String, Object> gapSlotObj = new HashMap<>();
-                            gapSlotObj.put("id", "gap-" + id + "-" + i + "-" + testStart);
-                            gapSlotObj.put("time", gapSlotTime);
-                            gapSlotObj.put("durationMinutes", targetDur);
-                            gapSlotObj.put("bookingId", null);
-                            gapSlotObj.put("bookingTimeSlot", null);
-                            gapSlotObj.put("isContinuation", false);
-                            gapSlotObj.put("isGapSlot", true);
-                            gapSlotObj.put("status", "empty");
-                            gapSlotObj.put("customer", "Ca Trống Lọt Khe");
-                            gapSlotObj.put("phone", "—");
-                            gapSlotObj.put("price", (gapPrice / 1000) + "k");
-                            gapSlotObj.put("depositPaid", "0k");
-                            gapSlotObj.put("cashDue", "0k");
-                            gapSlotObj.put("via", "⚡ Ca Lọt Khe (Tận dụng giờ trống)");
-                            gapSlotObj.put("code", "—");
-                            gapSlotObj.put("note", "Khe trống " + targetDur + " phút giữa các ca");
-
-                            slotsData.add(gapSlotObj);
-                        }
-
-                        testStart += targetDur;
-                    }
-                }
-            }
-
-            // Sắp xếp toàn bộ slotsData theo thứ tự thời gian bắt đầu tăng dần
+            // Sắp xếp slotsData theo thứ tự thời gian bắt đầu tăng dần (đã bỏ Gap Slots — ca cố định 2 tiếng)
             slotsData.sort(Comparator.comparingInt(s -> parseTimeToMinutes(((String) s.get("time")).split("-")[0].trim())));
 
             Map<String, Object> courtObj = new HashMap<>();
@@ -875,7 +783,9 @@ public class PitchBookingController {
         // Chong trung gio: don da huy thi ca trong lai.
         // KHOÁ dòng sân trước khi kiểm tra trùng ca: 2 request đặt cùng lúc (double-click,
         // 2 tab) nếu không khoá sẽ cùng đọc được danh sách rỗng rồi cùng insert → bán trùng ca.
+        // (Dat gio / book-offline deu loc truoc CAY ĐA -> DON DA HUY khong con "chan" khung gio.)
         List<Booking> courtBookings = bookingRepository.findByPitchIdAndBookingDate(id, bookingDate).stream()
+                .filter(b -> b.getStatus() == null || !"CANCELLED".equals(b.getStatus()))
                 .collect(java.util.stream.Collectors.toList());
         boolean isConflict = courtBookings.stream()
                 .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()));
@@ -886,6 +796,15 @@ public class PitchBookingController {
 
         String code = "VS-" + id + "-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         String via = (String) req.getOrDefault("via", "Đặt qua Website");
+        boolean isClubBooking = Boolean.TRUE.equals(req.get("isClubBooking"))
+                || "true".equalsIgnoreCase(String.valueOf(req.get("isClubBooking")));
+        String clubName = req.get("clubName") != null ? String.valueOf(req.get("clubName")).trim() : null;
+        if (isClubBooking && (clubName == null || clubName.isEmpty())) {
+            clubName = "CLB Cầu Thủ";
+        }
+        if (isClubBooking) {
+            via = "Đại diện " + clubName + " bao sân";
+        }
 
         Booking booking = Booking.builder()
                 .pitchId(id)
@@ -898,8 +817,10 @@ public class PitchBookingController {
                 .totalPrice(totalPrice)
                 .depositPaid(depositPaid)
                 .cashDue(cashDue)
-                .status("BOOKED")
+                .status("PENDING_PAYMENT")
                 .via(via)
+                .isClubBooking(isClubBooking)
+                .clubName(isClubBooking ? clubName : null)
                 .code(code)
                 .build();
         Booking saved;
@@ -975,6 +896,7 @@ public class PitchBookingController {
         // Đơn đã hủy thì ca đã trống trở lại nên không tính trùng.
         // KHOÁ dòng sân trước khi kiểm tra trùng ca (xem /book).
         List<Booking> courtBookings = bookingRepository.findByPitchIdAndBookingDate(id, bookingDate).stream()
+                .filter(b -> b.getStatus() == null || !"CANCELLED".equals(b.getStatus()))
                 .collect(java.util.stream.Collectors.toList());
         boolean isConflict = courtBookings.stream()
                 .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()));
@@ -983,6 +905,16 @@ public class PitchBookingController {
         }
 
         String code = "VS-" + id + "-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        String offlineVia = (String) req.getOrDefault("via", "Tạo Tại Quầy");
+        boolean isClubBookingOffline = Boolean.TRUE.equals(req.get("isClubBooking"))
+                || "true".equalsIgnoreCase(String.valueOf(req.get("isClubBooking")));
+        String clubNameOffline = req.get("clubName") != null ? String.valueOf(req.get("clubName")).trim() : null;
+        if (isClubBookingOffline && (clubNameOffline == null || clubNameOffline.isEmpty())) {
+            clubNameOffline = "CLB Cầu Thủ";
+        }
+        if (isClubBookingOffline) {
+            offlineVia = "Đại diện " + clubNameOffline + " bao sân";
+        }
 
         Booking booking = Booking.builder()
                 .pitchId(id)
@@ -996,7 +928,9 @@ public class PitchBookingController {
                 .depositPaid(depositPaid)
                 .cashDue(cashDue)
                 .status("BOOKED")
-                .via((String) req.getOrDefault("via", "Tạo Tại Quầy"))
+                .via(offlineVia)
+                .isClubBooking(isClubBookingOffline)
+                .clubName(isClubBookingOffline ? clubNameOffline : null)
                 .code(code)
                 .build();
 
@@ -1172,6 +1106,43 @@ Booking saved = bookingRepository.save(booking);
     /**
      * API Check-in Khách Vào Sân
      */
+    /**
+     * API Xác Nhận Thanh Toán Cọc (chuyển PENDING_PAYMENT -> BOOKED)
+     */
+    @PutMapping("/bookings/{bookingId}/confirm-payment")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+    public ResponseEntity<?> confirmBookingPayment(
+            @PathVariable Long bookingId,
+            @AuthenticationPrincipal com.turfzone.model.User me
+    ) {
+        return bookingRepository.findById(bookingId).map(b -> {
+            // Chong IDOR: chi chu san cua don nay (hoac ADMIN) duoc xac nhan coc.
+            try {
+                assertOwnsBooking(b, me);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            }
+            if ("CANCELLED".equalsIgnoreCase(b.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Đơn đã hủy, không thể xác nhận thanh toán."));
+            }
+            if ("PLAYING".equalsIgnoreCase(b.getStatus()) || "COMPLETED".equalsIgnoreCase(b.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Đơn đã diễn ra/đang thi đấu rồi, không cần xác nhận cọc."));
+            }
+            // Xac nhan cọc online: PENDING_PAYMENT -> BOOKED (da thu coc -> cho chu san mo cua luong check-in).
+            // Idempotent voi BOOKED -> giu nguyen, khong tao them/cu nhan.
+            boolean transitioned = !"BOOKED".equalsIgnoreCase(b.getStatus());
+            if (transitioned) {
+                b.setStatus("BOOKED");
+            }
+            Booking saved = bookingRepository.save(b);
+            return ResponseEntity.ok(Map.of(
+                    "message", transitioned
+                            ? "Xác nhận cọc thành công! Sân đã có chủ chính thức."
+                            : "Đơn đã ở trạng thái BOOKED từ trước.",
+                    "booking", saved));
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy đơn đặt này.")));
+    }
+
     @PutMapping("/bookings/{bookingId}/check-in")
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> checkInBooking(
@@ -1186,6 +1157,12 @@ Booking saved = bookingRepository.save(booking);
             // Đơn đã hủy không được check-in lại (làm sai dấu vết huỷ + cộng sai doanh thu).
             if ("CANCELLED".equalsIgnoreCase(b.getStatus())) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Đơn này đã hủy, không thể check-in."));
+            }
+            // Sau khi sửa luồng đặt online (PENDING_PAYMENT -> BOOKED), check-in chỉ hợp lệ khi chủ ca
+            // đã được xác nhận cọc (BOOKED). Cho check-in sớm trên PENDING_PAYMENT sẽ mất tiền cọc.
+            if (!"BOOKED".equalsIgnoreCase(b.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Đơn chưa được xác nhận cọc cho ca này. Vui lòng xác nhận thanh toán cọc trước khi check-in."));
             }
             b.setStatus("PLAYING");
             // Giu so tien da thu tai quay thay vi xoa cashDue — doanh thu phai

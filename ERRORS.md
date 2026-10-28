@@ -121,4 +121,45 @@
 - **Prevention**: Mọi dữ liệu đưa vào URL phải được `encode`/lọc ký tự lạ trước.
 - **Status**: Fixed
 
+## [2026-10-27 22:25] - Next.js Hydration Failed on Deep-Link Tabs (?tab=organizer)
+
+- **Type**: Runtime / Frontend
+- **Severity**: High
+- **File**: `frontend/src/app/page.tsx:35`
+- **Agent**: Antigravity Orchestrator (Thần)
+- **Root Cause**: `activeTab` trong `Home()` khởi tạo bằng lazy callback đọc `window.location.search` (`typeof window !== "undefined"`). Khi truy cập trực tiếp bằng URL chứa query param (như `?tab=organizer`), máy chủ SSR render giao diện tab mặc định `"booking"`, nhưng client khi hydrate lại khởi tạo `activeTab = "organizer"`. React so sánh cây DOM giữa SSR và Client thấy lệch hoàn toàn cấu trúc thẻ, ném lỗi Fatal Hydration Error.
+- **Error Message**: 
+  ```
+  Unhandled Runtime Error
+  Error: Hydration failed because the initial UI does not match what was rendered on the server.
+  See more info here: https://nextjs.org/docs/messages/react-hydration-error
+  ```
+- **Fix Applied**: 
+  1. Khởi tạo `activeTab` đồng nhất là `"booking"` (`useState<string>("booking")`) cả trên SSR và Client.
+  2. Việc đọc query param `?tab=...` và `sessionStorage` được thực thi an toàn trong `useEffect` ngay sau khi React hoàn tất hydrate (trong khi `BootSplash` đang giữ màn che tối thiểu 1s nên chuyển tab cực kỳ mượt mà, không giật hình).
+  3. Bổ sung `suppressHydrationWarning` cho thẻ hiển thị thời gian in biên bản trong `TournamentBracket.tsx`.
+- **Prevention**: Tuyệt đối không đọc `window`, `localStorage`, hoặc `sessionStorage` trong hàm khởi tạo `useState(...)` của các component SSR/Next.js. Luôn khởi tạo giá trị tĩnh an toàn và cập nhật qua `useEffect` sau mount.
+- **Status**: Fixed 
+
+## [2026-10-28 07:10] - Luồng ĐẶT SÂN ONLINE CÓ CỌ (PENDING_PAYMENT -> CONFIRM -> CHECK-IN) BỊ KẸT + CHƯA LOC DON DA HUY KHI DAT LAI
+
+- **Type**: Logic / Flow / Regression
+- **Severity**: High
+- **File**: `backend-core/.../controller/PitchBookingController.java`, `frontend/src/components/PitchDetail.tsx`, `frontend/src/components/AdminDashboard.tsx`, `frontend/src/components/ActivitySchedule.tsx`
+- **Root Cause**:
+  1. Sau khi sửa đổi trạng thái đặt online `BOOKED -> PENDING_PAYMENT` + thêm `PUT /bookings/{id}/confirm-payment`, backend đã có nhưng **frontend chưa gọi** endpoint confirm → khách đặt sân online mã giữ chỗ nhưng **chủ sân không xác nhận được cọc**, luồng không thể sang `BOOKED` → check-in không chạy.
+  2. Backend `/book` và `/book-offline` kiểm tra trùng giờ nhưng **thiếu lọc `CANCELLED`** → đơn đã hủy vẫn chiếm khung giờ, khách/chủ sân không đặt lại được ca đã hủy (matrix/stats đã lọc, nên inconsistent).
+  3. `PUT /bookings/{id}/confirm-payment` chỉ `@PreAuthorize("isAuthenticated()")` và **thiếu `assertOwnsBooking`** → bất kỳ user đăng nhập cũng xác nhận được/chiếm slot của đơn khác.
+  4. FE chưa hiểu status `pending_payment`: khách vẫn chọn được ca pending; owner thiếu nút xác nhận cọc.
+- **Fix Applied**:
+  1. Backend: lọc `CANCELLED` ở cả 2 endpoint chống trùng (`/book`, `/book-offline`).
+  2. Backend: `confirm-payment` → `@PreAuthorize("hasAnyRole('OWNER','ADMIN')")` + `assertOwnsBooking`; chuyển `PENDING_PAYMENT -> BOOKED` (idempotent với `BOOKED`).
+  3. Backend: `check-in` chỉ cho phép khi status là `BOOKED` (sau khi xác nhận cọc).
+  4. FE: `PitchDetail` chặn chọn ca `pending_payment`; `AdminDashboard` thêm nút "Xác Nhận Đã Thu Cọc & Giữ Ca" cho pending, thêm filter `PENDING`.
+  5. FE: `ActivitySchedule` cho phép khách tự hủy vé ở trạng thái `PENDING_PAYMENT`.
+- **Prevention**: Khi đổi trạng thái đơn đặt (PENDING/BOOKED/PLAYING/COMPLETED/CANCELLED) phải đồng bộ backend (controller/service) + frontend (component) + các nơi hiển thị/badge trong cùng một change set.
+- **Status**: Fixed 
+
+---
+
 ---

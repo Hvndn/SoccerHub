@@ -106,6 +106,11 @@ export default function PitchDetail({
  const [isBooking, setIsBooking] = useState(false);
  // Số người chia tiền — người dùng tự nhập, không mặc định roster có sẵn
  const [splitCount, setSplitCount] = useState(14);
+ // Tư cách đặt sân: Cá nhân hay Đại diện CLB bao sân
+ const [bookingMode, setBookingMode] = useState<"INDIVIDUAL" | "CLUB">("INDIVIDUAL");
+ const [myClubs, setMyClubs] = useState<any[]>([]);
+ const [selectedClubName, setSelectedClubName] = useState<string>("");
+ const [customClubName, setCustomClubName] = useState<string>("");
 
  // Thời lượng ca thi đấu CỐ ĐỊNH do Chủ Sân quy định (Mặc định 120 phút = 2 tiếng, bao gồm thi đấu và giao/trả ca)
  const fixedSlotDuration = useMemo(() => {
@@ -128,6 +133,19 @@ export default function PitchDetail({
  useEffect(() => {
  window.scrollTo({ top: 0, behavior: "smooth" });
  }, []);
+
+ // Nạp danh sách CLB mà người dùng tham gia/đại diện
+ useEffect(() => {
+   if (!user) return;
+   apiRequest<any[]>("/api/v1/clubs/mine")
+     .then((clubs) => {
+       if (Array.isArray(clubs) && clubs.length > 0) {
+         setMyClubs(clubs);
+         setSelectedClubName(clubs[0].name || "");
+       }
+     })
+     .catch(() => {});
+ }, [user]);
 
  // 1. Tải thông tin chi tiết Cụm Sân thật từ CSDL
  useEffect(() => {
@@ -208,7 +226,7 @@ export default function PitchDetail({
 
  // Chọn ca sân trên ma trận
  const handleSelectSlot = (court: any, slot: any) => {
- if (slot.status === "booked" || slot.status === "playing") {
+ if (slot.status === "booked" || slot.status === "playing" || slot.status === "pending_payment") {
  showToast(`⚠️ Ca [${slot.time}] của ${court.pitchName} đã được cọc trước! Vui lòng chọn ca trống.`);
  return;
  }
@@ -228,7 +246,7 @@ export default function PitchDetail({
 
  // Xác nhận đặt sân & tạo đơn cọc trên CSDL thật
  const handleStartBooking = async () => {
- if (!selectedSlot || selectedSlot.status === "booked") {
+ if (!selectedSlot || selectedSlot.status === "booked" || selectedSlot.status === "pending_payment") {
  showToast("❌ Vui lòng chọn một ca sân còn trống.");
  return;
  }
@@ -247,6 +265,10 @@ export default function PitchDetail({
  return;
  }
 
+ const clubNameFinal = bookingMode === "CLUB"
+   ? (selectedClubName === "__CUSTOM__" || !selectedClubName ? (customClubName.trim() || "CLB Cầu Thủ") : selectedClubName)
+   : undefined;
+
  const bookingPayload = {
  courtName: selectedSlot.courtName,
  courtType: selectedSlot.courtType || "Sân 7 Người",
@@ -254,9 +276,10 @@ export default function PitchDetail({
  bookingDate: selectedDate,
  customerName: customerName,
  customerPhone: customerPhone,
-  // Server tự tính lại giá + mức cọc (50% hoặc 100%) — client chỉ gửi mức chọn.
  depositPercent: depositOption === '100%' ? 100 : 50,
- via: "Đặt qua Website"
+ isClubBooking: bookingMode === "CLUB",
+ clubName: clubNameFinal,
+ via: bookingMode === "CLUB" ? ("Đại diện " + clubNameFinal + " bao sân") : "Đặt qua Website"
  };
 
   const res = await apiRequest<any>(`/api/v1/pitches/${pitchId}/book`, {
@@ -713,7 +736,7 @@ export default function PitchDetail({
  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 pt-1">
  {courtSlots.map((slot: any, sIdx: number) => {
  const isSelected = selectedSlot?.courtName === court.pitchName && selectedSlot?.time === slot.time;
- const isBooked = slot.status === "booked" || slot.status === "playing";
+ const isBooked = slot.status === "booked" || slot.status === "playing" || slot.status === "pending_payment";
  const isResale = slot.status === "resale";
  const isPeak = isPeakSlot(slot.time);
 
@@ -736,26 +759,30 @@ export default function PitchDetail({
 
  if (isBooked) {
  const isOwner = user?.role === "OWNER";
+ const isClub = Boolean(slot.isClubBooking || slot.clubName);
+  const isPending = slot.status === "pending_payment";
  return (
  <div
  key={sIdx}
- className="h-20 rounded-2xl bg-slate-200/70 text-slate-500 flex flex-col items-center justify-center p-2 cursor-not-allowed opacity-75 border border-slate-200 "
- title={isOwner ? `Khách: ${slot.customer || "Khách"} - SĐT: ${slot.phone || "N/A"}` : "Ca đã có khách đặt trước"}
+ className={`h-20 rounded-2xl flex flex-col items-center justify-center p-2 cursor-not-allowed border transition-all ${
+   isClub
+     ? "bg-purple-100/90 text-purple-950 border-purple-300 shadow-xs"
+     : "bg-slate-200/70 text-slate-500 border-slate-200 opacity-75"
+ }`}
+ title={
+   isClub
+     ? `Ca này đã được đại diện CLB ${slot.clubName || ""} bao sân trọn gói!`
+     : (isOwner ? `Khách: ${slot.customer || "Khách"} - SĐT: ${slot.phone || "N/A"}` : "Ca đã có khách đặt trước")
+ }
  >
  <span className="font-bold text-[13px]">{slot.time}</span>
- <div className="flex items-center space-x-1 mt-1 text-rose-600 font-bold text-[13px]">
+ <div className={`flex items-center space-x-1 mt-0.5 font-bold text-[13px] ${isClub ? "text-purple-700 font-black" : "text-rose-600"}`}>
  <Lock className="w-3.5 h-3.5" />
- <span>Đã Cọc</span>
+ <span>{isClub ? "CLB Bao Sân" : isPending ? "Chờ Xác Nhận Cọc" : "Đã Cọc"}</span>
  </div>
- {isOwner ? (
- <span className="text-[13px] text-slate-600 font-mono truncate max-w-[120px] font-semibold">
- {slot.customer || slot.phone || "Khách cọc"}
+ <span className={`text-[13px] truncate max-w-[130px] font-semibold ${isClub ? "text-purple-800 font-bold" : (isOwner ? "text-slate-600 font-mono" : "text-slate-500 font-medium")}`}>
+ {isClub ? (slot.clubName || "Bao trọn ca") : (isOwner ? (slot.customer || slot.phone || "Khách cọc") : "Khóa ca")}
  </span>
- ) : (
- <span className="text-[13px] text-slate-500 font-medium">
- Khóa ca
- </span>
- )}
  </div>
  );
  }
@@ -904,6 +931,75 @@ export default function PitchDetail({
  </span>
  </div>
  </div>
+ </div>
+
+ {/* Lựa Chọn Tư Cách Đặt Sân: Cá nhân hay Đại diện CLB Bao Sân */}
+ <div className="space-y-2">
+ <label className="text-[13px] font-extrabold tracking-wider text-slate-500 block">
+ Tư cách đặt sân:
+ </label>
+ <div className="grid grid-cols-2 gap-2">
+ <button
+ type="button"
+ onClick={() => setBookingMode("INDIVIDUAL")}
+ className={`p-2.5 rounded-xl font-bold border transition-all text-[13px] flex items-center justify-center gap-1.5 cursor-pointer ${
+ bookingMode === "INDIVIDUAL"
+ ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
+ : "bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300"
+ }`}
+ >
+ <span>👤 Cá Nhân</span>
+ </button>
+ <button
+ type="button"
+ onClick={() => setBookingMode("CLUB")}
+ className={`p-2.5 rounded-xl font-bold border transition-all text-[13px] flex items-center justify-center gap-1.5 cursor-pointer ${
+ bookingMode === "CLUB"
+ ? "bg-purple-700 text-white border-purple-700 shadow-xs"
+ : "bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300"
+ }`}
+ >
+ <span>🛡️ Đại Diện CLB</span>
+ </button>
+ </div>
+
+ {bookingMode === "CLUB" && (
+ <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 space-y-2 text-[13px] animate-fade-in">
+ <div className="flex items-center justify-between text-purple-900 font-bold">
+ <span>Tên CLB / Đội bóng đại diện:</span>
+ <span className="text-[13px] bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-black">
+ Bao Sân
+ </span>
+ </div>
+ {myClubs.length > 0 && (
+ <select
+ value={selectedClubName}
+ onChange={(e) => setSelectedClubName(e.target.value)}
+ className="w-full px-3 py-2 rounded-lg border border-purple-300 bg-white text-slate-900 font-bold text-[13px] focus:outline-none focus:ring-2 focus:ring-purple-600"
+ >
+ {myClubs.map((c) => (
+ <option key={c.id || c.name} value={c.name}>
+ ⚽ {c.name} ({c.memberCount || 0} thành viên)
+ </option>
+ ))}
+ <option value="__CUSTOM__">+ Nhập tên CLB/Đội bóng khác...</option>
+ </select>
+ )}
+
+ {(myClubs.length === 0 || selectedClubName === "__CUSTOM__") && (
+ <input
+ type="text"
+ placeholder="Nhập tên CLB / Đội bóng (VD: FC Hoàng Anh, FC Trẻ)..."
+ value={customClubName}
+ onChange={(e) => setCustomClubName(e.target.value)}
+ className="w-full px-3 py-2 rounded-lg border border-purple-300 bg-white text-slate-900 text-[13px] font-bold focus:outline-none focus:ring-2 focus:ring-purple-600"
+ />
+ )}
+ <p className="text-[13px] text-purple-700 leading-snug">
+ ⭐ Đơn đặt sẽ được đánh dấu <strong>Bao Sân</strong> dưới danh nghĩa CLB để toàn đội sinh hoạt và thi đấu độc quyền.
+ </p>
+ </div>
+ )}
  </div>
 
  {/* Tùy Chọn Cọc (50% hoặc 100%) */}

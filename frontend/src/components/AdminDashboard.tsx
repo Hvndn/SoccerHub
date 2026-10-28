@@ -90,6 +90,9 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
  const [matrixFilterType, setMatrixFilterType] = useState<string>("ALL");
  const [matrixFilterTime, setMatrixFilterTime] = useState<string>("ALL");
  const [matrixFilterMethod, setMatrixFilterMethod] = useState<string>("ALL");
+ const [clusterSearchQuery, setClusterSearchQuery] = useState<string>("");
+ const [courtFormatFilter, setCourtFormatFilter] = useState<string>("ALL");
+ const [courtSearchQuery, setCourtSearchQuery] = useState<string>("");
   // Thời lượng ca cố định 2 tiếng (120 phút) — chủ sân không chọn 1h/1.5h nữa.
   const MATRIX_DURATION = 120;
 
@@ -574,6 +577,33 @@ setIsSavingInfo(false);
  showToast(`🏟️ Đã kết nối cụm sân: [${pitch.name}]`);
  };
 
+ const filteredClusters = useMemo(() => {
+   if (!clusterSearchQuery.trim()) return realPitches;
+   const q = clusterSearchQuery.trim().toLowerCase();
+   return realPitches.filter((p) => 
+     (p.name || "").toLowerCase().includes(q) || 
+     (p.address || "").toLowerCase().includes(q)
+   );
+ }, [realPitches, clusterSearchQuery]);
+
+ const filteredCourts = useMemo(() => {
+   return pitchMatrix.filter((c: any) => {
+     if (courtFormatFilter !== "ALL") {
+       const type = (c.type || "").toUpperCase();
+       if (courtFormatFilter === "SAN_5" && !type.includes("5")) return false;
+       if (courtFormatFilter === "SAN_7" && !type.includes("7")) return false;
+       if (courtFormatFilter === "SAN_11" && !type.includes("11")) return false;
+     }
+     if (courtSearchQuery.trim()) {
+       const q = courtSearchQuery.trim().toLowerCase();
+       const name = (c.pitchName || "").toLowerCase();
+       const id = String(c.pitchId || "").toLowerCase();
+       if (!name.includes(q) && !id.includes(q)) return false;
+     }
+     return true;
+   });
+ }, [pitchMatrix, courtFormatFilter, courtSearchQuery]);
+
  // Add new pitch handler (Lưu thật vào MySQL)
  const handleCreateNewPitch = async (e: React.FormEvent) => {
  e.preventDefault();
@@ -664,7 +694,27 @@ setIsSavingInfo(false);
  };
 
  // Confirm Check-in (Cập nhật thật vào MySQL)
- const handleConfirmCheckin = async (slot: any) => {
+   // Xac nhan khach da thu coc online (PENDING_PAYMENT -> BOOKED) truoc khi check-in.
+  const handleConfirmBookingPayment = async (slot: any) => {
+  if (!slot || !slot.bookingId) return;
+  try {
+  await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}/confirm-payment`, { method: "PUT" });
+  await loadMatrixAndStats(activePitch?.id || 1);
+  setSelectedSlotForAction(null);
+  showToast("✅ Đã xác nhận cọc thành công! Sân đã được giữ chính thức cho khách.");
+
+  broadcastBookingEvent({
+  type: "BOOKING_CONFIRMED",
+  pitchId: activePitch?.id || 1,
+  bookingId: slot.bookingId,
+  customerName: slot.customer
+  } as any);
+  } catch (err: any) {
+  showToast(`❌ Lỗi xác nhận cọc: ${err.message}`);
+  }
+  };
+
+const handleConfirmCheckin = async (slot: any) => {
  if (!slot) return;
  if (slot.bookingId) {
  try {
@@ -850,6 +900,7 @@ setIsSavingInfo(false);
  // 1. Lọc theo trạng thái
  if (matrixFilterStatus === "BOOKED" && s.status !== "booked") return false;
  if (matrixFilterStatus === "PLAYING" && s.status !== "playing") return false;
+  if (matrixFilterStatus === "PENDING" && s.status !== "pending_payment") return false;
  if (matrixFilterStatus === "EMPTY" && s.status !== "empty") return false;
  if (matrixFilterStatus === "RESALE" && s.status !== "resale") return false;
 
@@ -904,7 +955,7 @@ setIsSavingInfo(false);
  <div className="space-y-1">
  <div className="flex items-center space-x-2">
  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[13px] tracking-wider shadow-xs">
- ⚡ ĐƠN ĐẶT SÂN MỚI TỨC THỜI
+ ⚡ Đơn đặt sân mới tức thời
  </span>
  <span className="text-[13px] font-mono text-sky-800 font-bold">Vừa đặt cọc xong</span>
  </div>
@@ -984,12 +1035,12 @@ setIsSavingInfo(false);
  <MapPin className="w-4 h-4 text-rose-600 shrink-0" />
  <span>{activePitch?.address || "Chưa khai báo địa chỉ"}</span>
  </span>
- <span>•</span>
+ <span className="hidden xl:inline">•</span>
  <span className="flex items-center gap-1.5">
  <PhoneCall className="w-4 h-4 text-emerald-500 shrink-0" />
- <span>Hotline: <strong className="text-slate-800 ">{activePitch?.phone || "Chưa khai báo"}</strong></span>
+ <span>Đường dây nóng: <strong className="text-slate-800 ">{activePitch?.phone || "Chưa khai báo"}</strong></span>
  </span>
- <span>•</span>
+ <span className="hidden xl:inline">•</span>
  <span className="text-sky-700 font-bold">
  Chủ sân: {activePitch?.ownerName || "Chưa khai báo"}
  </span>
@@ -997,20 +1048,35 @@ setIsSavingInfo(false);
  </div>
 
  <div className="flex flex-wrap items-center gap-2.5 min-w-0">
- {realPitches.length > 1 && (
- <select
- value={activePitch?.id || ""}
- onChange={(e) => {
- const p = realPitches.find(x => x.id.toString() === e.target.value);
- if (p) handleSelectPitch(p);
- }}
- className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-800 cursor-pointer shadow-xs"
- >
- {realPitches.map(p => (
- <option key={p.id} value={p.id}>{p.name}</option>
- ))}
- </select>
- )}
+ <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white shadow-xs focus-within:ring-2 focus-within:ring-[#0369a1]">
+   <Search className="w-4 h-4 text-sky-700 shrink-0" />
+   <input
+     type="text"
+     value={clusterSearchQuery}
+     onChange={(e) => setClusterSearchQuery(e.target.value)}
+     placeholder="Tìm cụm sân..."
+     className="w-28 sm:w-36 bg-transparent text-[13px] font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none"
+   />
+ </div>
+ <div className="flex items-center gap-1.5">
+              <span className="text-[13px] font-bold text-slate-500 shrink-0">Cụm:</span>
+              <select
+                value={activePitch?.id || ""}
+                onChange={(e) => {
+                  const p = realPitches.find(x => x.id.toString() === e.target.value);
+                  if (p) handleSelectPitch(p);
+                }}
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-800 cursor-pointer shadow-xs max-w-[200px] truncate"
+              >
+                {filteredClusters.length > 0 ? (
+                  filteredClusters.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))
+                ) : (
+                  <option value="">Không thấy cụm sân</option>
+                )}
+              </select>
+            </div>
 
  <button
  type="button"
@@ -1298,6 +1364,7 @@ setIsSavingInfo(false);
  <option value="ALL">Tất cả trạng thái</option>
  <option value="BOOKED">🟢 Đã Cọc</option>
  <option value="PLAYING">🔴 Đang Đá</option>
+  <option value="PENDING">🟡 Chờ Xác Nhận Cọc</option>
  <option value="EMPTY">⚪ Ca Trống</option>
  <option value="RESALE">🟡 Sàn Nhượng Gấp</option>
  </select>
@@ -1437,7 +1504,7 @@ setIsSavingInfo(false);
  </div>
 
  {/* Quick Pick Date Pills */}
- <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+ <div className="flex flex-wrap items-center gap-1.5 pb-1">
  {upcomingDays.slice(0, 10).map((day) => {
  const isSelected = matrixDate === day.iso;
  return (
@@ -1534,7 +1601,9 @@ setIsSavingInfo(false);
  ? "bg-amber-500/10 border-dashed border-amber-400 text-amber-800 font-bold hover:bg-amber-500/20"
  : slot.status === "playing"
  ? "bg-rose-500/10 border-rose-400 text-rose-600 font-bold"
- : slot.status === "booked"
+ : slot.status === "pending_payment"
+  ? "bg-amber-500/10 border-amber-400 text-amber-800 font-bold"
+  : slot.status === "booked"
  ? "bg-[#0369a1]/10 border-sky-400 text-sky-700 font-bold"
  : slot.status === "resale"
  ? "bg-amber-500/10 border-amber-400 text-amber-600 font-bold"
@@ -1645,8 +1714,43 @@ setIsSavingInfo(false);
  </button>
  </div>
 
+ <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+   <div className="flex flex-wrap items-center gap-1.5">
+     <span className="text-[13px] font-bold text-slate-500 mr-1">Lọc loại sân:</span>
+     {(["ALL", "SAN_5", "SAN_7", "SAN_11"] as const).map((fmt) => (
+       <button
+         key={fmt}
+         type="button"
+         onClick={() => setCourtFormatFilter(fmt)}
+         className={`px-3 py-1 rounded-lg text-[13px] font-bold transition-all ${
+           courtFormatFilter === fmt
+             ? "bg-[#0369a1] text-white shadow-xs"
+             : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+         }`}
+       >
+         {fmt === "ALL" ? `Tất cả (${pitchMatrix.length})` : fmt === "SAN_5" ? "Sân 5" : fmt === "SAN_7" ? "Sân 7" : "Sân 11"}
+       </button>
+     ))}
+   </div>
+   <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 text-[13px] focus-within:ring-2 focus-within:ring-[#0369a1]">
+     <Search className="w-3.5 h-3.5 text-sky-700 shrink-0" />
+     <input
+       type="text"
+       value={courtSearchQuery}
+       onChange={(e) => setCourtSearchQuery(e.target.value)}
+       placeholder="Tìm tên sân con..."
+       className="w-36 bg-transparent text-[13px] font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none"
+     />
+   </div>
+ </div>
+
  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
- {pitchMatrix.map((pitch) => (
+ {filteredCourts.length === 0 ? (
+   <div className="col-span-full p-8 rounded-2xl bg-white border border-dashed border-slate-200 text-center text-slate-500 text-[13px] font-medium">
+     Không tìm thấy sân con nào phù hợp với bộ lọc.
+   </div>
+ ) : (
+ filteredCourts.map((pitch) => (
  <div key={pitch.pitchId} className="p-3 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 sm:space-y-4">
  <div className="flex items-start justify-between">
  <div>
@@ -1690,7 +1794,8 @@ setIsSavingInfo(false);
  </button>
  </div>
  </div>
- ))}
+ )))
+ }
  </div>
  </div>
  </div>
@@ -2034,7 +2139,7 @@ setIsSavingInfo(false);
   type="text"
   value={infoAccountName}
   onChange={(e) => setInfoAccountName(e.target.value)}
-  placeholder="VD: CUM SAN BONG DA DAI NAM"
+  placeholder="VD: Cụm Sân Bóng Đá Đại Nam"
   className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[13px]"
   />
   </div>
@@ -2451,7 +2556,18 @@ setIsSavingInfo(false);
  </div>
 
  <div className="space-y-2.5 pt-2">
- {selectedSlotForAction.status === "booked" && (
+ {selectedSlotForAction.status === "pending_payment" && (
+  <button
+  type="button"
+  onClick={() => handleConfirmBookingPayment(selectedSlotForAction)}
+  className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95"
+  >
+  <ShieldCheck className="w-5 h-5" />
+  <span>Xác Nhận Đã Thu Cọc & Giữ Ca</span>
+  </button>
+  )}
+
+{selectedSlotForAction.status === "booked" && (
  <button
  type="button"
  onClick={() => handleConfirmCheckin(selectedSlotForAction)}
