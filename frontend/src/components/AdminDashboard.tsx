@@ -1624,6 +1624,11 @@ const handleConfirmCheckin = async (slot: any) => {
  🔗 Ca Nối Dài
  </span>
  )}
+ {slot.isFullDayBooking && (
+ <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-700 text-[13px] font-black tracking-wider">
+ 🌞 Bao Sân Cả Ngày
+ </span>
+ )}
  {slot.isGapSlot && (
  <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 text-[13px] font-black tracking-wider">
  ⚡ Khe Trống {slot.durationMinutes}p

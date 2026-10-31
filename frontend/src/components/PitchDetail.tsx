@@ -111,6 +111,8 @@ export default function PitchDetail({
  const [myClubs, setMyClubs] = useState<any[]>([]);
  const [selectedClubName, setSelectedClubName] = useState<string>("");
  const [customClubName, setCustomClubName] = useState<string>("");
+  // CLB bao san CA NGAY: thue tron 1 san con tu gio mo cua -> dong cua de tap luyen/thi dau
+  const [fullDayBooking, setFullDayBooking] = useState(false);
 
  // Thời lượng ca thi đấu CỐ ĐỊNH do Chủ Sân quy định (Mặc định 120 phút = 2 tiếng, bao gồm thi đấu và giao/trả ca)
  const fixedSlotDuration = useMemo(() => {
@@ -217,8 +219,33 @@ export default function PitchDetail({
  };
  }, [pitchDetails, pitch]);
 
- // Tính toán giá tiền thực tế
- const originalPrice = selectedSlot?.price || 0;
+ // Sân con đang chọn + khả năng bao sân cả ngày (tất cả ca trong ngày đều trống)
+ const selectedCourtData = useMemo(
+  () => matrixCourts.find((c: any) => c.pitchName === selectedSlot?.courtName),
+  [matrixCourts, selectedSlot]
+ );
+ const fullDayAvailable = useMemo(
+  () => !!selectedCourtData && (selectedCourtData.slots || []).length > 0
+   && (selectedCourtData.slots || []).every((s: any) => s.status === "empty"),
+  [selectedCourtData]
+ );
+ const fullDayTotal = useMemo(
+  () => (selectedCourtData?.slots || []).reduce(
+   (sum: number, s: any) => sum + (Number(s.priceValue) || 0), 0),
+  [selectedCourtData]
+ );
+ const fullDayRange = useMemo(() => {
+  const slots = selectedCourtData?.slots || [];
+  if (!slots.length) {
+   return `${pitchDetails?.openTime || "—"} - ${pitchDetails?.closeTime || "—"}`;
+  }
+  const first = String(slots[0].time || "").split("-")[0]?.trim() || "—";
+  const last = String(slots[slots.length - 1].time || "").split("-")[1]?.trim() || "—";
+  return `${first} - ${last}`;
+ }, [selectedCourtData, pitchDetails]);
+
+ // Tính toán giá tiền thực tế (bao sân cả ngày = tổng tất cả ca trong ngày)
+ const originalPrice = fullDayBooking ? fullDayTotal : (selectedSlot?.price || 0);
  // Không áp voucher/điểm ảo: tổng = giá ca sân theo ma trận CSDL
  const totalPrice = originalPrice;
  const depositAmount = depositOption === "50%" ? Math.round(totalPrice * 0.5) : totalPrice;
@@ -233,6 +260,7 @@ export default function PitchDetail({
   // Ma tran tra them priceValue (gia so). Dung gia so de bao gia khop thu phi —
   // parse chuoi "262k" bi lam tron ve 262.000 du gia thu phi la 262.500.
   const rawPrice = slot.priceValue || parseInt((slot.price || "350k").toString().replace(/\D/g, "")) * 1000 || 350000;
+ setFullDayBooking(false);
  setSelectedSlot({
  courtId: court.pitchId,
  courtName: court.pitchName,
@@ -248,6 +276,11 @@ export default function PitchDetail({
  const handleStartBooking = async () => {
  if (!selectedSlot || selectedSlot.status === "booked" || selectedSlot.status === "pending_payment") {
  showToast("❌ Vui lòng chọn một ca sân còn trống.");
+ return;
+ }
+
+ if (fullDayBooking && (!selectedCourtData || !fullDayAvailable)) {
+ showToast("❌ Sân này đã có ca được đặt — không thể bao sân cả ngày. Vui lòng chọn sân con khác.");
  return;
  }
 
@@ -272,14 +305,17 @@ export default function PitchDetail({
  const bookingPayload = {
  courtName: selectedSlot.courtName,
  courtType: selectedSlot.courtType || "Sân 7 Người",
- timeSlot: selectedSlot.time,
+ timeSlot: fullDayBooking ? fullDayRange : selectedSlot.time,
+ fullDay: fullDayBooking,
  bookingDate: selectedDate,
  customerName: customerName,
  customerPhone: customerPhone,
  depositPercent: depositOption === '100%' ? 100 : 50,
  isClubBooking: bookingMode === "CLUB",
  clubName: clubNameFinal,
- via: bookingMode === "CLUB" ? ("Đại diện " + clubNameFinal + " bao sân") : "Đặt qua Website"
+ via: bookingMode === "CLUB"
+   ? ("Đại diện " + clubNameFinal + " bao sân" + (fullDayBooking ? " cả ngày" : ""))
+   : (fullDayBooking ? "Bao sân cả ngày" : "Đặt qua Website")
  };
 
   const res = await apiRequest<any>(`/api/v1/pitches/${pitchId}/book`, {
@@ -303,7 +339,7 @@ export default function PitchDetail({
  customerPhone: customerPhone,
  courtName: selectedSlot.courtName,
  courtType: selectedSlot.courtType || "Sân 7",
- timeSlot: selectedSlot.time,
+ timeSlot: fullDayBooking ? fullDayRange : selectedSlot.time,
  bookingDate: selectedDate,
   totalPrice: res.totalPrice ?? totalPrice,
  via: "Đặt qua Website"
@@ -601,7 +637,7 @@ export default function PitchDetail({
  {upcomingDays.map((d) => (
  <button
  key={d.iso}
- onClick={() => setSelectedDate(d.iso)}
+ onClick={() => { setSelectedDate(d.iso); setFullDayBooking(false); }}
  className={`flex-1 min-w-[130px] p-3 rounded-2xl flex flex-col items-center gap-0.5 shadow-xs text-center transition-all cursor-pointer border ${
  selectedDate === d.iso
  ? "bg-[#0369a1] text-white border-[#0369a1] shadow-md font-black"
@@ -778,7 +814,7 @@ export default function PitchDetail({
  <span className="font-bold text-[13px]">{slot.time}</span>
  <div className={`flex items-center space-x-1 mt-0.5 font-bold text-[13px] ${isClub ? "text-purple-700 font-black" : "text-rose-600"}`}>
  <Lock className="w-3.5 h-3.5" />
- <span>{isClub ? "CLB Bao Sân" : isPending ? "Chờ Xác Nhận Cọc" : "Đã Cọc"}</span>
+ <span>{isClub ? (slot.isFullDayBooking ? "CLB Bao Sân • Cả Ngày" : "CLB Bao Sân") : isPending ? "Chờ Xác Nhận Cọc" : "Đã Cọc"}</span>
  </div>
  <span className={`text-[13px] truncate max-w-[130px] font-semibold ${isClub ? "text-purple-800 font-bold" : (isOwner ? "text-slate-600 font-mono" : "text-slate-500 font-medium")}`}>
  {isClub ? (slot.clubName || "Bao trọn ca") : (isOwner ? (slot.customer || slot.phone || "Khách cọc") : "Khóa ca")}
@@ -906,8 +942,8 @@ export default function PitchDetail({
  <p className="font-bold text-slate-900 font-mono">{selectedDate}</p>
  </div>
  <div>
- <span className="text-[13px] text-slate-500 font-bold">Khung giờ:</span>
- <p className="font-bold text-sky-700 font-mono">{selectedSlot.time}</p>
+ <span className="text-[13px] text-slate-500 font-bold">{fullDayBooking ? "Bao sân cả ngày:" : "Khung giờ:"}</span>
+ <p className="font-bold text-sky-700 font-mono">{fullDayBooking ? fullDayRange : selectedSlot.time}</p>
  </div>
  </div>
  </div>
@@ -915,14 +951,14 @@ export default function PitchDetail({
  {/* Chi Tiết Giá Tiền & Khuyến Mãi */}
  <div className="space-y-2.5 text-[13px]">
  <div className="flex justify-between items-center text-slate-600 ">
- <span>Giá ca sân niêm yết ({fixedSlotDuration} phút/ca):</span>
+ <span>{fullDayBooking ? "Giá bao sân cả ngày (tất cả ca):" : `Giá ca sân niêm yết (${fixedSlotDuration} phút/ca):`}</span>
  <span className="font-mono text-slate-900 font-bold">{originalPrice.toLocaleString("vi-VN")}đ</span>
  </div>
 
  {/* Tổng thanh toán */}
  <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
  <div>
- <span className="text-[13px] text-slate-500 font-extrabold block">TỔNG TIỀN CA SÂN:</span>
+ <span className="text-[13px] text-slate-500 font-extrabold block">{fullDayBooking ? "TỔNG TIỀN BAO SÂN CẢ NGÀY:" : "TỔNG TIỀN CA SÂN:"}</span>
  <span className="text-[13px] text-sky-700 font-bold">Theo giá niêm yết của sân</span>
  </div>
  <div className="text-right">
@@ -941,7 +977,7 @@ export default function PitchDetail({
  <div className="grid grid-cols-2 gap-2">
  <button
  type="button"
- onClick={() => setBookingMode("INDIVIDUAL")}
+ onClick={() => { setBookingMode("INDIVIDUAL"); setFullDayBooking(false); }}
  className={`p-2.5 rounded-xl font-bold border transition-all text-[13px] flex items-center justify-center gap-1.5 cursor-pointer ${
  bookingMode === "INDIVIDUAL"
  ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
@@ -995,7 +1031,26 @@ export default function PitchDetail({
  className="w-full px-3 py-2 rounded-lg border border-purple-300 bg-white text-slate-900 text-[13px] font-bold focus:outline-none focus:ring-2 focus:ring-purple-600"
  />
  )}
- <p className="text-[13px] text-purple-700 leading-snug">
+ {selectedSlot && (
+ <label className={`flex items-start gap-2 p-2.5 rounded-lg border transition-all cursor-pointer ${fullDayBooking ? "bg-purple-100 border-purple-400" : "bg-white border-purple-200"}`}>
+ <input
+ type="checkbox"
+ checked={fullDayBooking}
+ disabled={!fullDayAvailable}
+ onChange={(e) => setFullDayBooking(e.target.checked)}
+ className="mt-0.5 accent-purple-700"
+ />
+ <span className="leading-snug">
+ <strong className="text-purple-900">Bao sân cả ngày ({fullDayRange})</strong>
+ <span className={`block text-[12px] ${fullDayAvailable ? "text-purple-700" : "text-rose-600"}`}>
+ {fullDayAvailable
+ ? `Trọn ${(selectedCourtData?.slots || []).length} ca • ${fullDayTotal.toLocaleString("vi-VN")}đ — tập luyện/thi đấu cả ngày`
+ : "Sân đã có ca được đặt — không thể bao trọn ngày. Chọn sân con khác."}
+ </span>
+ </span>
+ </label>
+ )}
+  <p className="text-[13px] text-purple-700 leading-snug">
  ⭐ Đơn đặt sẽ được đánh dấu <strong>Bao Sân</strong> dưới danh nghĩa CLB để toàn đội sinh hoạt và thi đấu độc quyền.
  </p>
  </div>
@@ -1092,7 +1147,7 @@ export default function PitchDetail({
  </>
  ) : (
  <>
- <span>Xác Nhận Giữ Chỗ</span>
+ <span>{fullDayBooking ? "Xác Nhận Bao Sân Cả Ngày" : "Xác Nhận Giữ Chỗ"}</span>
  <ArrowRight className="w-[18px] h-[18px] text-white" />
  </>
  )}

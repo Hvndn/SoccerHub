@@ -359,6 +359,17 @@ public class PitchBookingController {
                     slotObj.put("code", b.getCode());
                     slotObj.put("isClubBooking", Boolean.TRUE.equals(b.getIsClubBooking()));
                     slotObj.put("clubName", b.getClubName());
+                    // Danh dau don BAO SAN CA NGAY (timeSlot phu kin gio mo -> dong cua)
+                    boolean isFullDayBooking = false;
+                    if (b.getTimeSlot() != null && b.getTimeSlot().contains("-")
+                            && pitch.getOpenTime() != null && pitch.getCloseTime() != null) {
+                        int bStart = parseTimeToMinutes(b.getTimeSlot().split("-")[0].trim());
+                        int bEnd = parseTimeToMinutes(b.getTimeSlot().split("-")[1].trim());
+                        int pOpen = parseTimeToMinutes(pitch.getOpenTime());
+                        int pClose = parseTimeToMinutes(pitch.getCloseTime());
+                        isFullDayBooking = bStart <= pOpen && bEnd >= pClose;
+                    }
+                    slotObj.put("isFullDayBooking", isFullDayBooking);
 
                     if (isContinuation) {
                         slotObj.put("id", "booking-" + b.getId() + "-cont-" + sIdx);
@@ -372,7 +383,9 @@ public class PitchBookingController {
                         slotObj.put("priceValue", b.getTotalPrice() != null ? b.getTotalPrice() : slotPrice);
                         slotObj.put("depositPaid", (b.getDepositPaid() != null ? (b.getDepositPaid() / 1000) : 0) + "k");
                         slotObj.put("cashDue", (b.getCashDue() != null ? (b.getCashDue() / 1000) : 0) + "k");
-                        slotObj.put("note", "Đơn chính (" + b.getTimeSlot() + ")");
+                        slotObj.put("note", isFullDayBooking
+                                ? "Bao sân cả ngày (" + b.getTimeSlot() + ")"
+                                : "Đơn chính (" + b.getTimeSlot() + ")");
                     }
                 } else {
                     // Ca trống thật sự
@@ -747,9 +760,15 @@ public class PitchBookingController {
         String bookingDate = (String) req.getOrDefault("bookingDate",
                 LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
 
-        if (courtName == null || timeSlot == null || customerName == null || customerPhone == null
-                || courtName.isBlank() || timeSlot.isBlank()
-                || customerName.isBlank() || customerPhone.isBlank()) {
+        // Dat bao san CA NGAY (CLB thue tron 1 san con de tap luyen/thi dau ca ngay).
+        // Khi fullDay=true, client khong can gui timeSlot: server tu tinh khung gio mo -> dong cua.
+        boolean fullDay = Boolean.TRUE.equals(req.get("fullDay"))
+                || "true".equalsIgnoreCase(String.valueOf(req.get("fullDay")));
+
+        if (courtName == null || customerName == null || customerPhone == null
+                || courtName.isBlank()
+                || customerName.isBlank() || customerPhone.isBlank()
+                || (!fullDay && (timeSlot == null || timeSlot.isBlank()))) {
             return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập đầy đủ thông tin đặt sân."));
         }
 
@@ -769,6 +788,14 @@ public class PitchBookingController {
             return ResponseEntity.badRequest().body(Map.of("message",
                     "Ngày đặt không hợp lệ hoặc đã qua. Vui lòng chọn ngày từ hôm nay trở đi."));
         }
+        // Bao san ca ngay: tu tinh khung gio tu gio mo cua -> dong cua.
+        if (fullDay) {
+            String dayStart = (pitch.getOpenTime() != null && !pitch.getOpenTime().isBlank())
+                    ? pitch.getOpenTime().trim() : "14:00";
+            String dayEnd = (pitch.getCloseTime() != null && !pitch.getCloseTime().isBlank())
+                    ? pitch.getCloseTime().trim() : "22:30";
+            timeSlot = dayStart + " - " + dayEnd;
+        }
         // Khung gio phai trong gio mo cua cum san.
         if (!isWithinOpeningHours(pitch, timeSlot)) {
             return ResponseEntity.badRequest().body(Map.of("message",
@@ -776,7 +803,27 @@ public class PitchBookingController {
         }
 
         // Gia + muc coc luon do server tinh lai.
-        int totalPrice = computeSlotPrice(pitch, courtName, timeSlot);
+        // Bao san ca ngay: tong gia = tong gia cua TAT CA ca trong ngay (de khop dung
+        // bang gia ma tran: ca thuong + ca vang), khong lay 1 ca roi nhan gio.
+        int totalPrice;
+        if (fullDay) {
+            int slotDuration = (pitch.getSlotDurationMinutes() != null && pitch.getSlotDurationMinutes() > 0)
+                    ? pitch.getSlotDurationMinutes() : 120;
+            List<String> daySlots = generateTimeSlots(
+                    pitch.getOpenTime() != null && !pitch.getOpenTime().isBlank() ? pitch.getOpenTime() : "14:00",
+                    pitch.getCloseTime() != null && !pitch.getCloseTime().isBlank() ? pitch.getCloseTime() : "22:30",
+                    slotDuration);
+            totalPrice = 0;
+            for (String daySlot : daySlots) {
+                totalPrice += computeSlotPrice(pitch, courtName, daySlot);
+            }
+            if (totalPrice <= 0) {
+                return ResponseEntity.badRequest().body(Map.of("message",
+                        "Không tính được giá bao sân cả ngày. Vui lòng kiểm tra giờ mở cửa của cụm sân."));
+            }
+        } else {
+            totalPrice = computeSlotPrice(pitch, courtName, timeSlot);
+        }
         int depositPaid = computeDeposit(totalPrice, req.get("depositPercent"));
         int cashDue = totalPrice - depositPaid;
 
@@ -787,8 +834,9 @@ public class PitchBookingController {
         List<Booking> courtBookings = bookingRepository.findByPitchIdAndBookingDate(id, bookingDate).stream()
                 .filter(b -> b.getStatus() == null || !"CANCELLED".equals(b.getStatus()))
                 .collect(java.util.stream.Collectors.toList());
+        final String effectiveTimeSlot = timeSlot; // fullDay co the da doi timeSlot -> lambda can bien final
         boolean isConflict = courtBookings.stream()
-                .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()));
+                .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(effectiveTimeSlot, b.getTimeSlot()));
         if (isConflict) {
             return ResponseEntity.badRequest().body(Map.of("message",
                     "Khung giờ này đã có đội đặt hoặc bị trùng giờ với một ca thi đấu khác! Vui lòng chọn giờ khác."));
@@ -803,7 +851,9 @@ public class PitchBookingController {
             clubName = "CLB Cầu Thủ";
         }
         if (isClubBooking) {
-            via = "Đại diện " + clubName + " bao sân";
+            via = "Đại diện " + clubName + " bao sân" + (fullDay ? " cả ngày" : "");
+        } else if (fullDay) {
+            via = "Bao sân cả ngày";
         }
 
         Booking booking = Booking.builder()

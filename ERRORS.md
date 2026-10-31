@@ -160,6 +160,20 @@
 - **Prevention**: Khi đổi trạng thái đơn đặt (PENDING/BOOKED/PLAYING/COMPLETED/CANCELLED) phải đồng bộ backend (controller/service) + frontend (component) + các nơi hiển thị/badge trong cùng một change set.
 - **Status**: Fixed 
 
+## [2026-10-31 07:40] - Cho Phép CLB Đặt Bao Sân Cả Ngày (fullDay) Với Giá Tổng Cả Ngày Trong Ngày
+
+- **Type**: Feature / Logic / Flow
+- **Severity**: Medium
+- **File**: `backend-core/.../controller/PitchBookingController.java`, `frontend/src/components/PitchDetail.tsx`, `frontend/src/components/AdminDashboard.tsx`
+- **Root Cause**: Luồng đặt sân dưới danh nghĩa CLB ("Bao Sân") chỉ hỗ trợ đặt **1 ca** (`timeSlot` 2h). Người dùng muốn CLB được **thuê bao sân cả ngày** cho một sân nhỏ/lớn trong cụm sân để tập luyện/thi đấu cả ngày.
+- **Fix Applied**:
+  1. Backend: `POST /api/v1/pitches/{id}/book` nhận `fullDay=true` → tự tính `timeSlot = openTime - closeTime` → đặt `PENDING_PAYMENT` với `via = "Đại diện <CLB> bao sân cả ngày"` → `totalPrice` = tổng giá tất cả ca chuẩn trong ngày.
+  2. Backend: ma trận thêm `isFullDayBooking` + note `Bao sân cả ngày (<timeSlot>)`.
+  3. FE: `PitchDetail` thêm checkbox "Bao sân cả ngày" (chỉ trong mode CLB; yêu cầu sân đã chọn và toàn bộ ca của sân đó đều trống).
+  4. FE: `AdminDashboard` thêm badge `🌞 Bao Sán Cả Ngày` cho các ca full day.
+- **Prevention**: Khi bổ sung kiểu đặt sân mới (full-day/bao trọn ca) phải cập nhật đồng bộ backend (validation, tính giá, matrix) + frontend (UI, payload) trong cùng một change set.
+- **Status**: Fixed 
+
 ---
 
 ---
