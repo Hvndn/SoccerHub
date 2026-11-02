@@ -17,4 +17,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Optional<Booking> findByPitchIdAndCourtNameAndBookingDateAndTimeSlot(Long pitchId, String courtName, String bookingDate, String timeSlot);
     /** Đơn giả lập dùng cho demo — mã luôn bắt đầu bằng "SIM-" */
     List<Booking> findByCodeStartingWith(String prefix);
+
+    List<Booking> findByStatus(String status);
 }

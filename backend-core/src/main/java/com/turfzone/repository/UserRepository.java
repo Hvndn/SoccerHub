@@ -3,6 +3,8 @@ package com.turfzone.repository;
 import com.turfzone.model.User;
 import com.turfzone.model.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +16,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Boolean existsByEmail(String email);
 
     Optional<User> findByPhone(String phone);
+
+    /** Tim nhom user theo so dien thoai (co the co nhieu user trung ho so -> tra ve danh sach). */
+    @Query("SELECT u FROM User u WHERE u.phone = :phone")
+    List<User> findUsersByPhone(@Param("phone") String phone);
 
     Boolean existsByPhone(String phone);
 
