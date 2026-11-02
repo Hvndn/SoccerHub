@@ -42,6 +42,8 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { pitchTypeLabel, isPeakSlot } from "@/lib/pitchLabels";
+import { joinBookingWaitlistApi, createRecurringBookingApi } from "@/lib/pitchService";
+import { BellRing, CalendarDays } from "lucide-react";
 import { broadcastBookingEvent, subscribeToBookingEvents } from "@/lib/realtimeService";
 
 interface PitchDetailProps {

@@ -265,3 +265,102 @@ export async function searchBookingApi(query: string): Promise<BookingSearchResu
     return [];
   }
 }
+
+export interface BookingWaitlistModel {
+  id: number;
+  pitchId: number;
+  pitchName?: string;
+  courtName: string;
+  bookingDate: string;
+  timeSlot: string;
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  status: 'WAITING' | 'NOTIFIED' | 'BOOKED' | 'EXPIRED' | 'CANCELLED';
+  notifiedAt?: string;
+  createdAt?: string;
+}
+
+/** Đổi lịch đặt sân (Dành cho chủ sân hoặc admin) */
+export async function rescheduleBookingApi(
+  bookingId: number | string,
+  newBookingDate: string,
+  newTimeSlot: string
+): Promise<{ message: string; booking: any }> {
+  return await apiRequest(`/api/v1/pitches/bookings/${bookingId}/reschedule`, {
+    method: 'POST',
+    body: JSON.stringify({ newBookingDate, newTimeSlot }),
+  });
+}
+
+/** Đổi lịch đặt sân (Dành cho Cầu thủ tự đổi ca cọc của mình) */
+export async function customerRescheduleBookingApi(
+  bookingId: number | string,
+  newBookingDate: string,
+  newTimeSlot: string
+): Promise<{ message: string; booking: any }> {
+  return await apiRequest(`/api/v1/pitches/bookings/${bookingId}/customer-reschedule`, {
+    method: 'POST',
+    body: JSON.stringify({ newBookingDate, newTimeSlot }),
+  });
+}
+
+/** Cầu thủ đăng ký vào Danh Sách Chờ (Waitlist) khi slot đã kín */
+export async function joinBookingWaitlistApi(payload: {
+  pitchId: number;
+  courtName: string;
+  bookingDate: string;
+  timeSlot: string;
+}): Promise<{ message: string; waitlist: BookingWaitlistModel }> {
+  return await apiRequest('/api/v1/pitches/bookings/waitlist', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Xem danh sách chờ của tôi */
+export async function getMyWaitlistsApi(): Promise<BookingWaitlistModel[]> {
+  try {
+    return await apiRequest<BookingWaitlistModel[]>('/api/v1/pitches/bookings/my-waitlists', {
+      method: 'GET',
+    });
+  } catch (err) {
+    console.error('Lỗi lấy danh sách chờ:', err);
+    return [];
+  }
+}
+
+/** Hủy theo dõi danh sách chờ */
+export async function cancelMyWaitlistApi(waitlistId: number | string): Promise<{ message: string }> {
+  return await apiRequest(`/api/v1/pitches/bookings/waitlist/${waitlistId}`, {
+    method: 'DELETE',
+  });
+}
+
+/** Đặt sân định kỳ cho CLB */
+export async function createRecurringBookingApi(payload: {
+  pitchId: number;
+  courtName: string;
+  timeSlot: string;
+  startDate: string;
+  endDate: string;
+  daysOfWeek: number[]; // 1 = Thứ 2, 7 = CN
+  clubName: string;
+}): Promise<{ message: string; recurringGroupId: string; totalSessions: number; bookings: any[] }> {
+  return await apiRequest('/api/v1/pitches/bookings/recurring', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Xem danh sách các đơn đặt của tôi (Cầu thủ) */
+export async function getMyBookingsApi(): Promise<BookingSearchResult[]> {
+  try {
+    return await apiRequest<BookingSearchResult[]>('/api/v1/pitches/bookings/my-bookings', {
+      method: 'GET',
+    });
+  } catch (err) {
+    console.error('Lỗi lấy danh sách đơn của tôi:', err);
+    return [];
+  }
+}

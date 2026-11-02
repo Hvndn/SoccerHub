@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Trophy,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 import { formatNotifTime, type AppNotification } from "@/lib/useNotifications";
 
@@ -43,6 +44,8 @@ function TypeIcon({ type }: { type: string }) {
   if (t === "BOOKING_CHECKED_IN") return <CheckCircle className="w-5 h-5 text-[#0369a1]" />;
   if (t === "BOOKING_REMINDER") return <Bell className="w-5 h-5 text-amber-700" />;
   if (t === "BOOKING_RESCHEDULED") return <Bell className="w-5 h-5 text-amber-700" />;
+  if (t === "WAITLIST_AVAILABLE") return <Sparkles className="w-5 h-5 text-emerald-600" />;
+  if (t === "BOOKING_RECURRING") return <CheckCircle2 className="w-5 h-5 text-teal-600" />;
   if (t.startsWith("TOURNAMENT") || t.startsWith("MATCH") || t.startsWith("BRACKET"))
     return <Trophy className="w-5 h-5 text-amber-700" />;
   return <AlertCircle className="w-5 h-5 text-amber-700" />;
@@ -54,6 +57,8 @@ function TypeTone(type: string): string {
   if (t === "BOOKING_CANCELLED") return "bg-rose-100 text-rose-600";
   if (t === "BOOKING_CHECKED_IN") return "bg-sky-100 text-[#0369a1]";
   if (t === "BOOKING_REMINDER") return "bg-amber-100 text-amber-700";
+  if (t === "WAITLIST_AVAILABLE") return "bg-emerald-100 text-emerald-700";
+  if (t === "BOOKING_RECURRING") return "bg-teal-100 text-teal-700";
   return "bg-amber-100 text-amber-600";
 }
 

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { Search, Sparkles, Eraser } from "lucide-react";
+import { Search, Sparkles, Eraser, Calendar, XCircle, Check, X } from "lucide-react";
+import { rescheduleBookingApi, cancelBookingApi } from "@/lib/pitchService";
 import AdminTable, { type AdminColumn } from "./AdminTable";
 import { SectionCard, StatusBadge } from "./AdminUI";
 import { listAdminBookings, simulateBookings, clearSimulatedBookings, type AdminBooking } from "@/lib/adminService";
@@ -113,6 +114,11 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  <div>
  <p className="font-bold text-slate-900 ">{r.customerName}</p>
  <p className="text-[13px] font-mono text-slate-500">{r.customerPhone}</p>
+        {(r.isClubBooking || r.clubName || (r.via && r.via.includes("CLB"))) && (
+          <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[11px] font-black bg-purple-100 text-purple-800 border border-purple-200">
+            🛡️ CLB Bao Sân{r.clubName ? `: ${r.clubName}` : ""}
+          </span>
+        )}
  </div>
  ),
  },

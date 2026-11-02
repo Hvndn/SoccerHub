@@ -61,6 +61,20 @@ public class Booking {
 
     private String cancelledBy; // "OWNER" hoặc "CUSTOMER"
 
+    /** Đặt sân theo tư cách cá nhân hay đại diện CLB bao sân */
+    @Builder.Default
+    private Boolean isClubBooking = false;
+
+    /** Tên CLB / Đội bóng được đại diện đặt bao sân */
+    private String clubName;
+
+    /** ID nhóm nếu là chuỗi đặt sân định kỳ theo tuần */
+    private String recurringGroupId;
+
+    /** Đặt sân định kỳ (true/false) */
+    @Builder.Default
+    private Boolean isRecurring = false;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 

@@ -8,6 +8,8 @@ import com.turfzone.model.Pitch;
 import com.turfzone.model.User;
 import com.turfzone.repository.BookingRepository;
 import com.turfzone.repository.PitchRepository;
+import com.turfzone.model.BookingWaitlist;
+import com.turfzone.repository.BookingWaitlistRepository;
 import com.turfzone.service.NotificationService;
 import com.turfzone.service.EmailService;
 import com.turfzone.service.PitchService;
@@ -34,6 +36,7 @@ public class PitchBookingController {
     private final NotificationService notificationService;
     private final com.turfzone.service.EmailService emailService;
     private final com.turfzone.repository.UserRepository userRepository;
+    private final BookingWaitlistRepository bookingWaitlistRepository;
 
     @GetMapping
     public ResponseEntity<List<Pitch>> getAllPitches() {
@@ -1264,6 +1267,7 @@ public ResponseEntity<?> rescheduleBooking(
         if (clash.isPresent() && !clash.get().getId().equals(b.getId())) {
             return ResponseEntity.badRequest().body(Map.of("message", "Khung gio nay vua duoc dat boi don khac, khong the dat lai lich."));
         }
+        triggerWaitlistNotification(b.getPitchId(), b.getCourtName(), b.getBookingDate(), b.getTimeSlot());
         b.setBookingDate(newBookingDate);
         b.setTimeSlot(newTimeSlot);
         b.setStatus("BOOKED");
@@ -1301,6 +1305,7 @@ public ResponseEntity<?> rescheduleBooking(
                 return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
             }
             b.setStatus("CANCELLED");
+            triggerWaitlistNotification(b.getPitchId(), b.getCourtName(), b.getBookingDate(), b.getTimeSlot());
             b.setCancelReason(reason);
             b.setCancelledBy(cancelledBy);
 
@@ -1396,6 +1401,7 @@ public ResponseEntity<?> rescheduleBooking(
             }
 
             b.setStatus("CANCELLED");
+            triggerWaitlistNotification(b.getPitchId(), b.getCourtName(), b.getBookingDate(), b.getTimeSlot());
             b.setCancelReason(reason);
             b.setCancelledBy("CUSTOMER");
             bookingRepository.save(b);
@@ -1447,6 +1453,7 @@ public ResponseEntity<?> rescheduleBooking(
             // Giữ đơn ở trạng thái CANCELLED (không xóa hẳn) để khách còn xem lịch sử
             // và chủ sân đối chiếu được tiền cọc đã hoàn.
             b.setStatus("CANCELLED");
+            triggerWaitlistNotification(b.getPitchId(), b.getCourtName(), b.getBookingDate(), b.getTimeSlot());
             b.setCancelReason(cancelReason);
             b.setCancelledBy("OWNER");
             bookingRepository.save(b);
@@ -1715,4 +1722,319 @@ public ResponseEntity<?> rescheduleBooking(
     private final java.util.concurrent.atomic.AtomicInteger simCodeSeq =
             new java.util.concurrent.atomic.AtomicInteger(
                     new java.util.Random().nextInt(1000, 99999));
+
+    /**
+     * Kích hoạt thông báo Realtime tới danh sách chờ (Waitlist) khi 1 ca đặt bị hủy hoặc đổi giờ.
+     */
+    private void triggerWaitlistNotification(Long pitchId, String courtName, String bookingDate, String timeSlot) {
+        try {
+            if (pitchId == null || courtName == null || bookingDate == null || timeSlot == null) return;
+            List<BookingWaitlist> waitlists = bookingWaitlistRepository
+                    .findByPitchIdAndCourtNameAndBookingDateAndTimeSlotAndStatus(
+                            pitchId, courtName, bookingDate, timeSlot, "WAITING");
+            if (waitlists.isEmpty()) return;
+
+            Pitch p = pitchRepository.findById(pitchId).orElse(null);
+            String pitchTitle = p != null ? p.getName() : "Sân bóng";
+
+            for (BookingWaitlist w : waitlists) {
+                w.setStatus("NOTIFIED");
+                w.setNotifiedAt(java.time.LocalDateTime.now());
+                bookingWaitlistRepository.save(w);
+
+                if (w.getCustomerEmail() != null && !w.getCustomerEmail().isBlank()) {
+                    notificationService.notify("PLAYER", w.getCustomerEmail(),
+                            "Slot trống vừa mở: " + pitchTitle,
+                            "Sân " + courtName + " khung giờ " + timeSlot + " ngày " + bookingDate + " vừa có người hủy lịch! Đặt ngay kẻo lỡ.",
+                            "WAITLIST_AVAILABLE", "/pitches/" + pitchId);
+                }
+            }
+        } catch (Exception e) {
+            // Không để lỗi waitlist ảnh hưởng luồng chính
+        }
+    }
+
+    /**
+     * API Người chơi đăng ký vào Danh Sách Chờ (Waitlist) khi slot bị kín.
+     */
+    @PostMapping("/bookings/waitlist")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> joinWaitlist(
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Vui lòng đăng nhập để đăng ký danh sách chờ."));
+        }
+        Long pitchId = req.get("pitchId") != null ? Long.parseLong(req.get("pitchId").toString()) : null;
+        String courtName = req.get("courtName") != null ? req.get("courtName").toString().trim() : null;
+        String bookingDate = req.get("bookingDate") != null ? req.get("bookingDate").toString().trim() : null;
+        String timeSlot = req.get("timeSlot") != null ? req.get("timeSlot").toString().trim() : null;
+
+        if (pitchId == null || courtName == null || bookingDate == null || timeSlot == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu thông tin sân, ca đấu hoặc ngày muốn chờ."));
+        }
+
+        Pitch pitch = pitchRepository.findById(pitchId).orElse(null);
+        if (pitch == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy sân bóng."));
+        }
+
+        Optional<BookingWaitlist> existing = bookingWaitlistRepository
+                .findByPitchIdAndCourtNameAndBookingDateAndTimeSlotAndCustomerEmailAndStatus(
+                        pitchId, courtName, bookingDate, timeSlot, currentUser.getEmail(), "WAITING");
+        if (existing.isPresent()) {
+            return ResponseEntity.ok(Map.of("message", "Bạn đã có trong danh sách chờ của khung giờ này rồi!", "waitlist", existing.get()));
+        }
+
+        BookingWaitlist wl = BookingWaitlist.builder()
+                .pitchId(pitchId)
+                .pitchName(pitch.getName())
+                .courtName(courtName)
+                .bookingDate(bookingDate)
+                .timeSlot(timeSlot)
+                .customerName(currentUser.getFullName() != null ? currentUser.getFullName() : currentUser.getEmail())
+                .customerPhone(currentUser.getPhone())
+                .customerEmail(currentUser.getEmail())
+                .status("WAITING")
+                .build();
+        BookingWaitlist saved = bookingWaitlistRepository.save(wl);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã lưu vào danh sách chờ! Hệ thống sẽ thông báo ngay khi có người hủy lịch.",
+                "waitlist", saved
+        ));
+    }
+
+    /**
+     * API Lấy danh sách các ca đang chờ (Waitlist) của tôi (Cầu thủ)
+     */
+    @GetMapping("/bookings/my-waitlists")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getMyWaitlists(@AuthenticationPrincipal User currentUser) {
+        if (currentUser == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        List<BookingWaitlist> list = bookingWaitlistRepository.findByCustomerEmailOrderByCreatedAtDesc(currentUser.getEmail());
+        return ResponseEntity.ok(list);
+    }
+
+    /**
+     * API Hủy yêu cầu chờ của tôi (Waitlist)
+     */
+    @DeleteMapping("/bookings/waitlist/{waitlistId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> cancelMyWaitlist(
+            @PathVariable Long waitlistId,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        return bookingWaitlistRepository.findById(waitlistId).map(wl -> {
+            if (!currentUser.getEmail().equalsIgnoreCase(wl.getCustomerEmail())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Bạn không có quyền hủy mục này."));
+            }
+            wl.setStatus("CANCELLED");
+            bookingWaitlistRepository.save(wl);
+            return ResponseEntity.ok(Map.of("message", "Đã hủy theo dõi khung giờ này."));
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy yêu cầu chờ.")));
+    }
+
+    /**
+     * API Cầu thủ tự đổi lịch (Reschedule) cho đơn đã cọc của mình.
+     */
+    @PostMapping("/bookings/{bookingId}/customer-reschedule")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> customerRescheduleBooking(
+            @PathVariable Long bookingId,
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        return bookingRepository.findById(bookingId).map(b -> {
+            String ownerPhone = currentUser.getPhone() != null ? currentUser.getPhone().replaceAll("\\s", "") : "";
+            String bPhone = b.getCustomerPhone() != null ? b.getCustomerPhone().replaceAll("\\s", "") : "";
+            boolean isMine = (!ownerPhone.isEmpty() && ownerPhone.equals(bPhone));
+            if (!isMine) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Bạn chỉ có thể đổi lịch cho đơn của mình."));
+            }
+            if (!"BOOKED".equalsIgnoreCase(b.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Chỉ đơn đã xác nhận cọc mới có thể đổi lịch."));
+            }
+
+            String newBookingDate = req.get("newBookingDate") != null ? req.get("newBookingDate").toString().trim() : null;
+            String newTimeSlot = req.get("newTimeSlot") != null ? req.get("newTimeSlot").toString().trim() : null;
+            if (newBookingDate == null || newBookingDate.isBlank() || newTimeSlot == null || newTimeSlot.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng chọn ngày và giờ mới."));
+            }
+
+            try {
+                if (LocalDate.parse(newBookingDate).isBefore(LocalDate.now())) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Ngày đặt mới phải từ hôm nay trở đi."));
+                }
+            } catch (Exception e) {}
+
+            Optional<Booking> clash = bookingRepository.findByPitchIdAndCourtNameAndBookingDateAndTimeSlot(
+                    b.getPitchId(), b.getCourtName(), newBookingDate, newTimeSlot);
+            if (clash.isPresent() && !clash.get().getId().equals(b.getId())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Khung giờ mới này đã có đội khác đặt."));
+            }
+
+            String oldDate = b.getBookingDate();
+            String oldSlot = b.getTimeSlot();
+
+            b.setBookingDate(newBookingDate);
+            b.setTimeSlot(newTimeSlot);
+            Booking saved = bookingRepository.save(b);
+
+            // Thông báo cho chủ sân
+            Pitch pitch = pitchRepository.findById(b.getPitchId()).orElse(null);
+            if (pitch != null && pitch.getOwnerId() != null) {
+                userRepository.findById(pitch.getOwnerId()).ifPresent(owner -> {
+                    notificationService.notify("OWNER", owner.getEmail(),
+                            "Khách đổi lịch đặt sân: " + b.getCustomerName(),
+                            "Khách đổi từ " + oldDate + " (" + oldSlot + ") sang " + newBookingDate + " (" + newTimeSlot + "). Đơn: " + b.getCode(),
+                            "BOOKING_RESCHEDULED", "/pitches/" + b.getPitchId());
+                });
+            }
+
+            // Kích hoạt waitlist cho slot cũ vừa trống
+            triggerWaitlistNotification(b.getPitchId(), b.getCourtName(), oldDate, oldSlot);
+
+            return ResponseEntity.ok(Map.of("message", "Đổi lịch đặt sân thành công!", "booking", saved));
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy đơn đặt.")));
+    }
+
+    /**
+     * API Đặt sân định kỳ cho CLB (Recurring Booking)
+     */
+    @PostMapping("/bookings/recurring")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> createRecurringBooking(
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        Long pitchId = req.get("pitchId") != null ? Long.parseLong(req.get("pitchId").toString()) : null;
+        String courtName = req.get("courtName") != null ? req.get("courtName").toString().trim() : null;
+        String timeSlot = req.get("timeSlot") != null ? req.get("timeSlot").toString().trim() : null;
+        String startDateStr = req.get("startDate") != null ? req.get("startDate").toString().trim() : null;
+        String endDateStr = req.get("endDate") != null ? req.get("endDate").toString().trim() : null;
+        String clubName = req.get("clubName") != null ? req.get("clubName").toString().trim() : "CLB";
+        List<?> daysOfWeekObj = req.get("daysOfWeek") instanceof List ? (List<?>) req.get("daysOfWeek") : List.of();
+
+        if (pitchId == null || courtName == null || timeSlot == null || startDateStr == null || endDateStr == null || daysOfWeekObj.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu thông tin bắt buộc (sân, ca, ngày bắt đầu, ngày kết thúc, thứ trong tuần)."));
+        }
+
+        Pitch pitch = pitchRepository.findById(pitchId).orElse(null);
+        if (pitch == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy sân bóng."));
+        }
+
+        LocalDate startDate = LocalDate.parse(startDateStr);
+        LocalDate endDate = LocalDate.parse(endDateStr);
+        if (endDate.isBefore(startDate)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Ngày kết thúc phải sau ngày bắt đầu."));
+        }
+
+        List<Integer> targetDays = new ArrayList<>();
+        for (Object d : daysOfWeekObj) {
+            targetDays.add(Integer.parseInt(d.toString()));
+        }
+
+        List<LocalDate> datesToBook = new ArrayList<>();
+        LocalDate curr = startDate;
+        while (!curr.isAfter(endDate)) {
+            if (targetDays.contains(curr.getDayOfWeek().getValue())) {
+                datesToBook.add(curr);
+            }
+            curr = curr.plusDays(1);
+        }
+
+        if (datesToBook.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không có ngày nào phù hợp trong khoảng thời gian đã chọn."));
+        }
+
+        // Kiểm tra xung đột lịch
+        List<String> conflicts = new ArrayList<>();
+        for (LocalDate d : datesToBook) {
+            String dStr = d.toString();
+            Optional<Booking> clash = bookingRepository.findByPitchIdAndCourtNameAndBookingDateAndTimeSlot(
+                    pitchId, courtName, dStr, timeSlot);
+            if (clash.isPresent() && !"CANCELLED".equalsIgnoreCase(clash.get().getStatus())) {
+                conflicts.add(dStr);
+            }
+        }
+
+        if (!conflicts.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Có " + conflicts.size() + " ngày bị trùng lịch: " + String.join(", ", conflicts),
+                    "conflictDates", conflicts
+            ));
+        }
+
+        int pricePerSlot = 300000;
+        try {
+            if (pitch.getAvgPricePerHour() != null) {
+                pricePerSlot = pitch.getAvgPricePerHour();
+            }
+        } catch (Exception e) {}
+
+        String recurringGroupId = "REC-" + System.currentTimeMillis();
+        String customerName = currentUser.getFullName() != null ? currentUser.getFullName() : currentUser.getEmail();
+        String customerPhone = currentUser.getPhone() != null ? currentUser.getPhone() : "";
+
+        List<Booking> createdList = new ArrayList<>();
+        for (LocalDate d : datesToBook) {
+            String code = "REC-" + (int)(Math.random() * 9000 + 1000) + "-" + d.getDayOfMonth();
+            Booking b = Booking.builder()
+                    .pitchId(pitchId)
+                    .courtName(courtName)
+                    .bookingDate(d.toString())
+                    .timeSlot(timeSlot)
+                    .customerName(customerName)
+                    .customerPhone(customerPhone)
+                    .totalPrice(pricePerSlot)
+                    .depositPaid(pricePerSlot / 2)
+                    .cashDue(pricePerSlot - (pricePerSlot / 2))
+                    .status("BOOKED")
+                    .via("CLB Định Kỳ")
+                    .code(code)
+                    .isClubBooking(true)
+                    .clubName(clubName)
+                    .isRecurring(true)
+                    .recurringGroupId(recurringGroupId)
+                    .build();
+            createdList.add(bookingRepository.save(b));
+        }
+
+        if (pitch.getOwnerId() != null) {
+            userRepository.findById(pitch.getOwnerId()).ifPresent(owner -> {
+                notificationService.notify("OWNER", owner.getEmail(),
+                        "Lịch đặt định kỳ CLB: " + clubName,
+                        "CLB " + clubName + " vừa đặt lịch cố định " + datesToBook.size() + " buổi tại " + courtName + " (" + timeSlot + ").",
+                        "BOOKING_RECURRING", "/pitches/" + pitchId);
+            });
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã tạo thành công chuỗi " + createdList.size() + " buổi đặt sân cố định cho CLB!",
+                "recurringGroupId", recurringGroupId,
+                "totalSessions", createdList.size(),
+                "bookings", createdList
+        ));
+    }
+
+
+    /**
+     * API Cầu thủ xem danh sách các đơn đặt sân của chính mình (đối chiếu SĐT hoặc tìm các đơn của mình)
+     */
+    @GetMapping("/bookings/my-bookings")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getMyBookings(@AuthenticationPrincipal User currentUser) {
+        if (currentUser == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        String phone = currentUser.getPhone() != null ? currentUser.getPhone().trim() : "";
+        if (phone.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        String clean = phone.replaceAll("\\s", "");
+        List<Booking> list = bookingRepository.findByCustomerPhoneContaining(clean);
+        return ResponseEntity.ok(list);
+    }
+
 }
