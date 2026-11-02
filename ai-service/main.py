@@ -74,6 +74,22 @@ def root():
         "endpoints": ["/api/v1/ai/recommend-pitches", "/api/v1/ai/matchmaking"]
     }
 
+
+# OpenAI-compatible /v1/models endpoint for local dev tools / IDE extensions
+@app.get("/v1/models")
+def get_v1_models():
+    return {
+        "object": "list",
+        "data": [
+            {
+                "id": "turfzone-ai-recommender",
+                "object": "model",
+                "created": 1700000000,
+                "owned_by": "turfzone"
+            }
+        ]
+    }
+
 @app.get("/health")
 def health():
     return {"status": "ONLINE"}
