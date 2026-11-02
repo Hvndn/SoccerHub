@@ -42,6 +42,7 @@ function TypeIcon({ type }: { type: string }) {
   if (t === "BOOKING_CANCELLED") return <XCircle className="w-5 h-5 text-rose-600" />;
   if (t === "BOOKING_CHECKED_IN") return <CheckCircle className="w-5 h-5 text-[#0369a1]" />;
   if (t === "BOOKING_REMINDER") return <Bell className="w-5 h-5 text-amber-700" />;
+  if (t === "BOOKING_RESCHEDULED") return <Bell className="w-5 h-5 text-amber-700" />;
   if (t.startsWith("TOURNAMENT") || t.startsWith("MATCH") || t.startsWith("BRACKET"))
     return <Trophy className="w-5 h-5 text-amber-700" />;
   return <AlertCircle className="w-5 h-5 text-amber-700" />;

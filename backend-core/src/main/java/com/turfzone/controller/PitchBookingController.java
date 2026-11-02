@@ -1043,9 +1043,13 @@ Booking saved = bookingRepository.save(booking);
         String s = phoneOrEmail.trim();
         if (EmailService.isValidEmail(s)) return s;
         String digits = s.replaceAll("\\s+", "");
-        return userRepository.findByPhone(digits)
+        // Dung tim nhom (findUsersByPhone) thay findByPhone (Optional) de tranh
+        // NonUniqueResultException khi tim thay nhieu user cung cung mot so dien thoai.
+        return userRepository.findUsersByPhone(digits)
+                .stream()
                 .map(com.turfzone.model.User::getEmail)
                 .filter(EmailService::isValidEmail)
+                .findFirst()
                 .orElse(null);
     }
 
@@ -1227,7 +1231,56 @@ Booking saved = bookingRepository.save(booking);
     /**
      * API Hủy Ca Đặt (Có Lý Do Hủy và Gửi Thông Báo Tới Người Đặt Sân)
      */
-@PostMapping("/bookings/{bookingId}/cancel")
+@PostMapping("/bookings/{bookingId}/reschedule")
+@PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+public ResponseEntity<?> rescheduleBooking(
+        @PathVariable Long bookingId,
+        @RequestBody(required = false) Map<String, Object> req,
+        @AuthenticationPrincipal com.turfzone.model.User me
+) {
+    return bookingRepository.findById(bookingId).map(b -> {
+        try {
+            assertOwnsBooking(b, me);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+        if ("CANCELLED".equalsIgnoreCase(b.getStatus())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Don da huy, khong the dat lai lich."));
+        }
+        if (!"BOOKED".equalsIgnoreCase(b.getStatus())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Chi cho phep dat lai lich cho don o trang thai BOOKED (da xac nhan coc)."));
+        }
+        String newTimeSlot = b.getTimeSlot();
+        String newBookingDate = b.getBookingDate();
+        if (req != null) {
+            if (req.get("newTimeSlot") != null) newTimeSlot = String.valueOf(req.get("newTimeSlot"));
+            if (req.get("newBookingDate") != null) newBookingDate = String.valueOf(req.get("newBookingDate"));
+        }
+        if (newTimeSlot == null || newTimeSlot.isBlank() || newBookingDate == null || newBookingDate.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Thieu newTimeSlot/newBookingDate de dat lai lich."));
+        }
+        Optional<Booking> clash = bookingRepository.findByPitchIdAndCourtNameAndBookingDateAndTimeSlot(
+                b.getPitchId(), b.getCourtName(), newBookingDate, newTimeSlot);
+        if (clash.isPresent() && !clash.get().getId().equals(b.getId())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Khung gio nay vua duoc dat boi don khac, khong the dat lai lich."));
+        }
+        b.setBookingDate(newBookingDate);
+        b.setTimeSlot(newTimeSlot);
+        b.setStatus("BOOKED");
+        Booking saved = bookingRepository.save(b);
+        String customerMail = resolveCustomerEmail(b.getCustomerPhone());
+        if (customerMail != null) {
+            notificationService.notify("PLAYER", customerMail,
+                    "Da dat lai lich ca " + (b.getCode() != null ? b.getCode() : ""),
+                    "Cum san da di chuyen ca " + b.getCourtName() + " tu " + b.getBookingDate() + " (" + b.getTimeSlot()
+                            + ") sang " + newBookingDate + " (" + newTimeSlot + ").",
+                    "BOOKING_RESCHEDULED", "/pitches/" + b.getPitchId());
+        }
+            return ResponseEntity.ok(Map.of("message", "Da dat lai lich thanh cong!", "booking", saved));
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Khong tim thay don dat nay.")));
+    }
+
+    @PostMapping("/bookings/{bookingId}/cancel")
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> cancelBookingWithReason(
             @PathVariable Long bookingId,
