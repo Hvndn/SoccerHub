@@ -966,13 +966,9 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  </div>
 
- <div className="pt-3 mt-3 border-t border-slate-200 flex items-center justify-between text-[13px] relative z-10">
-  <span className="font-bold text-slate-500 flex items-center gap-1">
+ <div className="pt-2.5 mt-3 border-t border-slate-200 flex items-center justify-between text-[13px] relative z-10">
+  <span className="font-bold text-slate-500">
     {t.hasBracket ? "✅ Đã bốc thăm" : "⏳ Chưa bốc thăm"}
-  </span>
-  <span className="font-bold text-[#0369a1] group-hover:underline flex items-center gap-1">
-    <span>Bấm để điều hành giải</span>
-    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
   </span>
 </div>
 </div>
