@@ -1,3 +1,5 @@
+import TournamentInviteModal from "./TournamentInviteModal";
+import { Mail } from "lucide-react";
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -63,6 +65,7 @@ export default function TournamentBracket({
 }) {
  const [tournaments, setTournaments] = useState<Tournament[]>([]);
  const [selectedId, setSelectedId] = useState("");
+ const [showInviteModal, setShowInviteModal] = useState(false);
 
  // Quyền quản trị giải đấu — backend chỉ cho ADMIN / ORGANIZER / OWNER.
  const { user: authUser } = useAuth();
@@ -857,6 +860,16 @@ const [addCount, setAddCount] = useState("4");
  </select>
 
  <div className="flex flex-wrap items-center gap-2">
+  <button
+    type="button"
+    onClick={() => setShowInviteModal(true)}
+    disabled={!selected}
+    title="Mở popup gửi thư mời cầu thủ / đội bóng tham gia giải đấu qua email"
+    className="px-3.5 py-2.5 rounded-xl bg-sky-50 text-sky-800 border border-sky-300 hover:bg-sky-100 font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-sm active:scale-95 disabled:opacity-40 cursor-pointer"
+  >
+    <Mail className="w-4 h-4 text-[#0369a1]" />
+    <span>Mời Cầu Thủ (Email)</span>
+  </button>
  <button
  onClick={() => handleFill()}
  disabled={!canAct || !selected || full || fillBusy}
@@ -1314,6 +1327,16 @@ const [addCount, setAddCount] = useState("4");
       </div>
 
       <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+        {canManage && (
+          <button
+            type="button"
+            onClick={() => setShowInviteModal(true)}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-sky-50 text-sky-800 border border-sky-300 hover:bg-sky-100 font-black text-[13px] shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Mail className="w-4 h-4 text-[#0369a1]" />
+            <span>Mời Cầu Thủ (Email)</span>
+          </button>
+        )}
         {canManage && (
           <button
             type="button"
@@ -1992,7 +2015,19 @@ const [addCount, setAddCount] = useState("4");
  />
  )}
 
- </div>
+ 
+      {/* POPUP MODAL MỜI CẦU THỦ QUA EMAIL */}
+      <TournamentInviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        tournament={selected}
+        tournaments={tournaments}
+        onInviteSuccess={async () => {
+          const list = await fetchTournaments(true);
+          setTournaments(list);
+        }}
+      />
+    </div>
  );
 }
 

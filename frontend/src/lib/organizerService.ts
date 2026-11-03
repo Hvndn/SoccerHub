@@ -133,13 +133,14 @@ export async function setJoinAccess(
 /** Thêm 1 email vào danh sách mời (tự chuyển giải sang chế độ kín nếu đang công khai). */
 export async function addTournamentInvite(
   tournamentId: number,
-  email: string
-): Promise<JoinAccess> {
-  const data = await apiRequest<{ message: string; joinMode: JoinMode; invitedEmails: string[] }>(
+  email: string,
+  message?: string
+): Promise<JoinAccess & { sentCount?: number }> {
+  const data = await apiRequest<{ message: string; joinMode: JoinMode; invitedEmails: string[]; sentCount?: number }>(
     `/api/v1/tournaments/${tournamentId}/invites`,
-    { method: "POST", body: JSON.stringify({ email }) }
+    { method: "POST", body: JSON.stringify({ email, message }) }
   );
-  return { joinMode: data?.joinMode ?? "PUBLIC", invitedEmails: data?.invitedEmails ?? [], message: data?.message };
+  return { joinMode: data?.joinMode ?? "PUBLIC", invitedEmails: data?.invitedEmails ?? [], message: data?.message, sentCount: data?.sentCount };
 }
 
 /** Gỡ 1 email khỏi danh sách mời. */

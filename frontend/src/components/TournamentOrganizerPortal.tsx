@@ -1,3 +1,4 @@
+import TournamentInviteModal from "./TournamentInviteModal";
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -30,6 +31,7 @@ import {
   type PendingTeam, type RefereeInfo
 } from "@/lib/organizerService";
 import {
+ Mail,
  Trophy,
  ShieldCheck, MessageCircle,
  Cpu,
@@ -340,6 +342,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
   // ---- SỬA THÔNG TIN GIẢI (trước đây BTC tạo xong không sửa được gì) ----
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteModalTourney, setInviteModalTourney] = useState<any | null>(null);
 
  // Form sửa giải hiện INLINE (không popup) nằm cuối trang -> tự cuộn tới khi mở.
  useEffect(() => {
@@ -981,6 +985,19 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
         </button>
         <button
           type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            const found = dbTournaments.find((x) => x.id === Number(t.id));
+            setInviteModalTourney(found || null);
+            setShowInviteModal(true);
+          }}
+          className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100 text-[13px] font-black transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
+        >
+          <Mail className="w-3.5 h-3.5 text-[#0369a1]" />
+          <span>Mời Email</span>
+        </button>
+        <button
+          type="button"
           onClick={() => toggleReferees(Number(t.id))}
           className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 text-[13px] font-black transition-all active:scale-95 flex items-center gap-1"
         >
@@ -1390,6 +1407,18 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   : "Chưa chọn giải — hãy mở tab “Giải Đấu & BXH” và chọn một giải."}
   </p>
   <button
+                    type="button"
+                    onClick={() => {
+                      setInviteModalTourney(activeTournament);
+                      setShowInviteModal(true);
+                    }}
+                    disabled={!activeTournament}
+                    className="px-3.5 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 text-[13px] font-extrabold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-[#0369a1]" />
+                    <span>Mời Cầu Thủ (Email)</span>
+                  </button>
+                  <button
   type="button"
   onClick={() => openEditModal(activeTournament)}
   disabled={!activeTournament}
@@ -2294,6 +2323,18 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  )}
 
  </div>
- </div>
+ 
+      {/* POPUP MODAL MỜI CẦU THỦ QUA EMAIL NỔI BẬT KHÔNG BỊ TRÔI XUỐNG DƯỚI */}
+      <TournamentInviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        tournament={inviteModalTourney || activeTournament}
+        tournaments={dbTournaments}
+        onInviteSuccess={async () => {
+          await fetchDbTournaments();
+          if (activeTournamentId) loadJoinAccess(Number(activeTournamentId));
+        }}
+      />
+    </div>
  );
 }

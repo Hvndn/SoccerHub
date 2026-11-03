@@ -60,6 +60,7 @@ public class TournamentController {
     private final TournamentRefereeRepository refereeRepository;
     private final TeamFormService teamFormService;
     private final NotificationService notificationService;
+    private final com.turfzone.service.EmailService emailService;
     private final ObjectMapper objectMapper;
 
     /**
@@ -1878,30 +1879,87 @@ public class TournamentController {
     /** BTC / chủ sân thêm 1 email vào danh sách mời của giải. */
     @PostMapping("/{id}/invites")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
-    public ResponseEntity<?> addInvite(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> addInvite(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
-        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
-        if (false) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
         }
-        String email = body.get("email") != null ? body.get("email").toString().trim().toLowerCase() : "";
-        if (email.isEmpty() || !email.contains("@")) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Email không hợp lệ."));
+
+        String rawEmail = body.get("email") != null ? body.get("email").toString() : "";
+        String customMsg = body.get("message") != null ? body.get("message").toString().trim() : "";
+
+        // Tách danh sách email theo dấu phẩy, chấm phẩy, khoảng trắng hoặc xuống dòng
+        String[] parts = rawEmail.split("[,;\\s\\n\\r]+");
+        List<String> validEmails = new ArrayList<>();
+        for (String p : parts) {
+            String clean = p.trim().toLowerCase();
+            if (com.turfzone.service.EmailService.isValidEmail(clean) && !validEmails.contains(clean)) {
+                validEmails.add(clean);
+            }
         }
+
+        if (validEmails.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập ít nhất một địa chỉ email hợp lệ."));
+        }
+
         List<String> emails = new ArrayList<>(
                 tournament.getInvitedEmails() != null ? tournament.getInvitedEmails() : List.of());
-        if (!emails.contains(email)) {
-            emails.add(email);
+        for (String em : validEmails) {
+            if (!emails.contains(em)) {
+                emails.add(em);
+            }
         }
         tournament.setInvitedEmails(emails);
-        // Mời email thì chuyển sang chế độ kín nếu đang công khai
         if (!"INVITE_ONLY".equalsIgnoreCase(tournament.getJoinMode())) {
             tournament.setJoinMode("INVITE_ONLY");
         }
         tournamentRepository.save(tournament);
+
+        // Gửi email HTML lời mời giải đấu cho từng email
+        int sentCount = 0;
+        String subject = "[Turfzone] Lời Mời Tham Gia Giải Đấu: " + tournament.getTitle();
+        String regUrl = "http://localhost:3000/tournaments/register?tournamentId=" + tournament.getId();
+
+        String htmlContent = "<div style=\"font-family:Segoe UI,Arial,sans-serif;max-width:620px;margin:0 auto;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden;background:#ffffff\">"
+                + "  <div style=\"background:linear-gradient(135deg,#0369a1,#0284c7);color:#ffffff;padding:24px 28px;text-align:center\">"
+                + "    <h1 style=\"margin:0;font-size:20px;font-weight:800;letter-spacing:0.5px\">🏆 THƯ MỜI THAM GIA GIẢI ĐẤU</h1>"
+                + "    <p style=\"margin:6px 0 0;font-size:14px;opacity:0.9\">Nền tảng quản lý giải đấu bóng đá Turfzone</p>"
+                + "  </div>"
+                + "  <div style=\"padding:26px 28px;color:#0f172a;font-size:14px;line-height:1.7\">"
+                + "    <p style=\"font-size:15px;margin-top:0\">Kính gửi <strong>Đội trưởng / Cầu thủ</strong>,</p>"
+                + "    <p>Ban Tổ Chức trân trọng kính mời bạn và đội bóng của mình đăng ký tham dự giải đấu bóng đá phong trào:</p>"
+                + "    <div style=\"background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #0369a1;border-radius:12px;padding:16px 20px;margin:18px 0\">"
+                + "      <h3 style=\"margin:0 0 10px;font-size:16px;color:#0369a1;font-weight:800\">" + tournament.getTitle() + "</h3>"
+                + "      <ul style=\"margin:0;padding-left:20px;color:#334155;line-height:1.8\">"
+                + "        <li><strong>Sân thi đấu:</strong> " + (tournament.getPitchName() != null ? tournament.getPitchName() : "Đà Nẵng") + "</li>"
+                + "        <li><strong>Thời gian:</strong> " + (tournament.getStartDate() != null ? tournament.getStartDate() : "Sắp diễn ra") + " đến " + (tournament.getEndDate() != null ? tournament.getEndDate() : "Đang cập nhật") + "</li>"
+                + "        <li><strong>Quy mô giải:</strong> " + (tournament.getTotalTeams() != null ? tournament.getTotalTeams() : 16) + " đội tranh tài (" + (tournament.getSportType() != null ? tournament.getSportType() : "SÂN 7") + ")</li>"
+                + "        <li><strong>Tổng giải thưởng:</strong> <span style=\"color:#059669;font-weight:bold\">" + (tournament.getPrizePool() != null ? String.format("%,d VNĐ", tournament.getPrizePool()) : "35.000.000 VNĐ") + "</span></li>"
+                + "      </ul>"
+                + "    </div>"
+                + (!customMsg.isEmpty() ? "<div style=\"background:#fefce8;border:1px solid #fef08a;border-radius:12px;padding:12px 16px;margin:16px 0;font-size:13.5px;color:#854d0e\"><strong>Lời nhắn từ BTC:</strong> " + customMsg + "</div>" : "")
+                + "    <div style=\"text-align:center;margin:28px 0 20px\">"
+                + "      <a href=\"" + regUrl + "\" style=\"display:inline-block;background:#0369a1;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;box-shadow:0 4px 12px rgba(3,105,161,0.25)\">"
+                + "        ⚽ ĐĂNG KÝ ĐỘI THAM GIA NGAY"
+                + "      </a>"
+                + "    </div>"
+                + "    <p style=\"font-size:12.5px;color:#64748b;text-align:center;margin:0\">Email này được gửi tự động từ hệ thống quản lý giải đấu Turfzone.</p>"
+                + "  </div>"
+                + "</div>";
+
+        for (String toEmail : validEmails) {
+            if (emailService.sendHtmlDirect(toEmail, subject, htmlContent)) {
+                sentCount++;
+            }
+        }
+
         return ResponseEntity.ok(Map.of(
-                "message", "Đã mời " + email + " tham gia giải.",
+                "message", "Đã thêm và gửi thư mời tới " + validEmails.size() + " email (" + sentCount + " email đã gửi thành công).",
+                "sentCount", sentCount,
                 "joinMode", tournament.getJoinMode(),
                 "invitedEmails", tournament.getInvitedEmails()));
     }
