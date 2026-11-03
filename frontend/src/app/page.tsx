@@ -33,8 +33,48 @@ export default function Home() {
  const router = useRouter();
  const [targetTournamentId, setTargetTournamentId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<string>("booking");
+
+  /** Xác định tab trang chủ mặc định chuẩn theo vai trò người dùng (tránh bị lệch role khi Back/vào URL gốc). */
+  const getDefaultHomeTab = (role?: string) => {
+    if (role === "OWNER") return "admin";
+    if (role === "ORGANIZER") return "organizer";
+    return "booking";
+  };
+
+  /** Kiểm tra và chuẩn hoá tab theo vai trò hiện tại (ngăn ngừa tab rác từ history cũ). */
+  const sanitizeTabForRole = (tab: string, role?: string): string => {
+    if (role === "OWNER") {
+      // Chủ sân chỉ được xem các tab quản lý + cộng đồng + giải đấu, cấm vào khu vực đặt sân của cầu thủ
+      if (tab === "booking") return "admin";
+      return tab;
+    }
+    if (role === "PLAYER") {
+      // Cầu thủ cấm vào bảng quản trị chủ sân hoặc điều hành giải của BTC
+      if (["admin", "owner-onboarding", "multi-sport", "organizer"].includes(tab)) {
+        return "booking";
+      }
+      return tab;
+    }
+    if (role === "ORGANIZER") {
+      // Ban tổ chức cấm vào khu quản lý sân của chủ sân
+      if (["admin", "owner-onboarding", "multi-sport"].includes(tab)) {
+        return "organizer";
+      }
+      return tab;
+    }
+    if (!role) {
+      // Khách chưa đăng nhập
+      if (["admin", "owner-onboarding", "multi-sport", "organizer", "my-activities", "profile", "team-management", "membership"].includes(tab)) {
+        return "booking";
+      }
+    }
+    return tab;
+  };
  const { user: authUser, logout: authLogout, isLoading: authLoading } = useAuth();
  const [localUser, setLocalUser] = useState<any | null>(null);
+
+ // Người dùng hiện tại: Ưu tiên user đăng nhập thật từ AuthContext, hoặc session đăng nhập tạm localUser
+ const currentUser = authUser || localUser;
 
  // Transition & Loading States
  const [isTabChanging, setIsTabChanging] = useState(false);
@@ -47,49 +87,63 @@ export default function Home() {
  const [authMode, setAuthMode] = useState<"login" | "register">("login");
  const [authRole, setAuthRole] = useState<"PLAYER" | "OWNER" | "ORGANIZER">("PLAYER");
 
-   // Đồng bộ tab với URL và lắng nghe nút Back / Forward của trình duyệt
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
+       // Đồng bộ tab với URL và lắng nghe nút Back / Forward của trình duyệt
+   React.useEffect(() => {
+     if (typeof window === "undefined") return;
 
-    const readUrlTab = () => {
-      const params = new URLSearchParams(window.location.search);
-      const urlTab = params.get("tab");
-      if (urlTab) {
-        setActiveTab(urlTab);
-        sessionStorage.setItem("turfzone_active_tab", urlTab);
-      } else {
-        const savedTab = sessionStorage.getItem("turfzone_active_tab");
-        if (savedTab) {
-          setActiveTab(savedTab);
-          const url = new URL(window.location.href);
-          url.searchParams.set("tab", savedTab);
-          window.history.replaceState({ tab: savedTab }, "", url.toString());
-        } else {
-          setActiveTab("booking");
-        }
-      }
-    };
+     const readUrlTab = (isPopState = false) => {
+       const params = new URLSearchParams(window.location.search);
+       const urlTab = params.get("tab");
+       const currentRole = currentUser?.role;
 
-    // Đọc URL khi mới vào trang
-    readUrlTab();
+       if (urlTab) {
+         const validTab = sanitizeTabForRole(urlTab, currentRole);
+         setActiveTab(validTab);
+         sessionStorage.setItem("turfzone_active_tab", validTab);
+         window.history.replaceState({ tab: validTab }, "", window.location.href);
+       } else {
+         if (!isPopState) {
+           // Khởi tạo lần đầu hoặc F5 reload: phục hồi tab từ sessionStorage nếu hợp lệ
+           const savedTab = sessionStorage.getItem("turfzone_active_tab");
+           if (savedTab) {
+             const validTab = sanitizeTabForRole(savedTab, currentRole);
+             setActiveTab(validTab);
+             const url = new URL(window.location.href);
+             url.searchParams.set("tab", validTab);
+             window.history.replaceState({ tab: validTab }, "", url.toString());
+             return;
+           }
+         }
+         // Khi bấm Back về URL gốc không có param ?tab=...:
+         // Quay về đúng trang chủ mặc định của vai trò (OWNER -> admin, ORGANIZER -> organizer, PLAYER -> booking)
+         const defaultTab = getDefaultHomeTab(currentRole);
+         setActiveTab(defaultTab);
+         sessionStorage.setItem("turfzone_active_tab", defaultTab);
+         const url = new URL(window.location.href);
+         url.searchParams.set("tab", defaultTab);
+         window.history.replaceState({ tab: defaultTab }, "", url.toString());
+       }
+     };
 
-    // Lắng nghe sự kiện Back/Forward của trình duyệt
-    const handlePopState = (e: PopStateEvent) => {
-      if (e.state && e.state.tab) {
-        setActiveTab(e.state.tab);
-        sessionStorage.setItem("turfzone_active_tab", e.state.tab);
-      } else {
-        readUrlTab();
-      }
-    };
+     // Đọc URL khi mới vào trang
+     readUrlTab(false);
 
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+     // Lắng nghe sự kiện Back/Forward của trình duyệt: giữ đúng tab trước đó và đúng role
+     const handlePopState = (e: PopStateEvent) => {
+       if (e.state && e.state.tab) {
+         const targetTab = sanitizeTabForRole(e.state.tab, currentUser?.role);
+         setActiveTab(targetTab);
+         sessionStorage.setItem("turfzone_active_tab", targetTab);
+       } else {
+         readUrlTab(true);
+       }
+     };
 
- // Người dùng hiện tại: Ưu tiên user đăng nhập thật từ AuthContext, hoặc session đăng nhập tạm localUser
- // Khi đăng xuất: cả hai đều là null => Trở về trạng thái Guest tự nhiên, không bị khóa cứng
- const currentUser = authUser || localUser;
+     window.addEventListener("popstate", handlePopState);
+     return () => window.removeEventListener("popstate", handlePopState);
+   }, [currentUser?.role]);
+
+
 
  // Kênh liên lạc B2B: chủ sân và ban tổ chức bấm "Nhắn tin" sẽ đưa cả hai sang
  // tab Cộng đồng và mở thẳng cuộc trò chuyện riêng với đối tác.
@@ -181,9 +235,15 @@ if (!currentUser) {
  setActiveTab("owner-onboarding");
  // Chu san cung to chuc giai tai cum san cua ho -> cho phep tab "organizer"
  // (Navbar da co nut mo tab nay cho OWNER).
- } else if (!OWNER_TABS.includes(activeTab) && !ORGANIZER_TABS.includes(activeTab)) {
- setActiveTab("admin");
- }
+      } else if (!OWNER_TABS.includes(activeTab) && !ORGANIZER_TABS.includes(activeTab)) {
+        setActiveTab("admin");
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("turfzone_active_tab", "admin");
+          const url = new URL(window.location.href);
+          url.searchParams.set("tab", "admin");
+          window.history.replaceState({ tab: "admin" }, "", url.toString());
+        }
+      }
  } else if (currentUser.role === "PLAYER") {
  // CẦU THỦ: Cấm vào trang quản lý sân & điều hành giải (của OWNER/ORGANIZER)
   // handleTabChange chan ca tab quan ly san cua Chu san VA tab dieu hanh giai cua BTC,
@@ -202,6 +262,10 @@ if (!currentUser) {
   // trên Navbar). Trước đây bị đẩy cứng về /admin -> vòng lặp, không về tới trang chủ được.
  }
  }, [currentUser, activeTab, authLoading]);
+
+const handleBackToHome = () => {
+  handleTabChange(getDefaultHomeTab(currentUser?.role));
+};
 
 const handleTabChange = (newTab: string) => {
   // SUPER ADMIN: được duyệt các khu vực của trang chủ như mọi tài khoản khác.
@@ -463,14 +527,14 @@ if (newTab === activeTab) return;
  }
  handleTabChange("admin");
  }}
- onBackToHome={() => handleTabChange("booking")}
+ onBackToHome={handleBackToHome}
  />
  )}
 
  {activeTab === "multi-sport" && (
  <MultiSportArena
  user={currentUser}
- onNavigateToBooking={() => handleTabChange("booking")}
+ onNavigateToBooking={handleBackToHome}
  onNavigateToChokego={() => handleTabChange("community")}
  />
  )}
@@ -479,7 +543,7 @@ if (newTab === activeTab) return;
             <TournamentLeaderboard
               user={currentUser}
               initialTournamentId={targetTournamentId}
-              onBackToHome={() => handleTabChange("booking")}
+              onBackToHome={handleBackToHome}
               onRequestLogin={() => handleOpenAuth("login", "PLAYER")}
             />
           )}
@@ -511,7 +575,7 @@ if (newTab === activeTab) return;
  currentUser ? (
  <TeamClubManagement
  user={currentUser}
- onBackToHome={() => handleTabChange("booking")}
+ onBackToHome={handleBackToHome}
  onNavigateTab={handleTabChange}
  />
  ) : (
@@ -582,7 +646,7 @@ if (newTab === activeTab) return;
  currentUser ? (
  <ActivitySchedule
                 user={currentUser}
-                onBackToHome={() => handleTabChange(currentUser?.role === "OWNER" ? "admin" : "booking")}
+                onBackToHome={handleBackToHome}
                 onNavigateTab={handleTabChange}
                 onOpenBracket={(id) => {
                   if (id) setTargetTournamentId(Number(id));
@@ -624,7 +688,7 @@ if (newTab === activeTab) return;
  <PlayerProfileConsole 
  user={currentUser}
  onOpenAuth={handleOpenAuth}
- onBackToHome={() => handleTabChange("booking")} 
+ onBackToHome={handleBackToHome} 
  onNavigateTab={handleTabChange}
  />
  )
@@ -707,7 +771,7 @@ if (newTab === activeTab) return;
  currentUser ? (
  <MemberCardPortal 
  user={currentUser}
- onBackToHome={() => handleTabChange("booking")} 
+ onBackToHome={handleBackToHome} 
  onNavigateTab={handleTabChange}
  />
  ) : (

@@ -227,7 +227,13 @@ function NewTournamentWizard() {
 
  return (
  <WizardPageShell
- onBack={() => router.back()}
+ onBack={() => {
+   if (typeof window !== "undefined" && window.history.length > 1) {
+     router.back();
+   } else {
+     router.push(isOwner ? "/?tab=admin" : "/?tab=tournaments");
+   }
+ }}
  backLabel="Quay lại"
  crumb="Tạo giải đấu mới"
  title="Khởi tạo giải đấu bóng đá mới"
