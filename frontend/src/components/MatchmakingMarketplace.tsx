@@ -265,7 +265,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  })
  : posts.filter(postPassesFormFilter);
 
- // Số liệu chợ kèo lấy thẳng từ CSDL — không hardcode.
+ // Số liệu chợ kèo lấy thẳng  — không hardcode.
  const openKèoCount = posts.length;
  // Số VĐV duy nhất đang mở kèo (mỗi đội 1 trưởng), đếm từ dữ liệu thật.
  const onlineCaptains = useMemo(
@@ -285,7 +285,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  () => posts.filter((p: any) => Math.abs((p.winRate ?? 50) - myWinRate) <= 15).length,
  [posts, myWinRate]
  );
- // Bảng xếp đội mở kèo — gom từ bảng matchmaking_posts trong CSDL.
+ // Bảng xếp đội mở kèo — gom từ bảng matchmaking_posts .
  const topTeams = useMemo(() => {
  const map = new Map<string, { teamName: string; count: number; winRate: number; pitchType?: string }>();
  for (const p of posts) {
@@ -435,11 +435,11 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <span>/</span>
  <span>Chợ Kèo Ghép Đội</span>
  <span>/</span>
- <span className="text-[#0b4f6c] font-bold">Sàn Ghép Cặp Tức Thì</span>
+ <span className="text-[#0b4f6c] font-bold">Tìm Đối Giao Hữu</span>
  </div>
  <div className="flex items-center space-x-2 pt-0.5">
  <span className="relative flex h-3 w-3">
- <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#acf847] opacity-75" />
+ <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-600 text-white opacity-75" />
  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#0369a1]" />
  </span>
  <span className="font-mono text-[14px] font-bold text-slate-900 ">
@@ -481,12 +481,12 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
   onClick={() => { setSelectedSport("ALL"); setMatchFormat("ALL"); }}
   className={`flex items-center space-x-2 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-bold text-[14px] shrink-0 transition-all ${
   selectedSport === "ALL"
-  ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
+  ? "bg-[#0369a1] text-white shadow-md "
   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
   }`}
   >
   <span>🎯 Tất cả</span>
-  <span className="px-2 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[14px] font-black">
+  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[14px] font-black">
   {posts.length} kèo
   </span>
   </button>
@@ -495,12 +495,12 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  onClick={() => { setSelectedSport("SAN_7"); setMatchFormat("SAN_7"); }}
  className={`flex items-center space-x-2 px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-bold text-[14px] shrink-0 transition-all ${
  selectedSport === "SAN_7"
- ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
+ ? "bg-[#0369a1] text-white shadow-md "
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
  <span>⚽ Sân 7</span>
- <span className="px-2 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[14px] font-black">
+ <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[14px] font-black">
  {openKèoBySport.get("SAN_7") ?? 0} kèo mở
  </span>
  </button>
@@ -509,7 +509,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  onClick={() => { setSelectedSport("SAN_5"); setMatchFormat("SAN_5"); }}
  className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-[14px] shrink-0 transition-all ${
  selectedSport === "SAN_5"
- ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
+ ? "bg-[#0369a1] text-white shadow-md "
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
@@ -523,7 +523,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  onClick={() => { setSelectedSport("SAN_11"); setMatchFormat("SAN_11"); }}
  className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-[14px] shrink-0 transition-all ${
  selectedSport === "SAN_11"
- ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
+ ? "bg-[#0369a1] text-white shadow-md "
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
@@ -537,7 +537,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  onClick={() => { setSelectedSport("FUTSAL"); setMatchFormat("FUTSAL"); }}
  className={`flex items-center space-x-2 px-5 py-3 rounded-2xl font-bold text-[14px] shrink-0 transition-all ${
  selectedSport === "FUTSAL"
- ? "bg-[#0369a1] text-white shadow-md shadow-[#006c49]/20"
+ ? "bg-[#0369a1] text-white shadow-md "
  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
  }`}
  >
@@ -694,7 +694,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <h2 className="text-xl font-black text-slate-900 shrink-0">
   Kèo Đang Mở Đăng Ký ({visiblePosts.length})
  </h2>
- <span className="px-3 py-1 rounded-full bg-[#acf847] text-[#102000] font-mono text-[14px] font-extrabold whitespace-nowrap">
+ <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[14px] font-extrabold whitespace-nowrap">
  {matchableCount}/{openKèoCount} kèo cùng tầm
  </span>
   {visiblePosts.length < openKèoCount && (
@@ -709,11 +709,11 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  type="button"
  onClick={sortByAi}
  disabled={aiSorting || posts.length === 0}
- title="Nhờ AI xếp kèo cùng tầm phong độ nhất lên đầu"
+ title="Sắp xếp các đội có trình độ tương đương lên đầu"
  className="text-[#0b4f6c] font-bold hover:underline disabled:opacity-50 flex items-center gap-1"
  >
  <Sparkles className="w-3.5 h-3.5" />
- <span>{aiSorting ? "AI đang xếp…" : aiOrder ? (aiOffline ? "Theo phong độ (AI offline) ↻" : "AI đã xếp kèo ✓ xếp lại") : "AI xếp kèo cùng tầm ▼"}</span>
+ <span>{aiSorting ? "Đang sắp xếp…" : aiOrder ? (aiOffline ? "Theo trình độ ↻" : "Đã xếp theo trình độ ↻") : "Xếp theo trình độ ▼"}</span>
  </button>
  </div>
  </div>
@@ -767,7 +767,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  {isAiTop && (
  <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-black text-[14px] flex items-center gap-1">
  <Sparkles className="w-3.5 h-3.5" />
- <span>{aiOffline ? "Hợp phong độ nhất" : "AI đề xuất"}</span>
+ <span>{aiOffline ? "Hợp phong độ nhất" : "Đề xuất"}</span>
  </span>
  )}
 
@@ -953,7 +953,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  </div>
  <h3 className="font-black text-sm text-slate-900 ">Kèo Gợi Ý Cho Bạn</h3>
  </div>
- <span className="px-2.5 py-0.5 rounded-full bg-[#acf847] text-[#102000] font-mono text-[14px] font-black">
+ <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[14px] font-black">
  {matchableCount}/{openKèoCount} cùng tầm
  </span>
  </div>
@@ -973,7 +973,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
  <div className="space-y-2 text-[14px]">
  <span className="text-[14px] font-extrabold text-slate-500 block">
- Kèo đang mở trong CSDL:
+ Kèo giao hữu gợi ý:
  </span>
  {loadingPosts ? (
  <p className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-500">
@@ -1013,7 +1013,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  )}
  </section>
 
- {/* WIDGET 2: HỒ SƠ CẦU THỦ + SỐ LIỆU SÀN (lấy từ CSDL) */}
+ {/* WIDGET 2: HỒ SƠ CẦU THỦ + SỐ LIỆU SÀN (lấy ) */}
  <section className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-md space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center space-x-2">
@@ -1071,7 +1071,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <Trophy className="w-5 h-5 text-amber-700" />
  <h3 className="font-black text-sm text-slate-900 ">Đội Mở Kèo Nhiều Nhất</h3>
  </div>
- <span className="text-[14px] text-slate-500 font-semibold">{openKèoCount} kèo trong CSDL</span>
+ <span className="text-[14px] text-slate-500 font-semibold">{openKèoCount} kèo đang mở</span>
  </div>
 
  {topTeams.length === 0 ? (
@@ -1093,7 +1093,7 @@ const [reviewSubmitting, setReviewSubmitting] = useState(false);
  <span
  className={`w-6 h-6 rounded-full flex items-center justify-center font-mono font-black text-[14px] shrink-0 ${
  i === 0
- ? "bg-[#acf847] text-[#102000]"
+ ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
  : "bg-slate-200 text-slate-900 font-bold"
  }`}
  >

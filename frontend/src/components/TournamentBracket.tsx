@@ -378,7 +378,7 @@ const [addCount, setAddCount] = useState("4");
  }
  };
 
- /** BTC sinh lịch thật cho toàn bộ trận (ngày + khung giờ + sân) rồi lưu vào CSDL. */
+ /** BTC sinh lịch thật cho toàn bộ trận (ngày + khung giờ + sân) rồi lưu vào hệ thống. */
  const handleSchedule = async () => {
  if (!selected) return;
  try {
@@ -931,7 +931,7 @@ const [addCount, setAddCount] = useState("4");
  <button
  onClick={() => (bracket ? setConfirmDraw(true) : startDraw())}
  disabled={!canAct || !selected || teamCount < 2 || drawBusy}
- title="Bốc thăm hạt giống theo thứ tự đăng ký, lưu nhánh đấu vào CSDL"
+ title="Bốc thăm hạt giống theo thứ tự đăng ký, lưu nhánh đấu vào hệ thống"
  className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[14px] transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
  {drawBusy ? (
@@ -981,7 +981,7 @@ const [addCount, setAddCount] = useState("4");
  <button
  onClick={() => setShowScheduleForm((v) => !v)}
  disabled={!canAct || !selected || scheduleBusy}
- title="Sinh ngày + khung giờ + sân cho từng trận, lưu vào CSDL"
+ title="Sinh ngày + khung giờ + sân cho từng trận, lưu vào hệ thống"
  className={`px-3.5 py-2.5 rounded-xl font-extrabold text-[14px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40 ${
  showScheduleForm
  ? "bg-[#0369a1] text-white shadow-lg"
@@ -1162,7 +1162,7 @@ const [addCount, setAddCount] = useState("4");
  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[14px] transition-all flex items-center justify-center space-x-1.5 shadow-md active:scale-95 disabled:opacity-50"
  >
  {scheduleBusy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
- <span>{scheduleBusy ? "Đang xếp lịch…" : "Sinh lịch & lưu vào CSDL"}</span>
+ <span>{scheduleBusy ? "Đang xếp lịch…" : "Sinh lịch & lưu vào hệ thống"}</span>
  </button>
  <p className="hidden sm:block text-[14px] text-slate-500 leading-relaxed">
  Sân lấy từ <span className="font-bold text-slate-500">{selected?.pitchName || selected?.location || "Sân BTC"}</span> trong hồ sơ giải. Xếp lại sẽ ghi đè lịch cũ.
@@ -1271,7 +1271,7 @@ const [addCount, setAddCount] = useState("4");
  </div>
  </div>
 
- {/* TAB 1: BRACKET CANVAS (render từ CSDL) */}
+ {/* TAB 1: BRACKET CANVAS (render ) */}
  {activeTab === "bracket" && (
  <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-6 shadow-md overflow-x-auto">
  <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1296,14 +1296,14 @@ const [addCount, setAddCount] = useState("4");
  {bracket && scheduledCount > 0 && (
  <p className="text-[14px] font-bold text-sky-800 ">
  <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
- Đã xếp lịch {scheduledCount} trận — ngày, khung giờ và sân lấy trực tiếp từ CSDL.
+ Đã xếp lịch {scheduledCount} trận — ngày, khung giờ và sân lấy trực tiếp .
  </p>
  )}
 
  {!selected ? (
  <div className="p-4 sm:p-8 text-center">
  <Trophy className="w-8 h-8 text-slate-400 mx-auto" />
- <p className="mt-3 text-sm text-slate-500">Chưa có giải đấu nào trong CSDL.</p>
+ <p className="mt-3 text-sm text-slate-500">Chưa có giải đấu nào .</p>
  </div>
    ) : !bracket ? (
   <div className="space-y-6">
@@ -1705,7 +1705,7 @@ const [addCount, setAddCount] = useState("4");
  </div>
  <p className="hidden sm:block text-[14px] text-slate-500 leading-relaxed">
  Camera là bộ công cụ mô phỏng dùng để minh hoạ luồng VAR. Quyết định bấm ở đây được ghi vào
- nhật ký phiên làm việc của BTC, không ghi vào CSDL.
+ nhật ký phiên làm việc của BTC, không ghi vào hệ thống.
  </p>
  </div>
  </div>
@@ -1844,7 +1844,7 @@ const [addCount, setAddCount] = useState("4");
  </div>
  )}
 
- {/* TAB 4: BIÊN BẢN ĐIỆN TỬ — in thật từ dữ liệu trận trong CSDL */}
+ {/* TAB 4: BIÊN BẢN ĐIỆN TỬ — in thật từ dữ liệu trận  */}
  {activeTab === "esheet" && (
  <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-6 shadow-md">
  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4 print:border-0 print:pb-0">
@@ -1855,7 +1855,7 @@ const [addCount, setAddCount] = useState("4");
  </h2>
  <p className="text-[14px] text-slate-500 mt-1">
  Dữ liệu lấy trực tiếp từ bảng <span className="font-mono">tournaments</span> &amp;{" "}
- <span className="font-mono">match_results</span> trong CSDL
+ <span className="font-mono">match_results</span> 
  </p>
  </div>
  <div className="flex items-center gap-2">
@@ -1986,7 +1986,7 @@ const [addCount, setAddCount] = useState("4");
  />
  <span className="font-bold text-slate-900 ">
  {varMatch.status === "DONE"
- ? "Kết quả đã được BTC nhập và lưu lịch sử trong CSDL."
+ ? "Kết quả đã được BTC nhập và lưu lịch sử ."
  : "Chưa có kết quả — biên bản chỉ mang tính dự thảo."}
  </span>
  </div>
@@ -2009,7 +2009,7 @@ const [addCount, setAddCount] = useState("4");
  byes={lottery?.byes ?? []}
  onDone={() => {
  setLottery(null);
- triggerToast("Nhánh đấu chính thức đã được lưu vào CSDL!");
+ triggerToast("Nhánh đấu chính thức đã được lưu vào hệ thống!");
  }}
  />
  )}

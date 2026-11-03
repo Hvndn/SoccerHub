@@ -68,7 +68,7 @@ export default function MatchmakingCard({
           {isAiTop && (
             <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-black text-[14px] flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{aiOffline ? "Hợp phong độ nhất" : "AI đề xuất"}</span>
+              <span>{aiOffline ? "Hợp phong độ nhất" : "Đề xuất"}</span>
             </span>
           )}
         </div>

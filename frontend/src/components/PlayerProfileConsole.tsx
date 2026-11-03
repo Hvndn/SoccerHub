@@ -66,7 +66,7 @@ export default function PlayerProfileConsole({
  // Active Football Pitch Format Tab State
  const [activeFormat, setActiveFormat] = useState<"san7" | "san5" | "san11" | "futsal">("san7");
 
- // Giải đấu trong CSDL — nguồn tính thành tích thi đấu thật.
+ // Giải đấu  — nguồn tính thành tích thi đấu thật.
  const [tournaments, setTournaments] = useState<any[]>([]);
  useEffect(() => {
  let alive = true;
@@ -178,7 +178,7 @@ export default function PlayerProfileConsole({
  : "HD";
 
  // ============================================================================
- // THÀNH TÍCH THI ĐẤU — tính từ CSDL (giải + nhánh đấu + goal_events)
+ // THÀNH TÍCH THI ĐẤU — tính  (giải + nhánh đấu + goal_events)
  // Không có bảng chỉ số kỹ năng/rank phần trăm trong hệ thống nên không bịa.
  // ============================================================================
  const perf = useMemo(() => {
@@ -336,7 +336,7 @@ export default function PlayerProfileConsole({
  cleanSheets: perf.cleanSheets,
  streak: goalDiff > 0 ? `+${goalDiff}` : goalDiff === 0 ? "0" : `${goalDiff}`,
  streakBadge: `${perf.goalsFor} bàn thắng / ${perf.goalsAgainst} bàn thua`,
- // Chỉ số kỹ năng & radar cần dữ liệu đo đạc chưa có trong CSDL
+ // Chỉ số kỹ năng & radar cần dữ liệu đo đạc chưa có 
  skills: [] as any[],
  radarPoints: [
  { label: "Ghi bàn", val: perf.goalsFor },
@@ -350,7 +350,7 @@ export default function PlayerProfileConsole({
 
  const currentStat = formatStats[activeFormat];
 
- // Lịch sử trận đấu — lấy từ CSDL (nhánh đấu các giải mà bạn làm trọng tài đội)
+ // Lịch sử trận đấu — lấy  (nhánh đấu các giải mà bạn làm trọng tài đội)
  const matchHistory = perf.history;
 
  const filteredMatches = matchHistory.filter(m => {
@@ -1090,7 +1090,7 @@ export default function PlayerProfileConsole({
 
  </div>
 
- {/* Thành tích thi đấu từ CSDL — không có bảng chỉ số kỹ thuật riêng */}
+ {/* Thành tích thi đấu  — không có bảng chỉ số kỹ thuật riêng */}
  <div className="mt-8 space-y-4">
  <h3 className="text-sm font-bold tracking-wider text-slate-700 ">
  Thành Tích Thi Đấu Trong Hệ Thống
@@ -1118,11 +1118,11 @@ export default function PlayerProfileConsole({
  { k: "Thắng", v: perf.wins, src: "match_results" },
  { k: "Hòa", v: perf.draws, src: "match_results" },
  { k: "Thua", v: perf.losses, src: "match_results" },
- { k: "Tỉ lệ thắng", v: `${winRate}%`, src: "tính từ CSDL" },
+ { k: "Tỉ lệ thắng", v: `${winRate}%`, src: "tính " },
  { k: "Bàn thắng", v: perf.goalsFor, src: "tournaments.bracket_json" },
  { k: "Bàn thua", v: perf.goalsAgainst, src: "tournaments.bracket_json" },
- { k: "Hiệu số", v: goalDiff > 0 ? `+${goalDiff}` : goalDiff, src: "tính từ CSDL" },
- { k: "Trận không thủng lưới", v: perf.cleanSheets, src: "tính từ CSDL" },
+ { k: "Hiệu số", v: goalDiff > 0 ? `+${goalDiff}` : goalDiff, src: "tính " },
+ { k: "Trận không thủng lưới", v: perf.cleanSheets, src: "tính " },
  { k: "Thành tích (T-H-B)", v: recordStr, src: "match_results" },
  ].map((row) => (
  <tr key={row.k}>

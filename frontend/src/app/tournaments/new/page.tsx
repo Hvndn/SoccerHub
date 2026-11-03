@@ -258,7 +258,7 @@ function NewTournamentWizard() {
  </h2>
  <p className="text-[14px] sm:text-sm text-slate-500">
  Giải <strong className="text-slate-900 ">“{form.title}”</strong> đã được
- lưu vào CSDL và hiển thị trong danh sách Giải Đấu & BXH.
+ lưu vào hệ thống và hiển thị trong danh sách Giải Đấu & BXH.
  </p>
  <div className="flex flex-wrap justify-center gap-2.5 pt-2">
  <a

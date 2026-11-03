@@ -137,7 +137,7 @@ export default function TournamentOrganizerPortal({
  return unsubscribe;
  }, []);
 
- // Danh sách giải lấy từ CSDL — không dùng dữ liệu giả.
+ // Danh sách giải lấy  — không dùng dữ liệu giả.
  const tournaments = useMemo(
  () =>
  dbTournaments.map((t: any) => {
@@ -175,7 +175,7 @@ export default function TournamentOrganizerPortal({
  const countBySportFilter = (id: string) =>
  id === "all" ? tournaments.length : tournaments.filter((t: any) => t.sport === id).length;
 
- // Giải dùng làm nguồn cho BXH / kết quả / lịch: giải đầu tiên đã bốc thăm trong CSDL.
+ // Giải dùng làm nguồn cho BXH / kết quả / lịch: giải đầu tiên đã bốc thăm .
  const activeTournamentId = useMemo(() => {
  if (selectedTournamentId) return selectedTournamentId;
  const withBracket = dbTournaments.find((t: any) => t.bracketJson);
@@ -756,7 +756,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="space-y-4 sm:space-y-8 animate-fade-in pb-16">
  {/* HEADER BAR */}
  <div className="bg-white text-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-slate-200/90 shadow-sm relative overflow-hidden">
- <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-sky-50 via-emerald-50 to-transparent rounded-full blur-3xl pointer-events-none" />
+ 
  
  <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6">
  <div className="space-y-3">
@@ -764,7 +764,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="flex items-center space-x-2 text-[14px] font-mono text-sky-900 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
  <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-ping" />
  <span>
- {loadingDb ? "Đang đồng bộ CSDL…" : `CSDL: ${dbTournaments.length} giải đấu`}
+ {loadingDb ? "Đang tải dữ liệu…" : `${dbTournaments.length} giải đấu`}
  </span>
  </div>
  </div>
@@ -808,7 +808,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <button
  onClick={() =>
  setVarNotice(
- `CSDL hiện có ${dbTournaments.length} giải đấu. Duyệt hồ sơ VĐV nằm ở mục Chợ Kèo của hệ thống.`
+ `Hệ thống hiện có ${dbTournaments.length} giải đấu. Duyệt hồ sơ VĐV nằm ở mục Chợ Kèo của hệ thống.`
  )
  }
  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold border border-slate-200 transition-all flex items-center space-x-2 relative active:scale-95 shadow-xs"
@@ -855,7 +855,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  <div className="text-[14px] font-mono text-slate-500 shrink-0 hidden md:block">
- Giải đang mở: <span className="text-sky-800 font-bold">{countBySportFilter("all")} giải trong CSDL</span>
+ Giải đang mở: <span className="text-sky-800 font-bold">{countBySportFilter("all")} giải </span>
  </div>
  </div>
  </div>
@@ -875,7 +875,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <Trophy className="w-8 h-8 text-slate-300 mx-auto" />
  <p className="mt-3 text-sm font-bold text-slate-600">
  {selectedSport === "all"
- ? "Chưa có giải đấu nào trong CSDL."
+ ? "Chưa có giải đấu nào ."
  : `Không có giải nào đúng bộ lọc “${SPORT_FILTERS.find((f) => f.id === selectedSport)?.label}”.`}
  </p>
  </div>
@@ -907,9 +907,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </span>
  </div>
  )}
- {t.status === "live" && (
- <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-200/30 rounded-full blur-2xl pointer-events-none" />
- )}
+ 
 
  <div className="space-y-3 sm:space-y-4 relative z-10">
  <div className="flex items-center justify-between gap-2">
@@ -1119,7 +1117,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  {/* 1. BẢNG ĐIỀU KHIỂN TRỌNG TÀI — chạy trên trận thật trong nhánh đấu */}
  <div className="bg-white border border-slate-200/90 text-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm relative overflow-hidden">
- <div className="absolute top-0 right-0 w-80 h-80 bg-rose-50/50 rounded-full blur-3xl pointer-events-none" />
+ 
 
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-100 pb-5 mb-6">
  <div className="flex items-center space-x-3 min-w-0">
@@ -1132,7 +1130,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  Bảng Điều Khiển Trọng Tài
  </span>
  <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[14px] font-black">
- Nguồn: CSDL
+ 
  </span>
  </div>
  <h2 className="text-lg font-black tracking-tight text-slate-900 mt-0.5 truncate">
@@ -1140,7 +1138,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  ? `${umpireMatch.teamA.name} vs ${umpireMatch.teamB.name}`
  : activeTournament
  ? `${activeTournament.title} — chưa bốc thăm`
- : "Chưa có giải nào trong CSDL"}
+ : "Chưa có giải nào "}
  </h2>
  </div>
  </div>
@@ -1400,7 +1398,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  className="text-[14px] font-bold text-[#0369a1] hover:underline flex items-center space-x-1 shrink-0 disabled:opacity-50"
  >
  <RefreshCw className={`w-3.5 h-3.5 ${loadingDb ? "animate-spin" : ""}`} />
- <span>{loadingDb ? "Đang tải…" : "Tải lại từ CSDL"}</span>
+ <span>{loadingDb ? "Đang tải…" : "Tải lại "}</span>
  </button>
  </div>
 
@@ -1440,8 +1438,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {!activeBracket && (
  <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">
  {dbTournaments.length === 0
- ? "Chưa đọc được danh sách giải từ CSDL."
- : "Chưa giải nào trong CSDL đã bốc thăm. Mở tab “Giải Đấu & BXH › Bảng Đấu & Nhánh Bracket” để bốc thăm và nhập kết quả."}
+ ? "Chưa đọc được danh sách giải ."
+ : "Chưa giải nào  đã bốc thăm. Mở tab “Giải Đấu & BXH › Bảng Đấu & Nhánh Bracket” để bốc thăm và nhập kết quả."}
  </p>
  )}
 
@@ -1640,7 +1638,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {/* RIGHT 4 COLS: THỐNG KÊ GIẢI + QUỸ THƯỞNG THẬT */}
  <div className="lg:col-span-4 space-y-4 sm:space-y-8">
 
- {/* 1. THỐNG KÊ GIẢI ĐẤU (đếm từ CSDL) */}
+ {/* 1. THỐNG KÊ GIẢI ĐẤU (đếm ) */}
  <div className="bg-white border border-slate-200 text-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-3 sm:space-y-6">
  <div className="flex items-center space-x-3 border-b border-slate-200 pb-4">
  <div className="w-9 h-9 rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/30 flex items-center justify-center text-sky-700 shrink-0">
@@ -1753,7 +1751,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   )}
  </>
  ) : (
- <p className="text-[14px] text-slate-500">Chưa chọn được giải nào từ CSDL.</p>
+ <p className="text-[14px] text-slate-500">Chưa chọn được giải nào .</p>
  )}
  </div>
 
@@ -1985,7 +1983,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
     </>
    )}
   </div>
- {/* 2. QUỸ THƯỞNG THẬT (prizePool từ CSDL) */}
+ {/* 2. QUỸ THƯỞNG THẬT (prizePool ) */}
  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-6">
  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
  <div className="flex items-center space-x-2.5">
@@ -2005,7 +2003,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  {!activeTournament || !activeTournament.prizePool ? (
  <p className="text-[14px] text-slate-500">
- Giải này chưa khai báo giải thưởng trong CSDL.
+ Giải này chưa khai báo giải thưởng .
  </p>
  ) : (
  <>
@@ -2031,7 +2029,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {/* 3. THÔNG TIN SÂN & THỜI GIAN THI ĐẤU (thật) */}
  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
  <h4 className="text-[14px] font-black text-slate-500">
- Thông Tin Giải Từ CSDL
+ Thông Tin Giải Đấu
  </h4>
 
  {!activeTournament ? (

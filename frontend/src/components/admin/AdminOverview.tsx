@@ -138,7 +138,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  <div className="pt-2">
  <div className="flex items-center gap-2 mb-3">
  <h3 className="font-black text-slate-900 text-sm">Biểu đồ thống kê</h3>
- <span className="text-[14px] text-slate-500">— dữ liệu trực tiếp từ CSDL</span>
+ <span className="text-[14px] text-slate-500">— dữ liệu trực tiếp </span>
  </div>
  <AdminCharts />
  </div>

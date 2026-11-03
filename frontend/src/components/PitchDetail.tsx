@@ -238,7 +238,7 @@ export default function PitchDetail({
      .catch(() => {});
  }, [user]);
 
- // 1. Tải thông tin chi tiết Cụm Sân thật từ CSDL
+ // 1. Tải thông tin chi tiết Cụm Sân thật 
  useEffect(() => {
  async function loadPitchInfo() {
  try {
@@ -361,7 +361,7 @@ export default function PitchDetail({
  showToast(`⚽ Đã chọn: ${court.pitchName} • Khung giờ: ${slot.time}`);
  };
 
- // Xác nhận đặt sân & tạo đơn cọc trên CSDL thật
+ // Xác nhận đặt sân & tạo đơn cọc trên hệ thống thật
  const handleStartBooking = async () => {
  if (!selectedSlot || selectedSlot.status === "booked" || selectedSlot.status === "pending_payment") {
  showToast("❌ Vui lòng chọn một ca sân còn trống.");
@@ -617,7 +617,7 @@ export default function PitchDetail({
  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
  <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
  <div>
- <span className="font-black text-[14px] bg-[#0369a1]/90 backdrop-blur-md px-2.5 py-1 rounded text-white">
+ <span className="font-black text-[14px] bg-[#0369a1]/90  px-2.5 py-1 rounded text-white">
  {pitchTypeLabel(pitchDetails?.pitchTypes?.[0]) || pitch?.sportBadge || "Sân bóng đá"}
  </span>
  <p className="font-black text-base sm:text-lg mt-1 text-white break-words">
@@ -789,7 +789,7 @@ export default function PitchDetail({
  {isLoading ? (
  <div className="py-16 text-center space-y-3">
  <RefreshCw className="w-8 h-8 text-[#0b4f6c] animate-spin mx-auto" />
- <p className="text-sm font-bold text-slate-500">Đang đồng bộ ma trận ca sân thật từ CSDL...</p>
+ <p className="text-sm font-bold text-slate-500">Đang đồng bộ ma trận ca sân thật ...</p>
  </div>
  ) : filteredCourts.length === 0 ? (
  <div className="py-12 text-center text-slate-500 space-y-2">
@@ -1452,7 +1452,7 @@ export default function PitchDetail({
  </button>
  </>
  ) : (
- /* Vé điện tử đã lưu trong CSDL */
+ /* Vé điện tử đã lưu  */
  <div className="text-center space-y-5 py-2">
  <div className="w-14 h-14 rounded-full bg-sky-100 text-sky-700 border-2 border-[#0369a1] mx-auto flex items-center justify-center">
  <CheckCircle2 className="w-8 h-8 text-emerald-500" />
@@ -1460,7 +1460,7 @@ export default function PitchDetail({
 
  <div>
  <span className="px-3 py-1 rounded-full bg-[#0369a1]/10 text-sky-700 text-[14px] font-bold border border-[#0369a1]/30">
- Đơn giữ chỗ đã lưu vào CSDL
+ Đơn giữ chỗ đã lưu vào hệ thống
  </span>
  <h3 className="text-2xl font-black text-slate-900 mt-2">Thẻ Vé Vào Sân Điện Tử</h3>
  <p className="text-[14px] text-slate-500 mt-1">Cho chủ sân xem mã này khi tới sân để check-in.</p>

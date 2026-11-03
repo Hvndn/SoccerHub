@@ -212,7 +212,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  }, [loadError, reloadTournaments]);
 
 
- // Top Vua phá lưới toàn hệ thống — dữ liệu thật từ CSDL (thay hardcode)
+ // Top Vua phá lưới toàn hệ thống — dữ liệu thật  (thay hardcode)
  const [topScorers, setTopScorers] = useState<ScorerRow[]>([]);
 
  React.useEffect(() => {
@@ -277,7 +277,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
     return [...visibleTournaments].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
   }, [visibleTournaments]);
 
- // Các địa điểm thực tế tồn tại trong CSDL → dùng cho dropdown lọc
+ // Các địa điểm thực tế tồn tại  → dùng cho dropdown lọc
  const locationOptions = useMemo(
  () => Array.from(new Set(tournaments.map((t) => t.location).filter(Boolean))) as string[],
  [tournaments]
@@ -324,7 +324,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  const openCount = countOpen(tournaments);
  const liveCount = countLive(tournaments);
 
- // Dải "trực tiếp" lấy từ CSDL thật: trận đã đánh gần nhất có lịch (BTC đã xếp lịch).
+ // Dải "trực tiếp" lấy  thật: trận đã đánh gần nhất có lịch (BTC đã xếp lịch).
  // Không có dữ liệu thì hiện trạng thái rõ ràng thay vì bịa tỷ số.
  const latestResult = useMemo(() => {
  type Row = { tournament: Tournament; matchId: string; a: string; b: string; sa: number; sb: number; date: string; time: string; winner: string | null };
@@ -455,7 +455,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  <span className="text-slate-900 font-bold">Giải Đấu Bóng Đá &amp; Phong Độ</span>
  <ChevronRight className="w-3.5 h-3.5" />
  <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-900 font-bold">
- {featured ? featured.title : `${tournaments.length} giải trong CSDL`}
+ {featured ? featured.title : `${tournaments.length} giải `}
  </span>
  </div>
 
@@ -485,7 +485,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  </div>
  </div>
 
- {/* 2. FOOTBALL SPORT FILTER RIBBON & QUICK ACTIONS — số liệu lấy từ CSDL */}
+ {/* 2. FOOTBALL SPORT FILTER RIBBON & QUICK ACTIONS — số liệu lấy  */}
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-xl bg-white shadow-xs border border-slate-200/80 ">
  {/* Sport Switcher Ribbon */}
  <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Lọc theo thể thức giải đấu">
@@ -822,12 +822,12 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  </div>
  </div>
  ) : (
- /* Empty state — không có giải nào trong CSDL */
+ /* Empty state — không có giải nào  */
  <div className="p-8 rounded-2xl bg-white border border-dashed border-slate-300 text-center">
  <Trophy className="w-10 h-10 text-slate-300 mx-auto" />
  <p className="mt-3 text-sm font-bold text-slate-700 ">Chưa có giải đấu tiêu điểm</p>
  <p className="mt-1 text-[14px] text-slate-500">
- Dữ liệu sẽ tự động hiển thị khi Ban Tổ Chức khởi tạo giải đấu mới trong CSDL.
+ Dữ liệu sẽ tự động hiển thị khi Ban Tổ Chức khởi tạo giải đấu mới .
  </p>
  </div>
  )}
@@ -856,12 +856,12 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   onDone={() => {
   setLottery(null);
   setDrawnTournament(null);
-  setActionNotice("✅ Nhánh đấu đã lưu vào CSDL. Xem cây nhánh đấu ở tab “Nhánh Đấu”.");
+  setActionNotice("✅ Nhánh đấu đã lưu vào hệ thống. Xem cây nhánh đấu ở tab “Nhánh Đấu”.");
   changeTab('bracket');
   }}
   />
 
- {/* 5. MAIN NAVIGATION TABS — số liệu đếm từ CSDL */}
+ {/* 5. MAIN NAVIGATION TABS — số liệu đếm  */}
  <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Khu vực nội dung giải đấu">
  <button 
  type="button"
@@ -932,7 +932,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  {activeTab === 'bracket' ? (
  <TournamentBracket initialTournamentId={bracketTargetId} />
  ) : activeTab === 'rankings' ? (
- /* ---------- TAB: BẢNG XEP HẠNG (tính từ đội đã đăng ký trong CSDL) ---------- */
+ /* ---------- TAB: BẢNG XEP HẠNG (tính từ đội đã đăng ký ) ---------- */
  <div className="p-5 rounded-2xl bg-white shadow-xs border border-slate-200/80 ">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
  <div className="flex items-center gap-2">
@@ -942,7 +942,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  </h2>
  </div>
  <span className="text-[14px] text-slate-500 font-semibold">
- Cập nhật từ CSDL • {tournaments.length} giải
+ Cập nhật  • {tournaments.length} giải
  </span>
  </div>
 
@@ -1063,7 +1063,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  {/* LEFT COLUMN (70% - Col span 8): TOURNAMENT CARDS & LIVE BRACKET */}
  <div className="lg:col-span-8 flex flex-col gap-3 sm:gap-6">
  
- {/* LIVE QUICK BRACKET — dựng từ bracketJson thật trong CSDL */}
+ {/* LIVE QUICK BRACKET — dựng từ bracketJson thật  */}
  {activeTab === 'live' && (
  <div className="p-5 rounded-2xl bg-white shadow-xs border border-slate-200/80 flex flex-col gap-4">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1198,7 +1198,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  <Search className="w-8 h-8 text-slate-300 mx-auto" />
  <p className="mt-3 text-sm font-bold text-slate-600 ">
  {tournaments.length === 0
- ? 'Chưa có giải đấu nào được khởi tạo trong CSDL.'
+ ? 'Chưa có giải đấu nào được khởi tạo .'
  : hasActiveFilters
  ? 'Không có giải đấu nào khớp bộ lọc.'
  : selectedStatus === 'ONGOING'
@@ -1537,7 +1537,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
  <span className="text-[14px] text-slate-500 font-semibold">Đà Nẵng • Mùa Q4</span>
  </div>
 
- {/* Leaderboard Rows — dữ liệu thật từ CSDL */}
+ {/* Leaderboard Rows — dữ liệu thật  */}
  <div className="flex flex-col gap-1 pt-1">
  {topScorers.length === 0 ? (
  <p className="p-4 text-center text-[14px] text-slate-500">

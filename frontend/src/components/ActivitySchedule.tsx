@@ -289,7 +289,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-slate-900 text-[14px] font-bold shadow-xs hover:bg-slate-100 transition-all border border-slate-200 disabled:opacity-50"
  >
  <RefreshCw className={`w-4 h-4 text-sky-700 ${loading ? "animate-spin" : ""}`} />
- <span>{loading ? "Đang tải…" : "Tải lại từ CSDL"}</span>
+ <span>{loading ? "Đang tải…" : "Tải lại "}</span>
  </button>
 
  <button
@@ -308,7 +308,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  </p>
  )}
 
- {/* 2. FILTER RIBBON — số liệu đếm từ CSDL */}
+ {/* 2. FILTER RIBBON — số liệu đếm  */}
  <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
  <div className="flex flex-wrap items-center gap-2">
  {filterTabs.map((t) => (
@@ -384,7 +384,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  </span>
  </div>
 
- {/* Đội hình lấy từ danh sách đội đã đăng ký trong CSDL */}
+ {/* Đội hình lấy từ danh sách đội đã đăng ký  */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
  {[hero.teamA, hero.teamB].map((name, i) => {
  const entry = tournaments.find((t) => t.id === hero.tournamentId)?.teams?.find((z) => z.teamName === name);
@@ -454,7 +454,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  </p>
  <p className="mt-1 text-[14px] text-slate-500">
  {tournaments.length === 0
- ? "Chưa đọc được giải đấu từ máy chủ. Bấm “Tải lại từ CSDL” để thử lại."
+ ? "Chưa đọc được giải đấu từ máy chủ. Bấm “Tải lại ” để thử lại."
  : "BTC chưa bốc thăm hoặc chưa xếp lịch cho giải nào. Mở tab Điều Hành Giải Đấu để bốc thăm và xếp lịch."}
  </p>
  </div>
@@ -566,7 +566,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  {myBookings.length === 0 ? (
  <p className="rounded-xl bg-white border border-slate-200/80 p-3 sm:p-5 text-[14px] text-slate-500">
  {user?.phone
- ? "Chưa có vé nào đặt bằng số điện thoại trong tài khoản. Bấm “Tải lại từ CSDL” sau khi đặt sân."
+ ? "Chưa có vé nào đặt bằng số điện thoại trong tài khoản. Bấm “Tải lại ” sau khi đặt sân."
  : "Tài khoản chưa có số điện thoại nên chưa tra cứu được vé. Cập nhật hồ sơ trước."}
  </p>
  ) : (
@@ -693,7 +693,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  Thống Kê Nhanh
  </h3>
  {[
- { label: "Giải trong CSDL", value: tournaments.length },
+ { label: "Giải ", value: tournaments.length },
  { label: "Trận sắp diễn ra", value: upcoming.length },
  { label: "Trận đã đánh", value: doneMatches.length },
  { label: "Kèo đang mở", value: openPosts.length },
@@ -758,7 +758,7 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
  </div>
 
  <p className="hidden sm:block text-[14px] text-slate-500 leading-relaxed">
- Vé thi đấu được cấp khi BTC nhập kết quả và thanh toán lệ phí trên CSDL. Muốn sửa tỷ số hoặc hoàn
+ Vé thi đấu được cấp khi BTC nhập kết quả và thanh toán lệ phí trên hệ thống. Muốn sửa tỷ số hoặc hoàn
  tiền cọc, vào tab Điều Hành Giải Đấu › Bảng Đấu &amp; Nhánh Bracket.
  </p>
 

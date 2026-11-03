@@ -167,7 +167,7 @@ const mobileNav: MobileNavItem[] =
 
  return (
  <>
- <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-sm transition-colors duration-300 w-full">
+ <header className="fixed top-0 left-0 right-0 z-50 bg-white/95  border-b border-slate-200 shadow-sm transition-colors duration-300 w-full">
  <div className="max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] h-[52px] sm:h-16 flex items-center justify-between gap-2 lg:gap-3 xl:gap-4">
  {/* BRAND LOGO */}
  <div
@@ -179,7 +179,7 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab(user?.role === "OWNER" ? "admin" : "booking");
  }}
  className="flex items-center space-x-2 cursor-pointer select-none shrink-0 group"
- title="Turfzone - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh"
+ title="Turfzone - Hệ Thống Đặt Sân Bóng Đá & Tổ Chức Giải Đấu"
  >
  {/* Light Mode Logo Image */}
  <SafeImage 
@@ -1310,7 +1310,7 @@ const mobileNav: MobileNavItem[] =
  {/* MOBILE BOTTOM NAVIGATION BAR — điều hướng nhanh dạng app */}
  {showBottomNav && (
  <nav
- className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-[0_-6px_24px_rgba(15,23,42,0.08)]"
+ className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95  border-t border-slate-200 shadow-[0_-6px_24px_rgba(15,23,42,0.08)]"
  style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
  aria-label="Điều hướng nhanh trên điện thoại"
  >

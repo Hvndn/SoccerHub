@@ -146,7 +146,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
  const [pitchMatrix, setPitchMatrix] = useState<any[]>([]);
 
  // Canteen Sales Inventory State
-  // Canteen: dữ liệu THẬT từ CSDL (trước đây là mảng cứng + nút Lưu chỉ hiện toast).
+  // Canteen: dữ liệu THẬT  (trước đây là mảng cứng + nút Lưu chỉ hiện toast).
   const [canteenItems, setCanteenItems] = useState<any[]>([]);
   const [canteenLoading, setCanteenLoading] = useState(false);
   const [canteenBusy, setCanteenBusy] = useState(false);
@@ -626,7 +626,7 @@ setIsSavingInfo(false);
  await loadMatrixAndStats(currentId);
  setShowAddPitchModal(false);
  setNewPitchName("");
- showToast(`🎉 Đã thêm sân [${newPitchName}] vào database cụm sân!`);
+ showToast(`🎉 Đã thêm sân [${newPitchName}] vào cụm sân!`);
  } catch (err: any) {
  showToast(`❌ Lỗi thêm sân con: ${err.message || 'Không thể lưu vào hệ thống'}`);
  }
@@ -946,7 +946,7 @@ const handleConfirmCheckin = async (slot: any) => {
  {/* POPUP THÔNG BÁO ĐƠN ĐẶT SÂN REALTIME TỪ CẦU THỦ */}
  {realtimeAlert && (
  <div className="bg-white text-slate-900 p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-sky-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 animate-modal-pop relative overflow-hidden">
- <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[#0369a1]/10 rounded-full blur-2xl pointer-events-none" />
+ 
  
  <div className="flex items-start space-x-3.5 relative z-10">
  <div className="w-12 h-12 rounded-2xl bg-[#0369a1] text-white flex items-center justify-center shrink-0 shadow-lg animate-bell-wiggle">
@@ -1081,7 +1081,7 @@ const handleConfirmCheckin = async (slot: any) => {
  <button
  type="button"
  onClick={fetchRealData}
- title="Đồng bộ dữ liệu thật từ CSDL"
+ title="Đồng bộ dữ liệu thật "
  className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all active:scale-95 border border-slate-200 "
  >
  <RefreshCw className={`w-4 h-4 ${isLoadingBackend ? 'animate-spin text-[#0369a1]' : ''}`} />
@@ -1818,14 +1818,14 @@ const handleConfirmCheckin = async (slot: any) => {
  </div>
 
  <p className="hidden sm:block text-[14px] text-slate-500">
- Giá đọc và ghi thẳng vào bảng <code>pitches</code> trong CSDL. Ca bắt đầu từ 17:00, 18:00 và
+ Giá đọc và ghi thẳng vào bảng <code>pitches</code> . Ca bắt đầu từ 17:00, 18:00 và
  19:00 được tính theo giá giờ vàng khi thanh toán.
  </p>
 
  <div className="space-y-3 sm:space-y-4 pt-2">
  {realPitches.length === 0 ? (
  <p className="text-[14px] text-slate-500 p-4 rounded-2xl bg-slate-50 border border-slate-200 ">
- Chưa có cụm sân nào trong CSDL.
+ Chưa có cụm sân nào .
  </p>
  ) : (
  realPitches.map((p: any) => {

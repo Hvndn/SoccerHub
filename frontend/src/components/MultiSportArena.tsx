@@ -76,7 +76,7 @@ export default function MultiSportArena({
  }, [bookingCourt, joiningMatch]);
  const [successToast, setSuccessToast] = useState<string | null>(null);
 
- // ---- Dữ liệu thật từ CSDL ----
+ // ---- Dữ liệu thật  ----
  const [courts, setCourts] = useState<Court[]>([]);
  const [loadingCourts, setLoadingCourts] = useState(true);
  const [matchQueues, setMatchQueues] = useState<MatchQueue[]>([]);
@@ -200,7 +200,7 @@ export default function MultiSportArena({
  }),
  }
  );
- handleActionToast(`Đã nhận kèo ${joiningMatch.id} thành công — kèo đã chốt trong CSDL.`);
+ handleActionToast(`Đã nhận kèo ${joiningMatch.id} thành công — kèo đã chốt .`);
  loadMatches();
  } catch (e: any) {
  handleActionToast(e?.message || "Không nhận được kèo (kèo có thể đã có người khác chốt).");
@@ -272,7 +272,7 @@ export default function MultiSportArena({
  </div>
  </div>
 
- {/* Quick Stats Strip — số liệu đếm trực tiếp từ CSDL */}
+ {/* Quick Stats Strip — số liệu đếm trực tiếp  */}
  <div className="mt-6 pt-6 border-t border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 min-w-0">
  <div className="text-lg sm:text-2xl font-bold text-emerald-600">{courts.length} Sân</div>
@@ -333,11 +333,11 @@ export default function MultiSportArena({
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
  {loadingCourts ? (
  <p className="col-span-full text-sm text-slate-500 p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-200 ">
- Đang tải danh sách sân từ CSDL…
+ Đang tải danh sách sân …
  </p>
  ) : filteredCourts.length === 0 ? (
  <p className="col-span-full text-sm text-slate-500 p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-200 ">
- Chưa có sân nào khớp bộ lọc này trong CSDL.
+ Chưa có sân nào khớp bộ lọc này .
  </p>
  ) : null}
  {filteredCourts.map((court) => (
@@ -488,7 +488,7 @@ export default function MultiSportArena({
  <div className="space-y-3 sm:space-y-4">
  {loadingMatches ? (
  <p className="text-sm text-slate-500 p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-200 ">
- Đang tải kèo từ CSDL…
+ Đang tải kèo …
  </p>
  ) : matchQueues.length === 0 ? (
  <p className="text-sm text-slate-500 p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-200 ">
@@ -562,7 +562,7 @@ export default function MultiSportArena({
  new Set(courts.flatMap((c) => c.features))
  ).slice(0, 8);
  if (loadingCourts) {
- return <p className="text-sm text-slate-500">Đang tải tiện ích từ CSDL…</p>;
+ return <p className="text-sm text-slate-500">Đang tải tiện ích …</p>;
  }
  if (amenities.length === 0) {
  return (

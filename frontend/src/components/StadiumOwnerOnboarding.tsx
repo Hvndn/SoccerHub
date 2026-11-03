@@ -139,7 +139,7 @@ export default function StadiumOwnerOnboarding({
  setShowAddModal(false);
  } catch (err: any) {
  toastErr(
- "Không thêm được sân vào CSDL: " +
+ "Không thêm được sân vào hệ thống: " +
  (err?.message || "kiểm tra lại đăng nhập chủ sân và kết nối máy chủ")
  );
  } finally {
@@ -192,7 +192,7 @@ export default function StadiumOwnerOnboarding({
  // Nạp lại danh sách sân thật sau khi tạo
  await fetchMyPitches();
  } catch (err: any) {
- toastErr("Không lưu được cụm sân vào CSDL: " + (err?.message || "lỗi máy chủ"));
+ toastErr("Không lưu được cụm sân vào hệ thống: " + (err?.message || "lỗi máy chủ"));
  } finally {
  setIsFinalSubmitting(false);
  if (ok && onComplete) onComplete();
@@ -507,7 +507,7 @@ export default function StadiumOwnerOnboarding({
  Hệ thống không giữ tiền giúp bạn — luồng thanh toán trong Turfzone chạy như sau:
  </p>
  {[
- { t: "1. Khách đặt ca", d: "Khách chọn khung giờ trống, hệ thống sinh đơn giữ chỗ trong CSDL, ca đó chuyển sang trạng thái Đã Đặt." },
+ { t: "1. Khách đặt ca", d: "Khách chọn khung giờ trống, hệ thống sinh đơn giữ chỗ , ca đó chuyển sang trạng thái Đã Đặt." },
  { t: "2. Thu tiền theo quy định của sân", d: "Khách trả trực tiếp tại quầy hoặc chuyển khoản theo thông tin tài khoản chủ sân tự công bố. Turfzone không can thiệp số tiền này." },
  { t: "3. Check-in khi khách tới", d: "Chủ sân mở mã đơn ở tab Quản Lý Cụm Sân để xác nhận khách đã tới và bàn giao ca." },
  { t: "4. Hủy ca", d: "Nếu khách không tới, chủ sân hủy đơn để ca trở lại trạng thái trống cho người khác đặt." }
@@ -527,7 +527,7 @@ export default function StadiumOwnerOnboarding({
  <p>• Ca giờ vàng nên để giá cao hơn giờ thường.</p>
  </div>
  <p className="text-[14px] text-sky-700 font-bold pt-2 border-t border-slate-100 ">
- Mọi thay đổi giá và cọc được lưu ngay vào CSDL.
+ Mọi thay đổi giá và cọc được lưu ngay vào hệ thống.
  </p>
  </div>
  </div>

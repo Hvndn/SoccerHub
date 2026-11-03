@@ -3,298 +3,240 @@
 import React, { useEffect, useState } from "react";
 import SafeImage from "@/components/SafeImage";
 import {
- MapPin,
- Trophy,
- Clock,
- Search,
- CheckCircle2,
- Zap,
- Users,
- Flame,
- Shield
+  MapPin,
+  Trophy,
+  Clock,
+  Search,
+  CheckCircle2,
+  Users,
+  Shield,
 } from "lucide-react";
-import { API_BASE_URL, fetchWithTimeout } from '@/lib/api';
+import { API_BASE_URL, fetchWithTimeout } from "@/lib/api";
 
 interface LandingHeroProps {
- onOpenAuth: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
- onNavigateTab?: (tab: string) => void;
+  onOpenAuth: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
+  onNavigateTab?: (tab: string) => void;
 }
 
-export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroProps) {
- const [city, setCity] = useState("dn");
- const [pitchType, setPitchType] = useState("7");
- const [timeSlot, setTimeSlot] = useState("gold");
- const [dateChoice, setDateChoice] = useState("today");
+export default function LandingHero({ onOpenAuth }: LandingHeroProps) {
+  const [city, setCity] = useState("dn");
+  const [pitchType, setPitchType] = useState("7");
+  const [timeSlot, setTimeSlot] = useState("gold");
+  const [dateChoice, setDateChoice] = useState("today");
 
- /**
- * 4 chỉ số dưới hero đếm trực tiếp từ CSDL (pitches / tournaments /
- * matchmaking_posts / tổng trận đã có kết quả) thay vì số quảng cáo bịa sẵn.
- */
- const [stats, setStats] = useState({ pitches: 0, tournaments: 0, posts: 0, matchesPlayed: 0, loading: true });
- useEffect(() => {
- let alive = true;
- const get = (p: string) =>
- fetchWithTimeout(`${API_BASE_URL}${p}`)
- .then((r) => (r.ok ? r.json() : []))
- .catch(() => []);
- Promise.all([
- get("/api/v1/pitches"),
- get("/api/v1/tournaments"),
- get("/api/v1/community/matchmaking-posts"),
- ])
- .then(([pitches, tournaments, posts]) => {
- if (!alive) return;
- let played = 0;
- for (const t of Array.isArray(tournaments) ? tournaments : []) {
- if (!t.bracketJson) continue;
- try {
- const b = JSON.parse(t.bracketJson);
- for (const r of b?.rounds ?? []) for (const m of r.matches ?? []) if (m.status === "DONE") played += 1;
- } catch { /* bỏ qua giải có bracket hỏng */ }
- }
- setStats({
- pitches: Array.isArray(pitches) ? pitches.length : 0,
- tournaments: Array.isArray(tournaments) ? tournaments.length : 0,
- posts: Array.isArray(posts) ? posts.filter((p: any) => (p.status ?? "OPEN") === "OPEN").length : 0,
- matchesPlayed: played,
- loading: false,
- });
- })
- .catch(() => { if (alive) setStats((s) => ({ ...s, loading: false })); });
- return () => { alive = false; };
- }, []);
+  const [stats, setStats] = useState({ pitches: 0, tournaments: 0, posts: 0, matchesPlayed: 0, loading: true });
+  useEffect(() => {
+    let alive = true;
+    const get = (p: string) =>
+      fetchWithTimeout(`${API_BASE_URL}${p}`)
+        .then((r) => (r.ok ? r.json() : []))
+        .catch(() => []);
+    Promise.all([
+      get("/api/v1/pitches"),
+      get("/api/v1/tournaments"),
+      get("/api/v1/community/matchmaking-posts"),
+    ])
+      .then(([pitches, tournaments, posts]) => {
+        if (!alive) return;
+        let played = 0;
+        for (const t of Array.isArray(tournaments) ? tournaments : []) {
+          if (!t.bracketJson) continue;
+          try {
+            const b = JSON.parse(t.bracketJson);
+            for (const r of b?.rounds ?? []) for (const m of r.matches ?? []) if (m.status === "DONE") played += 1;
+          } catch {
+            /* ignore */
+          }
+        }
+        setStats({
+          pitches: Array.isArray(pitches) ? pitches.length : 0,
+          tournaments: Array.isArray(tournaments) ? tournaments.length : 0,
+          posts: Array.isArray(posts) ? posts.filter((p: any) => (p.status ?? "OPEN") === "OPEN").length : 0,
+          matchesPlayed: played,
+          loading: false,
+        });
+      })
+      .catch(() => {
+        if (alive) setStats((s) => ({ ...s, loading: false }));
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
- return (
- <div className="relative w-full space-y-7 sm:space-y-14 overflow-x-clip">
- {/* ========================================================
- FULL-WIDTH EDGE-TO-EDGE BANNER (GIAO DIỆN SÁNG TINH TẾ)
- ======================================================== */}
- <div className="w-screen relative isolate left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden shadow-xs border-y border-slate-200/80 bg-white transition-colors">
- {/* Soft Ambient Accents (ẩn trên mobile để tối giản) */}
- <div className="hidden sm:block absolute -z-10 top-0 right-1/4 w-[500px] h-[500px] bg-sky-50/70 rounded-full blur-3xl pointer-events-none" />
- <div className="hidden sm:block absolute -z-10 -bottom-20 left-10 w-[450px] h-[450px] bg-sky-50/60 rounded-full blur-3xl pointer-events-none" />
+  return (
+    <div className="w-full space-y-6">
+      {/* BANNER ĐẦU TRANG TRUYỀN THỐNG */}
+      <div className="bg-white border border-slate-300 rounded-lg p-5 sm:p-8 shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div className="lg:col-span-7 space-y-4">
+            <div className="inline-block px-3 py-1 rounded bg-slate-100 border border-slate-300 text-slate-700 text-[14px] font-bold">
+              Hệ thống đặt sân bóng đá tại Đà Nẵng
+            </div>
+            <h1 className="text-2xl sm:text-4xl font-bold text-slate-900 leading-tight">
+              Đặt Sân Bóng Đá &amp; Tổ Chức Giải Đấu Phong Trào
+            </h1>
+            <p className="text-[15px] text-slate-600 leading-relaxed max-w-2xl">
+              Tra cứu lịch sân trống theo giờ, đặt cọc trực tuyến qua VietQR, tìm đối giao hữu và quản lý bảng đấu dành cho các đội bóng tại Đà Nẵng.
+            </p>
 
- {/* Inner Content Container Aligned with Site Container (max-w-[1720px]) */}
- <div className="relative z-10 max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-6 xl:px-[50px] py-6 sm:py-16 lg:py-20">
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 xl:gap-14 items-center">
- 
- {/* LEFT COLUMN: HERO CONTENT (7 COLS) */}
- <div className="lg:col-span-7 space-y-4 sm:space-y-6">
- {/* Main Headline: Đề tài quản lý sân bóng và giải đấu thể thao thông minh */}
- <h1 className="text-[1.7rem] leading-[1.22] sm:text-4xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-black text-slate-900 tracking-tight sm:font-display">
- Sân Bóng &amp;{" "}
- <span className="text-[#0b4f6c] ">Giải Đấu Thông Minh</span>
- </h1>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => onOpenAuth("login", "PLAYER")}
+                className="px-6 py-3 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[15px] flex items-center gap-2 cursor-pointer"
+              >
+                <Users className="w-4 h-4" />
+                <span>Đặt Sân Ngay</span>
+              </button>
 
- {/* Feature chips — chỉ hiện từ tablet trở lên để tối giản mobile */}
- <div className="hidden sm:grid sm:grid-cols-2 gap-5 pt-1">
- <div className="flex items-center space-x-3 p-2.5 sm:p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs">
- <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 border border-amber-200">
- <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-700 fill-amber-700" />
- </div>
- <span className="font-extrabold text-[14px] sm:text-sm text-slate-800 leading-snug">
- Đặt ca trực tiếp • Không trùng lịch
- </span>
- </div>
+              <button
+                type="button"
+                onClick={() => onOpenAuth("login", "OWNER")}
+                className="px-5 py-3 rounded-md bg-white hover:bg-slate-50 text-slate-800 font-bold text-[15px] border border-slate-300 flex items-center gap-2 cursor-pointer"
+              >
+                <Shield className="w-4 h-4 text-[#0369a1]" />
+                <span>Dành Cho Chủ Sân</span>
+              </button>
+            </div>
+          </div>
 
- <div className="flex items-center space-x-3 p-2.5 sm:p-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs">
- <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sky-100 flex items-center justify-center shrink-0 border border-sky-200">
- <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-700 fill-sky-700" />
- </div>
- <span className="font-extrabold text-[14px] sm:text-sm text-slate-800 leading-snug">
- Sân 5 · 7 · 11 &amp; Futsal
- </span>
- </div>
- </div>
+          <div className="hidden lg:flex lg:col-span-5 items-center justify-center">
+            <div className="w-full max-w-[360px]">
+              <SafeImage
+                src="/images/epic-goal-player.png"
+                alt="Đặt sân bóng đá trực tuyến"
+                className="w-full h-auto object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
 
- {/* Concise Thesis-Aligned Description (rút gọn trên mobile) */}
- <p className="text-[14px] sm:text-base text-slate-600 font-medium leading-relaxed max-w-2xl pt-1">
- <strong>Đặt sân online</strong>, cọc <strong>VietQR</strong>, quản lý ca sân và giải đấu.
- </p>
+      {/* KHUNG TÌM KIẾM SÂN TRỐNG TRUYỀN THỐNG */}
+      <div className="bg-white rounded-lg p-4 sm:p-6 border border-slate-300 shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+            <Search className="w-5 h-5 text-[#0369a1]" />
+            <span>Tra Cứu Sân Trống</span>
+          </h2>
+          <span className="hidden sm:inline-flex items-center gap-1.5 text-[14px] font-semibold text-slate-600">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>Đặt cọc 50% qua VietQR</span>
+          </span>
+        </div>
 
- {/* Action Button Strip */}
- <div className="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
- <button
- type="button"
- onClick={() => onOpenAuth("login", "PLAYER")}
- className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] sm:text-sm tracking-wider shadow-sm transition-all active:scale-[0.98] flex items-center justify-center space-x-2.5 cursor-pointer"
- >
- <Users className="w-4 h-4 text-white" />
- <span>Đặt Sân Ngay →</span>
- </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+          <div className="space-y-1">
+            <label htmlFor="hero-city" className="text-[14px] font-bold text-slate-700 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-slate-500" />
+              <span>Khu vực</span>
+            </label>
+            <select
+              id="hero-city"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="w-full bg-white border border-slate-300 rounded-md px-3 py-2.5 text-[14px] font-semibold text-slate-900 focus:outline-none focus:border-[#0369a1]"
+            >
+              <option value="dn">Toàn Đà Nẵng</option>
+              <option value="dn-hai-chau">Hải Châu · Thanh Khê · Sơn Trà</option>
+              <option value="dn-cam-le">Cẩm Lệ · Liên Chiểu · Ngũ Hành Sơn</option>
+            </select>
+          </div>
 
- <button
- type="button"
- onClick={() => onOpenAuth("login", "OWNER")}
- className="w-full sm:w-auto px-7 py-3.5 sm:py-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-[14px] sm:text-sm border border-slate-200 transition-all active:scale-[0.98] flex items-center justify-center space-x-2 cursor-pointer shadow-xs"
- >
- <Shield className="w-4 h-4 text-sky-700" />
- <span>Cổng Chủ Sân</span>
- </button>
- </div>
- </div>
+          <div className="space-y-1">
+            <label htmlFor="hero-pitch-type" className="text-[14px] font-bold text-slate-700 flex items-center gap-1">
+              <Trophy className="w-3.5 h-3.5 text-slate-500" />
+              <span>Loại sân</span>
+            </label>
+            <select
+              id="hero-pitch-type"
+              value={pitchType}
+              onChange={(e) => setPitchType(e.target.value)}
+              className="w-full bg-white border border-slate-300 rounded-md px-3 py-2.5 text-[14px] font-semibold text-slate-900 focus:outline-none focus:border-[#0369a1]"
+            >
+              <option value="7">Sân 7 người</option>
+              <option value="5">Sân 5 / Futsal</option>
+              <option value="11">Sân 11 người</option>
+            </select>
+          </div>
 
- {/* RIGHT COLUMN: CLEAN REAL PLAYER PHOTO WITHOUT UNNECESSARY BADGES (5 COLS) — ẩn trên mobile để gọn banner */}
- <div className="hidden lg:flex lg:col-span-5 relative items-center justify-center">
- {/* Subtle Stadium Light Flare */}
- <div className="absolute w-[360px] sm:w-[480px] h-[360px] sm:h-[480px] rounded-full bg-white/10 blur-3xl pointer-events-none" />
+          <div className="space-y-1">
+            <label htmlFor="hero-date" className="text-[14px] font-bold text-slate-700 flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-slate-500" />
+              <span>Ngày đặt</span>
+            </label>
+            <select
+              id="hero-date"
+              value={dateChoice}
+              onChange={(e) => setDateChoice(e.target.value)}
+              className="w-full bg-white border border-slate-300 rounded-md px-3 py-2.5 text-[14px] font-semibold text-slate-900 focus:outline-none focus:border-[#0369a1]"
+            >
+              <option value="today">Hôm nay</option>
+              <option value="tomorrow">Ngày mai</option>
+              <option value="weekend">Cuối tuần</option>
+            </select>
+          </div>
 
- {/* The Actual Player Image from Nicepage Template - Clean & Dramatic */}
- <div className="relative z-10 w-full max-w-[260px] sm:max-w-[480px]">
- <SafeImage
- src="/images/epic-goal-player.png"
- alt="Striker Scoring Epic Last-Minute Goal"
- className="w-full h-auto object-contain drop-shadow-[0_25px_35px_rgba(0,0,0,0.55)]"
- />
- </div>
- </div>
+          <div className="space-y-1">
+            <label htmlFor="hero-timeslot" className="text-[14px] font-bold text-slate-700 flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-slate-500" />
+              <span>Khung giờ</span>
+            </label>
+            <select
+              id="hero-timeslot"
+              value={timeSlot}
+              onChange={(e) => setTimeSlot(e.target.value)}
+              className="w-full bg-white border border-slate-300 rounded-md px-3 py-2.5 text-[14px] font-semibold text-slate-900 focus:outline-none focus:border-[#0369a1]"
+            >
+              <option value="gold">16:00 - 20:00 (Giờ cao điểm)</option>
+              <option value="afternoon">14:00 - 16:00 (Buổi chiều)</option>
+              <option value="night">20:00 - 22:00 (Buổi tối)</option>
+              <option value="all">Tất cả khung giờ</option>
+            </select>
+          </div>
 
- </div>
- </div>
- </div>
+          <button
+            type="button"
+            onClick={() => onOpenAuth("login", "PLAYER")}
+            className="w-full px-5 py-2.5 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Search className="w-4 h-4" />
+            <span>Tìm Sân</span>
+          </button>
+        </div>
+      </div>
 
- {/* ========================================================
- SECTION 2: BỘ LỌC TÌM SÂN TRỐNG GPS & GIỜ VÀNG (DƯỚI TỰ SÁNG TẠO)
- ======================================================== */}
- <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-8 border border-slate-200 shadow-xl space-y-3 sm:space-y-5">
- <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 ">
- <div className="flex items-center space-x-2.5">
- <div className="w-8 h-8 rounded-xl bg-[#0369a1] text-white flex items-center justify-center">
- <Search className="w-4 h-4" />
- </div>
- <div>
- <span className="text-[14px] sm:text-sm font-black text-slate-900 tracking-wider block">
- Tìm Sân Trống
- </span>
- </div>
- </div>
- <span className="hidden sm:inline-block text-[14px] font-mono font-bold text-sky-800 bg-sky-100/70 px-2.5 py-1 rounded-lg border border-sky-300 ">
- 
- </span>
- </div>
+      {/* THỐNG KÊ HỆ THỐNG ĐƠN GIẢN */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-white p-4 rounded-lg border border-slate-300">
+          <div className="text-2xl font-bold text-slate-900">
+            {stats.loading ? "—" : stats.pitches}
+          </div>
+          <div className="text-[14px] font-semibold text-slate-600">Cụm sân hoạt động</div>
+        </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5">
- {/* 1. Location Select */}
- <div className="space-y-1.5">
- <label htmlFor="hero-city" className="text-[14px] font-extrabold text-slate-500 tracking-wider flex items-center">
- <MapPin className="w-3.5 h-3.5 mr-1 text-rose-600" />
- Khu vực sân
- </label>
- <select
- id="hero-city"
- value={city}
- onChange={(e) => setCity(e.target.value)}
- className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
- >
- <option value="dn">Toàn Đà Nẵng</option>
- <option value="dn-hai-chau">Hải Châu · Thanh Khê · Sơn Trà</option>
- <option value="dn-cam-le">Cẩm Lệ · Liên Chiểu · Ngũ Hành Sơn</option>
- <option value="dn-lien-chieu">Khu vực ven biển & trung tâm</option>
- </select>
- </div>
+        <div className="bg-white p-4 rounded-lg border border-slate-300">
+          <div className="text-2xl font-bold text-slate-900">
+            {stats.loading ? "—" : stats.tournaments}
+          </div>
+          <div className="text-[14px] font-semibold text-slate-600">Giải đấu phong trào</div>
+        </div>
 
- {/* 2. Pitch Size Select */}
- <div className="space-y-1.5">
- <label htmlFor="hero-pitch-type" className="text-[14px] font-extrabold text-slate-500 tracking-wider flex items-center">
- <Trophy className="w-3.5 h-3.5 mr-1 text-amber-700" />
- Quy chuẩn sân
- </label>
- <select
- id="hero-pitch-type"
- value={pitchType}
- onChange={(e) => setPitchType(e.target.value)}
- className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
- >
- <option value="7">Sân 7 Người</option>
- <option value="5">Sân 5 / Futsal</option>
- <option value="11">Sân 11 Người</option>
- </select>
- </div>
+        <div className="bg-white p-4 rounded-lg border border-slate-300">
+          <div className="text-2xl font-bold text-slate-900">
+            {stats.loading ? "—" : stats.matchesPlayed}
+          </div>
+          <div className="text-[14px] font-semibold text-slate-600">Trận đã diễn ra</div>
+        </div>
 
- {/* 3. Date Select */}
- <div className="space-y-1.5">
- <label htmlFor="hero-date" className="text-[14px] font-extrabold text-slate-500 tracking-wider flex items-center">
- <Clock className="w-3.5 h-3.5 mr-1 text-[#0369a1]" />
- Ngày thi đấu
- </label>
- <select
- id="hero-date"
- value={dateChoice}
- onChange={(e) => setDateChoice(e.target.value)}
- className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
- >
- <option value="today">Hôm nay</option>
- <option value="tomorrow">Ngày mai</option>
- <option value="weekend">Cuối tuần</option>
- </select>
- </div>
-
- {/* 4. Time Slot Select */}
- <div className="space-y-1.5">
- <label htmlFor="hero-timeslot" className="text-[14px] font-extrabold text-slate-500 tracking-wider flex items-center">
- <Flame className="w-3.5 h-3.5 mr-1 text-orange-500" />
- Khung giờ đá
- </label>
- <select
- id="hero-timeslot"
- value={timeSlot}
- onChange={(e) => setTimeSlot(e.target.value)}
- className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] shadow-xs cursor-pointer"
- >
- <option value="gold">Giờ Vàng: 16:00 - 20:00</option>
- <option value="afternoon">Chiều Sớm: 14:00 - 16:00</option>
- <option value="night">Đêm: 20:00 - 22:00</option>
- <option value="all">Tất cả khung giờ</option>
- </select>
- </div>
- </div>
-
- {/* Action Row */}
- <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 ">
- <div className="hidden sm:flex items-center space-x-2 text-[14px] sm:text-[14px] font-semibold text-slate-600 ">
- <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
- <span>Cọc 50% qua VietQR</span>
- </div>
-
- <button
- type="button"
- onClick={() => onOpenAuth("login", "PLAYER")}
- className="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-[#0369a1] to-[#075985] hover:from-[#075985] hover:to-[#0369a1] text-white font-black text-[14px] sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
- >
- <Search className="w-4 h-4" />
- <span>Tìm Sân Trống</span>
- </button>
- </div>
- </div>
-
- {/* ========================================================
- SECTION 3: 4 CHỈ SỐ LẤY TRỰC TIẾP TỪ CSDL
- ======================================================== */}
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
- <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1 min-w-0">
- <div className="text-xl sm:text-3xl font-mono font-black text-[#0b4f6c] ">
- {stats.loading ? "—" : stats.pitches}
- </div>
- <div className="text-[14px] sm:text-[14px] font-bold text-slate-500 tracking-wider">Cụm sân</div>
- </div>
-
- <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1 min-w-0">
- <div className="text-xl sm:text-3xl font-mono font-black text-sky-700 ">
- {stats.loading ? "—" : stats.tournaments}
- </div>
- <div className="text-[14px] sm:text-[14px] font-bold text-slate-500 tracking-wider">Giải đấu</div>
- </div>
-
- <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1 min-w-0">
- <div className="text-xl sm:text-3xl font-mono font-black text-amber-700">{stats.loading ? "—" : stats.matchesPlayed}</div>
- <div className="text-[14px] sm:text-[14px] font-bold text-slate-500 tracking-wider">Trận đã đấu</div>
- </div>
-
- <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1 min-w-0">
- <div className="text-xl sm:text-3xl font-mono font-black text-[#0369a1]">{stats.loading ? "—" : stats.posts}</div>
- <div className="text-[14px] sm:text-[14px] font-bold text-slate-500 tracking-wider">Kèo đang mở</div>
- </div>
- </div>
- </div>
- );
+        <div className="bg-white p-4 rounded-lg border border-slate-300">
+          <div className="text-2xl font-bold text-slate-900">
+            {stats.loading ? "—" : stats.posts}
+          </div>
+          <div className="text-[14px] font-semibold text-slate-600">Kèo giao hữu đang mở</div>
+        </div>
+      </div>
+    </div>
+  );
 }

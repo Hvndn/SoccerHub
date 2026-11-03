@@ -47,7 +47,7 @@ const [subTab, setSubTab] = useState<"matchmaking" | "tournaments" | "organizer"
  return () => { alive = false; };
  }, [subTab]);
 
- // Badge "N giải" lấy từ CSDL (cache dùng chung — không gọi API trùng lặp)
+ // Badge "N giải" lấy  (cache dùng chung — không gọi API trùng lặp)
  useEffect(() => {
  let alive = true;
  fetchTournaments()

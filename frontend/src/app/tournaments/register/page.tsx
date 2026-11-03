@@ -219,7 +219,7 @@ function RegisterTeamWizard() {
  backLabel="Quay lại"
  crumb="Đăng ký đội thi đấu"
  title="Đăng ký đội bóng tham dự giải"
- subtitle="Hoàn tất các bước để nộp danh sách đội và giữ chỗ thi đấu trong CSDL."
+ subtitle="Hoàn tất các bước để nộp danh sách đội và giữ chỗ thi đấu ."
  >
  <WizardStepper
  steps={steps}
@@ -487,7 +487,7 @@ function RegisterTeamWizard() {
  </div>
  <p className="flex items-center gap-2 text-[14px] text-slate-500">
  <Trophy className="w-3.5 h-3.5 text-sky-700" />
- Hồ sơ được lưu vào CSDL & giữ chỗ tự động cho đội của bạn.
+ Hồ sơ được lưu vào hệ thống & giữ chỗ tự động cho đội của bạn.
  </p>
  {submitError && (
  <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-[14px] font-bold text-rose-700 ">

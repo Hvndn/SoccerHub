@@ -189,7 +189,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  const closeTime = item.closeTime || "22:30";
  const slotDur = item.slotDurationMinutes || 120;
 
- // Địa chỉ thật từ CSDL — không có thì để trống, không bịa địa chỉ
+ // Địa chỉ thật  — không có thì để trống, không bịa địa chỉ
  const address = item.address || item.area || "Chưa khai báo địa chỉ";
  const pitchName = item.name || "Cụm sân chưa đặt tên";
 
@@ -317,7 +317,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  const userPhone = (user?.phone ?? "").toString().replace(/\s/g, "");
  const hasUser = Boolean(user);
 
- // Giải đấu trong CSDL — dùng để đếm số trận đã đá của cầu thủ.
+ // Giải đấu  — dùng để đếm số trận đã đá của cầu thủ.
  const [tournaments, setTournaments] = useState<any[]>([]);
  useEffect(() => {
  let alive = true;
@@ -343,7 +343,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  const myRecord: string = myTeamEntry?.record ?? "0-0-0";
  const myWinRate: number = myTeamEntry?.winRate ?? 0;
 
- // Kèo đang mở thật từ bảng matchmaking_posts trong CSDL
+ // Kèo đang mở thật từ bảng matchmaking_posts 
  const [openPosts, setOpenPosts] = useState<any[]>([]);
  const [postsLoading, setPostsLoading] = useState(true);
  const [creatingPost, setCreatingPost] = useState(false);
@@ -371,7 +371,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  }, [fetchOpenPosts]);
 
  /**
- * Số trận đã đá của cầu thủ: quét các giải trong CSDL, tìm đội do chính
+ * Số trận đã đá của cầu thủ: quét các giải , tìm đội do chính
  * người dùng làm trọng tài/đội trưởng rồi đếm các trận đã có kết quả.
  */ const userMatchesPlayed = React.useMemo(() => {
  if (!userPhone) return 0;
@@ -398,7 +398,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  return played;
  }, [tournaments, userPhone]);
 
-/** Mã loại sân trong CSDL (SAN_5/SAN_7/SAN_11/FUTSAL) -> id của tab bộ lọc. */
+/** Mã loại sân  (SAN_5/SAN_7/SAN_11/FUTSAL) -> id của tab bộ lọc. */
 const SPORT_CODE_TO_TAB: Record<string, string> = {
   SAN_5: "SAN5",
   SAN_7: "SAN7",
@@ -443,7 +443,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
     });
     if (!hit) return false;
   }
-  // Quy mô sân con (mã trong CSDL: SAN_5/SAN_7/SAN_11)
+  // Quy mô sân con (mã : SAN_5/SAN_7/SAN_11)
   if (selectedPitchFormat !== "ALL" && !(p.pitchTypes ?? []).includes(selectedPitchFormat)) return false;
   // Chỉ xem cụm sân còn ca trống tối nay
   if (onlyAvailableTonight) {
@@ -660,7 +660,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
          {aiLoading ? (
            <><Loader2 className="w-4 h-4 animate-spin" /><span>Đang lọc…</span></>
          ) : (
-           <><Sparkles className="w-4 h-4" /><span>AI Gợi Ý Sân</span></>
+           <><Sparkles className="w-4 h-4" /><span>Gợi Ý Sân Phù Hợp</span></>
          )}
        </button>
      </div>
@@ -1212,7 +1212,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
 
  {/* MODAL MÃ QR BARRIER TOÀN MÀN HÌNH */}
  {showQrModal && (
- <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+ <div className="fixed inset-0 z-50 bg-slate-950/80  flex items-center justify-center p-4 overflow-y-auto">
  <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-sm w-full border border-slate-200 shadow-2xl text-center space-y-4 animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
  <div className="flex items-center justify-between pb-2 border-b border-slate-100 ">
  <span className="text-[14px] font-black text-slate-900">

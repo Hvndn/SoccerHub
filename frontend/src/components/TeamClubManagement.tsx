@@ -20,7 +20,7 @@ interface TeamClubManagementProps {
 }
 
 /**
- * Quản lý đội bóng — toàn bộ dữ liệu lấy từ CSDL:
+ * Quản lý đội bóng — toàn bộ dữ liệu lấy :
  * - Danh sách đội = các đội bạn làm đội trưởng (đăng ký vào giải, bảng tournament_teams embed trong tournament).
  * - Thành viên = các tài khoản cộng đồng có số điện thoại khớp (hệ thống không lưu danh sách cầu thủ theo đội nên hiển thị theo phong độ/địa bàn).
  * - Lịch đấu = các trận có đội của bạn trong bracketJson của giải.

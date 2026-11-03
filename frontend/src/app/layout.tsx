@@ -29,7 +29,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
- title: "Turfzone - Nền Tảng Quản Lý Sân Bóng & Giải Đấu Thông Minh",
+ title: "Turfzone - Hệ Thống Đặt Sân Bóng Đá & Tổ Chức Giải Đấu",
  description: "Nền tảng quản lý sân bóng, giải đấu và AI gợi ý sân thông minh tích hợp lịch sử thi đấu",
 };
 

@@ -604,7 +604,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
           className="group relative overflow-hidden rounded-2xl px-4 py-3 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
           style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}
         >
-          <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/20 rounded-full blur-3xl" />
+          
           <div className="relative flex items-center gap-3">
             <span className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
               <Flame className="w-5 h-5 text-white" />
@@ -624,7 +624,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
           className="group relative overflow-hidden rounded-2xl px-4 py-3 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
           style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}
         >
-          <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/20 rounded-full blur-3xl" />
+          
           <div className="relative flex items-center gap-3">
             <span className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
               <Radio className="w-5 h-5 text-white" />
@@ -677,7 +677,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
               <button
                 type="button"
                 onClick={() => onOpenAuth?.("login", "PLAYER")}
-                className="mt-2 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 shadow-[0_0_18px_rgba(74,222,128,0.4)]"
+                className="mt-2 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 shadow-sm"
               >
                 Đăng nhập ngay
               </button>
@@ -764,7 +764,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
             <button
               type="button"
               onClick={() => onOpenAuth?.("login", "PLAYER")}
-              className="mt-1 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 shadow-[0_0_18px_rgba(74,222,128,0.4)]"
+              className="mt-1 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 shadow-sm"
             >
               Đăng nhập ngay
             </button>

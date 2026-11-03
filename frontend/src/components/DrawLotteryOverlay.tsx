@@ -381,7 +381,7 @@ export default function DrawLotteryOverlay({
       className={
         inline
           ? "w-full animate-fade-in my-3"
-          : "fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in overflow-y-auto"
+          : "fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85  animate-fade-in overflow-y-auto"
       }
     >
       <div
@@ -394,8 +394,8 @@ export default function DrawLotteryOverlay({
         }
       >
         {/* Ánh sáng sao nền UEFA Champions League Atmosphere */}
-        <div className="absolute -top-24 -left-24 w-72 h-72 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+        
+        
 
         {/* HEADER: UEFA CHAMPIONS LEAGUE DRAW CEREMONY BANNER */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-sky-800/40 pb-4 relative z-10">
@@ -509,7 +509,7 @@ export default function DrawLotteryOverlay({
             </div>
 
             {/* THÂN BÁT THỦY TINH PHA LÊ HÌNH BÁN CẦU QUẢ BÓNG */}
-            <div className="absolute inset-x-0 bottom-3 h-[140px] sm:h-[155px] rounded-b-[140px] rounded-t-[20px] bg-gradient-to-b from-sky-400/25 via-sky-600/15 to-slate-900/60 backdrop-blur-md border-2 border-sky-300/40 shadow-2xl pointer-events-none overflow-hidden">
+            <div className="absolute inset-x-0 bottom-3 h-[140px] sm:h-[155px] rounded-b-[140px] rounded-t-[20px] bg-gradient-to-b from-sky-400/25 via-sky-600/15 to-slate-900/60  border-2 border-sky-300/40 shadow-2xl pointer-events-none overflow-hidden">
               {/* Đường vân hoa văn quả bóng Champions League trên thân chậu thủy tinh */}
               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]" />
               <div className="absolute top-2 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-white/70 to-transparent" />
