@@ -31,7 +31,8 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
  const router = useRouter();
- const [activeTab, setActiveTab] = useState("booking");
+ const [targetTournamentId, setTargetTournamentId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("booking");
  const { user: authUser, logout: authLogout, isLoading: authLoading } = useAuth();
  const [localUser, setLocalUser] = useState<any | null>(null);
 
@@ -46,16 +47,45 @@ export default function Home() {
  const [authMode, setAuthMode] = useState<"login" | "register">("login");
  const [authRole, setAuthRole] = useState<"PLAYER" | "OWNER" | "ORGANIZER">("PLAYER");
 
- // Hỗ trợ nhận tab qua URL query param nếu có
- React.useEffect(() => {
- if (typeof window !== "undefined") {
- const params = new URLSearchParams(window.location.search);
- const urlTab = params.get("tab");
- if (urlTab) {
- setActiveTab(urlTab);
- }
- }
- }, []);
+   // Đồng bộ tab với URL và lắng nghe nút Back / Forward của trình duyệt
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const readUrlTab = () => {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get("tab");
+      if (urlTab) {
+        setActiveTab(urlTab);
+        sessionStorage.setItem("turfzone_active_tab", urlTab);
+      } else {
+        const savedTab = sessionStorage.getItem("turfzone_active_tab");
+        if (savedTab) {
+          setActiveTab(savedTab);
+          const url = new URL(window.location.href);
+          url.searchParams.set("tab", savedTab);
+          window.history.replaceState({ tab: savedTab }, "", url.toString());
+        } else {
+          setActiveTab("booking");
+        }
+      }
+    };
+
+    // Đọc URL khi mới vào trang
+    readUrlTab();
+
+    // Lắng nghe sự kiện Back/Forward của trình duyệt
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state && e.state.tab) {
+        setActiveTab(e.state.tab);
+        sessionStorage.setItem("turfzone_active_tab", e.state.tab);
+      } else {
+        readUrlTab();
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
  // Người dùng hiện tại: Ưu tiên user đăng nhập thật từ AuthContext, hoặc session đăng nhập tạm localUser
  // Khi đăng xuất: cả hai đều là null => Trở về trạng thái Guest tự nhiên, không bị khóa cứng
@@ -111,7 +141,7 @@ export default function Home() {
   // trao đổi với khách (hỏi ca trống, xác nhận đặt sân, nhóm chat riêng).
   // "profile" = Hồ sơ cá nhân của chính chủ sân (họ tên, SĐT, khu vực, avatar);
   // trước đây thiếu tab này nên chủ sân không có chỗ sửa thông tin cá nhân.
-  const OWNER_TABS = [...OWNER_MANAGE_TABS, "community", "matchmaking", "profile"];
+  const OWNER_TABS = [...OWNER_MANAGE_TABS, "community", "matchmaking", "profile", "tournaments"];
  // Tab chỉ dành cho ORGANIZER hoặc người có quyền điều hành giải
  const ORGANIZER_TABS = ["organizer"];
  // Tab yêu cầu đăng nhập (bất kỳ vai trò nào cũng phải có tài khoản)
@@ -262,6 +292,12 @@ if (newTab === activeTab) return;
  const startedAt = Date.now();
  setTimeout(() => {
  setActiveTab(newTab);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("turfzone_active_tab", newTab);
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", newTab);
+        window.history.pushState({ tab: newTab }, "", url.toString());
+      }
  window.scrollTo({ top: 0, behavior: "smooth" });
  const elapsed = Date.now() - startedAt;
  const remaining = Math.max(0, MIN_TAB_LOADING_MS - elapsed);
@@ -440,12 +476,13 @@ if (newTab === activeTab) return;
  )}
 
  {activeTab === "tournaments" && (
- <CommunityForm 
- user={currentUser} 
- defaultSubTab="tournaments"
- onOpenAuth={handleOpenAuth}
- />
- )}
+            <TournamentLeaderboard
+              user={currentUser}
+              initialTournamentId={targetTournamentId}
+              onBackToHome={() => handleTabChange("booking")}
+              onRequestLogin={() => handleOpenAuth("login", "PLAYER")}
+            />
+          )}
 
  {activeTab === "matchmaking" && (
   <MatchmakingMarketplace user={currentUser} />
@@ -544,10 +581,14 @@ if (newTab === activeTab) return;
  {(activeTab === "my-activities" || activeTab === "schedule") && (
  currentUser ? (
  <ActivitySchedule
- user={currentUser}
- onBackToHome={() => handleTabChange("booking")}
- onNavigateTab={handleTabChange}
- />
+                user={currentUser}
+                onBackToHome={() => handleTabChange(currentUser?.role === "OWNER" ? "admin" : "booking")}
+                onNavigateTab={handleTabChange}
+                onOpenBracket={(id) => {
+                  if (id) setTargetTournamentId(Number(id));
+                  handleTabChange("tournaments");
+                }}
+              />
  ) : (
  <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
  <div className="w-16 h-16 rounded-2xl bg-amber-500/10 mx-auto flex items-center justify-center">
@@ -610,16 +651,18 @@ if (newTab === activeTab) return;
  )}
 
  {activeTab === "organizer" && (
- (currentUser?.role === "ORGANIZER" || currentUser?.role === "OWNER") ? (
- <CommunityForm 
- user={currentUser} 
- defaultSubTab="organizer"
- onOpenAuth={handleOpenAuth}
- onStartDm={handleStartDm}
- onNavigateTab={handleTabChange}
- onOpenTournamentChat={handleOpenTournamentChat}
- />
- ) : currentUser ? (
+            (currentUser?.role === "ORGANIZER" || currentUser?.role === "OWNER") ? (
+              <TournamentOrganizerPortal
+                user={currentUser}
+                onNavigateTab={handleTabChange}
+                onStartDm={handleStartDm}
+                onOpenTournamentChat={handleOpenTournamentChat}
+                onOpenBracket={(id) => {
+                if (id) setTargetTournamentId(Number(id));
+                handleTabChange("tournaments");
+              }}
+              />
+            ) : currentUser ? (
  <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
  <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
  <ShieldAlert className="w-8 h-8 text-rose-600" />

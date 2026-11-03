@@ -231,9 +231,9 @@ public class ChatController {
     ) {
         String q = (query == null) ? "" : query.trim().toLowerCase();
         String roleFilter = (role == null) ? "" : role.trim().toUpperCase();
-        // Yeu cau query toi thieu de tranh danh sach toan bo user (phan trang / chinh phu).
-        // (Truoc day endpoint tra ve 20 user dau tien khong loc -> nguy hiem lo du lieu nhat).
-        if (q.isEmpty()) {
+        // Chỉ chặn khi cả query và roleFilter đều rỗng (tránh dump toàn bộ CSDL user).
+        // Khi có roleFilter (ví dụ B2B: OWNER tìm ORGANIZER, ORGANIZER tìm OWNER) -> cho phép lấy danh sách đối tác.
+        if (q.isEmpty() && roleFilter.isEmpty()) {
             return ResponseEntity.ok(new ArrayList<Map<String, Object>>());
         }
         List<User> users = userRepository.findAll();
@@ -243,7 +243,7 @@ public class ChatController {
             String name = u.getFullName() != null ? u.getFullName() : "";
             String email = u.getEmail() != null ? u.getEmail() : "";
             String userRole = u.getRole() != null ? u.getRole().name() : "PLAYER";
-            if (!roleFilter.isEmpty() && !roleFilter.equals(userRole)) continue;
+            if (!roleFilter.isEmpty() && !roleFilter.equalsIgnoreCase(userRole)) continue;
             if (q.isEmpty() || name.toLowerCase().contains(q) || email.toLowerCase().contains(q)) {
                 Map<String, Object> row = new LinkedHashMap<>();
                 row.put("name", name.isEmpty() ? email.split("@")[0] : name);
