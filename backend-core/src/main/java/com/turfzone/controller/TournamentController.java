@@ -1186,7 +1186,9 @@ public class TournamentController {
     @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/simulate-results")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
-    public ResponseEntity<?> simulateResults(@PathVariable Long id) {
+    public ResponseEntity<?> simulateResults(
+            @PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "false") boolean nextStageOnly) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
@@ -1229,10 +1231,34 @@ public class TournamentController {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         int simulated = 0;
         List<GoalEvent> goalEvents = new ArrayList<>();
+        String currentSimulatedStage = null;
+
         for (Map<String, Object> round : rounds) {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> matches = (List<Map<String, Object>>) round.get("matches");
             if (matches == null) continue;
+
+            // Kiem tra xem vong nay co tran nao san sang da khong
+            boolean hasPlayableInThisRound = false;
+            for (Map<String, Object> checkM : matches) {
+                if (!"SCHEDULED".equals(checkM.get("status")) && !"TBD".equals(checkM.get("status"))) continue;
+                @SuppressWarnings("unchecked")
+                Map<String, Object> ta = (Map<String, Object>) checkM.get("teamA");
+                @SuppressWarnings("unchecked")
+                Map<String, Object> tb = (Map<String, Object>) checkM.get("teamB");
+                if (ta != null && tb != null && !Boolean.TRUE.equals(ta.get("tbd")) && !Boolean.TRUE.equals(tb.get("tbd"))) {
+                    hasPlayableInThisRound = true;
+                    break;
+                }
+            }
+
+            if (!hasPlayableInThisRound) {
+                continue; // Vong nay da thi dau xong hoac chua co doi
+            }
+
+            currentSimulatedStage = String.valueOf(round.getOrDefault("name", "Vòng đấu"));
+            int simulatedInThisRound = 0;
+
             for (Map<String, Object> m : matches) {
                 // Trận chờ (TBD) nhưng đã đủ 2 đội (do vòng trước điền vào) vẫn đá được
                 if (!"SCHEDULED".equals(m.get("status")) && !"TBD".equals(m.get("status"))) continue;
@@ -1317,6 +1343,12 @@ public class TournamentController {
                             .goals(e.getValue()).assists(0).build());
                 }
                 simulated++;
+                simulatedInThisRound++;
+            }
+
+            // Neu chi gia lap tung giai doan (nextStageOnly) va vong nay da gia lap tran -> dung ngay de BTC xem ket qua
+            if (nextStageOnly && simulatedInThisRound > 0) {
+                break;
             }
         }
         if (!goalEvents.isEmpty()) {
@@ -1344,17 +1376,28 @@ public class TournamentController {
 
         if (simulated == 0) {
             return ResponseEntity.ok(Map.of(
-                    "message", "Không còn trận nào chờ đá (các trận đã DONE hoặc chưa xếp đội).",
+                    "message", "Tất cả các trận đấu của giải đã hoàn tất (hoặc chưa đủ đội xếp cặp).",
                     "simulated", 0,
+                    "champion", champion != null ? champion : "",
+                    "completed", champion != null,
                     "bracket", bracket));
         }
-        String msg = "Đã giả lập " + simulated + " trận."
-                + (champion != null ? " Vô địch: " + champion + "!" : "");
-        return ResponseEntity.ok(Map.of(
-                "message", msg,
-                "simulated", simulated,
-                "champion", champion != null ? champion : "",
-                "bracket", bracket));
+        String msg;
+        if (nextStageOnly && currentSimulatedStage != null) {
+            msg = "Đã giả lập xong " + currentSimulatedStage + " (" + simulated + " trận)."
+                    + (champion != null ? " Vô địch: " + champion + "!" : " Các đội thắng đã tiến vào vòng tiếp theo!");
+        } else {
+            msg = "Đã giả lập toàn giải (" + simulated + " trận)."
+                    + (champion != null ? " Vô địch: " + champion + "!" : "");
+        }
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("message", msg);
+        resp.put("simulated", simulated);
+        resp.put("stage", currentSimulatedStage != null ? currentSimulatedStage : "");
+        resp.put("champion", champion != null ? champion : "");
+        resp.put("completed", champion != null);
+        resp.put("bracket", bracket);
+        return ResponseEntity.ok(resp);
     }
 
     /** Chia ngẫu nhiên số bàn cho các thành viên (không đội hình thì dùng số áo). */
@@ -1917,6 +1960,7 @@ public class TournamentController {
      * BTC xác nhận đã thu lệ phí của một đội → CONFIRMED (mới được bốc thăm).
      */
     @PostMapping("/{id}/teams/confirm-payment")
+    @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> confirmTeamPayment(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
@@ -1952,6 +1996,10 @@ public class TournamentController {
             }
         }
         found.setRegistrationStatus("CONFIRMED");
+        tournament.setTeams(new ArrayList<>(tournament.getTeams()));
+        tournament.setRegisteredTeams((int) tournament.getTeams().stream()
+                .filter(x -> "CONFIRMED".equalsIgnoreCase(x.getRegistrationStatus()) || "SIMULATED".equalsIgnoreCase(x.getRegistrationStatus()) || Boolean.TRUE.equals(x.getSimulated()))
+                .count());
         tournamentRepository.save(tournament);
         return ResponseEntity.ok(Map.of(
                 "message", "Đã xác nhận lệ phí của " + found.getTeamName() + ".",
@@ -1988,6 +2036,7 @@ public class TournamentController {
 
     /** Duyệt đội vào giải (chuyển PENDING_PAYMENT → CONFIRMED). */
     @PostMapping("/{id}/teams/{teamName}/approve")
+    @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> approveTeam(@PathVariable Long id, @PathVariable String teamName) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
@@ -1996,18 +2045,20 @@ public class TournamentController {
         for (TournamentTeamEntry team : t.getTeams()) {
             if (team.getTeamName() != null && team.getTeamName().equalsIgnoreCase(teamName)
                     && "PENDING_PAYMENT".equals(team.getRegistrationStatus())) {
-                // Không duyệt vượt sức chứa của giải (confirmTeamPayment đã có check này,
-                // approveTeam thì không -> giải có thể vượt số đội).
                 int cap = t.getTotalTeams() != null ? t.getTotalTeams() : 0;
                 long confirmed = t.getTeams().stream()
-                        .filter(x -> "CONFIRMED".equals(x.getRegistrationStatus()) || "SIMULATED".equals(x.getRegistrationStatus()))
+                        .filter(x -> "CONFIRMED".equalsIgnoreCase(x.getRegistrationStatus()) || "SIMULATED".equalsIgnoreCase(x.getRegistrationStatus()) || Boolean.TRUE.equals(x.getSimulated()))
                         .count();
                 if (cap > 0 && confirmed >= cap) {
                     return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu đã đủ số đội (" + cap + ")."));
                 }
                 team.setRegistrationStatus("CONFIRMED");
+                t.setTeams(new ArrayList<>(t.getTeams()));
+                t.setRegisteredTeams((int) t.getTeams().stream()
+                        .filter(x -> "CONFIRMED".equalsIgnoreCase(x.getRegistrationStatus()) || "SIMULATED".equalsIgnoreCase(x.getRegistrationStatus()) || Boolean.TRUE.equals(x.getSimulated()))
+                        .count());
                 tournamentRepository.save(t);
-                return ResponseEntity.ok(Map.of("message", "Đã duyệt đội " + teamName + " vào giải."));
+                return ResponseEntity.ok(Map.of("message", "Đã duyệt đội " + teamName + " vào giải.", "team", teamName));
             }
         }
         return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội chờ duyệt: " + teamName));
@@ -2015,18 +2066,23 @@ public class TournamentController {
 
     /** Từ chối đội (xóa khỏi danh sách đăng ký). */
     @PostMapping("/{id}/teams/{teamName}/reject")
+    @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> rejectTeam(@PathVariable Long id, @PathVariable String teamName) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
-        boolean removed = t.getTeams().removeIf(team ->
+        List<TournamentTeamEntry> currentList = new ArrayList<>(t.getTeams());
+        boolean removed = currentList.removeIf(team ->
                 team.getTeamName() != null && team.getTeamName().equalsIgnoreCase(teamName)
                         && "PENDING_PAYMENT".equals(team.getRegistrationStatus()));
         if (!removed) {
             return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội chờ duyệt: " + teamName));
         }
-        t.setRegisteredTeams(t.getTeams().size());
+        t.setTeams(currentList);
+        t.setRegisteredTeams((int) currentList.stream()
+                .filter(x -> "CONFIRMED".equalsIgnoreCase(x.getRegistrationStatus()) || "SIMULATED".equalsIgnoreCase(x.getRegistrationStatus()) || Boolean.TRUE.equals(x.getSimulated()))
+                .count());
         tournamentRepository.save(t);
         return ResponseEntity.ok(Map.of("message", "Đã từ chối đội " + teamName + "."));
     }

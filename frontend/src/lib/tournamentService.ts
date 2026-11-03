@@ -158,7 +158,7 @@ export const capacity = (t: Tournament): number => t.totalTeams ?? 0;
 
 export const isFull = (t: Tournament): boolean => {
   const cap = capacity(t);
-  return cap > 0 && registeredCount(t) >= cap;
+  return cap > 0 && (registeredCount(t) >= cap || confirmedCount(t) >= cap);
 };
 
 export const fillPercent = (t: Tournament): number => {
@@ -381,10 +381,14 @@ export async function fillSimulatedTeams(tournamentId: number, count?: number): 
 };
 
 /** Giả lập kết quả toàn giải (random tỷ số + cầu thủ ghi bàn) — demo BXH/phong độ. Cần ORGANIZER/ADMIN. */
-export async function simulateTournamentResults(tournamentId: number): Promise<{ message: string; simulated: number; champion: string; bracket: TournamentBracketData }> {
+export async function simulateTournamentResults(
+  tournamentId: number,
+  nextStageOnly: boolean = false
+): Promise<{ message: string; simulated: number; champion: string; stage?: string; completed?: boolean; bracket: TournamentBracketData }> {
   try {
-    const body = await apiRequest<{ message: string; simulated: number; champion: string; bracket: TournamentBracketData }>(
-      `/api/v1/tournaments/${tournamentId}/simulate-results`,
+    const query = nextStageOnly ? "?nextStageOnly=true" : "";
+    const body = await apiRequest<{ message: string; simulated: number; champion: string; stage?: string; completed?: boolean; bracket: TournamentBracketData }>(
+      `/api/v1/tournaments/${tournamentId}/simulate-results${query}`,
       { method: 'POST', body: JSON.stringify({}) }
     );
     await fetchTournaments(true);

@@ -93,14 +93,15 @@ const [addCount, setAddCount] = useState("4");
  const [confirmUndo, setConfirmUndo] = useState<BracketMatch | null>(null);
 
  const [confirmSimulate, setConfirmSimulate] = useState(false);
+ const [confirmStageSimulate, setConfirmStageSimulate] = useState(false);
  // Tu cuon toi hop xac nhan inline de BTC khong phai tim (xac nhan hien ngay duoi hang nut).
  useEffect(() => {
- if (!confirmDraw && !confirmSimulate && confirmUndo === null) return;
+ if (!confirmDraw && !confirmSimulate && !confirmStageSimulate && confirmUndo === null) return;
  const raf = requestAnimationFrame(() => {
   document.getElementById("confirm-inline-box")?.scrollIntoView({ behavior: "smooth", block: "center" });
  });
  return () => cancelAnimationFrame(raf);
- }, [confirmDraw, confirmSimulate, confirmUndo]);
+ }, [confirmDraw, confirmSimulate, confirmStageSimulate, confirmUndo]);
  const [simulateBusy, setSimulateBusy] = useState(false);
  const [lottery, setLottery] = useState<{ pairs: { matchId: string; teamA: string; teamB: string }[]; byes: string[] } | null>(null);
  const [activeTab, setActiveTab] = useState<"bracket" | "var_referee" | "standings" | "esheet">("bracket");
@@ -181,6 +182,25 @@ const [addCount, setAddCount] = useState("4");
  }
  }, [selected]);
 
+ const nextPlayableStage = useMemo(() => {
+   if (!bracket?.rounds) return null;
+   for (const r of bracket.rounds) {
+     const hasPlayable = (r.matches ?? []).some(
+       (m) =>
+         m.status !== "DONE" &&
+         m.status !== "BYE" &&
+         m.teamA &&
+         m.teamB &&
+         !m.teamA.tbd &&
+         !m.teamB.tbd
+     );
+     if (hasPlayable) {
+       return r.name;
+     }
+   }
+   return null;
+ }, [bracket]);
+
  // Chi dem doi DA VAO GIAI (da cong le phi) — doi cho phep phi chua duoc tinh vao suc chua
  const teamCount = selected ? confirmedCount(selected) : 0;
  const teamCap = selected?.totalTeams ?? 0;
@@ -195,7 +215,7 @@ const [addCount, setAddCount] = useState("4");
  const scheduledCount = useMemo(
  () =>
  (bracket?.rounds ?? []).reduce(
- (sum, r) => sum + r.matches.filter((m) => !!m.matchDate && m.status !== "BYE").length,
+ (sum, r) => sum + (r.matches ?? []).filter((m) => !!m.matchDate && m.status !== "BYE").length,
  0
  ),
  [bracket]
@@ -208,7 +228,7 @@ const [addCount, setAddCount] = useState("4");
  const playableMatches = useMemo(() => {
  const rows: { match: BracketMatch; roundName: string }[] = [];
  for (const r of bracket?.rounds ?? []) {
- for (const m of r.matches) {
+ for (const m of (r.matches ?? [])) {
  if (!m.teamA || !m.teamB) continue;
  if (m.teamA.tbd || m.teamB.tbd) continue;
  rows.push({ match: m, roundName: r.name });
@@ -259,20 +279,23 @@ const [addCount, setAddCount] = useState("4");
  ...prev,
  ]);
 
- const handleConfirmPayment = async (teamName: string) => {
- if (!selected) return;
- try {
- setConfirmingTeam(teamName);
- const res = await confirmTeamPayment(selected.id, teamName);
-  // Lam moi giai de panel "cho xac nhan le phi" va so doi cap nhat ngay
-  await refreshTournamentInCache(selected.id);
- triggerToast(res.message);
- } catch (err: any) {
- triggerToast(err?.message || "Xác nhận thất bại.");
- } finally {
- setConfirmingTeam(null);
- }
- };
+  const handleConfirmPayment = async (teamName: string) => {
+    if (!selected) return;
+    if (!canManage) {
+      triggerToast("Chỉ Ban tổ chức (BTC) hoặc Quản trị viên mới có quyền duyệt lệ phí.");
+      return;
+    }
+    try {
+      setConfirmingTeam(teamName);
+      const res = await confirmTeamPayment(selected.id, teamName);
+      await refreshTournamentInCache(selected.id);
+      triggerToast(res.message);
+    } catch (err: any) {
+      triggerToast(err?.message || "Xác nhận thất bại.");
+    } finally {
+      setConfirmingTeam(null);
+    }
+  };
 
  const handleFill = async (count?: number) => {
  if (!selected) return;
@@ -303,21 +326,22 @@ const [addCount, setAddCount] = useState("4");
  }
  };
 
- const startSimulate = async () => {
- if (!selected) return;
- try {
- setSimulateBusy(true);
- const res = await simulateTournamentResults(selected.id);
- // Tai lai giai de ket qua gia lap hien ngay tren cay nhanh dau
- await refreshTournamentInCache(selected.id);
- triggerToast(res.message);
- setConfirmSimulate(false);
- } catch (err: any) {
- triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để giả lập.");
- } finally {
- setSimulateBusy(false);
- }
- };
+   const startSimulate = async (nextStageOnly: boolean = false) => {
+  if (!selected) return;
+  try {
+  setSimulateBusy(true);
+  const res = await simulateTournamentResults(selected.id, nextStageOnly);
+  // Tai lai giai de ket qua gia lap hien ngay tren cay nhanh dau
+  await refreshTournamentInCache(selected.id);
+  triggerToast(res.message);
+  setConfirmSimulate(false);
+  setConfirmStageSimulate(false);
+  } catch (err: any) {
+  triggerToast(err?.message || "Cần đăng nhập ORGANIZER, OWNER hoặc ADMIN để giả lập.");
+  } finally {
+  setSimulateBusy(false);
+  }
+  };
 
  const startDraw = async () => {
  if (!selected) return;
@@ -872,19 +896,37 @@ const [addCount, setAddCount] = useState("4");
  </button>
 
  {bracket && (
+ <>
+ {/* Nút 1: Giả lập từng giai đoạn (vòng bảng -> tứ kết -> bán kết -> chung kết) */}
  <button
- onClick={() => setConfirmSimulate(true)}
- disabled={!canManage || !selected || simulateBusy}
- title="Tự random tỷ số + cầu thủ ghi bàn cho mọi trận chưa đá (chỉ dùng demo)"
- className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-md border border-slate-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+ type="button"
+ onClick={() => setConfirmStageSimulate(true)}
+ disabled={!canManage || !selected || simulateBusy || !nextPlayableStage}
+ title={nextPlayableStage ? `Giả lập kết quả vòng ${nextPlayableStage}` : "Đã hoàn thành toàn bộ các vòng đấu"}
+ className="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[13px] transition-all flex items-center space-x-1.5 shadow-md active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
  {simulateBusy ? (
  <RefreshCw className="w-4 h-4 animate-spin" />
  ) : (
- <Dices className="w-4 h-4" />
+ <Play className="w-4 h-4 fill-white" />
  )}
- <span>Giả lập KQ cả giải</span>
+ <span>{nextPlayableStage ? `Giả lập: ${nextPlayableStage}` : "Đã xong tất cả vòng"}</span>
  </button>
+
+ {/* Nút 2: Giả lập toàn bộ giải một lần (nếu muốn) */}
+ {nextPlayableStage && (
+ <button
+ type="button"
+ onClick={() => setConfirmSimulate(true)}
+ disabled={!canManage || !selected || simulateBusy}
+ title="Tự random tỷ số tất cả các vòng còn lại một lèo"
+ className="px-3 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-[13px] transition-all flex items-center space-x-1.5 shadow-sm border border-slate-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+ >
+ <Dices className="w-4 h-4 text-slate-500" />
+ <span className="hidden sm:inline">Giả lập cả giải</span>
+ </button>
+ )}
+ </>
  )}
 
  {/* Xếp lịch thi đấu — chỉ có ý nghĩa sau khi đã bốc thăm tạo nhánh đấu */}
@@ -929,6 +971,25 @@ const [addCount, setAddCount] = useState("4");
  onConfirm={startDraw}
  />
 
+ {/* Xác nhận giả lập từng giai đoạn */}
+ <ConfirmModal
+ open={confirmStageSimulate}
+ inline
+ title={`Giả lập kết quả: ${nextPlayableStage || "giai đoạn tiếp theo"}?`}
+ message={
+ <>
+ Hệ thống sẽ <strong>tự random tỷ số cho các trận thuộc “{nextPlayableStage}”</strong> của giải{" "}
+ <strong>“{selected?.title}”</strong>. Đội chiến thắng sẽ <strong>tự động tiến vào vòng kế tiếp</strong>{" "}
+ để bạn theo dõi trước khi tiến hành vòng sau.
+ </>
+ }
+ confirmLabel={`Giả lập ${nextPlayableStage || "giai đoạn này"}`}
+ danger={false}
+ busy={simulateBusy}
+ onCancel={() => setConfirmStageSimulate(false)}
+ onConfirm={() => startSimulate(true)}
+ />
+
  {/* Xác nhận giả lập kết quả toàn giải */}
  <ConfirmModal
  open={confirmSimulate}
@@ -941,11 +1002,11 @@ const [addCount, setAddCount] = useState("4");
  tiếp, giải có nhà vô địch. Trận đã có kết quả được giữ nguyên.
  </>
  }
- confirmLabel="Giả lập ngay"
+ confirmLabel="Giả lập toàn bộ"
  danger={false}
  busy={simulateBusy}
  onCancel={() => setConfirmSimulate(false)}
- onConfirm={startSimulate}
+ onConfirm={() => startSimulate(false)}
  />
 
  {/* Xác nhận huỷ kết quả (xóa bản ghi + cầu thủ ghi bàn, phong độ tự tính lại) */}
@@ -1062,33 +1123,51 @@ const [addCount, setAddCount] = useState("4");
  </div>
  )}
 
- {/* Duyệt lệ phí: đội PENDING chờ BTC xác nhận đã thu tiền */}
- {pendingTeams.length > 0 && (
- <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 space-y-2">
- <p className="text-[13px] font-black text-amber-800 tracking-wider">
- Chờ xác nhận lệ phí ({pendingTeams.length})
- </p>
- <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
- {pendingTeams.map((t) => (
- <div key={t.teamName} className="flex items-center justify-between gap-2 text-[13px]">
- <span className="text-slate-800 font-bold truncate">
- {t.teamName}
- <span className="text-slate-600 font-medium"> • {t.captainPhone || "—"}</span>
- </span>
- <button
- type="button"
- onClick={() => handleConfirmPayment(t.teamName)}
-   disabled={confirmingTeam === t.teamName || (teamCap > 0 && teamCount >= teamCap)}
-   title={teamCap > 0 && teamCount >= teamCap ? "Giải đã đủ " + teamCap + " đội — hãy tăng sức chứa trước khi duyệt thêm" : "Xác nhận đã thu lệ phí của đội này"}
- className="shrink-0 px-2.5 py-1 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-50"
- >
- {confirmingTeam === t.teamName ? "…" : "Đã thu phí"}
- </button>
- </div>
- ))}
- </div>
- </div>
- )}
+  {/* Duyệt lệ phí: đội PENDING chờ BTC xác nhận đã thu tiền */}
+  {pendingTeams.length > 0 && (
+  <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 space-y-2">
+  <div className="flex items-center justify-between">
+    <p className="text-[13px] font-black text-amber-800 tracking-wider">
+      Chờ xác nhận lệ phí ({pendingTeams.length})
+    </p>
+    {!canManage && (
+      <span className="text-[11px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded">
+        Chờ BTC duyệt
+      </span>
+    )}
+  </div>
+  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+  {pendingTeams.map((t) => (
+  <div key={t.teamName} className="flex items-center justify-between gap-2 text-[13px]">
+    <span className="text-slate-800 font-bold truncate">
+      {t.teamName}
+      <span className="text-slate-600 font-medium"> • {t.captainPhone || "—"}</span>
+    </span>
+    {canManage ? (
+      <button
+        type="button"
+        onClick={() => handleConfirmPayment(t.teamName)}
+        disabled={confirmingTeam === t.teamName || (teamCap > 0 && teamCount >= teamCap)}
+        title={teamCap > 0 && teamCount >= teamCap ? "Giải đã đủ " + teamCap + " đội — hãy tăng sức chứa trước khi duyệt thêm" : "Xác nhận đã thu lệ phí của đội này"}
+        className="shrink-0 px-2.5 py-1 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-50"
+      >
+        {confirmingTeam === t.teamName ? "Đang duyệt…" : "Đã thu phí"}
+      </button>
+    ) : (
+      <span className="shrink-0 px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[12px] font-bold">
+        Đang chờ cọc
+      </span>
+    )}
+  </div>
+  ))}
+  </div>
+  {canManage && teamCap > 0 && teamCount >= teamCap && (
+    <p className="text-[12px] text-rose-600 font-semibold pt-1">
+      ⚠️ Giải đã đủ {teamCap} đội. Hãy tăng sức chứa trước khi duyệt thêm.
+    </p>
+  )}
+  </div>
+  )}
  </div>
  </div>
 
@@ -1116,7 +1195,7 @@ const [addCount, setAddCount] = useState("4");
  >
  <Video className="w-4 h-4 text-red-400" />
  <span>Bàn VAR</span>
- <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[13px] font-mono">TRỰC TIẾP</span>
+ <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[13px] font-mono">Trực tiếp</span>
  </button>
 
  <button
@@ -1179,19 +1258,190 @@ const [addCount, setAddCount] = useState("4");
  <Trophy className="w-8 h-8 text-slate-400 mx-auto" />
  <p className="mt-3 text-sm text-slate-500">Chưa có giải đấu nào trong CSDL.</p>
  </div>
- ) : !bracket ? (
- <div className="p-4 sm:p-8 text-center rounded-2xl border border-dashed border-slate-300 ">
- <Shuffle className="w-8 h-8 text-slate-400 mx-auto" />
- <p className="mt-3 text-sm font-bold text-slate-700 ">
- Giải “{selected.title}” chưa bốc thăm chia cặp
- </p>
- <p className="mt-1 text-[13px] text-slate-500">
- {teamCount < 2
- ? `Mới có ${teamCount} đội — cần ít nhất 2 đội. Dùng nút “Giả lập đủ đội (Test)” nếu thiếu.`
- : `Đã có ${teamCount} đội. Bấm “Bốc thăm chia cặp” (hạt giống theo thứ tự đăng ký).`}
- </p>
- </div>
- ) : (
+   ) : !bracket ? (
+  <div className="space-y-6">
+    {/* Banner thông báo trạng thái */}
+    <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50 to-white border border-sky-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-0.5 rounded-full bg-[#0369a1] text-white text-[13px] font-black tracking-wide">
+            Sơ Đồ Hạt Giống Dự Kiến
+          </span>
+          <span className="text-[13px] font-bold text-slate-500">
+            {teamCount}/{teamCap || "—"} Đội Đã Ghi Danh
+          </span>
+        </div>
+        <h3 className="text-base sm:text-lg font-black text-slate-900">
+          Cây Nhánh Đấu Giải “{selected.title}”
+        </h3>
+        <p className="text-[13px] text-slate-600 leading-relaxed">
+          {teamCount < 2
+            ? "Giải đấu đang trong giai đoạn tiếp nhận đăng ký. Ban Tổ Chức sẽ chính thức chốt danh sách và quay bốc thăm trực tiếp khi đủ suất tham dự."
+            : "Các đội đã được xếp vào hạt giống dự kiến theo thứ tự ghi danh. Ban Tổ Chức có thể kích hoạt bốc thăm chính thức bất kỳ lúc nào."}
+        </p>
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+        {canManage && (
+          <button
+            type="button"
+            onClick={() => setConfirmDraw(true)}
+            disabled={teamCount < 2 || drawBusy}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[13px] shadow-md transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Shuffle className="w-4 h-4" />
+            <span>Bốc Thăm Chia Cặp Ngay</span>
+          </button>
+        )}
+        {!full && (
+          <a
+            href={`/tournaments/register?tournamentId=${selected.id}`}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>+ Đăng Ký Đội Ngay</span>
+          </a>
+        )}
+      </div>
+    </div>
+
+    {/* Cây Sơ Đồ Nhánh Đấu Dự Kiến (Preview Bracket Tree) */}
+    <div className="bg-slate-50/80 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 overflow-x-auto">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[13px] font-black text-slate-500 tracking-wider">
+          MÔ PHỎNG VỊ TRÍ HẠT GIỐNG (TỔNG {teamCap || Math.max(4, teamCount * 2)} SUẤT TRANH TÀI)
+        </span>
+        <span className="text-[13px] font-bold text-sky-700 bg-sky-100 px-2.5 py-1 rounded-md">
+          Thể thức: {formatLabel(selected.format)}
+        </span>
+      </div>
+
+      {(() => {
+        const capacity = teamCap > 0 ? teamCap : 8;
+        const confirmedTeams = (selected.teams ?? []).filter((t) => t.registrationStatus !== "PENDING_PAYMENT");
+        const round1MatchesCount = Math.max(2, Math.floor(capacity / 2));
+        const round1Matches = Array.from({ length: round1MatchesCount }, (_, idx) => {
+          const teamA = confirmedTeams[idx * 2];
+          const teamB = confirmedTeams[idx * 2 + 1];
+          return {
+            matchId: `R1-M${idx + 1}`,
+            teamA: teamA ? teamA.teamName : `Hạt giống #${idx * 2 + 1} (Chờ đăng ký)`,
+            teamB: teamB ? teamB.teamName : `Hạt giống #${idx * 2 + 2} (Chờ đăng ký)`,
+            hasRealA: !!teamA,
+            hasRealB: !!teamB,
+          };
+        });
+
+        const round2Count = Math.max(1, Math.floor(round1MatchesCount / 2));
+        const round2Matches = Array.from({ length: round2Count }, (_, idx) => ({
+          matchId: round2Count === 1 ? "Chung Kết" : `BK-M${idx + 1}`,
+          teamA: `Thắng R1-M${idx * 2 + 1}`,
+          teamB: `Thắng R1-M${idx * 2 + 2}`,
+        }));
+
+        return (
+          <div className="flex gap-4 sm:gap-8 items-start min-w-[650px] pb-2">
+            {/* Vòng 1 */}
+            <div className="flex-1 space-y-3">
+              <div className="text-center text-[13px] font-extrabold py-2 rounded-xl bg-slate-200/80 text-slate-700 border border-slate-300">
+                Vòng Khởi Tranh ({round1MatchesCount} trận)
+              </div>
+              {round1Matches.map((m, mi) => (
+                <div key={mi} className="p-3 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2 text-[13px]">
+                  <div className="flex items-center justify-between text-[13px] font-mono text-slate-500 font-bold">
+                    <span>{m.matchId}</span>
+                    <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Dự kiến</span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className={`p-2 rounded-lg flex items-center justify-between ${m.hasRealA ? "bg-sky-50 font-black text-sky-900 border border-sky-200" : "bg-slate-50 text-slate-500 italic"}`}>
+                      <span className="truncate">⚽ {m.teamA}</span>
+                      {m.hasRealA && <span className="text-[13px] bg-sky-200 text-sky-800 px-1.5 py-0.2 rounded font-bold">Đã nộp</span>}
+                    </div>
+                    <div className="text-center font-mono font-bold text-slate-300 text-[13px]">VS</div>
+                    <div className={`p-2 rounded-lg flex items-center justify-between ${m.hasRealB ? "bg-sky-50 font-black text-sky-900 border border-sky-200" : "bg-slate-50 text-slate-500 italic"}`}>
+                      <span className="truncate">⚽ {m.teamB}</span>
+                      {m.hasRealB && <span className="text-[13px] bg-sky-200 text-sky-800 px-1.5 py-0.2 rounded font-bold">Đã nộp</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Vòng 2 / Bán kết */}
+            <div className="flex-1 space-y-3 self-center">
+              <div className="text-center text-[13px] font-extrabold py-2 rounded-xl bg-indigo-100 text-indigo-900 border border-indigo-200">
+                {round2Count === 1 ? "Trận Chung Kết" : "Vòng Bán Kết"}
+              </div>
+              {round2Matches.map((m, mi) => (
+                <div key={mi} className="p-3 rounded-2xl bg-white border border-indigo-200 shadow-xs space-y-2 text-[13px]">
+                  <div className="flex items-center justify-between text-[13px] font-mono text-indigo-700 font-bold">
+                    <span>{m.matchId}</span>
+                    <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Tranh vé</span>
+                  </div>
+                  <div className="space-y-1 text-slate-500 italic text-[13px]">
+                    <div className="p-2 rounded-lg bg-slate-50 truncate">👑 {m.teamA}</div>
+                    <div className="text-center font-mono font-bold text-slate-300">VS</div>
+                    <div className="p-2 rounded-lg bg-slate-50 truncate">👑 {m.teamB}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Cúp Vô Địch */}
+            <div className="w-48 text-center self-center space-y-3 p-4 rounded-2xl bg-gradient-to-b from-amber-50 to-white border border-amber-300 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center mx-auto shadow-md">
+                <Trophy className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[13px] font-black text-amber-900 tracking-wider">NGÔI VƯƠNG</span>
+                <p className="text-base font-black text-amber-700">Cup Vô Địch</p>
+                <p className="text-[13px] font-bold text-slate-500 mt-1 font-mono">
+                  {selected.prizePool ? `Thưởng ${(selected.prizePool).toLocaleString("vi-VN")}đ` : "Huy Chương Vàng"}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+
+    {/* Danh sách các đội đã ghi danh tham dự */}
+    {(selected.teams ?? []).length > 0 && (
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
+            <Users className="w-4 h-4 text-sky-700" />
+            Danh Sách Đội Đã Ghi Danh ({selected.teams?.length} đội)
+          </h4>
+          <span className="text-[13px] text-slate-500">
+            Hạt giống xếp theo thời gian hoàn tất thủ tục
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+          {selected.teams?.map((tm, idx) => (
+            <div key={idx} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2 text-[13px]">
+              <div className="min-w-0">
+                <span className="font-extrabold text-slate-900 truncate block">
+                  #{idx + 1} · {tm.teamName}
+                </span>
+                <span className="text-slate-500 text-[13px]">
+                  HLV/Đội trưởng: {tm.captainName || "—"}
+                </span>
+              </div>
+              <span className={`shrink-0 px-2 py-0.5 rounded-full text-[13px] font-black ${
+                tm.registrationStatus === "PENDING_PAYMENT"
+                  ? "bg-amber-100 text-amber-800"
+                  : "bg-emerald-100 text-emerald-800"
+              }`}>
+                {tm.registrationStatus === "PENDING_PAYMENT" ? "Chờ duyệt phí" : "Chính thức"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+  ) : (
  <div key={bracket.drawnAt} className="flex gap-3 sm:gap-6 pb-2 items-start overflow-x-auto">
  {bracket.rounds.map((round, ri) => (
  <div key={ri} className="min-w-[250px] flex-1 space-y-3 sm:space-y-4">
@@ -1202,7 +1452,7 @@ const [addCount, setAddCount] = useState("4");
  }`}>
  {round.name} ({round.matches.length} trận)
  </div>
- {round.matches.map((m, mi) => renderMatch(m, mi))}
+ {(round.matches ?? []).map((m, mi) => renderMatch(m, mi))}
  </div>
  ))}
  </div>
@@ -1252,7 +1502,7 @@ const [addCount, setAddCount] = useState("4");
  <div className="flex items-center justify-center space-x-3 text-[13px] text-slate-500 font-mono font-bold">
  <Clock className="w-4 h-4 text-sky-700 " />
  <span>
- {varMatch.status === "DONE" ? "ĐÃ KẾT THÚC" : "ĐANG ĐIỀU KHIỂN"} • TỶ SỐ THỜI GIAN THỰC
+ {varMatch.status === "DONE" ? "Đã kết thúc" : "Đang điều khiển"} • Tỷ số thời gian thực
  </span>
  </div>
 
@@ -1687,7 +1937,7 @@ const [addCount, setAddCount] = useState("4");
  </span>
  </div>
  <span className="font-mono text-slate-500">
- In lúc {new Date().toLocaleString("vi-VN")} • Người lập: BTC
+ In lúc {typeof window !== "undefined" ? new Date().toLocaleDateString("vi-VN") : ""} • Người lập: BTC
  </span>
  </div>
  </div>
@@ -1698,6 +1948,7 @@ const [addCount, setAddCount] = useState("4");
  {/* Overlay hiệu ứng bốc thăm */}
  {selected && (
  <DrawLotteryOverlay
+ inline
  open={lottery !== null}
  tournamentTitle={selected.title}
  pairs={lottery?.pairs ?? []}
@@ -1712,3 +1963,4 @@ const [addCount, setAddCount] = useState("4");
  </div>
  );
 }
+
