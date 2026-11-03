@@ -515,7 +515,7 @@ if (newTab === activeTab) return;
  )}
 
  {/* Main Content Body */}
- <main className={`flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] pb-12 lg:pb-14 space-y-5 sm:space-y-12 ${!currentUser && activeTab === "booking" ? "pt-0" : "pt-3 sm:pt-4"} ${showBottomNav ? "pb-28 lg:pb-14" : ""}`}>
+ <main className={`flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] pb-12 lg:pb-14 space-y-5 sm:space-y-12 pt-3 sm:pt-5 ${showBottomNav ? "pb-28 lg:pb-14" : ""}`}>
   {/* AnimatePresence đã bỏ: exit animation treo khi đổi tab (motion.div cũ không được gỡ -> 2 nội dung chồng nhau, đọc sai trạng thái). Giữ animation khi vào tab. */}
   <>
  <motion.div
@@ -552,13 +552,13 @@ if (newTab === activeTab) return;
  user={currentUser}
  />
  ) : (
- <div className="space-y-8 sm:space-y-24">
+ <div className="space-y-8 sm:space-y-12">
  <LandingHero 
  onOpenAuth={handleOpenAuth} 
  onNavigateTab={handleTabChange}
  />
  <LandingFeatures
- onExplore={(role) => handleOpenAuth("login")}
+ onExplore={(role) => handleOpenAuth("login", role || "PLAYER")}
  onNavigateTab={handleTabChange}
  />
  </div>
