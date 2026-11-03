@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import FormDots from "./FormDots";
+import { useAuth } from "@/context/AuthContext";
 import TournamentBracket from "./TournamentBracket";
 import DrawLotteryOverlay from "./DrawLotteryOverlay";
 import {
@@ -18,6 +19,11 @@ import {
   Radio,
   RefreshCw,
   ChevronDown,
+  ChevronUp,
+  Copy,
+  Check,
+  Info,
+  ExternalLink,
   AlertTriangle,
   Lock,
   Unlock,
@@ -44,6 +50,7 @@ import {
 
 interface TournamentLeaderboardProps {
   user?: any;
+  onNavigateTab?: (tab: string) => void;
   onBackToHome?: () => void;
   onSelectTournament?: (id: string) => void;
   onRequestLogin?: () => void;
@@ -71,8 +78,12 @@ type TabKey = "open" | "live" | "bracket" | "rankings";
 type StatusFilter = "ALL" | "OPEN" | "ONGOING" | "COMPLETED";
 
 export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
+  user,
+  onNavigateTab,
   initialTournamentId,
 }) => {
+  const { user: authUser } = useAuth();
+  const currentUser = user || authUser;
   const [activeSport, setActiveSport] = useState<SportType | "all">("all");
   const [activeTab, setActiveTab] = useState<TabKey>("open");
   const [selectedFormat, setSelectedFormat] = useState<"ALL" | "KNOCKOUT" | "ROUND_ROBIN">("ALL");
@@ -83,6 +94,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loadingTournaments, setLoadingTournaments] = useState(true);
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
+  const [expandedTournamentId, setExpandedTournamentId] = useState<number | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [lottery, setLottery] = useState<{
@@ -851,9 +863,22 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
 
                       {/* Tên giải & Địa điểm */}
                       <div>
-                        <h3 className="text-lg font-bold text-slate-900 leading-snug">
-                          {t.title}
-                        </h3>
+                        <div
+                          onClick={() => setExpandedTournamentId(expandedTournamentId === t.id ? null : t.id)}
+                          className="cursor-pointer group flex items-start justify-between gap-2"
+                          title="Bấm để xem chi tiết giải đấu, điều lệ và danh sách đội"
+                        >
+                          <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-[#0369a1] transition-colors">
+                            {t.title}
+                          </h3>
+                          <span className="text-slate-400 group-hover:text-[#0369a1] shrink-0 mt-0.5 p-1 rounded-md hover:bg-slate-100 transition-colors">
+                            {expandedTournamentId === t.id ? (
+                              <ChevronUp className="w-5 h-5 text-[#0369a1]" />
+                            ) : (
+                              <ChevronDown className="w-5 h-5" />
+                            )}
+                          </span>
+                        </div>
                         <div className="flex flex-wrap items-center gap-3 text-[14px] text-slate-600 mt-1">
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3.5 h-3.5 text-slate-500" />
@@ -913,7 +938,119 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                       )}
                     </div>
 
-                    {/* Thanh tiến độ & Nút thao tác */}
+                    {/* KHỐI CHI TIẾT GIẢI ĐẤU MỞ RỘNG KHI CLICK VÀO TIÊU ĐỀ / CARD */}
+                    {expandedTournamentId === t.id && (
+                      <div className="pt-3 border-t border-slate-200 space-y-3.5 text-[13px] animate-fade-in">
+                        {/* 1. Điều lệ & Mô tả giải */}
+                        {t.description && (
+                          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 leading-relaxed">
+                            <span className="font-bold text-slate-900 block mb-1">📋 Điều Lệ &amp; Quy Định Giải:</span>
+                            <p className="whitespace-pre-line text-[13px]">{t.description}</p>
+                          </div>
+                        )}
+
+                        {/* 2. Bảng 4 thông số chi tiết */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                            <span className="text-slate-500 block text-[12px]">Hạn chót đăng ký</span>
+                            <strong className="text-slate-900 font-medium">{formatDate(t.registrationDeadline) || "Chưa ấn định"}</strong>
+                          </div>
+                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                            <span className="text-slate-500 block text-[12px]">Ngày bế mạc</span>
+                            <strong className="text-slate-900 font-medium">{formatDate(t.endDate) || "Chưa ấn định"}</strong>
+                          </div>
+                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                            <span className="text-slate-500 block text-[12px]">Quyền tham gia</span>
+                            <strong className={t.joinMode === "INVITE_ONLY" ? "text-amber-800" : "text-emerald-800"}>
+                              {t.joinMode === "INVITE_ONLY" ? "🔒 Mời qua email" : "🔓 Đăng ký tự do"}
+                            </strong>
+                          </div>
+                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                            <span className="text-slate-500 block text-[12px]">Trạng thái nhánh</span>
+                            <strong className={t.bracketJson ? "text-sky-800" : "text-slate-600"}>
+                              {t.bracketJson ? "✅ Đã bốc thăm" : "⏳ Chờ bốc thăm"}
+                            </strong>
+                          </div>
+                        </div>
+
+                        {/* 3. Toàn bộ danh sách các đội tham gia */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-slate-900">
+                              Danh Sách Toàn Bộ Đội Bóng ({t.teams?.length ?? 0}/{t.totalTeams ?? "—"} đội):
+                            </span>
+                            <span className="text-[12px] text-slate-500">
+                              {full ? "Đã chốt danh sách" : `Còn trống ${Math.max(0, (t.totalTeams ?? 0) - (t.teams?.length ?? 0))} suất`}
+                            </span>
+                          </div>
+                          {t.teams && t.teams.length > 0 ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {t.teams.map((tm: any, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="p-2 rounded-md bg-white border border-slate-200 flex items-center justify-between gap-1.5 text-[12px]"
+                                >
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center shrink-0">
+                                      {idx + 1}
+                                    </span>
+                                    <span className="font-bold text-slate-900 truncate">{tm.teamName}</span>
+                                  </div>
+                                  <span className="px-1.5 py-0.5 rounded text-[11px] font-bold shrink-0 bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                    Đã vào giải
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="p-2.5 rounded-md bg-slate-50 border border-dashed border-slate-300 text-slate-500 text-center text-[12px]">
+                              Chưa có đội bóng nào ghi danh. Hãy là đội đầu tiên nộp đơn tham gia!
+                            </p>
+                          )}
+                        </div>
+
+                        {/* 4. Hành động nhanh theo vai trò */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const origin = typeof window !== "undefined" ? window.location.origin : "";
+                                navigator.clipboard.writeText(`${origin}/tournaments/register?tournamentId=${t.id}`);
+                                setActionNotice(`✅ Đã sao chép liên kết giải: ${t.title}`);
+                                setTimeout(() => setActionNotice(null), 3000);
+                              }}
+                              className="px-3 py-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[12px] font-bold flex items-center gap-1 cursor-pointer"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Sao Chép Link Giải</span>
+                            </button>
+
+                            {(currentUser?.role === "OWNER" || currentUser?.role === "ORGANIZER") && onNavigateTab && (
+                              <button
+                                type="button"
+                                onClick={() => onNavigateTab("tournaments-portal")}
+                                className="px-3 py-1.5 rounded-md bg-amber-500 hover:bg-amber-600 text-slate-950 text-[12px] font-bold flex items-center gap-1 cursor-pointer shadow-xs"
+                              >
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                <span>Vào Quản Lý Giải</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setExpandedTournamentId(null)}
+                            className="px-2.5 py-1 text-slate-500 hover:text-slate-800 text-[12px] font-bold cursor-pointer"
+                          >
+                            Thu gọn ▲
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    
+{/* Thanh tiến độ & Nút thao tác */}
                     <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <div className="w-28 h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -928,6 +1065,15 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2 justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedTournamentId(expandedTournamentId === t.id ? null : t.id)}
+                          className="px-3 py-2 rounded-md text-[13px] font-bold bg-slate-50 text-slate-700 border border-slate-300 hover:bg-slate-100 flex items-center gap-1 cursor-pointer"
+                          title="Xem chi tiết điều lệ, các đội tham gia và lịch trình"
+                        >
+                          <Info className="w-3.5 h-3.5 text-[#0369a1]" />
+                          <span>{expandedTournamentId === t.id ? "Đóng" : "Chi Tiết"}</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => {

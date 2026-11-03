@@ -909,6 +909,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  if (e.key === "Enter" || e.key === " ") {
  e.preventDefault();
  setSelectedTournamentId(Number(t.id));
+   document.getElementById("organizer-console")?.scrollIntoView({ behavior: "smooth", block: "start" });
+   setVarNotice("✅ Đang điều hành giải: " + t.title);
  }
  }}
  >
@@ -1381,6 +1383,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  {/* 3. DATA TABLES & INCIDENT LOGS */}
+ <div id="organizer-console">
  <div className="bg-white border border-slate-200 rounded-lg p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
  {/* TABS HEADER */}
  <div className="flex items-center justify-between border-b border-slate-200 pb-4">
@@ -2185,6 +2188,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  </div>
 
+ </div>
  {/* RIGHT 4 COLS: THỐNG KÊ GIẢI + QUỸ THƯỞNG THẬT */}
  <div className="lg:col-span-4 space-y-4 sm:space-y-8">
 
