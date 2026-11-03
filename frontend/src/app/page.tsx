@@ -97,11 +97,16 @@ export default function Home() {
        const currentRole = currentUser?.role;
 
        if (urlTab) {
-         const validTab = sanitizeTabForRole(urlTab, currentRole);
-         setActiveTab(validTab);
-         sessionStorage.setItem("turfzone_active_tab", validTab);
-         window.history.replaceState({ tab: validTab }, "", window.location.href);
-       } else {
+          const validTab = sanitizeTabForRole(urlTab, currentRole);
+          setActiveTab(validTab);
+          sessionStorage.setItem("turfzone_active_tab", validTab);
+          // Đồng bộ lại URL nếu tab bị chuyển hướng do phân quyền
+          if (validTab !== urlTab) {
+            const url = new URL(window.location.href);
+            url.searchParams.set("tab", validTab);
+            window.history.replaceState({ tab: validTab }, "", url.toString());
+          }
+        } else {
          if (!isPopState) {
            // Khởi tạo lần đầu hoặc F5 reload: phục hồi tab từ sessionStorage nếu hợp lệ
            const savedTab = sessionStorage.getItem("turfzone_active_tab");
@@ -425,19 +430,26 @@ if (newTab === activeTab) return;
  setActiveTab("booking");
  }
  };
+  const handleLogout = () => {
+    authLogout();
+    setLocalUser(null);
+    setPendingTab(null);
+    setRoleWarning(null);
+    setAuthRole("PLAYER");
 
- const handleLogout = () => {
- authLogout();
- setLocalUser(null);
     if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      if (url.searchParams.has("pitchId")) {
-        url.searchParams.delete("pitchId");
-        window.history.replaceState({ tab: "booking" }, "", url.toString());
-      }
+      // 1. Xóa sạch tab cũ của role trong sessionStorage
+      sessionStorage.removeItem("turfzone_active_tab");
+
+      // 2. Xóa sạch query parameters trên URL (như ?tab=organizer, ?tab=admin, ?pitchId...)
+      // Đưa URL trên trình duyệt về trang chủ sạch sẽ: window.location.pathname ("/")
+      const cleanUrl = window.location.pathname || "/";
+      window.history.replaceState({ tab: "booking" }, "", cleanUrl);
     }
- setActiveTab("booking");
- };
+
+    // 3. Reset activeTab về tab mặc định của khách ("booking")
+    setActiveTab("booking");
+  };
 
  // Thanh điều hướng dưới mobile hiển thị cho khách / Cầu thủ / Ban tổ chức
  const showBottomNav = currentUser?.role !== "OWNER" && currentUser?.role !== "ADMIN";

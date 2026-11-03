@@ -164,6 +164,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logoutApi();
     writeCachedUser(null);
     setUser(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(USER_CACHE_KEY);
+      sessionStorage.removeItem('turfzone_active_tab');
+      sessionStorage.removeItem('Turfzone_token');
+      ['PLAYER', 'OWNER', 'ORGANIZER', 'ADMIN'].forEach((r) => {
+        sessionStorage.removeItem(`Turfzone_token_${r}`);
+      });
+    }
   };
 
   return (

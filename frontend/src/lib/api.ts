@@ -55,16 +55,23 @@ export function removeAuthToken(role?: string) {
   if (typeof window !== 'undefined') {
     if (role) {
       sessionStorage.removeItem(`Turfzone_token_${role}`);
-      return;
     }
-    // Dang xuat: xoá TOAN BO key token (mac dinh + theo vai tro) — truoc day chi
-    // xoá 'Turfzone_token', cac key Turfzone_token_ADMIN/OWNER/... van con lai.
-    const keys: string[] = [];
+    // Đăng xuất: Xoá TOÀN BỘ key token và tab role trong sessionStorage
+    const sessionKeys: string[] = [];
     for (let i = 0; i < sessionStorage.length; i++) {
       const k = sessionStorage.key(i);
-      if (k && k.startsWith('Turfzone_token')) keys.push(k);
+      if (k && (k.startsWith('Turfzone_token') || k.startsWith('turfzone_'))) {
+        sessionKeys.push(k);
+      }
     }
-    keys.forEach((k) => sessionStorage.removeItem(k));
+    sessionKeys.forEach((k) => sessionStorage.removeItem(k));
+    sessionStorage.removeItem('turfzone_active_tab');
+    sessionStorage.removeItem('Turfzone_token');
+
+    // Dọn sạch mọi token theo vai trò
+    ['PLAYER', 'OWNER', 'ORGANIZER', 'ADMIN'].forEach((r) => {
+      sessionStorage.removeItem(`Turfzone_token_${r}`);
+    });
   }
 }
 

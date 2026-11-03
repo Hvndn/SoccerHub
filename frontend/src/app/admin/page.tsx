@@ -14,6 +14,7 @@ import {
  MessageSquare,
  Megaphone,
  ScrollText,
+  LogOut,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { AdminToast } from "@/components/admin/AdminUI";
@@ -62,7 +63,7 @@ export default function AdminPage() {
 }
 
 function AdminConsole() {
- const { user, isLoading } = useAuth();
+ const { user, isLoading, logout } = useAuth();
  const [section, setSection] = useState<Section>("overview");
  const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -72,27 +73,43 @@ function AdminConsole() {
 
  return (
  <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
- <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
- <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-3 flex items-center justify-between gap-3">
- <div className="flex items-center gap-2.5">
- <Link href="/" className="flex items-center gap-2 font-black text-lg tracking-tight">
- <span className="text-sky-800 ">Turf</span>
- <span className="text-slate-900 ">Zone</span>
- </Link>
- <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[14px] font-black whitespace-nowrap">
- Quản Trị
- </span>
- </div>
- <Link
- href="/"
- aria-label="Về trang chủ"
- className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[14px] font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
- >
- <ArrowLeft className="w-4 h-4 shrink-0" />
- <span className="hidden sm:inline">Về trang chủ</span>
- </Link>
- </div>
- </header>
+  <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
+  <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-3 flex items-center justify-between gap-3">
+  <div className="flex items-center gap-2.5">
+    <Link href="/" className="flex items-center gap-2 font-black text-lg tracking-tight">
+      <span className="text-sky-800">Turf</span>
+      <span className="text-slate-900">Zone</span>
+    </Link>
+    <span className="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[14px] font-black whitespace-nowrap">
+      Quản Trị
+    </span>
+  </div>
+  <div className="flex items-center gap-2">
+    <Link
+      href="/"
+      aria-label="Về trang chủ"
+      className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[14px] font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
+    >
+      <ArrowLeft className="w-4 h-4 shrink-0" />
+      <span className="hidden sm:inline">Về trang chủ</span>
+    </Link>
+    {user && (
+      <button
+        type="button"
+        onClick={() => {
+          logout();
+          window.location.assign("/");
+        }}
+        className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-[14px] font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+        title="Đăng xuất khỏi tài khoản Quản Trị"
+      >
+        <LogOut className="w-4 h-4 shrink-0" />
+        <span>Đăng Xuất</span>
+      </button>
+    )}
+  </div>
+  </div>
+  </header>
 
  <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-4 sm:py-8">
  {isLoading ? (

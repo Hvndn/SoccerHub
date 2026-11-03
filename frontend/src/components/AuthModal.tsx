@@ -87,13 +87,16 @@ export default function AuthModal({
  const cardRef = useRef<HTMLDivElement>(null);
 
  useEffect(() => {
- if (isOpen) {
- if (initialMode) setMode(initialMode);
- if (initialRole) setRole(initialRole);
- setErrorMsg(null);
- setRegStep(1);
- }
- }, [isOpen, initialMode, initialRole]);
+    if (isOpen) {
+      if (initialMode) setMode(initialMode);
+      setRole(initialRole || "PLAYER");
+      setErrorMsg(null);
+      setRegStep(1);
+      setIdentifier("");
+      setPassword("");
+      setCapsOn(false);
+    }
+  }, [isOpen, initialMode, initialRole]);
 
  // ESC + focus-trap + khóa scroll nền + trả focus khi đóng
  useEffect(() => {
