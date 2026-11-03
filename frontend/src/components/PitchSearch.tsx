@@ -76,6 +76,62 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
  // Điều hướng & Modal
  const [selectedPitchForSlot, setSelectedPitchForSlot] = useState<any>(null);
+
+  // Reset sân đang chọn mỗi khi đăng nhập / đăng xuất để không bị tự nhảy vào sân cũ
+  useEffect(() => {
+    setSelectedPitchForSlot(null);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("pitchId")) {
+        url.searchParams.delete("pitchId");
+        window.history.replaceState({}, "", url.toString());
+      }
+    }
+  }, [user?.email, user?.id]);
+
+ const handleOpenPitch = (pitch: any) => {
+   if (!pitch) return;
+   setSelectedPitchForSlot(pitch);
+   if (typeof window !== "undefined") {
+     const url = new URL(window.location.href);
+     url.searchParams.set("pitchId", String(pitch.id));
+     window.history.pushState({ pitchId: pitch.id }, "", url.toString());
+     window.scrollTo({ top: 0, behavior: "smooth" });
+   }
+ };
+
+ const handleBackFromPitch = () => {
+   setSelectedPitchForSlot(null);
+   if (typeof window !== "undefined") {
+     const url = new URL(window.location.href);
+     if (url.searchParams.has("pitchId")) {
+       url.searchParams.delete("pitchId");
+       window.history.pushState({}, "", url.toString());
+     }
+     window.scrollTo({ top: 0, behavior: "smooth" });
+   }
+ };
+
+ // Danh sách sân thật từ Backend
+ const [realPitches, setRealPitches] = useState<any[]>([]);
+ const [loadingRealPitches, setLoadingRealPitches] = useState(false);
+
+ useEffect(() => {
+   const handlePopState = () => {
+     if (typeof window === "undefined") return;
+     const params = new URLSearchParams(window.location.search);
+     const pid = params.get("pitchId");
+     if (!pid) {
+       setSelectedPitchForSlot(null);
+     } else if (realPitches.length > 0) {
+       const found = realPitches.find((p) => String(p.id) === pid);
+       if (found) setSelectedPitchForSlot(found);
+     }
+   };
+   window.addEventListener("popstate", handlePopState);
+   return () => window.removeEventListener("popstate", handlePopState);
+ }, [realPitches]);
+
  const [toastMsg, setToastMsg] = useState<string | null>(null);
 
  // Kèo ghép & tương tác
@@ -94,10 +150,6 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  const [newMatchPitchId, setNewMatchPitchId] = useState("");
  const [newMatchNeed, setNewMatchNeed] = useState("");
  const [showQrModal, setShowQrModal] = useState(false);
-
- // Danh sách sân thật từ Backend
- const [realPitches, setRealPitches] = useState<any[]>([]);
- const [loadingRealPitches, setLoadingRealPitches] = useState(false);
 
  const showToast = (msg: string) => {
  setToastMsg(msg);
@@ -214,6 +266,15 @@ export default function PitchSearch({ user }: PitchSearchProps) {
  };
  });
  setRealPitches(mapped);
+
+ if (typeof window !== "undefined") {
+   const params = new URLSearchParams(window.location.search);
+   const pid = params.get("pitchId");
+   if (pid) {
+     const found = mapped.find((p: any) => String(p.id) === pid);
+     if (found) setSelectedPitchForSlot(found);
+   }
+ }
 
  // Nạp dữ liệu ca thật của cụm sân đầu tiên từ API ma trận để phục vụ widget trạng thái ca sân
  if (mapped.length > 0) {
@@ -411,7 +472,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  <PitchDetail
  pitch={selectedPitchForSlot}
  user={user}
- onBack={() => setSelectedPitchForSlot(null)}
+ onBack={handleBackFromPitch}
  />
  );
  }
@@ -959,7 +1020,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  </div>
  <button
  type="button"
- onClick={() => setSelectedPitchForSlot(featuredPitch)}
+ onClick={() => handleOpenPitch(featuredPitch)}
  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
  >
  <span>Chọn Khung Giờ Ngay</span>
@@ -1024,7 +1085,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  ) : (
  <button
  type="button"
- onClick={() => setSelectedPitchForSlot(featuredPitch)}
+ onClick={() => handleOpenPitch(featuredPitch)}
  className="px-2.5 sm:px-3 py-1 bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] rounded-lg font-sans shadow-sm transition-colors cursor-pointer shrink-0"
  >
  Chọn Ca
@@ -1165,7 +1226,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  <div className="flex items-start justify-between gap-2">
  <div>
  <h3 
- onClick={() => setSelectedPitchForSlot(pitch)}
+ onClick={() => handleOpenPitch(pitch)}
  className="text-lg font-black text-slate-900 group-hover:text-sky-700 transition-colors cursor-pointer"
  >
  {pitch.name}
@@ -1212,12 +1273,12 @@ const toSportTabs = (types?: string[] | null): string[] =>
  <span>Ca trống hôm nay ({pitch.openTime} - {pitch.closeTime}):</span>
  <span className="text-sky-700 ">120p (2 tiếng)/ca</span>
  </div>
- <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none">
+ <div className="flex flex-wrap items-center gap-2 pb-1">
  {pitch.timeSlots.map((ts: any, i: number) => (
  <button
  key={i}
  type="button"
- onClick={() => setSelectedPitchForSlot(pitch)}
+ onClick={() => handleOpenPitch(pitch)}
  className={`px-3 py-1.5 rounded-xl font-mono text-[13px] font-bold shrink-0 transition-all cursor-pointer ${
  ts.status === "ACTIVE"
  ? "bg-[#0369a1] text-white shadow-xs"
@@ -1249,7 +1310,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
 
  <button
  type="button"
- onClick={() => setSelectedPitchForSlot(pitch)}
+ onClick={() => handleOpenPitch(pitch)}
  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
  >
  <span>Xem Ca & Đặt</span>

@@ -239,7 +239,12 @@ public class ChatController {
         List<User> users = userRepository.findAll();
         List<Map<String, Object>> result = new ArrayList<>();
         for (User u : users) {
-            if (me != null && me.getEmail() != null && me.getEmail().equalsIgnoreCase(u.getEmail())) continue;
+            if (me != null && me.getEmail() != null && me.getEmail().equalsIgnoreCase(u.getEmail())) {
+                // Chỉ loại trừ chính mình khi tìm kiếm cùng vai trò (để tránh tự nhắn tin cho mình)
+                if (roleFilter.isEmpty() || (u.getRole() != null && me.getRole() == u.getRole())) {
+                    continue;
+                }
+            }
             String name = u.getFullName() != null ? u.getFullName() : "";
             String email = u.getEmail() != null ? u.getEmail() : "";
             String userRole = u.getRole() != null ? u.getRole().name() : "PLAYER";

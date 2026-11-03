@@ -22,8 +22,22 @@ export function apiUrl(path: string): string {
 
 export function getAuthToken(role?: string): string | null {
   if (typeof window === 'undefined') return null;
-  const key = role ? `Turfzone_token_${role}` : 'Turfzone_token';
-  return sessionStorage.getItem(key);
+  if (role) {
+    const roleToken = sessionStorage.getItem(`Turfzone_token_${role}`);
+    if (roleToken) return roleToken;
+  }
+  const defaultToken = sessionStorage.getItem('Turfzone_token');
+  if (defaultToken) return defaultToken;
+
+  // Fallback: check any existing Turfzone_token_* stored in sessionStorage
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const k = sessionStorage.key(i);
+    if (k && k.startsWith('Turfzone_token')) {
+      const val = sessionStorage.getItem(k);
+      if (val) return val;
+    }
+  }
+  return null;
 }
 
 export function setAuthToken(token: string, role?: string) {

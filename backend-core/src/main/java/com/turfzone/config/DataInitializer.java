@@ -153,6 +153,34 @@ private void seedUsers() {
                     .build());
             log.info("Seeded demo ORGANIZER account: organizer@Turfzone.vn / organizer123");
         }
+
+        if (!userRepository.existsByEmail("btc.danang@turfzone.vn")) {
+            userRepository.save(User.builder()
+                    .fullName("Ban Tổ Chức Giải Sân 7 Đà Nẵng")
+                    .email("btc.danang@turfzone.vn")
+                    .phone("0905123456")
+                    .password(passwordEncoder.encode("btc123"))
+                    .role(UserRole.ORGANIZER)
+                    .area("Hải Châu, Đà Nẵng")
+                    .level("Ban Tổ Chức Giải Đấu")
+                    .enabled(true)
+                    .build());
+            log.info("Seeded demo ORGANIZER account: btc.danang@turfzone.vn / btc123");
+        }
+
+        if (!userRepository.existsByEmail("btc.vietnam@turfzone.vn")) {
+            userRepository.save(User.builder()
+                    .fullName("Liên Đoàn Bóng Đá Phong Trào Turfzone")
+                    .email("btc.vietnam@turfzone.vn")
+                    .phone("0905654321")
+                    .password(passwordEncoder.encode("btc123"))
+                    .role(UserRole.ORGANIZER)
+                    .area("Toàn Quốc")
+                    .level("Hiệp Hội Tổ Chức Giải")
+                    .enabled(true)
+                    .build());
+            log.info("Seeded demo ORGANIZER account: btc.vietnam@turfzone.vn / btc123");
+        }
     }
 
     private void seedTournaments() {

@@ -382,6 +382,14 @@ if (newTab === activeTab) return;
 
  const handleLoginSuccess = (userData: any) => {
  setLocalUser(userData);
+    // Xóa sạch query param pitchId trên URL khi đăng nhập để luôn về danh sách tổng quan
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("pitchId")) {
+        url.searchParams.delete("pitchId");
+        window.history.replaceState({ tab: "booking" }, "", url.toString());
+      }
+    }
 
  // Nếu có pendingTab (tab người dùng đang cố vào trước khi bị redirect đăng nhập)
  // => Kiểm tra xem vai trò mới có đủ quyền truy cập pendingTab không
@@ -421,6 +429,13 @@ if (newTab === activeTab) return;
  const handleLogout = () => {
  authLogout();
  setLocalUser(null);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("pitchId")) {
+        url.searchParams.delete("pitchId");
+        window.history.replaceState({ tab: "booking" }, "", url.toString());
+      }
+    }
  setActiveTab("booking");
  };
 
