@@ -16,6 +16,7 @@ import {
   updateTournament,
   fetchTournamentFinance,
   fillSimulatedTeams,
+  clearSimulatedTeams,
   drawTournamentBracket,
   confirmTeamPayment,
   refreshTournamentInCache,
@@ -33,6 +34,7 @@ import {
 } from "@/lib/organizerService";
 import {
  Mail,
+  Copy, Check, Send, CreditCard, ExternalLink, Clock, UserCheck,
  Trophy,
  ShieldCheck, MessageCircle,
  Cpu,
@@ -109,7 +111,9 @@ export default function TournamentOrganizerPortal({
  const [selectedTournamentId, setSelectedTournamentId] = useState<number | null>(null);
 
  // Active Tab for Tables/Logs
- const [bottomTab, setBottomTab] = useState<"finance" | "schedule" | "var_logs">("finance");
+ const [bottomTab, setBottomTab] = useState<"teams" | "invites" | "finance" | "schedule" | "var_logs">("teams");
+  const [copiedInviteLink, setCopiedInviteLink] = useState(false);
+  const [inviteCustomNote, setInviteCustomNote] = useState("Ban Tổ Chức trân trọng kính mời bạn và đội bóng tham gia tranh tài tại giải đấu. Nhấp vào liên kết để nộp hồ sơ đăng ký!");
 
  // Real Database Tournaments (danh sách thật từ backend)
  const [dbTournaments, setDbTournaments] = useState<any[]>([]);
@@ -454,7 +458,16 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  });
 
  /** Gửi yêu cầu thêm đội thủ công vào giải đang chọn. */
- const handleAddManualTeam = async () => {
+ const handleCopyInviteLink = () => {
+    if (!activeTournament?.id) return;
+    const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+    const link = `${origin}/tournaments/register?tournamentId=${activeTournament.id}`;
+    navigator.clipboard.writeText(link);
+    setCopiedInviteLink(true);
+    setTimeout(() => setCopiedInviteLink(false), 2500);
+  };
+
+  const handleAddManualTeam = async () => {
 
   const tid = Number(activeTournament?.id);
   if (!tid) {
@@ -1373,10 +1386,12 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="flex items-center justify-between border-b border-slate-200 pb-4">
  <div className="flex items-center gap-2 flex-wrap">
  {[
- { id: "var_logs", label: "Kết Quả & Vua Phá Lưới" },
- { id: "schedule", label: "Lịch Thi Đấu" },
- { id: "finance", label: "Tài Chính Giải" }
- ].map(tab => (
+  { id: "teams", label: "Duyệt Đội & Đăng Ký", badge: pendingTeams.length > 0 ? pendingTeams.length : null },
+  { id: "invites", label: "Mời Giải Qua Email", badge: joinMode === "INVITE_ONLY" ? inviteEmails.length : null },
+  { id: "finance", label: "Tài Chính Giải" },
+  { id: "schedule", label: "Lịch Thi Đấu" },
+  { id: "var_logs", label: "Kết Quả & Ghi Bàn" }
+].map(tab => (
  <button
  key={tab.id}
  onClick={() => setBottomTab(tab.id as any)}
@@ -1443,7 +1458,544 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  )}
 
  {/* Bảng Xếp Hạng & Vua Phá Lưới công khai đã chuyển sang trang Giải Đấu & BXH (tournaments) để tránh lặp chức năng */}
-          {/* TAB CONTENT: KẾT QUẢ & VUA PHÁ LƯỚI (đọc từ goal_events) */}
+          {/* ================= TAB 1: DUYỆT ĐỘI & ĐĂNG KÝ ================= */}
+  {bottomTab === "teams" && activeTournament && (
+  <div className="space-y-5">
+    {/* Header & Quick stats */}
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-lg p-3.5">
+      <div className="flex items-center gap-2.5">
+        <div className="w-9 h-9 rounded-md bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center font-bold">
+          <Users2 className="w-5 h-5" />
+        </div>
+        <div>
+          <h4 className="text-[14px] font-bold text-slate-900">
+            Quản Lý & Duyệt Đội Tham Gia ({confirmedCount(activeTournament)}/{activeTournament.totalTeams ?? "—"} đội)
+          </h4>
+          <p className="text-[13px] text-slate-500">
+            Duyệt hồ sơ đội đăng ký, kiểm tra nộp lệ phí và quản lý danh sách đội thi đấu
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowAddTeamForm((v) => !v)}
+          className="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+        >
+          <UserPlus className="w-4 h-4" />
+          <span>{showAddTeamForm ? "Đóng Form Thêm" : "+ Thêm Đội Thủ Công"}</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Form Thêm Đội Thủ Công (Inline) */}
+    {showAddTeamForm && (
+      <div className="p-4 rounded-lg border border-emerald-300 bg-emerald-50/60 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[13px] font-bold text-emerald-900 flex items-center gap-1.5">
+            <UserPlus className="w-4 h-4 text-emerald-700" />
+            Nhập tay đội bóng vào giải (Đội tự động được đánh dấu đã hoàn thành lệ phí)
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowAddTeamForm(false)}
+            className="text-slate-400 hover:text-slate-700 cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+          <input
+            type="text"
+            value={addTeamForm.teamName}
+            onChange={(e) => setAddTeamForm({ ...addTeamForm, teamName: e.target.value })}
+            placeholder="Tên Đội Bóng (FC) *"
+            className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+          <input
+            type="text"
+            value={addTeamForm.captainName}
+            onChange={(e) => setAddTeamForm({ ...addTeamForm, captainName: e.target.value })}
+            placeholder="Họ tên người liên hệ / đội trưởng"
+            className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+          <input
+            type="tel"
+            value={addTeamForm.captainPhone}
+            onChange={(e) => setAddTeamForm({ ...addTeamForm, captainPhone: e.target.value })}
+            placeholder="Số ĐT / Zalo liên hệ"
+            className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={5}
+              max={25}
+              value={addTeamForm.memberCount}
+              onChange={(e) => setAddTeamForm({ ...addTeamForm, memberCount: Number(e.target.value) })}
+              placeholder="Quân số (5-25)"
+              className="w-24 px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <button
+              type="button"
+              onClick={handleAddManualTeam}
+              disabled={addingTeam || addTeamForm.teamName.trim().length < 3}
+              className="flex-1 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-1 cursor-pointer"
+            >
+              {addingTeam ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+              <span>Lưu Đội</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* PHÂN MỤC 1: ĐỘI ĐĂNG KÝ MỚI CHỜ DUYỆT HỒ SƠ */}
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4 text-amber-600" />
+          <h5 className="text-[14px] font-bold text-slate-900">
+            1. Đội Đăng Ký Chờ Duyệt Hồ Sơ
+          </h5>
+          <span className={`px-2 py-0.5 rounded-full text-[12px] font-bold ${
+            pendingTeams.length > 0 ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600"
+          }`}>
+            {pendingTeams.length} đội
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => loadPendingTeams(Number(activeTournament.id))}
+          disabled={pendingLoading}
+          className="text-[13px] text-sky-700 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+        >
+          <RefreshCw className={`w-3 h-3 ${pendingLoading ? "animate-spin" : ""}`} />
+          <span>Làm mới</span>
+        </button>
+      </div>
+
+      {pendingLoading ? (
+        <div className="p-4 text-center text-[13px] text-slate-500 bg-slate-50 rounded-lg border border-slate-200">
+          Đang nạp danh sách đội chờ duyệt…
+        </div>
+      ) : pendingTeams.length === 0 ? (
+        <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-center text-[13px] text-slate-500">
+          Không có đội nào đang chờ duyệt hồ sơ. Các đội mới nộp đơn sẽ xuất hiện tại đây.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {pendingTeams.map((pt) => (
+            <div
+              key={pt.teamName}
+              className="p-3.5 rounded-lg border border-amber-300 bg-amber-50/50 flex flex-col justify-between gap-3 shadow-2xs"
+            >
+              <div className="space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <h6 className="text-[14px] font-bold text-slate-900 truncate">{pt.teamName}</h6>
+                  <span className="px-2 py-0.5 rounded-md bg-amber-100 border border-amber-300 text-amber-800 text-[12px] font-bold shrink-0">
+                    Chờ duyệt đơn
+                  </span>
+                </div>
+                <p className="text-[13px] text-slate-600">
+                  Đại diện: <strong>{pt.captainName}</strong> • {pt.memberCount || 12} cầu thủ
+                </p>
+                <div className="flex flex-wrap items-center gap-x-3 text-[13px] text-slate-500">
+                  {pt.captainPhone && (
+                    <a href={`tel:${pt.captainPhone}`} className="text-sky-700 hover:underline flex items-center gap-1">
+                      <span>📞 {pt.captainPhone}</span>
+                    </a>
+                  )}
+                  {pt.captainEmail && <span>✉️ {pt.captainEmail}</span>}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2 border-t border-amber-200/60">
+                <button
+                  type="button"
+                  onClick={() => handleApprove(Number(activeTournament.id), pt.teamName)}
+                  disabled={pendingBusy}
+                  className="flex-1 py-1.5 px-3 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Duyệt Vào Giải</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleReject(Number(activeTournament.id), pt.teamName)}
+                  disabled={pendingBusy}
+                  className="py-1.5 px-3 rounded-md border border-rose-300 bg-white hover:bg-rose-50 text-rose-700 text-[13px] font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Từ Chối</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* PHÂN MỤC 2: ĐỘI CHỜ XÁC NHẬN LỆ PHÍ */}
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div className="flex items-center gap-2">
+          <CreditCard className="w-4 h-4 text-sky-700" />
+          <h5 className="text-[14px] font-bold text-slate-900">
+            2. Đội Chờ Xác Nhận Thu Lệ Phí
+          </h5>
+          <span className="px-2 py-0.5 rounded-full text-[12px] font-bold bg-sky-100 text-sky-800">
+            {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT").length} đội
+          </span>
+        </div>
+        <span className="text-[13px] text-slate-500 font-semibold">
+          Lệ phí: {formatMoney(activeTournament.entryFee ?? 0)}/đội
+        </span>
+      </div>
+
+      {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT").length === 0 ? (
+        <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 text-center text-[13px] text-slate-500">
+          Không có đội nào đang chờ xác nhận lệ phí.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {(activeTournament.teams ?? [])
+            .filter((z: any) => z.registrationStatus === "PENDING_PAYMENT")
+            .map((tm: any) => (
+              <div
+                key={tm.teamName}
+                className="p-3.5 rounded-lg border border-sky-300 bg-sky-50/50 flex flex-col justify-between gap-3 shadow-2xs"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h6 className="text-[14px] font-bold text-slate-900 truncate">{tm.teamName}</h6>
+                    <span className="px-2 py-0.5 rounded-md bg-amber-100 border border-amber-300 text-amber-800 text-[12px] font-bold shrink-0">
+                      Chờ đóng phí
+                    </span>
+                  </div>
+                  <p className="text-[13px] text-slate-600">
+                    Đại diện: <strong>{tm.captainName || "—"}</strong> • {tm.memberCount || 12} cầu thủ
+                  </p>
+                  <p className="text-[13px] text-slate-500">
+                    SĐT: {tm.captainPhone ? <a href={`tel:${tm.captainPhone}`} className="text-sky-700 hover:underline">{tm.captainPhone}</a> : "—"}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-sky-200">
+                  <button
+                    type="button"
+                    onClick={() => handleConfirmTeamFee(activeTournament.id, tm.teamName)}
+                    disabled={confirmingTeamFee === tm.teamName}
+                    className="flex-1 py-1.5 px-3 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {confirmingTeamFee === tm.teamName ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
+                    <span>Xác Nhận Đã Thu Phí</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleReject(activeTournament.id, tm.teamName)}
+                    disabled={pendingBusy}
+                    className="py-1.5 px-3 rounded-md border border-slate-300 bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-[13px] font-bold transition-colors cursor-pointer"
+                  >
+                    Huỷ
+                  </button>
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
+    </div>
+
+    {/* PHÂN MỤC 3: DANH SÁCH ĐỘI ĐÃ VÀO GIẢI CHÍNH THỨC */}
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div className="flex items-center gap-2">
+          <UserCheck className="w-4 h-4 text-emerald-600" />
+          <h5 className="text-[14px] font-bold text-slate-900">
+            3. Danh Sách Đội Đã Vào Giải Chính Thức (Sẵn Sàng Bốc Thăm)
+          </h5>
+          <span className="px-2 py-0.5 rounded-full text-[12px] font-bold bg-emerald-100 text-emerald-800">
+            {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus !== "PENDING_PAYMENT").length} đội
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={async () => {
+              await fillSimulatedTeams(Number(activeTournament.id), 2);
+              await fetchDbTournaments();
+              setVarNotice("✅ Đã bổ sung 2 đội test để chuẩn bị bốc thăm.");
+            }}
+            className="text-[12px] font-bold px-2 py-1 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 cursor-pointer"
+            title="Thêm đội test nhanh để đủ số lượng bốc thăm"
+          >
+            + Đội Test
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              await clearSimulatedTeams(Number(activeTournament.id));
+              await fetchDbTournaments();
+              setVarNotice("✅ Đã dọn dẹp các đội test.");
+            }}
+            className="text-[12px] font-bold px-2 py-1 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 cursor-pointer"
+            title="Xoá các đội test giả lập"
+          >
+            Dọn Đội Test
+          </button>
+        </div>
+      </div>
+
+      {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus !== "PENDING_PAYMENT").length === 0 ? (
+        <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-center text-[13px] text-slate-500">
+          Chưa có đội nào được xác nhận chính thức. Hãy duyệt các đội đăng ký ở mục 1 hoặc thêm đội thủ công ở trên.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+          {(activeTournament.teams ?? [])
+            .filter((z: any) => z.registrationStatus !== "PENDING_PAYMENT")
+            .map((tm: any, idx: number) => (
+              <div
+                key={tm.teamName}
+                className="p-3 rounded-lg border border-slate-300 bg-white flex items-center justify-between gap-2 shadow-2xs"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-[12px] flex items-center justify-center shrink-0">
+                    {idx + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-bold text-slate-900 truncate">{tm.teamName}</p>
+                    <p className="text-[12px] text-slate-500 truncate">
+                      {tm.captainName ? `${tm.captainName} · ` : ""}{tm.memberCount || 12} cầu thủ
+                    </p>
+                  </div>
+                </div>
+                <div className="shrink-0 flex items-center gap-1.5">
+                  {tm.simulated ? (
+                    <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">
+                      Test
+                    </span>
+                  ) : (
+                    <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                      Đã vào giải
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleReject(activeTournament.id, tm.teamName)}
+                    className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                    title="Xoá đội khỏi giải"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+{/* ================= TAB 2: MỜI GIẢI QUA EMAIL ================= */}
+{bottomTab === "invites" && activeTournament && (
+  <div className="space-y-5">
+    {/* Header Tab */}
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-lg p-3.5">
+      <div className="flex items-center gap-2.5">
+        <div className="w-9 h-9 rounded-md bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold">
+          <Mail className="w-5 h-5" />
+        </div>
+        <div>
+          <h4 className="text-[14px] font-bold text-slate-900">
+            Quyền Tham Gia & Mời Đội Qua Email ({activeTournament.title})
+          </h4>
+          <p className="text-[13px] text-slate-500">
+            Cấu hình mở công khai hoặc giới hạn giải kín, gửi thư mời và cấp quyền nộp đơn cho các đội
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {/* Khối 1: Chọn Chế Độ Tham Gia */}
+    <div className="space-y-2.5">
+      <label className="text-[13px] font-bold text-slate-700 block">
+        Chọn Thể Thức Tham Gia Giải Đấu:
+      </label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => handleSaveAccess("PUBLIC")}
+          disabled={accessBusy || joinMode === "PUBLIC"}
+          className={`p-3.5 rounded-lg border text-left transition-colors cursor-pointer ${
+            joinMode === "PUBLIC"
+              ? "border-emerald-500 bg-emerald-50/70 shadow-xs"
+              : "border-slate-300 bg-white hover:bg-slate-50"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Unlock className={`w-4 h-4 ${joinMode === "PUBLIC" ? "text-emerald-700" : "text-slate-400"}`} />
+            <span className="text-[14px] font-bold text-slate-900">Công Khai (Mở Tự Do)</span>
+          </div>
+          <p className="text-[13px] text-slate-600 mt-1 leading-relaxed">
+            Mọi cầu thủ và đội bóng trên nền tảng đều có thể xem thông tin và nộp đơn đăng ký tham gia giải.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleSaveAccess("INVITE_ONLY")}
+          disabled={accessBusy || joinMode === "INVITE_ONLY"}
+          className={`p-3.5 rounded-lg border text-left transition-colors cursor-pointer ${
+            joinMode === "INVITE_ONLY"
+              ? "border-amber-500 bg-amber-50/70 shadow-xs"
+              : "border-slate-300 bg-white hover:bg-slate-50"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Lock className={`w-4 h-4 ${joinMode === "INVITE_ONLY" ? "text-amber-800" : "text-slate-400"}`} />
+            <span className="text-[14px] font-bold text-slate-900">Giải Kín (Chỉ Mời Qua Email)</span>
+          </div>
+          <p className="text-[13px] text-slate-600 mt-1 leading-relaxed">
+            Chỉ những email được Ban Tổ Chức thêm vào danh sách bên dưới mới có quyền nộp đơn đăng ký.
+          </p>
+        </button>
+      </div>
+    </div>
+
+    {/* Khối 2: Tiện ích Sao Chép Link Đăng Ký Trực Tiếp */}
+    <div className="p-3.5 rounded-lg border border-slate-300 bg-white space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] font-bold text-slate-800 flex items-center gap-1.5">
+          <ExternalLink className="w-4 h-4 text-[#0369a1]" />
+          Đường Dẫn Đăng Ký Trực Tiếp Cho Đội Bóng:
+        </span>
+        <span className="text-[12px] text-slate-500">Gửi qua Zalo/Facebook cho đội trưởng</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          readOnly
+          value={`${typeof window !== "undefined" ? window.location.origin : ""}/tournaments/register?tournamentId=${activeTournament.id}`}
+          className="flex-1 px-3 py-2 rounded-lg border border-slate-300 bg-slate-50 font-mono text-[13px] text-slate-700 outline-none"
+        />
+        <button
+          type="button"
+          onClick={handleCopyInviteLink}
+          className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
+        >
+          {copiedInviteLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+          <span>{copiedInviteLink ? "Đã Sao Chép!" : "Sao Chép Link"}</span>
+        </button>
+      </div>
+    </div>
+
+    {/* Khối 3: Gửi Thư Mời Email & Quản Lý Danh Sách Mời */}
+    <div className="space-y-3">
+      <div className="border border-slate-300 bg-white rounded-lg p-4 space-y-3">
+        <h5 className="text-[14px] font-bold text-slate-900 flex items-center gap-1.5">
+          <Send className="w-4 h-4 text-amber-700" />
+          Gửi Thư Mời Mới Qua Email
+        </h5>
+        <div className="space-y-2">
+          <div>
+            <label className="text-[13px] font-bold text-slate-700 block mb-1">
+              Địa chỉ email đội bóng / đội trưởng:
+            </label>
+            <input
+              type="text"
+              value={inviteInput}
+              onChange={(e) => setInviteInput(e.target.value)}
+              placeholder="Nhập email (ví dụ: fc1@gmail.com, captain2@gmail.com... phân tách bằng dấu phẩy)"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-slate-50 font-mono text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+            />
+            <span className="text-[12px] text-slate-500 mt-0.5 block">
+              * Có thể nhập nhiều email cùng lúc, phân tách bằng dấu phẩy (,) hoặc khoảng trắng.
+            </span>
+          </div>
+
+          <div>
+            <label className="text-[13px] font-bold text-slate-700 block mb-1">
+              Lời nhắn gửi kèm trong thư mời:
+            </label>
+            <textarea
+              rows={2}
+              value={inviteCustomNote}
+              onChange={(e) => setInviteCustomNote(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-slate-50 text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+            />
+          </div>
+
+          <div className="pt-1 flex justify-end">
+            <button
+              type="button"
+              onClick={handleAddInvite}
+              disabled={accessBusy || !inviteInput.trim()}
+              className="px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-[13px] transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-xs"
+            >
+              {accessBusy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              <span>Gửi Thư Mời Email</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Danh sách email đã được cấp quyền mời */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+          <span className="text-[14px] font-bold text-slate-900 flex items-center gap-1.5">
+            <Mail className="w-4 h-4 text-sky-700" />
+            Danh Sách Email Đã Được Cấp Quyền Tham Gia ({inviteEmails.length})
+          </span>
+          {joinMode === "INVITE_ONLY" && (
+            <span className="px-2.5 py-0.5 rounded-full text-[12px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+              Đang áp dụng giải kín
+            </span>
+          )}
+        </div>
+
+        {inviteEmails.length === 0 ? (
+          <div className="p-4 rounded-lg bg-amber-50/70 border border-amber-200 text-amber-900 text-[13px] leading-relaxed">
+            Chưa có email nào trong danh sách mời. Khi giải ở chế độ <strong>“Chỉ mời qua email”</strong>, đội bóng cần đăng nhập đúng một email trong danh sách này để được nộp đơn.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+            {inviteEmails.map((em) => (
+              <div
+                key={em}
+                className="p-2.5 rounded-lg border border-slate-300 bg-white flex items-center justify-between gap-2 shadow-2xs"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span className="font-mono text-[13px] font-bold text-slate-900 truncate" title={em}>
+                    {em}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveInvite(em)}
+                  disabled={accessBusy}
+                  className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-slate-50 transition-colors cursor-pointer"
+                  title={`Gỡ lời mời ${em}`}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
+
+{/* TAB CONTENT: KẾT QUẢ & VUA PHÁ LƯỚI (đọc từ goal_events) */}
  {bottomTab === "var_logs" && activeBracket && (
  <div className="space-y-3 sm:space-y-4">
  <div>
