@@ -824,7 +824,7 @@ const [addCount, setAddCount] = useState("4");
  )}
 
  {/* Main Header Banner */}
- <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-slate-900 shadow-xl relative overflow-hidden">
+ <div className="bg-white border border-slate-300 rounded-lg p-5 text-slate-900">
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
  <div className="min-w-0">
  <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/30 text-sky-800 text-[14px] font-bold mb-3">
@@ -1308,7 +1308,7 @@ const [addCount, setAddCount] = useState("4");
    ) : !bracket ? (
   <div className="space-y-6">
     {/* Banner thông báo trạng thái */}
-    <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50 to-white border border-sky-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-0.5 rounded-full bg-[#0369a1] text-white text-[14px] font-black tracking-wide">
