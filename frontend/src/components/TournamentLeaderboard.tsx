@@ -821,7 +821,12 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                 return (
                   <article
                     key={t.id}
-                    className="bg-white rounded-lg p-5 border border-slate-300 hover:border-[#0369a1] transition-colors flex flex-col justify-between space-y-4"
+                    onClick={() => setExpandedTournamentId(expandedTournamentId === t.id ? null : t.id)}
+                    className={`bg-white rounded-lg p-5 border transition-all flex flex-col justify-between space-y-4 cursor-pointer text-left ${
+                      expandedTournamentId === t.id
+                        ? "border-[#0369a1] ring-2 ring-[#0369a1]/20 shadow-sm"
+                        : "border-slate-300 hover:border-sky-400"
+                    }`}
                   >
                     <div className="space-y-3">
                       {/* Hàng nhãn trạng thái & thể thức */}
@@ -1076,7 +1081,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setBracketTargetId(t.id);
                             setActiveTab("bracket");
                           }}
@@ -1096,6 +1102,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                           </span>
                         ) : (
                           <Link
+                            onClick={(e) => e.stopPropagation()}
                             href={`/tournaments/register?tournamentId=${t.id}`}
                             className="px-4 py-2 rounded-md text-[14px] font-bold bg-[#0369a1] hover:bg-[#075985] text-white flex items-center gap-1"
                           >
