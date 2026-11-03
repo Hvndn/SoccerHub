@@ -113,7 +113,7 @@ export default function TournamentOrganizerPortal({
  const [selectedTournamentId, setSelectedTournamentId] = useState<number | null>(null);
 
  // Active Tab for Tables/Logs
- const [bottomTab, setBottomTab] = useState<"teams" | "invites" | "finance" | "schedule" | "var_logs">("teams");
+ const [bottomTab, setBottomTab] = useState<"teams" | "invites" | "finance" | "schedule" | "var_logs" | "edit">("teams");
   const [copiedInviteLink, setCopiedInviteLink] = useState(false);
   const [inviteCustomNote, setInviteCustomNote] = useState("Ban Tổ Chức trân trọng kính mời bạn và đội bóng tham gia tranh tài tại giải đấu. Nhấp vào liên kết để nộp hồ sơ đăng ký!");
 
@@ -881,21 +881,21 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  ) : (
     filteredTournaments.map((t: any) => {
-      const isSelected = String(t.id) === String(selectedTournamentId);
-      const foundTourney = dbTournaments.find((x) => String(x.id) === String(t.id));
+      const isSelected = String(t.id) === String(activeTournamentId);
       return (
         <div
           key={t.id}
-          className={`rounded-lg p-4 sm:p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-xs cursor-pointer ${
-            isSelected || String(t.id) === String(activeTournamentId)
+          className={`rounded-lg p-4 sm:p-5 border transition-all duration-200 relative overflow-hidden flex flex-col justify-between shadow-xs cursor-pointer hover:border-[#0369a1] hover:shadow-sm ${
+            isSelected
               ? "border-[#0369a1] ring-2 ring-[#0369a1]/25 bg-sky-50/20"
               : t.status === "live"
               ? "bg-sky-50/40 border-sky-300 text-slate-900 hover:border-sky-400"
               : "bg-white border-slate-200/90 text-slate-900 hover:border-slate-300"
           }`}
           onClick={() => {
-            const nextId = isSelected ? null : Number(t.id);
-            setSelectedTournamentId(nextId);
+            setSelectedTournamentId(Number(t.id));
+            document.getElementById("organizer-console")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            setVarNotice("✅ Đang điều hành giải: " + t.title);
           }}
           role="button"
           tabIndex={0}
@@ -908,18 +908,18 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
             }
           }}
         >
-          {String(t.id) === String(activeTournamentId) && (
+          {isSelected && (
             <div className="absolute -top-px -right-px z-20">
-              <span className="inline-flex items-center gap-1 rounded-bl-xl rounded-tr-2xl bg-[#0369a1] px-2.5 py-1 text-[14px] font-black text-white shadow-sm">
-                <CheckCircle2 className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1 rounded-bl-xl rounded-tr-lg bg-[#0369a1] px-2.5 py-1 text-[13px] font-bold text-white shadow-xs">
+                <CheckCircle2 className="w-3.5 h-3.5" />
                 Đang thao tác
               </span>
             </div>
           )}
 
-          <div className="space-y-3 sm:space-y-4 relative z-10">
+          <div className="space-y-3 relative z-10">
             <div className="flex items-center justify-between gap-2">
-              <span className={`px-3 py-1 rounded-full text-[14px] font-black tracking-wider flex items-center gap-1.5 ${
+              <span className={`px-2.5 py-0.5 rounded-full text-[13px] font-bold tracking-wider flex items-center gap-1.5 ${
                 t.status === "live"
                   ? "bg-rose-500 text-white animate-pulse"
                   : t.status === "active"
@@ -930,23 +930,23 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                 {t.sportBadge}
               </span>
 
-              <span className="text-[14px] font-mono text-slate-500 font-bold">
+              <span className="text-[13px] font-mono text-slate-500 font-bold">
                 {t.courts}
               </span>
             </div>
 
             <div>
-              <h3 className="text-lg font-black tracking-tight leading-snug">
+              <h3 className="text-base sm:text-lg font-black tracking-tight leading-snug">
                 {t.title}
               </h3>
-              <p className="text-[14px] text-slate-500 mt-1 font-medium">
+              <p className="text-[13px] text-slate-500 mt-0.5 font-medium line-clamp-1">
                 {t.subtitle}
               </p>
             </div>
 
             {/* Progress Bar */}
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-[14px] font-bold text-slate-500">
+              <div className="flex items-center justify-between text-[13px] font-bold text-slate-500">
                 <span>Tiến Độ Giải Đấu</span>
                 <span>{t.progress}%</span>
               </div>
@@ -963,103 +963,11 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
             <span className="font-bold text-slate-500">
               {t.hasBracket ? "✅ Đã bốc thăm" : "⏳ Chưa bốc thăm"}
             </span>
-            <span className="font-bold text-sky-800 text-[12px]">
-              {isSelected ? "Thu gọn ▲" : "Bấm để mở ▼"}
+            <span className="font-bold text-[#0369a1] flex items-center gap-0.5 text-[12px] hover:underline">
+              <span>Vào điều hành ↓</span>
+              <ChevronRight className="w-3.5 h-3.5" />
             </span>
           </div>
-
-          {/* KHỐI HIỆN RA TOÀN BỘ KHI CLICK VÀO Ô GIẢI */}
-          {isSelected && (
-            <div
-              className="pt-3 mt-3 border-t border-slate-200 space-y-3 animate-fade-in text-[13px]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Bảng 4 thông số chi tiết */}
-              <div className="grid grid-cols-2 gap-2 text-[12px] bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                <div>
-                  <span className="text-slate-500 block">Lệ phí thi đấu:</span>
-                  <strong className="text-slate-900">{formatMoney(foundTourney?.entryFee ?? 0)}/đội</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500 block">Tổng quỹ thưởng:</span>
-                  <strong className="text-sky-800 font-bold">{formatMoney(foundTourney?.prizePool ?? 0)}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500 block">Hạn đăng ký:</span>
-                  <strong className="text-slate-900">{formatDate(foundTourney?.registrationDeadline)}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500 block">Thể thức thi đấu:</span>
-                  <strong className="text-slate-900">{formatLabel(foundTourney?.format)}</strong>
-                </div>
-              </div>
-
-              {/* Hàng nút bấm điều hành giải */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => onOpenBracket?.(String(t.id))}
-                  className="py-2 px-3 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Bốc Thăm &amp; Nhánh Đấu</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBottomTab("teams");
-                    document.getElementById("organizer-console")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }}
-                  className="py-2 px-3 rounded-md bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-[13px] flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
-                >
-                  <Users className="w-3.5 h-3.5" />
-                  <span>Duyệt Đội ({pendingTeams.length > 0 && String(t.id) === String(pendingFor) ? pendingTeams.length : (foundTourney?.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT").length})</span>
-                </button>
-
-                {foundTourney?.joinMode === "INVITE_ONLY" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setInviteModalTourney(foundTourney);
-                      setShowInviteModal(true);
-                    }}
-                    className="py-2 px-3 rounded-md bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[13px] flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-amber-700" />
-                    <span>Mời Email</span>
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => openEditModal(foundTourney)}
-                  className="py-2 px-3 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold text-[13px] flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                  <span>Sửa Giải</span>
-                </button>
-              </div>
-
-              {/* Nút điều hướng bảng điều khiển bên dưới */}
-              <div className="pt-1 flex items-center justify-between text-[12px]">
-                <button
-                  type="button"
-                  onClick={() => document.getElementById("organizer-console")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                  className="text-[#0369a1] hover:underline font-bold flex items-center gap-1 cursor-pointer"
-                >
-                  <span>Xem bảng điều khiển chi tiết bên dưới ↓</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedTournamentId(null)}
-                  className="text-slate-500 hover:text-slate-800 font-bold cursor-pointer"
-                >
-                  Thu gọn ▲
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       );
     })
@@ -2039,7 +1947,266 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  )}
 
- {/* TAB CONTENT: THỐNG KÊ TÀI CHÍNH GIẢI (BTC) */}
+ 
+{/* ================= TAB 6: SỬA THÔNG TIN GIẢI ĐẤU (INLINE) ================= */}
+{bottomTab === "edit" && activeTournament && (
+  <div className="space-y-4 animate-fade-in">
+    <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded-lg bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center font-bold">
+          <Pencil className="w-4 h-4" />
+        </div>
+        <div>
+          <h4 className="text-[14px] font-bold text-slate-900">
+            Sửa Thông Tin Giải: {activeTournament.title}
+          </h4>
+          <p className="text-[13px] text-slate-500">
+            Cập nhật tên giải, môn, thể thức, số đội, lệ phí và thông tin sân thi đấu
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setBottomTab("teams")}
+        className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[13px] font-bold transition-colors cursor-pointer"
+      >
+        Đóng / Về Duyệt Đội
+      </button>
+    </div>
+
+    <form onSubmit={handleSaveEdit} className="px-5 sm:px-6 py-4 space-y-3.5">
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Tên giải <span className="text-rose-500">*</span></label>
+ <input
+ type="text"
+ value={editForm.title}
+ onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+ required
+ placeholder="VD: Giải Giao Hữu Mùa Xu"
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Môn thi đấu</label>
+ <select
+ value={editForm.sportType}
+ onChange={(e) => setEditForm((f) => ({ ...f, sportType: e.target.value }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
+ >
+ <option value="SAN_7">Bóng Đá Sân 7</option>
+ <option value="SAN_5">Bóng Đá Sân 5</option>
+ <option value="SAN_11">Bóng Đá Sân 11</option>
+ <option value="FUTSAL">Futsal Trong Nhà</option>
+ </select>
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Thể thức giải</label>
+ <select
+ value={editForm.format}
+ onChange={(e) => setEditForm((f) => ({ ...f, format: e.target.value }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
+ >
+ <option value="KNOCKOUT">Loại trực tiếp</option>
+ <option value="ROUND_ROBIN">Đấu vòng tròn</option>
+ </select>
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Số đội tối đa</label>
+ <input
+ type="number"
+ min={2}
+ max={128}
+ value={editForm.totalTeams}
+ onChange={(e) => setEditForm((f) => ({ ...f, totalTeams: Number(e.target.value) }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Đã đăng ký</label>
+ <div className="w-full p-3 rounded-xl bg-slate-100 border border-slate-200 text-sm font-mono font-bold text-slate-600">
+ {activeTournament?.teams?.length ?? 0} đội
+ </div>
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Tiền thưởng (VNĐ)</label>
+ <input
+ type="number"
+ min={0}
+ step={100000}
+ value={editForm.prizePool}
+ onChange={(e) => setEditForm((f) => ({ ...f, prizePool: Number(e.target.value) }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Lệ phí mỗi đội (VNĐ)</label>
+ <input
+ type="number"
+ min={0}
+ step={100000}
+ value={editForm.entryFee}
+ onChange={(e) => setEditForm((f) => ({ ...f, entryFee: Number(e.target.value) }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Ngày mở giải</label>
+ <input
+ type="date"
+ value={editForm.startDate ?? ""}
+ onChange={(e) => setEditForm((f) => ({ ...f, startDate: e.target.value }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Ngày kết thúc</label>
+ <input
+ type="date"
+ value={editForm.endDate ?? ""}
+ onChange={(e) => setEditForm((f) => ({ ...f, endDate: e.target.value }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Hạn đăng ký</label>
+ <input
+ type="date"
+ value={editForm.registrationDeadline ?? ""}
+ onChange={(e) => setEditForm((f) => ({ ...f, registrationDeadline: e.target.value }))}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <div className="flex items-center justify-between">
+ <label className="font-extrabold text-slate-800 text-sm">Sân thi đấu</label>
+ {isOwner && (
+ <span className="text-[14px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+ Sân của bạn ({pitches.length})
+ </span>
+ )}
+ </div>
+ {pitches.length > 0 ? (
+ <select
+ value={editForm.pitchName}
+ onChange={(e) => {
+ const val = e.target.value;
+ const selectedPitch = pitches.find((p) => p.name === val);
+ setEditForm((f) => ({
+ ...f,
+ pitchName: val,
+ location: selectedPitch ? (selectedPitch.area || selectedPitch.address || f.location) : f.location,
+ }));
+ }}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ >
+ <option value="">-- Chọn cụm sân thi đấu --</option>
+ {pitches.map((p) => (
+ <option key={p.id} value={p.name}>
+ {p.name} {p.area ? `(${p.area})` : p.address ? `(${p.address})` : ""}
+ </option>
+ ))}
+ </select>
+ ) : (
+ <input
+ type="text"
+ value={editForm.pitchName}
+ onChange={(e) => setEditForm((f) => ({ ...f, pitchName: e.target.value }))}
+ placeholder={loadingPitches ? "Đang tải danh sách sân..." : "VD: Cụm Sân Turfzone Đà Nẵng"}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ )}
+ {isOwner && pitches.length === 0 && !loadingPitches && (
+ <p className="text-[14px] text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-200">
+ Bạn chưa đăng ký cụm sân nào. Vui lòng tạo sân tại Quản Lý Sân!
+ </p>
+ )}
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Địa điểm</label>
+ <input
+ type="text"
+ value={editForm.location}
+ onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
+ placeholder="VD: Đà Nẵng"
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ />
+ </div>
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 text-sm">Mô tả giải đấu</label>
+ <textarea
+ value={editForm.description}
+ onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+ rows={3}
+ placeholder="Luật chơi, điều kiện thi, đồ đạo..."
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm resize-y"
+ />
+ </div>
+
+ <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+ <p className="text-[14px] font-extrabold text-slate-600">
+ Tài khoản nhận lệ phí (hiển thị cho đội khi đăng ký)
+ </p>
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+ <input
+ type="text"
+ value={editForm.bankCode}
+ onChange={(e) => setEditForm((f) => ({ ...f, bankCode: e.target.value }))}
+ placeholder="Mã ngân hàng"
+ className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
+ />
+ <input
+ type="text"
+ value={editForm.bankAccount}
+ onChange={(e) => setEditForm((f) => ({ ...f, bankAccount: e.target.value }))}
+ placeholder="Số tài khoản"
+ className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
+ />
+ <input
+ type="text"
+ value={editForm.accountName}
+ onChange={(e) => setEditForm((f) => ({ ...f, accountName: e.target.value }))}
+ placeholder="Chủ tài khoản"
+ className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
+ />
+ </div>
+ </div>
+
+ <div className="flex gap-3 pt-1">
+ <button
+ type="button"
+ onClick={() => setBottomTab("teams")}
+ className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
+ >
+ Huỷ Bỏ
+ </button>
+ <button
+ type="submit"
+ disabled={savingEdit || !editForm.title.trim()}
+ className="flex-1 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+ >
+ {savingEdit ? "Đang lưu…" : "Lưu Thay Đổi"}
+ </button>
+ </div>
+ </form>
+  </div>
+)}
+
+{/* TAB CONTENT: THỐNG KÊ TÀI CHÍNH GIẢI (BTC) */}
  {bottomTab === "finance" && (
  <div className="space-y-4">
  {!activeTournament ? (
@@ -2280,259 +2447,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
         </div>
       </div>
 
-      {/* MODAL SỬA THÔNG TIN GIẢI ĐẤU */}
- {showEditModal && (
- <div id="edit-tournament-inline" className="w-full animate-fade-in">
- <div className="bg-white rounded-lg shadow-sm w-full max-w-2xl mx-auto border border-slate-200 overflow-hidden">
- <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
- <div className="flex items-center gap-2.5">
- <Pencil className="w-5 h-5 text-[#0369a1]" />
- <h3 className="font-black text-lg text-slate-900">Sửa Thông Tin Giải Đấu</h3>
- </div>
- <button
- type="button"
- onClick={() => setShowEditModal(false)}
- className="text-slate-500 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
- aria-label="Đóng"
- >
- <X className="w-5 h-5" />
- </button>
- </div>
+      </div>
 
- <form onSubmit={handleSaveEdit} className="px-5 sm:px-6 py-4 space-y-3.5">
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Tên giải <span className="text-rose-500">*</span></label>
- <input
- type="text"
- value={editForm.title}
- onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
- required
- placeholder="VD: Giải Giao Hữu Mùa Xu"
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Môn thi đấu</label>
- <select
- value={editForm.sportType}
- onChange={(e) => setEditForm((f) => ({ ...f, sportType: e.target.value }))}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
- >
- <option value="SAN_7">Bóng Đá Sân 7</option>
- <option value="SAN_5">Bóng Đá Sân 5</option>
- <option value="SAN_11">Bóng Đá Sân 11</option>
- <option value="FUTSAL">Futsal Trong Nhà</option>
- </select>
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Thể thức giải</label>
- <select
- value={editForm.format}
- onChange={(e) => setEditForm((f) => ({ ...f, format: e.target.value }))}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
- >
- <option value="KNOCKOUT">Loại trực tiếp</option>
- <option value="ROUND_ROBIN">Đấu vòng tròn</option>
- </select>
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Số đội tối đa</label>
- <input
- type="number"
- min={2}
- max={128}
- value={editForm.totalTeams}
- onChange={(e) => setEditForm((f) => ({ ...f, totalTeams: Number(e.target.value) }))}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Đã đăng ký</label>
- <div className="w-full p-3 rounded-xl bg-slate-100 border border-slate-200 text-sm font-mono font-bold text-slate-600">
- {activeTournament?.teams?.length ?? 0} đội
- </div>
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Tiền thưởng (VNĐ)</label>
- <input
- type="number"
- min={0}
- step={100000}
- value={editForm.prizePool}
- onChange={(e) => setEditForm((f) => ({ ...f, prizePool: Number(e.target.value) }))}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Lệ phí mỗi đội (VNĐ)</label>
- <input
- type="number"
- min={0}
- step={100000}
- value={editForm.entryFee}
- onChange={(e) => setEditForm((f) => ({ ...f, entryFee: Number(e.target.value) }))}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Ngày mở giải</label>
- <input
- type="date"
- value={editForm.startDate ?? ""}
- onChange={(e) => setEditForm((f) => ({ ...f, startDate: e.target.value }))}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Ngày kết thúc</label>
- <input
- type="date"
- value={editForm.endDate ?? ""}
- onChange={(e) => setEditForm((f) => ({ ...f, endDate: e.target.value }))}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Hạn đăng ký</label>
- <input
- type="date"
- value={editForm.registrationDeadline ?? ""}
- onChange={(e) => setEditForm((f) => ({ ...f, registrationDeadline: e.target.value }))}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
-
- <div className="space-y-1.5">
- <div className="flex items-center justify-between">
- <label className="font-extrabold text-slate-800 text-sm">Sân thi đấu</label>
- {isOwner && (
- <span className="text-[14px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
- Sân của bạn ({pitches.length})
- </span>
- )}
- </div>
- {pitches.length > 0 ? (
- <select
- value={editForm.pitchName}
- onChange={(e) => {
- const val = e.target.value;
- const selectedPitch = pitches.find((p) => p.name === val);
- setEditForm((f) => ({
- ...f,
- pitchName: val,
- location: selectedPitch ? (selectedPitch.area || selectedPitch.address || f.location) : f.location,
- }));
- }}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- >
- <option value="">-- Chọn cụm sân thi đấu --</option>
- {pitches.map((p) => (
- <option key={p.id} value={p.name}>
- {p.name} {p.area ? `(${p.area})` : p.address ? `(${p.address})` : ""}
- </option>
- ))}
- </select>
- ) : (
- <input
- type="text"
- value={editForm.pitchName}
- onChange={(e) => setEditForm((f) => ({ ...f, pitchName: e.target.value }))}
- placeholder={loadingPitches ? "Đang tải danh sách sân..." : "VD: Cụm Sân Turfzone Đà Nẵng"}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- )}
- {isOwner && pitches.length === 0 && !loadingPitches && (
- <p className="text-[14px] text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-200">
- Bạn chưa đăng ký cụm sân nào. Vui lòng tạo sân tại Quản Lý Sân!
- </p>
- )}
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Địa điểm</label>
- <input
- type="text"
- value={editForm.location}
- onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
- placeholder="VD: Đà Nẵng"
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 text-sm">Mô tả giải đấu</label>
- <textarea
- value={editForm.description}
- onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
- rows={3}
- placeholder="Luật chơi, điều kiện thi, đồ đạo..."
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm resize-y"
- />
- </div>
-
- <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
- <p className="text-[14px] font-extrabold text-slate-600">
- Tài khoản nhận lệ phí (hiển thị cho đội khi đăng ký)
- </p>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <input
- type="text"
- value={editForm.bankCode}
- onChange={(e) => setEditForm((f) => ({ ...f, bankCode: e.target.value }))}
- placeholder="Mã ngân hàng"
- className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
- />
- <input
- type="text"
- value={editForm.bankAccount}
- onChange={(e) => setEditForm((f) => ({ ...f, bankAccount: e.target.value }))}
- placeholder="Số tài khoản"
- className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
- />
- <input
- type="text"
- value={editForm.accountName}
- onChange={(e) => setEditForm((f) => ({ ...f, accountName: e.target.value }))}
- placeholder="Chủ tài khoản"
- className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
- />
- </div>
- </div>
-
- <div className="flex gap-3 pt-1">
- <button
- type="button"
- onClick={() => setShowEditModal(false)}
- className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
- >
- Huỷ Bỏ
- </button>
- <button
- type="submit"
- disabled={savingEdit || !editForm.title.trim()}
- className="flex-1 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
- >
- {savingEdit ? "Đang lưu…" : "Lưu Thay Đổi"}
- </button>
- </div>
- </form>
- </div>
- </div>
- )}
-
- </div>
- 
       {/* POPUP MODAL MỜI CẦU THỦ QUA EMAIL NỔI BẬT KHÔNG BỊ TRÔI XUỐNG DƯỚI */}
       <TournamentInviteModal
         isOpen={showInviteModal}
