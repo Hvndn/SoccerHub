@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle2, Trophy, Volume2, VolumeX, Zap, Sparkles, RefreshCw } from "lucide-react";
+import { CheckCircle2, Trophy, Volume2, VolumeX, Zap, Sparkles, RefreshCw, Shield, Play, ArrowRight, Award } from "lucide-react";
 
 export interface DrawPair {
   matchId: string;
@@ -20,12 +20,12 @@ interface DrawLotteryOverlayProps {
 }
 
 /**
- * Hiệu ứng bốc thăm chia cặp chuẩn "UEFA Champions League":
- *   - Chiếc chậu pha lê hình quả bóng đặc trưng UEFA Starball Bowl
- *   - Các quả cầu bốc thăm Champions League nảy và xoay đảo chiều trong chậu
- *   - Quả cầu bay lên và tách đôi (unveiling ribbon) hé lộ tên đội bóng
- *   - Nhạc hiệu điệp khúc kinh điển UEFA Champions League Anthem hào hùng (Web Audio Brass & Strings Synthesis)
- *   - Tuân thủ quy tắc UI: inline tại chỗ, chữ tối thiểu 13px, tiếng Việt chuẩn mực
+ * Giao diện Lễ Bốc Thăm & Phân Nhánh Thi Đấu phong cách thể thao Turfzone:
+ * - Trực quan, hiện đại, nền sáng thanh lịch với màu xanh thương hiệu (#0369a1).
+ * - Sân khấu bốc thăm trung tâm hiển thị từng cặp đối đầu (Team A vs Team B) lật thẻ minh bạch.
+ * - Cho phép bốc từng cặp hoặc bốc nhanh toàn bộ chỉ sau 1 click.
+ * - Âm thanh chuông nhẹ nhàng tinh tế (có thể tắt/bật dễ dàng).
+ * - Tuân thủ quy tắc UI: inline tại chỗ, chữ tối thiểu 13px, tiếng Việt chuẩn mực.
  */
 export default function DrawLotteryOverlay({
   open,
@@ -35,608 +35,423 @@ export default function DrawLotteryOverlay({
   onDone,
   inline = true,
 }: DrawLotteryOverlayProps) {
-  const [shuffling, setShuffling] = useState(true);
   const [locked, setLocked] = useState(0);
-  const [tick, setTick] = useState(0);
+  const [shuffling, setShuffling] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
-  const [currentDrawnTeam, setCurrentDrawnTeam] = useState<string | null>(null);
-  const [sphereOpening, setSphereOpening] = useState(false);
+  const [revealingTeamA, setRevealingTeamA] = useState(false);
+  const [revealingTeamB, setRevealingTeamB] = useState(false);
 
   const soundOnRef = useRef(soundOn);
-  const timers = useRef<number[]>([]);
-  const pairsRef = useRef(pairs);
-  pairsRef.current = pairs;
-  const audioCtx = useRef<AudioContext | null>(null);
-  const activeNodes = useRef<Array<{ osc?: OscillatorNode; gain?: GainNode }>>([]);
+  soundOnRef.current = soundOn;
 
-  useEffect(() => {
-    soundOnRef.current = soundOn;
-    if (!soundOn) {
-      stopAllAudio();
-    }
-  }, [soundOn]);
+  const timerRef = useRef<number | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
-  const pool = useMemo(() => {
-    const names = [...byes];
-    pairs.forEach((p) => names.push(p.teamA, p.teamB));
-    return names.length ? names : ["Đội hạt giống"];
-  }, [pairs, byes]);
-
-  // =========================================================================
-  //  WEB AUDIO SYNTHESIZER: UEFA CHAMPIONS LEAGUE ANTHEM & SOUND EFFECTS
-  // =========================================================================
-
-  const getCtx = useCallback(() => {
+  // Khởi tạo audio context an toàn trên trình duyệt
+  const getAudioCtx = useCallback(() => {
     if (typeof window === "undefined") return null;
-    if (!audioCtx.current || audioCtx.current.state === "closed") {
+    if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
       const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
       if (!Ctx) return null;
-      audioCtx.current = new Ctx();
+      audioCtxRef.current = new Ctx();
     }
-    if (audioCtx.current.state === "suspended") {
-      audioCtx.current.resume().catch(() => {});
+    if (audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume().catch(() => {});
     }
-    return audioCtx.current;
+    return audioCtxRef.current;
   }, []);
 
-  const stopAllAudio = useCallback(() => {
-    activeNodes.current.forEach(({ osc, gain }) => {
-      try {
-        if (gain) gain.gain.setValueAtTime(0.0001, 0);
-        if (osc) osc.stop();
-      } catch {
-        /* ignore */
-      }
-    });
-    activeNodes.current = [];
-  }, []);
-
-  // Phát một nốt nhạc phong cách dàn nhạc giao hưởng (Brass / String)
-  const playOrchestralTone = useCallback(
-    (
-      freq: number,
-      duration: number,
-      gain = 0.1,
-      type: OscillatorType = "sawtooth",
-      startOffset = 0,
-      detune = 0
-    ) => {
-      const ctx = getCtx();
-      if (!ctx || !soundOnRef.current) return;
-
-      try {
-        const osc = ctx.createOscillator();
-        const oscDetune = ctx.createOscillator();
-        const filter = ctx.createBiquadFilter();
-        const g = ctx.createGain();
-
-        const startTime = ctx.currentTime + startOffset;
-        const stopTime = startTime + duration;
-
-        // Bộ lọc mô phỏng nhạc cụ dây và kèn đồng Champions League
-        filter.type = "lowpass";
-        filter.frequency.setValueAtTime(1600, startTime);
-        filter.frequency.exponentialRampToValueAtTime(3200, startTime + 0.1);
-        filter.frequency.exponentialRampToValueAtTime(800, stopTime);
-
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, startTime);
-        if (detune) osc.detune.setValueAtTime(detune, startTime);
-
-        // Nốt bè thứ hai tạo độ dày hợp xướng
-        oscDetune.type = "triangle";
-        oscDetune.frequency.setValueAtTime(freq, startTime);
-        oscDetune.detune.setValueAtTime(7, startTime);
-
-        g.gain.setValueAtTime(0.0001, startTime);
-        g.gain.linearRampToValueAtTime(gain, startTime + 0.04);
-        g.gain.exponentialRampToValueAtTime(0.0001, stopTime);
-
-        osc.connect(filter);
-        oscDetune.connect(filter);
-        filter.connect(g);
-        g.connect(ctx.destination);
-
-        osc.start(startTime);
-        oscDetune.start(startTime);
-        osc.stop(stopTime + 0.05);
-        oscDetune.stop(stopTime + 0.05);
-
-        activeNodes.current.push({ osc, gain: g });
-      } catch {
-        /* ignore */
-      }
-    },
-    [getCtx]
-  );
-
-  // Hiệu ứng âm thanh khi rút quả bóng và mở quả cầu
-  const playBallDrawSound = useCallback(() => {
-    const ctx = getCtx();
-    if (!ctx || !soundOnRef.current) return;
-    try {
-      const startTime = ctx.currentTime;
-      // Âm thanh whoosh khi bóng bay lên
-      const osc = ctx.createOscillator();
-      const g = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(220, startTime);
-      osc.frequency.exponentialRampToValueAtTime(660, startTime + 0.22);
-      g.gain.setValueAtTime(0.01, startTime);
-      g.gain.linearRampToValueAtTime(0.12, startTime + 0.1);
-      g.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
-      osc.connect(g);
-      g.connect(ctx.destination);
-      osc.start(startTime);
-      osc.stop(startTime + 0.26);
-
-      // Âm thanh "pop" tách đôi quả cầu
-      const popOsc = ctx.createOscillator();
-      const popG = ctx.createGain();
-      popOsc.type = "triangle";
-      popOsc.frequency.setValueAtTime(520, startTime + 0.22);
-      popOsc.frequency.exponentialRampToValueAtTime(140, startTime + 0.35);
-      popG.gain.setValueAtTime(0.14, startTime + 0.22);
-      popG.gain.exponentialRampToValueAtTime(0.001, startTime + 0.38);
-      popOsc.connect(popG);
-      popG.connect(ctx.destination);
-      popOsc.start(startTime + 0.22);
-      popOsc.stop(startTime + 0.4);
-    } catch {
-      /* ignore */
-    }
-  }, [getCtx]);
-
-  // Nhạc hiệu kinh điển: Điệp khúc UEFA Champions League Anthem
-  // Giai điệu: Handel's Zadok the Priest - "Die Meister! Die Besten! Les grandes équipes! The Champions!"
-  const playChampionsLeagueAnthem = useCallback(() => {
+  // Tiếng chuông nhẹ nhàng khi mở lá thăm
+  const playCardFlipSound = useCallback(() => {
     if (!soundOnRef.current) return;
-
-    // 1. Dàn đàn dây rải dồn dập mở màn (Baroque Arpeggios)
-    const arpeggioNotes = [
-      261.63, 329.63, 392.0, 523.25, 659.25, 783.99, // C4 - E4 - G4 - C5 - E5 - G5
-      293.66, 349.23, 440.0, 587.33, 698.46, 880.0, // D4 - F4 - A4 - D5 - F5 - A5
-      261.63, 329.63, 392.0, 523.25, 659.25, 1046.5, // C4 - E4 - G4 - C5 - E5 - C6
-    ];
-    arpeggioNotes.forEach((n, idx) => {
-      playOrchestralTone(n, 0.12, 0.05, "sawtooth", idx * 0.065);
-    });
-
-    // 2. Điệp khúc kèn đồng & hợp xướng oai nghiêm
-    // "Die Meister!"
-    const tMeister = 1.35;
-    playOrchestralTone(523.25, 0.45, 0.15, "sawtooth", tMeister); // C5
-    playOrchestralTone(659.25, 0.45, 0.15, "sawtooth", tMeister + 0.25); // E5
-    playOrchestralTone(783.99, 0.55, 0.18, "sawtooth", tMeister + 0.5); // G5
-    playOrchestralTone(261.63, 0.9, 0.1, "triangle", tMeister); // Bass C3
-
-    // "Die Besten!"
-    const tBesten = tMeister + 1.15;
-    playOrchestralTone(587.33, 0.45, 0.15, "sawtooth", tBesten); // D5
-    playOrchestralTone(698.46, 0.45, 0.15, "sawtooth", tBesten + 0.25); // F5
-    playOrchestralTone(880.0, 0.55, 0.18, "sawtooth", tBesten + 0.5); // A5
-    playOrchestralTone(293.66, 0.9, 0.1, "triangle", tBesten); // Bass D3
-
-    // "Les grandes équipes!"
-    const tEquipes = tBesten + 1.15;
-    playOrchestralTone(783.99, 0.3, 0.14, "sawtooth", tEquipes); // G5
-    playOrchestralTone(698.46, 0.3, 0.14, "sawtooth", tEquipes + 0.2); // F5
-    playOrchestralTone(659.25, 0.3, 0.14, "sawtooth", tEquipes + 0.4); // E5
-    playOrchestralTone(587.33, 0.3, 0.14, "sawtooth", tEquipes + 0.6); // D5
-
-    // "THE CHAMPIONS!" — Cao trào đỉnh điểm vang vọng
-    const tChampions = tEquipes + 0.95;
-    // Chùm hợp âm C Major Fortissimo
-    playOrchestralTone(1046.5, 1.6, 0.22, "sawtooth", tChampions); // C6
-    playOrchestralTone(783.99, 1.6, 0.18, "sawtooth", tChampions); // G5
-    playOrchestralTone(659.25, 1.6, 0.16, "sawtooth", tChampions); // E5
-    playOrchestralTone(523.25, 1.6, 0.18, "sawtooth", tChampions); // C5
-    playOrchestralTone(130.81, 1.8, 0.18, "triangle", tChampions); // Sub-bass C2
-  }, [playOrchestralTone]);
-
-  // Fanfare ngắn khi hoàn thành một cặp đấu
-  const playPairLockFanfare = useCallback(
-    (index: number) => {
-      if (!soundOnRef.current) return;
-      playBallDrawSound();
-      const base = 440; // A4
-      const notes = [base, base * 1.25, base * 1.5];
-      notes.forEach((freq, idx) => {
-        playOrchestralTone(freq, 0.25, 0.11, "triangle", 0.2 + idx * 0.12);
-      });
-      void index;
-    },
-    [playBallDrawSound, playOrchestralTone]
-  );
-
-  // =========================================================================
-  //  LIFECYCLE & SEQUENCE BỐC THĂM
-  // =========================================================================
-
-  const skipDraw = useCallback(() => {
-    timers.current.forEach((t) => {
-      window.clearTimeout(t);
-      window.clearInterval(t);
-    });
-    timers.current = [];
-    setShuffling(false);
-    setLocked(pairs.length);
-    setCurrentDrawnTeam(null);
-    setSphereOpening(false);
-    if (soundOnRef.current) {
-      playChampionsLeagueAnthem();
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      const t = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, t); // D5
+      osc.frequency.exponentialRampToValueAtTime(880, t + 0.12); // A5
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.06, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.15);
+    } catch {
+      /* ignore audio error */
     }
-  }, [pairs.length, playChampionsLeagueAnthem]);
+  }, [getAudioCtx]);
 
+  // Tiếng còi kết thúc lễ bốc thăm nhẹ nhàng
+  const playFinishFanfare = useCallback(() => {
+    if (!soundOnRef.current) return;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      const t = ctx.currentTime;
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, t + idx * 0.1);
+        gain.gain.setValueAtTime(0.0001, t + idx * 0.1);
+        gain.gain.linearRampToValueAtTime(0.08, t + idx * 0.1 + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + idx * 0.1 + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t + idx * 0.1);
+        osc.stop(t + idx * 0.1 + 0.26);
+      });
+    } catch {
+      /* ignore audio error */
+    }
+  }, [getAudioCtx]);
+
+  const totalPairs = pairs.length;
+  const isDone = locked >= totalPairs;
+
+  // Bốc thăm nhanh toàn bộ các cặp đấu
+  const handleFastDraw = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setLocked(totalPairs);
+    setShuffling(false);
+    setRevealingTeamA(true);
+    setRevealingTeamB(true);
+    playFinishFanfare();
+  }, [totalPairs, playFinishFanfare]);
+
+  // Bốc cặp tiếp theo (hoặc bắt đầu bốc)
+  const drawNextPair = useCallback(() => {
+    if (locked >= totalPairs) return;
+    setShuffling(true);
+    setRevealingTeamA(false);
+    setRevealingTeamB(false);
+
+    // Mở Đội A trước
+    setTimeout(() => {
+      setRevealingTeamA(true);
+      playCardFlipSound();
+    }, 300);
+
+    // Mở Đội B sau 700ms
+    setTimeout(() => {
+      setRevealingTeamB(true);
+      playCardFlipSound();
+      setLocked((prev) => {
+        const next = prev + 1;
+        if (next >= totalPairs) {
+          setTimeout(playFinishFanfare, 400);
+        }
+        return next;
+      });
+      setShuffling(false);
+    }, 850);
+  }, [locked, totalPairs, playCardFlipSound, playFinishFanfare]);
+
+  // Tự động mở lần đầu khi popup mở ra
   useEffect(() => {
     if (!open) {
-      stopAllAudio();
+      if (timerRef.current) clearTimeout(timerRef.current);
       return;
     }
-
-    timers.current.forEach((t) => {
-      window.clearTimeout(t);
-      window.clearInterval(t);
-    });
-    timers.current = [];
-    stopAllAudio();
-
-    const reduced =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
-    if (reduced || pairsRef.current.length === 0) {
-      setShuffling(false);
-      setLocked(pairs.length);
-      if (soundOnRef.current) playChampionsLeagueAnthem();
-      return;
-    }
-
-    setShuffling(true);
     setLocked(0);
-    setTick(0);
-    setCurrentDrawnTeam(null);
-    setSphereOpening(false);
+    setShuffling(false);
+    setRevealingTeamA(false);
+    setRevealingTeamB(false);
 
-    // Bắt đầu phát nhạc hiệu Champions League khi mở bốc thăm
-    if (soundOnRef.current) {
-      playChampionsLeagueAnthem();
-    }
-
-    // Nhịp quay xáo bóng trong chậu pha lê (mỗi 65ms)
-    const shuffleTimer = window.setInterval(() => setTick((t) => t + 1), 65);
-    timers.current.push(shuffleTimer as unknown as number);
-
-    // Sau giai đoạn xáo bóng mở màn -> bắt đầu rút từng quả bóng
-    const startDrawingTimeout = window.setTimeout(() => {
-      window.clearInterval(shuffleTimer);
-      setShuffling(false);
-
-      const totalPairs = pairsRef.current.length;
-      pairsRef.current.forEach((pair, pairIdx) => {
-        // Rút bóng Đội A
-        const t1 = window.setTimeout(() => {
-          setCurrentDrawnTeam(pair.teamA);
-          setSphereOpening(true);
-          playBallDrawSound();
-        }, pairIdx * 1400 + 100);
-        timers.current.push(t1);
-
-        // Rút bóng Đội B và chốt cặp
-        const t2 = window.setTimeout(() => {
-          setCurrentDrawnTeam(pair.teamB);
-          setSphereOpening(true);
-          playPairLockFanfare(pairIdx);
-          setLocked(pairIdx + 1);
-        }, pairIdx * 1400 + 750);
-        timers.current.push(t2);
-
-        // Kết thúc cặp
-        const t3 = window.setTimeout(() => {
-          setSphereOpening(false);
-          if (pairIdx === totalPairs - 1) {
-            setCurrentDrawnTeam(null);
-          }
-        }, pairIdx * 1400 + 1200);
-        timers.current.push(t3);
-      });
-    }, 2000);
-
-    timers.current.push(startDrawingTimeout);
+    // Bắt đầu bốc thăm cặp đầu tiên sau 500ms
+    timerRef.current = window.setTimeout(() => {
+      drawNextPair();
+    }, 500);
 
     return () => {
-      timers.current.forEach((t) => {
-        window.clearTimeout(t);
-        window.clearInterval(t);
-      });
-      timers.current = [];
-      stopAllAudio();
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [open, pairs.length, playChampionsLeagueAnthem, playBallDrawSound, playPairLockFanfare, stopAllAudio]);
+  }, [open]);
 
-  // =========================================================================
-  //  VỊ TRÍ CÁC QUẢ BÓNG TRONG CHẬU PHA LÊ HÌNH QUẢ CẦU
-  // =========================================================================
-
-  const bowlBalls = useMemo(() => {
-    const count = Math.max(6, Math.min(pool.length, 16));
-    return Array.from({ length: count }, (_, i) => {
-      const angle = ((tick * 11 + i * (360 / count)) % 360) * (Math.PI / 180);
-      const wobble = Math.sin(tick * 0.2 + i) * 12;
-      const radiusX = 38 + (i % 3) * 6;
-      const radiusY = 28 + (i % 2) * 5;
-      const x = 50 + Math.cos(angle) * radiusX;
-      const y = 52 + Math.sin(angle) * radiusY + wobble;
-      const rot = (tick * 14 + i * 45) % 360;
-      return { x, y, rot };
-    });
-  }, [pool.length, tick]);
+  // Cặp đấu hiện tại đang bốc
+  const currentPairIdx = Math.min(locked, Math.max(0, totalPairs - 1));
+  const currentPair = pairs[currentPairIdx];
 
   if (!open) return null;
-
-  const done = !shuffling && locked >= pairs.length;
 
   return (
     <div
       className={
         inline
-          ? "w-full animate-fade-in my-3"
-          : "fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85  animate-fade-in overflow-y-auto"
+          ? "w-full my-4 animate-fade-in"
+          : "fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-fade-in overflow-y-auto"
       }
     >
       <div
         role="region"
         aria-label={`Lễ bốc thăm chia cặp ${tournamentTitle}`}
-        className={
-          inline
-            ? "w-full rounded-3xl bg-gradient-to-b from-slate-900 via-sky-950 to-slate-900 text-white border-2 border-sky-400/30 shadow-2xl p-4 sm:p-7 space-y-5 relative overflow-hidden"
-            : "w-full max-w-2xl rounded-3xl bg-gradient-to-b from-slate-900 via-sky-950 to-slate-900 text-white border-2 border-sky-400/30 shadow-2xl p-4 sm:p-8 space-y-5 my-auto relative overflow-hidden"
-        }
+        className="w-full max-w-4xl mx-auto rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden text-slate-800"
       >
-        {/* Ánh sáng sao nền UEFA Champions League Atmosphere */}
-        
-        
-
-        {/* HEADER: UEFA CHAMPIONS LEAGUE DRAW CEREMONY BANNER */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-sky-800/40 pb-4 relative z-10">
+        {/* HEADER: THƯƠNG HIỆU TURFZONE */}
+        <div className="bg-gradient-to-r from-sky-800 via-[#0369a1] to-sky-700 text-white p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
           <div className="flex items-center gap-3 text-center sm:text-left">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/30 shrink-0 text-2xl">
+            <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center border border-white/20 shadow-sm shrink-0 text-xl">
               🏆
             </div>
             <div>
               <div className="flex items-center justify-center sm:justify-start gap-2">
-                <span className="px-2.5 py-0.5 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 font-black text-[14px] tracking-wider">
-                  ⭐ LỄ BỐC THĂM CHIA CẶP CHAMPIONS LEAGUE
+                <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[12px] font-bold tracking-wide">
+                  Lễ Bốc Thăm & Phân Nhánh
+                </span>
+                <span className="text-sky-200 text-[13px] font-semibold">
+                  {totalPairs} cặp đấu R1
                 </span>
               </div>
-              <h3 className="text-lg sm:text-xl font-black text-white tracking-tight mt-0.5">
+              <h3 className="text-base sm:text-lg font-black text-white mt-0.5">
                 {tournamentTitle}
               </h3>
             </div>
           </div>
 
-          {/* BẬT / TẮT NHẠC HIỆU & NÚT BỎ QUA */}
+          {/* CÁC NÚT ĐIỀU KHIỂN HEADER */}
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => {
-                const nextState = !soundOn;
-                setSoundOn(nextState);
-                if (nextState) {
-                  playChampionsLeagueAnthem();
-                }
-              }}
-              title={soundOn ? "Tắt nhạc hiệu Champions League" : "Bật nhạc hiệu Champions League"}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-sky-200 border border-sky-500/30 text-[14px] font-bold transition-all shadow-sm active:scale-95"
+              onClick={() => setSoundOn(!soundOn)}
+              title={soundOn ? "Tắt âm thanh" : "Bật âm thanh"}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[13px] font-bold transition-colors cursor-pointer border border-white/20"
             >
               {soundOn ? (
                 <>
-                  <Volume2 className="w-4 h-4 text-sky-400 animate-pulse" />
-                  <span>Nhạc hiệu: Bật</span>
+                  <Volume2 className="w-4 h-4 text-emerald-300" />
+                  <span>Âm thanh: Bật</span>
                 </>
               ) : (
                 <>
-                  <VolumeX className="w-4 h-4 text-slate-400" />
-                  <span>Nhạc hiệu: Tắt</span>
+                  <VolumeX className="w-4 h-4 text-slate-300" />
+                  <span>Âm thanh: Tắt</span>
                 </>
               )}
             </button>
 
-            {!done && (
+            {!isDone && (
               <button
                 type="button"
-                onClick={skipDraw}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-[14px] transition-all shadow-md active:scale-95"
+                onClick={handleFastDraw}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-[13px] font-extrabold shadow-sm transition-transform active:scale-95 cursor-pointer"
+                title="Bốc thăm toàn bộ các cặp ngay lập tức"
               >
-                <Zap className="w-3.5 h-3.5" />
-                <span>Xem nhanh kết quả</span>
+                <Zap className="w-3.5 h-3.5 fill-current" />
+                <span>Bốc Nhanh Tất Cả</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* ===== KHU VỰC TRUNG TÂM: CHIẾC CHẬU THỦY TINH HÌNH QUẢ BÓNG & QUẢ CẦU RÚT THĂM ===== */}
-        <div className="relative mx-auto w-full max-w-[420px] py-2 flex flex-col items-center justify-center select-none z-10">
-          {/* QUẢ CẦU BAY LÊN TÁCH ĐÔI KHI RÚT TÊN ĐỘI */}
-          {currentDrawnTeam && (
-            <div className="absolute top-0 z-30 flex flex-col items-center animate-bounce">
-              <div className="relative flex items-center justify-center">
-                {/* Quả bóng bốc thăm tách đôi màu bạc pha ánh vàng */}
+        {/* THANH TIẾN ĐỘ BỐC THĂM */}
+        <div className="bg-slate-50 px-4 sm:px-6 py-2.5 border-b border-slate-200 flex items-center justify-between text-[13px] font-bold text-slate-600">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-pulse" />
+            <span>Tiến độ bốc thăm: {locked} / {totalPairs} cặp đấu</span>
+          </div>
+          <div className="w-36 sm:w-48 bg-slate-200 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${totalPairs > 0 ? (locked / totalPairs) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-6 space-y-6">
+          {/* SÂN KHẤU BỐC THĂM TRUNG TÂM (LIVE DRAW STAGE) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-sky-50/70 to-slate-50 border border-sky-200 shadow-2xs">
+            <div className="text-center mb-3">
+              <span className="text-[13px] font-bold text-[#0369a1] bg-sky-100/80 px-3 py-1 rounded-full border border-sky-200">
+                {isDone
+                  ? "🎉 Lễ bốc thăm đã hoàn tất thành công!"
+                  : `Đang bốc thăm: Trận ${currentPairIdx + 1} (${currentPair?.matchId || ""})`}
+              </span>
+            </div>
+
+            {/* THẺ ĐỐI ĐẦU ĐỘI A VS ĐỘI B */}
+            {currentPair && (
+              <div className="grid grid-cols-1 sm:grid-cols-11 gap-3 items-center">
+                {/* ĐỘI A */}
                 <div
-                  className={`w-14 h-14 rounded-full bg-gradient-to-tr from-slate-200 via-white to-amber-200 border-2 border-amber-300 shadow-2xl flex items-center justify-center text-xl transition-all duration-300 ${
-                    sphereOpening ? "scale-110 ring-4 ring-amber-400/50" : ""
+                  className={`sm:col-span-5 p-4 rounded-xl border transition-all duration-300 ${
+                    revealingTeamA || locked > currentPairIdx
+                      ? "bg-white border-sky-400 shadow-md ring-2 ring-sky-200"
+                      : "bg-slate-100/80 border-slate-200 opacity-60"
                   }`}
                 >
-                  ⭐
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-sky-100 text-[#0369a1] flex items-center justify-center font-bold text-base shrink-0 shadow-2xs">
+                      {currentPair.teamA.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[12px] font-bold text-sky-600 block">Đội Hạt Giống A</span>
+                      <h4 className="text-sm sm:text-base font-extrabold text-slate-900 truncate">
+                        {revealingTeamA || locked > currentPairIdx ? currentPair.teamA : "Đang rút thăm..."}
+                      </h4>
+                    </div>
+                  </div>
+                </div>
+
+                {/* BIỂU TƯỢNG VS */}
+                <div className="sm:col-span-1 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-[13px] shadow-sm">
+                    VS
+                  </div>
+                </div>
+
+                {/* ĐỘI B */}
+                <div
+                  className={`sm:col-span-5 p-4 rounded-xl border transition-all duration-300 ${
+                    revealingTeamB || locked > currentPairIdx
+                      ? "bg-white border-amber-400 shadow-md ring-2 ring-amber-200"
+                      : "bg-slate-100/80 border-slate-200 opacity-60"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-base shrink-0 shadow-2xs">
+                      {currentPair.teamB.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[12px] font-bold text-amber-700 block">Đội Đối Thủ B</span>
+                      <h4 className="text-sm sm:text-base font-extrabold text-slate-900 truncate">
+                        {revealingTeamB || locked > currentPairIdx ? currentPair.teamB : "Đang rút thăm..."}
+                      </h4>
+                    </div>
+                  </div>
                 </div>
               </div>
-              {/* Dải ruy băng mở ra hiển thị tên đội bóng vừa rút */}
-              <div className="mt-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-sm sm:text-base shadow-xl border border-amber-200 animate-fade-in-up">
-                ⚽ {currentDrawnTeam}
+            )}
+
+            {/* NÚT THAO TÁC SÂN KHẤU */}
+            {!isDone && (
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={drawNextPair}
+                  disabled={shuffling}
+                  className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                >
+                  {shuffling ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Đang mở lá thăm…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4 fill-current" />
+                      <span>Bốc Cặp Tiếp Theo</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* ĐỘI ĐẶC CÁCH VÒNG 1 (NẾU CÓ BYE) */}
+          {byes.length > 0 && (
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-[13px] flex items-center gap-2.5">
+              <Award className="w-4 h-4 text-amber-600 shrink-0" />
+              <div>
+                <span className="font-bold text-amber-900">Đội đặc cách vào thẳng vòng trong: </span>
+                <span className="text-amber-800 font-semibold">{byes.join(" • ")}</span>
               </div>
             </div>
           )}
 
-          {/* CHIẾC CHẬU PHA LÊ HÌNH QUẢ BÓNG (CHAMPIONS LEAGUE GLASS BOWL) */}
-          <div className="relative w-[280px] sm:w-[320px] h-[180px] sm:h-[200px] mt-6">
-            {/* Hào quang phát sáng sau chậu */}
-            <div className="absolute inset-x-8 bottom-4 h-[130px] rounded-b-[100px] bg-sky-400/20 blur-xl pointer-events-none" />
-
-            {/* CÁC QUẢ BÓNG BỐC THĂM LĂN XÁO BÊN TRONG CHẬU */}
-            <div className="absolute inset-x-6 bottom-[34px] h-[115px] sm:h-[130px] overflow-hidden rounded-b-[90px]">
-              {bowlBalls.map((b, i) => (
-                <div
-                  key={i}
-                  className="absolute w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-transform duration-100 ease-out"
-                  style={{
-                    left: `${b.x}%`,
-                    top: `${b.y}%`,
-                    transform: `translate(-50%, -50%) rotate(${b.rot}deg)`,
-                    background:
-                      i % 2 === 0
-                        ? "radial-gradient(circle at 30% 30%, #ffffff 0%, #cbd5e1 55%, #475569 100%)"
-                        : "radial-gradient(circle at 30% 30%, #fef08a 0%, #facc15 60%, #a16207 100%)",
-                    border: "1.5px solid rgba(255, 255, 255, 0.7)",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.4)",
-                  }}
-                >
-                  {/* Ngôi sao đặc trưng Champions League */}
-                  <span className="text-[14px] font-black leading-none opacity-80 text-sky-950">
-                    ★
-                  </span>
-                </div>
-              ))}
+          {/* LƯỚI DANH SÁCH CÁC CẶP ĐẤU ĐÃ PHÂN NHÁNH */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h5 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
+                <span>Bảng Phân Cặp Thi Đấu Vòng 1</span>
+                <span className="px-2 py-0.5 rounded-full text-[12px] font-bold bg-slate-100 text-slate-600">
+                  {pairs.length} trận đấu
+                </span>
+              </h5>
             </div>
 
-            {/* THÂN BÁT THỦY TINH PHA LÊ HÌNH BÁN CẦU QUẢ BÓNG */}
-            <div className="absolute inset-x-0 bottom-3 h-[140px] sm:h-[155px] rounded-b-[140px] rounded-t-[20px] bg-gradient-to-b from-sky-400/25 via-sky-600/15 to-slate-900/60  border-2 border-sky-300/40 shadow-2xl pointer-events-none overflow-hidden">
-              {/* Đường vân hoa văn quả bóng Champions League trên thân chậu thủy tinh */}
-              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]" />
-              <div className="absolute top-2 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-white/70 to-transparent" />
-              {/* Phản chiếu ánh sáng vệt pha lê */}
-              <div className="absolute top-4 left-4 w-12 h-20 bg-gradient-to-br from-white/30 to-transparent rounded-full -rotate-12 blur-xs" />
-            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[280px] overflow-y-auto pr-1">
+              {pairs.map((p, idx) => {
+                const isPairLocked = idx < locked;
+                const isCurrent = idx === locked;
 
-            {/* MIỆNG CHẬU PHA LÊ (ELIPSE VIỀN BẠC ÁNH KIM) */}
-            <div className="absolute inset-x-[-2px] bottom-[136px] sm:bottom-[152px] h-[36px] rounded-[50%] bg-gradient-to-b from-white/40 via-sky-500/20 to-sky-900/60 border-2 border-sky-200/60 shadow-lg pointer-events-none" />
+                return (
+                  <div
+                    key={p.matchId}
+                    className={`p-3 rounded-xl border transition-all ${
+                      isPairLocked
+                        ? "bg-emerald-50/40 border-emerald-300 shadow-2xs"
+                        : isCurrent
+                        ? "bg-sky-50/60 border-sky-400 ring-1 ring-sky-300"
+                        : "bg-slate-50 border-slate-200 opacity-60"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[12px] font-extrabold text-slate-600 font-mono">
+                        {p.matchId}
+                      </span>
+                      {isPairLocked ? (
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Đã chốt</span>
+                        </span>
+                      ) : isCurrent ? (
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800 flex items-center gap-1 animate-pulse">
+                          <span>Đang bốc…</span>
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-600">
+                          Chờ lượt
+                        </span>
+                      )}
+                    </div>
 
-            {/* CHÂN ĐẾ BỤC MẠ KIM LOẠI CỦA CHẬU */}
-            <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-[52%] h-[18px] rounded-full bg-gradient-to-b from-slate-300 via-sky-800 to-slate-900 border border-sky-400/40 shadow-xl" />
-
-            {/* THÔNG BÁO HOÀN TẤT BÓNG TRONG CHẬU */}
-            {done && (
-              <div className="absolute inset-x-0 bottom-[65px] text-center z-20">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-[14px] shadow-lg animate-fade-in-up">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-                  Đã bốc đủ {pairs.length} cặp đấu
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="text-center mt-3 space-y-1">
-            <h4 className="text-base sm:text-lg font-black text-sky-200">
-              {shuffling
-                ? "Đang hòa trộn các quả bóng trong chậu pha lê Champions League…"
-                : done
-                ? "Lễ bốc thăm đã hoàn tất thành công!"
-                : `Đang rút thăm lượt trận thứ ${locked + 1} / ${pairs.length}…`}
-            </h4>
-            <p className="text-[14px] text-sky-300/80">
-              {pairs.length} cặp đấu thi đấu chính thức
-              {byes.length > 0 && ` • ${byes.length} đội miễn vòng đầu (hạt giống)`}
-            </p>
-          </div>
-        </div>
-
-        {/* ===== DANH SÁCH CÁC CẶP ĐẤU ĐƯỢC BỐC THĂM TRỰC TIẾP ===== */}
-        <div className="space-y-2.5 max-h-[300px] sm:max-h-[340px] overflow-y-auto pr-1">
-          {pairs.map((p, i) => {
-            const isLocked = i < locked;
-            return (
-              <div
-                key={p.matchId}
-                className={`flex items-center gap-2 p-3 sm:p-3.5 rounded-2xl border-2 transition-all duration-300 ${
-                  isLocked
-                    ? "border-sky-400/80 bg-sky-950/70 shadow-md shadow-sky-900/40 scale-[1.01]"
-                    : "border-slate-800 bg-slate-900/50 opacity-60"
-                }`}
-              >
-                <span className="font-mono text-[14px] font-black text-sky-400 w-14 shrink-0">
-                  {p.matchId}
-                </span>
-
-                <div className="flex-1 text-center font-bold text-sm sm:text-base truncate">
-                  {isLocked ? (
-                    <span className="text-white font-black">{p.teamA}</span>
-                  ) : (
-                    <span className="text-slate-400 font-mono">
-                      {pool[(tick * 5 + i * 7) % pool.length]}
-                    </span>
-                  )}
-                </div>
-
-                <div className="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 font-black text-[14px] shrink-0 border border-sky-400/30">
-                  VS
-                </div>
-
-                <div className="flex-1 text-center font-bold text-sm sm:text-base truncate">
-                  {isLocked ? (
-                    <span className="text-white font-black">{p.teamB}</span>
-                  ) : (
-                    <span className="text-slate-400 font-mono">
-                      {pool[(tick * 11 + i * 13) % pool.length]}
-                    </span>
-                  )}
-                </div>
-
-                <div className="w-8 flex items-center justify-center shrink-0">
-                  {isLocked ? (
-                    <span className="text-xl leading-none animate-bounce" aria-hidden>
-                      ⚽
-                    </span>
-                  ) : (
-                    <RefreshCw className="w-4 h-4 text-sky-400 animate-spin" />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ĐỘI ĐẶC CÁCH VÒNG 1 (NẾU CÓ) */}
-        {byes.length > 0 && (
-          <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-400/30 text-[14px] flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-400 shrink-0" />
-            <div>
-              <span className="font-black text-amber-300">Đội miễn thi đấu vòng 1: </span>
-              <span className="text-amber-100 font-semibold">{byes.join(" • ")}</span>
+                    <div className="space-y-1 text-[13px]">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-slate-800 truncate">
+                          {isPairLocked ? p.teamA : "—"}
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-400 shrink-0">Hạt giống 1</span>
+                      </div>
+                      <div className="border-t border-slate-200/60 my-1" />
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-slate-800 truncate">
+                          {isPairLocked ? p.teamB : "—"}
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-400 shrink-0">Hạt giống 2</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        )}
 
-        {/* NÚT HOÀN TẤT XEM CÂY NHÁNH ĐẤU */}
-        <div className="pt-2">
-          <button
-            type="button"
-            onClick={onDone}
-            disabled={!done}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-sky-500 via-[#0369a1] to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-black text-sm sm:text-base shadow-xl shadow-sky-600/30 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {done ? (
-              <>
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>Xem Nhánh Đấu & Lịch Thi Đấu Chính Thức</span>
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                <span>
-                  Đang bốc thăm trực tiếp… ({locked}/{pairs.length} cặp đấu)
-                </span>
-              </>
-            )}
-          </button>
+          {/* NÚT HOÀN TẤT VÀ XEM NHÁNH ĐẤU */}
+          <div className="pt-2 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={onDone}
+              disabled={!isDone}
+              className="w-full py-3 px-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm sm:text-base shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {isDone ? (
+                <>
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span>Hoàn Tất Lễ Bốc Thăm & Xem Nhánh Đấu</span>
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                  <span>Đang bốc thăm trực tiếp… ({locked}/{totalPairs} cặp đấu)</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

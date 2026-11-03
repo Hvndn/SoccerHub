@@ -1618,30 +1618,53 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={async () => {
-              await fillSimulatedTeams(Number(activeTournament.id), 2);
-              await fetchDbTournaments();
-              setVarNotice("✅ Đã bổ sung 2 đội test để chuẩn bị bốc thăm.");
-            }}
-            className="text-[12px] font-bold px-2 py-1 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 cursor-pointer"
-            title="Thêm đội test nhanh để đủ số lượng bốc thăm"
-          >
-            + Đội Test
-          </button>
-          <button
-            type="button"
-            onClick={async () => {
-              await clearSimulatedTeams(Number(activeTournament.id));
-              await fetchDbTournaments();
-              setVarNotice("✅ Đã dọn dẹp các đội test.");
-            }}
-            className="text-[12px] font-bold px-2 py-1 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 cursor-pointer"
-            title="Xoá các đội test giả lập"
-          >
-            Dọn Đội Test
-          </button>
+          {(() => {
+            const cap = activeTournament.totalTeams || 8;
+            const confirmedTeams = (activeTournament.teams ?? []).filter((z: any) => z.registrationStatus !== "PENDING_PAYMENT");
+            const manualCount = confirmedTeams.filter((z: any) => !z.simulated).length;
+            const simCount = confirmedTeams.filter((z: any) => !!z.simulated).length;
+            const remaining = Math.max(0, cap - confirmedTeams.length);
+
+            return (
+              <>
+                {remaining > 0 ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await fillSimulatedTeams(Number(activeTournament.id), remaining);
+                      await fetchDbTournaments();
+                      setVarNotice(`✅ Đã bổ sung ${remaining} đội ngẫu nhiên cho đủ ${cap} đội theo yêu cầu. Giữ nguyên ${manualCount} đội thủ công của bạn!`);
+                    }}
+                    className="text-[13px] font-bold px-3 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                    title={`Thêm đúng ${remaining} đội ngẫu nhiên cho đủ ${cap} đội quy mô giải. Giữ nguyên 100% các đội thủ công đã nhập.`}
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>+ Điền Ngẫu Nhiên (${remaining} đội còn lại)</span>
+                  </button>
+                ) : (
+                  <span className="text-[13px] font-bold px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Đã đủ ${cap} đội</span>
+                  </span>
+                )}
+
+                {simCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await clearSimulatedTeams(Number(activeTournament.id));
+                      await fetchDbTournaments();
+                      setVarNotice(`✅ Đã dọn dẹp các đội ngẫu nhiên, giữ lại ${manualCount} đội thủ công.`);
+                    }}
+                    className="text-[13px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors"
+                    title="Xoá các đội ngẫu nhiên giả lập, giữ nguyên các đội thủ công bạn đã tạo"
+                  >
+                    Dọn Đội Ngẫu Nhiên
+                  </button>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
 
@@ -1671,12 +1694,12 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                 </div>
                 <div className="shrink-0 flex items-center gap-1.5">
                   {tm.simulated ? (
-                    <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">
-                      Test
+                    <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-slate-100 text-slate-600">
+                      Ngẫu nhiên
                     </span>
                   ) : (
-                    <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">
-                      Đã vào giải
+                    <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-emerald-100 text-emerald-800">
+                      Thủ công
                     </span>
                   )}
                   <button

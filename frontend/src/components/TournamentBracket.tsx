@@ -875,7 +875,7 @@ const [addCount, setAddCount] = useState("4");
  <button
  onClick={() => handleFill()}
  disabled={!canAct || !selected || full || fillBusy}
- title="Sinh đội Test kèm đủ quân số + danh sách thành viên cho đủ sức chứa (chỉ dùng demo)"
+ title="Tự động thêm đúng số đội ngẫu nhiên còn thiếu cho đủ quy mô giải, giữ nguyên 100% các đội thủ công bạn đã tạo"
  className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[14px] transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
  {fillBusy ? (
@@ -883,7 +883,7 @@ const [addCount, setAddCount] = useState("4");
  ) : (
  <UserPlus className="w-4 h-4" />
  )}
- <span>{full ? "Đủ đội" : `+${selected && teamCap ? teamCap - teamCount : ""} Đội Test`}</span>
+ <span>{full ? "Đã đủ đội" : `+ Điền Ngẫu Nhiên (${selected && teamCap ? teamCap - teamCount : ""} Đội)`}</span>
  </button>
   {/* THÊM N ĐỘI NGẪU NHIÊN — chọn số đội rồi thêm đúng N đội vào giải đang chọn.
       API: POST /api/v1/tournaments/{id}/fill-teams {"count": n} */}
@@ -916,7 +916,7 @@ const [addCount, setAddCount] = useState("4");
  <button
  onClick={handleClearSimulated}
  disabled={!canAct || !selected || clearBusy}
- title="Xóa đội Test đã giả lập, giữ nguyên đội đăng ký thật"
+ title="Xóa đội ngẫu nhiên đã giả lập, giữ nguyên 100% các đội thủ công bạn đã tạo"
  className="px-3.5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-extrabold text-[14px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40"
  >
  {clearBusy ? (
@@ -924,7 +924,7 @@ const [addCount, setAddCount] = useState("4");
  ) : (
  <RotateCcw className="w-4 h-4" />
  )}
- <span>Xoá {simulatedCount} Test</span>
+ <span>Xoá {simulatedCount} Đội Ngẫu Nhiên</span>
  </button>
  )}
 

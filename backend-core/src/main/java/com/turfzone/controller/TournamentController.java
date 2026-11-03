@@ -838,6 +838,7 @@ public class TournamentController {
      * Xóa toàn bộ đội Test đã giả lập (giữ nguyên đội đăng ký thật).
      * Dùng để dọn sau demo. Kèm reset nhánh đấu vì danh sách đã đổi.
      */
+    @org.springframework.transaction.annotation.Transactional
     @DeleteMapping("/{id}/simulated-teams")
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> clearSimulatedTeams(@PathVariable Long id) {
@@ -1994,6 +1995,7 @@ public class TournamentController {
      * sẵn sàng bốc thăm.</p>
      */
     @PostMapping("/{id}/teams/manual")
+    @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> addManualTeam(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
@@ -2164,8 +2166,7 @@ public class TournamentController {
         if (false) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         for (TournamentTeamEntry team : t.getTeams()) {
-            if (team.getTeamName() != null && team.getTeamName().equalsIgnoreCase(teamName)
-                    && "PENDING_PAYMENT".equals(team.getRegistrationStatus())) {
+            if (team.getTeamName() != null && team.getTeamName().equalsIgnoreCase(teamName)) {
                 int cap = t.getTotalTeams() != null ? t.getTotalTeams() : 0;
                 long confirmed = t.getTeams().stream()
                         .filter(x -> "CONFIRMED".equalsIgnoreCase(x.getRegistrationStatus()) || "SIMULATED".equalsIgnoreCase(x.getRegistrationStatus()) || Boolean.TRUE.equals(x.getSimulated()))
