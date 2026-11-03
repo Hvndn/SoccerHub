@@ -1,6 +1,7 @@
+"use client";
+
 import TournamentInviteModal from "./TournamentInviteModal";
 import { Mail } from "lucide-react";
-"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";

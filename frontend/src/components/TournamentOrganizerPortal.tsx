@@ -1,5 +1,6 @@
-import TournamentInviteModal from "./TournamentInviteModal";
 "use client";
+
+import TournamentInviteModal from "./TournamentInviteModal";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { todayLocalPlus } from "@/lib/dateUtils";
