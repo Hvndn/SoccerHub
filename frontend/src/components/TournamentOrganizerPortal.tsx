@@ -984,19 +984,22 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
             </span>
           )}
         </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            const found = dbTournaments.find((x) => x.id === Number(t.id));
-            setInviteModalTourney(found || null);
-            setShowInviteModal(true);
-          }}
-          className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100 text-[13px] font-black transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
-        >
-          <Mail className="w-3.5 h-3.5 text-[#0369a1]" />
-          <span>Mời Email</span>
-        </button>
+        {t.joinMode === "INVITE_ONLY" && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const found = dbTournaments.find((x) => x.id === Number(t.id));
+              setInviteModalTourney(found || null);
+              setShowInviteModal(true);
+            }}
+            className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 text-[13px] font-black transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
+            title="Giải có ràng buộc mời qua email — Gửi thư mời tham gia giải"
+          >
+            <Mail className="w-3.5 h-3.5 text-amber-700" />
+            <span>Mời Email</span>
+          </button>
+        )}
         <button
           type="button"
           onClick={() => toggleReferees(Number(t.id))}
@@ -1407,18 +1410,21 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   ? `Đang thao tác trên giải: ${activeTournament.title}`
   : "Chưa chọn giải — hãy mở tab “Giải Đấu & BXH” và chọn một giải."}
   </p>
-  <button
-                    type="button"
-                    onClick={() => {
-                      setInviteModalTourney(activeTournament);
-                      setShowInviteModal(true);
-                    }}
-                    disabled={!activeTournament}
-                    className="px-3.5 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 text-[13px] font-extrabold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-[#0369a1]" />
-                    <span>Mời Cầu Thủ (Email)</span>
-                  </button>
+  {activeTournament?.joinMode === "INVITE_ONLY" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInviteModalTourney(activeTournament);
+                        setShowInviteModal(true);
+                      }}
+                      disabled={!activeTournament}
+                      className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[13px] font-extrabold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                      title="Giải có ràng buộc mời qua email — Gửi thư mời tham gia"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Mời Cầu Thủ (Email)</span>
+                    </button>
+                  )}
                   <button
   type="button"
   onClick={() => openEditModal(activeTournament)}

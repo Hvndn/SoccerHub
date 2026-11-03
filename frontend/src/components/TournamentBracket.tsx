@@ -861,16 +861,17 @@ const [addCount, setAddCount] = useState("4");
  </select>
 
  <div className="flex flex-wrap items-center gap-2">
-  <button
-    type="button"
-    onClick={() => setShowInviteModal(true)}
-    disabled={!selected}
-    title="Mở popup gửi thư mời cầu thủ / đội bóng tham gia giải đấu qua email"
-    className="px-3.5 py-2.5 rounded-xl bg-sky-50 text-sky-800 border border-sky-300 hover:bg-sky-100 font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-sm active:scale-95 disabled:opacity-40 cursor-pointer"
-  >
-    <Mail className="w-4 h-4 text-[#0369a1]" />
-    <span>Mời Cầu Thủ (Email)</span>
-  </button>
+  {selected?.joinMode === "INVITE_ONLY" && (
+    <button
+      type="button"
+      onClick={() => setShowInviteModal(true)}
+      title="Giải có ràng buộc mời qua email — Mở popup gửi thư mời"
+      className="px-3.5 py-2.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-sm active:scale-95 cursor-pointer"
+    >
+      <Mail className="w-4 h-4 text-amber-700" />
+      <span>Mời Cầu Thủ (Email)</span>
+    </button>
+  )}
  <button
  onClick={() => handleFill()}
  disabled={!canAct || !selected || full || fillBusy}
@@ -1328,13 +1329,14 @@ const [addCount, setAddCount] = useState("4");
       </div>
 
       <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-        {canManage && (
+        {canManage && selected?.joinMode === "INVITE_ONLY" && (
           <button
             type="button"
             onClick={() => setShowInviteModal(true)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-sky-50 text-sky-800 border border-sky-300 hover:bg-sky-100 font-black text-[13px] shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 font-black text-[13px] shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+            title="Giải có ràng buộc mời qua email — Gửi thư mời tham gia"
           >
-            <Mail className="w-4 h-4 text-[#0369a1]" />
+            <Mail className="w-4 h-4 text-amber-700" />
             <span>Mời Cầu Thủ (Email)</span>
           </button>
         )}

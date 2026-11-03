@@ -1888,6 +1888,9 @@ public class TournamentController {
         if (isTournamentClosed(tournament)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
         }
+        if (!"INVITE_ONLY".equalsIgnoreCase(tournament.getJoinMode())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đang mở tự do (PUBLIC). Chỉ những giải có thiết lập ràng buộc 'Chỉ mời qua email' (INVITE_ONLY) mới gửi thư mời email."));
+        }
 
         String rawEmail = body.get("email") != null ? body.get("email").toString() : "";
         String customMsg = body.get("message") != null ? body.get("message").toString().trim() : "";
@@ -1914,9 +1917,6 @@ public class TournamentController {
             }
         }
         tournament.setInvitedEmails(emails);
-        if (!"INVITE_ONLY".equalsIgnoreCase(tournament.getJoinMode())) {
-            tournament.setJoinMode("INVITE_ONLY");
-        }
         tournamentRepository.save(tournament);
 
         // Gửi email HTML lời mời giải đấu cho từng email
