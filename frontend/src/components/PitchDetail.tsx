@@ -3,143 +3,224 @@
 import React, { useState, useEffect, useMemo } from "react";
 import SafeImage from "@/components/SafeImage";
 import {
- ArrowLeft,
- MapPin,
- Star,
- Share2,
- Heart,
- Navigation,
- ShieldCheck,
- Zap,
- CheckCircle2,
- Clock,
- Car,
- Wifi,
- ShowerHead,
- Calendar,
- ChevronRight,
- Sparkles,
- Lock,
- ArrowRight,
- Info,
- Ticket,
- QrCode,
- Users,
- Check,
- PhoneCall,
- Award,
- Coffee,
- Receipt,
- AlertCircle,
- Video,
- Flame,
- RefreshCw,
- Copy,
- Swords,
- Layers,
- CircleDollarSign,
- X
+  ArrowLeft,
+  MapPin,
+  Star,
+  Share2,
+  Navigation,
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
+  Calendar,
+  ChevronRight,
+  Lock,
+  ArrowRight,
+  QrCode,
+  PhoneCall,
+  Receipt,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { pitchTypeLabel, isPeakSlot } from "@/lib/pitchLabels";
 import {
   joinBookingWaitlistApi,
-  createRecurringBookingApi,
   cancelBookingByCustomerApi,
   confirmBookingPaymentApi,
-  cancelBookingApi
+  cancelBookingApi,
 } from "@/lib/pitchService";
-import { BellRing, CalendarDays } from "lucide-react";
 import { broadcastBookingEvent, subscribeToBookingEvents } from "@/lib/realtimeService";
 
 interface PitchDetailProps {
- pitch: any | null;
- onBack: () => void;
- user?: any;
+  pitch: any | null;
+  onBack: () => void;
+  user?: any;
 }
 
-export default function PitchDetail({
- pitch,
- onBack,
- user
-}: PitchDetailProps) {
- // Lấy pitchId thật từ prop hoặc mặc định là 1 (Cụm sân thật trong database)
- const pitchId = useMemo(() => {
- if (!pitch?.id) return 1;
- const cleanId = pitch.id.toString().replace(/\D/g, "");
- return Number(cleanId) || 1;
- }, [pitch]);
+export default function PitchDetail({ pitch, onBack, user }: PitchDetailProps) {
+  const pitchId = useMemo(() => {
+    if (!pitch?.id) return 1;
+    const cleanId = pitch.id.toString().replace(/\D/g, "");
+    return Number(cleanId) || 1;
+  }, [pitch]);
 
- // Sinh 7 ngày liên tiếp tính từ ngày hiện tại của thiết bị (Hôm nay, Ngày mai...)
- const upcomingDays = useMemo(() => {
- const days = [];
- const now = new Date();
- const dayNames = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
- for (let i = 0; i < 7; i++) {
- const d = new Date(now);
- d.setDate(now.getDate() + i);
- const year = d.getFullYear();
- const month = String(d.getMonth() + 1).padStart(2, "0");
- const date = String(d.getDate()).padStart(2, "0");
- const iso = `${year}-${month}-${date}`;
- const dayOfWeek = dayNames[d.getDay()];
- const dateFormatted = `${date}/${month}`;
- const label = i === 0 ? "Hôm Nay" : i === 1 ? "Ngày Mai" : dayOfWeek;
- days.push({
- iso,
- dayOfWeek,
- dateFormatted,
- label,
- display: `${label} (${dateFormatted})`,
- badge: i === 0 ? "🔥 Ca Tối" : i === 1 ? "⭐ Đặt Sớm" : "12 Ca Mở",
- isWeekend: d.getDay() === 0 || d.getDay() === 6
- });
- }
- return days;
- }, []);
+  const upcomingDays = useMemo(() => {
+    const days = [];
+    const now = new Date();
+    const dayNames = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(now);
+      d.setDate(now.getDate() + i);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const date = String(d.getDate()).padStart(2, "0");
+      const iso = `${year}-${month}-${date}`;
+      const dayOfWeek = dayNames[d.getDay()];
+      const dateFormatted = `${date}/${month}`;
+      const label = i === 0 ? "Hôm nay" : i === 1 ? "Ngày mai" : dayOfWeek;
+      days.push({
+        iso,
+        dayOfWeek,
+        dateFormatted,
+        label,
+        isWeekend: d.getDay() === 0 || d.getDay() === 6,
+      });
+    }
+    return days;
+  }, []);
 
- const [selectedDate, setSelectedDate] = useState<string>(upcomingDays[0].iso);
- const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
- const [selectedTimeFilter, setSelectedTimeFilter] = useState<string>("ALL");
- const [depositOption, setDepositOption] = useState<"50%" | "100%">("50%");
- const [autoLighting, setAutoLighting] = useState(true);
- const [isLiked, setIsLiked] = useState(false);
- const [copiedLink, setCopiedLink] = useState(false);
- const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>(upcomingDays[0].iso);
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [selectedTimeFilter, setSelectedTimeFilter] = useState<string>("ALL");
+  const [depositOption, setDepositOption] = useState<"50%" | "100%">("50%");
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
 
- // Dữ liệu cụm sân thật từ backend
- const [pitchDetails, setPitchDetails] = useState<any>(null);
- const [matrixCourts, setMatrixCourts] = useState<any[]>([]);
- const [isLoading, setIsLoading] = useState(true);
- const [isBooking, setIsBooking] = useState(false);
- // Số người chia tiền — người dùng tự nhập, không mặc định roster có sẵn
- const [splitCount, setSplitCount] = useState(14);
- // Tư cách đặt sân: Cá nhân hay Đại diện CLB bao sân
- const [bookingMode, setBookingMode] = useState<"INDIVIDUAL" | "CLUB">("INDIVIDUAL");
- const [myClubs, setMyClubs] = useState<any[]>([]);
- const [selectedClubName, setSelectedClubName] = useState<string>("");
- const [customClubName, setCustomClubName] = useState<string>("");
-  // CLB bao san CA NGAY: thue tron 1 san con tu gio mo cua -> dong cua de tap luyen/thi dau
+  const [pitchDetails, setPitchDetails] = useState<any>(null);
+  const [matrixCourts, setMatrixCourts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isBooking, setIsBooking] = useState(false);
+  const [splitCount, setSplitCount] = useState(14);
+
+  const [bookingMode, setBookingMode] = useState<"INDIVIDUAL" | "CLUB">("INDIVIDUAL");
+  const [myClubs, setMyClubs] = useState<any[]>([]);
+  const [selectedClubName, setSelectedClubName] = useState<string>("");
+  const [customClubName, setCustomClubName] = useState<string>("");
   const [fullDayBooking, setFullDayBooking] = useState(false);
 
- // Thời lượng ca thi đấu CỐ ĐỊNH do Chủ Sân quy định (Mặc định 120 phút = 2 tiếng, bao gồm thi đấu và giao/trả ca)
- const fixedSlotDuration = useMemo(() => {
- return pitchDetails?.slotDurationMinutes || pitch?.slotDurationMinutes || 120;
- }, [pitchDetails, pitch]);
+  const fixedSlotDuration = useMemo(() => {
+    return pitchDetails?.slotDurationMinutes || pitch?.slotDurationMinutes || 120;
+  }, [pitchDetails, pitch]);
 
- // Slot được chọn hiện tại (Mặc định null, người dùng bấm vào ca mới hiển thị phiếu đặt)
- const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
+  const [showQrModal, setShowQrModal] = useState(false);
 
- // Modal QR Code thanh toán & Thẻ Vé điện tử
- const [showQrModal, setShowQrModal] = useState(false);
-  // Quản lý ca chờ khóa (PENDING_PAYMENT / Hold slot)
   const [pendingSlotItem, setPendingSlotItem] = useState<{ court: any; slot: any } | null>(null);
   const [waitlistPhone, setWaitlistPhone] = useState(user?.phone || "");
-  const [waitlistNote, setWaitlistNote] = useState("");
   const [isProcessingPending, setIsProcessingPending] = useState(false);
 
+  const [bookingConfirmed, setBookingConfirmed] = useState<any | null>(null);
+  const [paymentDone, setPaymentDone] = useState(false);
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3500);
+  };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    apiRequest<any[]>("/api/v1/clubs/mine")
+      .then((clubs) => {
+        if (Array.isArray(clubs) && clubs.length > 0) {
+          setMyClubs(clubs);
+          setSelectedClubName(clubs[0].name || "");
+        }
+      })
+      .catch(() => {});
+  }, [user]);
+
+  useEffect(() => {
+    async function loadPitchInfo() {
+      try {
+        const data = await apiRequest<any>(`/api/v1/pitches/${pitchId}`);
+        if (data) setPitchDetails(data);
+      } catch {
+        /* fallback to pitch prop */
+      }
+    }
+    loadPitchInfo();
+  }, [pitchId]);
+
+  const fetchPitchMatrix = async (dateStr: string, durationMin: number) => {
+    setIsLoading(true);
+    try {
+      const data = await apiRequest<any[]>(
+        `/api/v1/pitches/${pitchId}/matrix?date=${dateStr}&duration=${durationMin}`
+      );
+      setMatrixCourts(Array.isArray(data) ? data : []);
+    } catch {
+      setMatrixCourts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchPitchMatrix(selectedDate, fixedSlotDuration);
+    }
+  }, [pitchId, selectedDate, fixedSlotDuration]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToBookingEvents(() => {
+      if (selectedDate) {
+        fetchPitchMatrix(selectedDate, fixedSlotDuration);
+      }
+    });
+    return () => unsubscribe();
+  }, [pitchId, selectedDate, fixedSlotDuration]);
+
+  const venueData = useMemo(() => {
+    return {
+      name: pitchDetails?.name || pitch?.name || "Cụm sân bóng đá",
+      address: pitchDetails?.address || pitch?.address || "Chưa khai báo địa chỉ",
+      phone: pitchDetails?.phone || pitch?.phone || "Chưa cập nhật",
+      openTime: pitchDetails?.openTime || pitch?.openTime || "14:00",
+      closeTime: pitchDetails?.closeTime || pitch?.closeTime || "22:30",
+      slotDuration: pitchDetails?.slotDurationMinutes || pitch?.slotDurationMinutes || 120,
+      rating: pitchDetails?.rating ?? pitch?.rating ?? null,
+      reviewsCount: pitchDetails?.reviewsCount ?? pitch?.reviewsCount ?? 0,
+      ownerName: pitchDetails?.ownerName || pitch?.ownerName || "Chủ sân",
+      mainImage:
+        pitchDetails?.imageUrl ||
+        pitch?.imageUrl ||
+        "https://images.unsplash.com/photo-1529900241452-f47268d87ec9?auto=format&fit=crop&w=1200&q=80",
+    };
+  }, [pitchDetails, pitch]);
+
+  const selectedCourtData = useMemo(
+    () => matrixCourts.find((c: any) => c.pitchName === selectedSlot?.courtName),
+    [matrixCourts, selectedSlot]
+  );
+  const fullDayAvailable = useMemo(
+    () =>
+      !!selectedCourtData &&
+      (selectedCourtData.slots || []).length > 0 &&
+      (selectedCourtData.slots || []).every((s: any) => s.status === "empty"),
+    [selectedCourtData]
+  );
+  const fullDayTotal = useMemo(
+    () =>
+      (selectedCourtData?.slots || []).reduce(
+        (sum: number, s: any) => sum + (Number(s.priceValue) || 0),
+        0
+      ),
+    [selectedCourtData]
+  );
+  const fullDayRange = useMemo(() => {
+    const slots = selectedCourtData?.slots || [];
+    if (!slots.length) {
+      return `${venueData.openTime} - ${venueData.closeTime}`;
+    }
+    const first = String(slots[0].time || "").split("-")[0]?.trim() || "—";
+    const last = String(slots[slots.length - 1].time || "").split("-")[1]?.trim() || "—";
+    return `${first} - ${last}`;
+  }, [selectedCourtData, venueData]);
+
+  const originalPrice = fullDayBooking ? fullDayTotal : selectedSlot?.price || 0;
+  const totalPrice = originalPrice;
+  const depositAmount = depositOption === "50%" ? Math.round(totalPrice * 0.5) : totalPrice;
+  const splitPerPlayer = Math.round(totalPrice / Math.max(1, splitCount));
+
   const handlePendingSlotClick = (court: any, slot: any) => {
-    if (pendingSlotItem?.slot?.time === slot.time && pendingSlotItem?.court?.pitchName === court.pitchName) {
+    if (
+      pendingSlotItem?.slot?.time === slot.time &&
+      pendingSlotItem?.court?.pitchName === court.pitchName
+    ) {
       setPendingSlotItem(null);
     } else {
       setPendingSlotItem({ court, slot });
@@ -152,11 +233,11 @@ export default function PitchDetail({
     setIsProcessingPending(true);
     try {
       await cancelBookingByCustomerApi(bookingId, "Người đặt tự hủy giữ ca");
-      showToast("✅ Đã hủy chọn ca thành công! Ca sân đã được mở lại cho mọi người.");
+      showToast("Đã hủy chọn ca thành công. Ca sân đã được mở lại.");
       setPendingSlotItem(null);
       await fetchPitchMatrix(selectedDate, fixedSlotDuration);
     } catch (err: any) {
-      showToast("❌ " + (err?.message || "Không thể hủy giữ ca"));
+      showToast(err?.message || "Không thể hủy giữ ca");
     } finally {
       setIsProcessingPending(false);
     }
@@ -164,7 +245,7 @@ export default function PitchDetail({
 
   const handleJoinWaitlistForPending = async (court: any, slot: any) => {
     if (!waitlistPhone.trim()) {
-      showToast("⚠️ Vui lòng nhập số điện thoại để đăng ký nhận ca trống.");
+      showToast("Vui lòng nhập số điện thoại để đăng ký nhận ca trống.");
       return;
     }
     setIsProcessingPending(true);
@@ -175,10 +256,10 @@ export default function PitchDetail({
         bookingDate: selectedDate,
         timeSlot: slot.time,
       });
-      showToast("✅ Đã đăng ký hàng chờ thành công! Hệ thống sẽ ưu tiên nhường ca cho bạn khi ca được mở lại.");
+      showToast("Đã đăng ký vào hàng chờ. Hệ thống sẽ ưu tiên cho bạn khi ca được mở lại.");
       setPendingSlotItem(null);
     } catch (err: any) {
-      showToast("❌ " + (err?.message || "Không thể đăng ký hàng chờ"));
+      showToast(err?.message || "Không thể đăng ký hàng chờ");
     } finally {
       setIsProcessingPending(false);
     }
@@ -189,11 +270,11 @@ export default function PitchDetail({
     setIsProcessingPending(true);
     try {
       await confirmBookingPaymentApi(bookingId);
-      showToast("✅ Đã xác nhận thu cọc thành công! Ca chuyển sang trạng thái Đã Cọc.");
+      showToast("Đã xác nhận thu cọc thành công.");
       setPendingSlotItem(null);
       await fetchPitchMatrix(selectedDate, fixedSlotDuration);
     } catch (err: any) {
-      showToast("❌ " + (err?.message || "Không thể xác nhận cọc"));
+      showToast(err?.message || "Không thể xác nhận cọc");
     } finally {
       setIsProcessingPending(false);
     }
@@ -204,1296 +285,986 @@ export default function PitchDetail({
     setIsProcessingPending(true);
     try {
       await cancelBookingApi(bookingId, "Chủ sân mở lại ca trống", "OWNER");
-      showToast("✅ Đã hủy giữ chỗ và mở lại ca trống thành công.");
+      showToast("Đã hủy giữ chỗ và mở lại ca trống.");
       setPendingSlotItem(null);
       await fetchPitchMatrix(selectedDate, fixedSlotDuration);
     } catch (err: any) {
-      showToast("❌ " + (err?.message || "Không thể hủy ca"));
+      showToast(err?.message || "Không thể hủy ca");
     } finally {
       setIsProcessingPending(false);
     }
   };
- const [bookingConfirmed, setBookingConfirmed] = useState<any | null>(null);
- const [paymentDone, setPaymentDone] = useState(false);
 
- const showToast = (msg: string) => {
- setToastMsg(msg);
- setTimeout(() => setToastMsg(null), 3500);
- };
+  const handleSelectSlot = (court: any, slot: any) => {
+    if (
+      slot.status === "booked" ||
+      slot.status === "playing" ||
+      slot.status === "pending_payment"
+    ) {
+      showToast(`Ca [${slot.time}] của ${court.pitchName} đã có người giữ hoặc đặt.`);
+      return;
+    }
+    const rawPrice =
+      slot.priceValue ||
+      parseInt((slot.price || "350k").toString().replace(/\D/g, "")) * 1000 ||
+      350000;
+    setFullDayBooking(false);
+    setShowQrModal(false);
+    setBookingConfirmed(null);
+    setPaymentDone(false);
+    setSelectedSlot({
+      courtId: court.pitchId,
+      courtName: court.pitchName,
+      courtType: court.type,
+      time: slot.time,
+      price: rawPrice,
+      status: slot.status,
+    });
+  };
 
- useEffect(() => {
- window.scrollTo({ top: 0, behavior: "smooth" });
- }, []);
-
- // Nạp danh sách CLB mà người dùng tham gia/đại diện
- useEffect(() => {
-   if (!user) return;
-   apiRequest<any[]>("/api/v1/clubs/mine")
-     .then((clubs) => {
-       if (Array.isArray(clubs) && clubs.length > 0) {
-         setMyClubs(clubs);
-         setSelectedClubName(clubs[0].name || "");
-       }
-     })
-     .catch(() => {});
- }, [user]);
-
- // 1. Tải thông tin chi tiết Cụm Sân thật 
- useEffect(() => {
- async function loadPitchInfo() {
- try {
- const data = await apiRequest<any>(`/api/v1/pitches/${pitchId}`);
- if (data) {
- setPitchDetails(data);
- }
- } catch (err) {
- console.warn("Không tải được chi tiết sân từ API, dùng dữ liệu sân truyền vào");
- }
- }
- loadPitchInfo();
- }, [pitchId]);
-
- // 2. Tải Ma trận Ca Sân thật từ Backend theo ca cố định của Chủ Sân
- const fetchPitchMatrix = async (dateStr: string, durationMin: number) => {
- setIsLoading(true);
- try {
- const data = await apiRequest<any[]>(`/api/v1/pitches/${pitchId}/matrix?date=${dateStr}&duration=${durationMin}`);
- if (Array.isArray(data) && data.length > 0) {
- setMatrixCourts(data);
- } else {
- setMatrixCourts([]);
- }
- } catch (err) {
- console.warn("Lỗi tải ma trận ca sân từ API:", err);
- setMatrixCourts([]);
- } finally {
- setIsLoading(false);
- }
- };
-
- // Re-fetch khi ngày hoặc thời lượng cố định của sân thay đổi
- useEffect(() => {
- if (selectedDate) {
- fetchPitchMatrix(selectedDate, fixedSlotDuration);
- }
- }, [pitchId, selectedDate, fixedSlotDuration]);
-
- // Lắng nghe sự kiện Realtime cập nhật ca sân
- useEffect(() => {
- const unsubscribe = subscribeToBookingEvents((_event: any) => {
- if (selectedDate) {
- fetchPitchMatrix(selectedDate, fixedSlotDuration);
- }
- });
- return () => unsubscribe();
- }, [pitchId, selectedDate, fixedSlotDuration]);
-
- // Dữ liệu cụm sân hiển thị (Ưu tiên dữ liệu thật từ DB, không bịa fallback)
- const venueData = useMemo(() => {
- return {
- name: pitchDetails?.name || pitch?.name || "Cụm sân chưa đặt tên",
- address: pitchDetails?.address || pitch?.address || "Chưa khai báo địa chỉ",
- phone: pitchDetails?.phone || pitch?.phone || "Chưa khai báo số điện thoại",
- openTime: pitchDetails?.openTime || pitch?.openTime || "—",
- closeTime: pitchDetails?.closeTime || pitch?.closeTime || "—",
- slotDuration: pitchDetails?.slotDurationMinutes || pitch?.slotDurationMinutes || 120,
- rating: pitchDetails?.rating ?? pitch?.rating ?? null,
- reviewsCount: pitchDetails?.reviewsCount ?? pitch?.reviewsCount ?? 0,
- ownerName: pitchDetails?.ownerName || pitch?.ownerName || "Chưa khai báo",
- mainImage: "https://images.unsplash.com/photo-1529900241452-f47268d87ec9?auto=format&fit=crop&w=1200&q=80",
- subImages: [
- "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=600&q=80",
- "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=600&q=80"
- ]
- };
- }, [pitchDetails, pitch]);
-
- // Sân con đang chọn + khả năng bao sân cả ngày (tất cả ca trong ngày đều trống)
- const selectedCourtData = useMemo(
-  () => matrixCourts.find((c: any) => c.pitchName === selectedSlot?.courtName),
-  [matrixCourts, selectedSlot]
- );
- const fullDayAvailable = useMemo(
-  () => !!selectedCourtData && (selectedCourtData.slots || []).length > 0
-   && (selectedCourtData.slots || []).every((s: any) => s.status === "empty"),
-  [selectedCourtData]
- );
- const fullDayTotal = useMemo(
-  () => (selectedCourtData?.slots || []).reduce(
-   (sum: number, s: any) => sum + (Number(s.priceValue) || 0), 0),
-  [selectedCourtData]
- );
- const fullDayRange = useMemo(() => {
-  const slots = selectedCourtData?.slots || [];
-  if (!slots.length) {
-   return `${pitchDetails?.openTime || "—"} - ${pitchDetails?.closeTime || "—"}`;
-  }
-  const first = String(slots[0].time || "").split("-")[0]?.trim() || "—";
-  const last = String(slots[slots.length - 1].time || "").split("-")[1]?.trim() || "—";
-  return `${first} - ${last}`;
- }, [selectedCourtData, pitchDetails]);
-
- // Tính toán giá tiền thực tế (bao sân cả ngày = tổng tất cả ca trong ngày)
- const originalPrice = fullDayBooking ? fullDayTotal : (selectedSlot?.price || 0);
- // Không áp voucher/điểm ảo: tổng = giá ca sân theo ma trận CSDL
- const totalPrice = originalPrice;
- const depositAmount = depositOption === "50%" ? Math.round(totalPrice * 0.5) : totalPrice;
-  const splitPerPlayer = Math.round(totalPrice / Math.max(1, splitCount));
-
- // Chọn ca sân trên ma trận
- const handleSelectSlot = (court: any, slot: any) => {
- if (slot.status === "booked" || slot.status === "playing" || slot.status === "pending_payment") {
- showToast(`⚠️ Ca [${slot.time}] của ${court.pitchName} đã được cọc trước! Vui lòng chọn ca trống.`);
- return;
- }
-  // Ma tran tra them priceValue (gia so). Dung gia so de bao gia khop thu phi —
-  // parse chuoi "262k" bi lam tron ve 262.000 du gia thu phi la 262.500.
-  const rawPrice = slot.priceValue || parseInt((slot.price || "350k").toString().replace(/\D/g, "")) * 1000 || 350000;
- setFullDayBooking(false);
- setSelectedSlot({
- courtId: court.pitchId,
- courtName: court.pitchName,
- courtType: court.type,
- time: slot.time,
- price: rawPrice,
- status: slot.status
- });
- showToast(`⚽ Đã chọn: ${court.pitchName} • Khung giờ: ${slot.time}`);
- };
-
- // Xác nhận đặt sân & tạo đơn cọc trên hệ thống thật
- const handleStartBooking = async () => {
- if (!selectedSlot || selectedSlot.status === "booked" || selectedSlot.status === "pending_payment") {
- showToast("❌ Vui lòng chọn một ca sân còn trống.");
- return;
- }
-
- if (fullDayBooking && (!selectedCourtData || !fullDayAvailable)) {
- showToast("❌ Sân này đã có ca được đặt — không thể bao sân cả ngày. Vui lòng chọn sân con khác.");
- return;
- }
-
- if (!user) {
- showToast("Bạn cần đăng nhập để đặt sân (hệ thống lưu tên & SĐT của bạn vào đơn).");
- return;
- }
-
- setIsBooking(true);
- try {
- const customerName = user.fullName || user.name || "";
- const customerPhone = user.phone || "";
- if (!customerPhone) {
- showToast("Tài khoản chưa có số điện thoại — hãy cập nhật SĐT trong hồ sơ trước khi đặt.");
- return;
- }
-
- const clubNameFinal = bookingMode === "CLUB"
-   ? (selectedClubName === "__CUSTOM__" || !selectedClubName ? (customClubName.trim() || "CLB Cầu Thủ") : selectedClubName)
-   : undefined;
-
- const bookingPayload = {
- courtName: selectedSlot.courtName,
- courtType: selectedSlot.courtType || "Sân 7 Người",
- timeSlot: fullDayBooking ? fullDayRange : selectedSlot.time,
- fullDay: fullDayBooking,
- bookingDate: selectedDate,
- customerName: customerName,
- customerPhone: customerPhone,
- depositPercent: depositOption === '100%' ? 100 : 50,
- isClubBooking: bookingMode === "CLUB",
- clubName: clubNameFinal,
- via: bookingMode === "CLUB"
-   ? ("Đại diện " + clubNameFinal + " bao sân" + (fullDayBooking ? " cả ngày" : ""))
-   : (fullDayBooking ? "Bao sân cả ngày" : "Đặt qua Website")
- };
-
-  const res = await apiRequest<any>(`/api/v1/pitches/${pitchId}/book`, {
- method: "POST",
- body: JSON.stringify(bookingPayload)
- });
-
- if (res && res.id) {
- setBookingConfirmed(res);
- setPaymentDone(false);
- setShowQrModal(true);
- showToast("🎉 Đã tạo mã giữ chỗ. Bắt đầu cọc với chủ sân để giữ chắc ca.");
-
- // Phát sự kiện Realtime thông báo cho Chủ Sân ngay tức thì
- broadcastBookingEvent({
- type: "BOOKING_CREATED",
- pitchId: pitchId,
- bookingId: res.id,
- code: res.code,
- customerName: customerName,
- customerPhone: customerPhone,
- courtName: selectedSlot.courtName,
- courtType: selectedSlot.courtType || "Sân 7",
- timeSlot: fullDayBooking ? fullDayRange : selectedSlot.time,
- bookingDate: selectedDate,
-  totalPrice: res.totalPrice ?? totalPrice,
- via: "Đặt qua Website"
- });
- } else {
- // Không tạo được đơn thật thì báo lỗi — tuyệt đối không bịa mã đơn
- showToast("❌ Không tạo được đơn giữ chỗ, vui lòng thử lại.");
- }
- } catch (err: any) {
- showToast(`❌ Lỗi đặt sân: ${err.message || "Không thể kết nối máy chủ"}`);
- } finally {
- setIsBooking(false);
- }
- };
-
- // Xử lý xác nhận thanh toán xong từ phía cầu thủ
- const handleCompletePayment = () => {
- setPaymentDone(true);
- // Reload lại ma trận ca sân thật để slot vừa đặt chuyển sang BOOKED
- fetchPitchMatrix(selectedDate, fixedSlotDuration);
- showToast("✅ Đã ghi nhận yêu cầu thanh toán cọc của bạn. Chủ sân sẽ đối soát tiền khi bạn check-in.");
-
- // Gửi sự kiện cập nhật trạng thái thanh toán
- if (bookingConfirmed) {
- broadcastBookingEvent({
- type: "BOOKING_CREATED",
- pitchId: pitchId,
- bookingId: bookingConfirmed.id,
- code: bookingConfirmed.code,
- customerName: bookingConfirmed.customerName,
- customerPhone: bookingConfirmed.customerPhone,
- courtName: bookingConfirmed.courtName,
- timeSlot: bookingConfirmed.timeSlot,
- bookingDate: selectedDate,
- totalPrice: bookingConfirmed.totalPrice,
- depositPaid: bookingConfirmed.depositPaid,
- via: "Đặt qua Website (Chờ chủ sân đối soát tiền)"
- });
- }
- };
-
- const handleCopyShare = () => {
- navigator.clipboard?.writeText(window.location.href);
- setCopiedLink(true);
- setTimeout(() => setCopiedLink(false), 2000);
- showToast("📋 Đã sao chép liên kết cụm sân vào bộ nhớ tạm!");
- };
-
- // Lọc sân theo danh mục và khung giờ
- const filteredCourts = matrixCourts.filter((court) => {
- if (selectedCategory !== "ALL") {
- if (!court.type?.toLowerCase().includes(selectedCategory.toLowerCase()) && 
- !court.pitchName?.toLowerCase().includes(selectedCategory.toLowerCase())) {
- return false;
- }
- }
- return true;
- });
-
- return (
- <div className="w-full space-y-4 sm:space-y-6 pb-20 text-slate-900 animate-fade-in">
- {/* Toast Notification */}
- {toastMsg && (
- <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in-up">
- <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
- <span className="text-sm font-bold">{toastMsg}</span>
- </div>
- )}
-
- {/* 1. THANH ĐIỀU HƯỚNG BREADCRUMBS & IOT REALTIME */}
- <nav aria-label="Breadcrumb" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm">
- <div className="flex items-center space-x-3">
- <button
- onClick={onBack}
- className="shrink-0 px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-sm transition-all flex items-center space-x-1.5 active:scale-95 shadow-xs"
- >
- <ArrowLeft className="w-4 h-4 shrink-0" />
- <span className="whitespace-nowrap">Quay Lại Tìm Sân</span>
- </button>
-
- <ol className="hidden sm:flex min-w-0 flex-1 items-center space-x-1.5 text-[14px] text-slate-500 overflow-hidden">
- <li className="flex items-center space-x-1">
- <span>Trang chủ</span>
- <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
- </li>
- <li className="flex items-center space-x-1">
- <span>Đặt Sân Bóng Đá</span>
- <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
- </li>
- <li className="font-bold text-slate-900 truncate max-w-xs">
- {venueData.name}
- </li>
- </ol>
- </div>
-
- <div className="shrink-0 hidden lg:inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/20 text-sky-700 text-[14px] font-bold">
- <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] animate-pulse" />
- <span>Thông tin ca sân cập nhật theo thời gian thực</span>
- </div>
- </nav>
-
- {/* 2. HEADER CỤM SÂN & BENTO ẢNH BÓNG ĐÁ ĐỈNH CAO */}
- <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 border border-slate-200 shadow-sm space-y-3 sm:space-y-4">
- {/* Title & Metadata */}
- <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
- <div className="space-y-2">
- <div className="flex flex-wrap items-center gap-2">
- <span className="bg-[#0369a1] text-white text-[14px] font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
- <ShieldCheck className="w-3.5 h-3.5" />
- <span>{pitchTypeLabel(pitchDetails?.pitchTypes?.[0]) || "Sân cỏ nhân tạo"}</span>
- </span>
- <span className="bg-[#0369a1] text-white text-[14px] font-black px-3 py-1 rounded-lg inline-flex items-center space-x-1 shadow-xs">
- <Zap className="w-3.5 h-3.5" />
- <span>Đèn LED chiếu sáng sân</span>
- </span>
- <span className="bg-slate-100 text-slate-700 text-[14px] font-bold px-3 py-1 rounded-lg border border-slate-200 ">
- {matrixCourts.length > 0 ? `${matrixCourts.length} Sân Con Hoạt Động` : "Cụm Sân Tiêu Chuẩn"}
- </span>
- {venueData.rating ? (
- <div className="inline-flex items-center space-x-1.5 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg text-[14px]">
- <Star className="w-4 h-4 text-amber-700 fill-amber-500" />
- <span className="font-extrabold text-slate-900 ">{venueData.rating}</span>
- <span className="text-slate-500 font-normal">({venueData.reviewsCount} đánh giá)</span>
- </div>
- ) : null}
- </div>
-
- <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 ">
- {venueData.name}
- </h1>
-
- <div className="text-sm text-slate-600 flex items-center space-x-2.5 flex-wrap font-medium">
- <span className="flex items-center gap-1.5">
- <MapPin className="w-4 h-4 text-rose-600 shrink-0" />
- <strong className="text-slate-800 ">{venueData.address}</strong>
- </span>
- <span className="text-slate-500">•</span>
- <span className="flex items-center gap-1 text-sky-700 font-bold">
- <PhoneCall className="w-4 h-4 shrink-0" />
- <span>Hotline: {venueData.phone}</span>
- </span>
- <span className="text-slate-500">•</span>
- <span className="bg-[#0369a1]/10 text-sky-700 border border-[#0369a1]/20 px-2.5 py-0.5 rounded-lg text-[14px] font-bold font-mono">
- Mở cửa: {venueData.openTime} - {venueData.closeTime} • Ca 2 tiếng
- </span>
- </div>
- </div>
-
- {/* Quick Action Group */}
- <div className="flex items-center space-x-2 shrink-0">
- <button
- onClick={() => setIsLiked(!isLiked)}
- className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition-colors flex items-center space-x-1.5 shadow-xs"
- >
- <Heart className={`w-4 h-4 ${isLiked ? "fill-rose-500 text-rose-600" : "text-rose-600"}`} />
- <span>Yêu thích</span>
- </button>
- <button
- onClick={handleCopyShare}
- className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition-colors flex items-center space-x-1.5 shadow-xs"
- >
- <Share2 className="w-4 h-4 text-[#0b4f6c] " />
- <span>{copiedLink ? "Đã Chép!" : "Chia sẻ"}</span>
- </button>
- <a
- href={`https://maps.google.com/?q=${encodeURIComponent(venueData.address)}`}
- target="_blank"
- rel="noreferrer"
- className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition-colors flex items-center space-x-1.5 shadow-xs"
- >
- <Navigation className="w-4 h-4 text-[#0369a1]" />
- <span>Chỉ đường</span>
- </a>
- </div>
- </div>
-
- {/* Bento Gallery Ảnh Bóng Đá Đích Thực */}
- <div className="grid grid-cols-1 md:grid-cols-12 gap-3 min-h-[280px] sm:min-h-[340px] rounded-2xl overflow-hidden shadow-xs">
- {/* Main Wide Photo (7 cols) */}
- <div className="md:col-span-6 lg:col-span-7 min-w-0 relative h-full group overflow-hidden bg-slate-900 rounded-2xl">
- <SafeImage
- src={venueData.mainImage}
- alt="Sân Bóng Đá Cỏ Nhân Tạo Chuẩn VFF"
- className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95"
- />
- <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
- <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end text-white">
- <div>
- <span className="font-black text-[14px] bg-[#0369a1]/90  px-2.5 py-1 rounded text-white">
- {pitchTypeLabel(pitchDetails?.pitchTypes?.[0]) || pitch?.sportBadge || "Sân bóng đá"}
- </span>
- <p className="font-black text-base sm:text-lg mt-1 text-white break-words">
- {pitchDetails?.description || venueData.address}
- </p>
- </div>
- </div>
- </div>
-
- {/* Secondary Photo Column (3 cols) */}
- <div className="hidden md:flex md:col-span-3 min-w-0 flex-col gap-3 h-full">
- <div className="relative flex-1 overflow-hidden group bg-slate-900 rounded-2xl">
- <SafeImage
- src={venueData.subImages[0]}
- alt="Bóng Thi Đấu & Điểm Phát Bóng"
- className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
- />
- <div className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-[14px] text-white font-bold">
- {venueData.name}
- </div>
- </div>
- <div className="relative flex-1 overflow-hidden group bg-slate-900 rounded-2xl">
- <SafeImage
- src={venueData.subImages[1]}
- alt="Khung Thành & Khu Vực Kỹ Thuật"
- className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
- />
- <div className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate bg-slate-950/80 backdrop-blur px-2.5 py-1 rounded text-[14px] text-white font-bold">
- {venueData.name}
- </div>
- </div>
- </div>
-
- {/* Quick Amenities Card (2 cols) — đọc từ cột amenities của bảng pitches */}
- <div className="hidden md:flex md:col-span-3 lg:col-span-2 min-w-0 flex-col justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200 ">
- <div>
- <p className="text-[14px] font-black text-slate-500 mb-2.5 break-words">
- Tiện ích sân bóng
- </p>
- <div className="space-y-2.5 text-[14px] font-semibold text-slate-700 ">
- {pitchDetails?.amenities?.length ? (
- pitchDetails.amenities.map((a: string) => (
- <div key={a} className="flex items-start space-x-2 min-w-0">
- <CheckCircle2 className="w-4 h-4 text-[#0b4f6c] shrink-0" />
- <span className="min-w-0 break-words">{a}</span>
- </div>
- ))
- ) : (
- <span className="text-slate-500">Chủ sân chưa khai báo tiện ích.</span>
- )}
- </div>
- </div>
-
- <div className="pt-3 border-t border-slate-200 flex flex-col min-w-0">
- <span className="text-[14px] text-slate-500">Giá ca sân từ:</span>
- <span className="text-lg font-black text-sky-700 font-mono leading-tight break-words">
- {pitchDetails?.avgPricePerHour
- ? pitchDetails.avgPricePerHour.toLocaleString("vi-VN")
- : "—"}
- <span className="text-[14px] font-normal text-slate-500">đ/ca</span>
- </span>
- </div>
- </div>
- </div>
- </div>
-
- {/* 3. MA TRẬN CHỌN CA SÂN & KHUNG GIỜ THI ĐẤU THỰC TẾ */}
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
- {/* CỘT TRÁI: CHỌN NGÀY & MA TRẬN CA SÂN THẬT (8 COLS) */}
- <main className="lg:col-span-8 space-y-5">
- {/* Header Bảng Chọn Ca */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm">
- <div>
- <h2 className="text-lg font-black text-slate-900 flex items-center space-x-2">
- <Calendar className="w-5 h-5 text-[#0b4f6c] " />
- <span>Lịch Thi Đấu & Ca Sân Trực Tuyến</span>
- </h2>
- 
- </div>
-
- {/* Chú thích màu sắc */}
- <div className="flex items-center space-x-3 text-[14px] font-bold flex-wrap">
- <div className="flex items-center space-x-1.5 text-sky-700 ">
- <span className="w-3 h-3 rounded-full bg-[#0369a1] shadow-xs" />
- <span>Đang chọn</span>
- </div>
- <div className="flex items-center space-x-1.5 text-slate-600 ">
- <span className="w-3 h-3 rounded-full bg-slate-200 border border-slate-300 " />
- <span>Còn trống</span>
- </div>
- <div className="flex items-center space-x-1.5 text-rose-600">
- <span className="w-3 h-3 rounded-full bg-rose-500 shadow-xs" />
- <span>Đã cọc</span>
- </div>
- <div className="flex items-center space-x-1.5 text-amber-700">
- <span className="w-3 h-3 rounded-full bg-amber-500 shadow-xs" />
- <span>Giờ Vàng ⭐</span>
- </div>
- </div>
- </div>
-
- {/* Dải 7 Ngày Động Tự Động Tính Theo Thời Gian Thực */}
- <div className="flex items-center gap-2 pb-1 flex-wrap">
- {upcomingDays.map((d) => (
- <button
- key={d.iso}
- onClick={() => { setSelectedDate(d.iso); setFullDayBooking(false); }}
- className={`flex-1 min-w-[130px] p-3 rounded-2xl flex flex-col items-center gap-0.5 shadow-xs text-center transition-all cursor-pointer border ${
- selectedDate === d.iso
- ? "bg-[#0369a1] text-white border-[#0369a1] shadow-md font-black"
- : "bg-white hover:bg-slate-50 border-slate-200 text-slate-900 "
- }`}
- >
- <span className={`text-[14px] tracking-wider font-extrabold ${selectedDate === d.iso ? "text-white font-black" : "text-slate-500"}`}>
- {d.label}
- </span>
- <span className="text-sm font-black font-mono">{d.dateFormatted}</span>
- <span className={`text-[14px] px-2 py-0.5 rounded-full mt-1 font-bold ${
- selectedDate === d.iso 
- ? "bg-white/20 text-white " 
- : d.isWeekend ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-500"
- }`}>
- {d.badge}
- </span>
- </button>
- ))}
- </div>
-
- {/* Bộ lọc Sân Con & Khung Giờ */}
- <div className="flex flex-wrap items-center justify-between gap-3">
- <div className="flex items-center gap-2 pb-1 flex-wrap">
- {[
- { id: "ALL", label: "Tất Cả Sân Con" },
- { id: "Sân 7", label: "Sân 7 Người (Cỏ Nhân Tạo)" },
- { id: "Sân 5", label: "Sân 5 Người (Mini / Futsal)" },
- { id: "Sân 11", label: "Sân 11 Tiêu Chuẩn" }
- ].map((cat) => (
- <button
- key={cat.id}
- onClick={() => setSelectedCategory(cat.id)}
- className={`px-3.5 py-2 rounded-xl text-[14px] font-bold shrink-0 transition-all ${
- selectedCategory === cat.id
- ? "bg-slate-900 text-white shadow-sm"
- : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
- }`}
- >
- {cat.label}
- </button>
- ))}
- </div>
-
- <div className="flex items-center space-x-2">
- <span className="text-[14px] text-slate-500 font-bold">Lọc giờ:</span>
- <select
- aria-label="Lọc giờ đá"
- value={selectedTimeFilter}
- onChange={(e) => setSelectedTimeFilter(e.target.value)}
- className="bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-[14px] font-bold text-slate-800 cursor-pointer"
- >
- <option value="ALL">Tất Cả Giờ Đá</option>
- <option value="PEAK">⭐ Khung Giờ Vàng (17:00 - 20:00)</option>
- <option value="OFF_PEAK">🌙 Giờ Thường / Đêm Mát</option>
- </select>
- </div>
- </div>
-
- {/* Bảng Ma Trận Sân Con & Các Ca Đá */}
- <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-3 sm:space-y-4">
- {isLoading ? (
- <div className="py-16 text-center space-y-3">
- <RefreshCw className="w-8 h-8 text-[#0b4f6c] animate-spin mx-auto" />
- <p className="text-sm font-bold text-slate-500">Đang đồng bộ ma trận ca sân thật ...</p>
- </div>
- ) : filteredCourts.length === 0 ? (
- <div className="py-12 text-center text-slate-500 space-y-2">
- <AlertCircle className="w-8 h-8 mx-auto text-slate-500" />
- <p className="font-bold text-sm">Không tìm thấy sân con nào phù hợp với bộ lọc.</p>
- </div>
- ) : (
- filteredCourts.map((court) => {
- const courtSlots = (court.slots || []).filter((s: any) => {
- if (selectedTimeFilter === "PEAK") {
- return isPeakSlot(s.time);
- }
- if (selectedTimeFilter === "OFF_PEAK") {
- return !isPeakSlot(s.time);
- }
- return true;
- });
-
- return (
- <div
- key={court.pitchId}
- className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3"
- >
- {/* Court Info Header */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200 ">
- <div className="flex items-center space-x-2.5">
- <span className="w-3 h-3 rounded-full bg-[#0369a1] shadow-xs" />
- <span className="font-black text-base text-slate-900 ">
- {court.pitchName}
- </span>
- <span className="px-2.5 py-0.5 rounded-lg bg-[#0369a1]/10 text-[#0b4f6c] text-[14px] font-bold font-mono">
-  {pitchTypeLabel(court.type)}
- </span>
- </div>
- <div className="text-[14px] font-mono text-slate-500">
- Giá giờ thường: <strong className="text-slate-900 font-bold">{(court.basePrice / 1000)}k/ca</strong> • Giờ vàng: <strong className="text-amber-700 font-bold">{(court.peakPrice / 1000)}k/ca</strong>
- </div>
- </div>
-
- {/* Slots Grid */}
- <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 pt-1">
- {courtSlots.map((slot: any, sIdx: number) => {
- const isSelected = selectedSlot?.courtName === court.pitchName && selectedSlot?.time === slot.time;
- const isBooked = slot.status === "booked" || slot.status === "playing" || slot.status === "pending_payment";
- const isResale = slot.status === "resale";
- const isPeak = isPeakSlot(slot.time);
-
- if (isSelected) {
- return (
- <button
- key={sIdx}
- type="button"
- className="h-20 rounded-2xl bg-[#0369a1] text-white shadow-lg shadow-sky-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-white/70 btn-shimmer cursor-pointer"
- >
- <span className="font-extrabold text-[14px]">{slot.time}</span>
- <span className="font-black text-sm font-mono mt-0.5">{slot.price} • ✓ Chọn</span>
- </button>
- );
- }
-
-  if (isBooked) {
-    const isOwner = user?.role === "OWNER";
-    const isClub = Boolean(slot.isClubBooking || slot.clubName);
-    const isPending = slot.status === "pending_payment";
-
-    // CA CHỜ KHÓA (pending_payment): Không khóa cứng, tương tác được inline
-    if (isPending) {
-      const isMyBooking = Boolean(slot.isMyBooking || (user?.phone && slot.phone && slot.phone.includes(user.phone.slice(-4))));
-      const isThisActive = pendingSlotItem?.court?.pitchName === court.pitchName && pendingSlotItem?.slot?.time === slot.time;
-      return (
-        <button
-          key={sIdx}
-          type="button"
-          onClick={() => handlePendingSlotClick(court, slot)}
-          className={`h-20 rounded-2xl flex flex-col items-center justify-center p-2 border transition-all cursor-pointer relative group text-left ${
-            isThisActive
-              ? "ring-2 ring-amber-500 bg-amber-100/90 text-amber-950 border-amber-400 shadow-md"
-              : isMyBooking
-              ? "bg-amber-50 hover:bg-amber-100 text-amber-950 border-amber-300 ring-1 ring-amber-300 shadow-xs"
-              : isOwner
-              ? "bg-amber-50/80 hover:bg-amber-100 text-amber-900 border-amber-300"
-              : "bg-slate-100 hover:bg-sky-50 text-slate-700 border-slate-300 hover:border-sky-300"
-          }`}
-          title={
-            isMyBooking
-              ? "Ca bạn đang giữ chỗ! Bấm để xem hoặc Hủy chọn ca."
-              : isOwner
-              ? `Khách: ${slot.customer || "Khách"} - SĐT: ${slot.phone || "N/A"} (Chờ cọc)`
-              : "Ca đang chờ cọc. Bấm để đăng ký vào hàng chờ nhận ca này!"
-          }
-        >
-          <div className="absolute top-1 right-1">
-            <span className={`text-[14px] font-bold px-1 rounded ${
-              isMyBooking ? "bg-amber-500 text-white" : "bg-amber-100 text-amber-800 border border-amber-300"
-            }`}>
-              {isMyBooking ? "Của bạn" : "Chờ cọc"}
-            </span>
-          </div>
-          <span className="font-bold text-[14px]">{slot.time}</span>
-          <div className="flex items-center space-x-1 mt-0.5 font-bold text-[14px] text-amber-700">
-            <Clock className="w-3.5 h-3.5 animate-pulse" />
-            <span>{isMyBooking ? "Đang Giữ Chỗ" : "Chờ Khóa Ca"}</span>
-          </div>
-          <span className="text-[14px] truncate max-w-[130px] font-semibold text-slate-500">
-            {isMyBooking ? "Bấm để Hủy/Xem" : isOwner ? "Bấm Duyệt/Mở lại" : "Bấm nhận hàng chờ"}
-          </span>
-        </button>
-      );
+  const handleStartBooking = async () => {
+    if (
+      !selectedSlot ||
+      selectedSlot.status === "booked" ||
+      selectedSlot.status === "pending_payment"
+    ) {
+      showToast("Vui lòng chọn một ca sân còn trống.");
+      return;
     }
 
-    return (
-      <div
-        key={sIdx}
-        className={`h-20 rounded-2xl flex flex-col items-center justify-center p-2 cursor-not-allowed border transition-all ${
-          isClub
-            ? "bg-purple-100/90 text-purple-950 border-purple-300 shadow-xs"
-            : "bg-slate-200/70 text-slate-500 border-slate-200 opacity-75"
-        }`}
-        title={
-          isClub
-            ? `Ca này đã được đại diện CLB ${slot.clubName || ""} bao sân trọn gói!`
-            : (isOwner ? `Khách: ${slot.customer || "Khách"} - SĐT: ${slot.phone || "N/A"}` : "Ca đã có khách đặt trước")
-        }
-      >
-        <span className="font-bold text-[14px]">{slot.time}</span>
-        <div className={`flex items-center space-x-1 mt-0.5 font-bold text-[14px] ${isClub ? "text-purple-700 font-black" : "text-rose-600"}`}>
-          <Lock className="w-3.5 h-3.5" />
-          <span>{isClub ? (slot.isFullDayBooking ? "CLB Bao Sân • Cả Ngày" : "CLB Bao Sân") : "Đã Cọc"}</span>
+    if (fullDayBooking && (!selectedCourtData || !fullDayAvailable)) {
+      showToast("Sân này đã có ca được đặt, không thể bao cả ngày.");
+      return;
+    }
+
+    if (!user) {
+      showToast("Bạn cần đăng nhập để đặt sân.");
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      const customerName = user.fullName || user.name || "";
+      const customerPhone = user.phone || "";
+      if (!customerPhone) {
+        showToast("Tài khoản chưa có số điện thoại. Vui lòng cập nhật SĐT trong hồ sơ.");
+        return;
+      }
+
+      const clubNameFinal =
+        bookingMode === "CLUB"
+          ? selectedClubName === "__CUSTOM__" || !selectedClubName
+            ? customClubName.trim() || "CLB Cầu Thủ"
+            : selectedClubName
+          : undefined;
+
+      const bookingPayload = {
+        courtName: selectedSlot.courtName,
+        courtType: selectedSlot.courtType || "Sân 7 Người",
+        timeSlot: fullDayBooking ? fullDayRange : selectedSlot.time,
+        fullDay: fullDayBooking,
+        bookingDate: selectedDate,
+        customerName: customerName,
+        customerPhone: customerPhone,
+        depositPercent: depositOption === "100%" ? 100 : 50,
+        isClubBooking: bookingMode === "CLUB",
+        clubName: clubNameFinal,
+        via:
+          bookingMode === "CLUB"
+            ? "Đại diện " + clubNameFinal + " bao sân" + (fullDayBooking ? " cả ngày" : "")
+            : fullDayBooking
+            ? "Bao sân cả ngày"
+            : "Đặt qua Website",
+      };
+
+      const res = await apiRequest<any>(`/api/v1/pitches/${pitchId}/book`, {
+        method: "POST",
+        body: JSON.stringify(bookingPayload),
+      });
+
+      if (res && res.id) {
+        setBookingConfirmed(res);
+        setPaymentDone(false);
+        setShowQrModal(true);
+        fetchPitchMatrix(selectedDate, fixedSlotDuration);
+        showToast("Đã tạo đơn giữ chỗ thành công.");
+
+        broadcastBookingEvent({
+          type: "BOOKING_CREATED",
+          pitchId: pitchId,
+          bookingId: res.id,
+          code: res.code,
+          customerName: customerName,
+          customerPhone: customerPhone,
+          courtName: selectedSlot.courtName,
+          courtType: selectedSlot.courtType || "Sân 7",
+          timeSlot: fullDayBooking ? fullDayRange : selectedSlot.time,
+          bookingDate: selectedDate,
+          totalPrice: res.totalPrice ?? totalPrice,
+          via: "Đặt qua Website",
+        });
+      } else {
+        showToast("Không tạo được đơn giữ chỗ, vui lòng thử lại.");
+      }
+    } catch (err: any) {
+      showToast(`Lỗi đặt sân: ${err.message || "Không thể kết nối máy chủ"}`);
+    } finally {
+      setIsBooking(false);
+    }
+  };
+
+  const handleCompletePayment = () => {
+    setPaymentDone(true);
+    fetchPitchMatrix(selectedDate, fixedSlotDuration);
+    showToast("Đã ghi nhận thông tin đặt sân. Vui lòng xuất trình mã vé khi đến sân.");
+
+    if (bookingConfirmed) {
+      broadcastBookingEvent({
+        type: "BOOKING_CREATED",
+        pitchId: pitchId,
+        bookingId: bookingConfirmed.id,
+        code: bookingConfirmed.code,
+        customerName: bookingConfirmed.customerName,
+        customerPhone: bookingConfirmed.customerPhone,
+        courtName: bookingConfirmed.courtName,
+        timeSlot: bookingConfirmed.timeSlot,
+        bookingDate: selectedDate,
+        totalPrice: bookingConfirmed.totalPrice,
+        depositPaid: bookingConfirmed.depositPaid,
+        via: "Đặt qua Website",
+      });
+    }
+  };
+
+  const handleCopyShare = () => {
+    navigator.clipboard?.writeText(window.location.href);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+    showToast("Đã sao chép đường dẫn sân.");
+  };
+
+  const filteredCourts = matrixCourts.filter((court) => {
+    if (selectedCategory !== "ALL") {
+      if (
+        !court.type?.toLowerCase().includes(selectedCategory.toLowerCase()) &&
+        !court.pitchName?.toLowerCase().includes(selectedCategory.toLowerCase())
+      ) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  return (
+    <div className="w-full space-y-5 pb-16 text-slate-900">
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg border border-slate-700">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <span className="text-[14px] font-bold">{toastMsg}</span>
         </div>
-        <span className={`text-[14px] truncate max-w-[130px] font-semibold ${isClub ? "text-purple-800 font-bold" : (isOwner ? "text-slate-600 font-mono" : "text-slate-500 font-medium")}`}>
-          {isClub ? (slot.clubName || "Bao trọn ca") : (isOwner ? (slot.customer || slot.phone || "Khách cọc") : "Khóa ca")}
-        </span>
-      </div>
-    );
-  }
+      )}
 
- return (
- <button
- key={sIdx}
- type="button"
- onClick={() => handleSelectSlot(court, slot)}
- className={`h-20 rounded-2xl shadow-xs flex flex-col items-center justify-center p-2 transition-all cursor-pointer border group relative ${
- slot.isGapSlot
- ? "bg-amber-500/10 hover:bg-amber-500/20 border-amber-400/80 text-amber-950 ring-1 ring-amber-400/40"
- : "bg-white hover:border-[#0369a1] hover:bg-sky-50/20 text-slate-900 border-slate-200 "
- }`}
- >
- {slot.isGapSlot ? (
- <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 text-[14px] font-black px-1.5 py-0.5 rounded shadow-xs flex items-center gap-0.5">
- <span>⚡ Lọt Khe</span>
- </div>
- ) : isPeak ? (
- <div className="absolute top-1.5 right-1.5 text-amber-700 text-[14px] font-bold">
- ⭐ Vàng
- </div>
- ) : isResale ? (
- <div className="absolute top-1 right-1 bg-amber-500 text-white text-[14px] font-bold px-1.5 rounded">
- Pass -40%
- </div>
- ) : null}
- <span className={`font-bold text-[14px] ${slot.isGapSlot ? "text-amber-700 font-extrabold" : "text-slate-700 group-hover:text-sky-700 "}`}>
- {slot.time}
- </span>
- <span className={`font-black text-sm font-mono mt-0.5 ${slot.isGapSlot ? "text-amber-600 " : "text-sky-700 "}`}>
- {slot.price}
- </span>
- {slot.isGapSlot && <span className="text-[14px] text-amber-600 font-bold">{slot.durationMinutes}p</span>}
- </button>
- );
- })}
- </div>
+      {/* 1. THANH ĐIỀU HƯỚNG QUAY LẠI */}
+      <nav
+        aria-label="Breadcrumb"
+        className="flex flex-wrap items-center justify-between gap-3 bg-white px-4 py-3 rounded-lg border border-slate-300 shadow-sm"
+      >
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="px-3.5 py-2 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold text-[14px] flex items-center gap-1.5 cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Danh sách sân</span>
+          </button>
 
-        {/* INLINE PANEL TÁC ĐỘNG CA CHỜ KHÓA (pending_payment) */}
-        {pendingSlotItem && pendingSlotItem.court.pitchName === court.pitchName && (
-          <div className="mt-4 p-4 rounded-2xl bg-amber-50/90 border border-amber-300 text-slate-800 space-y-3 animate-fade-in shadow-sm">
-            <div className="flex items-center justify-between border-b border-amber-200 pb-2.5">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-600 animate-pulse" />
-                <h4 className="font-bold text-sm text-amber-950">
-                  Tác Vụ Ca Chờ Khóa: {pendingSlotItem.slot.time} · {court.pitchName}
-                </h4>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPendingSlotItem(null)}
-                className="text-[14px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
-              >
-                Đóng
-              </button>
+          <ol className="hidden sm:flex items-center gap-1.5 text-[14px] text-slate-600">
+            <li>Đặt sân</li>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            <li className="font-bold text-slate-900 truncate max-w-md">{venueData.name}</li>
+          </ol>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCopyShare}
+            className="px-3 py-1.5 rounded-md bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-[14px] flex items-center gap-1.5 cursor-pointer"
+          >
+            <Share2 className="w-3.5 h-3.5 text-[#0369a1]" />
+            <span>{copiedLink ? "Đã chép link" : "Chia sẻ"}</span>
+          </button>
+          <a
+            href={`https://maps.google.com/?q=${encodeURIComponent(venueData.address)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="px-3 py-1.5 rounded-md bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-[14px] flex items-center gap-1.5"
+          >
+            <Navigation className="w-3.5 h-3.5 text-[#0369a1]" />
+            <span>Bản đồ</span>
+          </a>
+        </div>
+      </nav>
+
+      {/* 2. THÔNG TIN CỤM SÂN GỌN GÀNG (CHUẨN WEB ĐẶT SÂN TRUYỀN THỐNG) */}
+      <section className="bg-white rounded-lg p-4 sm:p-5 border border-slate-300 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+          <div className="md:col-span-4 lg:col-span-3 h-[160px] sm:h-[175px] rounded-md overflow-hidden bg-slate-900 border border-slate-200">
+            <SafeImage
+              src={venueData.mainImage}
+              alt={venueData.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          <div className="md:col-span-8 lg:col-span-9 space-y-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="bg-[#0369a1] text-white text-[14px] font-bold px-2.5 py-0.5 rounded inline-flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>{pitchTypeLabel(pitchDetails?.pitchTypes?.[0]) || "Sân cỏ nhân tạo"}</span>
+              </span>
+              <span className="bg-slate-100 text-slate-700 text-[14px] font-semibold px-2.5 py-0.5 rounded border border-slate-300">
+                {matrixCourts.length > 0 ? `${matrixCourts.length} sân con` : "Cụm sân tiêu chuẩn"}
+              </span>
+              {venueData.rating ? (
+                <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded text-[14px] font-bold text-slate-900">
+                  <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                  <span>{venueData.rating}</span>
+                </span>
+              ) : null}
             </div>
 
-            {/* TRƯỜNG HỢP 1: CHÍNH MÌNH ĐANG GIỮ CA */}
-            {Boolean(pendingSlotItem.slot.isMyBooking || (user?.phone && pendingSlotItem.slot.phone && pendingSlotItem.slot.phone.includes(user.phone.slice(-4)))) ? (
-              <div className="space-y-2.5">
-                <p className="text-[14px] text-amber-900 leading-relaxed">
-                  Ca này bạn đang giữ chỗ (chờ xác nhận thanh toán cọc). Bạn có thể <strong>Hủy chọn ca</strong> để mở lại slot trống cho mọi người, hoặc tiếp tục thanh toán.
-                </p>
-                <div className="flex items-center gap-2 flex-wrap pt-1">
-                  <button
-                    type="button"
-                    disabled={isProcessingPending}
-                    onClick={() => handleCustomerCancelHold(pendingSlotItem.slot.bookingId)}
-                    className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[14px] font-bold shadow-sm transition-all disabled:opacity-50 cursor-pointer"
-                  >
-                    {isProcessingPending ? "Đang xử lý..." : "❌ Hủy Chọn Ca Này (Mở Lại Ca)"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setBookingConfirmed({
-                        id: pendingSlotItem.slot.bookingId,
-                        code: pendingSlotItem.slot.code || "VS-HOLD",
-                        totalPrice: pendingSlotItem.slot.totalPrice || 350000,
-                        depositPaid: pendingSlotItem.slot.depositPaid || 100000,
-                        cashDue: (pendingSlotItem.slot.totalPrice || 350000) - (pendingSlotItem.slot.depositPaid || 100000)
-                      });
-                      setShowQrModal(true);
-                    }}
-                    className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#025684] text-white text-[14px] font-bold shadow-sm transition-all cursor-pointer"
-                  >
-                    💳 Tiếp Tục Thanh Toán Cọc
-                  </button>
-                </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{venueData.name}</h1>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[14px] text-slate-700 pt-0.5">
+              <div className="flex items-start gap-1.5">
+                <MapPin className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                <span>{venueData.address}</span>
               </div>
-            ) : user?.role === "OWNER" ? (
-              /* TRƯỜNG HỢP 2: CHỦ SÂN QUẢN LÝ */
-              <div className="space-y-2.5">
-                <div className="text-[14px] text-slate-700 space-y-1">
-                  <p>Khách hàng: <strong className="text-slate-900">{pendingSlotItem.slot.customer || "Khách"}</strong> · SĐT: <strong className="font-mono text-slate-900">{pendingSlotItem.slot.phone || "N/A"}</strong></p>
-                  <p className="text-slate-500">Ca đang ở trạng thái giữ chỗ tạm thời (chờ xác nhận tiền cọc).</p>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap pt-1">
-                  <button
-                    type="button"
-                    disabled={isProcessingPending}
-                    onClick={() => handleOwnerConfirmDeposit(pendingSlotItem.slot.bookingId)}
-                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[14px] font-bold shadow-sm transition-all disabled:opacity-50 cursor-pointer"
-                  >
-                    {isProcessingPending ? "Đang lưu..." : "✅ Xác Nhận Đã Thu Cọc (Khóa Ca)"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isProcessingPending}
-                    onClick={() => handleOwnerCancelHold(pendingSlotItem.slot.bookingId)}
-                    className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-700 text-[14px] font-bold transition-all disabled:opacity-50 cursor-pointer"
-                  >
-                    {isProcessingPending ? "Đang xử lý..." : "❌ Hủy Giữ Chỗ / Mở Lại Ca Trống"}
-                  </button>
-                </div>
+              <div className="flex items-center gap-1.5">
+                <PhoneCall className="w-4 h-4 text-[#0369a1] shrink-0" />
+                <span>
+                  Điện thoại: <strong className="font-mono text-slate-900">{venueData.phone}</strong>
+                </span>
               </div>
-            ) : (
-              /* TRƯỜNG HỢP 3: NGƯỜI KHÁC ĐĂNG KÝ VÀO HÀNG CHỜ */
-              <div className="space-y-2.5">
-                <p className="text-[14px] text-slate-700 leading-relaxed">
-                  Ca này đang được một khách khác giữ chỗ hoàn tất cọc. Bạn có thể <strong>Đăng ký hàng chờ</strong> để được ưu tiên nhận ca ngay khi khách cũ hủy chọn hoặc hết thời hạn cọc.
-                </p>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
-                  <input
-                    type="text"
-                    placeholder="Số điện thoại nhận ca..."
-                    value={waitlistPhone}
-                    onChange={(e) => setWaitlistPhone(e.target.value)}
-                    className="px-3 py-2 rounded-xl border border-slate-300 text-[14px] bg-white font-medium focus:outline-none focus:border-[#0369a1] sm:w-60"
-                  />
-                  <button
-                    type="button"
-                    disabled={isProcessingPending}
-                    onClick={() => handleJoinWaitlistForPending(court, pendingSlotItem.slot)}
-                    className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#025684] text-white text-[14px] font-bold shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-slate-500 shrink-0" />
+                <span>
+                  Giờ mở cửa:{" "}
+                  <strong className="font-mono text-slate-900">
+                    {venueData.openTime} - {venueData.closeTime}
+                  </strong>{" "}
+                  ({fixedSlotDuration}p/ca)
+                </span>
+              </div>
+            </div>
+
+            {pitchDetails?.amenities?.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[14px] font-semibold text-slate-500 mr-1">Tiện ích:</span>
+                {pitchDetails.amenities.map((a: string) => (
+                  <span
+                    key={a}
+                    className="px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[14px] font-medium border border-slate-200"
                   >
-                    {isProcessingPending ? "Đang đăng ký..." : "🔔 Đăng Ký Nhận Ca / Vào Hàng Chờ"}
-                  </button>
-                </div>
+                    {a}
+                  </span>
+                ))}
               </div>
             )}
           </div>
-        )}
- </div>
- );
- })
- )}
- </div>
+        </div>
+      </section>
 
- {/* Tóm tắt quy định gọn */}
- <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-2 text-[14px] text-slate-600 font-bold">
-   <span>✓ Check-in bằng mã đơn tại sân</span>
-   <span>•</span>
-   <span>💳 Cọc 50% hoặc 100% qua VietQR</span>
-   <span>•</span>
-   <span>📞 Liên hệ hotline sân khi cần đổi lịch</span>
- </div>
- </main>
+      {/* 3. BẢNG LỊCH CHỌN CA SÂN (TRÁI 8 CỘT) & PHIẾU ĐẶT SÂN (PHẢI 4 CỘT) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* CỘT TRÁI: CHỌN NGÀY & BẢNG GIỜ TRỐNG */}
+        <main className="lg:col-span-8 space-y-4">
+          <div className="bg-white rounded-lg p-4 border border-slate-300 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-[#0369a1]" />
+                <span>Chọn Ngày &amp; Khung Giờ Đặt Sân</span>
+              </h2>
 
- {/* CỘT PHẢI: PHIẾU ĐẶT CHỖ & TÍNH TIỀN THÔNG MINH (4 COLS - STICKY) */}
- <aside className="lg:col-span-4 sticky top-20 space-y-4">
- {selectedSlot ? (
- <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border border-slate-200 space-y-4 sm:space-y-5 animate-fade-in">
- {/* Header Phiếu Đặt */}
- <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 ">
- <div className="flex items-center space-x-2.5">
- <div className="w-8 h-8 rounded-xl bg-[#0369a1] text-white flex items-center justify-center font-bold">
- <Receipt className="w-[18px] h-[18px]" />
- </div>
- <div>
- <h3 className="font-black text-sm text-slate-900 ">Phiếu Đặt Chỗ Sân Bóng</h3>
- <span className="text-[14px] text-slate-500 font-mono">Giữ chỗ qua mã đơn</span>
- </div>
- </div>
- <button
- type="button"
- onClick={() => setSelectedSlot(null)}
- className="text-[14px] font-bold text-rose-600 hover:text-rose-600 bg-rose-50 px-2 py-1 rounded-lg transition-colors cursor-pointer"
- title="Bỏ chọn ca này"
- >
- Bỏ chọn ✕
- </button>
- </div>
+              {/* Chú thích trạng thái */}
+              <div className="flex items-center gap-3 text-[14px] font-semibold flex-wrap">
+                <span className="inline-flex items-center gap-1.5 text-slate-700">
+                  <span className="w-3 h-3 rounded-sm bg-white border border-slate-400" />
+                  Còn trống
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-[#0369a1]">
+                  <span className="w-3 h-3 rounded-sm bg-[#0369a1]" />
+                  Đang chọn
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-amber-700">
+                  <span className="w-3 h-3 rounded-sm bg-amber-400" />
+                  Chờ khóa ca
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-slate-500">
+                  <span className="w-3 h-3 rounded-sm bg-slate-300" />
+                  Đã đặt
+                </span>
+              </div>
+            </div>
 
- {/* Thông Tin Ca Đã Chọn */}
- <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
- <div className="flex items-start justify-between">
- <div>
- <span className="text-[14px] text-slate-500 font-extrabold tracking-wider">Cụm sân & Mặt sân</span>
- <p className="font-black text-sm text-slate-900 ">{pitchTypeLabel(selectedSlot.courtName) || selectedSlot.courtName}</p>
- <p className="text-[14px] text-slate-500 truncate max-w-[220px]">{venueData.name}</p>
- </div>
- <Award className="w-6 h-6 text-emerald-500 shrink-0" />
- </div>
+            {/* Thanh chọn 7 ngày */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+              {upcomingDays.map((d) => (
+                <button
+                  key={d.iso}
+                  type="button"
+                  onClick={() => {
+                    setSelectedDate(d.iso);
+                    setFullDayBooking(false);
+                  }}
+                  className={`py-2 px-2.5 rounded-md border text-center transition-colors cursor-pointer ${
+                    selectedDate === d.iso
+                      ? "bg-[#0369a1] text-white border-[#0369a1] font-bold"
+                      : "bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800"
+                  }`}
+                >
+                  <div
+                    className={`text-[14px] ${
+                      selectedDate === d.iso ? "text-white font-bold" : "text-slate-600 font-semibold"
+                    }`}
+                  >
+                    {d.label}
+                  </div>
+                  <div className="text-[14px] font-mono font-bold">{d.dateFormatted}</div>
+                </button>
+              ))}
+            </div>
 
- <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 text-[14px]">
- <div>
- <span className="text-[14px] text-slate-500 font-bold">Ngày thi đấu:</span>
- <p className="font-bold text-slate-900 font-mono">{selectedDate}</p>
- </div>
- <div>
- <span className="text-[14px] text-slate-500 font-bold">{fullDayBooking ? "Bao sân cả ngày:" : "Khung giờ:"}</span>
- <p className="font-bold text-sky-700 font-mono">{fullDayBooking ? fullDayRange : selectedSlot.time}</p>
- </div>
- </div>
- </div>
+            {/* Bộ lọc sân con & khung giờ */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[
+                  { id: "ALL", label: "Tất cả sân con" },
+                  { id: "Sân 7", label: "Sân 7 người" },
+                  { id: "Sân 5", label: "Sân 5 người" },
+                  { id: "Sân 11", label: "Sân 11 người" },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-3 py-1.5 rounded-md text-[14px] font-bold border transition-colors cursor-pointer ${
+                      selectedCategory === cat.id
+                        ? "bg-slate-800 text-white border-slate-800"
+                        : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
 
- {/* Chi Tiết Giá Tiền & Khuyến Mãi */}
- <div className="space-y-2.5 text-[14px]">
- <div className="flex justify-between items-center text-slate-600 ">
- <span>{fullDayBooking ? "Giá bao sân cả ngày (tất cả ca):" : `Giá ca sân niêm yết (${fixedSlotDuration} phút/ca):`}</span>
- <span className="font-mono text-slate-900 font-bold">{originalPrice.toLocaleString("vi-VN")}đ</span>
- </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[14px] text-slate-600 font-semibold">Khung giờ:</span>
+                <select
+                  aria-label="Lọc giờ đá"
+                  value={selectedTimeFilter}
+                  onChange={(e) => setSelectedTimeFilter(e.target.value)}
+                  className="bg-white px-3 py-1.5 rounded-md border border-slate-300 text-[14px] font-semibold text-slate-800 cursor-pointer"
+                >
+                  <option value="ALL">Tất cả giờ</option>
+                  <option value="PEAK">Giờ cao điểm (17:00 - 20:00)</option>
+                  <option value="OFF_PEAK">Giờ thường</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
- {/* Tổng thanh toán */}
- <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
- <div>
- <span className="text-[14px] text-slate-500 font-extrabold block">{fullDayBooking ? "TỔNG TIỀN BAO SÂN CẢ NGÀY:" : "TỔNG TIỀN CA SÂN:"}</span>
- <span className="text-[14px] text-sky-700 font-bold">Theo giá niêm yết của sân</span>
- </div>
- <div className="text-right">
- <span className="text-2xl font-black text-slate-900 font-mono">
- {totalPrice.toLocaleString("vi-VN")}đ
- </span>
- </div>
- </div>
- </div>
+          {/* DANH SÁCH SÂN CON & CÁC CA TRONG NGÀY */}
+          <div className="space-y-4">
+            {isLoading ? (
+              <div className="bg-white rounded-lg p-12 border border-slate-300 text-center space-y-2">
+                <RefreshCw className="w-7 h-7 text-[#0369a1] animate-spin mx-auto" />
+                <p className="text-[14px] font-semibold text-slate-600">Đang tải lịch ca sân...</p>
+              </div>
+            ) : filteredCourts.length === 0 ? (
+              <div className="bg-white rounded-lg p-10 border border-slate-300 text-center text-slate-600 space-y-2">
+                <AlertCircle className="w-7 h-7 mx-auto text-slate-400" />
+                <p className="font-bold text-[15px]">Không có sân con nào khớp với bộ lọc.</p>
+              </div>
+            ) : (
+              filteredCourts.map((court) => {
+                const courtSlots = (court.slots || []).filter((s: any) => {
+                  if (selectedTimeFilter === "PEAK") return isPeakSlot(s.time);
+                  if (selectedTimeFilter === "OFF_PEAK") return !isPeakSlot(s.time);
+                  return true;
+                });
 
- {/* Lựa Chọn Tư Cách Đặt Sân: Cá nhân hay Đại diện CLB Bao Sân */}
- <div className="space-y-2">
- <label className="text-[14px] font-extrabold tracking-wider text-slate-500 block">
- Tư cách đặt sân:
- </label>
- <div className="grid grid-cols-2 gap-2">
- <button
- type="button"
- onClick={() => { setBookingMode("INDIVIDUAL"); setFullDayBooking(false); }}
- className={`p-2.5 rounded-xl font-bold border transition-all text-[14px] flex items-center justify-center gap-1.5 cursor-pointer ${
- bookingMode === "INDIVIDUAL"
- ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
- : "bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300"
- }`}
- >
- <span>👤 Cá Nhân</span>
- </button>
- <button
- type="button"
- onClick={() => setBookingMode("CLUB")}
- className={`p-2.5 rounded-xl font-bold border transition-all text-[14px] flex items-center justify-center gap-1.5 cursor-pointer ${
- bookingMode === "CLUB"
- ? "bg-purple-700 text-white border-purple-700 shadow-xs"
- : "bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300"
- }`}
- >
- <span>🛡️ Đại Diện CLB</span>
- </button>
- </div>
+                return (
+                  <div
+                    key={court.pitchId}
+                    className="p-4 rounded-lg bg-white border border-slate-300 shadow-sm space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-base text-slate-900">{court.pitchName}</span>
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-300 text-[14px] font-semibold">
+                          {pitchTypeLabel(court.type)}
+                        </span>
+                      </div>
+                      <div className="text-[14px] text-slate-600">
+                        Giờ thường:{" "}
+                        <strong className="text-slate-900 font-mono">
+                          {(court.basePrice / 1000).toLocaleString("vi-VN")}k/ca
+                        </strong>{" "}
+                        • Cao điểm:{" "}
+                        <strong className="text-amber-700 font-mono">
+                          {(court.peakPrice / 1000).toLocaleString("vi-VN")}k/ca
+                        </strong>
+                      </div>
+                    </div>
 
- {bookingMode === "CLUB" && (
- <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 space-y-2 text-[14px] animate-fade-in">
- <div className="flex items-center justify-between text-purple-900 font-bold">
- <span>Tên CLB / Đội bóng đại diện:</span>
- <span className="text-[14px] bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-black">
- Bao Sân
- </span>
- </div>
- {myClubs.length > 0 && (
- <select
- value={selectedClubName}
- onChange={(e) => setSelectedClubName(e.target.value)}
- className="w-full px-3 py-2 rounded-lg border border-purple-300 bg-white text-slate-900 font-bold text-[14px] focus:outline-none focus:ring-2 focus:ring-purple-600"
- >
- {myClubs.map((c) => (
- <option key={c.id || c.name} value={c.name}>
- ⚽ {c.name} ({c.memberCount || 0} thành viên)
- </option>
- ))}
- <option value="__CUSTOM__">+ Nhập tên CLB/Đội bóng khác...</option>
- </select>
- )}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                      {courtSlots.map((slot: any, sIdx: number) => {
+                        const isSelected =
+                          selectedSlot?.courtName === court.pitchName &&
+                          selectedSlot?.time === slot.time;
+                        const isBooked =
+                          slot.status === "booked" ||
+                          slot.status === "playing" ||
+                          slot.status === "pending_payment";
+                        const isPeak = isPeakSlot(slot.time);
 
- {(myClubs.length === 0 || selectedClubName === "__CUSTOM__") && (
- <input
- type="text"
- placeholder="Nhập tên CLB / Đội bóng (VD: FC Hoàng Anh, FC Trẻ)..."
- value={customClubName}
- onChange={(e) => setCustomClubName(e.target.value)}
- className="w-full px-3 py-2 rounded-lg border border-purple-300 bg-white text-slate-900 text-[14px] font-bold focus:outline-none focus:ring-2 focus:ring-purple-600"
- />
- )}
- {selectedSlot && (
- <label className={`flex items-start gap-2 p-2.5 rounded-lg border transition-all cursor-pointer ${fullDayBooking ? "bg-purple-100 border-purple-400" : "bg-white border-purple-200"}`}>
- <input
- type="checkbox"
- checked={fullDayBooking}
- disabled={!fullDayAvailable}
- onChange={(e) => setFullDayBooking(e.target.checked)}
- className="mt-0.5 accent-purple-700"
- />
- <span className="leading-snug">
- <strong className="text-purple-900">Bao sân cả ngày ({fullDayRange})</strong>
- <span className={`block text-[14px] ${fullDayAvailable ? "text-purple-700" : "text-rose-600"}`}>
- {fullDayAvailable
- ? `Trọn ${(selectedCourtData?.slots || []).length} ca • ${fullDayTotal.toLocaleString("vi-VN")}đ — tập luyện/thi đấu cả ngày`
- : "Sân đã có ca được đặt — không thể bao trọn ngày. Chọn sân con khác."}
- </span>
- </span>
- </label>
- )}
-  <p className="text-[14px] text-purple-700 leading-snug">
- ⭐ Đơn đặt sẽ được đánh dấu <strong>Bao Sân</strong> dưới danh nghĩa CLB để toàn đội sinh hoạt và thi đấu độc quyền.
- </p>
- </div>
- )}
- </div>
+                        if (isSelected) {
+                          return (
+                            <button
+                              key={sIdx}
+                              type="button"
+                              onClick={() => setSelectedSlot(null)}
+                              className="py-3 px-2 rounded-md bg-[#0369a1] text-white border-2 border-[#0369a1] flex flex-col items-center justify-center cursor-pointer"
+                            >
+                              <span className="font-bold text-[14px] font-mono">{slot.time}</span>
+                              <span className="font-bold text-[14px] mt-0.5">
+                                {slot.price} • Đang chọn
+                              </span>
+                            </button>
+                          );
+                        }
 
- {/* Tùy Chọn Cọc (50% hoặc 100%) */}
- <div className="space-y-2">
- <label className="text-[14px] font-extrabold tracking-wider text-slate-500 block">
- Hình thức đặt cọc giữ chỗ:
- </label>
- <div className="grid grid-cols-2 gap-2">
- <div
- onClick={() => setDepositOption("50%")}
- className={`p-3 rounded-2xl cursor-pointer flex flex-col justify-between border-2 transition-all ${
- depositOption === "50%"
- ? "bg-[#0369a1]/10 border-[#0369a1] shadow-xs"
- : "bg-slate-50 border-slate-200 "
- }`}
- >
- <div className="flex items-center justify-between">
- <span className="font-bold text-[14px] text-slate-900 ">Cọc 50%</span>
- {depositOption === "50%" && <span className="text-emerald-500 font-black text-[14px]">✓</span>}
- </div>
- <span className="font-mono text-base font-black text-sky-700 mt-1">
- {Math.round(totalPrice * 0.5).toLocaleString("vi-VN")}đ
- </span>
- <span className="text-[14px] text-slate-500">Trả phần còn lại ở quầy</span>
- </div>
+                        if (isBooked) {
+                          const isOwner = user?.role === "OWNER";
+                          const isClub = Boolean(slot.isClubBooking || slot.clubName);
+                          const isPending = slot.status === "pending_payment";
 
- <div
- onClick={() => setDepositOption("100%")}
- className={`p-3 rounded-2xl cursor-pointer flex flex-col justify-between border-2 transition-all ${
- depositOption === "100%"
- ? "bg-[#0369a1]/10 border-[#0369a1] shadow-xs"
- : "bg-slate-50 border-slate-200 "
- }`}
- >
- <div className="flex items-center justify-between">
- <span className="font-bold text-[14px] text-slate-900 ">Thanh toán 100%</span>
- {depositOption === "100%" && <span className="text-emerald-500 font-black text-[14px]">✓</span>}
- </div>
- <span className="font-mono text-base font-black text-slate-900 mt-1">
- {totalPrice.toLocaleString("vi-VN")}đ
- </span>
- <span className="text-[14px] text-slate-500">Tặng +50 Điểm Thưởng</span>
- </div>
- </div>
- </div>
+                          if (isPending) {
+                            const isMyBooking = Boolean(
+                              slot.isMyBooking ||
+                                (user?.phone &&
+                                  slot.phone &&
+                                  slot.phone.includes(user.phone.slice(-4)))
+                            );
+                            const isThisActive =
+                              pendingSlotItem?.court?.pitchName === court.pitchName &&
+                              pendingSlotItem?.slot?.time === slot.time;
+                            return (
+                              <button
+                                key={sIdx}
+                                type="button"
+                                onClick={() => handlePendingSlotClick(court, slot)}
+                                className={`py-2.5 px-2 rounded-md flex flex-col items-center justify-center border cursor-pointer ${
+                                  isThisActive
+                                    ? "bg-amber-100 border-amber-500 text-amber-950"
+                                    : "bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-900"
+                                }`}
+                              >
+                                <span className="font-bold text-[14px] font-mono">{slot.time}</span>
+                                <span className="text-[14px] font-bold text-amber-800 mt-0.5">
+                                  {isMyBooking ? "Đang giữ chỗ" : "Chờ khóa ca"}
+                                </span>
+                                <span className="text-[14px] text-slate-600">
+                                  {isMyBooking
+                                    ? "Bấm hủy / xem"
+                                    : isOwner
+                                    ? "Duyệt / Mở ca"
+                                    : "Đăng ký chờ"}
+                                </span>
+                              </button>
+                            );
+                          }
 
- {/* Widget Dự Toán Chia Tiền (Split Bill) Cho Cả Đội */}
- <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-200 space-y-2">
- <span className="text-[14px] font-bold text-sky-800 block">
- Ước Tính Chia Tiền:
- </span>
- <div className="flex items-center justify-between gap-2">
- <span className="text-[14px] text-slate-500">Số người chia:</span>
- <input
- type="number"
- min={1}
- max={40}
- value={splitCount}
-  onChange={(e) => setSplitCount(Math.min(40, Math.max(1, Number(e.target.value) || 1)))}
- aria-label="Số người được chia tiền"
- className="w-16 px-2 py-1 rounded-lg border border-sky-200 bg-white text-[14px] font-mono font-bold text-center"
- />
- </div>
- <div className="flex items-center justify-between gap-2">
- <span className="text-[14px] text-slate-500">
- Mỗi người ~ <strong className="text-sky-700 font-mono font-bold text-[14px]">{splitPerPlayer.toLocaleString("vi-VN")}đ</strong>
- </span>
- <button
- type="button"
- onClick={() => showToast(`💸 Đã sao chép mức chia ${splitPerPlayer.toLocaleString("vi-VN")}đ/người (${splitCount} người)!`)}
- className="px-2.5 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] transition-colors shrink-0 shadow-xs"
- >
- Chia Tiền
- </button>
- </div>
- </div>
+                          return (
+                            <div
+                              key={sIdx}
+                              className={`py-2.5 px-2 rounded-md flex flex-col items-center justify-center border cursor-not-allowed ${
+                                isClub
+                                  ? "bg-slate-100 text-slate-700 border-slate-300"
+                                  : "bg-slate-100 text-slate-400 border-slate-200"
+                              }`}
+                            >
+                              <span className="font-semibold text-[14px] font-mono">{slot.time}</span>
+                              <div className="flex items-center gap-1 mt-0.5 text-[14px] font-bold">
+                                <Lock className="w-3.5 h-3.5" />
+                                <span>{isClub ? "CLB bao sân" : "Đã đặt"}</span>
+                              </div>
+                            </div>
+                          );
+                        }
 
- {/* Nút Đặt Ca Chính */}
- <div className="space-y-2 pt-1">
- <button
- type="button"
- onClick={handleStartBooking}
- disabled={isBooking}
- className="w-full py-3.5 px-4 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-sm sm:text-base shadow-lg shadow-[#0369a1]/30 flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
- >
- {isBooking ? (
- <>
- <RefreshCw className="w-4 h-4 animate-spin mr-1" />
- <span>Đang tạo đơn giữ chỗ...</span>
- </>
- ) : (
- <>
- <span>{fullDayBooking ? "Xác Nhận Bao Sân Cả Ngày" : "Xác Nhận Giữ Chỗ"}</span>
- <ArrowRight className="w-[18px] h-[18px] text-white" />
- </>
- )}
- </button>
- <div className="flex items-center justify-center space-x-1 text-center text-[14px] text-slate-500">
- <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
- <span>Mức cọc do từng sân quy định</span>
- </div>
- </div>
- </div>
- ) : (
- /* Placeholder khi chưa chọn ca nào */
- <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-8 border border-dashed border-slate-300 text-center space-y-4 animate-fade-in">
- <div className="w-16 h-16 rounded-2xl bg-[#0369a1]/10 text-[#0b4f6c] mx-auto flex items-center justify-center">
- <Calendar className="w-8 h-8 text-[#0b4f6c] animate-pulse" />
- </div>
- <div className="space-y-1.5">
- <h3 className="font-black text-base text-slate-900 ">
- Chưa Chọn Ca Thi Đấu
- </h3>
- <p className="text-[14px] text-slate-500 leading-relaxed max-w-[260px] mx-auto">
- Chọn một khung giờ trống bên trái để đặt sân.
- </p>
- </div>
- <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sky-50 text-sky-700 text-[14px] font-bold">
- <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-ping inline-block" />
- <span>Sẵn sàng giữ chỗ thời gian thực</span>
- </div>
- </div>
- )}
+                        return (
+                          <button
+                            key={sIdx}
+                            type="button"
+                            onClick={() => handleSelectSlot(court, slot)}
+                            className="py-3 px-2 rounded-md bg-white hover:bg-sky-50 hover:border-[#0369a1] text-slate-900 border border-slate-300 flex flex-col items-center justify-center transition-colors cursor-pointer"
+                          >
+                            <span className="font-bold text-[14px] font-mono text-slate-800">
+                              {slot.time}
+                            </span>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <span className="font-bold text-[14px] text-[#0369a1] font-mono">
+                                {slot.price}
+                              </span>
+                              {isPeak && (
+                                <span className="text-[14px] text-amber-700 font-semibold">
+                                  (Cao điểm)
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
 
- {/* Card Chủ Sân & Liên Hệ Trực Tiếp */}
- <div className="p-3 sm:p-4 bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between">
- <div className="flex items-center space-x-3">
- <div className="w-10 h-10 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] flex items-center justify-center font-bold text-[14px]">
- {venueData.ownerName ? venueData.ownerName.slice(0, 2).toUpperCase() : "CS"}
- </div>
- <div>
- <span className="font-bold text-[14px] text-slate-900 block">Chủ Sân: {venueData.ownerName}</span>
- <span className="text-[14px] text-slate-500 block font-mono">Hotline: {venueData.phone}</span>
- </div>
- </div>
- <a
- href={`tel:${venueData.phone}`}
- className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-sky-700 font-bold text-[14px] transition-colors flex items-center space-x-1"
- >
- <PhoneCall className="w-3.5 h-3.5" />
- <span>Gọi Sân</span>
- </a>
- </div>
- </aside>
- </div>
+                    {/* KHUNG TÁC ĐỘNG INLINE CHO CA CHỜ KHÓA */}
+                    {pendingSlotItem && pendingSlotItem.court.pitchName === court.pitchName && (
+                      <div className="mt-3 p-4 rounded-md bg-amber-50 border border-amber-300 text-slate-800 space-y-3">
+                        <div className="flex items-center justify-between border-b border-amber-200 pb-2">
+                          <h4 className="font-bold text-[15px] text-amber-950">
+                            Ca chờ khóa: {pendingSlotItem.slot.time} ({court.pitchName})
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => setPendingSlotItem(null)}
+                            className="text-[14px] font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
+                          >
+                            Đóng
+                          </button>
+                        </div>
 
- {/* 4. MODAL THANH TOÁN VIETQR NAPAS247 & MATCHDAY PASS */}
- {showQrModal && (
- <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
- <div className="bg-white max-w-lg w-full rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-4 sm:space-y-5 border border-slate-200 shadow-2xl relative animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
- <button
- type="button"
- onClick={() => setShowQrModal(false)}
- aria-label="Đóng cửa sổ mã giữ chỗ"
- className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center font-bold transition-colors"
- >
- <X className="w-4 h-4" />
- </button>
+                        {Boolean(
+                          pendingSlotItem.slot.isMyBooking ||
+                            (user?.phone &&
+                              pendingSlotItem.slot.phone &&
+                              pendingSlotItem.slot.phone.includes(user.phone.slice(-4)))
+                        ) ? (
+                          <div className="space-y-2.5">
+                            <p className="text-[14px] text-amber-900">
+                              Bạn đang giữ chỗ ca này. Bạn có thể hủy chọn ca để nhường lại hoặc xem thông tin đặt cọc.
+                            </p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <button
+                                type="button"
+                                disabled={isProcessingPending}
+                                onClick={() =>
+                                  handleCustomerCancelHold(pendingSlotItem.slot.bookingId)
+                                }
+                                className="px-4 py-2 rounded-md bg-rose-600 hover:bg-rose-700 text-white text-[14px] font-bold disabled:opacity-50 cursor-pointer"
+                              >
+                                {isProcessingPending ? "Đang xử lý..." : "Hủy Chọn Ca Này"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setBookingConfirmed({
+                                    id: pendingSlotItem.slot.bookingId,
+                                    code: pendingSlotItem.slot.code || "VS-HOLD",
+                                    courtName: court.pitchName,
+                                    timeSlot: pendingSlotItem.slot.time,
+                                    totalPrice: pendingSlotItem.slot.totalPrice || 350000,
+                                    depositPaid: pendingSlotItem.slot.depositPaid || 175000,
+                                  });
+                                  setShowQrModal(true);
+                                }}
+                                className="px-4 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold cursor-pointer"
+                              >
+                                Xem Mã Giữ Chỗ
+                              </button>
+                            </div>
+                          </div>
+                        ) : user?.role === "OWNER" ? (
+                          <div className="space-y-2.5">
+                            <p className="text-[14px] text-slate-700">
+                              Khách đặt: <strong>{pendingSlotItem.slot.customer || "Khách"}</strong> •
+                              SĐT: <strong className="font-mono">{pendingSlotItem.slot.phone || "N/A"}</strong>
+                            </p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <button
+                                type="button"
+                                disabled={isProcessingPending}
+                                onClick={() =>
+                                  handleOwnerConfirmDeposit(pendingSlotItem.slot.bookingId)
+                                }
+                                className="px-4 py-2 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-[14px] font-bold disabled:opacity-50 cursor-pointer"
+                              >
+                                Xác Nhận Đã Thu Cọc
+                              </button>
+                              <button
+                                type="button"
+                                disabled={isProcessingPending}
+                                onClick={() => handleOwnerCancelHold(pendingSlotItem.slot.bookingId)}
+                                className="px-4 py-2 rounded-md bg-white border border-slate-300 hover:bg-rose-50 text-rose-700 text-[14px] font-bold disabled:opacity-50 cursor-pointer"
+                              >
+                                Hủy Giữ Chỗ / Mở Lại Ca
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-2.5">
+                            <p className="text-[14px] text-slate-700">
+                              Ca này đang chờ khách trước hoàn tất đặt cọc. Nhập SĐT của bạn để đăng ký nhận ca nếu khách trước hủy chọn:
+                            </p>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                              <input
+                                type="text"
+                                placeholder="Số điện thoại của bạn..."
+                                value={waitlistPhone}
+                                onChange={(e) => setWaitlistPhone(e.target.value)}
+                                className="px-3 py-2 rounded-md border border-slate-300 text-[14px] bg-white font-semibold focus:outline-none focus:border-[#0369a1] sm:w-60"
+                              />
+                              <button
+                                type="button"
+                                disabled={isProcessingPending}
+                                onClick={() =>
+                                  handleJoinWaitlistForPending(court, pendingSlotItem.slot)
+                                }
+                                className="px-4 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold disabled:opacity-50 cursor-pointer"
+                              >
+                                {isProcessingPending ? "Đang gửi..." : "Đăng Ký Hàng Chờ"}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </main>
 
- {!paymentDone ? (
- <>
- <div className="text-center space-y-1.5">
- <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-[14px] font-bold">
- <Clock className="w-3.5 h-3.5" />
- <span>Đơn giữ chỗ đã lưu trong hệ thống</span>
- </div>
- <h3 className="text-2xl font-black text-slate-900 ">Mã Giữ Chỗ Của Bạn</h3>
- <p className="text-[14px] text-slate-500">Cọc trực tiếp với chủ sân qua VietQR. Hệ thống ghi nhận tiền cọc ngay khi bạn đặt ca.</p>
- </div>
+        {/* CỘT PHẢI: PHIẾU ĐẶT SÂN & MÃ GIỮ CHỖ INLINE */}
+        <aside className="lg:col-span-4 lg:sticky lg:top-20 space-y-4">
+          {/* HIỂN THỊ MÃ GIỮ CHỖ / VÉ ĐIỆN TỬ INLINE KHI ĐÃ ĐẶT */}
+          {showQrModal && bookingConfirmed ? (
+            <div className="bg-white rounded-lg p-5 border-2 border-[#0369a1] shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                <div>
+                  <span className="text-[14px] font-bold text-emerald-700 block">
+                    {paymentDone ? "Đã xác nhận giữ chỗ" : "Đơn đặt sân đã tạo"}
+                  </span>
+                  <h3 className="text-lg font-bold text-slate-900">Phiếu Giữ Chỗ Điện Tử</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowQrModal(false)}
+                  className="text-[14px] font-bold text-slate-500 hover:text-slate-900 cursor-pointer"
+                >
+                  Đóng
+                </button>
+              </div>
 
- {/* Tóm tắt cọc */}
- <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2 text-[14px]">
- <div className="flex justify-between">
- <span className="text-slate-500">Cụm sân:</span>
- <strong className="text-slate-900 ">{venueData.name}</strong>
- </div>
- <div className="flex justify-between">
- <span className="text-slate-500">Mặt sân & Khung giờ:</span>
-  <strong className="text-sky-700 ">{pitchTypeLabel(selectedSlot.courtName) || selectedSlot.courtName} • {selectedSlot.time}</strong>
- </div>
- <div className="flex justify-between">
- <span className="text-slate-500">Mã vé đặt:</span>
- <strong className="font-mono text-[#0b4f6c] font-bold">{bookingConfirmed?.code || "—"}</strong>
- </div>
- <div className="flex justify-between pt-2 border-t border-slate-200 text-sm">
- <span className="font-bold text-slate-800 ">Mức cọc dự kiến ({depositOption}):</span>
- <strong className="font-mono text-sky-700 font-black text-base">
- {depositAmount.toLocaleString("vi-VN")} đ
- </strong>
- </div>
- </div>
+              <div className="bg-slate-50 rounded-md p-3.5 border border-slate-200 space-y-2 text-[14px]">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Mã đặt sân:</span>
+                  <strong className="font-mono text-[#0369a1]">{bookingConfirmed.code || "—"}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Cụm sân:</span>
+                  <strong className="text-slate-900 text-right">{venueData.name}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Sân &amp; Giờ đá:</span>
+                  <strong className="text-slate-900">
+                    {bookingConfirmed.courtName || selectedSlot?.courtName} •{" "}
+                    {bookingConfirmed.timeSlot || selectedSlot?.time}
+                  </strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Ngày đá:</span>
+                  <strong className="font-mono text-slate-900">{selectedDate}</strong>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-slate-200">
+                  <span className="font-bold text-slate-800">Số tiền cọc ({depositOption}):</span>
+                  <strong className="font-mono text-[#0369a1] font-bold text-base">
+                    {depositAmount.toLocaleString("vi-VN")}đ
+                  </strong>
+                </div>
+              </div>
 
- {/* Mã QR vé giữ chỗ (không phải mã ngân hàng) */}
- <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border-2 border-emerald-500 shadow-sm">
- <div className="w-44 h-44 flex items-center justify-center">
- <QrCode className="w-40 h-40 text-slate-900" />
- </div>
- <div className="text-center mt-2 text-[14px] text-slate-600">
- <span>Mã giữ chỗ: </span>
- <strong className="text-[#0b4f6c] font-mono text-sm">{bookingConfirmed?.code || "—"}</strong>
- </div>
- <p className="text-[14px] text-slate-500 mt-1">Liên hệ chủ sân để hoàn tất cọc và xác nhận ca.</p>
- </div>
+              <div className="flex flex-col items-center justify-center p-4 bg-white rounded-md border border-slate-300">
+                <QrCode className="w-36 h-36 text-slate-900" />
+                <span className="text-[14px] font-mono font-bold text-slate-800 mt-2">
+                  Mã vé: {bookingConfirmed.code || "—"}
+                </span>
+                <p className="text-[14px] text-slate-600 text-center mt-1">
+                  Xuất trình mã này hoặc đọc số điện thoại cho chủ sân khi đến nhận sân.
+                </p>
+              </div>
 
- <button
- type="button"
- onClick={handleCompletePayment}
- className="w-full py-3.5 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
- >
- <CheckCircle2 className="w-5 h-5 text-white" />
- <span>Đã Đặt Giữ Chỗ Thành Công</span>
- </button>
- </>
- ) : (
- /* Vé điện tử đã lưu  */
- <div className="text-center space-y-5 py-2">
- <div className="w-14 h-14 rounded-full bg-sky-100 text-sky-700 border-2 border-[#0369a1] mx-auto flex items-center justify-center">
- <CheckCircle2 className="w-8 h-8 text-emerald-500" />
- </div>
+              {!paymentDone ? (
+                <button
+                  type="button"
+                  onClick={handleCompletePayment}
+                  className="w-full py-3 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Hoàn Tất Giữ Chỗ</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQrModal(false);
+                    setSelectedSlot(null);
+                  }}
+                  className="w-full py-2.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[14px] cursor-pointer"
+                >
+                  Đặt Thêm Ca Khác
+                </button>
+              )}
+            </div>
+          ) : selectedSlot ? (
+            <div className="bg-white rounded-lg p-5 border border-slate-300 shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                <div className="flex items-center gap-2">
+                  <Receipt className="w-5 h-5 text-[#0369a1]" />
+                  <h3 className="font-bold text-base text-slate-900">Phiếu Đặt Sân</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSlot(null)}
+                  className="text-[14px] font-bold text-rose-600 hover:underline cursor-pointer"
+                >
+                  Bỏ chọn
+                </button>
+              </div>
 
- <div>
- <span className="px-3 py-1 rounded-full bg-[#0369a1]/10 text-sky-700 text-[14px] font-bold border border-[#0369a1]/30">
- Đơn giữ chỗ đã lưu vào hệ thống
- </span>
- <h3 className="text-2xl font-black text-slate-900 mt-2">Thẻ Vé Vào Sân Điện Tử</h3>
- <p className="text-[14px] text-slate-500 mt-1">Cho chủ sân xem mã này khi tới sân để check-in.</p>
- </div>
+              {/* Thông tin ca đã chọn */}
+              <div className="p-3.5 rounded-md bg-slate-50 border border-slate-200 space-y-2 text-[14px]">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Sân con:</span>
+                  <strong className="text-slate-900">
+                    {pitchTypeLabel(selectedSlot.courtName) || selectedSlot.courtName}
+                  </strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Ngày đặt:</span>
+                  <strong className="font-mono text-slate-900">{selectedDate}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Khung giờ:</span>
+                  <strong className="font-mono text-[#0369a1]">
+                    {fullDayBooking ? fullDayRange : selectedSlot.time}
+                  </strong>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-slate-200">
+                  <span className="font-bold text-slate-800">Tổng tiền sân:</span>
+                  <strong className="text-lg font-bold text-slate-900 font-mono">
+                    {totalPrice.toLocaleString("vi-VN")}đ
+                  </strong>
+                </div>
+              </div>
 
- <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
- <div className="w-36 h-36 bg-white rounded-xl p-2 mx-auto flex items-center justify-center border shadow-xs">
- <QrCode className="w-32 h-32 text-slate-900" />
- </div>
- <div className="text-[14px] space-y-1 text-slate-600 font-medium">
- <p className="font-mono text-sky-700 font-black text-sm">
- MÃ VÉ: {bookingConfirmed?.code || "—"}
- </p>
- <p className="font-bold text-slate-900 ">{venueData.name}</p>
- <p>{pitchTypeLabel(selectedSlot.courtName) || selectedSlot.courtName} • {selectedSlot.time}</p>
- <p className="text-slate-500 text-[14px]">Ngày đá: {selectedDate}</p>
- </div>
- </div>
+              {/* Tư cách đặt sân */}
+              <div className="space-y-2">
+                <label className="text-[14px] font-bold text-slate-700 block">
+                  Hình thức đứng tên đặt sân:
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBookingMode("INDIVIDUAL");
+                      setFullDayBooking(false);
+                    }}
+                    className={`py-2 px-3 rounded-md font-bold border text-[14px] cursor-pointer ${
+                      bookingMode === "INDIVIDUAL"
+                        ? "bg-[#0369a1] text-white border-[#0369a1]"
+                        : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    Cá nhân
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBookingMode("CLUB")}
+                    className={`py-2 px-3 rounded-md font-bold border text-[14px] cursor-pointer ${
+                      bookingMode === "CLUB"
+                        ? "bg-[#0369a1] text-white border-[#0369a1]"
+                        : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    Đại diện CLB
+                  </button>
+                </div>
 
- <button
- type="button"
- onClick={() => setShowQrModal(false)}
- className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-[14px] font-bold transition-colors"
- >
- Đóng & Xem Lịch Đặt
- </button>
- </div>
- )}
- </div>
- </div>
- )}
- </div>
- );
+                {bookingMode === "CLUB" && (
+                  <div className="p-3 rounded-md bg-slate-50 border border-slate-300 space-y-2 text-[14px]">
+                    <span className="font-bold text-slate-800 block">Tên CLB / Đội bóng:</span>
+                    {myClubs.length > 0 && (
+                      <select
+                        value={selectedClubName}
+                        onChange={(e) => setSelectedClubName(e.target.value)}
+                        className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-slate-900 font-semibold text-[14px]"
+                      >
+                        {myClubs.map((c) => (
+                          <option key={c.id || c.name} value={c.name}>
+                            {c.name} ({c.memberCount || 0} thành viên)
+                          </option>
+                        ))}
+                        <option value="__CUSTOM__">+ Nhập tên CLB khác...</option>
+                      </select>
+                    )}
+
+                    {(myClubs.length === 0 || selectedClubName === "__CUSTOM__") && (
+                      <input
+                        type="text"
+                        placeholder="Nhập tên CLB / Đội bóng..."
+                        value={customClubName}
+                        onChange={(e) => setCustomClubName(e.target.value)}
+                        className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-slate-900 text-[14px] font-semibold"
+                      />
+                    )}
+
+                    <label className="flex items-start gap-2 pt-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={fullDayBooking}
+                        disabled={!fullDayAvailable}
+                        onChange={(e) => setFullDayBooking(e.target.checked)}
+                        className="mt-1 accent-[#0369a1]"
+                      />
+                      <span className="text-[14px]">
+                        <strong className="text-slate-900">Bao sân cả ngày ({fullDayRange})</strong>
+                        <span className="block text-slate-600">
+                          {fullDayAvailable
+                            ? `Trọn ngày: ${fullDayTotal.toLocaleString("vi-VN")}đ`
+                            : "Sân đã có người đặt lẻ ca nên không thể bao cả ngày."}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* Mức đặt cọc */}
+              <div className="space-y-2">
+                <label className="text-[14px] font-bold text-slate-700 block">
+                  Mức thanh toán giữ chỗ:
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDepositOption("50%")}
+                    className={`p-2.5 rounded-md border text-left cursor-pointer ${
+                      depositOption === "50%"
+                        ? "bg-sky-50 border-[#0369a1] text-slate-900"
+                        : "bg-white border-slate-300 text-slate-700"
+                    }`}
+                  >
+                    <div className="font-bold text-[14px]">Đặt cọc 50%</div>
+                    <div className="font-mono font-bold text-[#0369a1] text-[15px]">
+                      {Math.round(totalPrice * 0.5).toLocaleString("vi-VN")}đ
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDepositOption("100%")}
+                    className={`p-2.5 rounded-md border text-left cursor-pointer ${
+                      depositOption === "100%"
+                        ? "bg-sky-50 border-[#0369a1] text-slate-900"
+                        : "bg-white border-slate-300 text-slate-700"
+                    }`}
+                  >
+                    <div className="font-bold text-[14px]">Trả đủ 100%</div>
+                    <div className="font-mono font-bold text-slate-900 text-[15px]">
+                      {totalPrice.toLocaleString("vi-VN")}đ
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Chia tiền sân nhanh */}
+              <div className="p-3 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-between gap-2 text-[14px]">
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-600">Chia cho:</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={40}
+                    value={splitCount}
+                    onChange={(e) =>
+                      setSplitCount(Math.min(40, Math.max(1, Number(e.target.value) || 1)))
+                    }
+                    aria-label="Số người chia tiền"
+                    className="w-14 px-2 py-1 rounded border border-slate-300 bg-white font-mono font-bold text-center"
+                  />
+                  <span className="text-slate-600">người</span>
+                </div>
+                <strong className="font-mono text-[#0369a1]">
+                  ~{splitPerPlayer.toLocaleString("vi-VN")}đ/người
+                </strong>
+              </div>
+
+              {/* Nút xác nhận đặt */}
+              <button
+                type="button"
+                onClick={handleStartBooking}
+                disabled={isBooking}
+                className="w-full py-3 px-4 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {isBooking ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>{fullDayBooking ? "Xác Nhận Bao Sân Cả Ngày" : "Xác Nhận Đặt Sân"}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg p-6 border border-slate-300 text-center space-y-2">
+              <Calendar className="w-8 h-8 text-[#0369a1] mx-auto" />
+              <h3 className="font-bold text-base text-slate-900">Chưa chọn khung giờ</h3>
+              <p className="text-[14px] text-slate-600">
+                Vui lòng bấm chọn một khung giờ còn trống ở bảng bên trái để tiến hành đặt sân.
+              </p>
+            </div>
+          )}
+
+          {/* Thông tin liên hệ chủ sân */}
+          <div className="p-4 bg-white rounded-lg border border-slate-300 flex items-center justify-between gap-3">
+            <div>
+              <span className="font-bold text-[14px] text-slate-900 block">
+                Chủ sân: {venueData.ownerName}
+              </span>
+              <span className="text-[14px] text-slate-600 font-mono block">
+                SĐT: {venueData.phone}
+              </span>
+            </div>
+            <a
+              href={`tel:${venueData.phone}`}
+              className="px-3.5 py-2 rounded-md bg-slate-100 hover:bg-slate-200 text-[#0369a1] border border-slate-300 font-bold text-[14px] flex items-center gap-1.5 shrink-0"
+            >
+              <PhoneCall className="w-4 h-4" />
+              <span>Gọi điện</span>
+            </a>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
 }
-
-
