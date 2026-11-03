@@ -37,6 +37,7 @@ import {
  Mail,
   Copy, Check, Send, CreditCard, ExternalLink, Clock, UserCheck,
  Trophy,
+  Share2,
  ShieldCheck, MessageCircle,
  Cpu,
  Activity,
@@ -783,71 +784,56 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  </div>
 
- <h1 className="text-lg sm:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
- <span>Quản Lý Giải Đấu</span>
- <Award className="w-8 h-8 text-amber-700 shrink-0 hidden sm:inline-block" />
- </h1>
- <p className="text-sm text-slate-600 max-w-2xl font-medium leading-relaxed hidden sm:block">
- 
- </p>
- </div>
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2.5">
+            <span>Quản Lý Giải Đấu</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[13px] font-bold">
+              {loadingDb ? "Đang tải…" : `${dbTournaments.length} giải`}
+            </span>
+          </h1>
+          <p className="text-[13px] text-slate-500 mt-1">
+            Bốc thăm chia nhánh, duyệt hồ sơ đội bóng tham gia và điều hành kết quả thi đấu.
+          </p>
+        </div>
 
- {/* Thông báo kết quả thao tác. Trước đây setVarNotice() được gọi ở nhiều nơi
- nhưng không có chỗ nào render nó, nên mọi phản hồi đều vô hình với người dùng. */}
- {varNotice && (
- <div className="mt-4 flex items-start gap-3 rounded-2xl border border-[#0369a1]/25 bg-[#0369a1]/5 px-4 py-3 animate-fade-in">
- <AlertCircle className="w-4 h-4 text-[#0b4f6c] shrink-0 mt-0.5" />
- <p className="text-[14px] sm:text-sm font-bold text-slate-700 leading-relaxed flex-1">{varNotice}</p>
- <button
- type="button"
- onClick={() => setVarNotice(null)}
- className="shrink-0 rounded-lg p-1 text-slate-500 hover:text-slate-800 hover:bg-white transition-colors"
- aria-label="Đóng thông báo"
- >
- <X className="w-4 h-4" />
- </button>
- </div>
- )}
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={fetchDbTournaments}
+            disabled={loadingDb}
+            className="px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[13px] font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loadingDb ? "animate-spin" : ""}`} />
+            <span>Tải Lại</span>
+          </button>
 
- {/* Action Header Buttons */}
- <div className="flex flex-wrap items-center gap-3">
- <button
- onClick={() => window.print()}
- className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold border border-slate-200 transition-all flex items-center space-x-2 active:scale-95 shadow-xs"
- >
- <Download className="w-4 h-4 text-[#0369a1]" />
- <span>Xuất Báo Cáo</span>
- </button>
+          <Link
+            href="/tournaments/new"
+            className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>+ Tạo Giải Mới</span>
+          </Link>
+        </div>
+      </div>
+    </div>
 
- <button
- onClick={() =>
- setVarNotice(
- `Hệ thống hiện có ${dbTournaments.length} giải đấu. Duyệt hồ sơ VĐV nằm ở mục Chợ Kèo của hệ thống.`
- )
- }
- className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold border border-slate-200 transition-all flex items-center space-x-2 relative active:scale-95 shadow-xs"
- >
- <Users className="w-4 h-4 text-amber-600" />
- <span>Giải đang quản lý</span>
- <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[14px] font-black flex items-center justify-center">
- {dbTournaments.length}
- </span>
- </button>
+    {varNotice && (
+      <div className="mt-3 flex items-start gap-2.5 rounded-lg border border-sky-200 bg-sky-50 px-3.5 py-2.5 animate-fade-in text-[13px]">
+        <AlertCircle className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
+        <p className="font-bold text-sky-900 flex-1">{varNotice}</p>
+        <button
+          type="button"
+          onClick={() => setVarNotice(null)}
+          className="text-slate-400 hover:text-slate-700 cursor-pointer"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    )}
 
- <Link
- href="/tournaments/new"
- className="px-4 py-2.5 sm:px-5 rounded-xl text-[14px] font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-[#0369a1] hover:bg-[#075985] text-white"
- >
- <Plus className="w-4 h-4 stroke-[3]" />
- <span>+ Tạo Giải Mới</span>
- 
- </Link>
- </div>
- </div>
-
- {/* Form tạo giải đã chuyển sang trang wizard riêng: /tournaments/new (4 bước) */}
-
- {/* SPORT CATEGORY FILTERS */}
+    {/* SPORT CATEGORY FILTERS */}
  <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
  <div className="flex flex-wrap items-center gap-2">
  <span className="text-[14px] font-bold text-slate-500 mr-2 flex items-center gap-1.5 whitespace-nowrap">
@@ -1138,7 +1124,31 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </p>
  )}
 
- {/* Bảng điểm */}
+ {!umpireMatch ? (
+              <div className="p-6 text-center rounded-xl bg-slate-50 border border-dashed border-slate-300 space-y-2">
+                <Activity className="w-8 h-8 text-slate-300 mx-auto" />
+                <p className="text-sm font-bold text-slate-700">
+                  {activeTournament ? `Giải “${activeTournament.title}” chưa có trận đấu nào được chọn để điều hành.` : "Chưa chọn giải đấu nào."}
+                </p>
+                <p className="text-[13px] text-slate-500 max-w-md mx-auto">
+                  {activeBracket
+                    ? "Vui lòng chọn một trận đấu ở menu bên trên hoặc xem nhánh đấu để cập nhật kết quả thi đấu."
+                    : "Giải đấu chưa bốc thăm chia nhánh. Vui lòng bấm “Bốc Thăm & Nhánh Đấu” bên dưới để tạo lịch thi đấu."}
+                </p>
+                {activeTournament && !activeBracket && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenBracket?.(String(activeTournament.id))}
+                    className="mt-2 px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Bốc Thăm &amp; Nhánh Đấu</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Bảng điểm */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 items-center bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200">
  <div className="p-4 sm:p-6 rounded-2xl border border-sky-300 bg-white">
  <div className="flex items-center justify-between mb-2">
@@ -1215,7 +1225,11 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  )}
 
- {umpireMsg && (
+ 
+              </>
+            )}
+
+            {umpireMsg && (
  <p className="mt-4 p-3 rounded-xl bg-slate-100 text-[14px] font-bold text-slate-700 ">
  {umpireMsg}
  </p>
@@ -2145,405 +2159,128 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  </div>
- {/* RIGHT 4 COLS: THỐNG KÊ GIẢI + QUỸ THƯỞNG THẬT */}
- <div className="lg:col-span-4 space-y-4 sm:space-y-8">
+ {/* RIGHT 4 COLS: TỔNG QUAN GIẢI ĐẤU ĐANG CHỌN (TOURNAMENT SNAPSHOT) */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="bg-white border border-slate-300 text-slate-900 rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
+            <div className="flex items-center space-x-2.5 border-b border-slate-100 pb-3">
+              <div className="w-8 h-8 rounded-lg bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center shrink-0">
+                <Trophy className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[12px] font-bold text-sky-800">Thông tin giải đấu</span>
+                <h4 className="text-base font-bold text-slate-900 truncate">
+                  {activeTournament ? activeTournament.title : "Chưa chọn giải"}
+                </h4>
+              </div>
+            </div>
 
- {/* 1. THỐNG KÊ GIẢI ĐẤU (đếm ) */}
- <div className="bg-white border border-slate-200 text-slate-900 rounded-lg p-4 sm:p-6 shadow-xl space-y-3 sm:space-y-6">
- <div className="flex items-center space-x-3 border-b border-slate-200 pb-4">
- <div className="w-9 h-9 rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/30 flex items-center justify-center text-sky-700 shrink-0">
- <Cpu className="w-5 h-5" />
- </div>
- <div>
- <span className="text-[14px] font-black text-sky-700 tracking-wider">
- Thống kê giải đấu
- </span>
- <h4 className="text-base font-black text-slate-900 ">Đăng Ký &amp; Nhánh Đấu</h4>
- </div>
- </div>
-
- <div className="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200 space-y-3">
- {activeTournament ? (
- <>
- <div className="flex items-center justify-between text-[14px]">
- <span className="text-slate-500 font-bold">Đội đã đăng ký:</span>
- <span className="text-sky-800 font-mono font-black">
- {(activeTournament.teams?.length ?? 0)}/{activeTournament.totalTeams ?? 0}
- </span>
- </div>
- <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
- <div
- className="h-full bg-emerald-400 transition-all"
- style={{
- width: `${
- activeTournament.totalTeams
- ? Math.min(
- 100,
- Math.round(
- ((activeTournament.teams?.length ?? 0) / activeTournament.totalTeams) * 100
- )
- )
- : 0
- }%`,
- }}
- />
- </div>
- <div className="flex items-center justify-between text-[14px]">
- <span className="text-slate-500 font-bold">Lệ phí mỗi đội:</span>
- <span className="font-mono font-black">{formatMoney(activeTournament.entryFee ?? 0)}</span>
- </div>
- <div className="flex items-center justify-between text-[14px]">
- <span className="text-slate-500 font-bold">Đội chờ xác nhận lệ phí:</span>
- <span className="font-mono font-black text-amber-600 ">
- {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT").length}
- </span>
- </div>
-
-  {/* Danh sách đội chờ xác nhận lệ phí - hiển thị INLINE tại chỗ */}
-  {((activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT")).length > 0 && (
-  <div className="rounded-xl border border-amber-300 bg-amber-50/70 p-3 space-y-2 mt-2">
-    <div className="flex items-center justify-between">
-      <span className="text-[14px] font-black text-amber-800 flex items-center gap-1.5">
-        <Users2 className="w-4 h-4 text-amber-600" />
-        Đội chờ BTC xác nhận thu phí
-      </span>
-      <span className="text-[14px] font-bold text-amber-700 font-mono">
-        {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT").length} đội
-      </span>
-    </div>
-    <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-      {(activeTournament.teams ?? [])
-        .filter((z: any) => z.registrationStatus === "PENDING_PAYMENT")
-        .map((tm: any) => (
-          <div
-            key={tm.teamName}
-            className="p-2.5 rounded-lg bg-white border border-amber-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-xs"
-          >
-            <div className="min-w-0">
-              <p className="text-[14px] font-black text-slate-900 truncate">{tm.teamName}</p>
-              <p className="text-[14px] text-slate-500">
-                {tm.captainName || "Đội trưởng"} · {tm.captainPhone || "—"} ({tm.memberCount || 12} cầu thủ)
+            {!activeTournament ? (
+              <p className="text-[13px] text-slate-500 py-4 text-center">
+                Vui lòng chọn một giải đấu ở danh sách phía trên để xem tổng quan.
               </p>
-            </div>
-            <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
-              <button
-                type="button"
-                onClick={() => handleConfirmTeamFee(activeTournament.id, tm.teamName)}
-                disabled={confirmingTeamFee === tm.teamName}
-                className="px-2.5 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[14px] font-black transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1"
-              >
-                {confirmingTeamFee === tm.teamName ? (
-                  <>
-                    <RefreshCw className="w-3 h-3 animate-spin" />
-                    <span>Đang duyệt…</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span>Đã thu phí</span>
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleReject(activeTournament.id, tm.teamName)}
-                disabled={pendingBusy}
-                className="px-2 py-1 rounded-md bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-[14px] font-bold transition-all active:scale-95"
-                title="Từ chối đội này"
-              >
-                Từ chối
-              </button>
-            </div>
+            ) : (
+              <>
+                {/* Thanh tiến độ đăng ký */}
+                <div className="space-y-1.5 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <div className="flex items-center justify-between text-[13px]">
+                    <span className="text-slate-600 font-medium">Đội tham gia:</span>
+                    <span className="font-bold text-slate-900">
+                      {confirmedCount(activeTournament)}/{activeTournament.totalTeams ?? "—"} đội
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500 transition-all duration-300"
+                      style={{
+                        width: `${
+                          activeTournament.totalTeams
+                            ? Math.min(100, Math.round((confirmedCount(activeTournament) / activeTournament.totalTeams) * 100))
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[12px] text-slate-500 pt-0.5">
+                    <span>Trạng thái</span>
+                    <span className="font-bold text-emerald-700">
+                      {(confirmedCount(activeTournament) >= (activeTournament.totalTeams ?? 16)) ? "Đã đủ đội" : "Đang mở đăng ký"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Bảng thông số chi tiết */}
+                <div className="space-y-2 text-[13px]">
+                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                    <span className="text-slate-500">Môn thi đấu:</span>
+                    <span className="font-bold text-slate-900">{sportLabel(activeTournament.sportType)}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                    <span className="text-slate-500">Thể thức:</span>
+                    <span className="font-bold text-slate-900">{formatLabel(activeTournament.format)}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                    <span className="text-slate-500">Lệ phí giải:</span>
+                    <span className="font-bold font-mono text-slate-900">{formatMoney(activeTournament.entryFee ?? 0)}/đội</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                    <span className="text-slate-500">Tổng quỹ thưởng:</span>
+                    <span className="font-bold font-mono text-sky-800">{formatMoney(activeTournament.prizePool ?? 0)}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                    <span className="text-slate-500">Cụm sân:</span>
+                    <span className="font-bold text-slate-900 text-right truncate">
+                      {activeTournament.pitchName ?? activeTournament.location ?? "Chưa xếp sân"}
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                    <span className="text-slate-500">Khởi tranh:</span>
+                    <span className="font-bold text-slate-900">{formatDate(activeTournament.startDate)}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                    <span className="text-slate-500">Hạn đăng ký:</span>
+                    <span className="font-bold text-slate-900">{formatDate(activeTournament.registrationDeadline)}</span>
+                  </div>
+                </div>
+
+                {/* Hàng nút thao tác nhanh */}
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={handleCopyInviteLink}
+                    className="w-full py-2.5 px-3 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span>Sao Chép Link Đăng Ký</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(activeTournament)}
+                    className="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold border border-slate-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Sửa Thông Tin Giải</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        ))}
-    </div>
-  </div>
-  )}
- </>
- ) : (
- <p className="text-[14px] text-slate-500">Chưa chọn được giải nào .</p>
- )}
- </div>
 
- <button
- onClick={() => onOpenBracket?.(String(activeTournament?.id))}
- className="w-full py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
- >
- <Sparkles className="w-4 h-4" />
- <span>Bốc Thăm &amp; Nhánh Đấu</span>
- </button>
- 
-  {/* Thêm đội thủ công — BTC nhập tay đội vào giải (không qua form đăng ký của cầu thủ) */}
-  <button
-  type="button"
-  onClick={() => setShowAddTeamForm((v) => !v)}
-  disabled={!activeTournament}
-  className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[14px] font-black shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-  title="Nhập tay một đội bóng vào giải (đội trưởng, SĐT, số cầu thủ) — đội được đánh dấu đã đóng phí nên sẵn sàng bốc thăm"
-  >
-  <UserPlus className="w-4 h-4" />
-  <span>Thêm Đội Thủ Công</span>
-  </button>
-  {/* FORM THÊM ĐỘI THỦ CÔNG — hiển thị INLINE tại chỗ (KHÔNG dùng popup/modal) */}
-  {showAddTeamForm && (
-  <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 p-3.5 space-y-3">
-   <div className="flex items-center justify-between gap-2">
-    <span className="text-[14px] font-black tracking-wider text-emerald-800 flex items-center gap-1.5">
-     <UserPlus className="w-3.5 h-3.5" /> Thêm đội thủ công vào giải
-    </span>
-    <button
-     type="button"
-     onClick={() => setShowAddTeamForm(false)}
-     className="text-emerald-700 hover:text-emerald-900 p-0.5"
-     aria-label="Đóng form thêm đội"
-    >
-     <X className="w-3.5 h-3.5" />
-    </button>
-   </div>
-
-   <input
-    type="text"
-    value={addTeamForm.teamName}
-    onChange={(e) => setAddTeamForm((f) => ({ ...f, teamName: e.target.value }))}
-    placeholder="Tên đội * — VD: FC Đại Việt Đà Nẵng"
-    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-   />
-   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-    <input
-     type="text"
-     value={addTeamForm.captainName}
-     onChange={(e) => setAddTeamForm((f) => ({ ...f, captainName: e.target.value }))}
-     placeholder="Đội trưởng"
-     className="px-3 py-2 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-    />
-    <input
-     type="tel"
-     value={addTeamForm.captainPhone}
-     onChange={(e) => setAddTeamForm((f) => ({ ...f, captainPhone: e.target.value }))}
-     placeholder="Số điện thoại"
-     className="px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-    />
-    <input
-     type="number"
-     min={1}
-     max={30}
-     value={addTeamForm.memberCount}
-     onChange={(e) => setAddTeamForm((f) => ({ ...f, memberCount: Number(e.target.value) }))}
-     placeholder="Số cầu thủ"
-     aria-label="Số cầu thủ"
-     className="px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-    />
-   </div>
-   <p className="text-[14px] text-emerald-800/80 leading-relaxed">
-    Đội thêm tay được đánh dấu <strong>đã đóng lệ phí</strong> nên sẵn sàng bốc thăm. Danh sách đội sẽ đổi — cần bốc thăm lại.
-   </p>
-   <div className="flex items-center gap-2">
-    <button
-     type="button"
-     onClick={() => setShowAddTeamForm(false)}
-     className="px-3 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-[14px] font-extrabold border border-slate-200 transition-all active:scale-95"
-    >
-     Hủy
-    </button>
-    <button
-     type="button"
-     onClick={handleAddManualTeam}
-     disabled={addingTeam}
-     className="flex-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[14px] font-extrabold transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5"
-    >
-     {addingTeam ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
-     {addingTeam ? "Đang thêm…" : "Thêm vào giải"}
-    </button>
-   </div>
-  </div>
-  )}
-  <button
-    onClick={handleCreateRandomTournament}
-    className="w-full py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-[14px] border-2 border-dashed border-slate-300 transition-all flex items-center justify-center space-x-2 active:scale-95"
-    title="Tự động tạo giải thử (16 đội, loại trực tiếp, sân ngẫu nhiên) + bốc thăm ngay"
-  >
-    <RefreshCw className="w-4 h-4" />
-    <span>+ Giải Test Ngẫu Nhiên</span>
-  </button>
-  </div>
-
-  {/* ===== QUYỀN THAM GIA GIẢI (ai cũng tham gia / chỉ mời qua email) — hiển thị INLINE ===== */}
-  <div className="bg-white border border-slate-200 rounded-lg p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-5">
-   <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-    <div className="flex items-center space-x-2.5">
-     <div className="w-9 h-9 rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/30 flex items-center justify-center text-sky-700 shrink-0">
-      <ShieldCheck className="w-5 h-5" />
-     </div>
-     <div>
-      <span className="text-[14px] font-black text-sky-700 tracking-wider">
-       Quyền tham gia
-      </span>
-      <h4 className="text-sm font-black text-slate-900 ">
-       {activeTournament ? activeTournament.title : "Chưa chọn giải"}
-      </h4>
-     </div>
-    </div>
-    {activeTournament && (
-     <span className={`px-2.5 py-1 rounded-full text-[14px] font-black border ${
-      joinMode === "INVITE_ONLY"
-       ? "bg-amber-100 text-amber-800 border-amber-300"
-       : "bg-emerald-100 text-emerald-800 border-emerald-300"
-     }`}>
-      {joinMode === "INVITE_ONLY" ? "🔒 Chỉ mời qua email" : "🔓 Ai cũng tham gia"}
-     </span>
-    )}
-   </div>
-
-   {!activeTournament ? (
-    <p className="text-[14px] text-slate-500">Chọn một giải ở danh sách bên trái để đặt quyền tham gia.</p>
-   ) : (
-    <>
-     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-      {/* Ai cũng tham gia */}
-      <button
-       type="button"
-       onClick={() => handleSaveAccess("PUBLIC")}
-       disabled={accessBusy || joinMode === "PUBLIC"}
-       className={`p-3.5 rounded-2xl border-2 text-left transition-all disabled:opacity-70 ${
-        joinMode === "PUBLIC"
-         ? "border-emerald-400 bg-emerald-50 shadow-xs"
-         : "border-slate-200 bg-white hover:border-emerald-300"
-       }`}
-      >
-       <div className="flex items-center gap-2">
-        <Unlock className={`w-4 h-4 ${joinMode === "PUBLIC" ? "text-emerald-600" : "text-slate-400"}`} />
-        <span className="text-[14px] font-black text-slate-900">Mở tự do</span>
-       </div>
-       <p className="text-[14px] text-slate-500 mt-1 leading-relaxed">
-        
-       </p>
-      </button>
-
-      {/* Chỉ mời qua email */}
-      <button
-       type="button"
-       onClick={() => handleSaveAccess("INVITE_ONLY")}
-       disabled={accessBusy || joinMode === "INVITE_ONLY"}
-       className={`p-3.5 rounded-2xl border-2 text-left transition-all disabled:opacity-70 ${
-        joinMode === "INVITE_ONLY"
-         ? "border-amber-400 bg-amber-50 shadow-xs"
-         : "border-slate-200 bg-white hover:border-amber-300"
-       }`}
-      >
-       <div className="flex items-center gap-2">
-        <Lock className={`w-4 h-4 ${joinMode === "INVITE_ONLY" ? "text-amber-700" : "text-slate-400"}`} />
-        <span className="text-[14px] font-black text-slate-900">Chỉ mời qua email</span>
-       </div>
-       <p className="text-[14px] text-slate-500 mt-1 leading-relaxed">
-        
-       </p>
-      </button>
-     </div>
-
-     {/* Danh sách email mời */}
-     {joinMode === "INVITE_ONLY" && (
-      <div className="space-y-2.5 pt-1">
-       <div className="flex items-center gap-2">
-        <input
-         type="email"
-         value={inviteInput}
-         onChange={(e) => setInviteInput(e.target.value)}
-         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddInvite(); } }}
-         placeholder="Nhập email cầu thủ / đội trưởng rồi Enter"
-         className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
-        />
-        <button
-         type="button"
-         onClick={handleAddInvite}
-         disabled={accessBusy || !inviteInput.trim()}
-         className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-[14px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5 whitespace-nowrap"
-        >
-         <Plus className="w-3.5 h-3.5" />
-         Mời
-        </button>
-       </div>
-
-       {inviteEmails.length === 0 ? (
-        <p className="text-[14px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-         Chưa có email nào được mời. Cho tới khi có email trong danh sách, không ai đăng ký được vào giải này.
-        </p>
-       ) : (
-        <div className="flex flex-wrap gap-1.5">
-         {inviteEmails.map((em) => (
-          <span key={em} className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-[14px] font-mono font-bold">
-           {em}
-           <button
-            type="button"
-            onClick={() => handleRemoveInvite(em)}
-            disabled={accessBusy}
-            aria-label={`Gỡ lời mời ${em}`}
-            className="w-4 h-4 rounded-full hover:bg-amber-300 flex items-center justify-center transition-colors"
-           >
-            <X className="w-3 h-3" />
-           </button>
-          </span>
-         ))}
+          {/* Kênh liên lạc B2B với Chủ Sân (nếu có) */}
+          {user?.role === "ORGANIZER" && onOpenTournamentChat && (
+            <button
+              type="button"
+              onClick={onOpenTournamentChat}
+              className="w-full px-4 py-3 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-[13px] transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+            >
+              <MessageCircle className="w-4 h-4 text-[#0369a1]" />
+              <span>Phòng Chat Giải Đấu</span>
+            </button>
+          )}
         </div>
-       )}
-       <p className="text-[14px] text-slate-500">
-        Đã mời {inviteEmails.length} email. Cầu thủ chỉ đăng ký được khi đăng nhập đúng một email trong danh sách này.
-       </p>
       </div>
-     )}
-    </>
-   )}
-  </div>
- {/* 3. THÔNG TIN SÂN & THỜI GIAN THI ĐẤU (thật) */}
- <div className="bg-white border border-slate-200 rounded-lg p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
- <h4 className="text-[14px] font-black text-slate-500">
- Thông Tin Giải Đấu
- </h4>
 
- {!activeTournament ? (
- <p className="text-[14px] text-slate-500">Chưa chọn được giải.</p>
- ) : (
- <div className="space-y-2 text-[14px]">
- {[
- { label: "Thể thức môn", value: sportLabel(activeTournament.sportType) },
- { label: "Danh sách thi", value: formatLabel(activeTournament.format) },
- { label: "Ngày mở", value: activeTournament.startDate ?? "—" },
- { label: "Ngày kết thúc", value: activeTournament.endDate ?? "—" },
- { label: "Sân thi đấu", value: activeTournament.pitchName ?? activeTournament.location ?? "—" },
- { label: "Hạn đăng ký", value: activeTournament.registrationDeadline ?? "—" },
- ].map((r) => (
- <div
- key={r.label}
- className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2"
- >
- <span className="text-slate-500 shrink-0">{r.label}</span>
- <span className="font-bold text-slate-900 text-right truncate">{r.value}</span>
- </div>
- ))}
- </div>
- )}
- </div>
-
- </div>
-
-  {/* Kênh liên lạc B2B với Chủ Sân */}
-  {user?.role === "ORGANIZER" && (
-  <>
-  {onOpenTournamentChat && (
-  <button
-  type="button"
-  onClick={onOpenTournamentChat}
-  title="Vào phòng chat riêng của giải đấu để trao đổi với đội bóng và cầu thủ"
-  className="w-full mb-3 px-4 py-3 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
-  >
-  <MessageCircle className="w-4 h-4" />
-  <span>Chat Giải Đấu — trao đổi với đội bóng & cầu thủ</span>
-  </button>
-  )}
-  <BusinessContacts viewerRole="ORGANIZER" onStartDm={onStartDm} />
-  </>
-  )}
-
- {/* MODAL SỬA THÔNG TIN GIẢI ĐẤU */}
+      {/* MODAL SỬA THÔNG TIN GIẢI ĐẤU */}
  {showEditModal && (
  <div id="edit-tournament-inline" className="w-full animate-fade-in">
  <div className="bg-white rounded-lg shadow-sm w-full max-w-2xl mx-auto border border-slate-200 overflow-hidden">
