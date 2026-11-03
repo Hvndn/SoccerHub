@@ -38,6 +38,8 @@ export interface AdminBooking {
   via?: string | null;
   code?: string | null;
   createdAt?: string | null;
+  isClubBooking?: boolean | null;
+  clubName?: string | null;
 }
 
 export interface AdminPitch {

@@ -628,7 +628,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
          <h1 className="text-base sm:text-xl font-black text-slate-900 truncate">
            {hasUser ? `Xin chào, ${userName}` : "Tìm & Đặt Sân Turfzone"}
          </h1>
-         <div className="flex flex-wrap items-center gap-2 text-[13px] text-slate-600 font-bold mt-0.5">
+         <div className="flex flex-wrap items-center gap-2 text-[14px] text-slate-600 font-bold mt-0.5">
            <span>⚽ {user?.position ?? "Cầu thủ"}</span>
            <span>•</span>
            <span>📍 {user?.area ?? "Đà Nẵng"}</span>
@@ -646,7 +646,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
        <button
          type="button"
          onClick={() => setShowQrModal(true)}
-         className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-[13px] transition-all flex items-center gap-1.5 cursor-pointer"
+         className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-[14px] transition-all flex items-center gap-1.5 cursor-pointer"
        >
          <QrCode className="w-4 h-4 text-[#0369a1]" />
          <span>Mã QR</span>
@@ -655,7 +655,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
          type="button"
          onClick={askAiRecommend}
          disabled={aiLoading || realPitches.length === 0}
-         className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[13px] shadow-sm transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+         className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] shadow-sm transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
        >
          {aiLoading ? (
            <><Loader2 className="w-4 h-4 animate-spin" /><span>Đang lọc…</span></>
@@ -671,10 +671,10 @@ const toSportTabs = (types?: string[] | null): string[] =>
        {aiResults.map((r, i) => (
          <div key={r.id} className="rounded-xl border border-[#0369a1]/40 bg-sky-50/50 p-3 flex items-center justify-between gap-2">
            <div className="min-w-0">
-             <span className="text-[13px] font-black text-sky-800">Top #{i + 1} • {Math.round(r.compatibility_score ?? 0)}đ</span>
-             <p className="text-[13px] font-black text-slate-900 truncate">{r.name}</p>
+             <span className="text-[14px] font-black text-sky-800">Top #{i + 1} • {Math.round(r.compatibility_score ?? 0)}đ</span>
+             <p className="text-[14px] font-black text-slate-900 truncate">{r.name}</p>
            </div>
-           <span className="text-[13px] font-mono font-black text-sky-700 shrink-0">
+           <span className="text-[14px] font-mono font-black text-sky-700 shrink-0">
              {Math.round(Number(r.avg_price_per_hour || 0) / 1000)}k/h
            </span>
          </div>
@@ -705,7 +705,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
            key={tab.id}
            type="button"
            onClick={() => setSelectedSport(tab.id)}
-           className={`px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+           className={`px-3 py-1.5 rounded-xl text-[14px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
              selectedSport === tab.id
                ? "bg-[#0369a1] text-white shadow-xs"
                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -720,7 +720,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
      <button
        type="button"
        onClick={() => setOnlyAvailableTonight(!onlyAvailableTonight)}
-       className={`px-3 py-1.5 rounded-xl text-[13px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+       className={`px-3 py-1.5 rounded-xl text-[14px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
          onlyAvailableTonight
            ? "bg-[#0369a1]/10 border-[#0369a1] text-sky-700"
            : "bg-slate-50 border-slate-200 text-slate-600"
@@ -738,7 +738,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
          aria-label="Khu vực"
          value={selectedDistrict}
          onChange={(e) => setSelectedDistrict(e.target.value)}
-         className="w-full bg-transparent text-[13px] font-bold text-slate-900 focus:outline-none cursor-pointer"
+         className="w-full bg-transparent text-[14px] font-bold text-slate-900 focus:outline-none cursor-pointer"
        >
          {districtList.map((d) => (
            <option key={d.id} value={d.id}>{d.name}</option>
@@ -752,7 +752,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
          aria-label="Khung giờ"
          value={selectedTimeSlotFilter}
          onChange={(e) => setSelectedTimeSlotFilter(e.target.value)}
-         className="w-full bg-transparent text-[13px] font-bold text-slate-900 focus:outline-none cursor-pointer"
+         className="w-full bg-transparent text-[14px] font-bold text-slate-900 focus:outline-none cursor-pointer"
        >
          <option value="ALL">Mọi khung giờ</option>
          <option value="PEAK">⭐ Giờ vàng (18h - 20h)</option>
@@ -767,7 +767,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
          aria-label="Loại sân"
          value={selectedPitchFormat}
          onChange={(e) => setSelectedPitchFormat(e.target.value)}
-         className="w-full bg-transparent text-[13px] font-bold text-slate-900 focus:outline-none cursor-pointer"
+         className="w-full bg-transparent text-[14px] font-bold text-slate-900 focus:outline-none cursor-pointer"
        >
          <option value="ALL">Mọi cỡ sân</option>
          <option value="SAN_7">Sân 7 người</option>
@@ -779,7 +779,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
      <div className="bg-slate-50 rounded-xl px-3 py-2 border border-slate-200 flex items-center gap-2">
        <DollarSign className="w-4 h-4 text-emerald-500 shrink-0" />
        <div className="flex-1 min-w-0">
-         <div className="flex items-center justify-between text-[13px] font-bold">
+         <div className="flex items-center justify-between text-[14px] font-bold">
            <span className="text-slate-500">Tối đa</span>
            <span className="text-sky-700 font-mono font-black">{Math.round(maxBudget / 1000)}k/h</span>
          </div>
@@ -802,7 +802,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 sm:gap-6 items-start">
    {pitchLoadError && (
      <div className="xl:col-span-12 flex items-center justify-between gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-3.5">
-       <div className="flex items-center gap-2 text-[13px] font-bold text-amber-900">
+       <div className="flex items-center gap-2 text-[14px] font-bold text-amber-900">
          <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
          <span>{pitchLoadError}</span>
        </div>
@@ -810,7 +810,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
          type="button"
          onClick={fetchPitches}
          disabled={loadingRealPitches}
-         className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#0369a1] text-white text-[13px] font-bold"
+         className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#0369a1] text-white text-[14px] font-bold"
        >
          <RefreshCw className={`w-3.5 h-3.5 ${loadingRealPitches ? "animate-spin" : ""}`} />
          <span>Thử lại</span>
@@ -830,7 +830,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
        {loadingRealPitches ? (
          <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center space-y-2">
            <Loader2 className="w-7 h-7 text-[#0b4f6c] animate-spin mx-auto" />
-           <p className="text-[13px] font-bold text-slate-500">Đang tải danh sách sân...</p>
+           <p className="text-[14px] font-bold text-slate-500">Đang tải danh sách sân...</p>
          </div>
        ) : filteredPitches.length === 0 ? (
          <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center space-y-2 shadow-sm">
@@ -855,18 +855,18 @@ const toSportTabs = (types?: string[] | null): string[] =>
                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
 
                <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                 <span className="px-2.5 py-0.5 rounded-lg bg-slate-900/90 text-white font-extrabold text-[13px] flex items-center gap-1 border border-slate-700">
+                 <span className="px-2.5 py-0.5 rounded-lg bg-slate-900/90 text-white font-extrabold text-[14px] flex items-center gap-1 border border-slate-700">
                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                    <span>{pitch.pitchTypes?.[0] ? pitchTypeLabel(pitch.pitchTypes[0]) : pitch.sportBadge}</span>
                  </span>
                </div>
 
-               <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-[13px] font-bold">
+               <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-[14px] font-bold">
                  <span className="flex items-center gap-1 truncate">
                    <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                    <span className="truncate">{pitch.districtName}</span>
                  </span>
-                 <span className="bg-[#0369a1]/90 px-2 py-0.5 rounded-md text-[13px] font-mono">
+                 <span className="bg-[#0369a1]/90 px-2 py-0.5 rounded-md text-[14px] font-mono">
                    {pitch.openTime}-{pitch.closeTime}
                  </span>
                </div>
@@ -882,14 +882,14 @@ const toSportTabs = (types?: string[] | null): string[] =>
                      >
                        {pitch.name}
                      </h3>
-                     <p className="text-[13px] text-slate-500 font-medium truncate">
+                     <p className="text-[14px] text-slate-500 font-medium truncate">
                        {pitch.address}
                      </p>
                    </div>
                    {pitch.rating ? (
                      <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-lg shrink-0">
                        <Star className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
-                       <span className="font-extrabold text-[13px] text-slate-900">{pitch.rating}</span>
+                       <span className="font-extrabold text-[14px] text-slate-900">{pitch.rating}</span>
                      </div>
                    ) : null}
                  </div>
@@ -899,7 +899,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
                      {pitch.amenities.slice(0, 3).map((a: string) => (
                        <span
                          key={a}
-                         className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-800 font-bold text-[13px] border border-sky-200"
+                         className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-800 font-bold text-[14px] border border-sky-200"
                        >
                          {a}
                        </span>
@@ -915,7 +915,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
                      key={i}
                      type="button"
                      onClick={() => handleOpenPitch(pitch)}
-                     className="px-2.5 py-1 rounded-lg font-mono text-[13px] font-bold bg-slate-100 text-slate-800 hover:bg-[#0369a1] hover:text-white transition-all cursor-pointer"
+                     className="px-2.5 py-1 rounded-lg font-mono text-[14px] font-bold bg-slate-100 text-slate-800 hover:bg-[#0369a1] hover:text-white transition-all cursor-pointer"
                    >
                      {ts.time}
                    </button>
@@ -927,13 +927,13 @@ const toSportTabs = (types?: string[] | null): string[] =>
                    <span className="text-lg font-black text-sky-700 font-mono">
                      {Math.round(pitch.priceDiscounted / 1000)}k
                    </span>
-                   <span className="text-[13px] font-bold text-slate-500">/giờ • {pitch.slotDurationMinutes}p/ca</span>
+                   <span className="text-[14px] font-bold text-slate-500">/giờ • {pitch.slotDurationMinutes}p/ca</span>
                  </div>
 
                  <button
                    type="button"
                    onClick={() => handleOpenPitch(pitch)}
-                   className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[13px] shadow-sm transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
+                   className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] shadow-sm transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
                  >
                    <span>Đặt Sân</span>
                    <ChevronRight className="w-4 h-4" />
@@ -947,7 +947,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
        {/* Phân Trang 8 Sân / Trang */}
        {totalPages > 1 && (
          <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-200">
-           <span className="text-[13px] text-slate-500 font-bold">
+           <span className="text-[14px] text-slate-500 font-bold">
              Trang {currentPage}/{totalPages} ({filteredPitches.length} sân)
            </span>
            <div className="flex items-center gap-1.5 flex-wrap">
@@ -958,7 +958,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
                  setCurrentPage((p) => Math.max(1, p - 1));
                  window.scrollTo({ top: 300, behavior: "smooth" });
                }}
-               className="px-3 py-1.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 cursor-pointer"
+               className="px-3 py-1.5 rounded-xl border border-slate-200 text-[14px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 cursor-pointer"
              >
                Trước
              </button>
@@ -970,7 +970,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
                    setCurrentPage(page);
                    window.scrollTo({ top: 300, behavior: "smooth" });
                  }}
-                 className={`w-8 h-8 rounded-xl text-[13px] font-black cursor-pointer ${
+                 className={`w-8 h-8 rounded-xl text-[14px] font-black cursor-pointer ${
                    currentPage === page
                      ? "bg-[#0369a1] text-white"
                      : "border border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -986,7 +986,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
                  setCurrentPage((p) => Math.min(totalPages, p + 1));
                  window.scrollTo({ top: 300, behavior: "smooth" });
                }}
-               className="px-3 py-1.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 cursor-pointer"
+               className="px-3 py-1.5 rounded-xl border border-slate-200 text-[14px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 cursor-pointer"
              >
                Sau
              </button>
@@ -1009,7 +1009,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
          <button
            type="button"
            onClick={() => setShowCreateMatchModal(true)}
-           className="text-[13px] font-bold text-[#0369a1] hover:underline flex items-center gap-1 cursor-pointer"
+           className="text-[14px] font-bold text-[#0369a1] hover:underline flex items-center gap-1 cursor-pointer"
          >
            <PlusCircle className="w-3.5 h-3.5" />
            <span>Đăng Kèo</span>
@@ -1017,11 +1017,11 @@ const toSportTabs = (types?: string[] | null): string[] =>
        </div>
 
        {postsLoading ? (
-         <p className="p-3 rounded-xl bg-slate-50 text-[13px] text-slate-500 flex items-center gap-2">
+         <p className="p-3 rounded-xl bg-slate-50 text-[14px] text-slate-500 flex items-center gap-2">
            <Loader2 className="w-4 h-4 animate-spin" /> Đang tải…
          </p>
        ) : openPosts.length === 0 ? (
-         <p className="p-3 rounded-xl bg-slate-50 text-[13px] text-slate-500">
+         <p className="p-3 rounded-xl bg-slate-50 text-[14px] text-slate-500">
            Chưa có kèo mở.
          </p>
        ) : (
@@ -1033,24 +1033,24 @@ const toSportTabs = (types?: string[] | null): string[] =>
            return (
              <div key={p.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                <div className="flex items-center justify-between">
-                 <span className="px-2 py-0.5 rounded bg-[#0369a1]/15 text-sky-800 font-black text-[13px]">
+                 <span className="px-2 py-0.5 rounded bg-[#0369a1]/15 text-sky-800 font-black text-[14px]">
                    {label}
                  </span>
-                 <span className="font-mono text-[13px] font-bold text-slate-500">
+                 <span className="font-mono text-[14px] font-bold text-slate-500">
                    {p.matchTime ?? "—"}
                  </span>
                </div>
-               <h4 className="font-black text-[13px] text-slate-900 truncate">
+               <h4 className="font-black text-[14px] text-slate-900 truncate">
                  {p.pitchName ?? "Chưa chọn sân"}
                </h4>
                <div className="flex items-center justify-between pt-1.5 border-t border-slate-200">
-                 <span className="text-[13px] font-bold text-slate-600 truncate pr-2">
+                 <span className="text-[14px] font-bold text-slate-600 truncate pr-2">
                    {p.teamName}
                  </span>
                  <button
                    type="button"
                    onClick={() => handleAcceptFromWidget(p)}
-                   className="px-3 py-1 rounded-lg font-bold text-[13px] bg-[#0369a1] hover:bg-[#075985] text-white cursor-pointer shrink-0"
+                   className="px-3 py-1 rounded-lg font-bold text-[14px] bg-[#0369a1] hover:bg-[#075985] text-white cursor-pointer shrink-0"
                  >
                    Nhận Kèo
                  </button>
@@ -1071,12 +1071,12 @@ const toSportTabs = (types?: string[] | null): string[] =>
 
        <div className="space-y-1.5">
          {topTeamsByForm.length === 0 ? (
-           <p className="text-[13px] text-slate-500">Chưa có dữ liệu.</p>
+           <p className="text-[14px] text-slate-500">Chưa có dữ liệu.</p>
          ) : (
            topTeamsByForm.map((tm: any, idx: number) => (
              <div
                key={`${tm.teamName}-${idx}`}
-               className={`flex items-center justify-between p-2 rounded-xl text-[13px] ${
+               className={`flex items-center justify-between p-2 rounded-xl text-[14px] ${
                  idx === 0 ? "bg-amber-500/10 border border-amber-500/20" : "bg-slate-50"
                }`}
              >
@@ -1119,7 +1119,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
 
  <div className="space-y-3">
  <div>
- <label className="text-[13px] font-bold text-slate-700 block mb-1">
+ <label className="text-[14px] font-bold text-slate-700 block mb-1">
  Tên Đội / Tiêu đề kèo:
  </label>
  <input
@@ -1127,19 +1127,19 @@ const toSportTabs = (types?: string[] | null): string[] =>
  placeholder="Ví dụ: FC Anh Em Liên Chiểu tìm đối giao lưu vui vẻ"
  value={newMatchTitle}
  onChange={(e) => setNewMatchTitle(e.target.value)}
- className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </div>
 
  <div>
- <label className="text-[13px] font-bold text-slate-700 block mb-1">
+ <label className="text-[14px] font-bold text-slate-700 block mb-1">
  Sân thi đấu:
  </label>
  <select
  aria-label="Sân thi đấu"
  value={newMatchPitchId}
  onChange={(e) => setNewMatchPitchId(e.target.value)}
- className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {realPitches.length === 0 ? (
  <option value="">Chưa tải được danh sách sân</option>
@@ -1154,14 +1154,14 @@ const toSportTabs = (types?: string[] | null): string[] =>
  </div>
 
  <div>
- <label className="text-[13px] font-bold text-slate-700 block mb-1">
+ <label className="text-[14px] font-bold text-slate-700 block mb-1">
  Khung giờ thi đấu:
  </label>
  <select
  aria-label="Khung giờ thi đấu"
  value={newMatchSlot}
  onChange={(e) => setNewMatchSlot(e.target.value)}
- className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {(featuredPitch?.timeSlots?.length
  ? featuredPitch.timeSlots.map((s: any) => String(s.time))
@@ -1175,7 +1175,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  </div>
 
  <div>
- <label className="text-[13px] font-bold text-slate-700 block mb-1">
+ <label className="text-[14px] font-bold text-slate-700 block mb-1">
  Ghi chú / vị trí cần ghép:
  </label>
  <input
@@ -1183,7 +1183,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  placeholder="Ví dụ: Cần thêm 1 GK bắt gôn + 2 hậu vệ đá cánh"
  value={newMatchNeed}
  onChange={(e) => setNewMatchNeed(e.target.value)}
- className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </div>
  </div>
@@ -1192,7 +1192,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  <button
  type="button"
  onClick={() => setShowCreateMatchModal(false)}
- className="px-4 py-2 rounded-xl text-[13px] font-bold text-slate-600 hover:bg-slate-100 "
+ className="px-4 py-2 rounded-xl text-[14px] font-bold text-slate-600 hover:bg-slate-100 "
  >
  Hủy bỏ
  </button>
@@ -1200,7 +1200,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  type="button"
  disabled={creatingPost}
  onClick={handleCreateFromWidget}
- className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
+ className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
  >
  {creatingPost && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
  {creatingPost ? "Đang đăng…" : "Đăng Kèo Ngay"}
@@ -1215,7 +1215,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
  <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-sm w-full border border-slate-200 shadow-2xl text-center space-y-4 animate-modal-pop my-auto max-h-[92vh] overflow-y-auto">
  <div className="flex items-center justify-between pb-2 border-b border-slate-100 ">
- <span className="text-[13px] font-black text-slate-900">
+ <span className="text-[14px] font-black text-slate-900">
  Thẻ Hội Viên QR
  </span>
  <button
@@ -1234,7 +1234,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  <p className="font-mono text-sm font-black text-sky-700 ">
  {user?.id ? `#SH-${user.id}` : "#SH-GH"} • {userName}
  </p>
- <p className="text-[13px] text-slate-500 max-w-xs">
+ <p className="text-[14px] text-slate-500 max-w-xs">
  Đưa mã này cho chủ sân đối chiếu thông tin của bạn khi tới nhận sân.
  </p>
  </div>
@@ -1245,7 +1245,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  setShowQrModal(false);
  showToast("✓ Đã lưu mã QR vào thư viện ảnh thiết bị!");
  }}
- className="w-full py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-md"
+ className="w-full py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] shadow-md"
  >
  Lưu Mã Về Điện Thoại
  </button>

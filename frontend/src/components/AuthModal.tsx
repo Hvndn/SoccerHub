@@ -42,7 +42,7 @@ const SPORTS = ["Bóng Đá Sân 5", "Bóng Đá Sân 7", "Bóng Đá Sân 11", 
 
 const inputCls =
  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-[#0369a1] focus:border-emerald-500 placeholder:text-slate-500 transition-shadow";
-const labelCls = "block text-[13px] font-bold text-slate-700 mb-1.5";
+const labelCls = "block text-[14px] font-bold text-slate-700 mb-1.5";
 
 function passwordScore(pw: string): number {
  let s = 0;
@@ -308,7 +308,7 @@ export default function AuthModal({
  <p className="text-xl font-black tracking-tight">
  <span className="text-emerald-400">Turf</span>Zone
  </p>
- <p className="mt-1 text-[13px] font-bold tracking-widest text-emerald-200/80">
+ <p className="mt-1 text-[14px] font-bold tracking-widest text-emerald-200/80">
  Sân phủi • Giải đấu • Phong độ
  </p>
  </div>
@@ -328,7 +328,7 @@ export default function AuthModal({
  ].map(([num, label]) => (
  <div key={label} className="rounded-xl bg-white/10 backdrop-blur px-2 py-2.5 text-center border border-white/15">
  <p className="font-mono font-black text-emerald-300">{num}</p>
- <p className="text-[13px] font-bold text-white/80 mt-0.5">{label}</p>
+ <p className="text-[14px] font-bold text-white/80 mt-0.5">{label}</p>
  </div>
  ))}
  </div>
@@ -340,7 +340,7 @@ export default function AuthModal({
  <h2 id="auth-title" className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
  {mode === "login" ? "Đăng nhập" : "Tạo tài khoản mới"}
  </h2>
- <p className="mt-1 text-[13px] sm:text-sm text-slate-500">
+ <p className="mt-1 text-[14px] sm:text-sm text-slate-500">
  {mode === "login"
  ? "Chào mừng trở lại sân. Nhập thông tin để tiếp tục."
  : "Miễn phí. Mất chưa tới 1 phút để vào sân."}
@@ -355,7 +355,7 @@ export default function AuthModal({
  role="tab"
  aria-selected={mode === m}
  onClick={() => switchMode(m)}
- className={`py-2 rounded-lg text-[13px] font-black transition-all ${
+ className={`py-2 rounded-lg text-[14px] font-black transition-all ${
  mode === m
  ? "bg-white shadow text-[#0b4f6c]"
  : "auth-tab-btn-inactive"
@@ -368,7 +368,7 @@ export default function AuthModal({
 
  {/* Bước đăng ký 1/2 */}
  {mode === "register" && (
- <div className="mt-3 flex items-center gap-2 text-[13px] font-bold text-slate-500" aria-hidden>
+ <div className="mt-3 flex items-center gap-2 text-[14px] font-bold text-slate-500" aria-hidden>
  <span className={`flex items-center gap-1 ${regStep >= 1 ? "text-sky-800" : ""}`}>
  <span className={`w-5 h-5 rounded-full flex items-center justify-center font-mono ${regStep >= 1 ? "bg-[#0369a1] text-white" : "bg-slate-200 text-slate-500"}`}>1</span>
  Tài khoản & vai trò
@@ -385,7 +385,7 @@ export default function AuthModal({
  {errorMsg && (
  <div
  role="alert"
- className="mt-3 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-[13px] font-bold flex items-start gap-2"
+ className="mt-3 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-[14px] font-bold flex items-start gap-2"
  >
  <AlertCircle className="w-4 h-4 shrink-0 mt-px" />
  <span>{errorMsg}</span>
@@ -431,7 +431,7 @@ export default function AuthModal({
  </button>
  </div>
  {capsOn && password && (
- <p className="mt-1 text-[13px] font-semibold text-amber-600">
+ <p className="mt-1 text-[14px] font-semibold text-amber-600">
  Đang bật Caps Lock — kiểm tra lại mật khẩu.
  </p>
  )}
@@ -454,7 +454,7 @@ export default function AuthModal({
 
  {/* Google Sign-In */}
  <div className="mt-4 pt-4 border-t border-slate-100">
- <p className="text-center text-[13px] font-bold tracking-wider text-slate-500 mb-2">
+ <p className="text-center text-[14px] font-bold tracking-wider text-slate-500 mb-2">
  Hoặc tiếp tục với
  </p>
  <div className="flex justify-center">
@@ -530,7 +530,7 @@ export default function AuthModal({
  />
  ))}
  </div>
- <p className="mt-1 text-[13px] font-bold text-slate-500">
+ <p className="mt-1 text-[14px] font-bold text-slate-500">
  Độ mạnh: {STRENGTH_LABEL[strength]}
  </p>
  </div>
@@ -551,11 +551,11 @@ export default function AuthModal({
  }`}
  >
  {r.icon}
- <span className="text-[13px] font-black leading-tight">{r.label}</span>
+ <span className="text-[14px] font-black leading-tight">{r.label}</span>
  </button>
  ))}
  </div>
- <p className="mt-1.5 text-[13px] text-slate-500">
+ <p className="mt-1.5 text-[14px] text-slate-500">
  {ROLES.find((r) => r.id === role)?.desc}
  </p>
  </div>
@@ -632,7 +632,7 @@ export default function AuthModal({
  setRegStep(1);
  setErrorMsg(null);
  }}
- className="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-300 text-[13px] font-bold text-slate-700 hover:bg-slate-100 transition-all"
+ className="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl border border-slate-300 text-[14px] font-bold text-slate-700 hover:bg-slate-100 transition-all"
  >
  <ChevronLeft className="w-4 h-4" />
  <span>Quay lại</span>
@@ -663,7 +663,7 @@ export default function AuthModal({
  </div>
   {/* Google Sign-In */}
   <div className="mt-4 pt-4 border-t border-slate-100">
-  <p className="text-center text-[13px] font-bold tracking-wider text-slate-500 mb-2">
+  <p className="text-center text-[14px] font-bold tracking-wider text-slate-500 mb-2">
   Hoặc tiếp tục với
   </p>
   <div className="flex justify-center">
@@ -681,7 +681,7 @@ export default function AuthModal({
 
  {/* Demo 1-click */}
  <div className="mt-5 pt-4 border-t border-slate-100">
- <p className="text-center text-[13px] font-bold tracking-wider text-slate-500">
+ <p className="text-center text-[14px] font-bold tracking-wider text-slate-500">
  Demo
  </p>
  <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
@@ -689,7 +689,7 @@ export default function AuthModal({
  type="button"
  disabled={isSubmitting}
  onClick={() => handleQuickDemoLogin("player@Turfzone.vn", "PLAYER")}
- className="text-[13px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
+ className="text-[14px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
  >
  ⚽ Cầu Thủ
  </button>
@@ -697,7 +697,7 @@ export default function AuthModal({
  type="button"
  disabled={isSubmitting}
  onClick={() => handleQuickDemoLogin("owner@Turfzone.vn", "OWNER")}
- className="text-[13px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
+ className="text-[14px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
  >
  🏟️ Chủ Sân
  </button>
@@ -705,12 +705,12 @@ export default function AuthModal({
  type="button"
  disabled={isSubmitting}
  onClick={() => handleQuickDemoLogin("organizer@Turfzone.vn", "ORGANIZER")}
- className="text-[13px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
+ className="text-[14px] font-bold px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-900 border border-slate-200 transition-all disabled:opacity-50"
  >
  🏆 Ban Tổ Chức
  </button>
  </div>
- <p className="mt-3 text-center text-[13px] text-slate-500">
+ <p className="mt-3 text-center text-[14px] text-slate-500">
  {mode === "login" ? (
  <>Chưa có tài khoản?{" "}
  <button type="button" onClick={() => switchMode("register")} className="font-bold text-sky-800 hover:underline">

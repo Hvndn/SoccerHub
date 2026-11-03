@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, MapPin } from "lucide-react";
 
 interface WizardPageShellProps {
- backHref: string;
+ backHref?: string;
+ onBack?: () => void;
  backLabel: string;
  crumb: string;
  title: string;
@@ -19,6 +20,7 @@ interface WizardPageShellProps {
  */
 export default function WizardPageShell({
  backHref,
+ onBack,
  backLabel,
  crumb,
  title,
@@ -36,25 +38,36 @@ export default function WizardPageShell({
  >
  <span className="text-sky-800 ">Turf</span>Zone
  </Link>
+ {onBack ? (
+ <button
+ type="button"
+ onClick={onBack}
+ className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[14px] font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
+ >
+ <ArrowLeft className="w-4 h-4 shrink-0" />
+ <span className="hidden sm:inline">{backLabel}</span>
+ </button>
+ ) : (
  <Link
- href={backHref}
+ href={backHref ?? "/"}
  aria-label={backLabel}
- className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
+ className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[14px] font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
  >
  <ArrowLeft className="w-4 h-4 shrink-0" />
  <span className="hidden sm:inline">{backLabel}</span>
  </Link>
+ )}
  </div>
  </header>
 
  <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-4 sm:py-8">
  <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5">
  {/* Breadcrumb */}
- <nav aria-label="Điều hướng" className="flex items-center gap-1.5 text-[13px] text-slate-500">
+ <nav aria-label="Điều hướng" className="flex items-center gap-1.5 text-[14px] text-slate-500">
  <MapPin className="w-3.5 h-3.5" />
  <Link href="/" className="hover:underline font-semibold">Trang chủ</Link>
  <span aria-hidden>›</span>
- <Link href={backHref} className="hover:underline font-semibold">{backLabel.replace(/^←\s*/, "").replace(/^Quay lại\s*/i, "") || "Danh sách"}</Link>
+ <Link href={backHref ?? "/"} className="hover:underline font-semibold">{backLabel.replace(/^←\s*/, "").replace(/^Quay lại\s*/i, "") || "Danh sách"}</Link>
  <span aria-hidden>›</span>
  <span className="font-bold text-sky-800 ">{crumb}</span>
  </nav>
@@ -63,7 +76,7 @@ export default function WizardPageShell({
  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 ">
  {title}
  </h1>
- <p className="mt-1 text-[13px] sm:text-sm text-slate-500">{subtitle}</p>
+ <p className="mt-1 text-[14px] sm:text-sm text-slate-500">{subtitle}</p>
  </div>
 
  {children}
@@ -71,7 +84,7 @@ export default function WizardPageShell({
  </main>
 
  <footer className="border-t border-slate-200 py-4">
- <p className="text-center text-[13px] text-slate-600 ">
+ <p className="text-center text-[14px] text-slate-600 ">
  © 2026 Turfzone — Đồ Án Tốt Nghiệp: Hệ thống quản lý sân bóng & giải đấu phủi.
  </p>
  </footer>

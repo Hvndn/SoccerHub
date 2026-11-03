@@ -1,71 +1,52 @@
 "use client";
 
 import React from "react";
-import { Sparkles, LogIn, UserPlus, CheckCircle2 } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
 
 interface GuestFeatureBannerProps {
- title: string;
- description: string;
- features: string[];
- icon: React.ElementType;
- onOpenAuth: (mode: "login" | "register") => void;
+  title: string;
+  description: string;
+  features: string[];
+  icon: React.ElementType;
+  onOpenAuth: (mode: "login" | "register") => void;
 }
 
 export default function GuestFeatureBanner({
- title,
- description,
- features,
- icon: Icon,
- onOpenAuth,
+  title,
+  description,
+  icon: Icon,
+  onOpenAuth,
 }: GuestFeatureBannerProps) {
- return (
- <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3 sm:p-8 mb-6 sm:mb-8 stadium-shadow relative overflow-hidden animate-fade-in-up">
- <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
- <div className="space-y-3 max-w-2xl">
- <div className="hidden sm:inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0369a1]/15 text-[#0b4f6c] text-[13px] font-bold">
- <Sparkles className="w-3.5 h-3.5 text-[#0b4f6c] " />
- <span>Giới Thiệu Chức Năng</span>
- </div>
- <div className="flex items-center space-x-3">
- <div className="w-10 h-10 rounded-2xl bg-[#0369a1] text-white flex items-center justify-center shrink-0 shadow-md">
- <Icon className="w-5 h-5 text-white" />
- </div>
- <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight">
- {title}
- </h2>
- </div>
- <p className="hidden sm:block text-[13px] sm:text-sm text-slate-600 leading-relaxed font-medium">
- {description}
- </p>
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 mb-5 stadium-shadow animate-fade-in-up">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#0369a1] text-white flex items-center justify-center shrink-0">
+            <Icon className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-extrabold text-slate-900">{title}</h2>
+            <p className="text-[14px] text-slate-500">{description}</p>
+          </div>
+        </div>
 
- <div className="hidden sm:flex flex-wrap gap-4 pt-1 text-[13px] font-bold text-slate-700 ">
- {features.map((feat, idx) => (
- <span key={idx} className="flex items-center space-x-1.5">
- <CheckCircle2 className="w-4 h-4 text-[#0b4f6c] shrink-0" />
- <span>{feat}</span>
- </span>
- ))}
- </div>
- </div>
-
- {/* CTA Actions */}
- <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full lg:w-auto pt-2 lg:pt-0">
- <button
- onClick={() => onOpenAuth("login")}
- className="px-5 py-3 rounded-2xl bg-white hover:bg-slate-100 text-[#0b4f6c] font-bold text-[13px] border border-[#0369a1]/30 shadow-sm transition-all flex items-center justify-center space-x-2 active:scale-95"
- >
- <LogIn className="w-4 h-4 text-[#0b4f6c] " />
- <span>Đăng Nhập Ngay</span>
- </button>
- <button
- onClick={() => onOpenAuth("register")}
- className="px-5 py-3 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
- >
- <UserPlus className="w-4 h-4 text-white" />
- <span>Đăng Ký Tài Khoản</span>
- </button>
- </div>
- </div>
- </div>
- );
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+          <button
+            onClick={() => onOpenAuth("login")}
+            className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0b4f6c] font-bold text-[14px] flex items-center justify-center gap-1.5"
+          >
+            <LogIn className="w-4 h-4" />
+            <span>Đăng Nhập</span>
+          </button>
+          <button
+            onClick={() => onOpenAuth("register")}
+            className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] shadow-sm flex items-center justify-center gap-1.5"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Đăng Ký</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

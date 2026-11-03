@@ -171,7 +171,7 @@ export default function OwnerReportExport() {
  </div>
  <div>
  <h3 className="font-black text-sm text-slate-900">Xuất báo cáo thống kê</h3>
- <p className="text-[13px] text-slate-500 mt-0.5">
+ <p className="text-[14px] text-slate-500 mt-0.5">
  Tải file CSV (mở bằng Excel). Chỉ gồm dữ liệu của các cụm sân bạn sở hữu.
  </p>
  </div>
@@ -197,8 +197,8 @@ export default function OwnerReportExport() {
  <Download className="w-4 h-4 text-slate-400 group-hover:text-[#0369a1] transition-colors" />
  )}
  </div>
- <p className="font-black text-[13px] text-slate-900 leading-tight">{r.label}</p>
- <p className="text-[13px] text-slate-500 mt-1 leading-relaxed">{r.desc}</p>
+ <p className="font-black text-[14px] text-slate-900 leading-tight">{r.label}</p>
+ <p className="text-[14px] text-slate-500 mt-1 leading-relaxed">{r.desc}</p>
  </button>
  ))}
  </div>
@@ -206,11 +206,11 @@ export default function OwnerReportExport() {
  {/* Bộ lọc theo từng loại báo cáo */}
  <div className="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
  <label className="block">
- <span className="block text-[13px] font-bold text-slate-600 mb-1">Số tháng (báo cáo doanh thu)</span>
+ <span className="block text-[14px] font-bold text-slate-600 mb-1">Số tháng (báo cáo doanh thu)</span>
  <select
  value={months}
  onChange={(e) => setMonths(Number(e.target.value))}
- className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {[3, 6, 12, 24].map((m) => (
  <option key={m} value={m}>
@@ -221,31 +221,31 @@ export default function OwnerReportExport() {
  </label>
 
  <label className="block">
- <span className="block text-[13px] font-bold text-slate-600 mb-1">Từ ngày (báo cáo đơn đặt)</span>
+ <span className="block text-[14px] font-bold text-slate-600 mb-1">Từ ngày (báo cáo đơn đặt)</span>
  <input
  type="date"
  value={from}
  max={to}
  onChange={(e) => setFrom(e.target.value)}
- className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
 
  <label className="block">
- <span className="block text-[13px] font-bold text-slate-600 mb-1">Đến ngày / số ngày thống kê</span>
+ <span className="block text-[14px] font-bold text-slate-600 mb-1">Đến ngày / số ngày thống kê</span>
  <div className="flex gap-2">
  <input
  type="date"
  value={to}
  min={from}
  onChange={(e) => setTo(e.target.value)}
- className="flex-1 min-w-0 px-2.5 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="flex-1 min-w-0 px-2.5 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  <select
  value={days}
  onChange={(e) => setDays(Number(e.target.value))}
  aria-label="Số ngày thống kê tổng quan"
- className="px-2 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="px-2 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {[30, 90, 180, 365].map((d) => (
  <option key={d} value={d}>
@@ -257,7 +257,7 @@ export default function OwnerReportExport() {
  </label>
  </div>
 
- <p className="flex items-start gap-2 text-[13px] text-slate-500 leading-relaxed">
+ <p className="flex items-start gap-2 text-[14px] text-slate-500 leading-relaxed">
  <CalendarRange className="w-3.5 h-3.5 text-[#0369a1] shrink-0 mt-0.5" />
  <span>
  File CSV có BOM UTF-8 nên Excel hiển thị đúng tiếng Việt có dấu.
@@ -272,13 +272,13 @@ export default function OwnerReportExport() {
  <Mail className="w-4 h-4" />
  </div>
  <div className="min-w-0 flex-1">
- <h4 className="font-black text-[13px] text-slate-900">Hoặc gửi báo cáo qua email</h4>
- <p className="text-[13px] text-slate-500 mt-0.5">
+ <h4 className="font-black text-[14px] text-slate-900">Hoặc gửi báo cáo qua email</h4>
+ <p className="text-[14px] text-slate-500 mt-0.5">
  File CSV được đính kèm trực tiếp trong email.
  </p>
  </div>
  {mailReady === false && (
- <span className="shrink-0 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-[13px] font-black">
+ <span className="shrink-0 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-[14px] font-black">
  SMTP chưa bật
  </span>
  )}
@@ -286,22 +286,22 @@ export default function OwnerReportExport() {
 
  <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_auto] gap-3 items-end">
  <label className="block">
- <span className="block text-[13px] font-bold text-slate-600 mb-1">Email nhận báo cáo</span>
+ <span className="block text-[14px] font-bold text-slate-600 mb-1">Email nhận báo cáo</span>
  <input
  type="email"
  value={mailTo}
  onChange={(e) => setMailTo(e.target.value)}
  placeholder="VD: chusan@gmail.com"
- className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
 
  <label className="block">
- <span className="block text-[13px] font-bold text-slate-600 mb-1">Loại báo cáo</span>
+ <span className="block text-[14px] font-bold text-slate-600 mb-1">Loại báo cáo</span>
  <select
  value={mailType}
  onChange={(e) => setMailType(e.target.value as ReportType)}
- className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  >
  {REPORTS.map((r) => (
  <option key={r.key} value={r.key}>
@@ -315,7 +315,7 @@ export default function OwnerReportExport() {
  type="button"
  onClick={sendMail}
  disabled={mailBusy || !mailTo.trim()}
- className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 whitespace-nowrap h-[38px]"
+ className="px-5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 whitespace-nowrap h-[38px]"
  >
  {mailBusy ? (
  <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -327,7 +327,7 @@ export default function OwnerReportExport() {
  </div>
 
  {mailReady === false && (
- <p className="text-[13px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 leading-relaxed">
+ <p className="text-[14px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 leading-relaxed">
  Hệ thống chưa cấu hình SMTP nên chưa gửi được email. Quản trị viên cần đặt các biến{" "}
  <code className="font-mono">MAIL_ENABLED=true</code>, <code className="font-mono">MAIL_USERNAME</code>,{" "}
  <code className="font-mono">MAIL_PASSWORD</code> (với Gmail dùng Mật khẩu ứng dụng).

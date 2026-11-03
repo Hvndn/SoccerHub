@@ -1,308 +1,150 @@
-import React, { useState } from 'react';
-import { 
- Award, Trophy, ShieldCheck, CheckCircle2, Ticket, Sparkles, QrCode, 
- Calendar, Users, ArrowRight, ArrowLeft, Lock, Zap, Activity, Check, RefreshCw
-} from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Award,
+  Trophy,
+  ShieldCheck,
+  QrCode,
+  Calendar,
+  Users,
+  ArrowRight,
+  ArrowLeft,
+} from "lucide-react";
 
 interface MemberCardPortalProps {
- onBackToHome?: () => void;
- onNavigateTab?: (tab: string) => void;
- user?: any;
+  onBackToHome?: () => void;
+  onNavigateTab?: (tab: string) => void;
+  user?: any;
 }
 
 export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
- onBackToHome,
- onNavigateTab,
- user
+  onBackToHome,
+  onNavigateTab,
+  user,
 }) => {
- const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
- const userName = user?.fullName || user?.name || "Khách chưa đăng nhập";
- const userLevel = user?.level ?? "Chưa xếp bậc";
- const memberId = user?.id ? `#SH-${user.id}` : "#SH-—";
+  const userName = user?.fullName || user?.name || "Khách chưa đăng nhập";
+  const userLevel = user?.level ?? "Phong trào";
+  const memberId = user?.id ? `#SH-${user.id}` : "#SH-—";
 
- const handleCopyCode = () => {
- navigator.clipboard.writeText(memberId);
- setCopiedCode(true);
- setTimeout(() => setCopiedCode(false), 2000);
- };
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(memberId);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
 
- return (
- <div className="w-full min-h-[calc(100vh-120px)] bg-[#f8f9ff] text-[#0b1c30] font-sans flex flex-col items-center justify-center p-3 sm:p-6 transition-colors duration-300">
- 
- {/* Outer Card Container (Matching Stitch 100%) */}
- <div className="w-full max-w-[1240px] bg-white rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden relative">
- <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[720px]">
- 
- {/* CỘT TRÁI (Slate / Emerald Stadium Lighting - 5 Cols) */}
- <div className="lg:col-span-5 bg-[#213145] text-white p-4 sm:p-8 md:p-10 flex flex-col justify-between relative overflow-hidden">
- {/* Stadium Floodlight Glow Effects */}
- <div className="absolute -top-24 -left-24 w-80 h-80 bg-[#0369a1]/20 rounded-full blur-3xl pointer-events-none"></div>
- <div className="absolute bottom-10 right-0 w-64 h-64 bg-[#0369a1]/10 rounded-full blur-2xl pointer-events-none"></div>
+  return (
+    <div className="w-full py-4 sm:py-8 flex flex-col items-center">
+      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-xl border border-slate-200 p-5 sm:p-8 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-[#0369a1] text-white flex items-center justify-center shadow-sm">
+              <Trophy className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+                Thẻ Hội Viên Turfzone
+              </h1>
+              <p className="text-[14px] text-slate-500">
+                Mã VĐV dùng để check-in sân và tham gia giải đấu
+              </p>
+            </div>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[14px] font-black flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4" /> Đã kích hoạt
+          </span>
+        </div>
 
- {/* Left Header & Tagline */}
- <div className="relative z-10 space-y-3 sm:space-y-6">
- <div className="flex items-center gap-2">
- <span className="font-mono text-[13px] tracking-widest text-emerald-400 font-extrabold bg-slate-900/80 border border-[#0369a1]/30 px-3 py-1 rounded-full">
- Turfzone 4.0
- </span>
- <span className="w-1.5 h-1.5 rounded-full bg-[#0369a1]"></span>
- <span className="text-[13px] text-slate-300 font-bold">
- Hệ sinh thái bóng đá thông minh
- </span>
- </div>
+        {/* Digital Pass Card */}
+        <div className="w-full bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-2xl p-5 sm:p-6 text-white shadow-lg relative overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center relative z-10">
+            <div className="sm:col-span-8 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-mono text-[14px] font-bold border border-sky-400/30">
+                  {memberId}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[14px] font-bold">
+                  {userLevel}
+                </span>
+              </div>
 
- {/* Achievement Badge */}
- <div className="relative inline-block my-2">
- <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-emerald-600 to-emerald-400 p-0.5 shadow-lg shadow-emerald-600/30 flex items-center justify-center">
- <div className="w-full h-full bg-[#213145] rounded-2xl flex items-center justify-center relative overflow-hidden">
- <div className="absolute inset-0 bg-[#0369a1]/10"></div>
- <Trophy className="w-10 h-10 text-lime-400" />
- </div>
- </div>
- <span className="absolute -bottom-2 -right-2 bg-[#0369a1] text-white text-[13px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-slate-900">
- <ShieldCheck className="w-3 h-3" /> Sẵn sàng
- </span>
- </div>
+              <div>
+                <p className="text-[14px] text-slate-400">Vận động viên</p>
+                <p className="text-xl sm:text-2xl font-black text-white">{userName}</p>
+              </div>
 
- <div>
- <h2 className="text-lg sm:text-3xl font-extrabold text-white tracking-tight leading-snug">
- Tuyệt Vời,<br />
- <span className="text-emerald-400">Hồ Sơ Đã Sẵn Sàng!</span>
- </h2>
- <p className="hidden sm:block text-[13px] sm:text-sm text-slate-300 leading-relaxed mt-2">
- Hồ sơ cầu thủ của bạn đã lưu trong hệ thống — dùng để nhận kèo, tham gia giải và đặt sân.
- </p>
- </div>
+              <div className="flex flex-wrap items-center gap-3 text-[14px] text-slate-300 pt-1">
+                <span>⚽ Sân 5 · 7 · 11 · Futsal</span>
+                <span>•</span>
+                <span>📍 {user?.area || "Đà Nẵng"}</span>
+              </div>
+            </div>
 
- {/* Activated Privileges List */}
- <div className="space-y-3 pt-2">
- <div className="bg-slate-900/60 p-3 rounded-xl flex items-start gap-3 border border-slate-700/60 backdrop-blur-sm">
- <div className="w-8 h-8 rounded-lg bg-[#0369a1]/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
- <Ticket className="w-4 h-4" />
- </div>
- <div className="min-w-0">
- <p className="text-[13px] font-bold text-white">Hạng {userLevel} • Sẵn sàng nhận kèo</p>
- <p className="hidden sm:block text-[13px] text-slate-300">Hồ sơ lưu từ kết quả các giải trong hệ thống</p>
- </div>
- </div>
+            <div className="sm:col-span-4 flex sm:justify-end">
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                className="p-3 bg-white rounded-2xl shadow-md flex flex-col items-center hover:scale-105 transition-transform"
+                title="Bấm để sao chép mã VĐV"
+              >
+                <QrCode className="w-16 h-16 text-slate-900" />
+                <span className="font-mono text-[13px] text-slate-800 font-black mt-1">
+                  {copiedCode ? "Đã chép mã!" : "Sao chép mã"}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
 
- <div className="bg-slate-900/60 p-3 rounded-xl flex items-start gap-3 border border-slate-700/60 backdrop-blur-sm">
- <div className="w-8 h-8 rounded-lg bg-[#0369a1]/20 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
- <Award className="w-4 h-4" />
- </div>
- <div className="min-w-0">
- <p className="text-[13px] font-bold text-white">Mã thẻ VĐV: {memberId}</p>
- <p className="hidden sm:block text-[13px] text-slate-300">Dùng để chủ sân đối chiếu khi nhận sân</p>
- </div>
- </div>
+        {/* Quick Links */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => onNavigateTab?.("booking")}
+            className="p-4 bg-slate-50 hover:bg-sky-50 rounded-2xl border border-slate-200 flex items-center gap-3 text-left transition-all"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center shrink-0">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-base font-bold text-slate-900">Đặt Sân Ngay</p>
+              <p className="text-[14px] text-slate-500">Chọn ca trống & cọc VietQR</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-400" />
+          </button>
 
- <div className="bg-slate-900/60 p-3 rounded-xl flex items-start gap-3 border border-slate-700/60 backdrop-blur-sm">
- <div className="w-8 h-8 rounded-lg bg-[#0369a1]/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
- <Activity className="w-4 h-4" />
- </div>
- <div className="min-w-0">
- <p className="text-[13px] font-bold text-white">Lịch sử thi đấu theo giải</p>
-  <p className="hidden sm:block text-[13px] text-slate-300">Kết quả cập nhật khi các giải kết thúc</p>
- </div>
- </div>
- </div>
- </div>
+          <button
+            type="button"
+            onClick={() => onNavigateTab?.("matchmaking")}
+            className="p-4 bg-slate-50 hover:bg-amber-50 rounded-2xl border border-slate-200 flex items-center gap-3 text-left transition-all"
+          >
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-base font-bold text-slate-900">Chợ Kèo Giao Hữu</p>
+              <p className="text-[14px] text-slate-500">Tìm đối thủ cùng trình độ</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-400" />
+          </button>
+        </div>
 
- {/* Left Footer: Football Pitch Formats Sync */}
- <div className="relative z-10 pt-6 mt-4 border-t border-slate-700/60">
- <div className="flex items-center justify-between text-slate-300 mb-2">
- <span className="text-[13px] font-bold tracking-wider text-slate-300">Đồng bộ toàn bộ quy chuẩn sân</span>
- <div className="flex items-center gap-1.5 bg-[#0369a1]/20 px-2 py-0.5 rounded-full border border-[#0369a1]/30">
- <span className="w-1.5 h-1.5 rounded-full bg-[#0369a1] animate-pulse"></span>
- <span className="font-mono text-[13px] text-lime-400 font-bold tracking-wide">Đồng bộ trực tiếp</span>
- </div>
- </div>
-
- <div className="flex flex-wrap items-center gap-2 text-[13px] text-white font-semibold">
- <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">⚽ Sân 7 Phủi</span>
- <span className="text-slate-500">•</span>
- <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">👟 Sân 5 Mini Cỏ</span>
- <span className="text-slate-500">•</span>
- <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">🏟️ Sân 11 FIFA</span>
- <span className="text-slate-500">•</span>
- <span className="px-2.5 py-1 rounded bg-slate-900/80 border border-slate-700">🥅 Futsal Sàn Gỗ</span>
- </div>
- </div>
- </div>
-
- {/* CỘT PHẢI (Nền Trắng Sáng - Hoàn Tất & Kích Hoạt - 7 Cols) */}
- <div className="lg:col-span-7 bg-white p-4 sm:p-8 md:p-10 flex flex-col justify-between">
- <div className="space-y-3 sm:space-y-6">
- 
- {/* Stepper & Title */}
- <div className="flex items-center justify-between gap-3">
- <div className="flex items-center gap-2">
- <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[13px] font-bold tracking-wider">
- Hoàn tất thiết lập
- </span>
- <span className="px-2.5 py-1 rounded-full bg-[#0369a1]/10 text-sky-800 text-[13px] font-extrabold flex items-center gap-1 border border-[#0369a1]/20">
- <CheckCircle2 className="w-3.5 h-3.5" /> Bước 3/3
- </span>
- </div>
-
- <div className="flex items-center gap-1">
- <span className="w-6 h-1.5 rounded-full bg-[#0369a1]"></span>
- <span className="w-6 h-1.5 rounded-full bg-[#0369a1]"></span>
- <span className="w-6 h-1.5 rounded-full bg-[#0369a1]"></span>
- </div>
- </div>
-
- <div>
- <h1 className="text-lg sm:text-3xl font-extrabold text-slate-900 tracking-tight">
- Thẻ Hội Viên Điện Tử Của Bạn
- </h1>
- <p className="hidden sm:block text-[13px] sm:text-sm text-slate-500 mt-1">
- Hệ thống đã tạo sẵn thẻ định danh và quét 12 cụm sân thể thao gần bạn có ca trống tối nay.
- </p>
- </div>
-
- {/* DIGITAL ATHLETE PASS (Thẻ Member Card) */}
- <div className="w-full bg-white rounded-2xl p-3 sm:p-6 text-slate-900 shadow-xl relative overflow-hidden border border-slate-200 ">
- {/* Decorative Field Blueprint Lines */}
- <div className="absolute right-0 bottom-0 w-48 h-48 opacity-10 pointer-events-none">
- <svg className="w-full h-full fill-none stroke-slate-300 " strokeWidth="2" viewBox="0 0 100 100">
- <rect x="10" y="10" width="80" height="80" rx="4"></rect>
- <line x1="50" y1="10" x2="50" y2="90"></line>
- <circle cx="50" cy="50" r="16"></circle>
- </svg>
- </div>
-
- {/* Header Thẻ */}
- <div className="flex items-center justify-between relative z-10 mb-4">
- <div className="flex items-center gap-2.5">
- <div className="w-8 h-8 rounded-lg bg-[#0369a1] flex items-center justify-center text-white font-black">
- <Sparkles className="w-4 h-4" />
- </div>
- <div>
- <p className="text-sm font-extrabold tracking-tight text-slate-900 ">Thẻ Thể Thao Turfzone</p>
- <p className="text-[13px] text-slate-500 tracking-widest font-mono">Mã Định Danh VĐV</p>
- </div>
- </div>
- <span className="px-2.5 py-1 rounded bg-lime-500/15 text-sky-800 font-mono text-[13px] font-black border border-lime-500/40 ">
- Bậc: PRO-AM
- </span>
- </div>
-
- {/* Body Thẻ: User Info + Rating + QR Code */}
- <div className="grid grid-cols-12 gap-3 items-center relative z-10 my-4">
- <div className="col-span-8 space-y-2">
- <div>
- <span className="text-[13px] text-slate-500 font-bold tracking-wider">Họ và Tên Vận Động Viên</span>
- <div className="flex items-center gap-2">
- <p className="text-lg sm:text-xl font-extrabold text-slate-900 ">{userName}</p>
- <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[13px] font-bold">Phong Trào</span>
- </div>
- </div>
-
- <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1">
- <div>
- <span className="text-[13px] text-slate-500 block font-medium">Môn thi đấu</span>
- <span className="text-[13px] font-bold text-sky-800 ">Bóng Đá Sân 5, 7, 11</span>
- </div>
- <div className="w-px h-6 bg-slate-200 "></div>
- <div>
- <span className="text-[13px] text-slate-500 block font-medium">Bậc thi đấu</span>
- <div className="flex items-center gap-1.5 font-mono text-[13px] font-bold">
- <span className="text-sky-800 ">{userLevel}</span>
- </div>
- </div>
- </div>
- </div>
-
- {/* QR Code Check-in Box */}
- <div className="col-span-4 flex flex-col items-end">
- <div 
- onClick={handleCopyCode}
- className="p-2 bg-white rounded-xl shadow-md flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
- title="Bấm để sao chép mã VĐV"
- >
- <QrCode className="w-14 h-14 text-slate-900" />
- <span className="font-mono text-[13px] text-slate-700 font-black mt-1">
- {copiedCode ? "Đã chép mã!" : "Quét tại quầy"}
- </span>
- </div>
- </div>
- </div>
-
- {/* Footer Thẻ */}
- <div className="pt-3 border-t border-slate-200 flex items-center justify-between relative z-10 text-[13px]">
- <span className="font-mono text-slate-500 tracking-wider">{memberId} • Turfzone</span>
- <span className="flex items-center gap-1.5 text-sky-800 font-bold">
- <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Đã kích hoạt thành công
- </span>
- </div>
- </div>
-
- {/* Quick Action Suggestion Cards */}
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <button 
- onClick={() => onNavigateTab && onNavigateTab('booking')}
- className="text-left p-3.5 bg-slate-50 rounded-xl hover:bg-slate-100 border border-slate-200/80 transition flex items-center gap-3 group"
- >
- <div className="w-10 h-10 rounded-lg bg-[#0369a1]/10 text-sky-700 flex items-center justify-center shrink-0 group-hover:bg-[#075985] group-hover:text-slate-950 transition">
- <Calendar className="w-5 h-5" />
- </div>
- <div className="min-w-0 flex-1">
- <div className="flex items-center justify-between">
- <p className="text-[13px] font-bold text-slate-900 group-hover:text-sky-700 transition truncate">Đặt sân gần bạn ngay</p>
- <span className="text-[13px] text-lime-800 font-extrabold bg-[#0369a1]/20 px-1.5 py-0.5 rounded">-50K</span>
- </div>
- <p className="text-[13px] text-slate-500 truncate">Ca đẹp từ 18:30 - 21:00 tối nay</p>
- </div>
- </button>
-
- <button 
- onClick={() => onNavigateTab && onNavigateTab('community')}
- className="text-left p-3.5 bg-slate-50 rounded-xl hover:bg-slate-100 border border-slate-200/80 transition flex items-center gap-3 group"
- >
- <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition">
- <Users className="w-5 h-5" />
- </div>
- <div className="min-w-0 flex-1">
- <div className="flex items-center justify-between">
- <p className="text-[13px] font-bold text-slate-900 group-hover:text-amber-700 transition truncate">Chợ Kèo Khẩn Cấp</p>
- <span className="text-[13px] text-rose-700 font-extrabold bg-rose-500/10 px-1.5 py-0.5 rounded">8 KÈO</span>
- </div>
- <p className="text-[13px] text-slate-500 truncate">Đang thiếu 1-2 chân tối nay</p>
- </div>
- </button>
- </div>
- </div>
-
- {/* Bottom Navigation Buttons */}
- <div className="pt-4 space-y-3">
- <div className="flex flex-col sm:flex-row items-center gap-3">
- <button 
- onClick={() => onNavigateTab ? onNavigateTab('booking') : onBackToHome && onBackToHome()}
- className="w-full sm:flex-1 h-12 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-95"
- >
- <span className="sm:hidden">Khám Phá Sân Ngay</span><span className="hidden sm:inline">Vào Bảng Điều Khiển / Khám Phá Sân Ngay</span>
- <ArrowRight className="w-4 h-4" />
- </button>
- <button 
- onClick={onBackToHome}
- className="w-full sm:w-auto px-4 h-12 rounded-xl text-slate-600 hover:bg-slate-100 text-[13px] font-bold transition flex items-center justify-center gap-1.5"
- >
- <ArrowLeft className="w-4 h-4" />
- <span>Quay lại</span>
- </button>
- </div>
-
- <div className="flex items-center justify-center gap-1.5 text-[13px] text-slate-500">
- <Lock className="w-3.5 h-3.5 text-sky-700" />
- <p>Đồng bộ tự động với tài khoản và ví thể thao.</p>
- </div>
- </div>
- </div>
- </div>
- </div>
- </div>
- );
+        {onBackToHome && (
+          <div className="pt-2 flex justify-end">
+            <button
+              type="button"
+              onClick={onBackToHome}
+              className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-[14px] font-bold flex items-center gap-1.5"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Quay lại</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
+
 export default MemberCardPortal;

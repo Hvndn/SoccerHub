@@ -312,8 +312,8 @@ export default function CommunityChat({
         <div className={`max-w-[82%] sm:max-w-[70%] ${mine ? "items-end" : "items-start"} flex flex-col`}>
           {!mine && (
             <div className="flex items-center gap-1.5 mb-0.5 px-1">
-              <span className={`text-[13px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>{m.senderName}</span>
-              <span className="text-[13px] font-bold text-slate-400">{ROLE_LABEL[m.senderRole] ?? m.senderRole}</span>
+              <span className={`text-[14px] font-black ${ROLE_COLOR[m.senderRole] || "text-slate-600"}`}>{m.senderName}</span>
+              <span className="text-[14px] font-bold text-slate-400">{ROLE_LABEL[m.senderRole] ?? m.senderRole}</span>
             </div>
           )}
           <div
@@ -324,19 +324,19 @@ export default function CommunityChat({
             }`}
           >
             {m.pinned && (
-              <div className="flex items-center gap-1 mb-1 text-[13px] font-bold tracking-wide text-amber-600">
+              <div className="flex items-center gap-1 mb-1 text-[14px] font-bold tracking-wide text-amber-600">
                 <Bookmark className="w-3 h-3" /> Tin ghim
               </div>
             )}
             {quoted && (
-              <div className="mb-1.5 pl-2 border-l-2 border-slate-300 text-[13px] italic text-slate-500 line-clamp-2">
+              <div className="mb-1.5 pl-2 border-l-2 border-slate-300 text-[14px] italic text-slate-500 line-clamp-2">
                 {quoted.senderName}: {quoted.content}
               </div>
             )}
             {m.content}
           </div>
           <div className={`flex items-center gap-1.5 mt-0.5 px-1 ${mine ? "flex-row-reverse" : ""}`}>
-            <span className="text-[13px] text-slate-400">{formatTime(m.createdAt)}</span>
+            <span className="text-[14px] text-slate-400">{formatTime(m.createdAt)}</span>
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
               {mode === "public" && (
                 <>
@@ -387,7 +387,7 @@ export default function CommunityChat({
         <button
           type="button"
           onClick={() => setMode("public")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[14px] font-bold transition-all ${
             mode === "public" ? "bg-[#0369a1] text-white shadow-sm" : "text-slate-600 hover:bg-slate-200"
           }`}
         >
@@ -398,7 +398,7 @@ export default function CommunityChat({
         <button
           type="button"
           onClick={() => setMode("dm")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[14px] font-bold transition-all ${
             mode === "dm" ? "bg-[#0369a1] text-white shadow-sm" : "text-slate-600 hover:bg-slate-200"
           }`}
         >
@@ -406,7 +406,7 @@ export default function CommunityChat({
           <span className="hidden sm:inline">Tin nhắn riêng</span>
           <span className="sm:hidden">Riêng</span>
           {conversations.length > 0 && (
-            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[13px] font-black bg-rose-500 text-white">
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[14px] font-black bg-rose-500 text-white">
               {conversations.length}
             </span>
           )}
@@ -421,8 +421,8 @@ export default function CommunityChat({
             <div className="flex items-start gap-2 px-3 sm:px-4 py-2 bg-amber-50 border-b border-amber-200">
               <Pin className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-bold tracking-wide text-amber-700">Tin ghim</p>
-                <p className="text-[13px] text-slate-700 truncate">
+                <p className="text-[14px] font-bold tracking-wide text-amber-700">Tin ghim</p>
+                <p className="text-[14px] text-slate-700 truncate">
                   <span className="font-bold">{pinnedMsg.senderName}: </span>
                   {pinnedMsg.content}
                 </p>
@@ -436,14 +436,14 @@ export default function CommunityChat({
                 <PageSpinner size="sm" showText={false} sub="Đang tải tin nhắn…" />
               </div>
             ) : pubError ? (
-              <div className="text-[13px] text-rose-600 text-center py-6">{pubError}</div>
+              <div className="text-[14px] text-rose-600 text-center py-6">{pubError}</div>
             ) : pubMessages.length === 0 ? (
               <div className="text-center py-10">
                 <MessageCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                <p className="text-[13px] text-slate-500">
+                <p className="text-[14px] text-slate-500">
                   Kênh <strong className="text-slate-700">{channelName}</strong> chưa có tin nhắn nào.
                 </p>
-                <p className="text-[13px] text-slate-400 mt-1">{channelDesc}</p>
+                <p className="text-[14px] text-slate-400 mt-1">{channelDesc}</p>
               </div>
             ) : (
               pubMessages.map((m) => renderMessage(m, m.senderEmail === myEmail))
@@ -455,7 +455,7 @@ export default function CommunityChat({
           {replyTo && (
             <div className="flex items-center gap-2 px-3 sm:px-4 py-2 border-t border-slate-200 bg-sky-50">
               <Reply className="w-3.5 h-3.5 text-[#0369a1] shrink-0" />
-              <div className="min-w-0 flex-1 text-[13px] text-slate-600 truncate">
+              <div className="min-w-0 flex-1 text-[14px] text-slate-600 truncate">
                 <span className="font-bold text-slate-800">Trả lời {replyTo.senderName}: </span>
                 {replyTo.content}
               </div>
@@ -508,7 +508,7 @@ export default function CommunityChat({
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
                     placeholder="Tìm người dùng…"
-                    className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                    className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
                   />
                 </div>
                 <button
@@ -532,20 +532,20 @@ export default function CommunityChat({
                     onClick={() => startConversation(u)}
                     className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#0369a1] text-white text-[13px] font-black flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[#0369a1] text-white text-[14px] font-black flex items-center justify-center shrink-0">
                       {u.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-bold text-slate-900 truncate">{u.name}</p>
-                      <p className="text-[13px] text-slate-500 truncate">{u.email}</p>
+                      <p className="text-[14px] font-bold text-slate-900 truncate">{u.name}</p>
+                      <p className="text-[14px] text-slate-500 truncate">{u.email}</p>
                     </div>
-                    <span className="text-[13px] font-bold text-slate-400">{ROLE_LABEL[u.role] ?? u.role}</span>
+                    <span className="text-[14px] font-bold text-slate-400">{ROLE_LABEL[u.role] ?? u.role}</span>
                   </button>
                 ))}
               </div>
             )}
             {showNewChat && searching && (
-              <div className="px-3 py-2 text-[13px] text-slate-500 flex items-center gap-2">
+              <div className="px-3 py-2 text-[14px] text-slate-500 flex items-center gap-2">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" /> Đang tìm…
               </div>
             )}
@@ -555,8 +555,8 @@ export default function CommunityChat({
               {conversations.length === 0 && !showNewChat ? (
                 <div className="text-center py-8 px-3">
                   <MessageCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-[13px] text-slate-500">Chưa có hội thoại nào.</p>
-                  <p className="text-[13px] text-slate-400 mt-1">Bấm <UserPlus className="w-3 h-3 inline" /> để tìm và nhắn tin.</p>
+                  <p className="text-[14px] text-slate-500">Chưa có hội thoại nào.</p>
+                  <p className="text-[14px] text-slate-400 mt-1">Bấm <UserPlus className="w-3 h-3 inline" /> để tìm và nhắn tin.</p>
                 </div>
               ) : (
                 conversations.map((c) => (
@@ -570,16 +570,16 @@ export default function CommunityChat({
                         : "hover:bg-white"
                     }`}
                   >
-                    <div className="w-9 h-9 rounded-full bg-slate-200 text-slate-700 text-[13px] font-black flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-slate-200 text-slate-700 text-[14px] font-black flex items-center justify-center shrink-0">
                       {c.partnerName.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-bold text-slate-900 truncate">{c.partnerName}</p>
-                      <p className="text-[13px] text-slate-500 truncate">
+                      <p className="text-[14px] font-bold text-slate-900 truncate">{c.partnerName}</p>
+                      <p className="text-[14px] text-slate-500 truncate">
                         {c.isMine ? "Bạn: " : ""}{c.lastMessage}
                       </p>
                     </div>
-                    <span className="text-[13px] text-slate-400 shrink-0">
+                    <span className="text-[14px] text-slate-400 shrink-0">
                       {formatTime(c.lastTime)}
                     </span>
                   </button>
@@ -602,12 +602,12 @@ export default function CommunityChat({
                   >
                     <ArrowLeft className="w-4 h-4" />
                   </button>
-                  <div className="w-9 h-9 rounded-full bg-[#0369a1] text-white text-[13px] font-black flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-[#0369a1] text-white text-[14px] font-black flex items-center justify-center shrink-0">
                     {activePartner.partnerName.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-black text-slate-900 truncate">{activePartner.partnerName}</p>
-                    <p className="text-[13px] text-slate-500 truncate">{activePartner.partnerEmail}</p>
+                    <p className="text-[14px] text-slate-500 truncate">{activePartner.partnerEmail}</p>
                   </div>
                 </div>
 
@@ -620,7 +620,7 @@ export default function CommunityChat({
                   ) : dmMessages.length === 0 ? (
                     <div className="text-center py-10">
                       <MessageCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                      <p className="text-[13px] text-slate-500">Chưa có tin nhắn. Hãy gửi lời chào! 👋</p>
+                      <p className="text-[14px] text-slate-500">Chưa có tin nhắn. Hãy gửi lời chào! 👋</p>
                     </div>
                   ) : (
                     dmMessages.map((m) => renderMessage(m, m.senderEmail === myEmail))
@@ -651,7 +651,7 @@ export default function CommunityChat({
                 </form>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-400 text-[13px]">
+              <div className="flex-1 flex items-center justify-center text-slate-400 text-[14px]">
                 <div className="text-center">
                   <MessageCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
                   <p>Chọn một hội thoại hoặc tìm người mới để nhắn tin.</p>

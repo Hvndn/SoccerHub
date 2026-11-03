@@ -6,6 +6,8 @@ import { ImageOff } from "lucide-react";
 type SafeImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
  /** Nhãn hiện trên khung placeholder khi ảnh không tải được */
  fallbackLabel?: string;
+ /** Nội dung thay thế hoàn toàn khi ảnh lỗi (ví dụ chữ viết tắt của avatar) */
+ fallback?: React.ReactNode;
 };
 
 /**
@@ -15,7 +17,7 @@ type SafeImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
  * link Unsplash hết hạn, mạng yếu) trình duyệt hiện đúng biểu tượng "ảnh vỡ" —
  * trông như lỗi ứng dụng khi thực ra chỉ là ảnh không tải được.
  */
-export default function SafeImage({ src, alt, className = "", fallbackLabel, ...rest }: SafeImageProps) {
+export default function SafeImage({ src, alt, className = "", fallbackLabel, fallback, ...rest }: SafeImageProps) {
  const [failed, setFailed] = useState(false);
 
  // Đổi sang ảnh khác thì thử lại từ đầu
@@ -24,6 +26,8 @@ export default function SafeImage({ src, alt, className = "", fallbackLabel, ...
  }, [src]);
 
  if (!src || failed) {
+ // Avatar và các chỗ cần giữ bố cục: cho phép truyền nội dung thay thế riêng
+ if (fallback) return <>{fallback}</>;
  return (
  <div
  role="img"
@@ -31,7 +35,7 @@ export default function SafeImage({ src, alt, className = "", fallbackLabel, ...
  className={`${className} flex flex-col items-center justify-center gap-1.5 bg-slate-100 text-slate-500`}
  >
  <ImageOff className="w-6 h-6 shrink-0" />
- <span className="text-[13px] font-bold text-center px-2 leading-tight">
+ <span className="text-[14px] font-bold text-center px-2 leading-tight">
  {fallbackLabel || alt || "Ảnh không tải được"}
  </span>
  </div>

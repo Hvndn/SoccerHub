@@ -10,7 +10,7 @@ export default function FormDots({
  form,
  size = "md",
  showEmpty = true,
-  emptyClassName = "text-[13px] font-bold text-slate-600",
+  emptyClassName = "text-[14px] font-bold text-slate-600",
 }: {
  form?: string | null;
  size?: "sm" | "md";
@@ -22,7 +22,8 @@ export default function FormDots({
  if (!showEmpty) return null;
  return <span className={emptyClassName}>Chưa có lịch sử</span>;
  }
- const dot = size === "sm" ? "w-4 h-4 text-[10px]" : "w-5 h-5 text-[13px]";
+ // Chữ tối thiểu 13px theo quy ước UI của dự án: hộp "sm" nới lên 18px để chữ 13px vẫn vừa.
+ const dot = size === "sm" ? "w-[18px] h-[18px] text-[14px]" : "w-5 h-5 text-[14px]";
  const color = (c: string) =>
  c === "W"
  ? "bg-emerald-700 text-white"

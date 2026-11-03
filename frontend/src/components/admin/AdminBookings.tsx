@@ -101,7 +101,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  render: (r) => (
  <div>
  <p className="font-mono font-bold text-slate-700 ">{r.code || `#${r.id}`}</p>
- <p className="text-[13px] font-mono text-slate-500">{r.createdAt ? String(r.createdAt).slice(0, 16).replace("T", " ") : ""}</p>
+ <p className="text-[14px] font-mono text-slate-500">{r.createdAt ? String(r.createdAt).slice(0, 16).replace("T", " ") : ""}</p>
  </div>
  ),
  },
@@ -113,9 +113,9 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  render: (r) => (
  <div>
  <p className="font-bold text-slate-900 ">{r.customerName}</p>
- <p className="text-[13px] font-mono text-slate-500">{r.customerPhone}</p>
+ <p className="text-[14px] font-mono text-slate-500">{r.customerPhone}</p>
         {(r.isClubBooking || r.clubName || (r.via && r.via.includes("CLB"))) && (
-          <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[11px] font-black bg-purple-100 text-purple-800 border border-purple-200">
+          <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[14px] font-black bg-purple-100 text-purple-800 border border-purple-200">
             🛡️ CLB Bao Sân{r.clubName ? `: ${r.clubName}` : ""}
           </span>
         )}
@@ -130,7 +130,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  render: (r) => (
  <div>
  <p className="font-bold">{pitchTypeLabel(r.courtName) || r.courtName}</p>
- <p className="text-[13px] text-slate-500 font-mono">
+ <p className="text-[14px] text-slate-500 font-mono">
  {r.bookingDate} • {r.timeSlot}
  </p>
  </div>
@@ -150,7 +150,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  {
  key: "via",
  header: "Kênh",
- render: (r) => <span className="text-[13px] font-bold text-slate-600 ">{r.via || "—"}</span>,
+ render: (r) => <span className="text-[14px] font-bold text-slate-600 ">{r.via || "—"}</span>,
  },
  {
  key: "status",
@@ -170,7 +170,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
  <div>
  <h2 className="font-black text-slate-900 text-sm">Đơn đặt sân & doanh thu</h2>
- <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
+ <p className="hidden sm:block text-[14px] text-slate-500 mt-0.5">
  100 đơn mới nhất. Tra cứu mã vé hoặc SĐT để soi chi tiết.
  </p>
  </div>
@@ -183,13 +183,13 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  value={query}
  onChange={(e) => setQuery(e.target.value)}
  placeholder="Mã vé / SĐT…"
- className="pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0369a1] w-48 sm:w-56"
+ className="pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0369a1] w-48 sm:w-56"
  />
  </div>
  <button
  type="submit"
  disabled={searching}
- className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-all active:scale-95 disabled:opacity-50"
+ className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold transition-all active:scale-95 disabled:opacity-50"
  >
  {searching ? "Đang tìm…" : "Tra cứu"}
  </button>
@@ -199,16 +199,16 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  {/* Bộ công cụ dữ liệu demo — mọi đơn sinh ra đều có mã bắt đầu bằng "SIM-" nên xóa sạch được */}
  <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2.5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-3">
  <div className="flex-1 min-w-0">
- <p className="text-[13px] font-black text-slate-700 flex items-center gap-1.5">
+ <p className="text-[14px] font-black text-slate-700 flex items-center gap-1.5">
  <Sparkles className="w-3.5 h-3.5 text-[#0369a1]" />
  Dữ liệu demo
  </p>
- <p className="text-[13px] text-slate-500 mt-0.5">
+ <p className="text-[14px] text-slate-500 mt-0.5">
  Sinh đơn giả lập 21 ngày (14 ngày trước · 7 ngày sau) để dashboard chủ sân có doanh thu &amp; lịch đầy đủ.
  </p>
  </div>
  <div className="flex items-center gap-2 shrink-0">
- <label className="flex items-center gap-1.5 text-[13px] font-bold text-slate-500">
+ <label className="flex items-center gap-1.5 text-[14px] font-bold text-slate-500">
  <span className="hidden sm:inline">Đơn/ngày</span>
  <input
  type="number"
@@ -217,14 +217,14 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  value={perDay}
  onChange={(e) => setPerDay(Math.max(1, Math.min(30, Number(e.target.value) || 1)))}
  aria-label="Số đơn giả lập mỗi ngày"
- className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[13px] font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-14 px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[14px] font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </label>
  <button
  type="button"
  onClick={runSimulate}
  disabled={simBusy !== null}
- className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-all active:scale-95 disabled:opacity-50"
+ className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold transition-all active:scale-95 disabled:opacity-50"
  >
  <Sparkles className="w-3.5 h-3.5" />
  {simBusy === "gen" ? "Đang tạo…" : "Tạo đơn giả lập"}
@@ -233,7 +233,7 @@ export default function AdminBookings({ notify }: { notify: (type: "ok" | "err",
  type="button"
  onClick={runClearSim}
  disabled={simBusy !== null}
- className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold transition-all active:scale-95 disabled:opacity-50"
+ className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all active:scale-95 disabled:opacity-50"
  >
  <Eraser className="w-3.5 h-3.5" />
  {simBusy === "clear" ? "Đang xóa…" : "Dọn dữ liệu demo"}

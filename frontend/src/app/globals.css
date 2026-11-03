@@ -21,13 +21,20 @@ html {
      nền sáng — nếu để "light dark" thì khi hệ điều hành ở chế độ tối, các ô
      nhập sẽ nền tối trong khi giao diện vẫn sáng → lệch màu rõ rệt. */
   color-scheme: light;
+  font-size: 16.5px;
+}
+@media (min-width: 1024px) {
+  html {
+    font-size: 17px;
+  }
 }
 
 body {
   background-color: #f8fafc;
   color: #0f172a;
   font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-weight: 400;
+  font-weight: 450;
+  font-size: 15px;
   overflow-x: hidden;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -306,9 +313,12 @@ button.bg-emerald-700,
   textarea {
     font-size: 16px !important;
   }
-  /* Nâng sàn chữ micro-label 10px → 11px trên mobile cho dễ đọc */
-  .text-\[10px\] {
-    font-size: 11px;
+  /* Chữ tối thiểu 13px: không còn lớp text-[10px] trong mã nguồn, giữ luật này
+     làm lưới an toàn nếu sau này có ai thêm lại. */
+  .text-\[10px\],
+  .text-\[11px\],
+  .text-\[12px\] {
+    font-size: 13px;
   }
 }
 

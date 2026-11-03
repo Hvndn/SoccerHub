@@ -55,7 +55,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  <SectionCard>
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div>
- <h2 className="font-black text-slate-900 text-sm">Bảo trì dữ liệu</h2> <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
+ <h2 className="font-black text-slate-900 text-sm">Bảo trì dữ liệu</h2> <p className="hidden sm:block text-[14px] text-slate-500 mt-0.5">
  Xóa kết quả trận và bàn thắng mồ côi (giải đã bị xóa).
  </p>
  </div>
@@ -69,7 +69,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  notify("err", err?.message || "Dọn dữ liệu thất bại.");
  }
  }}
- className="shrink-0 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold transition-all active:scale-95"
+ className="shrink-0 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all active:scale-95"
  >
  Dọn dữ liệu mồ côi
  </button>
@@ -91,7 +91,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  {k.icon}
  </div>
  <div className="min-w-0">
- <p className="text-[13px] font-bold text-slate-500 tracking-wide">{k.label}</p>
+ <p className="text-[14px] font-bold text-slate-500 tracking-wide">{k.label}</p>
  <p className="font-mono font-black text-lg sm:text-xl text-slate-900 truncate">
  <CountUp
  value={k.value}
@@ -112,7 +112,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
   <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
   <h3 className="font-black text-slate-900 text-sm">Tổng quan tháng</h3>
   {report && (
-  <span className="text-[13px] font-mono text-slate-500">
+  <span className="text-[14px] font-mono text-slate-500">
   Tổng tháng này: {formatMoney(report.totalRevenueThisMonth)} • Lấp đầy TB: {report.avgOccupancyRate}
   </span>
   )}
@@ -120,15 +120,15 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
   {loading ? (
   <div className="skeleton-shimmer h-16 w-full rounded-xl" />
   ) : monthly.length === 0 ? (
-  <p className="text-[13px] text-slate-500 text-center py-4">
+  <p className="text-[14px] text-slate-500 text-center py-4">
   Chưa có dữ liệu doanh thu trong khoảng thời gian này.
   </p>
   ) : (
   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
   {monthly.map((m, i) => (
   <div key={i} className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 min-w-0">
-  <p className="text-[13px] font-bold text-slate-500 truncate">{String(m.month).replace(" (Dự kiến)", "*")}</p>
-  <p className="font-mono font-black text-slate-900 text-[13px] truncate">{formatMoney(Number(m.revenue) || 0)}</p>
+  <p className="text-[14px] font-bold text-slate-500 truncate">{String(m.month).replace(" (Dự kiến)", "*")}</p>
+  <p className="font-mono font-black text-slate-900 text-[14px] truncate">{formatMoney(Number(m.revenue) || 0)}</p>
   </div>
   ))}
   </div>
@@ -138,7 +138,7 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
  <div className="pt-2">
  <div className="flex items-center gap-2 mb-3">
  <h3 className="font-black text-slate-900 text-sm">Biểu đồ thống kê</h3>
- <span className="text-[13px] text-slate-500">— dữ liệu trực tiếp từ CSDL</span>
+ <span className="text-[14px] text-slate-500">— dữ liệu trực tiếp từ CSDL</span>
  </div>
  <AdminCharts />
  </div>

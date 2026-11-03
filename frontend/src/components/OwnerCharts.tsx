@@ -84,7 +84,7 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
   const empty = (msg: string) => (
     <div className="h-48 flex flex-col items-center justify-center gap-2 text-center">
       <BarChart3 className="w-8 h-8 text-slate-300" />
-      <p className="text-[13px] font-bold text-slate-500">{msg}</p>
+      <p className="text-[14px] font-bold text-slate-500">{msg}</p>
     </div>
   );
 
@@ -99,7 +99,7 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
             </div>
             <div className="min-w-0">
               <h3 className="font-black text-sm text-slate-900">Doanh thu theo tháng</h3>
-              <p className="text-[13px] text-slate-500 mt-0.5">6 tháng gần nhất · tiền cọc + tiền mặt đã thu</p>
+              <p className="text-[14px] text-slate-500 mt-0.5">6 tháng gần nhất · tiền cọc + tiền mặt đã thu</p>
             </div>
           </div>
           {loading ? (
@@ -148,7 +148,7 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
             </div>
             <div className="min-w-0">
               <h3 className="font-black text-sm text-slate-900">Tỷ lệ lấp đầy theo tháng</h3>
-              <p className="text-[13px] text-slate-500 mt-0.5">Số ca đã bán / tổng số ca có thể bán</p>
+              <p className="text-[14px] text-slate-500 mt-0.5">Số ca đã bán / tổng số ca có thể bán</p>
             </div>
           </div>
           {loading ? (
@@ -201,11 +201,11 @@ export default function OwnerCharts({ activePitch }: { activePitch?: any }) {
           </div>
           <div className="min-w-0">
             <h3 className="font-black text-sm text-slate-900">Nhu cầu theo khung giờ trong ngày</h3>
-            <p className="text-[13px] text-slate-500 mt-0.5">
+            <p className="text-[14px] text-slate-500 mt-0.5">
               Giúp chủ sân biết giờ nào hot nhất để tăng giá giờ vàng
               {activePitch?.name ? ` · ${activePitch.name}` : ""}
             </p>
-            <span className="inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[13px] font-bold">
+            <span className="inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[14px] font-bold">
             <span className="w-2 h-2 rounded-full bg-amber-500" />
             Giờ vàng (17h–21h) — nên tăng giá
             </span>

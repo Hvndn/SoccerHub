@@ -157,7 +157,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
  render: (r) => (
  <div>
  <p className="font-bold text-slate-900 ">{r.fullName}</p>
- <p className="text-[13px] font-mono text-slate-500 truncate max-w-[220px]">{r.email}</p>
+ <p className="text-[14px] font-mono text-slate-500 truncate max-w-[220px]">{r.email}</p>
  </div>
  ),
  },
@@ -229,7 +229,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
  setConfirm({ kind: "role", user: r, role: e.target.value });
  }
  }}
- className="pl-2 pr-6 py-1.5 rounded-lg border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1] disabled:opacity-50 cursor-pointer"
+ className="pl-2 pr-6 py-1.5 rounded-lg border border-slate-200 bg-white text-[14px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1] disabled:opacity-50 cursor-pointer"
  >
  {ALL_ROLES.map((role) => (
  <option key={role} value={role}>
@@ -257,7 +257,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
  <SectionCard>
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
   <div>
-  <h2 className="font-black text-slate-900 text-sm">Quản lý người dùng</h2> <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
+  <h2 className="font-black text-slate-900 text-sm">Quản lý người dùng</h2> <p className="hidden sm:block text-[14px] text-slate-500 mt-0.5">
   Khóa/mở tài khoản và phân vai trò. Không thể tự khóa hoặc tự đổi vai trò của chính mình.
   </p>
   </div>
@@ -270,14 +270,14 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   onChange={(e) => setQuery(e.target.value)}
   placeholder="Tìm nhanh trong danh sách…"
   aria-label="Tìm kiếm người dùng"
-  className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] w-48"
+  className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[14px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] w-48"
   />
   </div>
   <select
   value={roleFilter}
   onChange={(e) => setRoleFilter(e.target.value)}
   aria-label="Lọc theo vai trò"
-  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
   >
   <option value="">Tất cả ({totalUsers})</option>
   {ALL_ROLES.map((r) => (
@@ -289,7 +289,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   <button
   type="button"
   onClick={load}
-  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all whitespace-nowrap shrink-0"
+  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[14px] font-bold text-slate-700 transition-all whitespace-nowrap shrink-0"
   >
   Tải lại
   </button>
@@ -309,7 +309,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   {/* Phân trang */}
   {total > 0 && (
   <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-100">
-  <span className="text-[13px] font-bold text-slate-500">
+  <span className="text-[14px] font-bold text-slate-500">
   Hiển thị <strong className="text-slate-800">{rows.length}</strong> / {total} tài khoản
   {debouncedQ && <> · đang lọc “<strong className="text-slate-800">{debouncedQ}</strong>”</>}
   </span>
@@ -318,18 +318,18 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   type="button"
   disabled={page === 0 || loading}
   onClick={() => setPage((p) => Math.max(0, p - 1))}
-  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[14px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1"
   >
   <ChevronLeft className="w-3.5 h-3.5" /> Trước
   </button>
-  <span className="px-2.5 py-1.5 text-[13px] font-mono font-bold text-slate-700 bg-slate-100 rounded-lg">
+  <span className="px-2.5 py-1.5 text-[14px] font-mono font-bold text-slate-700 bg-slate-100 rounded-lg">
   Trang {page + 1}/{totalPages}
   </span>
   <button
   type="button"
   disabled={page + 1 >= totalPages || loading}
   onClick={() => setPage((p) => p + 1)}
-  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[13px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-[14px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1"
   >
   Sau <ChevronRight className="w-3.5 h-3.5" />
   </button>
@@ -390,7 +390,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   <h3 className="font-black text-slate-900 text-base truncate">
   {detail.user.fullName}
   </h3>
-  <p className="text-[13px] text-slate-500 font-mono truncate">{detail.user.email}</p>
+  <p className="text-[14px] text-slate-500 font-mono truncate">{detail.user.email}</p>
   </div>
   <div className="flex items-center gap-2 shrink-0">
   <StatusBadge tone={detail.user.enabled ? "green" : "rose"}>
@@ -412,21 +412,21 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   <Loader2 className="w-6 h-6 animate-spin text-[#0369a1]" />
   </div>
   ) : detail.data ? (
-  <div className="p-5 space-y-5 text-[13px]">
+  <div className="p-5 space-y-5 text-[14px]">
   {/* Chỉ số nhanh */}
   <div className="grid grid-cols-3 gap-3">
   <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
-  <p className="text-[13px] font-bold text-slate-500">Số đơn đặt</p>
+  <p className="text-[14px] font-bold text-slate-500">Số đơn đặt</p>
   <p className="font-mono font-black text-lg text-slate-900">{detail.data.bookingCount ?? 0}</p>
   </div>
   <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
-  <p className="text-[13px] font-bold text-emerald-700">Tổng chi</p>
+  <p className="text-[14px] font-bold text-emerald-700">Tổng chi</p>
   <p className="font-mono font-black text-lg text-emerald-700">
   {Number(detail.data.totalSpent ?? 0).toLocaleString("vi-VN")}đ
   </p>
   </div>
   <div className="rounded-xl bg-rose-50 border border-rose-200 p-3">
-  <p className="text-[13px] font-bold text-rose-700">Kèo đã đăng</p>
+  <p className="text-[14px] font-bold text-rose-700">Kèo đã đăng</p>
   <p className="font-mono font-black text-lg text-rose-700">
   {(detail.data.matchmakingPosts || []).length}
   </p>
@@ -435,7 +435,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
 
   {/* Hồ sơ */}
   <div>
-  <h4 className="font-black text-slate-900 text-[13px] mb-2 pb-1.5 border-b border-slate-100">
+  <h4 className="font-black text-slate-900 text-[14px] mb-2 pb-1.5 border-b border-slate-100">
   Hồ sơ cá nhân
   </h4>
   <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
@@ -454,7 +454,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   ["Ngày đăng ký", detail.data.user.createdAt ? String(detail.data.user.createdAt).slice(0, 10) : "—"],
   ].map(([label, val]) => (
   <div key={String(label)}>
-  <p className="text-[13px] font-bold text-slate-400">{label}</p>
+  <p className="text-[14px] font-bold text-slate-400">{label}</p>
   <p className="font-bold text-slate-800 truncate">{String(val ?? "—")}</p>
   </div>
   ))}
@@ -464,7 +464,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   {/* Kèo đã đăng */}
   {(detail.data.matchmakingPosts || []).length > 0 && (
   <div>
-  <h4 className="font-black text-slate-900 text-[13px] mb-2 pb-1.5 border-b border-slate-100">
+  <h4 className="font-black text-slate-900 text-[14px] mb-2 pb-1.5 border-b border-slate-100">
   Kèo giao hữu đã đăng
   </h4>
   <div className="space-y-1.5">
@@ -475,7 +475,7 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   >
   <div className="min-w-0">
   <p className="font-bold text-slate-900 truncate">{p.teamName}</p>
-  <p className="text-[13px] text-slate-500 truncate">
+  <p className="text-[14px] text-slate-500 truncate">
   {p.pitchName} · {p.matchTime}
   {p.opponentTeamName ? ` · đã ghép với ${p.opponentTeamName}` : ""}
   </p>

@@ -88,18 +88,18 @@ export default function AdminTable<T>({
  setPage(0);
  }}
  placeholder={searchPlaceholder}
- className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
  />
  </div>
- <span className="text-[13px] font-mono text-slate-500 whitespace-nowrap">
+ <span className="text-[14px] font-mono text-slate-500 whitespace-nowrap">
  {filtered.length} dòng
  </span>
  </div>
 
  <div className="overflow-x-auto -mx-1 px-1 rounded-xl border border-slate-200 ">
- <table className="w-full text-[13px] border-collapse min-w-[520px] bg-white ">
+ <table className="w-full text-[14px] border-collapse min-w-[520px] bg-white ">
  <thead>
- <tr className="text-left text-[13px] tracking-wider text-slate-500 border-b border-slate-200 bg-slate-50/60 ">
+ <tr className="text-left text-[14px] tracking-wider text-slate-500 border-b border-slate-200 bg-slate-50/60 ">
  {columns.map((col, ci) => (
  <th key={col.key} scope="col" className={`py-2.5 px-2 sm:px-3 font-bold whitespace-nowrap ${col.className ?? ""} ${ci === 0 ? "sticky left-0 bg-slate-50 z-10" : ""}`}>
  {col.sortable ? (
@@ -157,7 +157,7 @@ export default function AdminTable<T>({
 
  {totalPages > 1 && (
  <div className="flex items-center justify-between">
- <span className="text-[13px] text-slate-500 font-semibold">
+ <span className="text-[14px] text-slate-500 font-semibold">
  Trang {safePage + 1}/{totalPages}
  </span>
  <div className="flex items-center gap-1.5">

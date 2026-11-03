@@ -93,7 +93,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       {/* --- SECTION 1: 4 TRỤ CỘT --- */}
       <section className="space-y-4 sm:space-y-6">
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] text-[13px] font-black">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#0369a1]/10 text-[#0b4f6c] text-[14px] font-black">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Tính Năng Cốt Lõi</span>
           </div>
@@ -113,7 +113,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                       <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${pillar.gradient} text-white flex items-center justify-center shadow-sm`}>
                         <Icon className="w-5 h-5" />
                       </div>
-                      <span className="text-[13px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                      <span className="text-[14px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                         {pillar.badge}
                       </span>
                     </div>
@@ -126,13 +126,13 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                       {pillar.points.map((pt, idx) => (
                         <div key={idx} className="flex items-center space-x-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                          <span className="text-[13px] font-bold text-slate-700">{pt}</span>
+                          <span className="text-[14px] font-bold text-slate-700">{pt}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[13px]">
+                  <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[14px]">
                     <span className="text-sky-700 font-black">{pillar.metric}</span>
                   </div>
                 </div>
@@ -157,7 +157,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                 </div>
                 <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">Quản Lý Thủ Công</h3>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 font-extrabold text-[13px]">
+              <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 font-extrabold text-[14px]">
                 Dễ sai sót
               </span>
             </div>
@@ -165,7 +165,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               {traditionalIssues.map((item, idx) => (
                 <div key={idx} className="flex items-center space-x-2.5 p-2.5 rounded-xl bg-rose-50/50 border border-rose-100">
                   <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                  <span className="text-[13px] font-bold text-slate-800">{item}</span>
+                  <span className="text-[14px] font-bold text-slate-800">{item}</span>
                 </div>
               ))}
             </div>
@@ -179,7 +179,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                 </div>
                 <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">Nền Tảng Turfzone</h3>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 font-extrabold text-[13px]">
+              <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 font-extrabold text-[14px]">
                 Tự động 99.9%
               </span>
             </div>
@@ -187,7 +187,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               {platformAdvantages.map((item, idx) => (
                 <div key={idx} className="flex items-center space-x-2.5 p-2.5 rounded-xl bg-[#0369a1]/5 border border-[#0369a1]/15">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span className="text-[13px] font-bold text-slate-800">{item}</span>
+                  <span className="text-[14px] font-bold text-slate-800">{item}</span>
                 </div>
               ))}
             </div>
@@ -205,7 +205,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
           <button
             type="button"
             onClick={() => onExplore("PLAYER")}
-            className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[13px] sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-2"
           >
             <Users className="w-4 h-4" />
             <span>Cổng Cầu Thủ</span>
@@ -214,7 +214,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
           <button
             type="button"
             onClick={() => onExplore("OWNER")}
-            className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-black text-[13px] sm:text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-black text-[14px] sm:text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-2"
           >
             <Store className="w-4 h-4 text-[#0b4f6c]" />
             <span>Cổng Chủ Sân</span>
@@ -223,7 +223,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
           <button
             type="button"
             onClick={() => (onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER"))}
-            className="px-5 py-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-900 font-black text-[13px] sm:text-sm border border-sky-200 transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-900 font-black text-[14px] sm:text-sm border border-sky-200 transition-all active:scale-95 cursor-pointer flex items-center gap-2"
           >
             <Trophy className="w-4 h-4 text-amber-500" />
             <span>Giải Đấu &amp; Nhánh Đấu</span>

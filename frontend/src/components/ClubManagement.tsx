@@ -182,7 +182,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
             <h2 className="text-base sm:text-lg font-black text-slate-900 leading-tight">
               CLB của tôi
             </h2>
-            <p className="text-[13px] text-slate-500">
+            <p className="text-[14px] text-slate-500">
               Bạn là đại diện CLB — thêm thành viên, quản lý danh sách đội của CLB.
             </p>
           </div>
@@ -190,7 +190,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
         <button
           type="button"
           onClick={() => setShowCreate((v) => !v)}
-          className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
+          className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-extrabold transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
         >
           {showCreate ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
           {showCreate ? "Đóng" : "Tạo CLB"}
@@ -205,13 +205,13 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
         >
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#0b4f6c]" />
-            <span className="text-[13px] font-black text-slate-900">
+            <span className="text-[14px] font-black text-slate-900">
               Tạo CLB mới — bạn sẽ là đại diện
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-[13px] font-bold text-slate-600">Tên CLB *</label>
+              <label className="text-[14px] font-bold text-slate-600">Tên CLB *</label>
               <input
                 type="text"
                 value={form.name}
@@ -221,7 +221,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[13px] font-bold text-slate-600">Khu vực</label>
+              <label className="text-[14px] font-bold text-slate-600">Khu vực</label>
               <input
                 type="text"
                 value={form.area}
@@ -232,7 +232,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[13px] font-bold text-slate-600">Mô tả</label>
+            <label className="text-[14px] font-bold text-slate-600">Mô tả</label>
             <input
               type="text"
               value={form.description}
@@ -243,7 +243,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-[13px] font-bold text-slate-600">Số điện thoại CLB</label>
+              <label className="text-[14px] font-bold text-slate-600">Số điện thoại CLB</label>
               <input
                 type="tel"
                 value={form.phone}
@@ -253,7 +253,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[13px] font-bold text-slate-600">
+              <label className="text-[14px] font-bold text-slate-600">
                 Tối đa thành viên (0 = không giới hạn)
               </label>
               <input
@@ -269,7 +269,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
           <button
             type="submit"
             disabled={creating}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-extrabold transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5"
           >
             {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
             {creating ? "Đang tạo…" : "Tạo CLB"}
@@ -285,20 +285,20 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
           ))}
         </div>
       ) : error ? (
-        <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-[13px] font-bold text-rose-700">
+        <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-[14px] font-bold text-rose-700">
           {error}
         </p>
       ) : clubs.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center space-y-2">
           <Users className="w-8 h-8 text-slate-300 mx-auto" />
           <p className="text-sm font-bold text-slate-700">Bạn chưa có CLB nào</p>
-          <p className="text-[13px] text-slate-500">
+          <p className="text-[14px] text-slate-500">
             Tạo CLB để quản lý danh sách đội và đặt sân cho CLB của bạn.
           </p>
           <button
             type="button"
             onClick={() => setShowCreate(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold transition-all active:scale-95"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-extrabold transition-all active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" /> Tạo CLB ngay
           </button>
@@ -312,7 +312,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                 key={c.id}
                 type="button"
                 onClick={() => setActiveClubId(c.id)}
-                className={`px-3.5 py-2 rounded-xl text-[13px] font-extrabold transition-all border ${
+                className={`px-3.5 py-2 rounded-xl text-[14px] font-extrabold transition-all border ${
                   c.id === activeClubId
                     ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
                     : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
@@ -333,11 +333,11 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                     {activeClub.name}
                   </h3>
                   {activeClub.description && (
-                    <p className="text-[13px] text-slate-500 mt-0.5 leading-relaxed">
+                    <p className="text-[14px] text-slate-500 mt-0.5 leading-relaxed">
                       {activeClub.description}
                     </p>
                   )}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[13px] text-slate-500 font-semibold">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[14px] text-slate-500 font-semibold">
                     {activeClub.area && <span>📍 {activeClub.area}</span>}
                     {activeClub.phone && <span>☎ {activeClub.phone}</span>}
                     <span>
@@ -349,7 +349,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                   <button
                     type="button"
                     onClick={() => handleDeleteClub(activeClub)}
-                    className="shrink-0 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-[13px] font-extrabold border border-rose-200 transition-all active:scale-95 flex items-center gap-1.5"
+                    className="shrink-0 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-[14px] font-extrabold border border-rose-200 transition-all active:scale-95 flex items-center gap-1.5"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Xóa CLB
                   </button>
@@ -369,13 +369,13 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                       value={memberEmail}
                       onChange={(e) => setMemberEmail(e.target.value)}
                       placeholder="Email thành viên — VD: player@Turfzone.vn"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[13px]"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={memberBusy || !memberEmail.trim()}
-                    className="px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 shrink-0"
+                    className="px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-extrabold transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 shrink-0"
                   >
                     {memberBusy ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -389,7 +389,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
 
               {/* Danh sách thành viên */}
               <div className="space-y-2">
-                <span className="text-[13px] font-black tracking-wider text-slate-500">
+                <span className="text-[14px] font-black tracking-wider text-slate-500">
                   Thành viên ({activeClub.memberCount ?? 0})
                 </span>
                 <div className="space-y-1.5">
@@ -399,7 +399,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                       className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200 bg-white"
                     >
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-[13px] shrink-0 ${
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-[14px] shrink-0 ${
                           m.isRepresentative
                             ? "bg-amber-100 text-amber-800"
                             : "bg-slate-100 text-slate-600"
@@ -413,21 +413,21 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                       </div>
                       <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="text-[13px] font-black text-slate-900 truncate">
+                            <span className="text-[14px] font-black text-slate-900 truncate">
                               {m.name || m.email}
                             </span>
                             {m.isRepresentative && (
-                              <span className="shrink-0 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[13px] font-black">
+                              <span className="shrink-0 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[14px] font-black">
                                 Đại diện
                               </span>
                             )}
                             {m.email === myEmail && (
-                              <span className="shrink-0 px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[13px] font-black">
+                              <span className="shrink-0 px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[14px] font-black">
                                 Bạn
                               </span>
                             )}
                           </div>
-                        <p className="text-[13px] font-mono text-slate-500 truncate">
+                        <p className="text-[14px] font-mono text-slate-500 truncate">
                           {m.email}
                           {m.phone ? ` · ${m.phone}` : ""}
                         </p>
@@ -463,7 +463,7 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                     </div>
                   ))}
                   {(activeClub.memberList ?? []).length === 0 && (
-                    <p className="text-[13px] text-slate-500 text-center py-3">
+                    <p className="text-[14px] text-slate-500 text-center py-3">
                       CLB chưa có thành viên nào.
                     </p>
                   )}

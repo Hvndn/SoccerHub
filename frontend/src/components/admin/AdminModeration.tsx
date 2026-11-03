@@ -74,11 +74,11 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  render: (r) => (
  <div className="max-w-[240px]">
  <p className="font-bold text-slate-900 truncate">{r.teamName}</p>
- <p className="text-[13px] text-slate-500 truncate">
+ <p className="text-[14px] text-slate-500 truncate">
  {r.pitchName} • {r.matchTime}
  </p>
  {r.note && (
- <p className="text-[13px] text-slate-500 truncate italic">“{r.note}”</p>
+ <p className="text-[14px] text-slate-500 truncate italic">“{r.note}”</p>
  )}
  </div>
  ),
@@ -89,8 +89,8 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  render: (r) => (
   <div className="whitespace-nowrap">
  <p className="font-bold">{r.captainName || "—"}</p>
- <p className="text-[13px] font-mono text-slate-500">{r.captainPhone || ""}</p>
- <p className="text-[13px] font-bold text-slate-600">
+ <p className="text-[14px] font-mono text-slate-500">{r.captainPhone || ""}</p>
+ <p className="text-[14px] font-bold text-slate-600">
  {r.record && r.record !== "0-0-0" ? `${r.record} • ${r.winRate ?? 0}%` : "Tân binh"}
  </p>
  </div>
@@ -106,7 +106,7 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  <StatusBadge tone={STATUS_TONE[r.status ?? ""] ?? "slate"}>
  {STATUS_LABEL[r.status ?? ""] ?? r.status}
  </StatusBadge>
- <p className="text-[13px] font-mono font-bold text-slate-600 mt-1">
+ <p className="text-[14px] font-mono font-bold text-slate-600 mt-1">
  {formatMoney((r as any).estimatedFee)}
  </p>
  </div>
@@ -133,14 +133,14 @@ export default function AdminModeration({ notify }: { notify: (type: "ok" | "err
  <SectionCard>
  <div className="flex items-center justify-between mb-4">
  <div>
- <h2 className="font-black text-slate-900 text-sm">Kiểm duyệt chợ kèo</h2> <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
+ <h2 className="font-black text-slate-900 text-sm">Kiểm duyệt chợ kèo</h2> <p className="hidden sm:block text-[14px] text-slate-500 mt-0.5">
  Gỡ tin đăng vi phạm (spam, sai sự thật). Hành động không thể hoàn tác.
  </p>
  </div>
  <button
  type="button"
  onClick={load}
- className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all whitespace-nowrap shrink-0"
+ className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[14px] font-bold text-slate-700 transition-all whitespace-nowrap shrink-0"
  >
  Tải lại
  </button>

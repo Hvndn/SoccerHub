@@ -42,7 +42,7 @@ function ChartCard({ title, desc, icon, children, loading }: ChartCardProps) {
         </div>
         <div className="min-w-0">
           <h3 className="font-black text-sm text-slate-900">{title}</h3>
-          <p className="text-[13px] text-slate-500 mt-0.5">{desc}</p>
+          <p className="text-[14px] text-slate-500 mt-0.5">{desc}</p>
         </div>
       </div>
       {loading ? (
@@ -284,7 +284,7 @@ export default function AdminCharts() {
   const emptyHint = (msg: string) => (
     <div className="h-56 flex flex-col items-center justify-center gap-2 text-center">
       <BarChart3 className="w-8 h-8 text-slate-300" />
-      <p className="text-[13px] font-bold text-slate-500">{msg}</p>
+      <p className="text-[14px] font-bold text-slate-500">{msg}</p>
     </div>
   );
 
@@ -295,13 +295,13 @@ export default function AdminCharts() {
       <div className="flex flex-col gap-3 bg-white rounded-2xl border border-slate-200 p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[13px] font-bold text-slate-600 tracking-wide">Khoảng thời gian:</span>
+            <span className="text-[14px] font-bold text-slate-600 tracking-wide">Khoảng thời gian:</span>
             {RANGES.map((r) => (
               <button
                 key={r.days}
                 type="button"
                 onClick={() => setRangeDays(r.days)}
-                className={`px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-[14px] font-bold transition-all ${
                   rangeDays === r.days
                     ? "bg-[#0369a1] text-white shadow-sm"
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -315,7 +315,7 @@ export default function AdminCharts() {
                 value={pitchId}
                 onChange={(e) => setPitchId(e.target.value)}
                 aria-label="Lọc theo cụm sân"
-                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
               >
                 <option value="">Tất cả cụm sân</option>
                 {pitches.map((p: any) => (
@@ -325,7 +325,7 @@ export default function AdminCharts() {
                 ))}
               </select>
             )}
-            <span className="text-[13px] font-mono text-slate-500 ml-1">
+            <span className="text-[14px] font-mono text-slate-500 ml-1">
               Tổng trong {rangeDays} ngày:{" "}
               <strong className="text-[#0369a1]">{revenueInRange.sum.toLocaleString("vi-VN")}đ</strong>
               {" · "}

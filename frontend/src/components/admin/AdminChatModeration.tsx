@@ -88,8 +88,8 @@ const ROLE_LABEL: Record<string, string> = {
       render: (r) => (
         <div className="max-w-[180px]">
           <p className="font-bold text-slate-900 truncate">{r.senderName}</p>
-          <p className="text-[13px] font-mono text-slate-500 truncate">{r.senderEmail}</p>
-          <span className="text-[13px] font-bold text-slate-400">{ROLE_LABEL[r.senderRole] ?? r.senderRole}</span>
+          <p className="text-[14px] font-mono text-slate-500 truncate">{r.senderEmail}</p>
+          <span className="text-[14px] font-bold text-slate-400">{ROLE_LABEL[r.senderRole] ?? r.senderRole}</span>
         </div>
       ),
     },
@@ -109,7 +109,7 @@ const ROLE_LABEL: Record<string, string> = {
       header: "Nội dung",
       render: (r) => (
         <div className="max-w-[360px]">
-          {r.pinned && <span className="text-[13px] font-bold text-amber-600 mr-1">[Ghim]</span>}
+          {r.pinned && <span className="text-[14px] font-bold text-amber-600 mr-1">[Ghim]</span>}
           <span className="text-slate-700 break-words">{r.content}</span>
         </div>
       ),
@@ -120,7 +120,7 @@ const ROLE_LABEL: Record<string, string> = {
       sortable: true,
       sortValue: (r) => r.createdAt ?? "",
       render: (r) => (
-        <span className="text-[13px] font-mono text-slate-500 whitespace-nowrap">
+        <span className="text-[14px] font-mono text-slate-500 whitespace-nowrap">
           {r.createdAt ? String(r.createdAt).replace("T", " ").slice(0, 16) : "—"}
         </span>
       ),
@@ -148,7 +148,7 @@ const ROLE_LABEL: Record<string, string> = {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="font-black text-slate-900 text-sm">Kiểm duyệt tin nhắn chat</h2>
-            <p className="hidden sm:block text-[13px] text-slate-500 mt-0.5">
+            <p className="hidden sm:block text-[14px] text-slate-500 mt-0.5">
               Xem và gỡ tin vi phạm trong các kênh công khai và nhóm chat.
             </p>
           </div>
@@ -156,7 +156,7 @@ const ROLE_LABEL: Record<string, string> = {
             <select
               value={channel}
               onChange={(e) => setChannel(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
             >
               <option value="">Tất cả kênh</option>
               <option value="general">Phòng Chat Chung</option>
@@ -172,7 +172,7 @@ const ROLE_LABEL: Record<string, string> = {
             <button
               type="button"
               onClick={load}
-              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[14px] font-bold text-slate-700 transition-all flex items-center gap-1.5"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Tải lại
             </button>

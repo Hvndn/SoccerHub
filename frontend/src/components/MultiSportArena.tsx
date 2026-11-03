@@ -233,18 +233,18 @@ export default function MultiSportArena({
  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6 relative z-10">
  <div>
  <div className="flex items-center space-x-3 mb-3">
- <span className="bg-[#0369a1]/10 text-sky-800 border border-[#0369a1]/30 text-[13px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
- <ShieldCheck className="w-3.5 h-3.5" /> Danh sách đọc từ CSDL
+ <span className="bg-[#0369a1]/10 text-sky-800 border border-[#0369a1]/30 text-[14px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+ <ShieldCheck className="w-3.5 h-3.5" /> Trực tiếp
  </span>
- <span className="bg-[#0369a1]/10 text-sky-700 border border-[#0369a1]/30 text-[13px] font-bold px-3 py-1 rounded-full">
+ <span className="bg-[#0369a1]/10 text-sky-700 border border-[#0369a1]/30 text-[14px] font-bold px-3 py-1 rounded-full">
  {courts[0]?.name || "Chưa có cụm sân nào"}
  </span>
  </div>
  <h1 className="text-xl sm:text-4xl font-extrabold tracking-tight text-slate-900 ">
- Ma Trận Cụm Sân Bóng Đá
+ Cụm Sân Bóng Đá
  </h1>
  <p className="mt-2 text-slate-600 text-sm sm:text-base max-w-2xl hidden sm:block">
- Đặt ca sân 5, sân 7, sân 11 và Futsal trong nhà tự động 24/7. Tìm đối thủ ghép trận theo phong độ, giữ chỗ tức thì qua mã đặt chỗ.
+ 
  </p>
  </div>
 
@@ -260,7 +260,7 @@ export default function MultiSportArena({
  <button
  key={tab.id}
  onClick={() => setActiveFilter(tab.id as any)}
- className={`px-3.5 py-2 rounded-lg text-[13px] font-extrabold transition-all ${
+ className={`px-3.5 py-2 rounded-lg text-[14px] font-extrabold transition-all ${
  activeFilter === tab.id
  ? 'bg-[#0369a1] text-white shadow-lg'
  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200 '
@@ -276,19 +276,19 @@ export default function MultiSportArena({
  <div className="mt-6 pt-6 border-t border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 min-w-0">
  <div className="text-lg sm:text-2xl font-bold text-emerald-600">{courts.length} Sân</div>
- <div className="text-[13px] text-slate-500 mt-0.5 break-words">Đang hoạt động</div>
+ <div className="text-[14px] text-slate-500 mt-0.5 break-words">Đang hoạt động</div>
  </div>
  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 min-w-0">
  <div className="text-lg sm:text-2xl font-bold text-sky-700">{matchQueues.length} Kèo Mở</div>
- <div className="text-[13px] text-slate-500 mt-0.5 break-words">Chờ ghép đối thủ</div>
+ <div className="text-[14px] text-slate-500 mt-0.5 break-words">Chờ ghép đối thủ</div>
  </div>
  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 min-w-0">
  <div className="text-lg sm:text-2xl font-bold text-cyan-700">5 · 7 · 11</div>
- <div className="text-[13px] text-slate-500 mt-0.5 break-words">Loại mặt sân đang khai thác</div>
+ <div className="text-[14px] text-slate-500 mt-0.5 break-words">Loại mặt sân đang khai thác</div>
  </div>
  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 min-w-0">
  <div className="text-lg sm:text-2xl font-bold text-amber-600">Cọc 50%</div>
- <div className="text-[13px] text-slate-500 mt-0.5 break-words">Thanh toán qua VietQR khi đặt</div>
+ <div className="text-[14px] text-slate-500 mt-0.5 break-words">Thanh toán qua VietQR khi đặt</div>
  </div>
  </div>
  </div>
@@ -305,14 +305,14 @@ export default function MultiSportArena({
  <Activity className="w-5 h-5 text-emerald-500" />
  <span>Trạng Thái Các Sân Bóng Trực Tiếp</span>
  </h2>
- <p className="text-[13px] sm:text-sm text-slate-500 mt-1 hidden sm:block">
- Danh sách cụm sân trực tiếp từ hệ thống. Bấm “Đặt Ca” để giữ chỗ thật.
+ <p className="text-[14px] sm:text-sm text-slate-500 mt-1 hidden sm:block">
+ 
  </p>
  </div>
  </div>
 
  {/* Color Legend Bar */}
- <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 mb-6 flex flex-wrap items-center justify-between gap-3 sm:gap-4 text-[13px]">
+ <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 mb-6 flex flex-wrap items-center justify-between gap-3 sm:gap-4 text-[14px]">
  <div className="flex items-center space-x-6 flex-wrap gap-y-2">
  <div className="flex items-center space-x-2">
  <span className="w-3 h-3 rounded-full bg-[#0369a1]"></span>
@@ -324,7 +324,7 @@ export default function MultiSportArena({
  </div>
  </div>
 
- <div className="text-slate-500 text-[13px] flex items-center">
+ <div className="text-slate-500 text-[14px] flex items-center">
  <QrCode className="w-4 h-4 mr-1 text-emerald-500" /> Thanh toán cọc VietQR khi đặt
  </div>
  </div>
@@ -360,22 +360,22 @@ export default function MultiSportArena({
  {court.id}
  </span>
  {court.status === 'available' && (
- <span className="bg-[#0369a1]/20 text-sky-800 text-[13px] font-bold px-2.5 py-0.5 rounded-full border border-[#0369a1]/30 flex items-center gap-1">
+ <span className="bg-[#0369a1]/20 text-sky-800 text-[14px] font-bold px-2.5 py-0.5 rounded-full border border-[#0369a1]/30 flex items-center gap-1">
  <Check className="w-3 h-3" /> Ca Trống
  </span>
  )}
  {court.status === 'matching' && (
- <span className="bg-amber-500/20 text-amber-700 text-[13px] font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+ <span className="bg-amber-500/20 text-amber-700 text-[14px] font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
  <Users className="w-3 h-3" /> Ghép Kèo ({court.currentPlayers}/{court.maxPlayers})
  </span>
  )}
  {court.status === 'live' && (
- <span className="bg-red-500/20 text-red-600 text-[13px] font-bold px-2.5 py-0.5 rounded-full border border-red-500/30 flex items-center gap-1 animate-pulse">
- <Flame className="w-3 h-3" /> Live Score
+ <span className="bg-red-500/20 text-red-600 text-[14px] font-bold px-2.5 py-0.5 rounded-full border border-red-500/30 flex items-center gap-1 animate-pulse">
+ <Flame className="w-3 h-3" /> Đang Diễn Ra
  </span>
  )}
  {court.status === 'booked' && (
- <span className="bg-slate-200 text-slate-600 text-[13px] font-bold px-2.5 py-0.5 rounded-full">
+ <span className="bg-slate-200 text-slate-600 text-[14px] font-bold px-2.5 py-0.5 rounded-full">
  Đã Khóa Sân
  </span>
  )}
@@ -385,15 +385,15 @@ export default function MultiSportArena({
  {court.name}
  </h3>
 
- <div className="text-[13px] text-slate-500 space-y-1 mb-3">
+ <div className="text-[14px] text-slate-500 space-y-1 mb-3">
  <div>⚽ <span className="font-semibold text-slate-700 ">{court.fieldLabel}</span></div>
  <div>🌱 {court.surface}</div>
  </div>
 
  {/* Live score if active */}
  {court.status === 'live' && court.liveScore && (
- <div className="bg-red-950/40 border border-red-500/30 p-2.5 rounded-lg mb-3 text-[13px] text-red-200 font-mono">
- <div className="flex items-center text-[13px] text-red-400 font-sans mb-1 tracking-wider font-bold">
+ <div className="bg-red-950/40 border border-red-500/30 p-2.5 rounded-lg mb-3 text-[14px] text-red-200 font-mono">
+ <div className="flex items-center text-[14px] text-red-400 font-sans mb-1 tracking-wider font-bold">
  <Video className="w-3 h-3 mr-1" /> Trận Đấu Trực Tiếp
  </div>
  {court.liveScore}
@@ -403,12 +403,12 @@ export default function MultiSportArena({
  {/* Features tags */}
  <div className="flex flex-wrap gap-1 mb-4">
  {court.features.length === 0 ? (
- <span className="text-[13px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded">
+ <span className="text-[14px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded">
  Chưa khai báo tiện ích
  </span>
  ) : (
  court.features.map((feat, i) => (
- <span key={i} className="text-[13px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+ <span key={i} className="text-[14px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
  {feat}
  </span>
  ))
@@ -419,16 +419,16 @@ export default function MultiSportArena({
  {/* Bottom Action */}
  <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
  <div>
- <span className="text-[13px] text-slate-500">Giá ca:</span>
+ <span className="text-[14px] text-slate-500">Giá ca:</span>
  <div className="text-sm font-extrabold text-sky-700 ">
- {court.pricePerHour.toLocaleString()}đ<span className="text-[13px] font-normal text-slate-500">/giờ</span>
+ {court.pricePerHour.toLocaleString()}đ<span className="text-[14px] font-normal text-slate-500">/giờ</span>
  </div>
  </div>
 
  {court.status === 'available' && (
  <button
  onClick={() => setBookingCourt(court)}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold px-3 py-2 rounded-lg shadow transition"
+ className="bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold px-3 py-2 rounded-lg shadow transition"
  >
  Đặt Sân Ngay
  </button>
@@ -437,7 +437,7 @@ export default function MultiSportArena({
  {court.status === 'matching' && (
  <button
  onClick={() => handleActionToast(`Bạn đã gửi yêu cầu tham gia ghép đội tại ${court.id}!`)}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold px-3 py-2 rounded-lg shadow transition"
+ className="bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold px-3 py-2 rounded-lg shadow transition"
  >
  Vào Kèo Ngay
  </button>
@@ -446,14 +446,14 @@ export default function MultiSportArena({
  {court.status === 'live' && (
  <button
  onClick={() => handleActionToast(`Đang kết nối camera AI VAR live stream ${court.id}...`)}
- className="bg-rose-600 hover:bg-rose-700 text-white text-[13px] font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1"
+ className="bg-rose-600 hover:bg-rose-700 text-white text-[14px] font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1"
  >
  <Video className="w-3 h-3" /> Xem VAR Live
  </button>
  )}
 
  {court.status === 'booked' && (
- <span className="text-[13px] text-slate-500 font-medium italic">Không khả dụng</span>
+ <span className="text-[14px] text-slate-500 font-medium italic">Không khả dụng</span>
  )}
  </div>
  </div>
@@ -470,14 +470,14 @@ export default function MultiSportArena({
  <Zap className="w-5 h-5 text-amber-700" />
  <span>Sàn Ghép Kèo Đội Bóng Đá Phủi</span>
  </h2>
- <p className="text-[13px] sm:text-sm text-slate-500 mt-1 hidden sm:block">
- Gia nhập các kèo bóng đá đang thiếu cầu thủ, tự động chia tiền sân theo đầu người qua VietQR
+ <p className="text-[14px] sm:text-sm text-slate-500 mt-1 hidden sm:block">
+ 
  </p>
  </div>
 
  <button
  onClick={() => onNavigateToChokego?.()}
- className="bg-gradient-to-r from-[#0369a1] to-[#075985] hover:from-[#075985] hover:to-[#0369a1] text-white text-[13px] font-bold px-4 py-2.5 rounded-xl shadow-lg flex items-center space-x-2 transition"
+ className="bg-gradient-to-r from-[#0369a1] to-[#075985] hover:from-[#075985] hover:to-[#0369a1] text-white text-[14px] font-bold px-4 py-2.5 rounded-xl shadow-lg flex items-center space-x-2 transition"
  >
  <Plus className="w-4 h-4" />
  <span>+ Tạo Kèo Mới</span>
@@ -507,10 +507,10 @@ export default function MultiSportArena({
  </div>
  <div>
  <div className="flex items-center space-x-2">
- <span className="bg-amber-400/20 text-amber-600 text-[13px] font-bold px-2 py-0.5 rounded border border-amber-400/30">
+ <span className="bg-amber-400/20 text-amber-600 text-[14px] font-bold px-2 py-0.5 rounded border border-amber-400/30">
  {match.category}
  </span>
- <span className="text-[13px] text-slate-500">
+ <span className="text-[14px] text-slate-500">
  Đội Trưởng: <span className="font-semibold text-slate-800 ">{match.hostName}</span> ({match.hostForm ? `phong độ ${match.hostForm}` : "tân binh"})
  </span>
  </div>
@@ -519,7 +519,7 @@ export default function MultiSportArena({
  {match.title}
  </h3>
 
- <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-[13px] text-slate-500">
+ <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-[14px] text-slate-500">
  <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1 text-emerald-500" /> {match.time}</span>
  <span className="flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1 text-[#0369a1]" /> {match.court}</span>
  <span className="flex items-center"><Trophy className="w-3.5 h-3.5 mr-1 text-amber-700" /> Yêu cầu: {match.formInfo}</span>
@@ -529,7 +529,7 @@ export default function MultiSportArena({
 
  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-200 ">
  <div className="text-left sm:text-right mb-2">
- <div className="text-[13px] text-slate-500">Chi phí / cầu thủ:</div>
+ <div className="text-[14px] text-slate-500">Chi phí / cầu thủ:</div>
  <div className="text-lg font-black text-sky-700 ">
  {match.costPerPerson.toLocaleString()}đ
  </div>
@@ -537,7 +537,7 @@ export default function MultiSportArena({
 
  <button
  onClick={() => setJoiningMatch(match)}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold px-4 py-2 rounded-lg shadow transition flex items-center space-x-1"
+ className="bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold px-4 py-2 rounded-lg shadow transition flex items-center space-x-1"
  >
  <span>Gia Nhập Đội</span>
  <ChevronRight className="w-3.5 h-3.5" />
@@ -576,7 +576,7 @@ export default function MultiSportArena({
  {amenities.map((a) => (
  <span
  key={a}
- className="text-[13px] font-semibold bg-sky-50 text-sky-800 border border-sky-200 px-3 py-1.5 rounded-lg"
+ className="text-[14px] font-semibold bg-sky-50 text-sky-800 border border-sky-200 px-3 py-1.5 rounded-lg"
  >
  {a}
  </span>
@@ -585,7 +585,7 @@ export default function MultiSportArena({
  );
  })()}
 
- <p className="text-[13px] text-slate-500 mt-4 leading-relaxed hidden sm:block">
+ <p className="text-[14px] text-slate-500 mt-4 leading-relaxed hidden sm:block">
  Dịch vụ thuê áo, bóng hay trọng tài do từng cụm sân cung cấp — hỏi trực tiếp chủ
  sân theo số điện thoại trong hồ sơ khi tới nhận sân.
  </p>
@@ -631,7 +631,7 @@ export default function MultiSportArena({
  </div>
  </div>
 
- <div className="bg-slate-50 p-3 rounded-xl text-[13px] text-slate-500 space-y-1">
+ <div className="bg-slate-50 p-3 rounded-xl text-[14px] text-slate-500 space-y-1">
  <div className="font-semibold text-slate-700 ">ℹ️ Quy trình đặt ca:</div>
  <div>• Chọn ngày & khung giờ ở tab Đặt Sân.</div>
  <div>• Cọc 50% giá ca qua VietQR; hoàn cọc theo từng sân.</div>
@@ -640,7 +640,7 @@ export default function MultiSportArena({
  <div className="flex space-x-3 pt-2">
  <button
  onClick={() => setBookingCourt(null)}
- className="w-1/2 py-2.5 rounded-xl border border-slate-300 font-bold text-[13px] text-slate-700 hover:bg-slate-100 "
+ className="w-1/2 py-2.5 rounded-xl border border-slate-300 font-bold text-[14px] text-slate-700 hover:bg-slate-100 "
  >
  Hủy Bỏ
  </button>
@@ -649,7 +649,7 @@ export default function MultiSportArena({
  setBookingCourt(null);
  onNavigateToBooking?.();
  }}
- className="w-1/2 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-lg transition"
+ className="w-1/2 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] shadow-lg transition"
  >
  Chọn Khung Giờ
  </button>
@@ -693,14 +693,14 @@ export default function MultiSportArena({
  <div className="flex space-x-3 pt-2">
  <button
  onClick={() => setJoiningMatch(null)}
- className="w-1/2 py-2.5 rounded-xl border border-slate-300 font-bold text-[13px] text-slate-700 hover:bg-slate-100 "
+ className="w-1/2 py-2.5 rounded-xl border border-slate-300 font-bold text-[14px] text-slate-700 hover:bg-slate-100 "
  >
  Để Sau
  </button>
  <button
  onClick={handleAcceptMatch}
  disabled={accepting}
- className="w-1/2 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-lg transition disabled:opacity-60"
+ className="w-1/2 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] shadow-lg transition disabled:opacity-60"
  >
  {accepting ? "Đang chốt..." : "Xác Nhận Tham Gia"}
  </button>

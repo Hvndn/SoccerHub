@@ -48,8 +48,8 @@ const STEPS_OLD = [
 
 const inputCls =
  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-[#0369a1] focus:border-emerald-500";
-const labelCls = "block text-[13px] font-bold text-slate-700 mb-1.5";
-const errCls = "mt-1 text-[13px] font-semibold text-rose-600 ";
+const labelCls = "block text-[14px] font-bold text-slate-700 mb-1.5";
+const errCls = "mt-1 text-[14px] font-semibold text-rose-600 ";
 const PHONE_RE = /^0\d{9}$/;
 
 export default function RegisterTeamPage() {
@@ -247,30 +247,30 @@ function RegisterTeamWizard() {
           }`}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="min-w-0">
-                <span className="text-[13px] font-black text-sky-800 tracking-wider">
+                <span className="text-[14px] font-black text-sky-800 tracking-wider">
                   🏆 GIẢI ĐẤU ĐĂNG KÝ
                 </span>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 truncate">
                   {selected.title}
                 </h3>
-                <p className="mt-0.5 text-[13px] text-slate-600">
+                <p className="mt-0.5 text-[14px] text-slate-600">
                   {sportLabel(selected.sportType)} • Khởi tranh {formatDate(selected.startDate)} •{" "}
                   <strong>{selected.registeredTeams ?? 0}/{selected.totalTeams ?? "—"} đội</strong>
                 </p>
               </div>
               <div className="sm:text-right shrink-0">
-                <span className="block text-[13px] text-slate-500 font-semibold">Lệ phí giải</span>
+                <span className="block text-[14px] text-slate-500 font-semibold">Lệ phí giải</span>
                 <span className="font-mono text-base font-black text-sky-800">
                   {formatMoney(selected.entryFee)}
                 </span>
               </div>
             </div>
             {isSelectedFull ? (
-              <div className="p-2.5 rounded-lg bg-rose-100 border border-rose-300 text-rose-800 font-bold text-[13px] flex items-center gap-1.5">
+              <div className="p-2.5 rounded-lg bg-rose-100 border border-rose-300 text-rose-800 font-bold text-[14px] flex items-center gap-1.5">
                 <span>🔒 Giải đấu đã đủ số lượng đội đăng ký (Hết suất). Bạn không thể nộp đơn tham gia giải này.</span>
               </div>
             ) : (
-              <div className="text-[13px] text-emerald-800 font-bold flex items-center gap-1.5">
+              <div className="text-[14px] text-emerald-800 font-bold flex items-center gap-1.5">
                 <span>✅ Bạn đang nộp hồ sơ tham gia giải đấu này</span>
               </div>
             )}
@@ -288,11 +288,11 @@ function RegisterTeamWizard() {
  ))}
  </div>
  ) : loadError ? (
- <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-[13px] font-bold text-rose-700 ">
+ <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-[14px] font-bold text-rose-700 ">
  {loadError}
  </p>
  ) : tournaments.length === 0 ? (
- <p className="p-4 rounded-xl bg-slate-50 border border-dashed border-slate-300 text-[13px] text-slate-500 text-center">
+ <p className="p-4 rounded-xl bg-slate-50 border border-dashed border-slate-300 text-[14px] text-slate-500 text-center">
  Hiện chưa có giải đấu nào đang mở đăng ký.
  </p>
   ) : (
@@ -307,7 +307,7 @@ function RegisterTeamWizard() {
   <div className="flex items-start justify-between gap-2">
   <div className="min-w-0">
   <p className="text-sm font-black text-slate-900 truncate">{selected.title}</p>
-  <p className="mt-1 text-[13px] text-slate-600">
+  <p className="mt-1 text-[14px] text-slate-600">
   {sportLabel(selected.sportType)} • Khởi tranh {formatDate(selected.startDate)} •{" "}
   {selected.registeredTeams ?? 0}/{selected.totalTeams ?? "—"} đội
   </p>
@@ -317,9 +317,9 @@ function RegisterTeamWizard() {
   </span>
   </div>
   {isSelectedFull ? (
-  <p className="text-[13px] text-rose-700 font-bold">🔒 Giải đấu này đã đủ số lượng đội tham gia. Vui lòng quay lại chọn giải khác.</p>
+  <p className="text-[14px] text-rose-700 font-bold">🔒 Giải đấu này đã đủ số lượng đội tham gia. Vui lòng quay lại chọn giải khác.</p>
   ) : (
-  <p className="text-[13px] text-emerald-700 font-bold">✅ Bạn đang đăng ký giải này</p>
+  <p className="text-[14px] text-emerald-700 font-bold">✅ Bạn đang đăng ký giải này</p>
   )}
   </div>
   );
@@ -356,17 +356,17 @@ function RegisterTeamWizard() {
   <span className="block text-sm font-black text-slate-900 truncate">
   {t.title}
   </span>
-  <span className="mt-1 block text-[13px] text-slate-600">
+  <span className="mt-1 block text-[14px] text-slate-600">
   {sportLabel(t.sportType)} • Khởi tranh {formatDate(t.startDate)} •{" "}
   {t.registeredTeams ?? 0}/{t.totalTeams ?? "—"} đội
   </span>
   {isFull && (
-  <span className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-100 border border-rose-300 text-rose-800 text-[13px] font-black">
+  <span className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-100 border border-rose-300 text-rose-800 text-[14px] font-black">
   🔒 Đã đủ đội
   </span>
   )}
   {!isFull && t.joinMode === "INVITE_ONLY" && (
-  <span className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 border border-amber-300 text-amber-900 text-[13px] font-black">
+  <span className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 border border-amber-300 text-amber-900 text-[14px] font-black">
   🔒 Chỉ mời qua email
   </span>
   )}
@@ -381,7 +381,7 @@ function RegisterTeamWizard() {
   )
  )}
   {selected && isInviteOnly && !amInvited && (
-  <p className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-[13px] font-bold text-amber-900 leading-relaxed">
+  <p className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-[14px] font-bold text-amber-900 leading-relaxed">
   🔒 Giải này chỉ mời tham gia qua email. Bạn cần được Ban Tổ Chức mời trước khi đăng ký đội.
   </p>
   )}
@@ -467,7 +467,7 @@ function RegisterTeamWizard() {
  {/* STEP 4 — xác nhận */}
  {step === 3 && (
  <div className="space-y-4">
- <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-2 text-[13px]">
+ <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-2 text-[14px]">
  <p className="flex items-center gap-2 font-black text-slate-900 text-sm">
  <ShieldCheck className="w-4 h-4 text-sky-700" />
  Duyệt lại hồ sơ trước khi nộp
@@ -485,12 +485,12 @@ function RegisterTeamWizard() {
  </div>
  </dl>
  </div>
- <p className="flex items-center gap-2 text-[13px] text-slate-500">
+ <p className="flex items-center gap-2 text-[14px] text-slate-500">
  <Trophy className="w-3.5 h-3.5 text-sky-700" />
  Hồ sơ được lưu vào CSDL & giữ chỗ tự động cho đội của bạn.
  </p>
  {submitError && (
- <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-[13px] font-bold text-rose-700 ">
+ <p className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-[14px] font-bold text-rose-700 ">
  {submitError}
  </p>
  )}
@@ -505,17 +505,17 @@ function RegisterTeamWizard() {
  type="button"
  onClick={goBack}
  disabled={step === 0}
- className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 text-[13px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-all"
+ className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 text-[14px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-all"
  >
  <ArrowLeft className="w-4 h-4" />
  <span>Quay lại</span>
  </button>
- <span className="text-[13px] font-mono text-slate-600 ">Bước {step + 1}/{steps.length}</span>
+ <span className="text-[14px] font-mono text-slate-600 ">Bước {step + 1}/{steps.length}</span>
  {step < steps.length - 1 ? (
  <button
  type="button"
  onClick={goNext}
- className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95"
+ className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95"
  >
  <span>Tiếp tục</span>
  <ArrowRight className="w-4 h-4" />
@@ -525,7 +525,7 @@ function RegisterTeamWizard() {
  type="button"
  onClick={handleSubmit}
  disabled={submitting}
- className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 disabled:opacity-50"
+ className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 disabled:opacity-50"
  >
  {submitting && <RefreshCw className="w-4 h-4 animate-spin" />}
  <span>{submitting ? "Đang nộp…" : "Xác nhận & Nộp đơn"}</span>
@@ -562,7 +562,7 @@ function PaymentSuccess({
  <div className="p-4 sm:p-8 rounded-2xl bg-white border border-sky-200 text-center space-y-4">
  <CheckCircle2 className="w-12 h-12 text-sky-700 mx-auto" />
  <h2 className="text-lg font-black text-slate-900 ">Nộp đơn thành công!</h2>
- <p className="text-[13px] sm:text-sm text-slate-500">
+ <p className="text-[14px] sm:text-sm text-slate-500">
  Đội <strong className="text-slate-900 ">“{teamName}”</strong> đã được ghi
  danh vào giải <strong className="text-slate-900 ">“{selected.title}”</strong> ở
  trạng thái <strong className="text-amber-600">chờ xác nhận lệ phí</strong>.
@@ -581,7 +581,7 @@ function PaymentSuccess({
  loading="lazy"
  className="w-44 h-44 rounded-xl border border-slate-200 bg-white object-contain shrink-0"
  />
- <div className="text-[13px] text-slate-600 space-y-1.5">
+ <div className="text-[14px] text-slate-600 space-y-1.5">
  <p>Quét mã bằng app ngân hàng để chuyển khoản đúng số tiền.</p>
  <p>Nội dung CK: <strong className="font-mono">{teamName}</strong></p>
  {selected.accountName && (
@@ -590,12 +590,12 @@ function PaymentSuccess({
  </div>
  </div>
  ) : (
- <p className="text-[13px] text-slate-500">
+ <p className="text-[14px] text-slate-500">
  Giải chưa công bố tài khoản nhận online — BTC sẽ liên hệ thu trực tiếp. Bạn vẫn giữ chỗ ở trạng thái chờ xác nhận.
  </p>
  )}
  {paidAck ? (
- <p className="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-[13px] font-bold text-sky-800 ">
+ <p className="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-[14px] font-bold text-sky-800 ">
  ✓ Đã ghi nhận chuyển khoản. BTC sẽ xác nhận trong 24h — đội được bốc thăm sau khi xác nhận.
  </p>
  ) : (
@@ -603,7 +603,7 @@ function PaymentSuccess({
  <button
  type="button"
  onClick={onPaidAck}
- className="w-full py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95"
+ className="w-full py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95"
  >
  Tôi đã chuyển khoản
  </button>
@@ -614,7 +614,7 @@ function PaymentSuccess({
  <div className="flex flex-wrap justify-center gap-2.5 pt-1">
  <a
  href="/?tab=tournaments"
- className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold transition-all active:scale-95"
+ className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all active:scale-95"
  >
  Về danh sách giải đấu
  </a>
