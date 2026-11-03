@@ -1094,7 +1094,7 @@ const handleConfirmCheckin = async (slot: any) => {
  title="Cài đặt khung giờ mở cửa và đóng cửa cụm sân"
  >
  <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
- <span>Giờ Mở Sân: {operatingOpenTime} - {operatingCloseTime} (Ca 2 tiếng)</span>
+ <span>Giờ Mở: {operatingOpenTime} - {operatingCloseTime}</span>
  </button>
 
  {onNavigateTab && (
@@ -1279,7 +1279,7 @@ const handleConfirmCheckin = async (slot: any) => {
  <div className="text-2xl sm:text-3xl font-black text-[#0369a1] font-mono">
  {pitchStats.onlineBookings} Ca Online
  </div>
- <span className="text-[13px] font-bold text-slate-500">Ca đặt qua trang đặt sân của Turfzone</span>
+ <span className="text-[13px] font-bold text-slate-500"></span>
  </div>
 
  <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
@@ -1287,7 +1287,7 @@ const handleConfirmCheckin = async (slot: any) => {
  <div className="text-2xl sm:text-3xl font-black text-amber-700 font-mono">
  {pitchStats.counterBookings} Ca Trực Tiếp
  </div>
- <span className="text-[13px] font-bold text-amber-700">Khóa lịch ca tức thì trên toàn sàn</span>
+ <span className="text-[13px] font-bold text-amber-700"></span>
  </div>
  </div>
 
@@ -1305,7 +1305,7 @@ const handleConfirmCheckin = async (slot: any) => {
  </div>
  <div>
  <span className="text-sm font-black text-slate-900 block">Tra Cứu Mã Vé & Check-in</span>
- <span className="hidden sm:inline text-[13px] text-slate-500">Nhập mã vé hoặc SĐT khách</span>
+ <span className="hidden sm:inline text-[13px] text-slate-500"></span>
  </div>
  </div>
 

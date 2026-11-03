@@ -695,9 +695,7 @@ export default function PitchDetail({
  <Calendar className="w-5 h-5 text-[#0b4f6c] " />
  <span>Lịch Thi Đấu & Ca Sân Trực Tuyến</span>
  </h2>
- <p className="text-[13px] text-slate-500 mt-1">
- Dữ liệu ca sân được đồng bộ thời gian thực từ trung tâm điều hành chủ sân.
- </p>
+ 
  </div>
 
  {/* Chú thích màu sắc */}
@@ -746,32 +744,6 @@ export default function PitchDetail({
  </span>
  </button>
  ))}
- </div>
-
- {/* THÔNG TIN CA ĐÁ CỐ ĐỊNH NIÊM YẾT BỞI CHỦ SÂN */}
- <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-100 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
- <div className="flex items-center space-x-3">
- <div className="w-10 h-10 rounded-2xl bg-[#0369a1] text-white flex items-center justify-center shrink-0 shadow-md">
- <Clock className="w-5 h-5" />
- </div>
- <div>
- <span className="text-sm font-black text-slate-900 flex items-center gap-1.5">
- <span>Khung Giờ Thi Đấu Cố Định</span>
- <span className="px-2 py-0.5 rounded-md bg-[#0369a1]/10 text-sky-700 text-[13px] font-bold font-mono border border-[#0369a1]/30">
- {fixedSlotDuration} phút/ca
- </span>
- </span>
- <span className="text-[13px] text-slate-500">
- Lịch ca đấu đã được Chủ Sân chuẩn hóa cố định ({venueData.openTime} - {venueData.closeTime}) để đảm bảo tính liên tục của mặt sân.
- </span>
- </div>
- </div>
-
- <div className="flex items-center space-x-2 shrink-0">
- <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-[13px] font-bold text-slate-700 ">
- 🔒 Ca đấu cố định
- </span>
- </div>
  </div>
 
  {/* Bộ lọc Sân Con & Khung Giờ */}
@@ -872,12 +844,8 @@ export default function PitchDetail({
  type="button"
  className="h-20 rounded-2xl bg-[#0369a1] text-white shadow-lg shadow-sky-950/20 flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all slot-selected-bounce ring-2 ring-white/70 btn-shimmer cursor-pointer"
  >
- <div className="absolute top-0 right-0 bg-white text-[#0b4f6c] text-[13px] px-2 py-0.5 font-black rounded-bl shadow-xs">
- ĐANG CHỌN ⚽
- </div>
- <span className="font-extrabold text-sm">{slot.time}</span>
- <span className="font-black text-base font-mono mt-0.5">{slot.price}</span>
- <span className="text-[13px] text-cyan-50 font-semibold">{slot.durationMinutes || fixedSlotDuration || 120} phút (2 tiếng)</span>
+ <span className="font-extrabold text-[13px]">{slot.time}</span>
+ <span className="font-black text-sm font-mono mt-0.5">{slot.price} • ✓ Chọn</span>
  </button>
  );
  }
@@ -988,9 +956,7 @@ export default function PitchDetail({
  <span className={`font-black text-sm font-mono mt-0.5 ${slot.isGapSlot ? "text-amber-600 " : "text-sky-700 "}`}>
  {slot.price}
  </span>
- <span className={`text-[13px] font-medium ${slot.isGapSlot ? "text-amber-600/80 font-bold" : "text-slate-500"}`}>
- {slot.isGapSlot ? `${slot.durationMinutes}p linh hoạt` : "Còn trống"}
- </span>
+ {slot.isGapSlot && <span className="text-[13px] text-amber-600 font-bold">{slot.durationMinutes}p</span>}
  </button>
  );
  })}
@@ -1107,37 +1073,13 @@ export default function PitchDetail({
  )}
  </div>
 
- {/* Quy trình nhận sân & chính sách cọc (mô tả đúng luồng đang chạy) */}
- <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
- <div className="p-3 sm:p-4 bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm flex items-start space-x-3">
- <div className="w-10 h-10 rounded-xl bg-[#0369a1]/10 text-sky-700 flex items-center justify-center shrink-0 font-bold">
- <QrCode className="w-5 h-5 text-emerald-500" />
- </div>
- <div className="space-y-1">
- <h3 className="font-bold text-sm text-slate-900 ">
- Check-in bằng mã giữ chỗ
- </h3>
- <p className="text-[13px] text-slate-500 leading-relaxed">
- Sau khi đặt, hệ thống sinh mã đơn. Chủ sân nhập mã này tại tab Ma trận để
- check-in cho bạn khi tới sân.
- </p>
- </div>
- </div>
-
- <div className="p-3 sm:p-4 bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm flex items-start space-x-3">
- <div className="w-10 h-10 rounded-xl bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center shrink-0 font-bold">
- <ShieldCheck className="w-5 h-5 text-[#0369a1]" />
- </div>
- <div className="space-y-1">
- <h3 className="font-bold text-sm text-slate-900 ">
- Cọc & hủy lịch
- </h3>
- <p className="text-[13px] text-slate-500 leading-relaxed">
- Bạn chọn cọc 50% hoặc 100% giá ca khi đặt. Chính sách hoàn cọc do từng chủ sân
- quy định — liên hệ số điện thoại của sân để thoả thuận khi cần hủy.
- </p>
- </div>
- </div>
+ {/* Tóm tắt quy định gọn */}
+ <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-2 text-[13px] text-slate-600 font-bold">
+   <span>✓ Check-in bằng mã đơn tại sân</span>
+   <span>•</span>
+   <span>💳 Cọc 50% hoặc 100% qua VietQR</span>
+   <span>•</span>
+   <span>📞 Liên hệ hotline sân khi cần đổi lịch</span>
  </div>
  </main>
 
@@ -1410,7 +1352,7 @@ export default function PitchDetail({
  Chưa Chọn Ca Thi Đấu
  </h3>
  <p className="text-[13px] text-slate-500 leading-relaxed max-w-[260px] mx-auto">
- Vui lòng bấm vào một khung giờ <strong>Còn trống</strong> trên sơ đồ bên trái để xem chi tiết giá và mở phiếu đặt chỗ.
+ Chọn một khung giờ trống bên trái để đặt sân.
  </p>
  </div>
  <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sky-50 text-sky-700 text-[13px] font-bold">

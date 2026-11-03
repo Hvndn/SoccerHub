@@ -770,11 +770,11 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  <h1 className="text-lg sm:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
- <span>Quản Lý Giải Đấu Bóng Đá Turfzone</span>
+ <span>Quản Lý Giải Đấu</span>
  <Award className="w-8 h-8 text-amber-700 shrink-0 hidden sm:inline-block" />
  </h1>
  <p className="text-sm text-slate-600 max-w-2xl font-medium leading-relaxed hidden sm:block">
- Nhập tỷ số trọng tài, bốc thăm nhánh đấu, giải thưởng và sơ đồ knockout thời gian thực.
+ 
  </p>
  </div>
 
@@ -825,8 +825,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  className="px-4 py-2.5 sm:px-5 rounded-xl text-[13px] font-black shadow-md transition-all flex items-center space-x-2 active:scale-95 bg-[#0369a1] hover:bg-[#075985] text-white"
  >
  <Plus className="w-4 h-4 stroke-[3]" />
- <span className="sm:hidden">+ Tạo Giải Mới</span>
- <span className="hidden sm:inline">+ Khởi Tạo Giải Đấu Mới</span>
+ <span>+ Tạo Giải Mới</span>
+ 
  </Link>
  </div>
  </div>
@@ -955,7 +955,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  <div className="pt-5 mt-4 border-t border-slate-100 flex items-center justify-between gap-2 relative z-10">
  <span className="text-[13px] font-bold text-slate-500 flex items-center gap-1">
- {t.hasBracket ? "✅ Đã bốc thăm — có nhánh đấu trong CSDL" : "⏳ Chưa bốc thăm"}
+ {t.hasBracket ? "✅ Đã bốc thăm" : "⏳ Chưa bốc thăm"}
  </span>
 
  <button
@@ -1258,7 +1258,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold flex items-center gap-1.5"
  >
  <Video className="w-4 h-4 text-red-500" />
- <span>Mở Tòa VAR &amp; Biên Bản Đầy Đủ</span>
+ <span>Mở Nhánh &amp; Biên Bản</span>
  </button>
  <span className="px-3 py-2 rounded-xl bg-slate-50 text-[13px] text-slate-500 flex items-center">
  Sân: {umpireMatch?.pitchName ?? activeTournament?.pitchName ?? activeTournament?.location ?? "Chưa xếp sân"}
@@ -1271,7 +1271,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
  <div className="min-w-0">
  <span className="text-[13px] font-black text-[#0b4f6c]">
- BRACKET ENGINE — NGUỒN CSDL
+ Nhánh Đấu Hiện Tại
  </span>
  <h3 className="text-xl font-black text-slate-900 tracking-tight truncate">
  {activeTournament ? activeTournament.title : "Chưa chọn giải nào"}
@@ -1422,7 +1422,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                       title="Giải có ràng buộc mời qua email — Gửi thư mời tham gia"
                     >
                       <Mail className="w-3.5 h-3.5 text-amber-700" />
-                      <span>Mời Cầu Thủ (Email)</span>
+                      <span>Mời Email</span>
                     </button>
                   )}
                   <button
@@ -1432,7 +1432,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
   >
   <Pencil className="w-3.5 h-3.5" />
-  <span>Sửa Thông Tin Giải</span>
+  <span>Sửa Giải</span>
   </button>
  </div>
 
@@ -1762,7 +1762,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  className="w-full py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-95"
  >
  <Sparkles className="w-4 h-4" />
- <span>Mở Bảng Điều Hành Bốc Thăm</span>
+ <span>Bốc Thăm &amp; Nhánh Đấu</span>
  </button>
  
   {/* Thêm đội thủ công — BTC nhập tay đội vào giải (không qua form đăng ký của cầu thủ) */}
@@ -1855,7 +1855,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
     title="Tự động tạo giải thử (16 đội, loại trực tiếp, sân ngẫu nhiên) + bốc thăm ngay"
   >
     <RefreshCw className="w-4 h-4" />
-    <span>Tạo giải Test ngẫu nhiên & Bốc thăm</span>
+    <span>+ Giải Test Ngẫu Nhiên</span>
   </button>
   </div>
 
@@ -1904,10 +1904,10 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       >
        <div className="flex items-center gap-2">
         <Unlock className={`w-4 h-4 ${joinMode === "PUBLIC" ? "text-emerald-600" : "text-slate-400"}`} />
-        <span className="text-[13px] font-black text-slate-900">Ai cũng có thể tham gia</span>
+        <span className="text-[13px] font-black text-slate-900">Mở tự do</span>
        </div>
        <p className="text-[13px] text-slate-500 mt-1 leading-relaxed">
-        Mọi người có tài khoản đều đăng ký đội thi được. Phù hợp giải phong trào mở rộng.
+        
        </p>
       </button>
 
@@ -1924,10 +1924,10 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       >
        <div className="flex items-center gap-2">
         <Lock className={`w-4 h-4 ${joinMode === "INVITE_ONLY" ? "text-amber-700" : "text-slate-400"}`} />
-        <span className="text-[13px] font-black text-slate-900">Chỉ ai được mời qua email</span>
+        <span className="text-[13px] font-black text-slate-900">Chỉ mời qua email</span>
        </div>
        <p className="text-[13px] text-slate-500 mt-1 leading-relaxed">
-        Giải kín — chỉ email trong danh sách bên dưới mới đăng ký thi được.
+        
        </p>
       </button>
      </div>
@@ -2017,12 +2017,12 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {formatMoney(activeTournament.prizePool)}
  </span>
  <span className="text-[13px] text-slate-500 font-bold block pt-1">
- Số tiền do ban tổ chức khai trong hồ sơ giải
+ 
  </span>
  </div>
 
  <p className="text-[13px] text-slate-500 leading-relaxed">
- Hệ thống chưa có bảng phân bổ giải thưởng theo hạng trong CSDL — việc chia tiền do ban tổ chức thực hiện bên ngoài.
+ 
  </p>
  </>
  )}

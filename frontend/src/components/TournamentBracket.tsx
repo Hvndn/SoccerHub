@@ -832,7 +832,7 @@ const [addCount, setAddCount] = useState("4");
  <span>{selected ? `${selected.title} • Nhánh đấu & VAR` : "Nhánh đấu & Bàn trọng tài Live VAR"}</span>
  </div>
  <h1 className="text-lg sm:text-3xl font-extrabold tracking-tight text-slate-900 ">
- Quản Lý Giải Đấu & Bốc Thăm Chia Cặp Thật
+ Nhánh Đấu & Lịch Thi Đấu
  </h1>
  <p className="text-slate-600 text-[13px] sm:text-sm mt-1 max-w-2xl">
  {selected
@@ -869,7 +869,7 @@ const [addCount, setAddCount] = useState("4");
       className="px-3.5 py-2.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-sm active:scale-95 cursor-pointer"
     >
       <Mail className="w-4 h-4 text-amber-700" />
-      <span>Mời Cầu Thủ (Email)</span>
+      <span>Mời Email</span>
     </button>
   )}
  <button
@@ -883,7 +883,7 @@ const [addCount, setAddCount] = useState("4");
  ) : (
  <UserPlus className="w-4 h-4" />
  )}
- <span>{full ? "Đã đủ đội" : `Giả lập đủ đội (Test)${selected && !full && teamCap ? ` +${teamCap - teamCount}` : ""}`}</span>
+ <span>{full ? "Đủ đội" : `+${selected && teamCap ? teamCap - teamCount : ""} Đội Test`}</span>
  </button>
   {/* THÊM N ĐỘI NGẪU NHIÊN — chọn số đội rồi thêm đúng N đội vào giải đang chọn.
       API: POST /api/v1/tournaments/{id}/fill-teams {"count": n} */}
@@ -924,7 +924,7 @@ const [addCount, setAddCount] = useState("4");
  ) : (
  <RotateCcw className="w-4 h-4" />
  )}
- <span>Dọn {simulatedCount} đội Test</span>
+ <span>Xoá {simulatedCount} Test</span>
  </button>
  )}
 
@@ -939,7 +939,7 @@ const [addCount, setAddCount] = useState("4");
  ) : (
  <Shuffle className="w-4 h-4" />
  )}
- <span>{bracket ? "Bốc thăm lại" : selected?.format === "ROUND_ROBIN" ? "Xếp lịch vòng tròn" : "Bốc thăm chia cặp"}</span>
+ <span>{bracket ? "Bốc thăm lại" : selected?.format === "ROUND_ROBIN" ? "Xếp lịch" : "Bốc thăm"}</span>
  </button>
 
  {bracket && (
@@ -989,7 +989,7 @@ const [addCount, setAddCount] = useState("4");
  }`}
  >
  <Calendar className="w-4 h-4" />
- <span>Xếp lịch thi đấu</span>
+ <span>Xếp Lịch</span>
  </button>
  )}
  </div>
@@ -1321,11 +1321,7 @@ const [addCount, setAddCount] = useState("4");
         <h3 className="text-base sm:text-lg font-black text-slate-900">
           Cây Nhánh Đấu Giải “{selected.title}”
         </h3>
-        <p className="text-[13px] text-slate-600 leading-relaxed">
-          {teamCount < 2
-            ? "Giải đấu đang trong giai đoạn tiếp nhận đăng ký. Ban Tổ Chức sẽ chính thức chốt danh sách và quay bốc thăm trực tiếp khi đủ suất tham dự."
-            : "Các đội đã được xếp vào hạt giống dự kiến theo thứ tự ghi danh. Ban Tổ Chức có thể kích hoạt bốc thăm chính thức bất kỳ lúc nào."}
-        </p>
+
       </div>
 
       <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
@@ -1337,7 +1333,7 @@ const [addCount, setAddCount] = useState("4");
             title="Giải có ràng buộc mời qua email — Gửi thư mời tham gia"
           >
             <Mail className="w-4 h-4 text-amber-700" />
-            <span>Mời Cầu Thủ (Email)</span>
+            <span>Mời Email</span>
           </button>
         )}
         {canManage && (
@@ -1348,7 +1344,7 @@ const [addCount, setAddCount] = useState("4");
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[13px] shadow-md transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Shuffle className="w-4 h-4" />
-            <span>Bốc Thăm Chia Cặp Ngay</span>
+            <span>Bốc Thăm</span>
           </button>
         )}
         {!full && (
@@ -1357,7 +1353,7 @@ const [addCount, setAddCount] = useState("4");
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
           >
             <UserPlus className="w-4 h-4" />
-            <span>+ Đăng Ký Đội Ngay</span>
+            <span>+ Đăng Ký</span>
           </a>
         )}
       </div>
@@ -1367,7 +1363,7 @@ const [addCount, setAddCount] = useState("4");
     <div className="bg-slate-50/80 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 overflow-x-auto">
       <div className="flex items-center justify-between mb-4">
         <span className="text-[13px] font-black text-slate-500 tracking-wider">
-          MÔ PHỎNG VỊ TRÍ HẠT GIỐNG (TỔNG {teamCap || Math.max(4, teamCount * 2)} SUẤT TRANH TÀI)
+          Sơ Đồ Hạt Giống ({teamCap || Math.max(4, teamCount * 2)} Đội)
         </span>
         <span className="text-[13px] font-bold text-sky-700 bg-sky-100 px-2.5 py-1 rounded-md">
           Thể thức: {formatLabel(selected.format)}

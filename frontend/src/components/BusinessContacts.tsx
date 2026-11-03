@@ -1,19 +1,7 @@
 "use client";
 
-/* =========================================================
- * BusinessContacts — Kênh liên lạc B2B giữa Chủ sân và Ban tổ chức
- *
- * Vấn đề giải quyết: trước đây BTC muốn thuê sân cho giải, hoặc chủ sân
- * muốn tìm BTC tổ chức giải, phải tra email qua admin hoặc gõ tay trong ô
- * tìm kiếm người dùng (mà vẫn phải biết trước email của đối phương).
- *
- * Giải pháp: danh sách đối tác theo vai trò đối diện + nút "Nhắn tin" mở
- * thẳng cuộc trò chuyện riêng. Không tạo bảng/endpoint mới — chỉ dùng
- * GET /api/v1/chat/users?role=... đã có sẵn và mở CommunityChat ở chế độ DM.
- * ========================================================= */
-
 import React, { useCallback, useEffect, useState } from "react";
-import { MessageSquare, Loader2, Handshake, Users2, AlertCircle } from "lucide-react";
+import { MessageSquare, Loader2, Handshake, AlertCircle, ChevronDown } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 
 export interface BusinessContact {
@@ -23,39 +11,21 @@ export interface BusinessContact {
 }
 
 interface BusinessContactsProps {
-  /** Vai trò của người đang xem — dùng để chọn ra nhóm đối tác đối diện. */
   viewerRole: "OWNER" | "ORGANIZER" | "PLAYER" | "ADMIN";
-  /** Mở cuộc trò chuyện riêng với đối tác (được page.tsx nối sang tab Cộng đồng). */
   onStartDm?: (partnerEmail: string, partnerName: string) => void;
 }
 
-const COUNTERPART: Record<string, { role: string; label: string; hint: string; empty: string }> = {
+const COUNTERPART: Record<string, { role: string; label: string; empty: string }> = {
   OWNER: {
     role: "ORGANIZER",
     label: "Ban Tổ Chức",
-    hint: "Liên hệ BTC để đề xuất tổ chức giải tại cụm sân.",
-    empty: "Chưa có tài khoản Ban Tổ Chức nào trên hệ thống.",
+    empty: "Chưa có tài khoản Ban Tổ Chức.",
   },
   ORGANIZER: {
     role: "OWNER",
     label: "Chủ Sân",
-    hint: "Liên hệ chủ sân để thuê sân phục vụ giải đấu.",
-    empty: "Chưa có chủ sân nào đăng ký trên hệ thống.",
+    empty: "Chưa có tài khoản Chủ Sân.",
   },
-};
-
-const ROLE_BADGE: Record<string, string> = {
-  OWNER: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  ORGANIZER: "bg-sky-50 text-sky-700 border-sky-200",
-  ADMIN: "bg-amber-50 text-amber-700 border-amber-200",
-  PLAYER: "bg-slate-50 text-slate-600 border-slate-200",
-};
-
-const ROLE_LABEL: Record<string, string> = {
-  OWNER: "Chủ Sân",
-  ORGANIZER: "Ban Tổ Chức",
-  ADMIN: "Quản Trị",
-  PLAYER: "Cầu Thủ",
 };
 
 export default function BusinessContacts({ viewerRole, onStartDm }: BusinessContactsProps) {
@@ -63,6 +33,7 @@ export default function BusinessContacts({ viewerRole, onStartDm }: BusinessCont
   const [contacts, setContacts] = useState<BusinessContact[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   const load = useCallback(async () => {
     if (!cfg) return;
@@ -74,7 +45,7 @@ export default function BusinessContacts({ viewerRole, onStartDm }: BusinessCont
       );
       setContacts(Array.isArray(rows) ? rows : []);
     } catch (e: any) {
-      setError(e?.message || "Không tải được danh sách đối tác.");
+      setError(e?.message || "Không tải được danh sách.");
     } finally {
       setLoading(false);
     }
@@ -84,79 +55,88 @@ export default function BusinessContacts({ viewerRole, onStartDm }: BusinessCont
     load();
   }, [load]);
 
-  // Không áp dụng cho cầu thủ / admin — component này chỉ phục vụ 2 vai trò nghiệp vụ.
   if (!cfg) return null;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3">
-      <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/30 flex items-center justify-center shrink-0">
-            <Handshake className="w-5 h-5 text-[#0b4f6c]" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-sm sm:text-base font-black text-slate-900 truncate">
-              Liên hệ {cfg.label}
-            </h2>
-            <p className="text-[13px] text-slate-500 truncate">{cfg.hint}</p>
-          </div>
-        </div>
+    <div className="bg-white border border-slate-200 rounded-2xl p-3.5 sm:px-5 shadow-xs">
+      <div className="flex items-center justify-between gap-2">
         <button
           type="button"
-          onClick={load}
-          disabled={loading}
-          className="shrink-0 text-[13px] font-bold text-[#0369a1] hover:underline disabled:opacity-50"
+          onClick={() => setExpanded((v) => !v)}
+          className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer"
         >
-          {loading ? "Đang tải…" : "Tải lại"}
+          <div className="w-8 h-8 rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/25 flex items-center justify-center shrink-0">
+            <Handshake className="w-4 h-4 text-[#0b4f6c]" />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
+            <span className="text-sm font-black text-slate-900">
+              Liên Hệ {cfg.label}
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200 text-[13px] font-bold">
+              {loading ? "…" : `${contacts.length} đối tác`}
+            </span>
+          </div>
         </button>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={load}
+            disabled={loading}
+            className="text-[13px] font-bold text-[#0369a1] hover:underline disabled:opacity-50 cursor-pointer"
+          >
+            {loading ? "Đang tải…" : "Tải lại"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+          >
+            <span>{expanded ? "Thu gọn" : "Xem"}</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} />
+          </button>
+        </div>
       </div>
 
-      {error && (
-        <p className="flex items-start gap-1.5 text-[13px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5">
-          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-px" />
-          {error}
-        </p>
-      )}
+      {expanded && (
+        <div className="pt-3 mt-3 border-t border-slate-100">
+          {error && (
+            <p className="flex items-center gap-1.5 text-[13px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 mb-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{error}</span>
+            </p>
+          )}
 
-      {loading && contacts.length === 0 ? (
-        <div className="flex items-center justify-center gap-2 py-5 text-[13px] text-slate-500">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          Đang tải danh sách…
-        </div>
-      ) : contacts.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 py-5 text-center">
-          <Users2 className="w-8 h-8 text-slate-300" />
-          <p className="text-[13px] text-slate-500">{cfg.empty}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {contacts.map((c) => (
-            <div
-              key={c.email}
-              className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200"
-            >
-              <div className="min-w-0">
-                <p className="text-[13px] font-black text-slate-900 truncate">{c.name}</p>
-                <p className="text-[13px] text-slate-500 truncate">{c.email}</p>
-                <span
-                  className={`inline-block mt-1 px-1.5 py-0.5 rounded-md border text-[13px] font-black ${
-                    ROLE_BADGE[c.role] ?? ROLE_BADGE.PLAYER
-                  }`}
-                >
-                  {ROLE_LABEL[c.role] ?? c.role}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => onStartDm?.(c.email, c.name)}
-                className="shrink-0 w-9 h-9 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white flex items-center justify-center transition-all active:scale-95"
-                title={`Nhắn tin cho ${c.name}`}
-                aria-label={`Nhắn tin cho ${c.name}`}
-              >
-                <MessageSquare className="w-4 h-4" />
-              </button>
+          {loading && contacts.length === 0 ? (
+            <div className="flex items-center justify-center gap-2 py-3 text-[13px] text-slate-500">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Đang tải…</span>
             </div>
-          ))}
+          ) : contacts.length === 0 ? (
+            <p className="text-[13px] text-slate-500 py-2 text-center">{cfg.empty}</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {contacts.map((c) => (
+                <div
+                  key={c.email}
+                  className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-black text-slate-900 truncate">{c.name}</p>
+                    <p className="text-[13px] text-slate-500 truncate">{c.email}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onStartDm?.(c.email, c.name)}
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-black transition-all active:scale-95 cursor-pointer"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Nhắn tin</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
