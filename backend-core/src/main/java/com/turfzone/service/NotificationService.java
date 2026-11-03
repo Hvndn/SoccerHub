@@ -22,9 +22,12 @@ public class NotificationService {
 
     public void notify(String targetRole, String targetEmail, String title, String message, String type, String link) {
         try {
+            String cleanEmail = (targetEmail != null && !targetEmail.isBlank())
+                    ? targetEmail.trim().toLowerCase()
+                    : null;
             notificationRepository.save(Notification.builder()
                     .targetRole(targetRole != null ? targetRole : "ALL")
-                    .targetEmail(targetEmail)
+                    .targetEmail(cleanEmail)
                     .title(title)
                     .message(message)
                     .type(type != null ? type : "SYSTEM")

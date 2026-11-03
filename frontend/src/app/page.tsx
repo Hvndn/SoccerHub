@@ -94,6 +94,10 @@ export default function Home() {
      const readUrlTab = (isPopState = false) => {
        const params = new URLSearchParams(window.location.search);
        const urlTab = params.get("tab");
+       const tidParam = params.get("tournamentId");
+       if (tidParam && !isNaN(Number(tidParam))) {
+         setTargetTournamentId(Number(tidParam));
+       }
        const currentRole = currentUser?.role;
 
        if (urlTab) {
@@ -135,6 +139,11 @@ export default function Home() {
 
      // Lắng nghe sự kiện Back/Forward của trình duyệt: giữ đúng tab trước đó và đúng role
      const handlePopState = (e: PopStateEvent) => {
+       const params = new URLSearchParams(window.location.search);
+       const tidParam = params.get("tournamentId");
+       if (tidParam && !isNaN(Number(tidParam))) {
+         setTargetTournamentId(Number(tidParam));
+       }
        if (e.state && e.state.tab) {
          const targetTab = sanitizeTabForRole(e.state.tab, currentUser?.role);
          setActiveTab(targetTab);
@@ -430,6 +439,17 @@ if (newTab === activeTab) return;
  setActiveTab("booking");
  }
  };
+  const handleOpenTournament = React.useCallback((id: number) => {
+    setTargetTournamentId(id);
+    handleTabChange("tournaments");
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", "tournaments");
+      url.searchParams.set("tournamentId", String(id));
+      window.history.pushState({ tab: "tournaments" }, "", url.toString());
+    }
+  }, [handleTabChange]);
+
   const handleLogout = () => {
     authLogout();
     setLocalUser(null);
@@ -476,6 +496,7 @@ if (newTab === activeTab) return;
  user={currentUser}
  onOpenAuth={handleOpenAuth}
  onLogout={handleLogout}
+ onOpenTournament={handleOpenTournament}
  />
 
  {/* Toast Cảnh Báo Phân Quyền Vai Trò - Kích thước lớn dễ nhìn */}

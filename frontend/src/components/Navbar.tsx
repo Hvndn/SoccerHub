@@ -41,6 +41,7 @@ interface NavbarProps {
  user: any | null;
  onOpenAuth: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
  onLogout: () => void;
+ onOpenTournament?: (tournamentId: number) => void;
 }
 
 export default function Navbar({
@@ -48,9 +49,12 @@ export default function Navbar({
  setActiveTab,
  user,
  onOpenAuth,
- onLogout
+ onLogout,
+ onOpenTournament
 }: NavbarProps) {
  const router = useRouter();
+
+
  const [showNotifications, setShowNotifications] = useState(false);
  const [showUserDropdown, setShowUserDropdown] = useState(false);
  const [showMobileDrawer, setShowMobileDrawer] = useState(false);
@@ -82,9 +86,44 @@ export default function Navbar({
  notifications,
  unreadCount,
  markAllRead,
+ markSingleRead,
  removeNotification,
  clearAllNotifications,
  } = useNotifications(user);
+
+ const handleNotificationClick = (notif: any) => {
+   if (!notif.read) {
+     markSingleRead(notif.id);
+   }
+   setShowNotifications(false);
+   if (!notif.link) return;
+
+   if (/^https?:\/\//i.test(notif.link)) {
+     window.location.href = notif.link;
+     return;
+   }
+
+   try {
+     const url = new URL(notif.link, window.location.origin);
+     const tabParam = url.searchParams.get("tab");
+     const tidParam = url.searchParams.get("tournamentId");
+
+     if (tidParam && !isNaN(Number(tidParam)) && onOpenTournament) {
+       onOpenTournament(Number(tidParam));
+       return;
+     }
+
+     if (tabParam) {
+       setActiveTab(tabParam);
+       window.history.pushState({ tab: tabParam }, "", notif.link);
+       return;
+     }
+
+     router.push(notif.link);
+   } catch {
+     router.push(notif.link);
+   }
+ };
 
  // Grouped Dropdown States
  const [showPitchMenu, setShowPitchMenu] = useState(false);
@@ -542,9 +581,11 @@ const mobileNav: MobileNavItem[] =
  notifications.map(notif => (
  <div
  key={notif.id}
- className={`relative p-4 sm:p-5 transition-colors hover:bg-slate-50 ${
+ onClick={() => handleNotificationClick(notif)}
+ className={`relative p-4 sm:p-5 transition-colors cursor-pointer hover:bg-slate-100/90 ${
  !notif.read ? "bg-sky-50/60 " : ""
  }`}
+ title={notif.link ? "Nhấp để mở chi tiết giải đấu" : undefined}
  >
  <div className="flex items-start space-x-3.5">
  {/* Icon theo loại to hơn */}
@@ -552,13 +593,15 @@ const mobileNav: MobileNavItem[] =
  notif.type === "BOOKING_CREATED" ? "bg-sky-100 text-sky-700" :
  notif.type === "BOOKING_CANCELLED" ? "bg-rose-100 text-rose-600" :
  notif.type === "BOOKING_CHECKED_IN" ? "bg-sky-100 text-[#0369a1]" :
+ (notif.type === "TOURNAMENT_INVITE" || notif.type?.startsWith("TOURNAMENT")) ? "bg-amber-100 text-amber-800" :
  "bg-amber-100 text-amber-600"
  }`}>
  {notif.type === "BOOKING_CREATED" && <CheckCircle className="w-5 h-5 text-emerald-500" />}
  {notif.type === "BOOKING_CANCELLED" && <XCircle className="w-5 h-5 text-rose-600" />}
  {notif.type === "BOOKING_CHECKED_IN" && <CheckCircle className="w-5 h-5 text-[#0369a1]" />}
-{notif.type === "BOOKING_REMINDER" && <Bell className="w-5 h-5 text-amber-700" />}
-{notif.type === "BOOKING_RESCHEDULED" && <Bell className="w-5 h-5 text-amber-700" />}
+ {notif.type === "BOOKING_REMINDER" && <Bell className="w-5 h-5 text-amber-700" />}
+ {notif.type === "BOOKING_RESCHEDULED" && <Bell className="w-5 h-5 text-amber-700" />}
+ {(notif.type === "TOURNAMENT_INVITE" || notif.type?.startsWith("TOURNAMENT")) && <Trophy className="w-5 h-5 text-amber-700" />}
  {(notif.type === "PROMO" || notif.type === "OPERATING_HOURS_UPDATED") && <AlertCircle className="w-5 h-5 text-amber-700" />}
  </div>
 
@@ -580,6 +623,12 @@ const mobileNav: MobileNavItem[] =
  </div>
  )}
 
+ {notif.link && (
+ <p className="text-[13px] font-bold text-[#0369a1] hover:underline inline-flex items-center gap-1 pt-0.5">
+   <span>Xem giải đấu ngay →</span>
+ </p>
+ )}
+
  <p className="text-[14px] text-slate-500 font-mono mt-1.5">{formatNotifTime(notif.time)}</p>
  </div>
 
@@ -587,7 +636,7 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={(e) => { e.stopPropagation(); removeNotification(notif.id); }}
- className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
+ className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
  title="Xóa thông báo"
  >
  <X className="w-4 h-4" />

@@ -59,6 +59,8 @@ function TypeTone(type: string): string {
   if (t === "BOOKING_REMINDER") return "bg-amber-100 text-amber-700";
   if (t === "WAITLIST_AVAILABLE") return "bg-emerald-100 text-emerald-700";
   if (t === "BOOKING_RECURRING") return "bg-teal-100 text-teal-700";
+  if (t.startsWith("TOURNAMENT") || t.startsWith("MATCH") || t.startsWith("BRACKET"))
+    return "bg-amber-100 text-amber-800";
   return "bg-amber-100 text-amber-600";
 }
 
@@ -94,7 +96,7 @@ export default function NotificationsCenter({
     if (!n.read) onMarkRead?.(n.id);
     if (!n.link) return;
     if (/^https?:\/\//i.test(n.link)) window.location.href = n.link;
-    else router.push(n.link);
+    else window.location.assign(n.link);
   };
 
   return (
@@ -152,7 +154,10 @@ export default function NotificationsCenter({
           filtered.map((n) => (
             <div
               key={n.id}
+              onClick={() => openLink(n)}
               className={`p-4 sm:p-5 transition-colors hover:bg-slate-50 ${
+                n.link ? "cursor-pointer" : ""
+              } ${
                 !n.read ? "bg-sky-50/60" : ""
               }`}
             >
@@ -189,29 +194,38 @@ export default function NotificationsCenter({
                       {n.link && (
                         <button
                           type="button"
-                          onClick={() => openLink(n)}
-                          className="text-[14px] font-bold text-[#0b4f6c] hover:underline flex items-center gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openLink(n);
+                          }}
+                          className="text-[14px] font-bold text-[#0b4f6c] hover:underline flex items-center gap-1 cursor-pointer"
                         >
-                          <span>Xem chi tiết →</span>
+                          <span>Xem chi tiết giải đấu →</span>
                         </button>
                       )}
                       {!n.read && onMarkRead && (
                         <button
                           type="button"
-                          onClick={() => onMarkRead(n.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onMarkRead(n.id);
+                          }}
                           aria-label="Đánh dấu đã đọc"
                           title="Đánh dấu đã đọc"
-                          className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-[#0369a1] hover:bg-sky-50 transition-colors"
+                          className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-[#0369a1] hover:bg-sky-50 transition-colors cursor-pointer"
                         >
                           <CheckCircle className="w-4 h-4" />
                         </button>
                       )}
                       <button
                         type="button"
-                        onClick={() => onDelete(n.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(n.id);
+                        }}
                         aria-label="Xóa thông báo này"
                         title="Xóa thông báo này"
-                        className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

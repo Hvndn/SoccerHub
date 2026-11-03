@@ -1956,6 +1956,21 @@ public class TournamentController {
             if (emailService.sendHtmlDirect(toEmail, subject, htmlContent)) {
                 sentCount++;
             }
+            // Tạo thông báo hệ thống cho tài khoản có email này (hiển thị ở chuông thông báo khi cầu thủ đăng nhập)
+            try {
+                String pitch = tournament.getPitchName() != null ? tournament.getPitchName() : "Sân bóng Turfzone";
+                notificationService.notify(
+                        "PLAYER",
+                        toEmail,
+                        "🏆 Lời mời tham gia giải " + tournament.getTitle(),
+                        "Ban Tổ Chức trân trọng mời bạn và đội bóng tham gia giải \""
+                                + tournament.getTitle() + "\" (" + pitch + "). Nhấp vào để xem chi tiết giải đấu!",
+                        "TOURNAMENT_INVITE",
+                        "/?tab=tournaments&tournamentId=" + tournament.getId()
+                );
+            } catch (Exception ex) {
+                // Không để lỗi thông báo làm gián đoạn
+            }
         }
 
         return ResponseEntity.ok(Map.of(
