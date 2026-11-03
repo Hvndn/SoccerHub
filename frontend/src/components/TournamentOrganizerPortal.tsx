@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { todayLocalPlus } from "@/lib/dateUtils";
 import Link from "next/link";
 import { API_BASE_URL, apiRequest, fetchWithTimeout } from '@/lib/api';
+import { getMyPitchesApi, getAllPitchesApi, type PitchModel } from '@/lib/pitchService';
 import {
   confirmedCount,
   sportLabel,
@@ -14,6 +15,8 @@ import {
   fetchTournamentFinance,
   fillSimulatedTeams,
   drawTournamentBracket,
+  confirmTeamPayment,
+  refreshTournamentInCache,
   fetchTournaments,
   subscribeTournaments,
   type TournamentFinance,
@@ -73,6 +76,28 @@ export default function TournamentOrganizerPortal({
  // Sport Filter State
  const [selectedSport, setSelectedSport] = useState<string>("all");
 
+ // Pitch selection by role (OWNER vs ORGANIZER/ADMIN)
+ const [pitches, setPitches] = useState<PitchModel[]>([]);
+ const [loadingPitches, setLoadingPitches] = useState(false);
+ const isOwner = user?.role === "OWNER";
+
+ useEffect(() => {
+ let isMounted = true;
+ setLoadingPitches(true);
+ const fetcher = isOwner ? getMyPitchesApi() : getAllPitchesApi();
+ fetcher
+ .then((list) => {
+ if (isMounted) setPitches(Array.isArray(list) ? list : []);
+ })
+ .catch((err) => console.error("Lỗi nạp danh sách sân cho portal:", err))
+ .finally(() => {
+ if (isMounted) setLoadingPitches(false);
+ });
+ return () => {
+ isMounted = false;
+ };
+ }, [isOwner]);
+
  // Thông báo tương tác trong trang (không dùng alert để giữ đúng nghiệp vụ)
  const [varNotice, setVarNotice] = useState<string | null>(null);
 
@@ -81,7 +106,7 @@ export default function TournamentOrganizerPortal({
  const [selectedTournamentId, setSelectedTournamentId] = useState<number | null>(null);
 
  // Active Tab for Tables/Logs
- const [bottomTab, setBottomTab] = useState<"standings" | "var_logs" | "schedule" | "finance">("standings");
+ const [bottomTab, setBottomTab] = useState<"finance" | "schedule" | "var_logs">("finance");
 
  // Real Database Tournaments (danh sách thật từ backend)
  const [dbTournaments, setDbTournaments] = useState<any[]>([]);
@@ -206,6 +231,22 @@ export default function TournamentOrganizerPortal({
       fetchDbTournaments();
     } catch { /* toast đã hiện */ }
     finally { setPendingBusy(false); }
+  };
+
+  const [confirmingTeamFee, setConfirmingTeamFee] = useState<string | null>(null);
+
+  const handleConfirmTeamFee = async (tid: number, teamName: string) => {
+    setConfirmingTeamFee(teamName);
+    try {
+      const res = await confirmTeamPayment(tid, teamName);
+      await refreshTournamentInCache(tid);
+      await fetchDbTournaments();
+      setVarNotice(`✅ ${res.message || `Đã xác nhận thu lệ phí cho đội ${teamName}.`}`);
+    } catch (err: any) {
+      setVarNotice(`❌ ${err?.message || "Xác nhận lệ phí thất bại."}`);
+    } finally {
+      setConfirmingTeamFee(null);
+    }
   };
 
   // --- Trọng tài ---
@@ -559,7 +600,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  const doneMatches = useMemo(() => {
  if (!activeBracket) return [];
  return activeBracket.rounds
- .flatMap((r: any) => r.matches)
+ .flatMap((r: any) => r.matches ?? [])
  .filter((m: any) => m.status === "DONE" && m.teamA && m.teamB)
  .map((m: any) => ({
  matchId: m.matchId,
@@ -574,7 +615,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  const scheduledMatches = useMemo(() => {
  if (!activeBracket) return [];
  return activeBracket.rounds
- .flatMap((r: any) => r.matches)
+ .flatMap((r: any) => r.matches ?? [])
  .filter((m: any) => m.status !== "BYE" && m.teamA && m.teamB)
  .map((m: any) => ({
  matchId: m.matchId,
@@ -642,7 +683,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  const umpireMatches = useMemo(() => {
  if (!activeBracket) return [] as any[];
  return activeBracket.rounds
- .flatMap((r: any) => r.matches)
+ .flatMap((r: any) => r.matches ?? [])
  .filter((m: any) => m.teamA && m.teamB && !m.teamA.tbd && !m.teamB.tbd && m.status !== "BYE")
  .map((m: any) => ({ ...m, roundName: "" }));
  }, [activeBracket]);
@@ -1113,7 +1154,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="flex items-center justify-between mb-2">
  <div className="flex items-center space-x-2">
  <span className="w-3 h-3 rounded-full bg-[#0369a1]" />
- <span className="text-[13px] font-black tracking-wide text-slate-700">ĐỘI A</span>
+ <span className="text-[13px] font-black tracking-wide text-slate-700">Đội A</span>
  </div>
  </div>
  <div className="flex items-baseline justify-between gap-2">
@@ -1130,7 +1171,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="flex items-center justify-between mb-2">
  <div className="flex items-center space-x-2">
  <span className="w-3 h-3 rounded-full bg-[#0369a1]" />
- <span className="text-[13px] font-black tracking-wide text-slate-700">ĐỘI B</span>
+ <span className="text-[13px] font-black tracking-wide text-slate-700">Đội B</span>
  </div>
  </div>
  <div className="flex items-baseline justify-between gap-2">
@@ -1368,63 +1409,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </p>
  )}
 
- {/* TAB CONTENT: BXH TÍNH TỪ TRẬN ĐÃ ĐÁ */}
- {bottomTab === "standings" && activeBracket && (
- standings.length === 0 ? (
- <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">
- Chưa có trận nào có kết quả nên chưa xếp hạng được.
- </p>
- ) : (
- <div className="overflow-x-auto">
- <table className="w-full text-left border-collapse min-w-[620px]">
- <thead>
- <tr className="border-b border-slate-200 text-[13px] font-black text-slate-500 tracking-wider">
- <th className="py-3 px-3">Hạng</th>
- <th className="py-3 px-3">Đội Bóng (FC)</th>
- <th className="py-3 px-3 text-center">Trận</th>
- <th className="py-3 px-3 text-center">T</th>
- <th className="py-3 px-3 text-center">H</th>
- <th className="py-3 px-3 text-center">B</th>
- <th className="py-3 px-3 text-center">HS</th>
- <th className="py-3 px-3 text-center">Điểm</th>
- <th className="py-3 px-3 text-right">Phong độ</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-100 text-[13px] font-medium">
- {standings.map((row: any, idx: number) => (
- <tr
- key={row.team}
- className={`hover:bg-slate-50 transition-colors ${
- idx === 0 ? "bg-sky-50 " : ""
- }`}
- >
- <td className="py-3 px-3 font-mono font-bold text-slate-900 sticky left-0 bg-white ">
- #{idx + 1}
- </td>
- <td className="py-3 px-3 font-bold text-slate-900 ">
- {idx === 0 ? "👑 " : ""}
- {row.team}
- </td>
- <td className="py-3 px-3 text-center font-mono text-slate-600 ">{row.played}</td>
- <td className="py-3 px-3 text-center font-mono font-bold text-sky-700 ">{row.won}</td>
- <td className="py-3 px-3 text-center font-mono font-bold text-amber-600 ">{row.drawn}</td>
- <td className="py-3 px-3 text-center font-mono font-bold text-rose-600">{row.lost}</td>
- <td className="py-3 px-3 text-center font-mono font-bold text-[#0369a1] ">
- {row.diff > 0 ? `+${row.diff}` : row.diff}
- </td>
- <td className="py-3 px-3 text-center font-mono font-black text-slate-900 ">{row.points}</td>
- <td className="py-3 px-3 text-right">
- <FormDots form={row.form} size="sm" />
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
- )
- )}
-
- {/* TAB CONTENT: KẾT QUẢ & VUA PHÁ LƯỚI (đọc từ goal_events) */}
+ {/* Bảng Xếp Hạng & Vua Phá Lưới công khai đã chuyển sang trang Giải Đấu & BXH (tournaments) để tránh lặp chức năng */}
+          {/* TAB CONTENT: KẾT QUẢ & VUA PHÁ LƯỚI (đọc từ goal_events) */}
  {bottomTab === "var_logs" && activeBracket && (
  <div className="space-y-3 sm:space-y-4">
  <div>
@@ -1668,6 +1654,67 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT").length}
  </span>
  </div>
+
+  {/* Danh sách đội chờ xác nhận lệ phí - hiển thị INLINE tại chỗ */}
+  {((activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT")).length > 0 && (
+  <div className="rounded-xl border border-amber-300 bg-amber-50/70 p-3 space-y-2 mt-2">
+    <div className="flex items-center justify-between">
+      <span className="text-[13px] font-black text-amber-800 flex items-center gap-1.5">
+        <Users2 className="w-4 h-4 text-amber-600" />
+        Đội chờ BTC xác nhận thu phí
+      </span>
+      <span className="text-[13px] font-bold text-amber-700 font-mono">
+        {(activeTournament.teams ?? []).filter((z: any) => z.registrationStatus === "PENDING_PAYMENT").length} đội
+      </span>
+    </div>
+    <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+      {(activeTournament.teams ?? [])
+        .filter((z: any) => z.registrationStatus === "PENDING_PAYMENT")
+        .map((tm: any) => (
+          <div
+            key={tm.teamName}
+            className="p-2.5 rounded-lg bg-white border border-amber-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-xs"
+          >
+            <div className="min-w-0">
+              <p className="text-[13px] font-black text-slate-900 truncate">{tm.teamName}</p>
+              <p className="text-[12px] text-slate-500">
+                {tm.captainName || "Đội trưởng"} · {tm.captainPhone || "—"} ({tm.memberCount || 12} cầu thủ)
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => handleConfirmTeamFee(activeTournament.id, tm.teamName)}
+                disabled={confirmingTeamFee === tm.teamName}
+                className="px-2.5 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-black transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1"
+              >
+                {confirmingTeamFee === tm.teamName ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    <span>Đang duyệt…</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>Đã thu phí</span>
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleReject(activeTournament.id, tm.teamName)}
+                disabled={pendingBusy}
+                className="px-2 py-1 rounded-md bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-[12px] font-bold transition-all active:scale-95"
+                title="Từ chối đội này"
+              >
+                Từ chối
+              </button>
+            </div>
+          </div>
+        ))}
+    </div>
+  </div>
+  )}
  </>
  ) : (
  <p className="text-[13px] text-slate-500">Chưa chọn được giải nào từ CSDL.</p>
@@ -2128,14 +2175,49 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  <div className="space-y-1.5">
+ <div className="flex items-center justify-between">
  <label className="font-extrabold text-slate-800 text-sm">Sân thi đấu</label>
+ {isOwner && (
+ <span className="text-[13px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+ Sân của bạn ({pitches.length})
+ </span>
+ )}
+ </div>
+ {pitches.length > 0 ? (
+ <select
+ value={editForm.pitchName}
+ onChange={(e) => {
+ const val = e.target.value;
+ const selectedPitch = pitches.find((p) => p.name === val);
+ setEditForm((f) => ({
+ ...f,
+ pitchName: val,
+ location: selectedPitch ? (selectedPitch.area || selectedPitch.address || f.location) : f.location,
+ }));
+ }}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+ >
+ <option value="">-- Chọn cụm sân thi đấu --</option>
+ {pitches.map((p) => (
+ <option key={p.id} value={p.name}>
+ {p.name} {p.area ? `(${p.area})` : p.address ? `(${p.address})` : ""}
+ </option>
+ ))}
+ </select>
+ ) : (
  <input
  type="text"
  value={editForm.pitchName}
  onChange={(e) => setEditForm((f) => ({ ...f, pitchName: e.target.value }))}
- placeholder="VD: Cụm Sân Turfzone Đà Nẵng"
+ placeholder={loadingPitches ? "Đang tải danh sách sân..." : "VD: Cụm Sân Turfzone Đà Nẵng"}
  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
  />
+ )}
+ {isOwner && pitches.length === 0 && !loadingPitches && (
+ <p className="text-[13px] text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-200">
+ Bạn chưa đăng ký cụm sân nào. Vui lòng tạo sân tại Quản Lý Sân!
+ </p>
+ )}
  </div>
 
  <div className="space-y-1.5">

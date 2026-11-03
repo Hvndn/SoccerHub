@@ -1,9 +1,12 @@
 "use client";
 
 import React, { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
 import WizardStepper from "@/components/WizardStepper";
 import WizardPageShell from "@/components/WizardPageShell";
 import { createTournament, sportLabel, formatLabel } from "@/lib/tournamentService";
+import { useAuth } from "@/context/AuthContext";
+import { getMyPitchesApi, getAllPitchesApi, type PitchModel } from "@/lib/pitchService";
 import {
  ArrowLeft,
  ArrowRight,
@@ -55,12 +58,51 @@ export default function NewTournamentPage() {
 }
 
 function NewTournamentWizard() {
+ const router = useRouter();
  const [step, setStep] = useState(0);
  const [maxReached, setMaxReached] = useState(0);
  const [errors, setErrors] = useState<Record<string, string>>({});
  const [submitting, setSubmitting] = useState(false);
  const [submitError, setSubmitError] = useState<string | null>(null);
  const [createdId, setCreatedId] = useState<number | null>(null);
+ const { user } = useAuth();
+ const [pitches, setPitches] = useState<PitchModel[]>([]);
+ const [loadingPitches, setLoadingPitches] = useState(false);
+ const isOwner = user?.role === "OWNER";
+
+ React.useEffect(() => {
+   let isMounted = true;
+   setLoadingPitches(true);
+   // Nếu là chủ sân (OWNER) -> chỉ lấy danh sách cụm sân của chính chủ sân đó
+   // Nếu là ORGANIZER hoặc ADMIN -> lấy tất cả các sân
+   const fetcher = isOwner ? getMyPitchesApi() : getAllPitchesApi();
+   fetcher
+     .then((data) => {
+       if (!isMounted) return;
+       const list = Array.isArray(data) ? data : [];
+       setPitches(list);
+       if (list.length > 0 && !form.pitchName) {
+         const first = list[0];
+         setForm((f) => ({
+           ...f,
+           pitchName: first.name || "",
+           location: first.area || first.address || f.location,
+           bankCode: f.bankCode || (first as any).bankCode || "",
+           bankAccount: f.bankAccount || (first as any).bankAccount || "",
+           accountName: f.accountName || (first as any).accountName || "",
+         }));
+       }
+     })
+     .catch((err) => {
+       console.error("Lỗi nạp danh sách sân cho giải:", err);
+     })
+     .finally(() => {
+       if (isMounted) setLoadingPitches(false);
+     });
+   return () => {
+     isMounted = false;
+   };
+ }, [isOwner]);
 
  const [form, setForm] = useState({
  title: "",
@@ -185,8 +227,8 @@ function NewTournamentWizard() {
 
  return (
  <WizardPageShell
- backHref="/?tab=tournaments"
- backLabel="Quay lại Giải Đấu & BXH"
+ onBack={() => router.back()}
+ backLabel="Quay lại"
  crumb="Tạo giải đấu mới"
  title="Khởi tạo giải đấu bóng đá mới"
  subtitle="Hoàn tất 4 bước để công bố giải lên hệ thống Turfzone & CSDL thật."
@@ -368,17 +410,55 @@ function NewTournamentWizard() {
  {/* STEP 3 */}
  {step === 2 && (
  <div className="space-y-4">
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div>
- <label htmlFor="t-pitch" className={labelCls}>Sân Đăng Cai Tổ Chức *</label>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"> <div>
+ <label htmlFor="t-pitch" className={labelCls}>
+ {isOwner ? "Chọn Cụm Sân Của Bạn Đăng Cai *" : "Sân Đăng Cai Tổ Chức *"}
+ </label>
+ {pitches.length > 0 ? (
+ <select
+ id="t-pitch"
+ value={form.pitchName}
+ onChange={(e) => {
+ const val = e.target.value;
+ const selectedPitch = pitches.find((p) => p.name === val);
+ setForm((f) => ({
+ ...f,
+ pitchName: val,
+ location: selectedPitch ? (selectedPitch.area || selectedPitch.address || f.location) : f.location,
+ bankCode: (selectedPitch as any)?.bankCode || f.bankCode,
+ bankAccount: (selectedPitch as any)?.bankAccount || f.bankAccount,
+ accountName: (selectedPitch as any)?.accountName || f.accountName,
+ }));
+ setErrors((errs) => {
+ const next = { ...errs };
+ delete next.pitchName;
+ return next;
+ });
+ }}
+ className={inputCls}
+ >
+ <option value="">-- Chọn cụm sân đăng cai --</option>
+ {pitches.map((p) => (
+ <option key={p.id} value={p.name}>
+ {p.name} {p.area ? `(${p.area})` : p.address ? `(${p.address})` : ""}
+ </option>
+ ))}
+ </select>
+ ) : (
  <input
  id="t-pitch"
  type="text"
  value={form.pitchName}
  onChange={(e) => set("pitchName", e.target.value)}
- placeholder="Ví dụ: Cụm Sân Chuyên Việt"
+ placeholder={loadingPitches ? "Đang tải danh sách sân..." : "Ví dụ: Cụm Sân Chuyên Việt"}
  className={inputCls}
  />
+ )}
+ {isOwner && pitches.length === 0 && !loadingPitches && (
+ <p className="mt-1.5 text-[13px] text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+ Bạn chưa có cụm sân nào trên hệ thống. Vui lòng tạo sân tại Quản Lý Sân trước khi tạo giải!
+ </p>
+ )}
  {errors.pitchName && <p className={errCls}>{errors.pitchName}</p>}
  </div>
  <div>
@@ -512,7 +592,7 @@ function NewTournamentWizard() {
  type="text"
  value={form.accountName}
  onChange={(e) => set("accountName", e.target.value)}
- placeholder="VD: NGUYEN VAN A"
+ placeholder="VD: Nguyễn Văn A"
  className={inputCls}
  />
  </div>
