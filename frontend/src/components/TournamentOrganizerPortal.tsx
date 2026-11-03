@@ -966,165 +966,20 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  </div>
 
- <div className="pt-5 mt-4 border-t border-slate-100 flex items-center justify-between gap-2 relative z-10">
- <span className="text-[14px] font-bold text-slate-500 flex items-center gap-1">
- {t.hasBracket ? "✅ Đã bốc thăm" : "⏳ Chưa bốc thăm"}
- </span>
+ <div className="pt-3 mt-3 border-t border-slate-200 flex items-center justify-between text-[13px] relative z-10">
+  <span className="font-bold text-slate-500 flex items-center gap-1">
+    {t.hasBracket ? "✅ Đã bốc thăm" : "⏳ Chưa bốc thăm"}
+  </span>
+  <span className="font-bold text-[#0369a1] group-hover:underline flex items-center gap-1">
+    <span>Bấm để điều hành giải</span>
+    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+  </span>
+</div>
+</div>
+))}
+</div>
 
- <button
- onClick={(e) => {
- e.stopPropagation();
- onOpenBracket?.(String(t.id));
- }}
- className="text-[14px] font-black text-[#0369a1] hover:text-[#0369a1] flex items-center space-x-1 group"
- >
- <span>Mở Nhánh Đấu</span>
- <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
- </button>
-
-      {/* Nút Duyệt đội + Trọng tài */}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => togglePending(Number(t.id))}
-          className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 text-[14px] font-black transition-all active:scale-95 flex items-center gap-1"
-        >
-          <Users className="w-3.5 h-3.5" />
-          Duyệt đội
-          {pendingTeams.length > 0 && pendingFor === Number(t.id) && (
-            <span className="min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-white text-[14px] font-black flex items-center justify-center">
-              {pendingTeams.length}
-            </span>
-          )}
-        </button>
-        {t.joinMode === "INVITE_ONLY" && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              const found = dbTournaments.find((x) => x.id === Number(t.id));
-              setInviteModalTourney(found || null);
-              setShowInviteModal(true);
-            }}
-            className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 text-[14px] font-black transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
-            title="Giải có ràng buộc mời qua email — Gửi thư mời tham gia giải"
-          >
-            <Mail className="w-3.5 h-3.5 text-amber-700" />
-            <span>Mời Email</span>
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={() => toggleReferees(Number(t.id))}
-          className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 text-[14px] font-black transition-all active:scale-95 flex items-center gap-1"
-        >
-          <ShieldCheck className="w-3.5 h-3.5" />
-          Trọng tài
-          {referees.length > 0 && refFor === Number(t.id) && (
-            <span className="min-w-[16px] h-4 px-1 rounded-full bg-sky-500 text-white text-[14px] font-black flex items-center justify-center">
-              {referees.length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Panel duyệt đội */}
-      {pendingOpenFor === Number(t.id) && (
-        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
-          <p className="text-[14px] font-black tracking-wider text-amber-700">Đội chờ duyệt</p>
-          {pendingLoading ? (
-            <p className="text-[14px] text-slate-500">Đang tải…</p>
-          ) : pendingTeams.length === 0 ? (
-            <p className="text-[14px] text-slate-500">Không có đội nào chờ duyệt.</p>
-          ) : (
-            <ul className="space-y-2">
-              {pendingTeams.map((pt) => (
-                <li key={pt.teamName} className="flex items-center gap-2 bg-white rounded-lg border border-amber-100 px-3 py-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14px] font-bold text-slate-800 truncate">{pt.teamName}</p>
-                    <p className="text-[14px] text-slate-500 truncate">{pt.captainName} · {pt.captainPhone}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleApprove(Number(t.id), pt.teamName)}
-                    disabled={pendingBusy}
-                    className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[14px] font-black transition-all active:scale-95 disabled:opacity-40"
-                  >
-                    Duyệt
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleReject(Number(t.id), pt.teamName)}
-                    disabled={pendingBusy}
-                    className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[14px] font-black transition-all active:scale-95 disabled:opacity-40"
-                  >
-                    Từ chối
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
-      {/* Panel trọng tài */}
-      {refOpen === Number(t.id) && (
-        <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-2">
-          <p className="text-[14px] font-black tracking-wider text-sky-700">Trọng tài</p>
-          {refLoading ? (
-            <p className="text-[14px] text-slate-500">Đang tải…</p>
-          ) : referees.length === 0 ? (
-            <p className="text-[14px] text-slate-500">Chưa có trọng tài nào.</p>
-          ) : (
-            <ul className="space-y-1.5">
-              {referees.map((r) => (
-                <li key={r.id} className="flex items-center gap-2 bg-white rounded-lg border border-sky-100 px-3 py-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14px] font-bold text-slate-800 truncate">{r.name}</p>
-                    <p className="text-[14px] text-slate-500 truncate">{r.phone || r.email}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveReferee(Number(t.id), r.id)}
-                    disabled={refBusy}
-                    className="px-2 py-1 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-[14px] font-black transition-all active:scale-95 disabled:opacity-40"
-                  >
-                    Xóa
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="flex items-center gap-2">
-            <input
-              value={refName}
-              onChange={(e) => setRefName(e.target.value)}
-              placeholder="Tên trọng tài"
-              className="flex-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
-            />
-            <input
-              value={refPhone}
-              onChange={(e) => setRefPhone(e.target.value)}
-              placeholder="SĐT"
-              className="w-24 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
-            />
-            <button
-              type="button"
-              onClick={() => handleAddReferee(Number(t.id))}
-              disabled={refBusy || refName.trim().length < 2}
-              className="px-3 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 disabled:opacity-40"
-            >
-              Thêm
-            </button>
-          </div>
-        </div>
-      )}
- </div>
- </div>
- ))}
- </div>
-
- {/* MAIN CONTENT GRID: LIVE ELECTRONIC UMPIRE CONSOLE (LEFT 8) + AI SEEDING & ESCROW (RIGHT 4) */}
+{/* MAIN CONTENT GRID: LIVE ELECTRONIC UMPIRE CONSOLE (LEFT 8) + AI SEEDING & ESCROW (RIGHT 4) */}
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
  
  {/* LEFT 8 COLS: UMPIRE CONSOLE + BRACKET ENGINE + DATA TABLES */}
