@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Award,
   Trophy,
   ShieldCheck,
   QrCode,
@@ -34,50 +33,50 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
   };
 
   return (
-    <div className="w-full py-4 sm:py-8 flex flex-col items-center">
-      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-xl border border-slate-200 p-5 sm:p-8 space-y-6">
+    <div className="w-full py-4 sm:py-6 flex flex-col items-center">
+      <div className="w-full max-w-3xl bg-white rounded-lg shadow-xs border border-slate-300 p-4 sm:p-6 space-y-5">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-[#0369a1] text-white flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-lg bg-[#0b4f6c] text-white flex items-center justify-center">
               <Trophy className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+              <h1 className="text-lg sm:text-xl font-bold text-slate-900">
                 Thẻ Hội Viên Turfzone
               </h1>
-              <p className="text-[14px] text-slate-500">
+              <p className="text-[13px] text-slate-600">
                 Mã VĐV dùng để check-in sân và tham gia giải đấu
               </p>
             </div>
           </div>
-          <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[14px] font-black flex items-center gap-1.5">
+          <span className="px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13px] font-bold flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4" /> Đã kích hoạt
           </span>
         </div>
 
         {/* Digital Pass Card */}
-        <div className="w-full bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-2xl p-5 sm:p-6 text-white shadow-lg relative overflow-hidden">
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center relative z-10">
-            <div className="sm:col-span-8 space-y-3">
+        <div className="w-full bg-[#0f172a] rounded-lg p-5 text-white border border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+            <div className="sm:col-span-8 space-y-2.5">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-mono text-[14px] font-bold border border-sky-400/30">
+                <span className="px-2.5 py-0.5 rounded-md bg-sky-500/20 text-sky-300 font-mono text-[13px] font-bold border border-sky-400/30">
                   {memberId}
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[14px] font-bold">
+                <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[13px] font-bold">
                   {userLevel}
                 </span>
               </div>
 
               <div>
-                <p className="text-[14px] text-slate-400">Vận động viên</p>
-                <p className="text-xl sm:text-2xl font-black text-white">{userName}</p>
+                <p className="text-[13px] text-slate-400">Vận động viên</p>
+                <p className="text-lg sm:text-xl font-bold text-white">{userName}</p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-[14px] text-slate-300 pt-1">
-                <span>⚽ Sân 5 · 7 · 11 · Futsal</span>
+              <div className="flex flex-wrap items-center gap-3 text-[13px] text-slate-300 pt-1">
+                <span>Sân 5 · Sân 7 · Sân 11 · Futsal</span>
                 <span>•</span>
-                <span>📍 {user?.area || "Đà Nẵng"}</span>
+                <span>{user?.area || "Đà Nẵng"}</span>
               </div>
             </div>
 
@@ -85,11 +84,11 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
               <button
                 type="button"
                 onClick={handleCopyCode}
-                className="p-3 bg-white rounded-2xl shadow-md flex flex-col items-center hover:scale-105 transition-transform"
+                className="p-3 bg-white rounded-lg border border-slate-200 flex flex-col items-center hover:bg-slate-50 transition-colors cursor-pointer"
                 title="Bấm để sao chép mã VĐV"
               >
                 <QrCode className="w-16 h-16 text-slate-900" />
-                <span className="font-mono text-[13px] text-slate-800 font-black mt-1">
+                <span className="font-mono text-[13px] text-slate-800 font-bold mt-1">
                   {copiedCode ? "Đã chép mã!" : "Sao chép mã"}
                 </span>
               </button>
@@ -102,14 +101,14 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
           <button
             type="button"
             onClick={() => onNavigateTab?.("booking")}
-            className="p-4 bg-slate-50 hover:bg-sky-50 rounded-2xl border border-slate-200 flex items-center gap-3 text-left transition-all"
+            className="p-3.5 bg-slate-50 hover:bg-sky-50 rounded-lg border border-slate-300 flex items-center gap-3 text-left transition-colors cursor-pointer"
           >
-            <div className="w-10 h-10 rounded-xl bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center shrink-0">
-              <Calendar className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-md bg-[#0b4f6c]/10 text-[#0b4f6c] flex items-center justify-center shrink-0">
+              <Calendar className="w-4 h-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-base font-bold text-slate-900">Đặt Sân Ngay</p>
-              <p className="text-[14px] text-slate-500">Chọn ca trống & cọc VietQR</p>
+              <p className="text-[14px] font-bold text-slate-900">Đặt Sân Ngay</p>
+              <p className="text-[13px] text-slate-600">Chọn ca trống & cọc VietQR</p>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-400" />
           </button>
@@ -117,25 +116,25 @@ export const MemberCardPortal: React.FC<MemberCardPortalProps> = ({
           <button
             type="button"
             onClick={() => onNavigateTab?.("matchmaking")}
-            className="p-4 bg-slate-50 hover:bg-amber-50 rounded-2xl border border-slate-200 flex items-center gap-3 text-left transition-all"
+            className="p-3.5 bg-slate-50 hover:bg-amber-50 rounded-lg border border-slate-300 flex items-center gap-3 text-left transition-colors cursor-pointer"
           >
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
-              <Users className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-md bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
+              <Users className="w-4 h-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-base font-bold text-slate-900">Chợ Kèo Giao Hữu</p>
-              <p className="text-[14px] text-slate-500">Tìm đối thủ cùng trình độ</p>
+              <p className="text-[14px] font-bold text-slate-900">Chợ Kèo Giao Hữu</p>
+              <p className="text-[13px] text-slate-600">Tìm đối thủ cùng trình độ</p>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-400" />
           </button>
         </div>
 
         {onBackToHome && (
-          <div className="pt-2 flex justify-end">
+          <div className="pt-1 flex justify-end">
             <button
               type="button"
               onClick={onBackToHome}
-              className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-[14px] font-bold flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 text-[13px] font-bold flex items-center gap-1.5 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Quay lại</span>

@@ -945,7 +945,7 @@ const handleConfirmCheckin = async (slot: any) => {
 
  {/* POPUP THÔNG BÁO ĐƠN ĐẶT SÂN REALTIME TỪ CẦU THỦ */}
  {realtimeAlert && (
- <div className="bg-white text-slate-900 p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-sky-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 animate-modal-pop relative overflow-hidden">
+ <div className="bg-white text-slate-900 p-4 sm:p-5 rounded-lg shadow-2xl border-2 border-sky-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 animate-modal-pop relative overflow-hidden">
  
  
  <div className="flex items-start space-x-3.5 relative z-10">
@@ -1015,7 +1015,7 @@ const handleConfirmCheckin = async (slot: any) => {
  )}
 
  {/* HEADER BANNER WITH REAL BACKEND DATA */}
- <div className="glass-panel p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-4 shadow-sm">
+ <div className="glass-panel p-4 sm:p-8 rounded-lg border border-slate-200 space-y-3 sm:space-y-4 shadow-sm">
  <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
  {/* min-w-[480px] ở xl: chặn cột trái bị ép về 0px khi dãy nút bên phải
      (max-content ~1286px) chiếm hết chỗ → chữ tiêu đề rớt thành cột dọc. */}
@@ -1252,7 +1252,7 @@ const handleConfirmCheckin = async (slot: any) => {
  )}
 
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
- <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
+ <div className="glass-panel p-3 sm:p-5 rounded-lg border border-slate-200 space-y-2">
  <span className="text-sm font-bold text-slate-500 tracking-wider block">
  Doanh Thu {matrixDate === upcomingDays[0]?.iso ? "Hôm Nay" : `Ngày ${matrixDate.split("-").reverse().join("/")}`}
  </span>
@@ -1264,7 +1264,7 @@ const handleConfirmCheckin = async (slot: any) => {
  </span>
  </div>
 
- <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
+ <div className="glass-panel p-3 sm:p-5 rounded-lg border border-slate-200 space-y-2">
  <span className="text-sm font-bold text-slate-500 tracking-wider block">Tỷ Lệ Lấp Đầy Ca Sân</span>
  <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
  {pitchStats.occupancyRate}%
@@ -1274,7 +1274,7 @@ const handleConfirmCheckin = async (slot: any) => {
  </span>
  </div>
 
- <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
+ <div className="glass-panel p-3 sm:p-5 rounded-lg border border-slate-200 space-y-2">
  <span className="text-sm font-bold text-slate-500 tracking-wider block">Đơn Cọc VietQR Online</span>
  <div className="text-2xl sm:text-3xl font-black text-[#0369a1] font-mono">
  {pitchStats.onlineBookings} Ca Online
@@ -1282,7 +1282,7 @@ const handleConfirmCheckin = async (slot: any) => {
  <span className="text-[14px] font-bold text-slate-500"></span>
  </div>
 
- <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-2">
+ <div className="glass-panel p-3 sm:p-5 rounded-lg border border-slate-200 space-y-2">
  <span className="text-sm font-bold text-slate-500 tracking-wider block">Khách Vàng Lai Tại Quầy</span>
  <div className="text-2xl sm:text-3xl font-black text-amber-700 font-mono">
  {pitchStats.counterBookings} Ca Trực Tiếp
@@ -1298,7 +1298,7 @@ const handleConfirmCheckin = async (slot: any) => {
 
  {/* QUICK SEARCH & CHECK-IN TOOLBAR */}
  {activeSubTab === "matrix" && (
- <div className="glass-panel p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white ">
+ <div className="glass-panel p-3 sm:p-5 rounded-lg border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white ">
  <div className="flex items-center space-x-3 w-full sm:w-auto">
  <div className="w-10 h-10 rounded-xl bg-[#0369a1]/10 text-[#0b4f6c] flex items-center justify-center shrink-0">
  <QrCode className="w-5 h-5" />
@@ -1334,7 +1334,7 @@ const handleConfirmCheckin = async (slot: any) => {
  {/* --- SUB-TAB CONTENT 1: LIVE MATRIX VIEW --- */}
  {activeSubTab === "matrix" && (
  <div className="space-y-3 sm:space-y-6">
- <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-5">
+ <div className="glass-panel p-4 sm:p-6 rounded-lg border border-slate-200 space-y-3 sm:space-y-5">
  <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-3 sm:gap-4 border-b border-slate-100 pb-4">
  <div className="flex items-center space-x-2.5 shrink-0">
  <BarChart2 className="w-5.5 h-5.5 text-[#0b4f6c] " />
@@ -1675,7 +1675,7 @@ const handleConfirmCheckin = async (slot: any) => {
  {/* --- SUB-TAB CONTENT 2: PITCH INVENTORY & MANAGEMENT --- */}
  {activeSubTab === "pitches" && (
  <div className="space-y-3 sm:space-y-6">
- <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-5">
+ <div className="glass-panel p-4 sm:p-6 rounded-lg border border-slate-200 space-y-3 sm:space-y-5">
  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
  <div>
  <h2 className="text-xl font-black text-slate-900 flex items-center space-x-2.5">
@@ -1809,7 +1809,7 @@ const handleConfirmCheckin = async (slot: any) => {
  {/* --- SUB-TAB CONTENT 3: GIÁ THUÊ SÂN (ghi vào bảng pitches qua API) --- */}
  {activeSubTab === "pricing" && (
  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
- <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-5">
+ <div className="glass-panel p-4 sm:p-6 rounded-lg border border-slate-200 space-y-3 sm:space-y-5">
  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
  <div className="flex items-center space-x-2">
  <Sliders className="w-5 h-5 text-[#0b4f6c] " />
@@ -1818,7 +1818,7 @@ const handleConfirmCheckin = async (slot: any) => {
  </div>
 
  <p className="hidden sm:block text-[14px] text-slate-500">
- Giá đọc và ghi thẳng vào bảng <code>pitches</code> . Ca bắt đầu từ 17:00, 18:00 và
+ Cập nhật giá ca thường và ca giờ vàng của từng sân. Ca bắt đầu từ 17:00, 18:00 và
  19:00 được tính theo giá giờ vàng khi thanh toán.
  </p>
 
@@ -1896,7 +1896,7 @@ const handleConfirmCheckin = async (slot: any) => {
  </div>
  </div>
 
- <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-5">
+ <div className="glass-panel p-4 sm:p-6 rounded-lg border border-slate-200 space-y-3 sm:space-y-5">
  <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
  <ShieldCheck className="w-5 h-5 text-emerald-500" />
  <h3 className="font-extrabold text-base text-slate-900 ">Tiền Cọc & Giữ Chỗ</h3>
@@ -1939,7 +1939,7 @@ const handleConfirmCheckin = async (slot: any) => {
 
  {/* --- SUB-TAB CONTENT 4: CANTEEN POS --- */}
   {activeSubTab === "canteen" && (
-  <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-5">
+  <div className="glass-panel p-4 sm:p-6 rounded-lg border border-slate-200 space-y-3 sm:space-y-5">
   <div className="flex items-center justify-between border-b border-slate-100 pb-4">
   <div className="flex items-center space-x-2">
   <Coffee className="w-5 h-5 text-amber-700" />
@@ -2042,7 +2042,7 @@ const handleConfirmCheckin = async (slot: any) => {
  {/* MODAL 0: SỬA HỒ SƠ CỤM SÂN (tên, địa chỉ, SĐT, bộ môn, tiện ích, ảnh, mô tả) */}
   {showEditInfoModal && (
   <div id="admin-inline-edit-info" className="w-full animate-fade-in">
-  <div className="bg-white rounded-3xl shadow-sm w-full max-w-2xl my-8 border border-slate-200 overflow-hidden">
+  <div className="bg-white rounded-lg shadow-sm w-full max-w-2xl my-8 border border-slate-200 overflow-hidden">
   <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
   <div className="flex items-center gap-2.5">
   <Pencil className="w-5 h-5 text-[#0369a1]" />
@@ -2243,7 +2243,7 @@ const handleConfirmCheckin = async (slot: any) => {
  {showAddPitchModal && (
   <div id="admin-inline-add-pitch" className="w-full animate-fade-in">
  <div 
- className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+ className="bg-white p-4 sm:p-7 rounded-lg max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
@@ -2352,7 +2352,7 @@ const handleConfirmCheckin = async (slot: any) => {
  {showOfflineModal && (
   <div id="admin-inline-offline" className="w-full animate-fade-in">
  <div 
- className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+ className="bg-white p-4 sm:p-7 rounded-lg max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
@@ -2511,7 +2511,7 @@ const handleConfirmCheckin = async (slot: any) => {
  {selectedSlotForAction && (
   <div id="admin-inline-slot-action" className="w-full animate-fade-in">
  <div 
- className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+ className="bg-white p-4 sm:p-7 rounded-lg max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
@@ -2600,7 +2600,7 @@ const handleConfirmCheckin = async (slot: any) => {
  {showHoursModal && (
   <div id="admin-inline-hours" className="w-full animate-fade-in">
  <div 
- className="bg-white p-4 sm:p-7 rounded-2xl sm:rounded-3xl max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+ className="bg-white p-4 sm:p-7 rounded-lg max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
@@ -2688,7 +2688,7 @@ const handleConfirmCheckin = async (slot: any) => {
   id="admin-inline-cancel" className="w-full animate-fade-in"
   >
  <div 
- className="relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden animate-modal-pop my-auto"
+ className="relative w-full max-w-md bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden animate-modal-pop my-auto"
  onClick={(e) => e.stopPropagation()}
  >
  {/* Header */}

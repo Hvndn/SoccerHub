@@ -80,7 +80,7 @@ export default function Home() {
  const [isTabChanging, setIsTabChanging] = useState(false);
 
   /** Mọi lần chuyển trạng thái/trang đều hiện vòng xoay tối thiểu 1 giây. */
-  const MIN_TAB_LOADING_MS = 1000;
+  const MIN_TAB_LOADING_MS = 120;
 
  // Modals state
  const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -568,22 +568,7 @@ if (newTab === activeTab) return;
   )}
 
 {activeTab === "community" && (
- <>
- {!currentUser && (
- <GuestFeatureBanner
- title="Cộng Đồng Cầu Thủ & Phong Độ Thi Đấu"
- description="Ghép trận theo phong độ, theo dõi lịch sử thi đấu và kết nối cộng đồng Turfzone."
- features={[
- "Lịch sử thi đấu & chuỗi phong độ",
- "Ghép trận theo trình độ",
- "Bảng xếp hạng phong độ",
- ]}
- icon={Users}
- onOpenAuth={handleOpenAuth}
- />
- )}
   <CommunityHub user={currentUser} onOpenAuth={handleOpenAuth} onNavigateTab={handleTabChange} initialDmPartner={pendingDmPartner} initialChannel={pendingChannel} />
- </>
  )}
 
  {activeTab === "team-management" && (

@@ -755,7 +755,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  return (
  <div className="space-y-4 sm:space-y-8 animate-fade-in pb-16">
  {/* HEADER BAR */}
- <div className="bg-white text-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-slate-200/90 shadow-sm relative overflow-hidden">
+ <div className="bg-white text-slate-900 rounded-lg p-4 sm:p-8 border border-slate-200/90 shadow-sm relative overflow-hidden">
  
  
  <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6">
@@ -864,14 +864,14 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
  {loadingDb && filteredTournaments.length === 0 ? (
  [0, 1, 2].map((i) => (
- <div key={i} className="rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/90 bg-white space-y-3">
+ <div key={i} className="rounded-lg p-4 sm:p-6 border border-slate-200/90 bg-white space-y-3">
  <div className="skeleton-shimmer h-5 w-2/3 rounded-lg" />
  <div className="skeleton-shimmer h-3 w-1/2 rounded-lg" />
  <div className="skeleton-shimmer h-2 w-full rounded-full" />
  </div>
  ))
  ) : filteredTournaments.length === 0 ? (
- <div className="md:col-span-3 rounded-2xl sm:rounded-3xl p-4 sm:p-10 text-center border border-dashed border-slate-300 bg-white">
+ <div className="md:col-span-3 rounded-lg p-4 sm:p-10 text-center border border-dashed border-slate-300 bg-white">
  <Trophy className="w-8 h-8 text-slate-300 mx-auto" />
  <p className="mt-3 text-sm font-bold text-slate-600">
  {selectedSport === "all"
@@ -882,7 +882,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  ) : filteredTournaments.map((t: any) => (
  <div
  key={t.id}
- className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-xs cursor-pointer ${
+ className={`rounded-lg p-4 sm:p-6 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-xs cursor-pointer ${
   String(t.id) === String(activeTournamentId)
     ? "border-[#0369a1] ring-2 ring-[#0369a1]/25"
     : t.status === "live"
@@ -1116,7 +1116,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="lg:col-span-8 space-y-4 sm:space-y-8">
 
  {/* 1. BẢNG ĐIỀU KHIỂN TRỌNG TÀI — chạy trên trận thật trong nhánh đấu */}
- <div className="bg-white border border-slate-200/90 text-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm relative overflow-hidden">
+ <div className="bg-white border border-slate-200/90 text-slate-900 rounded-lg p-4 sm:p-8 shadow-sm relative overflow-hidden">
  
 
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-100 pb-5 mb-6">
@@ -1265,7 +1265,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  {/* 2. NHÁNH ĐẤU THẬT — parse từ bracketJson của giải đang chọn */}
- <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
+ <div className="bg-white border border-slate-200 rounded-lg p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
  <div className="min-w-0">
  <span className="text-[14px] font-black text-[#0b4f6c]">
@@ -1368,12 +1368,11 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  {/* 3. DATA TABLES & INCIDENT LOGS */}
- <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
+ <div className="bg-white border border-slate-200 rounded-lg p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
  {/* TABS HEADER */}
  <div className="flex items-center justify-between border-b border-slate-200 pb-4">
  <div className="flex items-center gap-2 flex-wrap">
  {[
- { id: "standings", label: "Bảng Xếp Hạng" },
  { id: "var_logs", label: "Kết Quả & Vua Phá Lưới" },
  { id: "schedule", label: "Lịch Thi Đấu" },
  { id: "finance", label: "Tài Chính Giải" }
@@ -1479,8 +1478,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </p>
  {topScorers.length === 0 ? (
  <p className="text-[14px] text-slate-500">
- Chưa có dữ liệu cầu thủ ghi bàn. Khi nhập kết quả ở tab Bracket, mục “Ghi bàn/kiến tạo” sẽ ghi vào bảng{" "}
- <span className="font-mono">goal_events</span>.
+ Chưa có dữ liệu cầu thủ ghi bàn. Khi nhập kết quả ở nhánh đấu, danh sách ghi bàn sẽ hiển thị tại đây.
  </p>
  ) : (
  <div className="space-y-2">
@@ -1639,7 +1637,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="lg:col-span-4 space-y-4 sm:space-y-8">
 
  {/* 1. THỐNG KÊ GIẢI ĐẤU (đếm ) */}
- <div className="bg-white border border-slate-200 text-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-3 sm:space-y-6">
+ <div className="bg-white border border-slate-200 text-slate-900 rounded-lg p-4 sm:p-6 shadow-xl space-y-3 sm:space-y-6">
  <div className="flex items-center space-x-3 border-b border-slate-200 pb-4">
  <div className="w-9 h-9 rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/30 flex items-center justify-center text-sky-700 shrink-0">
  <Cpu className="w-5 h-5" />
@@ -1858,7 +1856,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   </div>
 
   {/* ===== QUYỀN THAM GIA GIẢI (ai cũng tham gia / chỉ mời qua email) — hiển thị INLINE ===== */}
-  <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-5">
+  <div className="bg-white border border-slate-200 rounded-lg p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-5">
    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
     <div className="flex items-center space-x-2.5">
      <div className="w-9 h-9 rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/30 flex items-center justify-center text-sky-700 shrink-0">
@@ -1983,51 +1981,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
     </>
    )}
   </div>
- {/* 2. QUỸ THƯỞNG THẬT (prizePool ) */}
- <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-6">
- <div className="flex items-center justify-between border-b border-slate-100 pb-4">
- <div className="flex items-center space-x-2.5">
- <div className="w-9 h-9 rounded-xl bg-[#0369a1]/10 border border-[#0369a1]/30 flex items-center justify-center text-sky-700 shrink-0">
- <Lock className="w-5 h-5" />
- </div>
- <div>
- <span className="text-[14px] font-black text-sky-700 tracking-wider">
- Quỹ giải thưởng
- </span>
- <h4 className="text-sm font-black text-slate-900 ">
- {activeTournament ? activeTournament.title : "Chưa chọn giải"}
- </h4>
- </div>
- </div>
- </div>
-
- {!activeTournament || !activeTournament.prizePool ? (
- <p className="text-[14px] text-slate-500">
- Giải này chưa khai báo giải thưởng .
- </p>
- ) : (
- <>
- <div className="text-center bg-slate-50 p-3 sm:p-5 rounded-2xl border border-slate-200 space-y-1">
- <span className="text-[14px] font-bold text-slate-500 block">
- Tổng giải thưởng
- </span>
- <span className="text-xl sm:text-3xl font-black font-mono text-sky-700 tracking-tight">
- {formatMoney(activeTournament.prizePool)}
- </span>
- <span className="text-[14px] text-slate-500 font-bold block pt-1">
- 
- </span>
- </div>
-
- <p className="text-[14px] text-slate-500 leading-relaxed">
- 
- </p>
- </>
- )}
- </div>
-
  {/* 3. THÔNG TIN SÂN & THỜI GIAN THI ĐẤU (thật) */}
- <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
+ <div className="bg-white border border-slate-200 rounded-lg p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
  <h4 className="text-[14px] font-black text-slate-500">
  Thông Tin Giải Đấu
  </h4>
@@ -2079,7 +2034,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {/* MODAL SỬA THÔNG TIN GIẢI ĐẤU */}
  {showEditModal && (
  <div id="edit-tournament-inline" className="w-full animate-fade-in">
- <div className="bg-white rounded-3xl shadow-sm w-full max-w-2xl mx-auto border border-slate-200 overflow-hidden">
+ <div className="bg-white rounded-lg shadow-sm w-full max-w-2xl mx-auto border border-slate-200 overflow-hidden">
  <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
  <div className="flex items-center gap-2.5">
  <Pencil className="w-5 h-5 text-[#0369a1]" />

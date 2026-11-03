@@ -2,15 +2,21 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import {
- Home, ChevronRight, Calendar, Clock, MapPin, Trophy, Users, ShieldCheck, Zap,
- QrCode, Video, MessageSquare, CheckCircle2, RefreshCw, XCircle, PlayCircle, FileText
+  Calendar,
+  Clock,
+  MapPin,
+  Trophy,
+  RefreshCw,
+  CheckCircle2,
+  X,
 } from "lucide-react";
-import { API_BASE_URL, apiRequest, fetchWithTimeout } from '@/lib/api';
+import { API_BASE_URL, apiRequest, fetchWithTimeout } from "@/lib/api";
 import { pitchTypeLabel } from "@/lib/pitchLabels";
-import { todayLocal, isPastDay } from "@/lib/dateUtils";
+import { isPastDay } from "@/lib/dateUtils";
 import {
- fetchTournaments, sportLabel, formatLabel,
- type Tournament, type TournamentBracketData,
+  fetchTournaments,
+  type Tournament,
+  type TournamentBracketData,
 } from "@/lib/tournamentService";
 
 interface ActivityScheduleProps {
@@ -21,787 +27,536 @@ interface ActivityScheduleProps {
 }
 
 type MatchRow = {
- key: string;
- matchId: string;
- roundName: string;
- tournamentId: number;
- tournamentTitle: string;
- teamA: string;
- teamB: string;
- formA?: string;
- recordA?: string;
- formB?: string;
- recordB?: string;
- scoreA?: number;
- scoreB?: number;
- status: string;
- matchDate?: string;
- timeSlot?: string;
- pitchName?: string;
- startAt?: Date;
+  key: string;
+  matchId: string;
+  roundName: string;
+  tournamentId: number;
+  tournamentTitle: string;
+  teamA: string;
+  teamB: string;
+  formA?: string;
+  recordA?: string;
+  formB?: string;
+  recordB?: string;
+  scoreA?: number;
+  scoreB?: number;
+  status: string;
+  matchDate?: string;
+  timeSlot?: string;
+  pitchName?: string;
+  startAt?: Date;
 };
 
 const WEEKDAY = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-
 const money = (n?: number | null) => `${(n ?? 0).toLocaleString("vi-VN")}đ`;
 
-/** "2026-11-15" + "17:00 - 18:30" -> Date (dùng mốc đầu khung giờ). */
 function parseStart(date?: string, slot?: string): Date | undefined {
- if (!date) return undefined;
- const hhmm = /(\d{1,2}):(\d{2})/.exec(slot ?? "");
- const d = new Date(`${date}T${hhmm ? `${hhmm[1].padStart(2, "0")}:${hhmm[2]}` : "00:00"}:00`);
- return Number.isNaN(d.getTime()) ? undefined : d;
+  if (!date) return undefined;
+  const hhmm = /(\d{1,2}):(\d{2})/.exec(slot ?? "");
+  const d = new Date(`${date}T${hhmm ? `${hhmm[1].padStart(2, "0")}:${hhmm[2]}` : "00:00"}:00`);
+  return Number.isNaN(d.getTime()) ? undefined : d;
+}
+
+function prettyDate(iso?: string): string {
+  if (!iso) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
 }
 
 export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
   user,
-  onBackToHome,
   onNavigateTab,
   onOpenBracket,
 }) => {
- const [activeFilter, setActiveFilter] = useState<
- "upcoming" | "tournaments" | "matchmaking" | "history" | "cancelled"
- >("upcoming");
+  const [activeFilter, setActiveFilter] = useState<
+    "bookings" | "upcoming" | "tournaments" | "matchmaking" | "history"
+  >("bookings");
 
- const [tournaments, setTournaments] = useState<Tournament[]>([]);
- const [posts, setPosts] = useState<any[]>([]);
- const [myBookings, setMyBookings] = useState<any[]>([]);
- const [loading, setLoading] = useState(true);
- const [loadError, setLoadError] = useState<string | null>(null);
- const [now, setNow] = useState(() => new Date());
- const [notice, setNotice] = useState<string | null>(null);
- const [selectedMatch, setSelectedMatch] = useState<MatchRow | null>(null);
-
- // Form hien INLINE (khong popup) -> tu cuon toi khi mo.
- useEffect(() => {
-  if (!(selectedMatch)) return;
-  const raf = requestAnimationFrame(() => {
-   document.querySelector('#inline-selectedmatch')?.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
-  return () => cancelAnimationFrame(raf);
- }, [selectedMatch]);
- const [cancellingId, setCancellingId] = useState<number | null>(null);
-  /** Vé đang chờ xác nhận hủy (thay cho window.confirm). */
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [myBookings, setMyBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [now] = useState(() => new Date());
+  const [notice, setNotice] = useState<string | null>(null);
+  const [selectedMatchKey, setSelectedMatchKey] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
 
- /** Người đặt tự hủy vé của mình (chỉ khi ca chưa bắt đầu) — backend cũng kiểm lại SĐT. */
- const cancelMyBooking = async (b: any) => {
- try {
- setCancellingId(b.id);
- const res = await apiRequest<any>(`/api/v1/pitches/bookings/${b.id}/cancel-by-customer`, {
- method: "POST",
- body: JSON.stringify({ reason: "Người đặt tự hủy từ màn Vé của tôi" }),
- });
- setNotice(`Đã hủy vé ${b.code}. Khung giờ đã mở lại cho khách khác.`);
- await load();
- void res;
- } catch (e: any) {
- setNotice(e?.message || "Không hủy được vé. Vui lòng thử lại.");
- } finally {
-  setCancellingId(null);
-  setConfirmCancelId(null);
- }
- };
+  const cancelMyBooking = async (b: any) => {
+    try {
+      setCancellingId(b.id);
+      await apiRequest<any>(`/api/v1/pitches/bookings/${b.id}/cancel-by-customer`, {
+        method: "POST",
+        body: JSON.stringify({ reason: "Người đặt tự hủy từ màn Vé của tôi" }),
+      });
+      setNotice(`Đã hủy vé ${b.code}. Khung giờ đã mở lại.`);
+      await load();
+    } catch (e: any) {
+      setNotice(e?.message || "Không hủy được vé. Vui lòng thử lại.");
+    } finally {
+      setCancellingId(null);
+      setConfirmCancelId(null);
+    }
+  };
 
- // Đồng hồ 1 nhịp/giây cho countdown + trạng thái "đã bắt đầu"
- useEffect(() => {
- const t = setInterval(() => setNow(new Date()), 1000);
- return () => clearInterval(t);
- }, []);
+  useEffect(() => {
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(null), 4000);
+    return () => clearTimeout(t);
+  }, [notice]);
 
- useEffect(() => {
- if (!notice) return;
- const t = setTimeout(() => setNotice(null), 4000);
- return () => clearTimeout(t);
- }, [notice]);
+  const load = async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const [ts, ps] = await Promise.all([
+        fetchTournaments().catch(() => [] as Tournament[]),
+        fetchWithTimeout(`${API_BASE_URL}/api/v1/community/matchmaking-posts`)
+          .then((r) => (r.ok ? r.json() : []))
+          .catch(() => [] as any[]),
+      ]);
+      setTournaments(ts);
+      setPosts(Array.isArray(ps) ? ps : []);
 
- const load = async () => {
- setLoading(true);
- setLoadError(null);
- try {
- const [ts, ps] = await Promise.all([
- fetchTournaments().catch(() => [] as Tournament[]),
- fetchWithTimeout(`${API_BASE_URL}/api/v1/community/matchmaking-posts`)
- .then((r) => (r.ok ? r.json() : []))
- .catch(() => [] as any[]),
- ]);
- setTournaments(ts);
- setPosts(Array.isArray(ps) ? ps : []);
+      const phone = (user?.phone ?? "").toString().replace(/\s/g, "");
+      if (phone.length >= 8) {
+        const bs = await apiRequest<any[]>(
+          `/api/v1/pitches/bookings/search?query=${encodeURIComponent(phone)}`
+        )
+          .then((r) => (Array.isArray(r) ? r : []))
+          .catch(() => [] as any[]);
+        setMyBookings(Array.isArray(bs) ? bs : []);
+      } else {
+        setMyBookings([]);
+      }
+    } catch (e: any) {
+      setLoadError(e?.message || "Không tải được dữ liệu từ máy chủ.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
- // Vé của chính mình: tra theo SĐT trong tài khoản (API search bookings)
- const phone = (user?.phone ?? "").toString().replace(/\s/g, "");
- if (phone.length >= 8) {
-  const bs = await apiRequest<any[]>(`/api/v1/pitches/bookings/search?query=${encodeURIComponent(phone)}`)
-  .then((r) => (Array.isArray(r) ? r : []))
-  .catch(() => [] as any[]);
- setMyBookings(Array.isArray(bs) ? bs : []);
- } else {
- setMyBookings([]);
- }
- } catch (e: any) {
- setLoadError(e?.message || "Không tải được dữ liệu từ máy chủ.");
- } finally {
- setLoading(false);
- }
- };
+  useEffect(() => {
+    load();
+  }, [user?.phone]);
 
- useEffect(() => {
- load();
- // eslint-disable-next-line react-hooks/exhaustive-deps
- }, [user?.phone]);
+  const allMatches = useMemo<MatchRow[]>(() => {
+    const rows: MatchRow[] = [];
+    for (const t of tournaments) {
+      if (!t.bracketJson) continue;
+      let b: TournamentBracketData | null = null;
+      try {
+        const p = JSON.parse(t.bracketJson) as TournamentBracketData;
+        b = p && Array.isArray(p.rounds) ? p : null;
+      } catch {
+        b = null;
+      }
+      if (!b) continue;
+      for (const r of b.rounds) {
+        for (const m of r.matches) {
+          if (!m.teamA || !m.teamB || m.status === "BYE") continue;
+          rows.push({
+            key: `t${t.id}-${m.matchId}`,
+            matchId: m.matchId,
+            roundName: r.name,
+            tournamentId: t.id,
+            tournamentTitle: t.title,
+            teamA: m.teamA.name,
+            teamB: m.teamB.name,
+            formA: m.teamA.form ?? "",
+            recordA: m.teamA.record ?? "0-0-0",
+            formB: m.teamB.form ?? "",
+            recordB: m.teamB.record ?? "0-0-0",
+            scoreA: m.scoreA,
+            scoreB: m.scoreB,
+            status: m.status ?? "SCHEDULED",
+            matchDate: m.matchDate,
+            timeSlot: m.timeSlot,
+            pitchName: m.pitchName ?? t.pitchName ?? t.location ?? undefined,
+            startAt: parseStart(m.matchDate, m.timeSlot),
+          });
+        }
+      }
+    }
+    return rows.sort((a, b) => (a.startAt?.getTime() ?? Infinity) - (b.startAt?.getTime() ?? Infinity));
+  }, [tournaments]);
 
- /** Gom toàn bộ trận trong mọi nhánh đấu ra một danh sách phẳng. */
- const allMatches = useMemo<MatchRow[]>(() => {
- const rows: MatchRow[] = [];
- for (const t of tournaments) {
- if (!t.bracketJson) continue;
- let b: TournamentBracketData | null = null;
- try {
- const p = JSON.parse(t.bracketJson) as TournamentBracketData;
- b = p && Array.isArray(p.rounds) ? p : null;
- } catch {
- b = null;
- }
- if (!b) continue;
- for (const r of b.rounds) {
- for (const m of r.matches) {
- if (!m.teamA || !m.teamB || m.status === "BYE") continue;
- rows.push({
- key: `t${t.id}-${m.matchId}`,
- matchId: m.matchId,
- roundName: r.name,
- tournamentId: t.id,
- tournamentTitle: t.title,
- teamA: m.teamA.name,
- teamB: m.teamB.name,
- formA: m.teamA.form ?? "",
- recordA: m.teamA.record ?? "0-0-0",
- formB: m.teamB.form ?? "",
- recordB: m.teamB.record ?? "0-0-0",
- scoreA: m.scoreA,
- scoreB: m.scoreB,
- status: m.status ?? "SCHEDULED",
- matchDate: m.matchDate,
- timeSlot: m.timeSlot,
- pitchName: m.pitchName ?? t.pitchName ?? t.location ?? undefined,
- startAt: parseStart(m.matchDate, m.timeSlot),
- });
- }
- }
- }
- return rows.sort((a, b) => (a.startAt?.getTime() ?? Infinity) - (b.startAt?.getTime() ?? Infinity));
- }, [tournaments]);
+  const upcoming = useMemo(
+    () => allMatches.filter((m) => m.status !== "DONE" && (m.startAt ? m.startAt.getTime() > now.getTime() : true)),
+    [allMatches, now]
+  );
+  const doneMatches = useMemo(() => allMatches.filter((m) => m.status === "DONE"), [allMatches]);
+  const matchedPosts = useMemo(() => posts.filter((p: any) => p.status === "MATCHED"), [posts]);
 
- const upcoming = useMemo(
- () => allMatches.filter((m) => m.status !== "DONE" && (m.startAt ? m.startAt.getTime() > now.getTime() : false)),
- [allMatches, now]
- );
- const running = useMemo(
- () => allMatches.filter((m) => m.status !== "DONE" && m.startAt && m.startAt.getTime() <= now.getTime() && now.getTime() - m.startAt.getTime() < 6 * 3600 * 1000),
- [allMatches, now]
- );
- const doneMatches = useMemo(() => allMatches.filter((m) => m.status === "DONE"), [allMatches]);
+  const filterTabs: { id: typeof activeFilter; label: string; count: number }[] = [
+    { id: "bookings", label: "Vé Đặt Sân Của Tôi", count: myBookings.length },
+    { id: "upcoming", label: "Lịch Đấu Sắp Tới", count: upcoming.length },
+    { id: "tournaments", label: "Tất Cả Trận Giải", count: allMatches.length },
+    { id: "matchmaking", label: "Kèo Đã Ghép", count: matchedPosts.length },
+    { id: "history", label: "Kết Quả Đã Đá", count: doneMatches.length },
+  ];
 
- const openPosts = useMemo(() => posts.filter((p: any) => (p.status ?? "OPEN") === "OPEN"), [posts]);
- const matchedPosts = useMemo(() => posts.filter((p: any) => p.status === "MATCHED"), [posts]);
- const cancelledPosts = useMemo(() => posts.filter((p: any) => p.status === "CANCELLED"), [posts]);
+  const dateBox = (m: MatchRow) => {
+    const d = m.startAt ?? (m.matchDate ? new Date(`${m.matchDate}T00:00:00`) : null);
+    if (!d) return { top: "Lịch", num: "—", bot: m.timeSlot?.slice(0, 5) || "—" };
+    return {
+      top: WEEKDAY[d.getDay()],
+      num: String(d.getDate()),
+      bot: m.timeSlot?.slice(0, 5) || d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+    };
+  };
 
- /** Trận nổi bật: đang diễn ra, nếu không thì trận sắp tới gần nhất. */
- const hero = running[0] ?? upcoming[0] ?? null;
- const heroSeconds = hero?.startAt ? Math.max(0, Math.floor((hero.startAt.getTime() - now.getTime()) / 1000)) : 0;
+  const visibleMatches =
+    activeFilter === "upcoming"
+      ? upcoming
+      : activeFilter === "tournaments"
+      ? allMatches
+      : activeFilter === "history"
+      ? doneMatches
+      : [];
 
- const fmtCountdown = (total: number) => {
- const h = Math.floor(total / 3600);
- const m = Math.floor((total % 3600) / 60);
- const s = total % 60;
- const pad = (n: number) => String(n).padStart(2, "0");
- return `${pad(h)}:${pad(m)}:${pad(s)}`;
- };
+  return (
+    <div className="w-full space-y-4 pb-12 text-slate-900">
+      {/* 1. UNIFIED HEADER & TABS */}
+      <section className="bg-white border border-slate-300 rounded-lg p-5 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+              Vé Đặt Sân & Lịch Thi Đấu
+            </h1>
+            <p className="text-[14px] text-slate-600 mt-1">
+              Tra cứu vé đặt sân của bạn, lịch thi đấu giải và các kèo giao hữu đã chốt.
+            </p>
+          </div>
 
- const listFor = (filter: typeof activeFilter): MatchRow[] => {
- switch (filter) {
- case "upcoming":
- case "tournaments":
-      return allMatches;
-    case "matchmaking":
-    case "cancelled":
-      return [];
- case "history":
- return doneMatches;
- default:
- return [];
- }
- };
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={load}
+              disabled={loading}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-white text-slate-800 text-[14px] font-bold hover:bg-slate-50 border border-slate-300 disabled:opacity-50 cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 text-[#0369a1] ${loading ? "animate-spin" : ""}`} />
+              <span>{loading ? "Đang tải..." : "Làm mới"}</span>
+            </button>
 
- const visibleMatches = listFor(activeFilter);
-  // Hai tab keo co du lieu rieng (keo da ghep / keo da huy) — truoc day listFor tra []
-  // nen badge co so nhung danh sach luon rong.
-  const visibleKeo: any[] =
-    activeFilter === "matchmaking" ? matchedPosts : activeFilter === "cancelled" ? cancelledPosts : [];
+            <button
+              type="button"
+              onClick={() => onNavigateTab && onNavigateTab("booking")}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold cursor-pointer"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>+ Đặt Sân Mới</span>
+            </button>
+          </div>
+        </div>
 
- const filterTabs: { id: typeof activeFilter; label: string; count: number; tone: string }[] = [
- { id: "upcoming", label: "Sắp diễn ra", count: upcoming.length, tone: "bg-[#0369a1] text-white" },
- { id: "tournaments", label: "Lịch đấu giải", count: allMatches.length, tone: "bg-slate-200 text-slate-800 " },
- { id: "matchmaking", label: "Kèo đã ghép", count: matchedPosts.length, tone: "bg-slate-200 text-slate-800 " },
- { id: "history", label: "Đã đá", count: doneMatches.length, tone: "bg-slate-200 text-slate-800 " },
- { id: "cancelled", label: "Đã hủy", count: cancelledPosts.length, tone: "bg-rose-100 text-rose-700" },
- ];
+        <div className="flex flex-wrap items-center gap-2">
+          {filterTabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setActiveFilter(t.id)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer ${
+                activeFilter === t.id
+                  ? "bg-[#0369a1] text-white border-[#0369a1]"
+                  : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+              }`}
+            >
+              <span>{t.label}</span>
+              <span
+                className={`px-2 py-0.5 rounded text-[13px] font-mono font-bold ${
+                  activeFilter === t.id ? "bg-white/20 text-white" : "bg-white text-slate-700 border border-slate-200"
+                }`}
+              >
+                {t.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
 
- const dateBox = (m: MatchRow) => {
- const d = m.startAt ?? (m.matchDate ? new Date(`${m.matchDate}T00:00:00`) : null);
- if (!d) return { top: "—", num: "—", bot: "—" };
- return { top: WEEKDAY[d.getDay()], num: String(d.getDate()), bot: d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) };
- };
+      {loadError && (
+        <p className="rounded-lg bg-rose-50 border border-rose-300 px-4 py-3 text-[14px] font-bold text-rose-700">
+          {loadError}
+        </p>
+      )}
 
- return (
- <div className="w-full bg-[#f8f9ff] text-[#0b1c30] font-sans transition-colors duration-300">
- <div className="w-full py-2">
- <div className="flex flex-col w-full gap-3 sm:gap-6">
+      {/* 2. TAB: MY BOOKINGS */}
+      {activeFilter === "bookings" && (
+        <section>
+          {myBookings.length === 0 ? (
+            <div className="rounded-lg bg-white border border-slate-300 p-8 text-center space-y-3">
+              <Calendar className="w-8 h-8 text-slate-400 mx-auto" />
+              <p className="text-[15px] font-semibold text-slate-700">
+                {user?.phone
+                  ? "Bạn chưa có vé đặt sân nào."
+                  : "Tài khoản chưa cập nhật số điện thoại nên chưa tra cứu được vé đặt sân."}
+              </p>
+              <button
+                type="button"
+                onClick={() => onNavigateTab && onNavigateTab("booking")}
+                className="px-4 py-2 rounded-md bg-[#0369a1] text-white text-[14px] font-bold"
+              >
+                Tìm & Đặt Sân Ngay
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {myBookings.map((b) => {
+                const started =
+                  b.status === "PLAYING" || b.status === "COMPLETED" || isPastDay(b.bookingDate);
+                const canCancel =
+                  b.status === "BOOKED" || b.status === "PENDING_PAYMENT" || b.status === "RESALE";
+                const statusVi =
+                  b.status === "CANCELLED"
+                    ? "Đã hủy"
+                    : b.status === "COMPLETED"
+                    ? "Đã hoàn thành"
+                    : b.status === "PENDING_PAYMENT"
+                    ? "Chờ xác nhận cọc"
+                    : b.status === "PLAYING"
+                    ? "Đang thi đấu"
+                    : "Đã đặt lịch";
 
- {/* 1. BREADCRUMB & ACTIONS */}
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
- <div className="flex flex-col gap-1.5">
- <nav className="flex items-center gap-2 text-[14px] font-semibold text-slate-500">
- <button onClick={onBackToHome} className="hover:text-sky-800 transition-colors flex items-center gap-1">
- <Home className="w-3.5 h-3.5" />
- <span>Trang chủ</span>
- </button>
- <ChevronRight className="w-3.5 h-3.5" />
- <span className="text-slate-900 font-bold">Lịch Hoạt Động & Đặt Chỗ</span>
- <ChevronRight className="w-3.5 h-3.5" />
- <span className="text-sky-800 font-mono font-bold">Tất cả lịch trình</span>
- </nav>
+                return (
+                  <div
+                    key={b.id}
+                    className="rounded-lg bg-white border border-slate-300 p-4 flex flex-col justify-between gap-3"
+                  >
+                    <div className="flex items-start justify-between gap-3 pb-2.5 border-b border-slate-200">
+                      <div className="min-w-0">
+                        <h3 className="text-base font-bold text-slate-900 truncate">
+                          {pitchTypeLabel(b.courtName) || b.courtType || "Sân bóng"} • {b.timeSlot}
+                        </h3>
+                        <p className="text-[13px] text-slate-600 mt-0.5">
+                          Ngày đá: <strong className="text-slate-900">{prettyDate(b.bookingDate)}</strong> • Mã vé:{" "}
+                          <span className="font-mono font-bold text-[#0369a1]">{b.code}</span>
+                        </p>
+                      </div>
+                      <span
+                        className={`px-2.5 py-0.5 rounded text-[13px] font-bold border shrink-0 ${
+                          b.status === "CANCELLED"
+                            ? "bg-rose-50 text-rose-700 border-rose-200"
+                            : b.status === "COMPLETED"
+                            ? "bg-slate-100 text-slate-700 border-slate-300"
+                            : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                        }`}
+                      >
+                        {statusVi}
+                      </span>
+                    </div>
 
- <div className="flex items-center gap-3">
- <h1 className="text-lg sm:text-3xl font-extrabold text-slate-900 tracking-tight">
- Lịch Trình & Vé Thi Đấu
- </h1>
- <span className="px-2.5 py-0.5 rounded-full bg-[#0369a1] text-white font-black text-[14px]">
- {tournaments.length} giải
- </span>
- </div>
- </div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[14px]">
+                      <div className="text-slate-700">
+                        Tổng tiền: <strong className="font-mono text-slate-900">{money(b.totalPrice)}</strong>{" "}
+                        <span className="text-[13px] text-slate-500">(Đã cọc {money(b.depositPaid)})</span>
+                      </div>
 
- <div className="flex flex-wrap items-center gap-3">
- <button
- onClick={load}
- disabled={loading}
- className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-slate-900 text-[14px] font-bold shadow-xs hover:bg-slate-100 transition-all border border-slate-200 disabled:opacity-50"
- >
- <RefreshCw className={`w-4 h-4 text-sky-700 ${loading ? "animate-spin" : ""}`} />
- <span>{loading ? "Đang tải…" : "Tải lại "}</span>
- </button>
+                      {canCancel && !started && (
+                        confirmCancelId === b.id ? (
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => cancelMyBooking(b)}
+                              disabled={cancellingId === b.id}
+                              className="px-3 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white text-[13px] font-bold"
+                            >
+                              {cancellingId === b.id ? "Đang hủy..." : "Xác nhận hủy"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmCancelId(null)}
+                              className="px-3 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold"
+                            >
+                              Không
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setConfirmCancelId(b.id)}
+                            className="px-3 py-1 rounded bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 text-[13px] font-bold cursor-pointer"
+                          >
+                            Hủy vé
+                          </button>
+                        )
+                      )}
+                    </div>
 
- <button
- onClick={() => onNavigateTab && onNavigateTab("booking")}
- className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold shadow-md transition-all active:scale-95"
- >
- <Calendar className="w-4 h-4" />
- <span>+ Đặt Sân Mới</span>
- </button>
- </div>
- </div>
+                    {b.status === "CANCELLED" && b.cancelReason && (
+                      <p className="text-[13px] text-rose-600">Lý do hủy: {b.cancelReason}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
 
- {loadError && (
- <p className="rounded-xl bg-rose-50 border border-rose-300 px-4 py-3 text-[14px] font-bold text-rose-700 ">
- {loadError}
- </p>
- )}
-
- {/* 2. FILTER RIBBON — số liệu đếm  */}
- <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
- <div className="flex flex-wrap items-center gap-2">
- {filterTabs.map((t) => (
- <button
- key={t.id}
- onClick={() => setActiveFilter(t.id)}
- className={`flex items-center gap-2 px-4 py-2 rounded-full text-[14px] font-bold transition-all ${
- activeFilter === t.id
- ? "bg-slate-900 text-white shadow-sm"
- : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 "
- }`}
- >
- <span>{t.label}</span>
- <span className={`px-2 py-0.5 rounded-full font-mono text-[14px] font-bold ${t.tone}`}>{t.count}</span>
- </button>
- ))}
- </div>
-
- <div className="hidden lg:flex items-center gap-2 text-slate-500 text-[14px] font-medium shrink-0">
- <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-pulse"></span>
- Lịch lấy trực tiếp từ bảng <span className="font-mono">tournaments</span> &amp;{" "}
- <span className="font-mono">matchmaking_posts</span>
- </div>
- </div>
-
- {/* 3. NỘI DUNG */}
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 items-start">
- <div className="lg:col-span-8 flex flex-col gap-3 sm:gap-6">
-
- {/* HERO: trận sắp tới / đang diễn ra */}
- {hero ? (
- <div className="relative overflow-hidden rounded-xl bg-white shadow-md p-4 sm:p-6 lg:p-7 flex flex-col gap-3 sm:gap-5 border border-slate-200/80 ">
- <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0369a1] via-[#38bdf8] to-[#075985]"></div>
-
- <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
- <div className="flex items-center gap-2.5">
- <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white font-mono text-[14px] font-bold">
- <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-ping"></span>
- {running.length ? "Đang diễn ra" : "Trận tiếp theo"}
- </span>
- {hero.startAt && !running.length && (
- <span className="text-[14px] sm:text-sm font-bold text-rose-600 flex items-center gap-1">
- <Clock className="w-4 h-4 text-rose-600" />
- Khởi tranh sau: <span className="font-mono font-black tracking-wider text-base">{fmtCountdown(heroSeconds)}</span>
- </span>
- )}
- </div>
-
- <div className="flex items-center gap-2">
- <span className="px-2.5 py-1 rounded bg-sky-100 text-sky-900 font-bold text-[14px]">
- {sportLabel(tournaments.find((t) => t.id === hero.tournamentId)?.sportType)}
- </span>
- <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 font-mono text-[14px] font-bold">
- {hero.matchId}
- </span>
- </div>
- </div>
-
- <div className="flex flex-col gap-3 flex-1 min-w-0">
- <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
- {hero.teamA} vs {hero.teamB}
- </h2>
-
- <div className="flex flex-wrap items-center gap-y-1.5 gap-x-4 text-[14px]">
- <span className="flex items-center gap-1.5 font-bold text-slate-900 ">
- <Clock className="w-4 h-4 text-sky-700" />
- {hero.timeSlot ?? "Chưa xếp giờ"}
- {hero.matchDate ? ` (${prettyDate(hero.matchDate)})` : ""}
- </span>
- <span className="flex items-center gap-1.5 text-slate-600 ">
- <MapPin className="w-4 h-4 text-sky-700" />
- {hero.pitchName ?? "Chưa xếp sân"}
- </span>
- </div>
-
- {/* Đội hình lấy từ danh sách đội đã đăng ký  */}
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
- {[hero.teamA, hero.teamB].map((name, i) => {
- const entry = tournaments.find((t) => t.id === hero.tournamentId)?.teams?.find((z) => z.teamName === name);
- const initials = name.split(" ").filter(Boolean).slice(-2).map((w) => w[0]).join("").toUpperCase();
- return (
- <div key={i} className="p-3 rounded-lg bg-slate-50 flex flex-col gap-1.5 border border-slate-200/60 ">
- <div className="flex items-center justify-between text-[14px] font-bold text-slate-500">
- <span className=" tracking-wider">
- {i === 0 ? "Đội A" : "Đội B"}
- </span>
- <span className={`font-mono ${i === 0 ? "text-sky-800 " : ""}`}>
- Phong độ {i === 0 ? (hero.recordA ?? entry?.record ?? "0-0-0") : (hero.recordB ?? entry?.record ?? "0-0-0")}
- </span>
- </div>
- <div className="flex items-center gap-2 text-[14px] font-bold text-slate-900 ">
- <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[14px] font-black shrink-0 ${
- i === 0 ? "bg-[#0369a1] text-white" : "bg-slate-200 text-slate-700 "
- }`}>
- {initials || "?"}
- </span>
- <span className="truncate">{name}</span>
- </div>
- <div className="hidden sm:block text-[14px] text-slate-500">
- {entry
- ? `Trọng tài đội: ${entry.captainName ?? "—"} · ${entry.memberCount ?? "—"} thành viên`
- : "Không tìm thấy hồ sơ đội trong giải"}
- </div>
- </div>
- );
- })}
- </div>
- </div>
-
- <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100 ">
- <div className="flex flex-wrap items-center gap-3">
- <button
- onClick={() => setSelectedMatch(hero)}
- className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-extrabold shadow-sm transition-all active:scale-95"
- >
- <FileText className="w-4 h-4" />
- Chi Tiết Trận
- </button>
- <button
-                  onClick={() => {
-                    if (hero?.tournamentId && onOpenBracket) {
-                      onOpenBracket(hero.tournamentId);
-                    } else if (onNavigateTab) {
-                      onNavigateTab("tournaments");
-                    }
-                  }}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 text-slate-900 text-[14px] font-bold hover:bg-slate-200 transition-all cursor-pointer"
+      {/* 3. TAB: MATCHMAKING */}
+      {activeFilter === "matchmaking" && (
+        <section>
+          {matchedPosts.length === 0 ? (
+            <div className="rounded-lg bg-white border border-slate-300 p-8 text-center">
+              <p className="text-[15px] text-slate-600 font-semibold">Chưa có kèo giao hữu nào đã ghép.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {matchedPosts.map((p: any) => (
+                <div
+                  key={p.id}
+                  className="rounded-lg bg-white p-4 border border-slate-300 flex items-center justify-between gap-3"
                 >
-                  <Trophy className="w-4 h-4 text-sky-700" />
-                  Mở Nhánh Đấu
-                </button>
- </div>
- <span className="text-[14px] text-slate-500">
- {hero.roundName} · {hero.tournamentTitle}
- </span>
- </div>
- </div>
- ) : (
- <div className="rounded-xl bg-white border border-dashed border-slate-300 p-4 sm:p-8 text-center">
- <Calendar className="w-8 h-8 text-slate-300 mx-auto" />
- <p className="mt-3 text-sm font-bold text-slate-700 ">
- Chưa có trận nào sắp diễn ra
- </p>
- <p className="mt-1 text-[14px] text-slate-500">
- {tournaments.length === 0
- ? "Chưa đọc được giải đấu từ máy chủ. Bấm “Tải lại ” để thử lại."
- : "BTC chưa bốc thăm hoặc chưa xếp lịch cho giải nào. Mở tab Điều Hành Giải Đấu để bốc thăm và xếp lịch."}
- </p>
- </div>
- )}
-
- {/* DANH SÁCH TRẬN THEO BỘ LỌC */}
- <div className="flex flex-col gap-3 sm:gap-4">
- <div className="flex items-center justify-between">
- <h2 className="text-base font-bold text-slate-900 ">
-  {activeFilter === "history" ? "Kết Quả Các Trận Đã Đánh" : activeFilter === "matchmaking" ? "Kèo Đã Ghép" : activeFilter === "cancelled" ? "Kèo Đã Hủy" : activeFilter === "tournaments" ? "Lịch Đấu Giải" : "Các Trận Sắp Tới"}
-  <span className="ml-2 font-mono text-[14px] text-slate-500">({(visibleKeo.length || visibleMatches.length)})</span>
- </h2>
- <span className="text-[14px] text-slate-500 font-medium">Sắp xếp theo thời gian</span>
- </div>
-
-  {visibleKeo.length > 0 ? (
-  <div className="space-y-2.5">
-  {visibleKeo.map((p: any) => (
-  <div key={p.id} className="w-full rounded-xl bg-white shadow-xs p-3 sm:p-4 border border-slate-200/80">
-  <div className="flex flex-wrap items-center justify-between gap-2">
-  <div className="min-w-0">
-  <p className="font-black text-slate-900 truncate">{p.teamName}</p>
-  <p className="text-[14px] text-slate-500 truncate">
-  {p.opponentTeamName ? `vs ${p.opponentTeamName} • ` : ""}
-  {p.pitchName} • {p.matchTime}
-  </p>
-  </div>
-  <span className={`px-2.5 py-1 rounded-lg text-[14px] font-black shrink-0 ${activeFilter === "cancelled" ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-800"}`}>
-  {activeFilter === "cancelled" ? "Đã hủy" : "Đã ghép"}
-  </span>
-  </div>
-  </div>
-  ))}
-  </div>
-  ) : visibleMatches.length === 0 ? (
- <div className="rounded-xl bg-white border border-dashed border-slate-300 p-4 sm:p-8 text-center">
- <p className="text-sm text-slate-500">
- {activeFilter === "history"
- ? "Chưa có trận nào kết thúc."
- : "Chưa có trận nào khớp bộ lọc này."}
- </p>
- </div>
- ) : (
- visibleMatches.map((m) => {
- const db = dateBox(m);
- return (
- <button
- key={m.key}
- onClick={() => setSelectedMatch(m)}
- className="w-full text-left rounded-xl bg-white shadow-xs p-3 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-5 border border-slate-200/80 hover:shadow-md transition-shadow"
- >
- <div className="flex items-start gap-3 sm:gap-4">
- <div className="w-14 h-14 rounded-xl bg-slate-100 flex flex-col items-center justify-center shrink-0 text-center border border-slate-200 ">
-  <span className="text-[14px] font-bold text-slate-600">{db.top}</span>
- <span className="text-lg leading-none text-sky-800 font-black">{db.num}</span>
-  <span className="text-[14px] text-slate-600 font-bold">{db.bot}</span>
- </div>
- <div className="flex flex-col gap-1 min-w-0">
- <div className="flex flex-wrap items-center gap-2">
- <span className={`px-2 py-0.5 rounded text-[14px] font-bold ${
- m.status === "DONE"
- ? "bg-sky-100 text-sky-800 "
- : "bg-rose-100 text-rose-700 "
- }`}>
- {m.status === "DONE" ? "Đã đá" : m.roundName}
- </span>
- <span className="text-sm font-bold text-slate-900 ">{m.tournamentTitle}</span>
- </div>
- <div className="flex items-center gap-3 text-slate-500 text-[14px] flex-wrap">
- <span className="flex items-center gap-1 text-slate-900 font-semibold">
- <Clock className="w-3.5 h-3.5 text-sky-700" />
- {m.timeSlot ?? "Chưa xếp giờ"}
- </span>
- <span className="hidden sm:inline">•</span>
- <span>{m.pitchName ?? "Chưa xếp sân"}</span>
- <span className="hidden sm:inline">•</span>
- <span className="font-mono text-slate-500">{m.matchId}</span>
- </div>
- <p className="text-[14px] text-slate-600 ">
- <strong className="text-slate-900 ">{m.teamA}</strong>
- {m.status === "DONE" && (
- <span className="font-mono text-sky-700 ">
- {" "}{m.scoreA}-{m.scoreB}{" "}
- </span>
- )}
- <strong className="text-slate-900 ">{m.teamB}</strong>
- </p>
- </div>
- </div>
-
- <div className="flex flex-row md:flex-col items-end gap-2 shrink-0">
- <span className="px-3 py-2 rounded-lg bg-slate-100 text-[14px] font-bold flex items-center gap-1.5">
- <QrCode className="w-3.5 h-3.5 text-sky-700" />
- Chi tiết
- </span>
- </div>
- </button>
- );
- })
- )}
- </div>
-
- {/* VÉ ĐẶT SÂN CỦA TÔI (tra theo SĐT trong tài khoản) */}
- <div className="flex flex-col gap-3">
- <h2 className="text-base font-bold text-slate-900 ">
- Vé Đặt Sân Của Tôi
- <span className="ml-2 font-mono text-[14px] text-slate-500">({myBookings.length})</span>
- </h2>
- {myBookings.length === 0 ? (
- <p className="rounded-xl bg-white border border-slate-200/80 p-3 sm:p-5 text-[14px] text-slate-500">
- {user?.phone
- ? "Chưa có vé nào đặt bằng số điện thoại trong tài khoản. Bấm “Tải lại ” sau khi đặt sân."
- : "Tài khoản chưa có số điện thoại nên chưa tra cứu được vé. Cập nhật hồ sơ trước."}
- </p>
- ) : (
- myBookings.map((b) => {
- const started =
- b.status === "PLAYING" ||
- b.status === "COMPLETED" ||
- isPastDay(b.bookingDate);
- const canCancel = b.status === "BOOKED" || b.status === "PENDING_PAYMENT" || b.status === "RESALE";
- return (
- <div key={b.id} className="rounded-xl bg-white border border-slate-200/80 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3">
- <div className="min-w-0">
- <p className="text-sm font-bold text-slate-900 ">
- {pitchTypeLabel(b.courtName) || b.courtType || "Sân"} · {b.timeSlot}
-                {(b.isClubBooking || b.clubName || (b.via && b.via.includes("CLB"))) && (
-                  <span className="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full text-[14px] font-black bg-purple-100 text-purple-800 border border-purple-200">
-                    🛡️ CLB Bao Sân{b.clubName ? `: ${b.clubName}` : ""}
+                  <div className="min-w-0">
+                    <p className="font-bold text-base text-slate-900 truncate">
+                      {p.teamName}{" "}
+                      {p.opponentTeamName ? (
+                        <span className="text-[#0369a1]">vs {p.opponentTeamName}</span>
+                      ) : (
+                        ""
+                      )}
+                    </p>
+                    <p className="text-[13px] text-slate-600 truncate mt-0.5">
+                      {p.pitchName} • {p.matchTime}
+                    </p>
+                  </div>
+                  <span className="px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[13px] font-bold shrink-0">
+                    Đã chốt kèo
                   </span>
-                )}
- </p>
- <p className="text-[14px] text-slate-500">
- {b.bookingDate} · Mã vé <span className="font-mono font-bold">{b.code}</span> · Tổng {money(b.totalPrice)} (cọc {money(b.depositPaid)})
- </p>
- {b.status === "CANCELLED" && b.cancelReason && (
- <p className="text-[14px] text-rose-600 font-medium mt-0.5">
- Lý do: {b.cancelReason}
- </p>
- )}
- </div>
- <div className="flex items-center gap-2 shrink-0">
- <span className={`px-2.5 py-1 rounded-full text-[14px] font-black ${
- b.status === "CANCELLED"
- ? "bg-rose-100 text-rose-700 "
- : b.status === "RESALE"
- ? "bg-amber-100 text-amber-700 "
- : b.status === "COMPLETED"
- ? "bg-slate-100 text-slate-600 "
- : "bg-cyan-100 text-cyan-800 "
- }`}>
- {b.status}
- </span>
- {canCancel && !started && (
-  confirmCancelId === b.id ? (
-  <span className="flex items-center gap-1.5">
-  <span className="text-[14px] font-bold text-slate-600 hidden sm:inline">Hủy vé {b.code}?</span>
-  <button
-  type="button"
-  onClick={() => cancelMyBooking(b)}
-  disabled={cancellingId === b.id}
-  className="px-2.5 py-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-[14px] font-black transition-all active:scale-95 disabled:opacity-50"
-  >
-  {cancellingId === b.id ? "Đang hủy…" : "Chắc chắn hủy"}
-  </button>
-  <button
-  type="button"
-  onClick={() => setConfirmCancelId(null)}
-  className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-black transition-all active:scale-95"
-  >
-  Giữ lại
-  </button>
-  </span>
-  ) : (
-  <button
-  type="button"
-  onClick={() => setConfirmCancelId(b.id)}
-  className="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 text-[14px] font-black transition-all active:scale-95"
-  >
-  Hủy vé
-  </button>
-  )
- )}
- </div>
- </div>
- );
- })
- )}
- </div>
- </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
- {/* CỘT PHẢI: CHỢ KÈO THẬT */}
- <aside className="lg:col-span-4 flex flex-col gap-3 sm:gap-6">
- <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3 sm:p-5 space-y-3">
- <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
- <Zap className="w-4 h-4 text-amber-700" />
- Kèo Ghép Đang Mở ({openPosts.length})
- </h3>
+      {/* 4. TABS: TOURNAMENT MATCHES (UPCOMING / ALL / HISTORY) */}
+      {(activeFilter === "upcoming" || activeFilter === "tournaments" || activeFilter === "history") && (
+        <section>
+          {visibleMatches.length === 0 ? (
+            <div className="rounded-lg bg-white border border-slate-300 p-8 text-center">
+              <p className="text-[15px] text-slate-600 font-semibold">
+                Chưa có trận đấu nào trong mục này.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {visibleMatches.map((m) => {
+                const db = dateBox(m);
+                const isExpanded = selectedMatchKey === m.key;
+                return (
+                  <div
+                    key={m.key}
+                    className="rounded-lg bg-white p-4 border border-slate-300 space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="w-13 h-13 rounded-md bg-slate-100 flex flex-col items-center justify-center shrink-0 text-center border border-slate-300 px-2 py-1">
+                          <span className="text-[12px] font-bold text-slate-600">{db.top}</span>
+                          <span className="text-base leading-tight text-[#0369a1] font-bold">{db.num}</span>
+                          <span className="text-[12px] text-slate-600 font-mono">{db.bot}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[12px] font-bold border ${
+                                m.status === "DONE"
+                                  ? "bg-sky-50 text-[#0369a1] border-sky-200"
+                                  : "bg-amber-50 text-amber-800 border-amber-200"
+                              }`}
+                            >
+                              {m.status === "DONE" ? "Đã kết thúc" : m.roundName}
+                            </span>
+                            <span className="text-[13px] font-semibold text-slate-600 truncate">
+                              {m.tournamentTitle}
+                            </span>
+                          </div>
 
- {openPosts.length === 0 ? (
- <p className="text-[14px] text-slate-500">
- Chưa có kèo nào đang mở. Mở tab Chợ Kèo để tạo kèo đầu tiên.
- </p>
- ) : (
- <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
- {openPosts.slice(0, 8).map((p: any) => (
- <div key={p.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 ">
- <div className="flex items-center justify-between gap-2">
- <span className="text-[14px] font-bold text-slate-900 truncate">{p.teamName}</span>
-  <span className="font-mono text-[14px] font-bold text-amber-700 shrink-0">
- {p.record && p.record !== "0-0-0" ? `${p.record}` : "Tân binh"}
- </span>
- </div>
- <p className="text-[14px] text-slate-500 truncate">
- {p.pitchName} · {p.matchTime}
- </p>
- <p className="text-[14px] text-slate-500">
- Cọc dự kiến {money(p.estimatedFee)} · {p.paymentModel}
- </p>
- </div>
- ))}
- </div>
- )}
+                          <p className="text-base font-bold text-slate-900 mt-1">
+                            <span>{m.teamA}</span>
+                            {m.status === "DONE" ? (
+                              <span className="font-mono text-[#0369a1] mx-2">
+                                {m.scoreA} - {m.scoreB}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-normal mx-2">vs</span>
+                            )}
+                            <span>{m.teamB}</span>
+                          </p>
 
- <button
- onClick={() => onNavigateTab && onNavigateTab("matchmaking")}
- className="w-full px-3 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold transition-all active:scale-95"
- >
- Mở Chợ Kèo
- </button>
- </div>
+                          <div className="flex flex-wrap items-center gap-2 text-[13px] text-slate-600 mt-1">
+                            <span className="inline-flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5 text-[#0369a1]" />
+                              {m.timeSlot ?? "Chưa xếp giờ"}
+                            </span>
+                            <span>•</span>
+                            <span className="inline-flex items-center gap-1 truncate">
+                              <MapPin className="w-3.5 h-3.5 text-[#0369a1]" />
+                              {m.pitchName ?? "Chưa xếp sân"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
- <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3 sm:p-5 space-y-2">
- <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
- <ShieldCheck className="w-4 h-4 text-sky-700" />
- Thống Kê Nhanh
- </h3>
- {[
- { label: "Giải ", value: tournaments.length },
- { label: "Trận sắp diễn ra", value: upcoming.length },
- { label: "Trận đã đánh", value: doneMatches.length },
- { label: "Kèo đang mở", value: openPosts.length },
- { label: "Vé của tôi", value: myBookings.length },
- ].map((s) => (
- <div key={s.label} className="flex items-center justify-between text-[14px]">
- <span className="text-slate-500">{s.label}</span>
- <span className="font-mono font-black text-slate-900 ">{s.value}</span>
- </div>
- ))}
- </div>
- </aside>
- </div>
- </div>
- </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMatchKey(isExpanded ? null : m.key)}
+                        className="px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-800 text-[13px] font-bold border border-slate-300 shrink-0 cursor-pointer"
+                      >
+                        {isExpanded ? "Thu gọn" : "Chi tiết"}
+                      </button>
+                    </div>
 
- {/* MODAL: CHI TIẾT TRẬN */}
- {selectedMatch && (
- <div id="inline-selectedmatch" className="w-full animate-fade-in">
- <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-4 sm:p-6 space-y-3 sm:space-y-4 shadow-sm">
- <div className="flex items-center justify-between">
- <h3 className="text-base font-extrabold flex items-center gap-2 text-slate-900 ">
- <Trophy className="w-5 h-5 text-sky-700" />
- {selectedMatch.matchId} · {selectedMatch.roundName}
- </h3>
- <button onClick={() => setSelectedMatch(null)} className="text-slate-500 hover:text-slate-700 ">
- ✕
- </button>
- </div>
+                    {isExpanded && (
+                      <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-[13px] text-slate-600">
+                        <div>
+                          Mã trận: <strong className="font-mono text-slate-900">{m.matchId}</strong> • Ngày:{" "}
+                          <strong className="text-slate-900">
+                            {m.matchDate ? prettyDate(m.matchDate) : "Chưa xếp"}
+                          </strong>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (m.tournamentId && onOpenBracket) {
+                              onOpenBracket(m.tournamentId);
+                            } else if (onNavigateTab) {
+                              onNavigateTab("tournaments");
+                            }
+                          }}
+                          className="px-3 py-1.5 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trophy className="w-3.5 h-3.5" />
+                          <span>Mở nhánh đấu giải</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
 
- <p className="text-sm font-bold text-slate-900 ">
- {selectedMatch.teamA}
- {selectedMatch.status === "DONE" && (
- <span className="font-mono text-sky-700 ">
- {" "}{selectedMatch.scoreA}-{selectedMatch.scoreB}{" "}
- </span>
- )}
- {selectedMatch.teamB}
- </p>
-
- <div className="grid grid-cols-2 gap-3 text-[14px]">
- <div>
- <span className="text-slate-500">Giải đấu:</span>
- <div className="font-bold text-slate-900 ">{selectedMatch.tournamentTitle}</div>
- </div>
- <div>
- <span className="text-slate-500">Ngày giờ:</span>
- <div className="font-bold text-slate-900 ">
- {selectedMatch.matchDate ? prettyDate(selectedMatch.matchDate) : "Chưa xếp"} · {selectedMatch.timeSlot ?? "—"}
- </div>
- </div>
- <div>
- <span className="text-slate-500">Sân:</span>
- <div className="font-bold text-slate-900 ">{selectedMatch.pitchName ?? "Chưa xếp"}</div>
- </div>
- <div>
- <span className="text-slate-500">Phong độ (T-H-B):</span>
- <div className="font-mono font-bold text-slate-900 ">
- {selectedMatch.recordA ?? "0-0-0"} / {selectedMatch.recordB ?? "0-0-0"}
- </div>
- </div>
- </div>
-
- <p className="hidden sm:block text-[14px] text-slate-500 leading-relaxed">
- Vé thi đấu được cấp khi BTC nhập kết quả và thanh toán lệ phí trên hệ thống. Muốn sửa tỷ số hoặc hoàn
- tiền cọc, vào tab Điều Hành Giải Đấu › Bảng Đấu &amp; Nhánh Bracket.
- </p>
-
- <div className="flex gap-2">
- <button
- onClick={() => {
-              const tId = selectedMatch?.tournamentId;
-              setSelectedMatch(null);
-              if (tId && onOpenBracket) {
-                onOpenBracket(tId);
-              } else if (onNavigateTab) {
-                onNavigateTab("tournaments");
-              }
-            }}
- className="flex-1 px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold"
- >
- Mở nhánh đấu
- </button>
- <button
- onClick={() => setSelectedMatch(null)}
- className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-[14px] font-bold"
- >
- Đóng
- </button>
- </div>
- </div>
- </div>
- )}
-
- {/* Toast */}
- {notice && (
- <div className="fixed inset-x-4 bottom-4 z-[60] mx-auto max-w-md">
- <div className="rounded-xl bg-slate-900 text-white text-[14px] font-bold px-4 py-3 shadow-lg">{notice}</div>
- </div>
- )}
- </div>
- );
+      {notice && (
+        <div className="fixed inset-x-4 bottom-4 z-[60] mx-auto max-w-md">
+          <div className="rounded-lg bg-slate-900 text-white text-[14px] font-bold px-4 py-3 shadow-lg flex items-center justify-between gap-2">
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              {notice}
+            </span>
+            <button onClick={() => setNotice(null)} className="text-slate-400 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
-
-function prettyDate(iso?: string): string {
- if (!iso) return "";
- const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
- return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
-}
 
 export default ActivitySchedule;

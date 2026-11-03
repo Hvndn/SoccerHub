@@ -11,9 +11,7 @@ import {
   ArrowLeft,
   Loader2,
   Lock,
-  ShieldCheck,
   Radio,
-  Sparkles,
   UserPlus,
   Clock,
   Building,
@@ -24,21 +22,9 @@ import {
 } from "lucide-react";
 import { apiRequest, ensureLoggedIn } from "@/lib/api";
 import CommunityChat from "./CommunityChat";
-import PageSpinner from "./PageSpinner";
 import GroupChatPanel from "./GroupChatPanel";
-
 import TeamClubManagement from "./TeamClubManagement";
 import ClubManagement from "./ClubManagement";
-
-/* =========================================================
- * CommunityHub — Tab "Cộng đồng" chuẩn Mobile-first
- * Phong cách Dark / Neon Green:
- *   + Top sub-nav: Toggle "Trò chuyện" / "Đội bóng (Clan)"
- *   + Search bar + filter chips: Tất cả, Chưa đọc, Riêng tư, Bạn bè
- *   + Banner nổi bật: "CHAT GIẢI ĐẤU" + "BẮT ĐỐI GIAO HỮU"
- *   + Channel card list: avatar tròn neon, tên phòng, tin mới nhất,
- *     thời gian, badge số tin chưa đọc màu xanh neon
- * ========================================================= */
 
 interface Conversation {
   partnerEmail: string;
@@ -54,7 +40,6 @@ interface ChannelInfo {
   desc: string;
   lastMessage: string;
   lastSender: string;
-  /** Email người gửi tin cuối — dùng để không tính nhầm tin của mình là chưa đọc. */
   lastSenderEmail: string;
   lastTime: string | null;
   memberCount: number;
@@ -74,15 +59,11 @@ interface CommunityHubProps {
   user?: any;
   onOpenAuth?: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
   onNavigateTab?: (tab: string) => void;
-  /** Mở thẳng cuộc trò chuyện riêng với một người (dùng bởi kênh liên lạc B2B). */
   initialDmPartner?: { partnerEmail: string; partnerName: string } | null;
-  /** Mở thẳng một kênh chat cụ thể (vd: "giai-dau" khi BTC bấm nút "Chat Giải Đấu"). */
   initialChannel?: string | null;
 }
 
 const SEEN_PREFIX = "shub_chat_seen_";
-
-/** Slug kênh chat riêng cho giải đấu (BTC ↔ đội bóng ↔ cầu thủ). */
 const TOURNAMENT_CHANNEL = "giai-dau";
 
 function getSeen(key: string): number {
@@ -118,11 +99,17 @@ function formatTime(iso?: string): string {
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "Tất cả" },
   { key: "unread", label: "Chưa đọc" },
-  { key: "private", label: "Riêng tư" },
-  { key: "friends", label: "Bạn bè" },
+  { key: "private", label: "Tin nhắn riêng" },
+  { key: "friends", label: "Đã liên hệ" },
 ];
 
-export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialDmPartner, initialChannel }: CommunityHubProps) {
+export default function CommunityHub({
+  user,
+  onOpenAuth,
+  onNavigateTab,
+  initialDmPartner,
+  initialChannel,
+}: CommunityHubProps) {
   const myEmail = (user?.email || "").toLowerCase();
 
   const [mode, setMode] = useState<"chat" | "clan" | "club">("chat");
@@ -135,8 +122,6 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
   const [channels, setChannels] = useState<ChannelInfo[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Mở thẳng DM khi bên ngoài yêu cầu (nút "Nhắn tin" ở kênh liên lạc B2B của
-  // chủ sân / ban tổ chức). Xóa yêu cầu sau khi dùng để không mở lại khi back về.
   useEffect(() => {
     if (!initialDmPartner?.partnerEmail) return;
     setMode("chat");
@@ -153,37 +138,11 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
     }
   }, [user?.role, mode]);
 
-  /**
-   * Hiệu ứng chuyển trạng thái: bật vòng xoay tối thiểu MIN_LOADING_MS,
-   * kể cả khi dữ liệu về nhanh hơn, để người dùng không thấy màn hình nhảy loè.
-   */
-  const MIN_LOADING_MS = 1000;
-  const [switching, setSwitching] = useState(false);
-  const switchTimer = useRef<number | null>(null);
-
-  const runWithLoader = useCallback(() => {
-    if (switchTimer.current) window.clearTimeout(switchTimer.current);
-    setSwitching(true);
-    switchTimer.current = window.setTimeout(() => {
-      setSwitching(false);
-      switchTimer.current = null;
-    }, MIN_LOADING_MS);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (switchTimer.current) window.clearTimeout(switchTimer.current);
-    };
-  }, []);
-
-  // ---- Tải dữ liệu xem trước (chỉ khi đã đăng nhập) ----
-  // Khoa in-flight + so thu tu response: request 5s truoc chua xong se bi bo qua,
-  // tranh tinh trang cu bi response cu (cham) ghi de.
-  const refreshSeqRef = React.useRef(0);
-  const refreshingRef = React.useRef(false);
+  const refreshSeqRef = useRef(0);
+  const refreshingRef = useRef(false);
   const refresh = useCallback(async () => {
     if (!user) return;
-    if (refreshingRef.current) return; // request truoc chua xong -> bo qua vong nay
+    if (refreshingRef.current) return;
     refreshingRef.current = true;
     const seq = ++refreshSeqRef.current;
     try {
@@ -191,7 +150,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
         apiRequest<ChannelInfo[]>("/api/v1/chat/channels").catch(() => [] as ChannelInfo[]),
         apiRequest<Conversation[]>("/api/v1/chat/conversations").catch(() => [] as Conversation[]),
       ]);
-      if (seq !== refreshSeqRef.current) return; // response cu hon -> bo
+      if (seq !== refreshSeqRef.current) return;
       setChannels(Array.isArray(chans) ? chans : []);
       setConversations(Array.isArray(convos) ? convos : []);
     } finally {
@@ -208,7 +167,6 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
     return () => window.clearInterval(t);
   }, [user, mode, view.kind, refresh]);
 
-  // ---- Đếm tin chưa đọc ----
   const channelUnread = useMemo(() => {
     const map: Record<string, number> = {};
     channels.forEach((c) => {
@@ -228,44 +186,17 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
     });
   }, [conversations, tick]);
 
-  const onlineCount = useMemo(() => {
-    return channels.find((c) => c.slug === TOURNAMENT_CHANNEL)?.memberCount ?? 0;
-  }, [channels]);
-
-  // ---- Điều hướng ----
   const openChannel = (c: ChannelInfo) => {
     if (!user) {
       ensureLoggedIn("vào phòng chat");
       onOpenAuth?.("login", "PLAYER");
       return;
     }
-    runWithLoader();
     markSeen("ch:" + c.slug);
     setTick((x) => x + 1);
     setView({ kind: "public", slug: c.slug, name: c.name, desc: c.desc });
   };
 
-  const openGeneral = () => {
-    const g = channels.find((c) => c.slug === "general");
-    if (g) openChannel(g);
-    else
-      openChannel({
-        slug: "general",
-        name: "Phòng Chat Chung",
-        desc: "Kênh chung của cộng đồng Turfzone",
-        lastMessage: "",
-        lastSender: "",
-        lastSenderEmail: "",
-        lastTime: null,
-        memberCount: 0,
-        pinned: null,
-      });
-  };
-
-  /**
-   * Mở kênh "Chat Giải Đấu" (trao đổi với BTC / đội bóng / cầu thủ trong giải).
-   * Trước đây card này mở nhầm kênh "general" (Phòng Chat Chung) — sai ý nghĩa.
-   */
   const openTournamentChat = () => {
     const t = channels.find((c) => c.slug === TOURNAMENT_CHANNEL);
     if (t) {
@@ -285,13 +216,12 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
     });
   };
 
-  // Mở sẵn kênh được yêu cầu (vd: BTC bấm "Chat Giải Đấu" ở trang Điều Hành giải đấu).
   const openedInitialChannel = useRef<string | null>(null);
   useEffect(() => {
     if (!initialChannel) return;
     if (openedInitialChannel.current === initialChannel) return;
     if (!user) return;
-    if (channels.length === 0) return; // chờ danh sách kênh tải xong
+    if (channels.length === 0) return;
     openedInitialChannel.current = initialChannel;
     const found = channels.find((c) => c.slug === initialChannel);
     if (found) {
@@ -321,31 +251,19 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
       markSeen("dm:" + partnerEmail);
       setTick((x) => x + 1);
     }
-    runWithLoader();
     setView({ kind: "dm", partnerEmail, partnerName });
   };
 
   const back = () => {
-    runWithLoader();
     setView({ kind: "home" });
   };
 
-  /** Đổi chế độ Trò chuyện / Đội bóng — có hiệu ứng xoay. */
   const switchMode = (m: "chat" | "clan" | "club") => {
     if (m === mode) return;
     if (user?.role === "OWNER" && m === "club") return;
-    runWithLoader();
     setMode(m);
   };
 
-  /** Mở chợ kèo giao hữu — chuyển sang tab "Chợ Kèo" riêng. */
-  const openMatchmaking = () => {
-    if (onNavigateTab) {
-      onNavigateTab("matchmaking");
-    }
-  };
-
-  // ---- Danh sách channel (kênh công khai + DM) ----
   const CHANNEL_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
     general: Hash,
     "vang-lai": Flame,
@@ -367,7 +285,6 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
       unread: number;
       icon: React.ComponentType<{ className?: string }>;
       isDm: boolean;
-      /** Người bạn đã từng nhắn tin (dùng cho chip "Bạn bè"). */
       talkedToMe: boolean;
       onClick: () => void;
     }[] = [];
@@ -395,14 +312,12 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
         unread: c.unread,
         icon: MessageCircle,
         isDm: true,
-        // "Bạn bè" = người mà bạn đã chủ động nhắn tin trước
         talkedToMe: !!c.isMine,
         onClick: () => openDm(c.partnerEmail, c.partnerName),
       });
     });
 
     return list;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channels, channelUnread, dmChannels]);
 
   const filteredChannels = useMemo(() => {
@@ -416,9 +331,6 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
     });
   }, [channelRows, search, filter]);
 
-  /* =========================================================
-   * CHANNEL VIEW — mở phòng chat / kèo / đội bóng
-   * ========================================================= */
   if (view.kind !== "home") {
     const title =
       view.kind === "public"
@@ -427,53 +339,34 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
         ? view.partnerName || "Tin nhắn riêng"
         : view.kind === "groups"
         ? "Nhóm chat"
-        : "Đội bóng (Clan)";
+        : "Đội bóng";
     const subtitle =
       view.kind === "public"
         ? view.desc
         : view.kind === "dm"
-        ? view.partnerEmail || "Trò chuyện riêng tư 1-1"
+        ? view.partnerEmail || "Trò chuyện trực tiếp 1-1"
         : view.kind === "groups"
-        ? "Phòng chat riêng cho nhóm bạn"
+        ? "Phòng chat nhóm"
         : "Quản lý đội bóng của bạn";
 
     return (
-      <div className="w-full space-y-4 pb-10 sm:pb-16">
-        <div className="rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-2xl relative">
-          {/* Vòng xoay khi đang chuyển trạng thái (tối thiểu 1s) */}
-          {switching && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/85 backdrop-blur-[2px] animate-fade-in">
-              <PageSpinner size="md" sub="Đang tải…" />
-            </div>
-          )}
-
-          {/* Header kênh */}
-          <div className="flex items-center gap-3 px-3.5 sm:px-5 py-3.5 border-b border-slate-200 bg-gradient-to-r from-white via-slate-50 to-white">
+      <div className="w-full space-y-4 pb-12">
+        <div className="rounded-lg overflow-hidden bg-white border border-slate-300">
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50">
             <button
               type="button"
               onClick={back}
-              className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0369a1] flex items-center justify-center transition-all active:scale-95 shrink-0"
-              aria-label="Quay lại"
+              className="px-3 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 text-[13px] font-bold flex items-center gap-1.5 shrink-0 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
+              <span>Quay lại</span>
             </button>
-            <div className="relative w-10 h-10 rounded-full bg-slate-100 ring-2 ring-[#0369a1]/40 shadow-sm flex items-center justify-center shrink-0">
-              {view.kind === "clan" || view.kind === "groups" ? (
-                <Users className="w-4 h-4 text-[#0369a1]" />
-              ) : (
-                <MessageCircle className="w-4 h-4 text-[#0369a1]" />
-              )}
-            </div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-sm sm:text-base font-black text-slate-900 truncate leading-tight">{title}</h2>
-              <p className="text-[14px] text-slate-500 truncate flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                {subtitle}
-              </p>
+              <h2 className="text-base font-bold text-slate-900 truncate">{title}</h2>
+              <p className="text-[13px] text-slate-600 truncate">{subtitle}</p>
             </div>
           </div>
 
-          {/* Nội dung */}
           <div className="bg-white">
             {view.kind === "public" && (
               <CommunityChat
@@ -495,10 +388,7 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
                 }
               />
             )}
-            {view.kind === "groups" && (
-              <GroupChatPanel user={user} />
-            )}
-            
+            {view.kind === "groups" && <GroupChatPanel user={user} />}
             {view.kind === "clan" && (
               <TeamClubManagement user={user} onBackToHome={back} onNavigateTab={onNavigateTab} />
             )}
@@ -508,301 +398,247 @@ export default function CommunityHub({ user, onOpenAuth, onNavigateTab, initialD
     );
   }
 
-  /* =========================================================
-   * HOME — Hub dark/neon
-   * ========================================================= */
   return (
-    <div className="w-full space-y-4 sm:space-y-5 pb-10 sm:pb-16 relative">
-      {/* ===== Lớp che + vòng xoay khi chuyển trạng thái (tối thiểu 1s) ===== */}
-      {switching && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-white/80 backdrop-blur-[2px] animate-fade-in">
-          <PageSpinner size="md" sub="Đang tải…" />
-        </div>
-      )}
+    <div className="w-full space-y-4 pb-12">
+      {/* 1. UNIFIED HEADER + TABS + SEARCH/FILTERS */}
+      <section className="bg-white border border-slate-300 rounded-lg p-5 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+              Cộng Đồng & Nhắn Tin
+            </h1>
+            <p className="text-[14px] text-slate-600 mt-1">
+              Kênh trao đổi trực tiếp giữa cầu thủ, đội trưởng, chủ sân và ban tổ chức giải đấu.
+            </p>
+          </div>
 
-      {/* ===== TOP SUB-NAV: Trò chuyện / Đội bóng (Clan) ===== */}
-      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white border border-slate-200">
-        <button
-          type="button"
-          onClick={() => switchMode("chat")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[14px] sm:text-sm font-black transition-all ${
-            mode === "chat"
-              ? "bg-[#0369a1] text-white shadow-md"
-              : "text-slate-500 hover:text-slate-900"
-          }`}
-        >
-          <MessageCircle className="w-4 h-4 shrink-0" />
-          <span>Trò chuyện</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => switchMode("clan")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[14px] sm:text-sm font-black transition-all ${
-            mode === "clan"
-              ? "bg-[#0369a1] text-white shadow-md"
-              : "text-slate-500 hover:text-slate-900"
-          }`}
-        >
-          <Users className="w-4 h-4 shrink-0" />
-          <span>Đội Bóng</span>
-        </button>
-        {user?.role !== "OWNER" && (
-        <button
-          type="button"
-          onClick={() => switchMode("club")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[14px] sm:text-sm font-black transition-all ${
-            mode === "club"
-              ? "bg-[#0369a1] text-white shadow-md"
-              : "text-slate-500 hover:text-slate-900"
-          }`}
-        >
-          <Building2 className="w-4 h-4 shrink-0" />
-          <span>CLB của tôi</span>
-        </button>
-        )}
-      </div>
-
-      {/* ===== SEARCH + FILTER CHIPS ===== */}
-      {mode === "chat" && (
-      <div className="space-y-3 p-4 sm:p-5 rounded-3xl bg-white border border-slate-200 shadow-2xl">
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#0369a1]/80" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm kiếm phòng chat, đội bóng, cầu thủ..."
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0369a1]/40 focus:border-[#0369a1]/60 transition-all"
-          />
-        </div>
-        <div className="flex items-center gap-2 pb-0.5 flex-wrap">
-          {FILTERS.map((f) => (
+          {/* Sub-mode tabs */}
+          <div className="flex flex-wrap items-center gap-2">
             <button
-              key={f.key}
               type="button"
-              onClick={() => setFilter(f.key)}
-              className={`shrink-0 px-3.5 py-1.5 rounded-full text-[14px] font-bold transition-all border ${
-                filter === f.key
-                  ? "bg-[#0369a1] text-white border-[#0369a1] shadow-md"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-[#0369a1]/60 hover:text-[#075985]"
+              onClick={() => switchMode("chat")}
+              className={`px-4 py-2 rounded-md text-[14px] font-bold border flex items-center gap-1.5 cursor-pointer ${
+                mode === "chat"
+                  ? "bg-[#0369a1] text-white border-[#0369a1]"
+                  : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
               }`}
             >
-              {f.label}
+              <MessageCircle className="w-4 h-4" />
+              <span>Phòng Chat & Tin Nhắn</span>
             </button>
-          ))}
-        </div>
-      </div>
-      )}
-
-      {/* ===== BANNER NỔI BẬT ===== */}
-      {mode === "chat" && (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* BẮT ĐỐI GIAO HỮU (trái) */}
-        <button
-          type="button"
-          onClick={openMatchmaking}
-          className="group relative overflow-hidden rounded-2xl px-4 py-3 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
-          style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}
-        >
-          
-          <div className="relative flex items-center gap-3">
-            <span className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-              <Flame className="w-5 h-5 text-white" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-[15px] sm:text-base font-black text-white leading-tight">Bắt Đối Giao Hữu</h3>
-              <p className="text-[14px] text-white/90 leading-snug">Ghép kèo nhanh theo phong độ</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform shrink-0" />
-          </div>
-        </button>
-
-        {/* CHAT GIẢI ĐẤU (phải) */}
-        <button
-          type="button"
-          onClick={openTournamentChat}
-          className="group relative overflow-hidden rounded-2xl px-4 py-3 text-left transition-all hover:shadow-lg active:scale-[0.98] border border-white/20"
-          style={{ background: "linear-gradient(135deg, #0369a1 0%, #075985 100%)" }}
-        >
-          
-          <div className="relative flex items-center gap-3">
-            <span className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-              <Radio className="w-5 h-5 text-white" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-[15px] sm:text-base font-black text-white leading-tight">Chat Giải Đấu</h3>
-              <p className="text-[14px] text-white/90 leading-snug">Trao đổi với BTC · {onlineCount} người online</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform shrink-0" />
-          </div>
-        </button>
-      </div>
-      )}
-
-      {/* ===== CHANNEL CARD LIST ===== */}
-      {mode === "chat" ? (
-        <div className="rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-200">
-            <h3 className="text-[14px] font-black text-slate-500 flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#0369a1]" />
-              Kênh trò chuyện
-            </h3>
-            <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => switchMode("clan")}
+              className={`px-4 py-2 rounded-md text-[14px] font-bold border flex items-center gap-1.5 cursor-pointer ${
+                mode === "clan"
+                  ? "bg-[#0369a1] text-white border-[#0369a1]"
+                  : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>Đội Bóng</span>
+            </button>
+            {user?.role !== "OWNER" && (
               <button
                 type="button"
-                onClick={() => { runWithLoader(); setView({ kind: "groups" }); }}
-                className="flex items-center gap-1.5 text-[14px] font-bold text-[#0369a1] hover:text-[#075985] transition-colors"
+                onClick={() => switchMode("club")}
+                className={`px-4 py-2 rounded-md text-[14px] font-bold border flex items-center gap-1.5 cursor-pointer ${
+                  mode === "club"
+                    ? "bg-[#0369a1] text-white border-[#0369a1]"
+                    : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+                }`}
+              >
+                <Building2 className="w-4 h-4" />
+                <span>CLB Của Tôi</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Search & Quick Actions when in Chat mode */}
+        {mode === "chat" && (
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2 flex-1">
+              <div className="relative flex-1 min-w-[220px] max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Tìm phòng chat, đội bóng, người liên hệ..."
+                  className="w-full pl-9 pr-3 py-2 rounded-md border border-slate-300 bg-white text-[14px] text-slate-900 focus:outline-none focus:border-[#0369a1]"
+                />
+              </div>
+
+              {FILTERS.map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => setFilter(f.key)}
+                  className={`px-3 py-1.5 rounded-md text-[13px] font-bold border cursor-pointer ${
+                    filter === f.key
+                      ? "bg-slate-800 text-white border-slate-800"
+                      : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={openTournamentChat}
+                className="px-3 py-1.5 rounded-md bg-sky-50 hover:bg-sky-100 text-[#0369a1] border border-sky-200 text-[13px] font-bold flex items-center gap-1.5 cursor-pointer"
+              >
+                <Radio className="w-3.5 h-3.5" />
+                <span>Kênh Giải Đấu</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setView({ kind: "groups" })}
+                className="px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-[13px] font-bold flex items-center gap-1.5 cursor-pointer"
               >
                 <Users className="w-3.5 h-3.5" />
-                Nhóm chat
+                <span>Nhóm Chat</span>
               </button>
               <button
                 type="button"
                 onClick={() => openDm()}
-                className="flex items-center gap-1.5 text-[14px] font-bold text-[#0369a1] hover:text-[#075985] transition-colors"
+                className="px-3 py-1.5 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold flex items-center gap-1.5 cursor-pointer"
               >
                 <UserPlus className="w-3.5 h-3.5" />
-                Tin nhắn mới
+                <span>Tin Nhắn Mới</span>
               </button>
             </div>
           </div>
+        )}
+      </section>
 
+      {/* 2. MAIN CONTENT */}
+      {mode === "chat" ? (
+        <div className="rounded-lg bg-white border border-slate-300 overflow-hidden">
           {!user ? (
             <div className="px-5 py-10 text-center space-y-3">
-              <Lock className="w-10 h-10 text-slate-600 mx-auto" />
-              <p className="text-sm font-bold text-slate-900">Đăng nhập để tham gia cộng đồng</p>
-              <p className="text-[14px] text-slate-500 max-w-sm mx-auto leading-relaxed">
-                Trò chuyện với cầu thủ, chủ sân và ban tổ chức giải đấu.
+              <Lock className="w-8 h-8 text-slate-500 mx-auto" />
+              <p className="text-[15px] font-bold text-slate-900">Đăng nhập để tham gia trò chuyện</p>
+              <p className="text-[14px] text-slate-600 max-w-sm mx-auto">
+                Nhắn tin trực tiếp với chủ sân, ban tổ chức giải đấu và các đội bóng khác.
               </p>
               <button
                 type="button"
                 onClick={() => onOpenAuth?.("login", "PLAYER")}
-                className="mt-2 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 shadow-sm"
+                className="px-5 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold"
               >
-                Đăng nhập ngay
+                Đăng Nhập Ngay
               </button>
             </div>
           ) : loading && channels.length === 0 ? (
-            <div className="px-5 py-10 text-center text-slate-500 text-[14px] flex items-center justify-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" /> Đang tải kênh…
+            <div className="px-5 py-10 text-center text-slate-600 text-[14px] flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" /> Đang tải danh sách kênh...
             </div>
           ) : filteredChannels.length === 0 ? (
             <div className="px-5 py-10 text-center space-y-2">
-              <MessageCircle className="w-9 h-9 text-slate-600 mx-auto" />
-              <p className="text-[14px] text-slate-500">
+              <MessageCircle className="w-8 h-8 text-slate-400 mx-auto" />
+              <p className="text-[14px] text-slate-600">
                 {filter === "unread"
                   ? "Không có tin nhắn chưa đọc."
                   : filter === "private" || filter === "friends"
-                  ? "Chưa có hội thoại riêng. Bấm \"Tin nhắn mới\" để bắt đầu."
+                  ? 'Chưa có cuộc trò chuyện riêng. Bấm "Tin Nhắn Mới" để bắt đầu.'
                   : "Không tìm thấy kênh phù hợp."}
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:gap-px bg-slate-200">
               {filteredChannels.map((ch) => {
                 const Icon = ch.icon;
                 return (
-                  <li key={ch.id}>
-                    <button
-                      type="button"
-                      onClick={ch.onClick}
-                      className="w-full flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-slate-50 transition-colors text-left group"
-                    >
-                      {/* Avatar icon tròn */}
-                      <div className="relative shrink-0">
-                        <div className="w-11 h-11 rounded-full bg-sky-50 ring-2 ring-[#0369a1]/25 group-hover:ring-[#0369a1]/60 transition-all flex items-center justify-center">
-                          <Icon className="w-5 h-5 text-[#0369a1]" />
-                        </div>
-                        {ch.unread > 0 && (
-                          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
-                        )}
+                  <button
+                    key={ch.id}
+                    type="button"
+                    onClick={ch.onClick}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 bg-white hover:bg-slate-50 transition-colors text-left group cursor-pointer"
+                  >
+                    <div className="relative shrink-0">
+                      <div className="w-10 h-10 rounded-md bg-slate-100 border border-slate-300 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-[#0369a1]" />
                       </div>
+                      {ch.unread > 0 && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-600 border-2 border-white" />
+                      )}
+                    </div>
 
-                      {/* Tên phòng + tin mới nhất */}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className={`text-sm truncate ${ch.unread > 0 ? "font-black text-slate-900" : "font-bold text-slate-700"}`}>
-                            {ch.name}
-                          </p>
-                        </div>
-                        <p className="text-[14px] text-slate-500 truncate mt-0.5">{ch.preview}</p>
-                      </div>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={`text-[14px] truncate ${
+                          ch.unread > 0 ? "font-bold text-slate-900" : "font-semibold text-slate-800"
+                        }`}
+                      >
+                        {ch.name}
+                      </p>
+                      <p className="text-[13px] text-slate-500 truncate mt-0.5">{ch.preview}</p>
+                    </div>
 
-                      {/* Thời gian + badge chưa đọc */}
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        {ch.time && <span className="text-[14px] text-slate-500 font-semibold">{formatTime(ch.time)}</span>}
-                        {ch.unread > 0 ? (
-                          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#0369a1] text-white text-[14px] font-black flex items-center justify-center">
-                            {ch.unread > 9 ? "9+" : ch.unread}
-                          </span>
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#0369a1] group-hover:translate-x-0.5 transition-all" />
-                        )}
-                      </div>
-                    </button>
-                  </li>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      {ch.time && (
+                        <span className="text-[12px] text-slate-500 font-mono">{formatTime(ch.time)}</span>
+                      )}
+                      {ch.unread > 0 ? (
+                        <span className="px-2 py-0.5 rounded bg-[#0369a1] text-white text-[12px] font-bold">
+                          Mới
+                        </span>
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#0369a1]" />
+                      )}
+                    </div>
+                  </button>
                 );
               })}
-            </ul>
+            </div>
           )}
         </div>
       ) : mode === "clan" ? (
-        /* ===== CLAN MODE ===== */
         user ? (
-          <div className="rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-xl">
+          <div className="rounded-lg overflow-hidden bg-white border border-slate-300">
             <TeamClubManagement user={user} onBackToHome={() => switchMode("chat")} onNavigateTab={onNavigateTab} />
           </div>
         ) : (
-          <div className="rounded-3xl bg-white border border-slate-200 shadow-2xl px-5 py-12 text-center space-y-3">
-            <div className="w-14 h-14 rounded-2xl bg-[#0369a1]/10 ring-2 ring-[#0369a1]/40 flex items-center justify-center mx-auto">
-              <Users className="w-7 h-7 text-[#0369a1]" />
-            </div>
-            <h3 className="text-sm font-black text-slate-900">Đội bóng (Clan)</h3>
-            <p className="text-[14px] text-slate-500 max-w-sm mx-auto leading-relaxed">
-              Đăng nhập để tạo đội, quản lý thành viên và theo dõi lịch sử thi đấu của đội bạn.
+          <div className="rounded-lg bg-white border border-slate-300 px-5 py-10 text-center space-y-3">
+            <Users className="w-8 h-8 text-[#0369a1] mx-auto" />
+            <h3 className="text-base font-bold text-slate-900">Quản Lý Đội Bóng</h3>
+            <p className="text-[14px] text-slate-600 max-w-sm mx-auto">
+              Đăng nhập để tạo đội bóng, quản lý thành viên và theo dõi lịch sử thi đấu.
             </p>
             <button
               type="button"
               onClick={() => onOpenAuth?.("login", "PLAYER")}
-              className="mt-1 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 shadow-sm"
+              className="px-5 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold"
             >
-              Đăng nhập ngay
+              Đăng Nhập Ngay
             </button>
           </div>
         )
+      ) : user ? (
+        <div className="rounded-lg overflow-hidden bg-white border border-slate-300 p-4 sm:p-5">
+          <ClubManagement user={user} onBack={() => switchMode("chat")} />
+        </div>
       ) : (
-        /* ===== CLUB MODE: CLB của tôi (người đại diện quản lý CLB + thành viên) ===== */
-        user ? (
-          <div className="rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-xl p-4 sm:p-5">
-            <ClubManagement user={user} onBack={() => switchMode("chat")} />
-          </div>
-        ) : (
-          <div className="rounded-3xl bg-white border border-slate-200 shadow-2xl px-5 py-12 text-center space-y-3">
-            <div className="w-14 h-14 rounded-2xl bg-[#0369a1]/10 ring-2 ring-[#0369a1]/40 flex items-center justify-center mx-auto">
-              <Building2 className="w-7 h-7 text-[#0369a1]" />
-            </div>
-            <h3 className="text-sm font-black text-slate-900">CLB của tôi</h3>
-            <p className="text-[14px] text-slate-500 max-w-sm mx-auto leading-relaxed">
-              Đăng nhập để tạo CLB, thêm thành viên và quản lý đội bóng của CLB bạn.
-            </p>
-            <button
-              type="button"
-              onClick={() => onOpenAuth?.("login", "PLAYER")}
-              className="mt-1 px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95"
-            >
-              Đăng nhập ngay
-            </button>
-          </div>
-        )
+        <div className="rounded-lg bg-white border border-slate-300 px-5 py-10 text-center space-y-3">
+          <Building2 className="w-8 h-8 text-[#0369a1] mx-auto" />
+          <h3 className="text-base font-bold text-slate-900">CLB Của Tôi</h3>
+          <p className="text-[14px] text-slate-600 max-w-sm mx-auto">
+            Đăng nhập để tạo CLB, thêm thành viên và quản lý đội bóng.
+          </p>
+          <button
+            type="button"
+            onClick={() => onOpenAuth?.("login", "PLAYER")}
+            className="px-5 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold"
+          >
+            Đăng Nhập Ngay
+          </button>
+        </div>
       )}
-
-      {/* ===== CLUB MODE: CLB của tôi (người đại diện quản lý CLB + thành viên) ===== */}
-
-      {/* Ghi chú nhỏ */}
-      <p className="text-[14px] text-slate-500 text-center flex items-center justify-center gap-1.5">
-        <ShieldCheck className="w-3.5 h-3.5 text-[#0369a1]" />
-        
-      </p>
     </div>
   );
 }
