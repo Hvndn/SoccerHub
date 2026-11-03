@@ -364,3 +364,23 @@ export async function getMyBookingsApi(): Promise<BookingSearchResult[]> {
     return [];
   }
 }
+
+/** Hủy vé đặt / Hủy giữ chỗ ca của chính khách hàng */
+export async function cancelBookingByCustomerApi(
+  bookingId: number | string,
+  reason?: string
+): Promise<any> {
+  return await apiRequest(`/api/v1/pitches/bookings/${bookingId}/cancel-by-customer`, {
+    method: 'POST',
+    body: JSON.stringify({ reason: reason || 'Người đặt tự hủy giữ ca' }),
+  });
+}
+
+/** Chủ sân hoặc Admin xác nhận cọc ca đang giữ chỗ (PENDING_PAYMENT -> BOOKED) */
+export async function confirmBookingPaymentApi(
+  bookingId: number | string
+): Promise<any> {
+  return await apiRequest(`/api/v1/pitches/bookings/${bookingId}/confirm-payment`, {
+    method: 'PUT',
+  });
+}

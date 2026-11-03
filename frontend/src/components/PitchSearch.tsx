@@ -89,6 +89,10 @@ export default function PitchSearch({ user }: PitchSearchProps) {
     }
   }, [user?.email, user?.id]);
 
+  // Phân trang danh sách sân (8 sân / trang)
+  const [currentPage, setCurrentPage] = useState(1);
+  const PITCHES_PER_PAGE = 8;
+
  const handleOpenPitch = (pitch: any) => {
    if (!pitch) return;
    setSelectedPitchForSlot(pitch);
@@ -450,6 +454,17 @@ const toSportTabs = (types?: string[] | null): string[] =>
   }
  return true;
  });
+
+  // Reset về trang 1 khi thay đổi bất kỳ bộ lọc nào
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSport, selectedDistrict, maxBudget, selectedTimeSlotFilter, selectedPitchFormat, onlyAvailableTonight]);
+
+  const totalPages = Math.ceil(filteredPitches.length / PITCHES_PER_PAGE) || 1;
+  const paginatedPitches = useMemo(() => {
+    const start = (currentPage - 1) * PITCHES_PER_PAGE;
+    return filteredPitches.slice(start, start + PITCHES_PER_PAGE);
+  }, [filteredPitches, currentPage]);
 
  const featuredPitch = realPitches.length > 0 ? realPitches[0] : null;
 
@@ -1188,7 +1203,7 @@ const toSportTabs = (types?: string[] | null): string[] =>
  </div>
  </div>
  ) : (
- filteredPitches.map((pitch) => (
+ paginatedPitches.map((pitch) => (
  <article
  key={pitch.id}
  className="group bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 shadow-sm sport-card-hover flex flex-col md:flex-row cursor-pointer"
@@ -1321,7 +1336,57 @@ const toSportTabs = (types?: string[] | null): string[] =>
  </article>
  ))
  )}
- </div>
+ 
+              {/* Thanh Phân Trang 8 Sân / Trang */}
+              {totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 pb-2 border-t border-slate-200">
+                  <p className="text-[13px] text-slate-500 font-medium">
+                    Hiển thị <span className="font-bold text-slate-900">{(currentPage - 1) * PITCHES_PER_PAGE + 1} - {Math.min(currentPage * PITCHES_PER_PAGE, filteredPitches.length)}</span> trên tổng số <span className="font-bold text-slate-900">{filteredPitches.length}</span> cụm sân
+                  </p>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      disabled={currentPage === 1}
+                      onClick={() => {
+                        setCurrentPage((p) => Math.max(1, p - 1));
+                        window.scrollTo({ top: 350, behavior: "smooth" });
+                      }}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      Trang trước
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => {
+                          setCurrentPage(page);
+                          window.scrollTo({ top: 350, behavior: "smooth" });
+                        }}
+                        className={`w-9 h-9 rounded-xl text-[13px] font-black transition-all cursor-pointer ${
+                          currentPage === page
+                            ? "bg-[#0369a1] text-white shadow-sm"
+                            : "border border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      disabled={currentPage === totalPages}
+                      onClick={() => {
+                        setCurrentPage((p) => Math.min(totalPages, p + 1));
+                        window.scrollTo({ top: 350, behavior: "smooth" });
+                      }}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      Trang sau
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
  </main>
 
  {/* CỘT PHẢI (4 COLS): CHỢ KÈO GHÉP ĐỘI ELO & THẺ CHECK-IN QUICKPASS */}

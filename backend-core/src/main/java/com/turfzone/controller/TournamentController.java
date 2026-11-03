@@ -19,6 +19,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.turfzone.model.User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Sort;
+import java.time.LocalDate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -30,6 +32,27 @@ import java.util.concurrent.ThreadLocalRandom;
 @RequestMapping("/api/v1/tournaments")
 @RequiredArgsConstructor
 public class TournamentController {
+    /**
+     * Kiem tra giai dau da ket thuc hoac het thoi han to chuc chua.
+     * Neu da dong/ket thuc -> chi cho phep xem (read-only), khong the sua doi du lieu.
+     */
+    private boolean isTournamentClosed(Tournament t) {
+        if (t == null) return false;
+        String st = t.getStatus() != null ? t.getStatus().toUpperCase() : "";
+        if ("COMPLETED".equals(st) || "FINISHED".equals(st) || "CANCELLED".equals(st)) {
+            return true;
+        }
+        if (t.getEndDate() != null && !t.getEndDate().isBlank()) {
+            try {
+                LocalDate end = LocalDate.parse(t.getEndDate().trim());
+                if (end.isBefore(LocalDate.now())) {
+                    return true;
+                }
+            } catch (Exception ignored) {}
+        }
+        return false;
+    }
+
 
     private final TournamentRepository tournamentRepository;
     private final MatchResultRepository matchResultRepository;
@@ -117,7 +140,7 @@ public class TournamentController {
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getTournaments(@AuthenticationPrincipal com.turfzone.model.User me) {
-        List<Tournament> tournaments = tournamentRepository.findAll();
+        List<Tournament> tournaments = tournamentRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
         attachForms(tournaments); // 1 lần truy vấn phong độ cho toàn bộ đội, không N+1
         List<Map<String, Object>> out = new ArrayList<>();
         for (Tournament t : tournaments) {
@@ -188,7 +211,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> updateTournament(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
-        if (t == null) {
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
 
@@ -278,7 +303,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
     public ResponseEntity<?> tournamentFinance(@PathVariable Long id) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
-        if (t == null) {
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
 
@@ -400,7 +427,9 @@ public class TournamentController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> setTournamentStatus(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         String status = String.valueOf(body.getOrDefault("status", "")).trim().toUpperCase();
@@ -489,7 +518,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> fillTeams(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         int cap = tournament.getTotalTeams() != null ? tournament.getTotalTeams() : 8;
@@ -667,7 +698,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> drawBracket(@PathVariable Long id) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         List<TournamentTeamEntry> teams = tournament.getTeams() != null
@@ -808,7 +841,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> clearSimulatedTeams(@PathVariable Long id) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         List<TournamentTeamEntry> teams = tournament.getTeams() != null
@@ -853,7 +888,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> saveMatchResult(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
@@ -1063,7 +1100,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> undoMatchResult(@PathVariable Long id, @PathVariable String matchId) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
@@ -1190,7 +1229,9 @@ public class TournamentController {
             @PathVariable Long id,
             @RequestParam(required = false, defaultValue = "false") boolean nextStageOnly) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
@@ -1473,7 +1514,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> generateSchedule(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
@@ -1563,7 +1606,9 @@ public class TournamentController {
     @GetMapping("/{id}/bracket")
     public ResponseEntity<?> getBracket(@PathVariable Long id) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
@@ -1593,7 +1638,9 @@ public class TournamentController {
             return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập để đăng ký đội."));
         }
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("error", "Giải đấu không tồn tại"));
         }
 
@@ -1768,7 +1815,9 @@ public class TournamentController {
     @GetMapping("/{id}/access")
     public ResponseEntity<?> getJoinAccess(@PathVariable Long id, @AuthenticationPrincipal com.turfzone.model.User me) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         boolean isAdmin = me != null && me.getRole() != null && "ADMIN".equals(me.getRole().name());
@@ -1793,7 +1842,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> setJoinAccess(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         String mode = String.valueOf(body.getOrDefault("joinMode", "PUBLIC")).trim().toUpperCase();
@@ -1829,7 +1880,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> addInvite(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         String email = body.get("email") != null ? body.get("email").toString().trim().toLowerCase() : "";
@@ -1858,7 +1911,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> removeInvite(@PathVariable Long id, @PathVariable String email) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         String target = email.trim().toLowerCase();
@@ -1884,7 +1939,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> addManualTeam(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         String teamName = body.get("teamName") != null ? body.get("teamName").toString().trim() : "";
@@ -1964,7 +2021,9 @@ public class TournamentController {
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
     public ResponseEntity<?> confirmTeamPayment(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
-        if (tournament == null) {
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         }
         String teamName = String.valueOf(body.getOrDefault("teamName", "")).trim();
@@ -2018,6 +2077,8 @@ public class TournamentController {
     public ResponseEntity<?> pendingTeams(@PathVariable Long id) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         List<Map<String, Object>> out = new ArrayList<>();
         for (TournamentTeamEntry team : t.getTeams()) {
@@ -2041,6 +2102,8 @@ public class TournamentController {
     public ResponseEntity<?> approveTeam(@PathVariable Long id, @PathVariable String teamName) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         for (TournamentTeamEntry team : t.getTeams()) {
             if (team.getTeamName() != null && team.getTeamName().equalsIgnoreCase(teamName)
@@ -2071,6 +2134,8 @@ public class TournamentController {
     public ResponseEntity<?> rejectTeam(@PathVariable Long id, @PathVariable String teamName) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         List<TournamentTeamEntry> currentList = new ArrayList<>(t.getTeams());
         boolean removed = currentList.removeIf(team ->
@@ -2097,6 +2162,8 @@ public class TournamentController {
     public ResponseEntity<?> listReferees(@PathVariable Long id) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         List<Map<String, Object>> out = new ArrayList<>();
         for (TournamentReferee r : refereeRepository.findByTournamentIdOrderByNameAsc(id)) {
@@ -2119,6 +2186,8 @@ public class TournamentController {
     public ResponseEntity<?> addReferee(@PathVariable Long id, @RequestBody Map<String, Object> req) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         String name = req.get("name") != null ? req.get("name").toString().trim() : "";
         if (name.length() < 2 || name.length() > 80) {
@@ -2152,6 +2221,8 @@ public class TournamentController {
     public ResponseEntity<?> removeReferee(@PathVariable Long id, @PathVariable Long refId) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
+        if (false) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         refereeRepository.deleteByIdAndTournamentId(refId, id);
         return ResponseEntity.ok(Map.of("message", "Đã xóa trọng tài.", "id", refId));

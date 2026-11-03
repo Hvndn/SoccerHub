@@ -355,6 +355,13 @@ public class PitchBookingController {
                     boolean isPending = "PENDING_PAYMENT".equals(bStatus);
                     slotObj.put("status", isPending ? "pending_payment" : bStatus.toLowerCase()); // pending_payment, booked, playing, resale
                     slotObj.put("isPendingPayment", isPending);
+                      boolean isMyBooking = me != null && (
+                              (me.getPhone() != null && !me.getPhone().isBlank() && b.getCustomerPhone() != null && me.getPhone().replaceAll("\\s", "").equals(b.getCustomerPhone().replaceAll("\\s", "")))
+                              || (me.getFullName() != null && !me.getFullName().isBlank() && b.getCustomerName() != null && me.getFullName().trim().equalsIgnoreCase(b.getCustomerName().trim()))
+                      );
+                      slotObj.put("isMyBooking", isMyBooking);
+                      slotObj.put("depositPaid", b.getDepositPaid());
+                      slotObj.put("totalPrice", b.getTotalPrice());
                     // Ten khach la PII — an voi nguoi xem khong phai chu san.
                     slotObj.put("customer", fullAccess ? b.getCustomerName() : maskName(b.getCustomerName()));
                     slotObj.put("phone", fullAccess ? b.getCustomerPhone() : maskPhone(b.getCustomerPhone()));
@@ -1372,18 +1379,19 @@ public ResponseEntity<?> rescheduleBooking(
 
         return bookingRepository.findById(bookingId).map(b -> {
             String ownerPhone = currentUser != null && currentUser.getPhone() != null
-                    ? currentUser.getPhone().replaceAll("\\s", "")
-                    : "";
-            String bookingPhone = b.getCustomerPhone() != null ? b.getCustomerPhone().replaceAll("\\s", "") : "";
+                      ? currentUser.getPhone().replaceAll("\s", "")
+                      : "";
+              String bookingPhone = b.getCustomerPhone() != null ? b.getCustomerPhone().replaceAll("\s", "") : "";
+              String ownerName = currentUser != null && currentUser.getFullName() != null ? currentUser.getFullName().trim().toLowerCase() : "";
+              String bookingName = b.getCustomerName() != null ? b.getCustomerName().trim().toLowerCase() : "";
 
-            if (ownerPhone.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "message", "Tài khoản của bạn chưa có số điện thoại nên không tự hủy được. Vui lòng liên hệ chủ sân."));
-            }
-            if (!ownerPhone.equals(bookingPhone)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                        "message", "Bạn chỉ có thể hủy vé đặt bằng chính số điện thoại của mình."));
-            }
+              boolean isAuthorizedUser = (!ownerPhone.isEmpty() && ownerPhone.equals(bookingPhone))
+                      || (!ownerName.isEmpty() && ownerName.equals(bookingName));
+
+              if (!isAuthorizedUser) {
+                  return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                          "message", "Bạn chỉ có thể hủy vé đặt bằng chính tài khoản hoặc số điện thoại của mình."));
+              }
             if ("CANCELLED".equals(b.getStatus())) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Vé này đã được hủy trước đó."));
             }

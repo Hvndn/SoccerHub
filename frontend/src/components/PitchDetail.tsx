@@ -42,7 +42,13 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { pitchTypeLabel, isPeakSlot } from "@/lib/pitchLabels";
-import { joinBookingWaitlistApi, createRecurringBookingApi } from "@/lib/pitchService";
+import {
+  joinBookingWaitlistApi,
+  createRecurringBookingApi,
+  cancelBookingByCustomerApi,
+  confirmBookingPaymentApi,
+  cancelBookingApi
+} from "@/lib/pitchService";
 import { BellRing, CalendarDays } from "lucide-react";
 import { broadcastBookingEvent, subscribeToBookingEvents } from "@/lib/realtimeService";
 
@@ -126,6 +132,87 @@ export default function PitchDetail({
 
  // Modal QR Code thanh toán & Thẻ Vé điện tử
  const [showQrModal, setShowQrModal] = useState(false);
+  // Quản lý ca chờ khóa (PENDING_PAYMENT / Hold slot)
+  const [pendingSlotItem, setPendingSlotItem] = useState<{ court: any; slot: any } | null>(null);
+  const [waitlistPhone, setWaitlistPhone] = useState(user?.phone || "");
+  const [waitlistNote, setWaitlistNote] = useState("");
+  const [isProcessingPending, setIsProcessingPending] = useState(false);
+
+  const handlePendingSlotClick = (court: any, slot: any) => {
+    if (pendingSlotItem?.slot?.time === slot.time && pendingSlotItem?.court?.pitchName === court.pitchName) {
+      setPendingSlotItem(null);
+    } else {
+      setPendingSlotItem({ court, slot });
+      if (user?.phone) setWaitlistPhone(user.phone);
+    }
+  };
+
+  const handleCustomerCancelHold = async (bookingId: number | string) => {
+    if (!bookingId) return;
+    setIsProcessingPending(true);
+    try {
+      await cancelBookingByCustomerApi(bookingId, "Người đặt tự hủy giữ ca");
+      showToast("✅ Đã hủy chọn ca thành công! Ca sân đã được mở lại cho mọi người.");
+      setPendingSlotItem(null);
+      await fetchPitchMatrix(selectedDate, fixedSlotDuration);
+    } catch (err: any) {
+      showToast("❌ " + (err?.message || "Không thể hủy giữ ca"));
+    } finally {
+      setIsProcessingPending(false);
+    }
+  };
+
+  const handleJoinWaitlistForPending = async (court: any, slot: any) => {
+    if (!waitlistPhone.trim()) {
+      showToast("⚠️ Vui lòng nhập số điện thoại để đăng ký nhận ca trống.");
+      return;
+    }
+    setIsProcessingPending(true);
+    try {
+      await joinBookingWaitlistApi({
+        pitchId: pitch.id,
+        courtName: court.pitchName,
+        bookingDate: selectedDate,
+        timeSlot: slot.time,
+      });
+      showToast("✅ Đã đăng ký hàng chờ thành công! Hệ thống sẽ ưu tiên nhường ca cho bạn khi ca được mở lại.");
+      setPendingSlotItem(null);
+    } catch (err: any) {
+      showToast("❌ " + (err?.message || "Không thể đăng ký hàng chờ"));
+    } finally {
+      setIsProcessingPending(false);
+    }
+  };
+
+  const handleOwnerConfirmDeposit = async (bookingId: number | string) => {
+    if (!bookingId) return;
+    setIsProcessingPending(true);
+    try {
+      await confirmBookingPaymentApi(bookingId);
+      showToast("✅ Đã xác nhận thu cọc thành công! Ca chuyển sang trạng thái Đã Cọc.");
+      setPendingSlotItem(null);
+      await fetchPitchMatrix(selectedDate, fixedSlotDuration);
+    } catch (err: any) {
+      showToast("❌ " + (err?.message || "Không thể xác nhận cọc"));
+    } finally {
+      setIsProcessingPending(false);
+    }
+  };
+
+  const handleOwnerCancelHold = async (bookingId: number | string) => {
+    if (!bookingId) return;
+    setIsProcessingPending(true);
+    try {
+      await cancelBookingApi(bookingId, "Chủ sân mở lại ca trống", "OWNER");
+      showToast("✅ Đã hủy giữ chỗ và mở lại ca trống thành công.");
+      setPendingSlotItem(null);
+      await fetchPitchMatrix(selectedDate, fixedSlotDuration);
+    } catch (err: any) {
+      showToast("❌ " + (err?.message || "Không thể hủy ca"));
+    } finally {
+      setIsProcessingPending(false);
+    }
+  };
  const [bookingConfirmed, setBookingConfirmed] = useState<any | null>(null);
  const [paymentDone, setPaymentDone] = useState(false);
 
@@ -795,35 +882,81 @@ export default function PitchDetail({
  );
  }
 
- if (isBooked) {
- const isOwner = user?.role === "OWNER";
- const isClub = Boolean(slot.isClubBooking || slot.clubName);
-  const isPending = slot.status === "pending_payment";
- return (
- <div
- key={sIdx}
- className={`h-20 rounded-2xl flex flex-col items-center justify-center p-2 cursor-not-allowed border transition-all ${
-   isClub
-     ? "bg-purple-100/90 text-purple-950 border-purple-300 shadow-xs"
-     : "bg-slate-200/70 text-slate-500 border-slate-200 opacity-75"
- }`}
- title={
-   isClub
-     ? `Ca này đã được đại diện CLB ${slot.clubName || ""} bao sân trọn gói!`
-     : (isOwner ? `Khách: ${slot.customer || "Khách"} - SĐT: ${slot.phone || "N/A"}` : "Ca đã có khách đặt trước")
- }
- >
- <span className="font-bold text-[13px]">{slot.time}</span>
- <div className={`flex items-center space-x-1 mt-0.5 font-bold text-[13px] ${isClub ? "text-purple-700 font-black" : "text-rose-600"}`}>
- <Lock className="w-3.5 h-3.5" />
- <span>{isClub ? (slot.isFullDayBooking ? "CLB Bao Sân • Cả Ngày" : "CLB Bao Sân") : isPending ? "Chờ Xác Nhận Cọc" : "Đã Cọc"}</span>
- </div>
- <span className={`text-[13px] truncate max-w-[130px] font-semibold ${isClub ? "text-purple-800 font-bold" : (isOwner ? "text-slate-600 font-mono" : "text-slate-500 font-medium")}`}>
- {isClub ? (slot.clubName || "Bao trọn ca") : (isOwner ? (slot.customer || slot.phone || "Khách cọc") : "Khóa ca")}
- </span>
- </div>
- );
- }
+  if (isBooked) {
+    const isOwner = user?.role === "OWNER";
+    const isClub = Boolean(slot.isClubBooking || slot.clubName);
+    const isPending = slot.status === "pending_payment";
+
+    // CA CHỜ KHÓA (pending_payment): Không khóa cứng, tương tác được inline
+    if (isPending) {
+      const isMyBooking = Boolean(slot.isMyBooking || (user?.phone && slot.phone && slot.phone.includes(user.phone.slice(-4))));
+      const isThisActive = pendingSlotItem?.court?.pitchName === court.pitchName && pendingSlotItem?.slot?.time === slot.time;
+      return (
+        <button
+          key={sIdx}
+          type="button"
+          onClick={() => handlePendingSlotClick(court, slot)}
+          className={`h-20 rounded-2xl flex flex-col items-center justify-center p-2 border transition-all cursor-pointer relative group text-left ${
+            isThisActive
+              ? "ring-2 ring-amber-500 bg-amber-100/90 text-amber-950 border-amber-400 shadow-md"
+              : isMyBooking
+              ? "bg-amber-50 hover:bg-amber-100 text-amber-950 border-amber-300 ring-1 ring-amber-300 shadow-xs"
+              : isOwner
+              ? "bg-amber-50/80 hover:bg-amber-100 text-amber-900 border-amber-300"
+              : "bg-slate-100 hover:bg-sky-50 text-slate-700 border-slate-300 hover:border-sky-300"
+          }`}
+          title={
+            isMyBooking
+              ? "Ca bạn đang giữ chỗ! Bấm để xem hoặc Hủy chọn ca."
+              : isOwner
+              ? `Khách: ${slot.customer || "Khách"} - SĐT: ${slot.phone || "N/A"} (Chờ cọc)`
+              : "Ca đang chờ cọc. Bấm để đăng ký vào hàng chờ nhận ca này!"
+          }
+        >
+          <div className="absolute top-1 right-1">
+            <span className={`text-[13px] font-bold px-1 rounded ${
+              isMyBooking ? "bg-amber-500 text-white" : "bg-amber-100 text-amber-800 border border-amber-300"
+            }`}>
+              {isMyBooking ? "Của bạn" : "Chờ cọc"}
+            </span>
+          </div>
+          <span className="font-bold text-[13px]">{slot.time}</span>
+          <div className="flex items-center space-x-1 mt-0.5 font-bold text-[13px] text-amber-700">
+            <Clock className="w-3.5 h-3.5 animate-pulse" />
+            <span>{isMyBooking ? "Đang Giữ Chỗ" : "Chờ Khóa Ca"}</span>
+          </div>
+          <span className="text-[13px] truncate max-w-[130px] font-semibold text-slate-500">
+            {isMyBooking ? "Bấm để Hủy/Xem" : isOwner ? "Bấm Duyệt/Mở lại" : "Bấm nhận hàng chờ"}
+          </span>
+        </button>
+      );
+    }
+
+    return (
+      <div
+        key={sIdx}
+        className={`h-20 rounded-2xl flex flex-col items-center justify-center p-2 cursor-not-allowed border transition-all ${
+          isClub
+            ? "bg-purple-100/90 text-purple-950 border-purple-300 shadow-xs"
+            : "bg-slate-200/70 text-slate-500 border-slate-200 opacity-75"
+        }`}
+        title={
+          isClub
+            ? `Ca này đã được đại diện CLB ${slot.clubName || ""} bao sân trọn gói!`
+            : (isOwner ? `Khách: ${slot.customer || "Khách"} - SĐT: ${slot.phone || "N/A"}` : "Ca đã có khách đặt trước")
+        }
+      >
+        <span className="font-bold text-[13px]">{slot.time}</span>
+        <div className={`flex items-center space-x-1 mt-0.5 font-bold text-[13px] ${isClub ? "text-purple-700 font-black" : "text-rose-600"}`}>
+          <Lock className="w-3.5 h-3.5" />
+          <span>{isClub ? (slot.isFullDayBooking ? "CLB Bao Sân • Cả Ngày" : "CLB Bao Sân") : "Đã Cọc"}</span>
+        </div>
+        <span className={`text-[13px] truncate max-w-[130px] font-semibold ${isClub ? "text-purple-800 font-bold" : (isOwner ? "text-slate-600 font-mono" : "text-slate-500 font-medium")}`}>
+          {isClub ? (slot.clubName || "Bao trọn ca") : (isOwner ? (slot.customer || slot.phone || "Khách cọc") : "Khóa ca")}
+        </span>
+      </div>
+    );
+  }
 
  return (
  <button
@@ -862,6 +995,112 @@ export default function PitchDetail({
  );
  })}
  </div>
+
+        {/* INLINE PANEL TÁC ĐỘNG CA CHỜ KHÓA (pending_payment) */}
+        {pendingSlotItem && pendingSlotItem.court.pitchName === court.pitchName && (
+          <div className="mt-4 p-4 rounded-2xl bg-amber-50/90 border border-amber-300 text-slate-800 space-y-3 animate-fade-in shadow-sm">
+            <div className="flex items-center justify-between border-b border-amber-200 pb-2.5">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-600 animate-pulse" />
+                <h4 className="font-bold text-sm text-amber-950">
+                  Tác Vụ Ca Chờ Khóa: {pendingSlotItem.slot.time} · {court.pitchName}
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPendingSlotItem(null)}
+                className="text-[13px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+              >
+                Đóng
+              </button>
+            </div>
+
+            {/* TRƯỜNG HỢP 1: CHÍNH MÌNH ĐANG GIỮ CA */}
+            {Boolean(pendingSlotItem.slot.isMyBooking || (user?.phone && pendingSlotItem.slot.phone && pendingSlotItem.slot.phone.includes(user.phone.slice(-4)))) ? (
+              <div className="space-y-2.5">
+                <p className="text-[13px] text-amber-900 leading-relaxed">
+                  Ca này bạn đang giữ chỗ (chờ xác nhận thanh toán cọc). Bạn có thể <strong>Hủy chọn ca</strong> để mở lại slot trống cho mọi người, hoặc tiếp tục thanh toán.
+                </p>
+                <div className="flex items-center gap-2 flex-wrap pt-1">
+                  <button
+                    type="button"
+                    disabled={isProcessingPending}
+                    onClick={() => handleCustomerCancelHold(pendingSlotItem.slot.bookingId)}
+                    className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[13px] font-bold shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    {isProcessingPending ? "Đang xử lý..." : "❌ Hủy Chọn Ca Này (Mở Lại Ca)"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBookingConfirmed({
+                        id: pendingSlotItem.slot.bookingId,
+                        code: pendingSlotItem.slot.code || "VS-HOLD",
+                        totalPrice: pendingSlotItem.slot.totalPrice || 350000,
+                        depositPaid: pendingSlotItem.slot.depositPaid || 100000,
+                        cashDue: (pendingSlotItem.slot.totalPrice || 350000) - (pendingSlotItem.slot.depositPaid || 100000)
+                      });
+                      setShowQrModal(true);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#025684] text-white text-[13px] font-bold shadow-sm transition-all cursor-pointer"
+                  >
+                    💳 Tiếp Tục Thanh Toán Cọc
+                  </button>
+                </div>
+              </div>
+            ) : user?.role === "OWNER" ? (
+              /* TRƯỜNG HỢP 2: CHỦ SÂN QUẢN LÝ */
+              <div className="space-y-2.5">
+                <div className="text-[13px] text-slate-700 space-y-1">
+                  <p>Khách hàng: <strong className="text-slate-900">{pendingSlotItem.slot.customer || "Khách"}</strong> · SĐT: <strong className="font-mono text-slate-900">{pendingSlotItem.slot.phone || "N/A"}</strong></p>
+                  <p className="text-slate-500">Ca đang ở trạng thái giữ chỗ tạm thời (chờ xác nhận tiền cọc).</p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap pt-1">
+                  <button
+                    type="button"
+                    disabled={isProcessingPending}
+                    onClick={() => handleOwnerConfirmDeposit(pendingSlotItem.slot.bookingId)}
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    {isProcessingPending ? "Đang lưu..." : "✅ Xác Nhận Đã Thu Cọc (Khóa Ca)"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isProcessingPending}
+                    onClick={() => handleOwnerCancelHold(pendingSlotItem.slot.bookingId)}
+                    className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-700 text-[13px] font-bold transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    {isProcessingPending ? "Đang xử lý..." : "❌ Hủy Giữ Chỗ / Mở Lại Ca Trống"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* TRƯỜNG HỢP 3: NGƯỜI KHÁC ĐĂNG KÝ VÀO HÀNG CHỜ */
+              <div className="space-y-2.5">
+                <p className="text-[13px] text-slate-700 leading-relaxed">
+                  Ca này đang được một khách khác giữ chỗ hoàn tất cọc. Bạn có thể <strong>Đăng ký hàng chờ</strong> để được ưu tiên nhận ca ngay khi khách cũ hủy chọn hoặc hết thời hạn cọc.
+                </p>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                  <input
+                    type="text"
+                    placeholder="Số điện thoại nhận ca..."
+                    value={waitlistPhone}
+                    onChange={(e) => setWaitlistPhone(e.target.value)}
+                    className="px-3 py-2 rounded-xl border border-slate-300 text-[13px] bg-white font-medium focus:outline-none focus:border-[#0369a1] sm:w-60"
+                  />
+                  <button
+                    type="button"
+                    disabled={isProcessingPending}
+                    onClick={() => handleJoinWaitlistForPending(court, pendingSlotItem.slot)}
+                    className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#025684] text-white text-[13px] font-bold shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    {isProcessingPending ? "Đang đăng ký..." : "🔔 Đăng Ký Nhận Ca / Vào Hàng Chờ"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
  </div>
  );
  })

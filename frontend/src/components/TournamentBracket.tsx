@@ -163,6 +163,16 @@ const [addCount, setAddCount] = useState("4");
   [tournaments, selectedId]
  );
 
+  // Kiểm tra giải đấu đã kết thúc hoặc hết thời gian tổ chức
+  const isClosed = Boolean(
+    selected?.status === "COMPLETED" ||
+    selected?.status === "FINISHED" ||
+    (selected?.endDate && new Date(selected.endDate) < new Date(new Date().toDateString()))
+  );
+
+  // Chỉ cho phép tác động (bốc thăm, giả lập, xếp lịch...) khi có quyền VÀ giải chưa kết thúc
+  const canAct = canManage && !isClosed;
+
  // Mở sẵn giải được chỉ định (giải vừa bốc thăm) — không thì tab "Nhánh Đấu" mở ra
  // sẽ không chọn giải nào và BTC phải tự chọn lại.
  useEffect(() => {
@@ -779,6 +789,28 @@ const [addCount, setAddCount] = useState("4");
 
  return (
  <div className="space-y-4 sm:space-y-8 text-slate-900 transition-colors duration-200">
+
+      {/* BANNER THÔNG BÁO GIẢI ĐÃ KẾT THÚC / CHẾ ĐỘ CHỈ XEM */}
+      {isClosed && (
+        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-800 shadow-xs animate-fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-700 flex items-center justify-center shrink-0">
+              <Trophy className="w-5 h-5 text-amber-600" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-amber-950 flex items-center gap-2">
+                🏆 Giải Đấu Đã Kết Thúc (Chế Độ Lưu Trữ / Chỉ Xem)
+              </h4>
+              <p className="text-[13px] text-amber-800 mt-0.5">
+                Toàn bộ kết quả, tỷ số các vòng và nhánh đấu đã được đóng băng. Bạn chỉ có thể tra cứu và xem lại dữ liệu lịch sử.
+              </p>
+            </div>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-amber-500 text-slate-950 font-black text-[13px] self-start sm:self-auto shrink-0 shadow-xs">
+            Đã Hoàn Tất
+          </span>
+        </div>
+      )}
  {/* Toast Notification */}
  {toastMessage && (
  <div className="fixed top-4 inset-x-4 sm:inset-x-auto sm:top-6 sm:right-6 z-50 bg-slate-900 text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-sky-400 animate-fade-in-up sm:max-w-sm">
@@ -817,7 +849,7 @@ const [addCount, setAddCount] = useState("4");
  className="bg-slate-50 border border-slate-200 text-[13px] font-extrabold text-slate-900 rounded-xl px-3.5 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0369a1] max-w-full"
  >
  {tournaments.length === 0 && <option value="">Chưa có giải đấu</option>}
- {tournaments.map((t) => (
+ {[...tournaments].sort((a, b) => Number(b.id) - Number(a.id)).map((t) => (
  <option key={t.id} value={t.id}>
  {t.title} ({confirmedCount(t)}/{t.totalTeams ?? "—"} đội • {t.status})
  </option>
@@ -827,7 +859,7 @@ const [addCount, setAddCount] = useState("4");
  <div className="flex flex-wrap items-center gap-2">
  <button
  onClick={() => handleFill()}
- disabled={!canManage || !selected || full || fillBusy}
+ disabled={!canAct || !selected || full || fillBusy}
  title="Sinh đội Test kèm đủ quân số + danh sách thành viên cho đủ sức chứa (chỉ dùng demo)"
  className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
@@ -868,7 +900,7 @@ const [addCount, setAddCount] = useState("4");
  {simulatedCount > 0 && (
  <button
  onClick={handleClearSimulated}
- disabled={!canManage || !selected || clearBusy}
+ disabled={!canAct || !selected || clearBusy}
  title="Xóa đội Test đã giả lập, giữ nguyên đội đăng ký thật"
  className="px-3.5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-extrabold text-[13px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40"
  >
@@ -883,7 +915,7 @@ const [addCount, setAddCount] = useState("4");
 
  <button
  onClick={() => (bracket ? setConfirmDraw(true) : startDraw())}
- disabled={!canManage || !selected || teamCount < 2 || drawBusy}
+ disabled={!canAct || !selected || teamCount < 2 || drawBusy}
  title="Bốc thăm hạt giống theo thứ tự đăng ký, lưu nhánh đấu vào CSDL"
  className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[13px] transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
@@ -901,7 +933,7 @@ const [addCount, setAddCount] = useState("4");
  <button
  type="button"
  onClick={() => setConfirmStageSimulate(true)}
- disabled={!canManage || !selected || simulateBusy || !nextPlayableStage}
+ disabled={!canAct || !selected || simulateBusy || !nextPlayableStage}
  title={nextPlayableStage ? `Giả lập kết quả vòng ${nextPlayableStage}` : "Đã hoàn thành toàn bộ các vòng đấu"}
  className="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[13px] transition-all flex items-center space-x-1.5 shadow-md active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
@@ -918,7 +950,7 @@ const [addCount, setAddCount] = useState("4");
  <button
  type="button"
  onClick={() => setConfirmSimulate(true)}
- disabled={!canManage || !selected || simulateBusy}
+ disabled={!canAct || !selected || simulateBusy}
  title="Tự random tỷ số tất cả các vòng còn lại một lèo"
  className="px-3 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-[13px] transition-all flex items-center space-x-1.5 shadow-sm border border-slate-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
  >
@@ -933,7 +965,7 @@ const [addCount, setAddCount] = useState("4");
  {bracket && (
  <button
  onClick={() => setShowScheduleForm((v) => !v)}
- disabled={!canManage || !selected || scheduleBusy}
+ disabled={!canAct || !selected || scheduleBusy}
  title="Sinh ngày + khung giờ + sân cho từng trận, lưu vào CSDL"
  className={`px-3.5 py-2.5 rounded-xl font-extrabold text-[13px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40 ${
  showScheduleForm
