@@ -5,8 +5,10 @@
  */
 
 export interface RealtimeBookingEvent {
-  type: "BOOKING_CREATED" | "BOOKING_CHECKED_IN" | "BOOKING_CANCELLED" | "OPERATING_HOURS_UPDATED";
+  type: "BOOKING_CREATED" | "BOOKING_CHECKED_IN" | "BOOKING_CANCELLED" | "OPERATING_HOURS_UPDATED" | "TOURNAMENT_INVITE" | "MATCH_RESULT_UPDATED";
   pitchId?: number | string;
+  tournamentId?: number | string;
+  tournamentTitle?: string;
   bookingId?: number | string;
   code?: string;
   customerName?: string;
@@ -177,11 +179,13 @@ export function subscribeToBookingEvents(callback: (event: RealtimeBookingEvent)
  * role = "OWNER" (Mở trang quản lý chủ sân)
  * role = "PLAYER" (Mở trang tìm & đặt sân của cầu thủ)
  */
-export function openDualRoleWindow(role: "OWNER" | "PLAYER") {
+export function openDualRoleWindow(role: "OWNER" | "PLAYER" | "ORGANIZER") {
   if (typeof window === "undefined") return;
   const baseUrl = window.location.origin;
   const targetUrl = role === "OWNER" 
     ? `${baseUrl}/?role=OWNER&tab=admin&sim=true`
+    : role === "ORGANIZER"
+    ? `${baseUrl}/?role=ORGANIZER&tab=organizer&sim=true`
     : `${baseUrl}/?role=PLAYER&tab=booking&sim=true`;
   
   window.open(targetUrl, "_blank");
