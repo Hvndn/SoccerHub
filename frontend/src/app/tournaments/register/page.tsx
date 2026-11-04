@@ -691,10 +691,16 @@ function PaymentSuccess({
 
       <div className="flex flex-wrap justify-center gap-2.5 pt-1">
         <a
+          href={`/?tab=tournaments&tournamentId=${selected.id}`}
+          className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors shadow-xs"
+        >
+          Theo dõi bảng đấu &amp; trạng thái đội →
+        </a>
+        <a
           href="/?tab=tournaments"
           className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-[13px] font-bold transition-colors"
         >
-          Về danh sách giải đấu
+          Tất cả giải đấu
         </a>
       </div>
     </div>
