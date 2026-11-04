@@ -423,24 +423,34 @@ public class TournamentController {
         }
     }
 
-    /** Admin: đóng / mở / kết thúc giải đấu. */
+    /** Ban tổ chức / Chủ sân / Admin: đóng / mở / khởi tranh / kết thúc giải đấu. */
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'OWNER')")
     public ResponseEntity<?> setTournamentStatus(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
-        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
-        if (false) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
-        }
         String status = String.valueOf(body.getOrDefault("status", "")).trim().toUpperCase();
         if (!Set.of("OPEN", "ONGOING", "COMPLETED").contains(status)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Trạng thái không hợp lệ: " + status));
         }
         tournament.setStatus(status);
         tournamentRepository.save(tournament);
+        String label = switch (status) {
+            case "ONGOING" -> "Đang diễn ra";
+            case "COMPLETED" -> "Đã kết thúc";
+            default -> "Đang mở đăng ký";
+        };
+        try {
+            notificationService.notify(
+                    "ALL",
+                    "Cập nhật giải đấu: " + tournament.getTitle(),
+                    "Ban Tổ Chức đã chuyển trạng thái giải \"" + tournament.getTitle() + "\" sang: " + label + ".",
+                    "TOURNAMENT",
+                    "/?tab=tournaments&tournamentId=" + tournament.getId()
+            );
+        } catch (Exception ignored) {}
         return ResponseEntity.ok(Map.of(
-                "message", "Đã cập nhật trạng thái giải đấu thành " + status,
+                "message", "Đã cập nhật trạng thái giải đấu thành: " + label,
                 "id", tournament.getId(),
                 "status", tournament.getStatus()
         ));
@@ -2201,7 +2211,7 @@ public class TournamentController {
         return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội chờ duyệt: " + teamName));
     }
 
-    /** Từ chối đội (xóa khỏi danh sách đăng ký). */
+    /** Từ chối hoặc rút đội khỏi giải (xóa khỏi danh sách đăng ký). */
     @PostMapping("/{id}/teams/{teamName}/reject")
     @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
@@ -2209,21 +2219,230 @@ public class TournamentController {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
-        if (false) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
         List<TournamentTeamEntry> currentList = new ArrayList<>(t.getTeams());
-        boolean removed = currentList.removeIf(team ->
+        boolean wasConfirmed = currentList.stream().anyMatch(team ->
                 team.getTeamName() != null && team.getTeamName().equalsIgnoreCase(teamName)
-                        && "PENDING_PAYMENT".equals(team.getRegistrationStatus()));
+                        && !"PENDING_PAYMENT".equals(team.getRegistrationStatus()));
+        boolean removed = currentList.removeIf(team ->
+                team.getTeamName() != null && team.getTeamName().equalsIgnoreCase(teamName));
         if (!removed) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội chờ duyệt: " + teamName));
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội: " + teamName));
         }
         t.setTeams(currentList);
         t.setRegisteredTeams((int) currentList.stream()
                 .filter(x -> "CONFIRMED".equalsIgnoreCase(x.getRegistrationStatus()) || "SIMULATED".equalsIgnoreCase(x.getRegistrationStatus()) || Boolean.TRUE.equals(x.getSimulated()))
                 .count());
+        if (wasConfirmed) {
+            clearTournamentResults(t.getId());
+            t.setBracketJson(null);
+        }
         tournamentRepository.save(t);
-        return ResponseEntity.ok(Map.of("message", "Đã từ chối đội " + teamName + "."));
+        return ResponseEntity.ok(Map.of("message", "Đã gỡ đội " + teamName + " khỏi giải."));
+    }
+
+    /** BTC cập nhật danh sách cầu thủ (Roster) và thông tin đội trưởng của một đội trong giải. */
+    @PutMapping("/{id}/teams/{teamName}/roster")
+    @org.springframework.transaction.annotation.Transactional
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
+    public ResponseEntity<?> updateTeamRoster(
+            @PathVariable Long id,
+            @PathVariable String teamName,
+            @RequestBody Map<String, Object> body) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu đã kết thúc, không thể sửa danh sách cầu thủ."));
+        }
+        if (t.getTeams() == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải chưa có đội nào."));
+        }
+        TournamentTeamEntry found = null;
+        for (TournamentTeamEntry entry : t.getTeams()) {
+            if (entry.getTeamName() != null && entry.getTeamName().equalsIgnoreCase(teamName.trim())) {
+                found = entry;
+                break;
+            }
+        }
+        if (found == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy đội " + teamName + " trong giải."));
+        }
+        if (body.get("captainName") != null) {
+            String cn = body.get("captainName").toString().trim();
+            if (!cn.isEmpty()) found.setCaptainName(cn);
+        }
+        if (body.get("captainPhone") != null) {
+            found.setCaptainPhone(body.get("captainPhone").toString().trim());
+        }
+        if (body.get("memberNames") != null) {
+            String rawMembers = body.get("memberNames").toString().trim();
+            List<String> cleaned = new ArrayList<>();
+            for (String part : rawMembers.split("[,\\n\\r;]+")) {
+                String p = part.trim();
+                if (!p.isEmpty()) cleaned.add(p);
+            }
+            found.setMemberNames(String.join(", ", cleaned));
+            if (!cleaned.isEmpty()) {
+                found.setMemberCount(cleaned.size());
+            }
+        }
+        t.setTeams(new ArrayList<>(t.getTeams()));
+        tournamentRepository.save(t);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã cập nhật danh sách cầu thủ cho đội " + found.getTeamName() + ".",
+                "teamName", found.getTeamName(),
+                "memberCount", found.getMemberCount() != null ? found.getMemberCount() : 0,
+                "memberNames", found.getMemberNames() != null ? found.getMemberNames() : ""
+        ));
+    }
+
+    /** BTC tinh chỉnh lịch thi đấu (ngày, giờ, sân, trọng tài) cho từng trận lẻ trong nhánh đấu. */
+    @PatchMapping("/{id}/matches/{matchId}/schedule")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
+    public ResponseEntity<?> updateSingleMatchSchedule(
+            @PathVariable Long id,
+            @PathVariable String matchId,
+            @RequestBody Map<String, Object> body) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(tournament)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu đã kết thúc, không thể đổi lịch trận đấu."));
+        }
+        if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải chưa bốc thăm nhánh đấu."));
+        }
+        Map<String, Object> bracket;
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> parsed = objectMapper.readValue(tournament.getBracketJson(), Map.class);
+            bracket = parsed;
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Dữ liệu nhánh đấu bị lỗi."));
+        }
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> rounds = (List<Map<String, Object>>) bracket.get("rounds");
+        Map<String, Object> target = null;
+        if (rounds != null) {
+            outer:
+            for (Map<String, Object> r : rounds) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> matches = (List<Map<String, Object>>) r.get("matches");
+                if (matches == null) continue;
+                for (Map<String, Object> m : matches) {
+                    if (matchId.equals(m.get("matchId"))) {
+                        target = m;
+                        break outer;
+                    }
+                }
+            }
+        }
+        if (target == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy trận " + matchId + "."));
+        }
+        if (body.containsKey("matchDate")) {
+            target.put("matchDate", str(body.get("matchDate")));
+        }
+        if (body.containsKey("timeSlot")) {
+            target.put("timeSlot", str(body.get("timeSlot")));
+        }
+        if (body.containsKey("pitchName")) {
+            target.put("pitchName", str(body.get("pitchName")));
+        }
+        if (body.containsKey("refereeName")) {
+            target.put("refereeName", str(body.get("refereeName")));
+        }
+        try {
+            tournament.setBracketJson(objectMapper.writeValueAsString(bracket));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi lưu lịch trận đấu."));
+        }
+        tournamentRepository.save(tournament);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã cập nhật lịch thi đấu cho trận " + matchId + ".",
+                "match", target,
+                "bracket", bracket
+        ));
+    }
+
+    /** BTC phát thông báo điều hành giải đấu tới toàn bộ đội bóng tham gia & danh sách mời. */
+    @PostMapping("/{id}/announce")
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
+    public ResponseEntity<?> broadcastAnnouncement(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+
+        String title = body.get("title") != null ? body.get("title").toString().trim() : "";
+        String content = body.get("content") != null ? body.get("content").toString().trim() : "";
+        boolean sendEmail = Boolean.TRUE.equals(body.get("sendEmail"));
+
+        if (title.isEmpty() || content.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập đầy đủ tiêu đề và nội dung thông báo."));
+        }
+
+        String link = "/?tab=tournaments&tournamentId=" + tournament.getId();
+        Set<String> targetEmails = new LinkedHashSet<>();
+        if (tournament.getTeams() != null) {
+            for (TournamentTeamEntry tm : tournament.getTeams()) {
+                if (tm.getCaptainEmail() != null && !tm.getCaptainEmail().isBlank()) {
+                    targetEmails.add(tm.getCaptainEmail().trim().toLowerCase());
+                }
+            }
+        }
+        if (tournament.getInvitedEmails() != null) {
+            for (String em : tournament.getInvitedEmails()) {
+                if (em != null && !em.isBlank()) {
+                    targetEmails.add(em.trim().toLowerCase());
+                }
+            }
+        }
+
+        int notifiedCount = 0;
+        int emailedCount = 0;
+        for (String email : targetEmails) {
+            try {
+                notificationService.notify(
+                        "PLAYER",
+                        email,
+                        "📢 [BTC " + tournament.getTitle() + "] " + title,
+                        content,
+                        "TOURNAMENT_ANNOUNCEMENT",
+                        link
+                );
+                notifiedCount++;
+            } catch (Exception ignored) {}
+
+            if (sendEmail && com.turfzone.service.EmailService.isValidEmail(email)) {
+                String html = "<div style=\"font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e2e8f0;border-radius:14px;padding:24px;background:#ffffff\">"
+                        + "<h2 style=\"margin:0 0 12px;color:#0369a1;font-size:18px\">📢 Thông Báo Từ Ban Tổ Chức: " + tournament.getTitle() + "</h2>"
+                        + "<h3 style=\"margin:0 0 10px;color:#0f172a;font-size:16px\">" + title + "</h3>"
+                        + "<p style=\"color:#334155;font-size:14px;line-height:1.6;white-space:pre-line\">" + content + "</p>"
+                        + "<hr style=\"border:none;border-top:1px solid #e2e8f0;margin:20px 0\"/>"
+                        + "<p style=\"font-size:12px;color:#64748b;margin:0\">Hệ thống điều hành giải đấu Turfzone • Sân: "
+                        + (tournament.getPitchName() != null ? tournament.getPitchName() : "Đà Nẵng") + "</p>"
+                        + "</div>";
+                if (emailService.sendHtmlDirect(email, "[BTC " + tournament.getTitle() + "] " + title, html)) {
+                    emailedCount++;
+                }
+            }
+        }
+
+        // Gửi thêm 1 thông báo chung lên hệ thống nếu giải chưa có email đội trưởng riêng
+        notificationService.notify(
+                "ALL",
+                "📢 [BTC " + tournament.getTitle() + "] " + title,
+                content,
+                "TOURNAMENT",
+                link
+        );
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã phát thông báo tới toàn giải (" + notifiedCount + " tài khoản nhận thông báo"
+                        + (sendEmail ? ", " + emailedCount + " email đã gửi" : "") + ").",
+                "notifiedCount", notifiedCount,
+                "emailedCount", emailedCount
+        ));
     }
 
     // ============================================================

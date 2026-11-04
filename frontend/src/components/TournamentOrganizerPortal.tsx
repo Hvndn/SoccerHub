@@ -19,6 +19,9 @@ import {
   fillSimulatedTeams,
   clearSimulatedTeams,
   drawTournamentBracket,
+  simulateTournamentResults,
+  generateTournamentSchedule,
+  undoMatchResult,
   confirmTeamPayment,
   refreshTournamentInCache,
   fetchTournaments,
@@ -31,6 +34,7 @@ import {
   getPendingTeams, approveTeam, rejectTeam, addManualTeam,
   fetchJoinAccess, setJoinAccess, addTournamentInvite, removeTournamentInvite,
   getReferees, addReferee, removeReferee,
+  updateTournamentStatus, updateTeamRoster, updateSingleMatchSchedule, broadcastTournamentAnnouncement,
   type PendingTeam, type RefereeInfo
 } from "@/lib/organizerService";
 import {
@@ -57,7 +61,11 @@ import {
  Pencil,
  Wallet,
  Users2, UserPlus,
- AlertCircle
+ AlertCircle,
+ Calendar,
+ Megaphone,
+ FileText,
+ RotateCcw
 } from "lucide-react";
 
 interface TournamentOrganizerPortalProps {
@@ -113,7 +121,7 @@ export default function TournamentOrganizerPortal({
  const [selectedTournamentId, setSelectedTournamentId] = useState<number | null>(null);
 
  // Active Tab for Tables/Logs
- const [bottomTab, setBottomTab] = useState<"teams" | "invites" | "finance" | "schedule" | "var_logs" | "edit">("teams");
+ const [bottomTab, setBottomTab] = useState<"teams" | "invites" | "referees" | "broadcast" | "finance" | "schedule" | "var_logs" | "edit">("teams");
   const [copiedInviteLink, setCopiedInviteLink] = useState(false);
   const [inviteCustomNote, setInviteCustomNote] = useState("Ban Tổ Chức trân trọng kính mời bạn và đội bóng tham gia tranh tài tại giải đấu. Nhấp vào liên kết để nộp hồ sơ đăng ký!");
 
@@ -266,6 +274,7 @@ export default function TournamentOrganizerPortal({
   const [refName, setRefName] = useState("");
   const [refPhone, setRefPhone] = useState("");
   const [refEmail, setRefEmail] = useState("");
+  const [refNotes, setRefNotes] = useState("Trọng tài chính");
 
   const loadReferees = async (tid: number) => {
     setRefLoading(true);
@@ -274,6 +283,14 @@ export default function TournamentOrganizerPortal({
     catch { setReferees([]); }
     finally { setRefLoading(false); }
   };
+
+  useEffect(() => {
+    if (activeTournamentId) {
+      loadPendingTeams(Number(activeTournamentId));
+      loadReferees(Number(activeTournamentId));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTournamentId]);
 
   const toggleReferees = (tid: number) => {
     setRefOpen((cur) => {
@@ -284,13 +301,24 @@ export default function TournamentOrganizerPortal({
   };
 
   const handleAddReferee = async (tid: number) => {
-    if (refName.trim().length < 2) return;
+    if (refName.trim().length < 2) {
+      setVarNotice("⚠️ Tên trọng tài cần tối thiểu 2 ký tự.");
+      return;
+    }
     setRefBusy(true);
     try {
-      await addReferee(tid, { name: refName.trim(), phone: refPhone.trim() || undefined, email: refEmail.trim() || undefined });
-      setRefName(""); setRefPhone(""); setRefEmail("");
+      await addReferee(tid, {
+        name: refName.trim(),
+        phone: refPhone.trim() || undefined,
+        email: refEmail.trim() || undefined,
+        notes: refNotes.trim() || undefined,
+      });
+      setRefName(""); setRefPhone(""); setRefEmail(""); setRefNotes("Trọng tài chính");
       await loadReferees(tid);
-    } catch { /* toast đã hiện */ }
+      setVarNotice("✅ Đã thêm trọng tài vào tổ điều hành giải.");
+    } catch (err: any) {
+      setVarNotice("❌ " + (err?.message || "Không thêm được trọng tài."));
+    }
     finally { setRefBusy(false); }
   };
 
@@ -299,8 +327,201 @@ export default function TournamentOrganizerPortal({
     try {
       await removeReferee(tid, id);
       await loadReferees(tid);
-    } catch { /* toast đã hiện */ }
+      setVarNotice("✅ Đã gỡ trọng tài khỏi giải.");
+    } catch (err: any) {
+      setVarNotice("❌ " + (err?.message || "Không xóa được trọng tài."));
+    }
     finally { setRefBusy(false); }
+  };
+
+  // --- Quản lý Danh sách Cầu thủ (Roster) của từng đội ---
+  const [editingRosterTeam, setEditingRosterTeam] = useState<string | null>(null);
+  const [rosterCaptainName, setRosterCaptainName] = useState("");
+  const [rosterCaptainPhone, setRosterCaptainPhone] = useState("");
+  const [rosterMemberNames, setRosterMemberNames] = useState("");
+  const [savingRoster, setSavingRoster] = useState(false);
+
+  const handleOpenRosterEdit = (tm: any) => {
+    if (editingRosterTeam === tm.teamName) {
+      setEditingRosterTeam(null);
+      return;
+    }
+    setEditingRosterTeam(tm.teamName);
+    setRosterCaptainName(tm.captainName || "");
+    setRosterCaptainPhone(tm.captainPhone || "");
+    setRosterMemberNames(tm.memberNames || "");
+  };
+
+  const handleSaveRoster = async (teamName: string) => {
+    if (!activeTournamentId) return;
+    setSavingRoster(true);
+    try {
+      const res = await updateTeamRoster(Number(activeTournamentId), teamName, {
+        captainName: rosterCaptainName,
+        captainPhone: rosterCaptainPhone,
+        memberNames: rosterMemberNames,
+      });
+      await refreshTournamentInCache(Number(activeTournamentId));
+      await fetchDbTournaments();
+      setEditingRosterTeam(null);
+      setVarNotice("✅ " + (res.message || `Đã cập nhật danh sách cầu thủ đội ${teamName}.`));
+    } catch (err: any) {
+      setVarNotice("❌ " + (err?.message || "Không cập nhật được danh sách cầu thủ."));
+    } finally {
+      setSavingRoster(false);
+    }
+  };
+
+  // --- Bộ Xếp Lịch Tự Động & Sửa Lịch Từng Trận ---
+  const [scheduleConfig, setScheduleConfig] = useState({
+    startDate: todayLocalPlus(1),
+    matchesPerDay: 2,
+    startHour: 17,
+    matchMinutes: 90,
+    daysBetweenRounds: 2,
+  });
+  const [schedulingBusy, setSchedulingBusy] = useState(false);
+  const [editingMatchScheduleId, setEditingMatchScheduleId] = useState<string | null>(null);
+  const [matchEditForm, setMatchEditForm] = useState({
+    matchDate: "",
+    timeSlot: "",
+    pitchName: "",
+    refereeName: "",
+  });
+
+  const handleAutoGenerateSchedule = async () => {
+    if (!activeTournamentId) return;
+    setSchedulingBusy(true);
+    try {
+      const res = await generateTournamentSchedule(Number(activeTournamentId), {
+        startDate: scheduleConfig.startDate || activeTournament?.startDate || todayLocalPlus(1),
+        matchesPerDay: Number(scheduleConfig.matchesPerDay) || 2,
+        startHour: Number(scheduleConfig.startHour) || 17,
+        matchMinutes: Number(scheduleConfig.matchMinutes) || 90,
+        daysBetweenRounds: Number(scheduleConfig.daysBetweenRounds) ?? 2,
+      });
+      await fetchDbTournaments();
+      setVarNotice("✅ " + (res.message || "Đã xếp lịch thi đấu tự động thành công!"));
+    } catch (err: any) {
+      setVarNotice("❌ " + (err?.message || "Xếp lịch tự động thất bại."));
+    } finally {
+      setSchedulingBusy(false);
+    }
+  };
+
+  const handleOpenMatchScheduleEdit = (m: any) => {
+    if (editingMatchScheduleId === m.matchId) {
+      setEditingMatchScheduleId(null);
+      return;
+    }
+    setEditingMatchScheduleId(m.matchId);
+    setMatchEditForm({
+      matchDate: m.matchDate || activeTournament?.startDate || todayLocalPlus(1),
+      timeSlot: m.timeSlot || "17:30 - 19:00",
+      pitchName: m.pitchName || activeTournament?.pitchName || "Sân 1",
+      refereeName: m.refereeName || (referees[0]?.name ?? ""),
+    });
+  };
+
+  const handleSaveSingleMatchSchedule = async (matchId: string) => {
+    if (!activeTournamentId) return;
+    setSchedulingBusy(true);
+    try {
+      const res = await updateSingleMatchSchedule(Number(activeTournamentId), matchId, matchEditForm);
+      await refreshTournamentInCache(Number(activeTournamentId));
+      await fetchDbTournaments();
+      setEditingMatchScheduleId(null);
+      setVarNotice("✅ " + (res.message || `Đã cập nhật lịch trận ${matchId}.`));
+    } catch (err: any) {
+      setVarNotice("❌ " + (err?.message || "Không lưu được lịch trận đấu."));
+    } finally {
+      setSchedulingBusy(false);
+    }
+  };
+
+  // --- Phát Thông Báo Điều Hành Giải (Broadcast) ---
+  const [broadcastTitle, setBroadcastTitle] = useState("");
+  const [broadcastContent, setBroadcastContent] = useState("");
+  const [broadcastSendEmail, setBroadcastSendEmail] = useState(true);
+  const [broadcastBusy, setBroadcastBusy] = useState(false);
+
+  const handleSendBroadcast = async () => {
+    if (!activeTournamentId) return;
+    if (!broadcastTitle.trim() || !broadcastContent.trim()) {
+      setVarNotice("⚠️ Vui lòng nhập tiêu đề và nội dung thông báo.");
+      return;
+    }
+    setBroadcastBusy(true);
+    try {
+      const res = await broadcastTournamentAnnouncement(Number(activeTournamentId), {
+        title: broadcastTitle.trim(),
+        content: broadcastContent.trim(),
+        sendEmail: broadcastSendEmail,
+      });
+      setBroadcastTitle("");
+      setBroadcastContent("");
+      setVarNotice("✅ " + (res.message || "Đã phát thông báo tới toàn bộ đội bóng!"));
+    } catch (err: any) {
+      setVarNotice("❌ " + (err?.message || "Không gửi được thông báo."));
+    } finally {
+      setBroadcastBusy(false);
+    }
+  };
+
+  // --- Đổi Trạng Thái Giải Đấu & Xuất CSV Báo Cáo ---
+  const [statusBusy, setStatusBusy] = useState(false);
+  const handleSwitchTournamentStatus = async (newStatus: "OPEN" | "ONGOING" | "COMPLETED") => {
+    if (!activeTournamentId) return;
+    setStatusBusy(true);
+    try {
+      const res = await updateTournamentStatus(Number(activeTournamentId), newStatus);
+      await refreshTournamentInCache(Number(activeTournamentId));
+      await fetchDbTournaments();
+      setVarNotice("✅ " + (res.message || "Đã cập nhật trạng thái giải đấu."));
+    } catch (err: any) {
+      setVarNotice("❌ " + (err?.message || "Không đổi được trạng thái giải."));
+    } finally {
+      setStatusBusy(false);
+    }
+  };
+
+  const handleExportTournamentCsv = () => {
+    if (!activeTournament) return;
+    const lines: string[] = [];
+    lines.push(`"BÁO CÁO ĐIỀU HÀNH GIẢI ĐẤU - ${activeTournament.title}"`);
+    lines.push(`"Môn thi đấu","${sportLabel(activeTournament.sportType)}","Thể thức","${formatLabel(activeTournament.format)}"`);
+    lines.push(`"Cụm sân","${activeTournament.pitchName || activeTournament.location || "Đà Nẵng"}","Trạng thái","${activeTournament.status || "OPEN"}"`);
+    lines.push(`"Lệ phí/đội","${activeTournament.entryFee || 0}","Quỹ thưởng","${activeTournament.prizePool || 0}"`);
+    lines.push("");
+    lines.push(`"1. DANH SÁCH ĐỘI BÓNG THAM GIA (${(activeTournament.teams || []).length} đội)"`);
+    lines.push(`"STT","Tên Đội","Đội Trưởng","Số Điện Thoại","Quân Số","Trạng Thái Lệ Phí","Danh Sách Cầu Thủ"`);
+    (activeTournament.teams || []).forEach((tm: any, idx: number) => {
+      lines.push(
+        `"${idx + 1}","${tm.teamName || ""}","${tm.captainName || ""}","${tm.captainPhone || ""}","${tm.memberCount || 12}","${tm.registrationStatus || "CONFIRMED"}","${(tm.memberNames || "").replace(/"/g, '""')}"`
+      );
+    });
+    lines.push("");
+    lines.push(`"2. LỊCH THI ĐẤU & KẾT QUẢ (${scheduledMatches.length} trận)"`);
+    lines.push(`"Mã Trận","Đội A","Tỷ Số","Đội B","Ngày Thi Đấu","Khung Giờ","Sân","Trọng Tài"`);
+    scheduledMatches.forEach((m: any) => {
+      const done = doneMatches.find((d: any) => d.matchId === m.matchId);
+      const scoreStr = done ? `${done.scoreA} - ${done.scoreB}` : "Chưa đá";
+      lines.push(
+        `"${m.matchId}","${m.teamA}","${scoreStr}","${m.teamB}","${m.matchDate || "Chưa xếp"}","${m.timeSlot || ""}","${m.pitchName || ""}","${m.refereeName || ""}"`
+      );
+    });
+
+    const csvContent = "\uFEFF" + lines.join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bao-cao-giai-${activeTournament.id}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setVarNotice("✅ Đã xuất file báo cáo giải đấu (.CSV) thành công!");
   };
 
  // 
@@ -627,15 +848,20 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  const scheduledMatches = useMemo(() => {
  if (!activeBracket) return [];
  return activeBracket.rounds
- .flatMap((r: any) => r.matches ?? [])
+ .flatMap((r: any) => (r.matches ?? []).map((m: any) => ({ ...m, roundName: r.name })))
  .filter((m: any) => m.status !== "BYE" && m.teamA && m.teamB)
  .map((m: any) => ({
  matchId: m.matchId,
+ roundName: m.roundName,
+ status: m.status,
  teamA: m.teamA.name,
  teamB: m.teamB.name,
+ scoreA: m.scoreA ?? 0,
+ scoreB: m.scoreB ?? 0,
  matchDate: m.matchDate,
  timeSlot: m.timeSlot,
  pitchName: m.pitchName,
+ refereeName: m.refereeName,
  }))
  .sort((a: any, b: any) => (a.matchDate ?? "").localeCompare(b.matchDate ?? ""));
  }, [activeBracket]);
@@ -681,23 +907,24 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  // Vua phá lưới đọc từ bảng goal_events của giải
  const [topScorers, setTopScorers] = useState<any[]>([]);
- useEffect(() => {
- let alive = true;
- if (!activeTournamentId) { setTopScorers([]); return; }
- fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments/${activeTournamentId}/scorers`)
+ const loadTopScorers = useCallback((tid?: number | null) => {
+ if (!tid) { setTopScorers([]); return; }
+ fetchWithTimeout(`${API_BASE_URL}/api/v1/tournaments/${tid}/scorers`)
  .then((r) => (r.ok ? r.json() : []))
- .then((d) => { if (alive && Array.isArray(d)) setTopScorers(d.slice(0, 5)); })
- .catch(() => { if (alive) setTopScorers([]); });
- return () => { alive = false; };
- }, [activeTournamentId]);
+ .then((d) => { if (Array.isArray(d)) setTopScorers(d.slice(0, 10)); })
+ .catch(() => { setTopScorers([]); });
+ }, []);
 
- // --- Bảng điều khiển trọng tài: chọn 1 trận thật để nhập tỷ số ---
+ useEffect(() => {
+ loadTopScorers(activeTournamentId);
+ }, [activeTournamentId, loadTopScorers]);
+
+ // --- Bảng điều khiển trọng tài: chọn 1 trận thật để nhập tỷ số & biên bản ---
  const umpireMatches = useMemo(() => {
  if (!activeBracket) return [] as any[];
  return activeBracket.rounds
- .flatMap((r: any) => r.matches ?? [])
- .filter((m: any) => m.teamA && m.teamB && !m.teamA.tbd && !m.teamB.tbd && m.status !== "BYE")
- .map((m: any) => ({ ...m, roundName: "" }));
+ .flatMap((r: any) => (r.matches ?? []).map((m: any) => ({ ...m, roundName: r.name })))
+ .filter((m: any) => m.teamA && m.teamB && !m.teamA.tbd && !m.teamB.tbd && m.status !== "BYE");
  }, [activeBracket]);
 
  const [umpireMatchId, setUmpireMatchId] = useState<string>("");
@@ -705,6 +932,20 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  const [umpireScoreB, setUmpireScoreB] = useState(0);
  const [umpireBusy, setUmpireBusy] = useState(false);
  const [umpireMsg, setUmpireMsg] = useState<string | null>(null);
+
+ // Biên bản chi tiết trận đấu (Thẻ phạt, MVP, Cầu thủ ghi bàn)
+ const [showMatchSheet, setShowMatchSheet] = useState(false);
+ const [yellowCardsA, setYellowCardsA] = useState(0);
+ const [yellowCardsB, setYellowCardsB] = useState(0);
+ const [redCardsA, setRedCardsA] = useState(0);
+ const [redCardsB, setRedCardsB] = useState(0);
+ const [mvpPlayer, setMvpPlayer] = useState("");
+ const [matchNotes, setMatchNotes] = useState("");
+ const [scorerRows, setScorerRows] = useState<{ playerName: string; teamName: string; goals: number; assists: number }[]>([]);
+ const [newScorerTeam, setNewScorerTeam] = useState<"A" | "B">("A");
+ const [newScorerName, setNewScorerName] = useState("");
+ const [newScorerGoals, setNewScorerGoals] = useState(1);
+ const [newScorerAssists, setNewScorerAssists] = useState(0);
 
  useEffect(() => {
  if (!umpireMatches.length) { setUmpireMatchId(""); return; }
@@ -720,12 +961,74 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  [umpireMatches, umpireMatchId]
  );
 
+ // Danh sách cầu thủ gợi ý cho đội A và đội B của trận đang chọn
+ const umpireRosterOptions = useMemo(() => {
+ if (!activeTournament || !umpireMatch) return { A: [] as string[], B: [] as string[] };
+ const findRoster = (tName: string) => {
+ const entry = (activeTournament.teams ?? []).find((t: any) => t.teamName === tName);
+ if (!entry?.memberNames) return [];
+ return String(entry.memberNames)
+ .split(",")
+ .map((s) => s.trim())
+ .filter(Boolean);
+ };
+ return {
+ A: findRoster(umpireMatch.teamA?.name),
+ B: findRoster(umpireMatch.teamB?.name),
+ };
+ }, [activeTournament, umpireMatch]);
+
  useEffect(() => {
  setUmpireScoreA(umpireMatch?.scoreA ?? 0);
  setUmpireScoreB(umpireMatch?.scoreB ?? 0);
+ setYellowCardsA(0);
+ setYellowCardsB(0);
+ setRedCardsA(0);
+ setRedCardsB(0);
+ setMvpPlayer("");
+ setMatchNotes("");
+ setScorerRows([]);
+ setNewScorerName("");
  setUmpireMsg(null);
  // eslint-disable-next-line react-hooks/exhaustive-deps
  }, [umpireMatchId]);
+
+ const handleAddScorerRow = () => {
+ if (!umpireMatch || !newScorerName.trim()) return;
+ const teamName = newScorerTeam === "A" ? umpireMatch.teamA.name : umpireMatch.teamB.name;
+ setScorerRows((prev) => [
+ ...prev,
+ {
+ playerName: newScorerName.trim(),
+ teamName,
+ goals: Math.max(0, Number(newScorerGoals) || 0),
+ assists: Math.max(0, Number(newScorerAssists) || 0),
+ },
+ ]);
+ setNewScorerName("");
+ setNewScorerGoals(1);
+ setNewScorerAssists(0);
+ };
+
+ const handleRemoveScorerRow = (idx: number) => {
+ setScorerRows((prev) => prev.filter((_, i) => i !== idx));
+ };
+
+ const handleUndoMatch = async (matchIdToUndo: string) => {
+ if (!activeTournamentId) return;
+ setUmpireBusy(true);
+ try {
+ const res = await undoMatchResult(Number(activeTournamentId), matchIdToUndo);
+ await fetchDbTournaments();
+ loadTopScorers(activeTournamentId);
+ setUmpireMsg(`✅ ${res.message}`);
+ setVarNotice(`✅ ${res.message}`);
+ } catch (e: any) {
+ setUmpireMsg(`❌ ${e?.message || "Không thể huỷ kết quả trận này."}`);
+ } finally {
+ setUmpireBusy(false);
+ }
+ };
 
  const saveUmpireScore = async () => {
  if (!activeTournamentId || !umpireMatch) return;
@@ -735,18 +1038,31 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  return;
  }
  if (umpireMatch.status === "DONE") {
- setUmpireMsg("Trận này đã có kết quả. Mở tab Bracket để bấm “Huỷ KQ” rồi nhập lại.");
+ setUmpireMsg("Trận này đã có kết quả. Bấm nút “Huỷ Kết Quả & Mở Lại Trận” để nhập lại.");
  return;
  }
  try {
  setUmpireBusy(true);
  const body = await apiRequest<any>(`/api/v1/tournaments/${activeTournamentId}/matches`, {
  method: "POST",
- body: JSON.stringify({ matchId: umpireMatch.matchId, scoreA: umpireScoreA, scoreB: umpireScoreB }),
+ body: JSON.stringify({
+ matchId: umpireMatch.matchId,
+ scoreA: umpireScoreA,
+ scoreB: umpireScoreB,
+ yellowCardsA,
+ yellowCardsB,
+ redCardsA,
+ redCardsB,
+ mvpPlayer: mvpPlayer.trim() || undefined,
+ notes: matchNotes.trim() || undefined,
+ scorers: scorerRows.length > 0 ? scorerRows : undefined,
+ }),
  });
  const formNote = (body?.formChanges ?? []).map((c: any) => `${c.team} ${c.after?.record ?? ""}`).join(" • ");
  setUmpireMsg(`${body?.message ?? "Đã lưu kết quả."}${formNote ? ` | Phong độ: ${formNote}` : ""}`);
+ setScorerRows([]);
  await fetchDbTournaments();
+ loadTopScorers(activeTournamentId);
  } catch (e: any) {
  setUmpireMsg(e?.message || "Không gọi được máy chủ. Kiểm tra kết nối rồi thử lại.");
  } finally {
@@ -946,7 +1262,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
               </div>
               <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#0369a1] to-[#075985] transition-all duration-500"
+                  className="h-full bg-[#0369a1] transition-all duration-500"
                   style={{ width: `${t.progress}%` }}
                 />
               </div>
@@ -1039,10 +1355,20 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  {umpireMatch && umpireMatch.status === "DONE" && (
- <p className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[14px] font-bold">
- Trận này đã có kết quả {umpireMatch.scoreA}-{umpireMatch.scoreB}. Muốn sửa thì vào tab
- Bracket bấm “Huỷ KQ” — hệ thống sẽ mở lại trận để nhập tỷ số mới.
- </p>
+ <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[14px] flex flex-wrap items-center justify-between gap-3">
+   <span className="font-bold">
+     Trận này đã có kết quả {umpireMatch.scoreA}-{umpireMatch.scoreB}. Bạn có thể huỷ kết quả để mở lại trận và nhập tỷ số mới.
+   </span>
+   <button
+     type="button"
+     onClick={() => handleUndoMatch(umpireMatch.matchId)}
+     disabled={umpireBusy}
+     className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[13px] font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+   >
+     <RotateCcw className="w-3.5 h-3.5" />
+     <span>Huỷ Kết Quả &amp; Mở Lại Trận</span>
+   </button>
+ </div>
  )}
 
  {!umpireMatch ? (
@@ -1054,17 +1380,35 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                 <p className="text-[13px] text-slate-500 max-w-md mx-auto">
                   {activeBracket
                     ? "Vui lòng chọn một trận đấu ở menu bên trên hoặc xem nhánh đấu để cập nhật kết quả thi đấu."
-                    : "Giải đấu chưa bốc thăm chia nhánh. Vui lòng bấm “Bốc Thăm & Nhánh Đấu” bên dưới để tạo lịch thi đấu."}
+                    : "Giải đấu chưa bốc thăm chia nhánh. Vui lòng bấm “Bốc Thăm Chia Nhánh Ngay” bên dưới để tạo lịch thi đấu."}
                 </p>
                 {activeTournament && !activeBracket && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenBracket?.(String(activeTournament.id))}
-                    className="mt-2 px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    <span>Bốc Thăm &amp; Nhánh Đấu</span>
-                  </button>
+                  <div className="pt-2 flex flex-wrap items-center justify-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const res = await drawTournamentBracket(Number(activeTournament.id));
+                          await fetchDbTournaments();
+                          setVarNotice("✅ " + (res.message || "Đã bốc thăm chia nhánh thành công!"));
+                        } catch (err: any) {
+                          setVarNotice("❌ " + (err?.message || "Chưa đủ đội xác nhận để bốc thăm."));
+                        }
+                      }}
+                      className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>Bốc Thăm Chia Nhánh Ngay</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onOpenBracket?.(String(activeTournament.id))}
+                      className="px-4 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-[13px] font-bold inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>Mở Trang Giải Đấu</span>
+                    </button>
+                  </div>
                 )}
               </div>
             ) : (
@@ -1106,30 +1450,41 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  </div>
 
- {/* Điều khiển */}
+ {/* Điều khiển tỷ số & Biên bản chi tiết trận đấu */}
  {umpireMatch && umpireMatch.status !== "DONE" && (
- <div className="mt-6 space-y-3">
- <span className="text-[14px] font-bold text-slate-500 block">
- Điều Khiển Tỷ Số:
- </span>
+ <div className="mt-6 space-y-4">
+ <div className="flex flex-wrap items-center justify-between gap-2">
+   <span className="text-[14px] font-bold text-slate-600">
+     Điều Khiển Tỷ Số &amp; Biên Bản Trận Đấu:
+   </span>
+   <button
+     type="button"
+     onClick={() => setShowMatchSheet((v) => !v)}
+     className="px-3.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-[#0369a1] border border-sky-200 text-[13px] font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+   >
+     <FileText className="w-4 h-4" />
+     <span>{showMatchSheet ? "Ẩn Biên Bản Chi Tiết" : "+ Ghi Cầu Thủ Ghi Bàn / Thẻ Phạt / MVP"}</span>
+   </button>
+ </div>
+
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
  <button
  onClick={() => setUmpireScoreA(umpireScoreA + 1)}
- className="py-3 px-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+ className="py-3 px-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
  >
  <Plus className="w-4 h-4 stroke-[3]" />
  <span>+1 Bàn (Đội A)</span>
  </button>
  <button
  onClick={() => setUmpireScoreB(umpireScoreB + 1)}
- className="py-3 px-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+ className="py-3 px-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
  >
  <Plus className="w-4 h-4 stroke-[3]" />
  <span>+1 Bàn (Đội B)</span>
  </button>
  <button
  onClick={() => { setUmpireScoreA(0); setUmpireScoreB(0); }}
- className="py-3 px-4 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-[14px] font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+ className="py-3 px-4 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-[14px] font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
  >
  <RefreshCw className="w-4 h-4" />
  <span>Đặt lại 0-0</span>
@@ -1137,12 +1492,210 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <button
  onClick={saveUmpireScore}
  disabled={umpireBusy}
- className="py-3 px-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50"
+ className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[14px] font-black shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer"
  >
- <CheckCircle2 className="w-4 h-4 text-purple-200" />
- <span>{umpireBusy ? "Đang lưu…" : "Lưu KQ & Lịch Sử"}</span>
+ <CheckCircle2 className="w-4 h-4" />
+ <span>{umpireBusy ? "Đang lưu…" : "Lưu KQ & Biên Bản"}</span>
  </button>
  </div>
+
+ {/* KHỐI INLINE: BIÊN BẢN TRẬN ĐẤU CHI TIẾT (CẦU THỦ GHI BÀN, THẺ PHẠT, MVP) */}
+ {showMatchSheet && (
+   <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-4">
+     <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+       <h4 className="text-[14px] font-bold text-slate-900 flex items-center gap-1.5">
+         <FileText className="w-4 h-4 text-[#0369a1]" />
+         <span>Biên Bản Thống Kê Trận Đấu ({umpireMatch.matchId})</span>
+       </h4>
+       <span className="text-[13px] text-slate-500">Tự động cập nhật BXH Vua phá lưới</span>
+     </div>
+
+     {/* Thẻ vàng / Thẻ đỏ & Cầu thủ xuất sắc MVP */}
+     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+       <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+         <label className="text-[13px] font-bold text-amber-700 block mb-1">
+           🟨 Thẻ vàng ({umpireMatch.teamA.name})
+         </label>
+         <input
+           type="number"
+           min={0}
+           max={15}
+           value={yellowCardsA}
+           onChange={(e) => setYellowCardsA(Math.max(0, Number(e.target.value)))}
+           className="w-full px-2.5 py-1.5 rounded border border-slate-300 text-[13px] font-bold text-slate-900"
+         />
+       </div>
+       <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+         <label className="text-[13px] font-bold text-rose-700 block mb-1">
+           🟥 Thẻ đỏ ({umpireMatch.teamA.name})
+         </label>
+         <input
+           type="number"
+           min={0}
+           max={10}
+           value={redCardsA}
+           onChange={(e) => setRedCardsA(Math.max(0, Number(e.target.value)))}
+           className="w-full px-2.5 py-1.5 rounded border border-slate-300 text-[13px] font-bold text-slate-900"
+         />
+       </div>
+       <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+         <label className="text-[13px] font-bold text-amber-700 block mb-1">
+           🟨 Thẻ vàng ({umpireMatch.teamB.name})
+         </label>
+         <input
+           type="number"
+           min={0}
+           max={15}
+           value={yellowCardsB}
+           onChange={(e) => setYellowCardsB(Math.max(0, Number(e.target.value)))}
+           className="w-full px-2.5 py-1.5 rounded border border-slate-300 text-[13px] font-bold text-slate-900"
+         />
+       </div>
+       <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+         <label className="text-[13px] font-bold text-rose-700 block mb-1">
+           🟥 Thẻ đỏ ({umpireMatch.teamB.name})
+         </label>
+         <input
+           type="number"
+           min={0}
+           max={10}
+           value={redCardsB}
+           onChange={(e) => setRedCardsB(Math.max(0, Number(e.target.value)))}
+           className="w-full px-2.5 py-1.5 rounded border border-slate-300 text-[13px] font-bold text-slate-900"
+         />
+       </div>
+     </div>
+
+     {/* MVP & Ghi chú trọng tài */}
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+       <div>
+         <label className="text-[13px] font-bold text-slate-700 block mb-1">
+           ⭐ Cầu thủ xuất sắc nhất trận (MVP):
+         </label>
+         <input
+           type="text"
+           value={mvpPlayer}
+           onChange={(e) => setMvpPlayer(e.target.value)}
+           placeholder="Nhập tên cầu thủ MVP của trận..."
+           className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900"
+         />
+       </div>
+       <div>
+         <label className="text-[13px] font-bold text-slate-700 block mb-1">
+           📝 Ghi chú giám sát / trọng tài:
+         </label>
+         <input
+           type="text"
+           value={matchNotes}
+           onChange={(e) => setMatchNotes(e.target.value)}
+           placeholder="VD: Đá bù 3 phút, thời tiết tốt..."
+           className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900"
+         />
+       </div>
+     </div>
+
+     {/* Thêm cầu thủ ghi bàn & kiến tạo */}
+     <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-3">
+       <div className="flex flex-wrap items-center justify-between gap-2">
+         <span className="text-[13px] font-bold text-slate-900">
+           ⚽ Danh Sách Cầu Thủ Ghi Bàn &amp; Kiến Tạo
+         </span>
+         <span className="text-[13px] text-slate-500">
+           Lưu ý: nếu nhập cầu thủ ghi bàn, tổng bàn của mỗi đội phải khớp tỷ số {umpireScoreA}-{umpireScoreB}
+         </span>
+       </div>
+
+       <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+         <div className="sm:col-span-3">
+           <label className="text-[13px] font-semibold text-slate-600 block mb-1">Thuộc đội</label>
+           <select
+             value={newScorerTeam}
+             onChange={(e) => setNewScorerTeam(e.target.value as "A" | "B")}
+             className="w-full px-2.5 py-2 rounded-lg border border-slate-300 bg-slate-50 text-[13px] font-bold text-slate-900"
+           >
+             <option value="A">{umpireMatch.teamA.name}</option>
+             <option value="B">{umpireMatch.teamB.name}</option>
+           </select>
+         </div>
+
+         <div className="sm:col-span-4">
+           <label className="text-[13px] font-semibold text-slate-600 block mb-1">Tên cầu thủ</label>
+           <input
+             type="text"
+             list="umpire-roster-datalist"
+             value={newScorerName}
+             onChange={(e) => setNewScorerName(e.target.value)}
+             placeholder="Chọn hoặc gõ tên cầu thủ..."
+             className="w-full px-2.5 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900"
+           />
+           <datalist id="umpire-roster-datalist">
+             {(newScorerTeam === "A" ? umpireRosterOptions.A : umpireRosterOptions.B).map((pName) => (
+               <option key={pName} value={pName} />
+             ))}
+           </datalist>
+         </div>
+
+         <div className="sm:col-span-2">
+           <label className="text-[13px] font-semibold text-slate-600 block mb-1">Số bàn (⚽)</label>
+           <input
+             type="number"
+             min={0}
+             max={20}
+             value={newScorerGoals}
+             onChange={(e) => setNewScorerGoals(Math.max(0, Number(e.target.value)))}
+             className="w-full px-2.5 py-2 rounded-lg border border-slate-300 bg-white text-[13px] font-bold text-slate-900"
+           />
+         </div>
+
+         <div className="sm:col-span-1">
+           <label className="text-[13px] font-semibold text-slate-600 block mb-1">Kiến tạo</label>
+           <input
+             type="number"
+             min={0}
+             max={20}
+             value={newScorerAssists}
+             onChange={(e) => setNewScorerAssists(Math.max(0, Number(e.target.value)))}
+             className="w-full px-2 py-2 rounded-lg border border-slate-300 bg-white text-[13px] font-bold text-slate-900"
+           />
+         </div>
+
+         <div className="sm:col-span-2">
+           <button
+             type="button"
+             onClick={handleAddScorerRow}
+             disabled={!newScorerName.trim()}
+             className="w-full py-2 px-3 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold cursor-pointer disabled:opacity-40"
+           >
+             + Thêm
+           </button>
+         </div>
+       </div>
+
+       {scorerRows.length > 0 && (
+         <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+           {scorerRows.map((row, idx) => (
+             <span
+               key={idx}
+               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-sky-50 border border-sky-200 text-[13px] font-bold text-slate-800"
+             >
+               <span>{row.playerName}</span>
+               <span className="text-slate-500">({row.teamName})</span>
+               <span className="text-[#0369a1]">{row.goals}⚽</span>
+               {row.assists > 0 && <span className="text-emerald-700">{row.assists}👟</span>}
+               <button
+                 type="button"
+                 onClick={() => handleRemoveScorerRow(idx)}
+                 className="text-slate-400 hover:text-rose-600 cursor-pointer ml-1"
+               >
+                 <X className="w-3.5 h-3.5" />
+               </button>
+             </span>
+           ))}
+         </div>
+       )}
+     </div>
+   </div>
+ )}
  </div>
  )}
 
@@ -1156,16 +1709,40 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </p>
  )}
 
- <div className="mt-5 flex flex-wrap gap-2">
+ <div className="mt-5 flex flex-wrap items-center gap-2">
  <button
  onClick={() => onOpenBracket?.(String(activeTournament?.id))}
- className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold flex items-center gap-1.5"
+ className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold flex items-center gap-1.5 cursor-pointer"
  >
  <Video className="w-4 h-4 text-red-500" />
- <span>Mở Nhánh &amp; Biên Bản</span>
+ <span>Mở Nhánh &amp; Trang Giải</span>
  </button>
- <span className="px-3 py-2 rounded-xl bg-slate-50 text-[14px] text-slate-500 flex items-center">
+ {activeTournament && activeBracket && (
+   <button
+     type="button"
+     onClick={async () => {
+       try {
+         setUmpireBusy(true);
+         const res = await simulateTournamentResults(Number(activeTournament.id), true);
+         await fetchDbTournaments();
+         loadTopScorers(activeTournament.id);
+         setVarNotice("✅ " + res.message);
+       } catch (err: any) {
+         setVarNotice("❌ " + (err?.message || "Giả lập vòng đấu thất bại."));
+       } finally {
+         setUmpireBusy(false);
+       }
+     }}
+     disabled={umpireBusy}
+     className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[13px] font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+   >
+     <Sparkles className="w-4 h-4 text-amber-600" />
+     <span>Giả Lập Nhanh Vòng Hiện Tại</span>
+   </button>
+ )}
+ <span className="px-3 py-2 rounded-xl bg-slate-50 text-[13px] text-slate-600 font-semibold flex items-center">
  Sân: {umpireMatch?.pitchName ?? activeTournament?.pitchName ?? activeTournament?.location ?? "Chưa xếp sân"}
+ {umpireMatch?.refereeName ? ` • Trọng tài: ${umpireMatch.refereeName}` : ""}
  </span>
  </div>
  </div>
@@ -1282,20 +1859,29 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {[
   { id: "teams", label: "Duyệt Đội & Đăng Ký", badge: pendingTeams.length > 0 ? pendingTeams.length : null },
   { id: "invites", label: "Mời Giải Qua Email", badge: joinMode === "INVITE_ONLY" ? inviteEmails.length : null },
-  { id: "finance", label: "Tài Chính Giải" },
-  { id: "schedule", label: "Lịch Thi Đấu" },
-  { id: "var_logs", label: "Kết Quả & Ghi Bàn" }
+  { id: "referees", label: "Tổ Trọng Tài", badge: referees.length > 0 ? referees.length : null },
+  { id: "broadcast", label: "Thông Báo BTC", badge: null },
+  { id: "schedule", label: "Lịch Thi Đấu", badge: null },
+  { id: "var_logs", label: "Kết Quả & Ghi Bàn", badge: null },
+  { id: "finance", label: "Tài Chính Giải", badge: null }
 ].map(tab => (
  <button
  key={tab.id}
  onClick={() => setBottomTab(tab.id as any)}
- className={`px-4 py-2 rounded-xl text-[14px] font-extrabold transition-all whitespace-nowrap ${
+ className={`px-3.5 py-2 rounded-xl text-[13px] font-extrabold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
  bottomTab === tab.id
- ? "bg-[#0369a1] text-white shadow-md"
+ ? "bg-[#0369a1] text-white shadow-xs"
  : "text-slate-600 hover:bg-slate-100 "
  }`}
  >
- {tab.label}
+ <span>{tab.label}</span>
+ {tab.badge !== null && tab.badge !== undefined && (
+   <span className={`px-1.5 py-0.5 rounded-full text-[13px] font-bold ${
+     bottomTab === tab.id ? "bg-white text-[#0369a1]" : "bg-sky-100 text-[#0369a1]"
+   }`}>
+     {tab.badge}
+   </span>
+ )}
  </button>
  ))}
  </div>
@@ -1316,6 +1902,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   ? `Đang thao tác trên giải: ${activeTournament.title}`
   : "Chưa chọn giải — hãy mở tab “Giải Đấu & BXH” và chọn một giải."}
   </p>
+  <div className="flex flex-wrap items-center gap-2">
   {activeTournament?.joinMode === "INVITE_ONLY" && (
                     <button
                       type="button"
@@ -1324,22 +1911,32 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                         setShowInviteModal(true);
                       }}
                       disabled={!activeTournament}
-                      className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[14px] font-extrabold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[13px] font-extrabold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
                       title="Giải có ràng buộc mời qua email — Gửi thư mời tham gia"
                     >
                       <Mail className="w-3.5 h-3.5 text-amber-700" />
                       <span>Mời Email</span>
                     </button>
                   )}
+  <button
+    type="button"
+    onClick={handleExportTournamentCsv}
+    disabled={!activeTournament}
+    className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-[13px] font-bold transition-all active:scale-95 disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+  >
+    <Download className="w-3.5 h-3.5 text-[#0369a1]" />
+    <span>Xuất Báo Cáo (.CSV)</span>
+  </button>
                   <button
   type="button"
   onClick={() => openEditModal(activeTournament)}
   disabled={!activeTournament}
-  className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-extrabold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+  className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-extrabold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
   >
   <Pencil className="w-3.5 h-3.5" />
   <span>Sửa Giải</span>
   </button>
+  </div>
  </div>
 
  {/* Chưa chọn giải có nhánh đấu */}
@@ -1673,46 +2270,113 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
           Chưa có đội nào được xác nhận chính thức. Hãy duyệt các đội đăng ký ở mục 1 hoặc thêm đội thủ công ở trên.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {(activeTournament.teams ?? [])
             .filter((z: any) => z.registrationStatus !== "PENDING_PAYMENT")
-            .map((tm: any, idx: number) => (
-              <div
-                key={tm.teamName}
-                className="p-3 rounded-lg border border-slate-300 bg-white flex items-center justify-between gap-2 shadow-2xs"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-[12px] flex items-center justify-center shrink-0">
-                    {idx + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-bold text-slate-900 truncate">{tm.teamName}</p>
-                    <p className="text-[12px] text-slate-500 truncate">
-                      {tm.captainName ? `${tm.captainName} · ` : ""}{tm.memberCount || 12} cầu thủ
-                    </p>
+            .map((tm: any, idx: number) => {
+              const isEditingThisTeam = editingRosterTeam === tm.teamName;
+              return (
+                <div
+                  key={tm.teamName}
+                  className="p-3.5 rounded-lg border border-slate-300 bg-white flex flex-col gap-2.5 shadow-2xs"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-[13px] flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[14px] font-bold text-slate-900 truncate">{tm.teamName}</p>
+                        <p className="text-[13px] text-slate-500 truncate">
+                          {tm.captainName ? `${tm.captainName} · ` : ""}{tm.memberCount || 12} cầu thủ
+                        </p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenRosterEdit(tm)}
+                        className="px-2.5 py-1 rounded text-[13px] font-bold bg-sky-50 hover:bg-sky-100 text-[#0369a1] border border-sky-200 cursor-pointer transition-colors"
+                      >
+                        {isEditingThisTeam ? "Đóng" : "Cầu thủ"}
+                      </button>
+                      {tm.simulated ? (
+                        <span className="px-2 py-0.5 rounded text-[13px] font-bold bg-slate-100 text-slate-600">
+                          Ngẫu nhiên
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-[13px] font-bold bg-emerald-100 text-emerald-800">
+                          Thủ công
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleReject(activeTournament.id, tm.teamName)}
+                        className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                        title="Xoá đội khỏi giải"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="shrink-0 flex items-center gap-1.5">
-                  {tm.simulated ? (
-                    <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-slate-100 text-slate-600">
-                      Ngẫu nhiên
-                    </span>
-                  ) : (
-                    <span className="px-2 py-0.5 rounded text-[12px] font-bold bg-emerald-100 text-emerald-800">
-                      Thủ công
-                    </span>
+
+                  {/* Form Inline sửa danh sách cầu thủ của đội */}
+                  {isEditingThisTeam && (
+                    <div className="pt-2.5 border-t border-slate-200 space-y-2.5 bg-slate-50 p-3 rounded-lg">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[13px] font-bold text-slate-700 block mb-1">Đội trưởng</label>
+                          <input
+                            type="text"
+                            value={rosterCaptainName}
+                            onChange={(e) => setRosterCaptainName(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded border border-slate-300 bg-white text-[13px] text-slate-900"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[13px] font-bold text-slate-700 block mb-1">SĐT liên hệ</label>
+                          <input
+                            type="text"
+                            value={rosterCaptainPhone}
+                            onChange={(e) => setRosterCaptainPhone(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded border border-slate-300 bg-white text-[13px] text-slate-900"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[13px] font-bold text-slate-700 block mb-1">
+                          Danh sách cầu thủ (phân tách bằng dấu phẩy):
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={rosterMemberNames}
+                          onChange={(e) => setRosterMemberNames(e.target.value)}
+                          placeholder="VD: Nguyễn Văn A, Trần Văn B, Lê Hoàng C..."
+                          className="w-full px-2.5 py-1.5 rounded border border-slate-300 bg-white text-[13px] text-slate-900"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingRosterTeam(null)}
+                          className="px-3 py-1 rounded border border-slate-300 bg-white text-slate-700 text-[13px] font-bold cursor-pointer"
+                        >
+                          Huỷ
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveRoster(tm.teamName)}
+                          disabled={savingRoster}
+                          className="px-3 py-1 rounded bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold cursor-pointer disabled:opacity-50"
+                        >
+                          {savingRoster ? "Đang lưu..." : "Lưu Danh Sách"}
+                        </button>
+                      </div>
+                    </div>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => handleReject(activeTournament.id, tm.teamName)}
-                    className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                    title="Xoá đội khỏi giải"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
         </div>
       )}
     </div>
@@ -1912,8 +2576,228 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 )}
 
 
+{/* TAB CONTENT: TỔ TRỌNG TÀI */}
+ {bottomTab === "referees" && (
+ <div className="space-y-4">
+ {!activeTournament ? (
+ <p className="text-sm text-slate-500 py-4 text-center">Vui lòng chọn một giải đấu để quản lý tổ trọng tài.</p>
+ ) : (
+ <>
+ <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+ <div className="flex items-center justify-between">
+ <h4 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
+ <ShieldCheck className="w-4 h-4 text-[#0369a1]" />
+ Thêm Trọng Tài / Giám Sát Mới
+ </h4>
+ <span className="text-[13px] font-bold text-slate-500">
+ Hiện có: {referees.length} người
+ </span>
+ </div>
+ <form
+ onSubmit={(e) => {
+ e.preventDefault();
+ handleAddReferee(Number(activeTournament.id));
+ }}
+ className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5"
+ >
+ <input
+ type="text"
+ required
+ value={refName}
+ onChange={(e) => setRefName(e.target.value)}
+ placeholder="Họ tên trọng tài *"
+ className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] font-bold text-slate-900 focus:outline-none focus:border-[#0369a1]"
+ />
+ <input
+ type="text"
+ value={refPhone}
+ onChange={(e) => setRefPhone(e.target.value)}
+ placeholder="Số điện thoại"
+ className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] font-mono text-slate-900 focus:outline-none focus:border-[#0369a1]"
+ />
+ <input
+ type="email"
+ value={refEmail}
+ onChange={(e) => setRefEmail(e.target.value)}
+ placeholder="Email liên hệ"
+ className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 focus:outline-none focus:border-[#0369a1]"
+ />
+ <select
+ value={refNotes}
+ onChange={(e) => setRefNotes(e.target.value)}
+ className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] font-bold text-slate-800 focus:outline-none focus:border-[#0369a1] cursor-pointer"
+ >
+ <option value="Trọng tài chính">Trọng tài chính</option>
+ <option value="Trọng tài biên">Trọng tài biên</option>
+ <option value="Trọng tài bàn / Giám sát">Trọng tài bàn / Giám sát</option>
+ <option value="Tổ Y tế / Hậu cần">Tổ Y tế / Hậu cần</option>
+ </select>
+ <button
+ type="submit"
+ disabled={refBusy || !refName.trim()}
+ className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
+ >
+ <UserPlus className="w-4 h-4" />
+ <span>{refBusy ? "Đang thêm..." : "Thêm Trọng Tài"}</span>
+ </button>
+ </form>
+ </div>
+
+ {refLoading ? (
+ <p className="text-[13px] text-slate-500 py-4 text-center">Đang tải danh sách trọng tài...</p>
+ ) : referees.length === 0 ? (
+ <div className="p-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center text-[13px] text-slate-500">
+ Chưa có trọng tài nào trong giải này. Hãy thêm trọng tài ở khung trên để phân công bắt chính các trận đấu.
+ </div>
+ ) : (
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+ {referees.map((ref) => (
+ <div
+ key={ref.id}
+ className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between gap-3"
+ >
+ <div className="min-w-0 space-y-0.5">
+ <div className="flex items-center gap-2 flex-wrap">
+ <p className="text-[14px] font-bold text-slate-900">{ref.name}</p>
+ {ref.notes && (
+ <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-800 text-[13px] font-bold">
+ {ref.notes}
+ </span>
+ )}
+ </div>
+ <p className="text-[13px] text-slate-500 font-mono">
+ {ref.phone || "Chưa có SĐT"} {ref.email ? `· ${ref.email}` : ""}
+ </p>
+ </div>
+ <button
+ type="button"
+ onClick={() => handleRemoveReferee(Number(activeTournament.id), ref.id)}
+ disabled={refBusy}
+ className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 text-[13px] font-bold transition-colors cursor-pointer shrink-0 flex items-center gap-1"
+ >
+ <X className="w-3.5 h-3.5" />
+ <span>Xoá</span>
+ </button>
+ </div>
+ ))}
+ </div>
+ )}
+ </>
+ )}
+ </div>
+ )}
+
+ {/* TAB CONTENT: THÔNG BÁO BAN TỔ CHỨC (BROADCAST) */}
+ {bottomTab === "broadcast" && (
+ <div className="space-y-4">
+ {!activeTournament ? (
+ <p className="text-sm text-slate-500 py-4 text-center">Vui lòng chọn một giải đấu để gửi thông báo.</p>
+ ) : (
+ <div className="p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-4">
+ <div>
+ <h4 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
+ <Megaphone className="w-4 h-4 text-[#0369a1]" />
+ Phát Thông Báo Toàn Giải: {activeTournament.title}
+ </h4>
+ <p className="text-[13px] text-slate-500 mt-0.5">
+ Gửi thông báo trực tiếp lên chuông ứng dụng và Email cho tất cả đội trưởng & cầu thủ tham gia giải.
+ </p>
+ </div>
+
+ <div className="space-y-1.5">
+ <span className="text-[13px] font-bold text-slate-600 block">Chọn mẫu thông báo nhanh:</span>
+ <div className="flex flex-wrap gap-2">
+ {[
+ {
+ label: "Mời họp kỹ thuật & Bốc thăm",
+ title: `[BTC ${activeTournament.title}] Thông báo họp kỹ thuật & bốc thăm chia nhánh`,
+ content: `Ban Tổ Chức trân trọng kính mời Đội trưởng các đội bóng tham dự buổi họp kỹ thuật và bốc thăm chia nhánh giải ${activeTournament.title} tại ${activeTournament.pitchName || "sân thi đấu"}. Vui lòng có mặt đúng giờ để xác nhận danh sách cầu thủ.`,
+ },
+ {
+ label: "Đã công bố Lịch thi đấu",
+ title: `[BTC ${activeTournament.title}] Chính thức công bố Lịch thi đấu & Tổ trọng tài`,
+ content: `Lịch thi đấu chính thức của giải ${activeTournament.title} đã được cập nhật trên hệ thống. Đề nghị các đội bóng kiểm tra giờ bóng lăn, cụm sân và có mặt trước trận đấu tối thiểu 15 phút để làm thủ tục.`,
+ },
+ {
+ label: "Tạm hoãn / Đổi giờ do thời tiết",
+ title: `[KHẨN - ${activeTournament.title}] Thông báo điều chỉnh giờ thi đấu do thời tiết`,
+ content: `Do điều kiện thời tiết không thuận lợi, Ban Tổ Chức xin thông báo tạm hoãn và điều chỉnh khung giờ các lượt trận hôm nay tại ${activeTournament.pitchName || "cụm sân"}. Lịch đá bù đã được cập nhật trực tiếp trên bảng nhánh đấu.`,
+ },
+ ].map((tpl) => (
+ <button
+ key={tpl.label}
+ type="button"
+ onClick={() => {
+ setBroadcastTitle(tpl.title);
+ setBroadcastContent(tpl.content);
+ }}
+ className="px-3 py-1.5 rounded-lg bg-white hover:bg-sky-50 border border-slate-300 hover:border-sky-300 text-slate-700 hover:text-sky-800 text-[13px] font-bold transition-colors cursor-pointer"
+ >
+ + {tpl.label}
+ </button>
+ ))}
+ </div>
+ </div>
+
+ <form
+ onSubmit={(e) => {
+ e.preventDefault();
+ handleSendBroadcast();
+ }}
+ className="space-y-3"
+ >
+ <div className="space-y-1">
+ <label className="text-[13px] font-bold text-slate-700 block">Tiêu đề thông báo *</label>
+ <input
+ type="text"
+ required
+ value={broadcastTitle}
+ onChange={(e) => setBroadcastTitle(e.target.value)}
+ placeholder="VD: Thông báo lịch họp kỹ thuật & công bố nhánh đấu..."
+ className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:border-[#0369a1]"
+ />
+ </div>
+
+ <div className="space-y-1">
+ <label className="text-[13px] font-bold text-slate-700 block">Nội dung chi tiết *</label>
+ <textarea
+ rows={4}
+ required
+ value={broadcastContent}
+ onChange={(e) => setBroadcastContent(e.target.value)}
+ placeholder="Nhập nội dung thông báo gửi tới các đội trưởng và cầu thủ..."
+ className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-[14px] text-slate-900 focus:outline-none focus:border-[#0369a1]"
+ />
+ </div>
+
+ <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+ <label className="inline-flex items-center gap-2 text-[13px] font-bold text-slate-700 cursor-pointer">
+ <input
+ type="checkbox"
+ checked={broadcastSendEmail}
+ onChange={(e) => setBroadcastSendEmail(e.target.checked)}
+ className="w-4 h-4 rounded accent-[#0369a1]"
+ />
+ <span>Đồng thời gửi Email cho các cầu thủ đã được mời tham gia giải</span>
+ </label>
+
+ <button
+ type="submit"
+ disabled={broadcastBusy || !broadcastTitle.trim() || !broadcastContent.trim()}
+ className="px-5 py-2.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-2"
+ >
+ <Megaphone className="w-4 h-4" />
+ <span>{broadcastBusy ? "Đang phát thông báo..." : "Phát Thông Báo Ngay"}</span>
+ </button>
+ </div>
+ </form>
+ </div>
+ )}
+ </div>
+ )}
+
 {/* TAB CONTENT: KẾT QUẢ & VUA PHÁ LƯỚI (đọc từ goal_events) */}
- {bottomTab === "var_logs" && activeBracket && (
+ {bottomTab === "var_logs" && (
  <div className="space-y-3 sm:space-y-4">
  <div>
  <p className="text-[14px] font-black text-slate-500 mb-2">
@@ -1926,15 +2810,33 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  {doneMatches.map((m: any) => (
  <div
  key={m.matchId}
- className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-[14px]"
+ className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-[14px]"
  >
+ <div className="flex items-center gap-2.5 min-w-0">
  <span className="font-mono text-slate-500 shrink-0">{m.matchId}</span>
  <span className="font-bold text-slate-800 truncate">
- {m.teamA} <span className="font-mono text-sky-700 ">{m.scoreA}-{m.scoreB}</span> {m.teamB}
+ {m.teamA} <span className="font-mono text-sky-700 px-1.5 py-0.5 rounded bg-sky-100">{m.scoreA} - {m.scoreB}</span> {m.teamB}
  </span>
- <span className="font-mono text-slate-500 shrink-0">
+ {m.mvpPlayer && (
+ <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[13px] font-bold">
+ MVP: {m.mvpPlayer}
+ </span>
+ )}
+ </div>
+ <div className="flex items-center gap-2 shrink-0">
+ <span className="font-mono text-slate-500 text-[13px]">
  {m.matchDate ? m.matchDate.split("-").reverse().join("/") : "—"}
  </span>
+ <button
+ type="button"
+ onClick={() => handleUndoMatch(m.matchId)}
+ disabled={umpireBusy}
+ className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 text-[13px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+ >
+ <RotateCcw className="w-3.5 h-3.5" />
+ <span>Huỷ KQ</span>
+ </button>
+ </div>
  </div>
  ))}
  </div>
@@ -1983,8 +2885,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
  )}
 
- 
-{/* ================= TAB 6: SỬA THÔNG TIN GIẢI ĐẤU (INLINE) ================= */}
+ {/* ================= TAB 6: SỬA THÔNG TIN GIẢI ĐẤU (INLINE) ================= */}
 {bottomTab === "edit" && activeTournament && (
   <div className="space-y-4 animate-fade-in">
     <div className="flex items-center justify-between border-b border-slate-200 pb-3">
@@ -2324,37 +3225,191 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  )}
 
  {/* TAB CONTENT: LỊCH THI ĐẤU THẬT */}
- {bottomTab === "schedule" && activeBracket && (
-  scheduledMatches.length === 0 ? (
- <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">
- BTC chưa bấm “Xếp lịch thi đấu” cho giải này nên chưa có ngày/giờ cho từng trận.
+ {bottomTab === "schedule" && (
+ <div className="space-y-4">
+ {!activeBracket ? (
+ <p className="text-sm text-slate-500 py-4 text-center">
+ Giải đấu chưa bốc thăm chia nhánh. Hãy bốc thăm nhánh đấu ở mục "Duyệt Đội & Đăng Ký" trước khi xếp lịch thi đấu.
  </p>
  ) : (
+ <>
+ {/* Bộ xếp lịch tự động inline */}
+ <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+ <div className="flex flex-wrap items-center justify-between gap-2">
+ <div>
+ <h4 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
+ <Calendar className="w-4 h-4 text-[#0369a1]" />
+ Bộ Xếp Lịch Thi Đấu Tự Động
+ </h4>
+ <p className="text-[13px] text-slate-500">
+ Tự động phân bổ ngày thi đấu, ca giờ và cụm sân cho toàn bộ các trận trong nhánh đấu
+ </p>
+ </div>
+ </div>
+
+ <form
+ onSubmit={(e) => {
+ e.preventDefault();
+ handleAutoGenerateSchedule();
+ }}
+ className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-1"
+ >
+ <div className="space-y-1">
+ <label className="text-[13px] font-bold text-slate-600 block">Ngày bắt đầu</label>
+ <input
+ type="date"
+ value={scheduleConfig.startDate || activeTournament?.startDate || ""}
+ onChange={(e) => setScheduleConfig((c) => ({ ...c, startDate: e.target.value }))}
+ className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] font-mono font-bold text-slate-900 focus:outline-none focus:border-[#0369a1]"
+ />
+ </div>
+ <div className="space-y-1">
+ <label className="text-[13px] font-bold text-slate-600 block">Số trận / ngày</label>
+ <input
+ type="number"
+ min={1}
+ max={12}
+ value={scheduleConfig.matchesPerDay}
+ onChange={(e) => setScheduleConfig((c) => ({ ...c, matchesPerDay: Number(e.target.value) || 2 }))}
+ className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] font-mono text-slate-900 focus:outline-none focus:border-[#0369a1]"
+ />
+ </div>
+ <div className="space-y-1">
+ <label className="text-[13px] font-bold text-slate-600 block">Giờ bóng lăn (0-23h)</label>
+ <input
+ type="number"
+ min={6}
+ max={22}
+ value={scheduleConfig.startHour}
+ onChange={(e) => setScheduleConfig((c) => ({ ...c, startHour: Number(e.target.value) || 17 }))}
+ className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] font-mono text-slate-900 focus:outline-none focus:border-[#0369a1]"
+ />
+ </div>
+ <div className="space-y-1">
+ <label className="text-[13px] font-bold text-slate-600 block">Thời lượng (phút/trận)</label>
+ <input
+ type="number"
+ min={30}
+ max={150}
+ step={15}
+ value={scheduleConfig.matchMinutes}
+ onChange={(e) => setScheduleConfig((c) => ({ ...c, matchMinutes: Number(e.target.value) || 90 }))}
+ className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] font-mono text-slate-900 focus:outline-none focus:border-[#0369a1]"
+ />
+ </div>
+ <div className="flex items-end">
+ <button
+ type="submit"
+ disabled={schedulingBusy}
+ className="w-full py-2 px-4 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
+ >
+ <Calendar className="w-4 h-4" />
+ <span>{schedulingBusy ? "Đang xếp lịch..." : "Tự Động Xếp Lịch"}</span>
+ </button>
+ </div>
+ </form>
+ </div>
+
+ {/* Danh sách tất cả trận trong nhánh để xem & chỉnh lịch từng trận */}
  <div className="space-y-2">
  {scheduledMatches.map((m: any) => (
  <div
  key={m.matchId}
- className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-[14px]"
+ className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2.5 text-[14px]"
  >
+ <div className="flex flex-wrap items-center justify-between gap-2">
  <div className="flex items-center gap-2.5 min-w-0">
- <span className="font-mono text-slate-500 shrink-0">{m.matchId}</span>
+ <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[13px] font-bold shrink-0">
+ {m.matchId} {m.roundName ? `· ${m.roundName}` : ""}
+ </span>
  <span className="font-bold text-slate-900 truncate">
  {m.teamA} vs {m.teamB}
  </span>
  </div>
- <div className="flex items-center gap-2 font-mono text-slate-500 shrink-0">
- {m.matchDate && (
- <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-700 font-bold">
+ <div className="flex flex-wrap items-center gap-2 text-[13px]">
+ {m.matchDate ? (
+ <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-800 font-mono font-bold">
  {m.matchDate.split("-").reverse().join("/")}
  </span>
+ ) : (
+ <span className="text-slate-400">Chưa xếp ngày</span>
  )}
- {m.timeSlot && <span className="font-bold text-slate-700 ">{m.timeSlot}</span>}
- {m.pitchName && <span className="text-sky-800 truncate max-w-[200px]">{m.pitchName}</span>}
+ {m.timeSlot && (
+ <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold">
+ {m.timeSlot}
+ </span>
+ )}
+ {m.pitchName && (
+ <span className="text-slate-700 font-semibold truncate max-w-[180px]">
+ 📍 {m.pitchName}
+ </span>
+ )}
+ {m.refereeName && (
+ <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-bold">
+ Trọng tài: {m.refereeName}
+ </span>
+ )}
+ <button
+ type="button"
+ onClick={() => handleOpenMatchScheduleEdit(m)}
+ className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-[#0369a1] border border-slate-300 text-[13px] font-bold transition-colors cursor-pointer"
+ >
+ {editingMatchScheduleId === m.matchId ? "Đóng" : "Đổi giờ / Sân / Trọng tài"}
+ </button>
  </div>
+ </div>
+
+ {editingMatchScheduleId === m.matchId && (
+ <div className="p-3 rounded-lg bg-slate-50 border border-sky-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-2.5">
+ <input
+ type="date"
+ value={matchEditForm.matchDate}
+ onChange={(e) => setMatchEditForm((f) => ({ ...f, matchDate: e.target.value }))}
+ className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[13px] font-mono text-slate-900"
+ />
+ <input
+ type="text"
+ value={matchEditForm.timeSlot}
+ onChange={(e) => setMatchEditForm((f) => ({ ...f, timeSlot: e.target.value }))}
+ placeholder="Khung giờ (VD: 19:00-20:30)"
+ className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[13px] font-mono text-slate-900"
+ />
+ <input
+ type="text"
+ value={matchEditForm.pitchName}
+ onChange={(e) => setMatchEditForm((f) => ({ ...f, pitchName: e.target.value }))}
+ placeholder="Sân thi đấu (VD: Sân 5A)"
+ className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900"
+ />
+ <input
+ type="text"
+ list="tournament-referees-list"
+ value={matchEditForm.refereeName}
+ onChange={(e) => setMatchEditForm((f) => ({ ...f, refereeName: e.target.value }))}
+ placeholder="Trọng tài bắt chính"
+ className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900"
+ />
+ <datalist id="tournament-referees-list">
+ {referees.map((r) => (
+ <option key={r.id} value={r.name} />
+ ))}
+ </datalist>
+ <button
+ type="button"
+ onClick={() => handleSaveSingleMatchSchedule(m.matchId)}
+ disabled={schedulingBusy}
+ className="px-3 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors cursor-pointer"
+ >
+ {schedulingBusy ? "Đang lưu..." : "Lưu Lịch Trận"}
+ </button>
+ </div>
+ )}
  </div>
  ))}
  </div>
- )
+ </>
+ )}
+ </div>
  )}
 
  </div>
@@ -2370,7 +3425,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                 <Trophy className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <span className="text-[12px] font-bold text-sky-800">Thông tin giải đấu</span>
+                <span className="text-[13px] font-bold text-sky-800">Thông tin giải đấu</span>
                 <h4 className="text-base font-bold text-slate-900 truncate">
                   {activeTournament ? activeTournament.title : "Chưa chọn giải"}
                 </h4>
@@ -2403,11 +3458,40 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                       }}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[12px] text-slate-500 pt-0.5">
+                  <div className="flex items-center justify-between text-[13px] text-slate-500 pt-0.5">
                     <span>Trạng thái</span>
                     <span className="font-bold text-emerald-700">
                       {(confirmedCount(activeTournament) >= (activeTournament.totalTeams ?? 16)) ? "Đã đủ đội" : "Đang mở đăng ký"}
                     </span>
+                  </div>
+                </div>
+
+                {/* Chuyển trạng thái giải đấu nhanh */}
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                  <span className="text-[13px] font-bold text-slate-700 block">Trạng thái vận hành giải:</span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { code: "OPEN", label: "Mở đăng ký" },
+                      { code: "ONGOING", label: "Đang diễn ra" },
+                      { code: "COMPLETED", label: "Đã kết thúc" },
+                    ].map((st) => {
+                      const isCurrent = (activeTournament.status || "OPEN").toUpperCase() === st.code;
+                      return (
+                        <button
+                          key={st.code}
+                          type="button"
+                          disabled={statusBusy || isCurrent}
+                          onClick={() => handleSwitchTournamentStatus(st.code as "OPEN" | "ONGOING" | "COMPLETED")}
+                          className={`py-1.5 px-2 rounded-md text-[13px] font-bold transition-colors cursor-pointer border ${
+                            isCurrent
+                              ? "bg-[#0369a1] text-white border-[#0369a1]"
+                              : "bg-white hover:bg-slate-100 text-slate-700 border-slate-300"
+                          }`}
+                        >
+                          {st.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

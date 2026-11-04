@@ -154,3 +154,50 @@ export async function removeTournamentInvite(
   );
   return { joinMode: "PUBLIC", invitedEmails: data?.invitedEmails ?? [], message: data?.message };
 }
+
+
+/** BTC đổi trạng thái giải đấu: OPEN | ONGOING | COMPLETED. */
+export async function updateTournamentStatus(
+  tournamentId: number,
+  status: "OPEN" | "ONGOING" | "COMPLETED"
+): Promise<{ message: string; id: number; status: string }> {
+  return apiRequest<{ message: string; id: number; status: string }>(
+    `/api/v1/tournaments/${tournamentId}/status`,
+    { method: "PATCH", body: JSON.stringify({ status }) }
+  );
+}
+
+/** BTC cập nhật danh sách cầu thủ (Roster) và đội trưởng của một đội trong giải. */
+export async function updateTeamRoster(
+  tournamentId: number,
+  teamName: string,
+  payload: { captainName?: string; captainPhone?: string; memberNames?: string }
+): Promise<{ message: string; teamName: string; memberCount: number; memberNames: string }> {
+  return apiRequest<{ message: string; teamName: string; memberCount: number; memberNames: string }>(
+    `/api/v1/tournaments/${tournamentId}/teams/${encodeURIComponent(teamName)}/roster`,
+    { method: "PUT", body: JSON.stringify(payload) }
+  );
+}
+
+/** BTC chỉnh sửa lịch thi đấu và trọng tài cho từng trận lẻ trong nhánh đấu. */
+export async function updateSingleMatchSchedule(
+  tournamentId: number,
+  matchId: string,
+  payload: { matchDate?: string; timeSlot?: string; pitchName?: string; refereeName?: string }
+): Promise<{ message: string; match: any; bracket: any }> {
+  return apiRequest<{ message: string; match: any; bracket: any }>(
+    `/api/v1/tournaments/${tournamentId}/matches/${encodeURIComponent(matchId)}/schedule`,
+    { method: "PATCH", body: JSON.stringify(payload) }
+  );
+}
+
+/** BTC phát thông báo điều hành tới toàn bộ đội bóng tham gia giải (in-app + tùy chọn email). */
+export async function broadcastTournamentAnnouncement(
+  tournamentId: number,
+  payload: { title: string; content: string; sendEmail?: boolean }
+): Promise<{ message: string; notifiedCount: number; emailedCount: number }> {
+  return apiRequest<{ message: string; notifiedCount: number; emailedCount: number }>(
+    `/api/v1/tournaments/${tournamentId}/announce`,
+    { method: "POST", body: JSON.stringify(payload) }
+  );
+}
