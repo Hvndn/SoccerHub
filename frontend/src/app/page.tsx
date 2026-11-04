@@ -56,8 +56,9 @@ export default function Home() {
       return tab;
     }
     if (role === "ORGANIZER") {
-      // Ban tổ chức cấm vào khu quản lý sân của chủ sân
-      if (["admin", "owner-onboarding", "multi-sport"].includes(tab)) {
+      // Ban tổ chức chỉ sử dụng các tab điều hành giải, giải đấu, cộng đồng và hồ sơ — cấm vào trang đặt sân của cầu thủ & quản lý sân
+      const allowedOrganizerTabs = ["organizer", "tournaments", "community", "profile"];
+      if (!allowedOrganizerTabs.includes(tab)) {
         return "organizer";
       }
       return tab;
@@ -267,9 +268,16 @@ if (!currentUser) {
  setActiveTab("booking");
  }
  } else if (currentUser.role === "ORGANIZER") {
- // BAN TỔ CHỨC: Cấm vào bảng quản lý sân của Chủ sân
-  if (OWNER_MANAGE_TABS.includes(activeTab)) {
- setActiveTab("tournaments");
+ // BAN TỔ CHỨC: Cấm vào trang đặt sân của Cầu thủ và bảng quản lý sân của Chủ sân -> về thẳng Điều Hành Giải Đấu
+ const allowedOrganizerTabs = ["organizer", "tournaments", "community", "profile"];
+ if (!allowedOrganizerTabs.includes(activeTab)) {
+   setActiveTab("organizer");
+   if (typeof window !== "undefined") {
+     sessionStorage.setItem("turfzone_active_tab", "organizer");
+     const url = new URL(window.location.href);
+     url.searchParams.set("tab", "organizer");
+     window.history.replaceState({ tab: "organizer" }, "", url.toString());
+   }
  }
 } else if (currentUser.role === "ADMIN") {
   // SUPER ADMIN: được phép xem trang chủ như mọi tài khoản khác (nút quản trị nằm
@@ -327,14 +335,24 @@ const handleTabChange = (newTab: string) => {
  }
 
  // ================================================================
- // GUARD 3: ORGANIZER (Ban Tổ Chức) - Không được vào khu Chủ Sân
+ // GUARD 3: ORGANIZER (Ban Tổ Chức) - Không được vào khu Chủ Sân hoặc Đặt Sân Cầu Thủ
  // ================================================================
  if (currentUser?.role === "ORGANIZER") {
   if (OWNER_MANAGE_TABS.includes(newTab)) {
- showRoleWarning("🚫 Tài khoản Ban Tổ Chức không có quyền vào Bảng Quản Lý Cụm Sân. Chức năng này chỉ dành cho Chủ Sân (OWNER).");
- setActiveTab("tournaments");
- return;
- }
+    showRoleWarning("🚫 Tài khoản Ban Tổ Chức không có quyền vào Bảng Quản Lý Cụm Sân. Chức năng này chỉ dành cho Chủ Sân (OWNER).");
+    setActiveTab("organizer");
+    return;
+  }
+  if (!["organizer", "tournaments", "community", "profile"].includes(newTab)) {
+    setActiveTab("organizer");
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("turfzone_active_tab", "organizer");
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", "organizer");
+      window.history.replaceState({ tab: "organizer" }, "", url.toString());
+    }
+    return;
+  }
  }
 
  // ================================================================
@@ -430,13 +448,32 @@ if (newTab === activeTab) return;
 
  // Routing mặc định theo vai trò
  if (userData?.role === "ADMIN") {
- window.location.assign("/admin");
+   window.location.assign("/admin");
  } else if (userData?.role === "OWNER") {
- setActiveTab(userData?.role === "OWNER" && userData?.profileCompleted === false ? "owner-onboarding" : "admin");
+   const target = userData?.profileCompleted === false ? "owner-onboarding" : "admin";
+   setActiveTab(target);
+   if (typeof window !== "undefined") {
+     sessionStorage.setItem("turfzone_active_tab", target);
+     const url = new URL(window.location.href);
+     url.searchParams.set("tab", target);
+     window.history.replaceState({ tab: target }, "", url.toString());
+   }
  } else if (userData?.role === "ORGANIZER") {
- setActiveTab("tournaments");
+   setActiveTab("organizer");
+   if (typeof window !== "undefined") {
+     sessionStorage.setItem("turfzone_active_tab", "organizer");
+     const url = new URL(window.location.href);
+     url.searchParams.set("tab", "organizer");
+     window.history.replaceState({ tab: "organizer" }, "", url.toString());
+   }
  } else {
- setActiveTab("booking");
+   setActiveTab("booking");
+   if (typeof window !== "undefined") {
+     sessionStorage.setItem("turfzone_active_tab", "booking");
+     const url = new URL(window.location.href);
+     url.searchParams.set("tab", "booking");
+     window.history.replaceState({ tab: "booking" }, "", url.toString());
+   }
  }
  };
   const handleOpenTournament = React.useCallback((id: number) => {
@@ -547,6 +584,17 @@ if (newTab === activeTab) return;
  Chuyển Sang Bảng Điều Hành Cụm Sân →
  </button>
  </div>
+ ) : currentUser?.role === "ORGANIZER" ? (
+ <TournamentOrganizerPortal
+   user={currentUser}
+   onNavigateTab={handleTabChange}
+   onStartDm={handleStartDm}
+   onOpenTournamentChat={handleOpenTournamentChat}
+   onOpenBracket={(id) => {
+     if (id) setTargetTournamentId(Number(id));
+     handleTabChange("tournaments");
+   }}
+ />
  ) : currentUser ? (
  <PitchSearch
  user={currentUser}
@@ -710,8 +758,8 @@ if (newTab === activeTab) return;
 
  {activeTab === "profile" && (
  currentUser ? (
- currentUser.role === "OWNER" ? (
- // Chủ sân dùng trang hồ sơ riêng, không hiển thị phong độ/thể chất cầu thủ
+ (currentUser.role === "OWNER" || currentUser.role === "ORGANIZER") ? (
+ // Chủ sân & Ban tổ chức dùng trang hồ sơ quản lý riêng, không hiển thị phong độ/thể chất cầu thủ
  <OwnerProfileConsole
  user={currentUser}
  onOpenAuth={handleOpenAuth}

@@ -215,7 +215,7 @@ const mobileNav: MobileNavItem[] =
  window.location.assign("/admin");
  return;
  }
- handleSelectSubTab(user?.role === "OWNER" ? "admin" : "booking");
+ handleSelectSubTab(user?.role === "OWNER" ? "admin" : user?.role === "ORGANIZER" ? "organizer" : "booking");
  }}
  className="flex items-center space-x-2 cursor-pointer select-none shrink-0 group"
  title="Turfzone - Hệ Thống Đặt Sân Bóng Đá & Tổ Chức Giải Đấu"
@@ -827,13 +827,13 @@ const mobileNav: MobileNavItem[] =
  <button
  type="button"
  onClick={() => {
- handleSelectSubTab("my-activities");
+ handleSelectSubTab("profile");
  setShowUserDropdown(false);
  }}
  className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
  >
- <Calendar className="w-4 h-4 text-emerald-500" />
- <span>Lịch Trình & Vé Đã Đặt</span>
+ <User className="w-4 h-4 text-[#0369a1]" />
+ <span>Hồ Sơ Ban Tổ Chức</span>
  </button>
  </>
  ) : user.role === "PLAYER" ? (
