@@ -80,7 +80,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       id: "booking",
       title: "Đặt Sân Bóng Trực Tuyến",
       badge: "Cầu thủ",
-      accent: "from-sky-500 to-[#0369a1]",
+      accent: "bg-[#0369a1]",
       badgeTone: "bg-sky-50 text-[#0369a1] border-sky-200",
       iconTone: "bg-sky-50 text-[#0369a1] border-sky-200",
       icon: Calendar,
@@ -96,7 +96,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       id: "owner",
       title: "Quản Lý Cụm Sân & Lịch Đặt",
       badge: "Chủ sân",
-      accent: "from-emerald-500 to-teal-600",
+      accent: "bg-emerald-600",
       badgeTone: "bg-emerald-50 text-emerald-700 border-emerald-200",
       iconTone: "bg-emerald-50 text-emerald-700 border-emerald-200",
       icon: ShieldCheck,
@@ -112,7 +112,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       id: "tournament",
       title: "Tổ Chức & Quản Lý Giải Đấu",
       badge: "Ban tổ chức",
-      accent: "from-amber-500 to-orange-600",
+      accent: "bg-amber-500",
       badgeTone: "bg-amber-50 text-amber-800 border-amber-200",
       iconTone: "bg-amber-50 text-amber-700 border-amber-200",
       icon: Trophy,
@@ -128,7 +128,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       id: "matchmaking",
       title: "Tìm Đối Giao Hữu & Đội Bóng",
       badge: "Cộng đồng",
-      accent: "from-rose-500 to-pink-600",
+      accent: "bg-rose-600",
       badgeTone: "bg-rose-50 text-rose-700 border-rose-200",
       iconTone: "bg-rose-50 text-rose-600 border-rose-200",
       icon: Users,
@@ -346,7 +346,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                 className="relative bg-white landing-card-interactive p-5 sm:p-6 border border-slate-200 flex flex-col justify-between space-y-5 overflow-hidden group"
               >
                 <div
-                  className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${item.accent}`}
+                  className={`absolute top-0 left-0 right-0 h-1.5 ${item.accent}`}
                 />
 
                 <div className="space-y-3.5 pt-1">
@@ -453,10 +453,10 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       </section>
 
       {/* PHẦN 4: BANNER KÊU GỌI HÀNH ĐỘNG GIAO DIỆN SÁNG (DAYLIGHT CTA) */}
-      <section className="relative overflow-hidden landing-shell-radius bg-gradient-to-br from-sky-50 via-white to-emerald-50 text-slate-900 p-6 sm:p-8 lg:p-10 border border-sky-200">
+      <section className="relative overflow-hidden landing-shell-radius bg-white text-slate-900 p-6 sm:p-8 lg:p-10 border border-slate-200">
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
-            <span className="inline-block px-3 py-1 rounded-full bg-sky-100 text-[#0369a1] border border-sky-200 text-[13px] font-bold">
+            <span className="inline-block px-3 py-1 rounded-full bg-sky-50 text-[#0369a1] border border-sky-200 text-[13px] font-bold">
               Bắt đầu cùng Turfzone ngay hôm nay
             </span>
             <h3 className="text-xl sm:text-3xl font-black text-slate-900 leading-tight">
@@ -470,7 +470,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               <button
                 type="button"
                 onClick={() => onExplore("PLAYER")}
-                className="btn-shine-effect px-5 py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                className="px-5 py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
               >
                 <Users className="w-4 h-4" />
                 <span>Tài Khoản Cầu Thủ</span>

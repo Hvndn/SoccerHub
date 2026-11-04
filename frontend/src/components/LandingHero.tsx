@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import SafeImage from "@/components/SafeImage";
 import {
   MapPin,
   Trophy,
@@ -210,10 +209,10 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
   return (
     <div className="w-full space-y-6">
-      {/* 1. DẢI BĂNG CHUYỀN SỰ KIỆN TRỰC TIẾP GIAO DIỆN SÁNG */}
+      {/* 1. DẢI BĂNG CHUYỀN SỰ KIỆN TRỰC TIẾP (MÀU ĐƠN SẮC PHẲNG SÁNG) */}
       {liveItems.length > 0 && (
-        <div className="bg-gradient-to-r from-sky-50 via-white to-emerald-50 text-slate-800 landing-card-radius px-4 py-2.5 border border-sky-200/80 flex items-center gap-3 overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-[13px] font-bold shrink-0">
+        <div className="bg-white text-slate-800 landing-card-radius px-4 py-2.5 border border-slate-200 flex items-center gap-3 overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13px] font-bold shrink-0">
             <span className="w-2 h-2 rounded-full bg-emerald-500 live-radar-dot" />
             <Radio className="w-3.5 h-3.5 text-emerald-700" />
             <span>Trực tiếp sân cỏ</span>
@@ -232,7 +231,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                   }
                   className="inline-flex items-center gap-2 text-[13px] font-semibold text-slate-700 hover:text-[#0369a1] transition-colors cursor-pointer shrink-0"
                 >
-                  <span className="px-2 py-0.5 rounded bg-sky-100 text-[#0369a1] border border-sky-200 font-bold text-[13px]">
+                  <span className="px-2 py-0.5 rounded bg-sky-50 text-[#0369a1] border border-sky-200 font-bold text-[13px]">
                     {item.badge}
                   </span>
                   <span>{item.text}</span>
@@ -244,20 +243,12 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         </div>
       )}
 
-      {/* 2. HERO BANNER GIAO DIỆN SÁNG TINH KHÔI (DAYLIGHT SPORTS CLUB) */}
-      <div className="relative overflow-hidden landing-shell-radius bg-gradient-to-br from-sky-50 via-white to-emerald-50/70 text-slate-900 border border-sky-200/90">
-        {/* Ánh sáng dịu nhẹ & Đường nét sân bóng trang nhã */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 85% 18%, rgba(16, 185, 129, 0.14) 0%, transparent 45%), radial-gradient(circle at 10% 85%, rgba(3, 105, 161, 0.12) 0%, transparent 50%)",
-          }}
-        />
+      {/* 2. HERO BANNER NỀN TRẮNG PHẲNG CHUẨN MỰC (KHÔNG DÙNG GRADIENT) */}
+      <div className="relative overflow-hidden landing-shell-radius bg-white text-slate-900 border border-slate-200">
+        {/* Đường nét sân bóng trang nhã đơn sắc */}
         <svg
           aria-hidden="true"
-          className="pointer-events-none absolute -right-12 -bottom-12 w-[500px] h-[500px] text-[#0369a1]/[0.05]"
+          className="pointer-events-none absolute -right-12 -bottom-12 w-[500px] h-[500px] text-slate-900/[0.03]"
           viewBox="0 0 200 200"
           fill="none"
         >
@@ -268,36 +259,33 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         </svg>
 
         <div className="relative z-10 p-6 sm:p-10 lg:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-          {/* Cột Trái: Thông điệp Sáng Rõ & Hành động */}
+          {/* Cột Trái: Thông điệp & Hành động */}
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-7 space-y-5"
           >
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white border border-sky-200 text-[#0369a1] text-[13px] font-bold shadow-2xs">
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-sky-50 border border-sky-200 text-[#0369a1] text-[13px] font-bold">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 live-radar-dot" />
               <span>Trung tâm đặt sân &amp; giải đấu bóng đá Đà Nẵng</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-[42px] font-black tracking-tight leading-[1.16] text-slate-900">
               Chạm Để Giữ Sân Cỏ,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0369a1] via-sky-600 to-emerald-600">
-                Bùng Nổ Mọi Trận Cầu
-              </span>{" "}
-              Tại Đà Nẵng
+              <span className="text-[#0369a1]">Bùng Nổ Mọi Trận Cầu</span> Tại Đà Nẵng
             </h1>
 
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl font-medium">
               Trải nghiệm đặt sân bóng trực quan theo khung giờ thực tế, thanh toán VietQR xác nhận ngay lập tức, ghép kèo giao hữu và vận hành giải đấu tự động.
             </p>
 
-            {/* Nút hành động sáng rõ */}
+            {/* Nút hành động màu phẳng chuẩn mực */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
                 type="button"
                 onClick={() => onOpenAuth("login", "PLAYER")}
-                className="btn-shine-effect px-6 py-3.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[15px] transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="px-6 py-3.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[15px] transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Calendar className="w-4 h-4 stroke-[2.5]" />
                 <span>Đặt Sân Ngay</span>
@@ -309,7 +297,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                 onClick={() =>
                   onNavigateTab ? onNavigateTab("tournaments") : onOpenAuth("login", "PLAYER")
                 }
-                className="px-5 py-3.5 rounded-xl bg-white hover:bg-amber-50/70 text-slate-900 font-bold text-[15px] border border-slate-300 hover:border-amber-400 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="px-5 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-900 font-bold text-[15px] border border-slate-300 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Trophy className="w-4 h-4 text-amber-600" />
                 <span>Đấu Trường Giải Đấu</span>
@@ -318,9 +306,9 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               <button
                 type="button"
                 onClick={() => onOpenAuth("login", "OWNER")}
-                className="px-5 py-3.5 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 text-emerald-800 font-bold text-[14px] border border-emerald-200 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="px-5 py-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[14px] border border-slate-200 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
               >
-                <Shield className="w-4 h-4 text-emerald-600" />
+                <Shield className="w-4 h-4 text-[#0369a1]" />
                 <span>Dành Cho Chủ Sân</span>
               </button>
             </div>
@@ -342,7 +330,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
             </div>
           </motion.div>
 
-          {/* Cột Phải: Thẻ Tương Tác 3 Chế Độ Giao Diện Sáng (Daylight Interactive Card) */}
+          {/* Cột Phải: Thẻ Tương Tác 3 Chế Độ Màu Đơn Sắc */}
           <div
             className="lg:col-span-5"
             onMouseMove={handleMouseMove}
@@ -352,10 +340,10 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               animate={{ rotateX: tilt.y, rotateY: tilt.x }}
               transition={{ type: "spring", stiffness: 200, damping: 20 }}
               style={{ transformPerspective: 1000 }}
-              className="landing-card-radius bg-white border border-slate-200/90 p-4 sm:p-5 space-y-4 shadow-md"
+              className="landing-card-radius bg-slate-50 border border-slate-200 p-4 sm:p-5 space-y-4"
             >
-              {/* Thanh chuyển đổi 3 chế độ tương tác sáng sủa */}
-              <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200">
+              {/* Thanh chuyển đổi 3 chế độ */}
+              <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-white border border-slate-200">
                 {modeTabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeMode === tab.id;
@@ -382,7 +370,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                 })}
               </div>
 
-              {/* Nội dung động theo từng chế độ trên nền sáng */}
+              {/* Nội dung động theo từng chế độ */}
               <div className="min-h-[260px] flex flex-col justify-between">
                 <AnimatePresence mode="wait">
                   {activeMode === "pitch" && (
@@ -394,9 +382,9 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                       transition={{ duration: 0.25 }}
                       className="space-y-3.5"
                     >
-                      <div className="rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50/70 to-sky-50 p-3.5 border border-emerald-200 flex items-center justify-between gap-2">
+                      <div className="rounded-xl bg-white p-3.5 border border-slate-200 flex items-center justify-between gap-2">
                         <div>
-                          <span className="text-[13px] font-bold text-emerald-800 block">
+                          <span className="text-[13px] font-bold text-[#0369a1] block">
                             Sân 7A · Cụm Sân Trung Tâm Đà Nẵng
                           </span>
                           <h3 className="text-base font-black text-slate-900">
@@ -419,7 +407,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                               className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                                 selected
                                   ? "bg-sky-50 border-[#0369a1] ring-1 ring-[#0369a1]"
-                                  : "bg-slate-50/80 hover:bg-slate-100/80 border-slate-200"
+                                  : "bg-white hover:bg-slate-100 border-slate-200"
                               }`}
                             >
                               <div className="flex items-center justify-between gap-1">
@@ -466,28 +454,28 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                       transition={{ duration: 0.25 }}
                       className="space-y-3.5"
                     >
-                      <div className="rounded-xl bg-amber-50/90 border border-amber-200 p-3.5 flex items-center justify-between gap-3">
+                      <div className="rounded-xl bg-white border border-slate-200 p-3.5 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
-                            <Trophy className="w-5 h-5 text-amber-700" />
+                          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+                            <Trophy className="w-5 h-5 text-amber-600" />
                           </div>
                           <div>
                             <div className="text-[14px] font-black text-slate-900">
                               Hệ Thống Chia Nhánh &amp; Bảng Điểm Tự Động
                             </div>
-                            <div className="text-[13px] text-amber-800 font-medium">
+                            <div className="text-[13px] text-slate-600 font-medium">
                               {stats.tournaments} giải đấu · {stats.matchesPlayed} trận đã cập nhật tỷ số
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="rounded-xl bg-slate-50 border border-slate-200 p-3.5 space-y-2.5">
+                      <div className="rounded-xl bg-white border border-slate-200 p-3.5 space-y-2.5">
                         <div className="flex items-center justify-between text-[13px] text-slate-600 font-bold">
                           <span>Bán kết 1 · Sân 7A</span>
                           <span className="text-emerald-700">Đã kết thúc</span>
                         </div>
-                        <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200">
+                        <div className="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
                           <span className="text-[14px] font-bold text-slate-900">FC Sông Hàn</span>
                           <span className="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-black text-[14px]">
                             3 - 1
@@ -499,7 +487,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                           <span>Bán kết 2 · Sân 7B</span>
                           <span className="text-amber-700">19:30 tối nay</span>
                         </div>
-                        <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200">
+                        <div className="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
                           <span className="text-[14px] font-bold text-slate-900">FC Sơn Trà</span>
                           <span className="px-2.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[13px]">
                             Sắp đá
@@ -530,9 +518,9 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                       transition={{ duration: 0.25 }}
                       className="space-y-3.5"
                     >
-                      <div className="rounded-xl bg-sky-50 border border-sky-200 p-3.5 flex items-center justify-between gap-3">
+                      <div className="rounded-xl bg-white border border-slate-200 p-3.5 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-white border border-sky-200 flex items-center justify-center shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center shrink-0">
                             <Swords className="w-5 h-5 text-[#0369a1]" />
                           </div>
                           <div>
@@ -546,21 +534,21 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                         </div>
                       </div>
 
-                      <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 flex items-center justify-between gap-3">
+                      <div className="rounded-xl bg-white border border-slate-200 p-4 flex items-center justify-between gap-3">
                         <div className="text-center space-y-1 flex-1">
-                          <div className="w-11 h-11 rounded-full bg-sky-100 border border-sky-300 mx-auto flex items-center justify-center font-black text-[#0369a1] text-[14px]">
+                          <div className="w-11 h-11 rounded-full bg-sky-50 border border-sky-200 mx-auto flex items-center justify-center font-black text-[#0369a1] text-[14px]">
                             ĐN
                           </div>
                           <div className="text-[14px] font-bold text-slate-900">FC Đà Nẵng Trẻ</div>
                           <div className="text-[13px] text-emerald-700 font-semibold">Đã có sân 7</div>
                         </div>
 
-                        <div className="px-3 py-1.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-black text-[13px]">
+                        <div className="px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-black text-[13px]">
                           Tìm đối 50/50
                         </div>
 
                         <div className="text-center space-y-1 flex-1">
-                          <div className="w-11 h-11 rounded-full bg-white border border-dashed border-slate-300 mx-auto flex items-center justify-center font-black text-slate-500 text-[14px]">
+                          <div className="w-11 h-11 rounded-full bg-slate-50 border border-dashed border-slate-300 mx-auto flex items-center justify-center font-black text-slate-500 text-[14px]">
                             ?
                           </div>
                           <div className="text-[14px] font-bold text-slate-700">Đội của bạn</div>
@@ -592,11 +580,11 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="bg-white landing-shell-radius p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4"
+        className="bg-white landing-shell-radius p-5 sm:p-6 border border-slate-200 space-y-4"
       >
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-200 text-[#0369a1] flex items-center justify-center">
               <Search className="w-5 h-5" />
             </div>
             <div>
@@ -732,7 +720,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           <button
             type="button"
             onClick={() => onOpenAuth("login", "PLAYER")}
-            className="btn-shine-effect w-full px-5 py-2.5 h-[44px] rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full px-5 py-2.5 h-[44px] rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
           >
             <Search className="w-4 h-4" />
             <span>Tìm Sân Trống</span>
