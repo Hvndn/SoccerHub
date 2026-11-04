@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import SafeImage from "@/components/SafeImage";
 import {
   ShieldCheck,
@@ -25,8 +26,10 @@ interface LandingFeaturesProps {
 }
 
 export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFeaturesProps) {
-  const [featuredPitches, setFeaturedPitches] = useState<any[]>([]);
+  const [allPitches, setAllPitches] = useState<any[]>([]);
   const [loadingPitches, setLoadingPitches] = useState(true);
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [activeStep, setActiveStep] = useState<number>(0);
 
   useEffect(() => {
     let alive = true;
@@ -35,7 +38,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       .then((data) => {
         if (!alive) return;
         if (Array.isArray(data)) {
-          setFeaturedPitches(data.slice(0, 3));
+          setAllPitches(data);
         }
       })
       .catch(() => {})
@@ -46,6 +49,26 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       alive = false;
     };
   }, []);
+
+  // Tự động chuyển bước minh họa mỗi 4 giây
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 3);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const filteredPitches = useMemo(() => {
+    const list = allPitches.filter((p) => {
+      if (typeFilter === "all") return true;
+      const t = String(p.type || "").toUpperCase();
+      if (typeFilter === "7") return t.includes("7");
+      if (typeFilter === "5") return t.includes("5");
+      if (typeFilter === "11") return t.includes("11");
+      return true;
+    });
+    return list.slice(0, 3);
+  }, [allPitches, typeFilter]);
 
   const services = [
     {
@@ -138,10 +161,17 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
     },
   ];
 
+  const filterChips = [
+    { id: "all", label: "Tất cả mặt sân" },
+    { id: "7", label: "Sân 7 người" },
+    { id: "5", label: "Sân 5 / Futsal" },
+    { id: "11", label: "Sân 11 người" },
+  ];
+
   return (
     <div className="space-y-10 sm:space-y-14">
-      {/* PHẦN 1: CỤM SÂN TIÊU BIỂU ĐANG MỞ ĐẶT CA */}
-      {!loadingPitches && featuredPitches.length > 0 && (
+      {/* PHẦN 1: KHÁM PHÁ CỤM SÂN TƯƠNG TÁC TRỰC TIẾP */}
+      {!loadingPitches && allPitches.length > 0 && (
         <section className="space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-3.5">
             <div>
@@ -154,90 +184,107 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               </h2>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onExplore("PLAYER")}
-              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-sky-50 text-slate-800 hover:text-[#0369a1] border border-slate-200 font-bold text-[14px] transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>Xem toàn bộ cụm sân</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {featuredPitches.map((pitch) => {
-              const price = Number(pitch.pricePerHour || 300000);
-              return (
-                <div
-                  key={pitch.id}
-                  onClick={() => onExplore("PLAYER")}
-                  className="group bg-white rounded-2xl border border-slate-200 hover:border-[#0369a1] shadow-xs hover:shadow-xl transition-all overflow-hidden flex flex-col justify-between cursor-pointer"
+            {/* Bộ lọc loại mặt sân tương tác ngay tại chỗ */}
+            <div className="flex flex-wrap items-center gap-2">
+              {filterChips.map((chip) => (
+                <button
+                  key={chip.id}
+                  type="button"
+                  onClick={() => setTypeFilter(chip.id)}
+                  className={`px-3.5 py-1.5 rounded-full text-[13px] font-bold transition-all cursor-pointer ${
+                    typeFilter === chip.id
+                      ? "bg-[#0369a1] text-white"
+                      : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
+                  }`}
                 >
-                  <div>
-                    <div className="relative h-44 bg-slate-900 overflow-hidden">
-                      <SafeImage
-                        src={pitch.imageUrl || "/images/copa-action.png"}
-                        alt={pitch.name || "Sân bóng Đà Nẵng"}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/20 to-transparent" />
-                      <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
-                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950 font-black text-[13px] shadow-sm">
-                          Đang mở đặt ca
-                        </span>
-                        <span className="px-2.5 py-1 rounded-lg bg-slate-900/80 backdrop-blur-xs text-white font-bold text-[13px]">
-                          {pitchTypeLabel(pitch.type)}
-                        </span>
-                      </div>
-                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white">
-                        <span className="text-[13px] font-semibold flex items-center gap-1 text-slate-200 line-clamp-1">
-                          <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                          <span>{pitch.location || pitch.address || "Đà Nẵng"}</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="p-5 space-y-2.5">
-                      <h3 className="text-base sm:text-lg font-extrabold text-slate-900 group-hover:text-[#0369a1] transition-colors line-clamp-2">
-                        {pitch.name}
-                      </h3>
-                      <div className="flex items-center gap-4 text-[13px] text-slate-600 font-semibold">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-[#0369a1]" />
-                          <span>05:00 - 23:00</span>
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <QrCode className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Hỗ trợ cọc VietQR</span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <div>
-                      <span className="text-[13px] text-slate-500 font-semibold block">
-                        Giá thuê từ
-                      </span>
-                      <span className="text-base font-black text-[#0369a1]">
-                        {price.toLocaleString("vi-VN")}đ
-                        <span className="text-[13px] font-semibold text-slate-500">/giờ</span>
-                      </span>
-                    </div>
-
-                    <span className="px-3.5 py-2 rounded-xl bg-[#0369a1] group-hover:bg-[#075985] text-white font-bold text-[13px] flex items-center gap-1.5 transition-colors">
-                      <span>Chọn Khung Giờ</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                  {chip.label}
+                </button>
+              ))}
+            </div>
           </div>
+
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <AnimatePresence mode="popLayout">
+              {filteredPitches.map((pitch, idx) => {
+                const price = Number(pitch.pricePerHour || 300000);
+                return (
+                  <motion.div
+                    layout
+                    key={pitch.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.3, delay: idx * 0.06 }}
+                    onClick={() => onExplore("PLAYER")}
+                    className="group bg-white landing-card-interactive border border-slate-200 overflow-hidden flex flex-col justify-between cursor-pointer"
+                  >
+                    <div>
+                      <div className="relative h-44 bg-slate-900 overflow-hidden">
+                        <SafeImage
+                          src={pitch.imageUrl || "/images/copa-action.png"}
+                          alt={pitch.name || "Sân bóng Đà Nẵng"}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                        <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
+                          <span className="px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950 font-black text-[13px] flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-950" />
+                            <span>Đang mở đặt ca</span>
+                          </span>
+                          <span className="px-2.5 py-1 rounded-lg bg-slate-900/80 backdrop-blur-xs text-white font-bold text-[13px]">
+                            {pitchTypeLabel(pitch.type)}
+                          </span>
+                        </div>
+                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white">
+                          <span className="text-[13px] font-semibold flex items-center gap-1 text-slate-200 line-clamp-1">
+                            <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span>{pitch.location || pitch.address || "Đà Nẵng"}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-5 space-y-2.5">
+                        <h3 className="text-base sm:text-lg font-extrabold text-slate-900 group-hover:text-[#0369a1] transition-colors line-clamp-2">
+                          {pitch.name}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-4 text-[13px] text-slate-600 font-semibold">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 text-[#0369a1]" />
+                            <span>05:00 - 23:00</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <QrCode className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Giữ ca VietQR</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                      <div>
+                        <span className="text-[13px] text-slate-500 font-semibold block">
+                          Giá thuê từ
+                        </span>
+                        <span className="text-base font-black text-[#0369a1]">
+                          {price.toLocaleString("vi-VN")}đ
+                          <span className="text-[13px] font-semibold text-slate-500">/giờ</span>
+                        </span>
+                      </div>
+
+                      <span className="px-3.5 py-2 rounded-xl bg-[#0369a1] group-hover:bg-[#075985] text-white font-bold text-[13px] flex items-center gap-1.5 transition-colors">
+                        <span>Chọn Khung Giờ</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
         </section>
       )}
 
-      {/* PHẦN 2: HỆ SINH THÁI DỊCH VỤ TRÊN TURFZONE */}
+      {/* PHẦN 2: BENTO GRID HỆ SINH THÁI DỊCH VỤ */}
       <section className="space-y-5">
         <div className="border-b border-slate-200 pb-3.5 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
@@ -254,14 +301,17 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {services.map((item) => {
+          {services.map((item, idx) => {
             const Icon = item.icon;
             return (
-              <div
+              <motion.div
                 key={item.id}
-                className="relative bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-5 overflow-hidden group"
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.35, delay: idx * 0.07 }}
+                className="relative bg-white landing-card-interactive p-5 sm:p-6 border border-slate-200 flex flex-col justify-between space-y-5 overflow-hidden group"
               >
-                {/* Dải màu nhấn trên đỉnh thẻ */}
                 <div
                   className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${item.accent}`}
                 />
@@ -285,8 +335,8 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                   </h3>
 
                   <div className="space-y-2.5 pt-0.5">
-                    {item.points.map((pt, idx) => (
-                      <div key={idx} className="flex items-start gap-2">
+                    {item.points.map((pt, i) => (
+                      <div key={i} className="flex items-start gap-2">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                         <span className="text-[14px] text-slate-600 font-medium leading-snug">
                           {pt}
@@ -304,14 +354,14 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                   <span>{item.ctaLabel}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
-              </div>
+              </motion.div>
             );
           })}
         </div>
       </section>
 
-      {/* PHẦN 3: QUY TRÌNH ĐẶT SÂN NHANH TRONG 3 BƯỚC */}
-      <section className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+      {/* PHẦN 3: QUY TRÌNH ĐẶT SÂN TƯƠNG TÁC TRONG 3 BƯỚC */}
+      <section className="bg-white landing-shell-radius p-6 sm:p-8 border border-slate-200 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-100 pb-4">
           <div>
             <span className="text-[13px] font-bold text-emerald-700 block mb-0.5">
@@ -322,27 +372,40 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             </h3>
           </div>
           <span className="text-[13px] font-semibold text-slate-500">
-            Hỗ trợ hoàn tiền cọc theo chính sách từng cụm sân
+            Nhấp vào từng bước để xem chi tiết
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {steps.map((s, idx) => {
             const StepIcon = s.icon;
+            const isSelected = activeStep === idx;
             return (
               <div
                 key={idx}
-                className="rounded-2xl bg-slate-50/80 border border-slate-200 p-5 flex items-start gap-4"
+                onClick={() => setActiveStep(idx)}
+                className={`landing-card-radius p-5 flex items-start gap-4 border transition-all cursor-pointer ${
+                  isSelected
+                    ? "bg-sky-50/70 border-[#0369a1]"
+                    : "bg-slate-50/80 border-slate-200 hover:border-slate-300"
+                }`}
               >
                 <div
-                  className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 font-black ${s.tone}`}
+                  className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 font-black ${s.tone}`}
                 >
                   <StepIcon className="w-6 h-6" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[13px] font-extrabold text-[#0369a1] block">
-                    {s.step}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-extrabold text-[#0369a1]">
+                      {s.step}
+                    </span>
+                    {isSelected && (
+                      <span className="px-2 py-0.5 rounded bg-[#0369a1] text-white text-[13px] font-bold">
+                        Đang xem
+                      </span>
+                    )}
+                  </div>
                   <h4 className="text-base font-extrabold text-slate-900">
                     {s.title}
                   </h4>
@@ -356,50 +419,60 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
         </div>
       </section>
 
-      {/* PHẦN 4: BANNER KÊU GỌI HÀNH ĐỘNG THEO VAI TRÒ */}
-      <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#072a3a] via-[#0b4f6c] to-[#0369a1] text-white p-6 sm:p-8 lg:p-10 border border-sky-800 shadow-lg">
-        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 text-center lg:text-left max-w-xl">
+      {/* PHẦN 4: BANNER KÊU GỌI HÀNH ĐỘNG CÓ HIỆU ỨNG NỔI */}
+      <section className="relative overflow-hidden landing-shell-radius bg-gradient-to-r from-[#041d2b] via-[#0b4f6c] to-[#0369a1] text-white p-6 sm:p-8 lg:p-10 border border-sky-800">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
             <span className="inline-block px-3 py-1 rounded-full bg-white/15 text-sky-100 text-[13px] font-bold">
               Bắt đầu cùng Turfzone ngay hôm nay
             </span>
-            <h3 className="text-xl sm:text-2xl font-black text-white">
+            <h3 className="text-xl sm:text-3xl font-black text-white leading-tight">
               Bạn muốn đặt sân thi đấu hay đăng ký quản lý cụm sân?
             </h3>
-            <p className="text-[14px] sm:text-base text-sky-100/90 font-medium">
-              Chọn đúng vai trò của bạn để trải nghiệm trọn vẹn các tính năng chuyên biệt.
+            <p className="text-[14px] sm:text-base text-sky-100/90 font-medium max-w-2xl">
+              Chọn đúng vai trò của bạn để trải nghiệm trọn vẹn hệ thống đặt sân, ghép kèo và điều hành giải đấu tự động.
             </p>
+
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => onExplore("PLAYER")}
+                className="btn-shine-effect px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+              >
+                <Users className="w-4 h-4" />
+                <span>Tài Khoản Cầu Thủ</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onExplore("OWNER")}
+                className="px-5 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+              >
+                <Store className="w-4 h-4 text-[#0369a1]" />
+                <span>Tài Khoản Chủ Sân</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER")
+                }
+                className="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/25 font-bold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+              >
+                <Trophy className="w-4 h-4 text-amber-300" />
+                <span>Xem Giải Đấu</span>
+              </button>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => onExplore("PLAYER")}
-              className="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[14px] shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-2"
-            >
-              <Users className="w-4 h-4" />
-              <span>Tài Khoản Cầu Thủ</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onExplore("OWNER")}
-              className="px-5 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-[14px] shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-2"
-            >
-              <Store className="w-4 h-4 text-[#0369a1]" />
-              <span>Tài Khoản Chủ Sân</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER")
-              }
-              className="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/25 font-bold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
-            >
-              <Trophy className="w-4 h-4 text-amber-300" />
-              <span>Xem Giải Đấu</span>
-            </button>
+          <div className="hidden lg:flex lg:col-span-4 items-center justify-center">
+            <div className="w-56 h-56 relative animate-float-slow">
+              <SafeImage
+                src="/images/epic-goal-player.png"
+                alt="Cầu thủ Turfzone"
+                className="w-full h-full object-contain drop-shadow-2xl"
+              />
+            </div>
           </div>
         </div>
       </section>
