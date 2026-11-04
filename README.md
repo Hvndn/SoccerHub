@@ -3,6 +3,8 @@
 > **Đồ Án Tốt Nghiệp:** Xây dựng hệ thống quản lý sân bóng và giải đấu thể thao tích hợp tính năng thông minh.
 > Phong độ đội bóng được suy ra từ **lịch sử thi đấu thật** (không dùng điểm Elo cộng dồn).
 
+📚 **Tài liệu kỹ thuật:** [Mục lục](docs/README.md) · [Kiến trúc hệ thống](docs/ARCHITECTURE.md) · [API — 131 endpoint](docs/API.md) · [CSDL & nghiệp vụ](docs/DATABASE.md) · [Frontend](docs/FRONTEND.md) · [AI Service](docs/AI-SERVICE.md) · [Triển khai & vận hành](docs/DEPLOYMENT.md)
+
 ---
 
 ## 🔑 Tài Khoản Demo
@@ -14,9 +16,9 @@ Hệ thống tự tạo sẵn khi khởi động lần đầu (`DataInitializer`
 | Quản trị hệ thống | `admin@Turfzone.vn` | `admin123` | Khu vực `/admin`: KPI, quản lý người dùng/giải/sân, duyệt chợ kèo |
 | Cầu thủ | `player@Turfzone.vn` | `player123` | Đặt sân, xem vé, tự hủy vé, tham gia chợ kèo |
 | Chủ sân | `owner@Turfzone.vn` | `owner123` | Dashboard cụm sân: doanh thu, tỷ lệ lấp đầy, đơn tại quầy |
-| Ban tổ chức | `organizer@Turfzone.vn` | `organizer123` | Tạo giải, bốc thăm, nhập tỷ số, VAR |
+| Ban tổ chức | `organizer@Turfzone.vn` | `organizer123` | Tạo giải, bốc thăm, nhập tỷ số, ghi bàn thắng |
 
-Ở màn đăng nhập có nút **đăng nhập nhanh 1 chạm** cho 3 vai trò phía trên.
+Ở màn đăng nhập có nút **đăng nhập nhanh 1 chạm** cho 3 vai trò Cầu thủ / Chủ sân / Ban tổ chức (Admin đăng nhập bằng email + mật khẩu).
 
 ### Nút bổ sung dữ liệu demo (để kịp dữ liệu khi thuyết trình)
 
@@ -30,12 +32,12 @@ Ngoài ra seed sẵn **một giải đã kết thúc** kèm nhánh đấu và 3 
 
 ---
 
-## 📌 Kiến Trúc Hệ Thống (3 dịch vụ)
+## 📌 Kiến Trúc Hệ Thống (4 thành phần)
 
-1. **Backend Core Service (Java 21 + Spring Boot 3.2 + MySQL)** — cổng 8080
+1. **Backend Core Service (Java 17 + Spring Boot 3.2.3 + MySQL)** — cổng 8080
    - Xác thực JWT, 4 vai trò: PLAYER / OWNER / ORGANIZER / ADMIN.
    - **Đặt sân:** ma trận ca theo giờ mở/đóng thật của từng sân, chống trùng ca, sinh mã giữ chỗ `VS-…`, check-in tại quầy, người đặt tự hủy vé.
-   - **Giải đấu:** đăng ký đội, bốc thăm theo thứ tự đăng ký, nhập tỷ số, BXH, vua phá lưới, VAR.
+   - **Giải đấu:** đăng ký đội, bốc thăm theo thứ tự đăng ký, nhập tỷ số, BXH, vua phá lưới. Bảng "Tổ VAR" trong tab nhánh đấu là công cụ phía giao diện (ghi kết quả qua chính API nhập tỷ số), backend không có bảng dữ liệu VAR.
    - **Phong độ:** `TeamFormService` quét bảng `match_results` mỗi lần đọc → chuỗi 5 trận gần nhất (ký tự đầu = mới nhất), thành tích T-H-B, tỷ lệ thắng. **Không lưu điểm, không cộng dồn.**
    - **Thống kê chủ sân:** doanh thu thật, tỷ lệ lấp đầy, đếm đơn qua website / tại quầy — tính từ CSDL, không có số liệu cứng.
    - Thông báo nội bộ khi có đơn đặt sân mới.
@@ -45,15 +47,18 @@ Ngoài ra seed sẵn **một giải đã kết thúc** kèm nhánh đấu và 3 
    - `POST /api/v1/ai/matchmaking` — ghép kèo theo **tỷ lệ thắng + chuỗi phong độ** (`form_matchmaking.py`).
 
 3. **Frontend (Next.js 14 App Router + Tailwind CSS + Framer Motion)** — cổng 3000
-   - Ứng dụng 1 trang theo tab: Đặt sân · Chợ kèo · Giải đấu · Vé của tôi · Hồ sơ · Đội của tôi.
-   - Route riêng: `/tournaments/new`, `/tournaments/register`, `/admin`.
+   - Ứng dụng 1 trang với 12 tab (Đặt sân · Đa môn · Giải đấu · Chợ kèo · Cộng đồng · Đội của tôi · Lịch của tôi · Hồ sơ · Thẻ thành viên · Ban tổ chức · Quản lý cụm sân · Quản trị), điều hướng bằng state `activeTab`.
+   - Route riêng: `/tournaments/new`, `/tournaments/register`, `/admin`, `/notifications`, `/player-setup`.
    - Có `error.tsx` (error boundary) và `not-found.tsx` (trang 404) — lỗi runtime không còn ra màn trắng.
+
+4. **Mobile App (Expo / React Native)** — thư mục `mobile-app/`
+   - Bản di động tối giản dùng chung API backend; cấu hình `EXPO_PUBLIC_API_URL` trong `mobile-app/.env.example`.
 
 ---
 
 ## 🚀 Hướng Dẫn Chạy Local
 
-- **1. MySQL:** tạo database `Turfzone_db` (mặc định `root/1234`, cấu hình tại `backend-core/src/main/resources/application.yml`).
+- **1. MySQL:** tạo database `soccerhub_db` (mặc định `root/1234`, cấu hình tại `backend-core/src/main/resources/application.yml`). Đổi tên database bằng biến `SPRING_DATASOURCE_URL` hoặc `MYSQL_DATABASE`.
 
 - **2. AI Service:**
   ```bash
@@ -75,6 +80,8 @@ Ngoài ra seed sẵn **một giải đã kết thúc** kèm nhánh đấu và 3 
   npm run dev
   ```
   Truy cập: `http://localhost:3000`
+
+> Chạy tất cả dịch vụ trong **một** terminal: `run.bat` (backend 8080 + AI 8000 + frontend 3000 cho chủ sân/admin + frontend 3001 cho cầu thủ). Hai cổng frontend dùng chung code nhưng tách phiên đăng nhập để demo 2 vai trò song song.
 
 > Nếu chạy frontend local nhưng backend chưa bật, trỏ sang bản deploy:
 > ```bash
@@ -120,10 +127,14 @@ File `backend-core/src/main/resources/db_migration_new.sql` (chạy được nhi
 | Phân hệ | Mô tả (khớp với code đang chạy) | Giao diện |
 |---|---|---|
 | **Đặt Sân** | Tìm kiếm & xem chi tiết cụm sân, ma trận ca theo ngày, đặt ca → sinh mã giữ chỗ lưu vào CSDL | Tab *Đặt sân* |
-| **Giải Đấu** | Tạo giải, đăng ký đội (kèm STK nhận lệ phí nếu BTC khai báo → QR VietQR dựng từ STK đó), bốc thăm nhánh, nhập tỷ số, BXH, vua phá lưới, VAR | `/tournaments` |
+| **Giải Đấu** | Tạo giải, đăng ký đội (kèm STK nhận lệ phí nếu BTC khai báo → QR VietQR dựng từ STK đó), bốc thăm nhánh, nhập tỷ số, BXH, vua phá lưới (tab VAR là công cụ giao diện) | Tab *Giải đấu* + `/tournaments/new`, `/tournaments/register` |
 | **Cộng Đồng** | Bài đăng tìm đối thủ, **BXH Phong Độ 5 Trận** lấy từ lịch sử thi đấu thật, danh sách kèo mở | Tab *Chợ kèo* |
 | **Thẻ Thành Viên** | Thông tin thẻ & chỉ số thi đấu tính từ giải / bracket / goal_events trong CSDL | Tab *Thẻ Thành Viên* |
-| **Chủ Sân** | Onboarding cụm sân, quản lý giá ca, ma trận ca, thống kê doanh thu & lấp đầy, đơn tại quầy, check-in bằng mã | Tab *Quản Lý Cụm Sân* |
+| **Chủ Sân** | Onboarding cụm sân, quản lý giá ca, ma trận ca, thống kê doanh thu & lấp đầy, đơn tại quầy, check-in bằng mã, **kho căn tin** (nhập món, bán tại quầy) | Tab *Quản Lý Cụm Sân* |
+| **CLB & Đội** | Tạo CLB, thêm/xóa thành viên, đặt đại diện đội, quản lý đội tham gia giải | Tab *Đội của tôi* |
+| **Chat** | Kênh chat cộng đồng + chat nhóm, ghim tin, cảm xúc, đính kèm ảnh/tệp, đánh dấu đã đọc | Tab *Chợ kèo* → khối chat |
+| **Thông Báo** | Thông báo trong hệ thống khi có đơn mới / giải đấu, admin phát thông báo toàn hệ thống | Chuông trên navbar, `/notifications` |
+| **Quản Trị** | KPI toàn hệ thống, quản lý người dùng (khóa/xóa/đổi vai trò), duyệt chợ kèo, kiểm duyệt chat, nhật ký thao tác admin | `/admin` |
 
 ### Về thanh toán (trung thực)
 - Hệ thống **chưa tích hợp cổng thanh toán tự động**. Đặt qua web sinh **mã giữ chỗ**; khách cọc trực tiếp với chủ sân, đối soát khi check-in.
@@ -137,7 +148,7 @@ File `backend-core/src/main/resources/db_migration_new.sql` (chạy được nhi
 - **Màu thương hiệu:** nút bấm dùng `#0369a1` (sky-700) — chữ trắng trên nền này đạt **5.93:1**, vượt chuẩn WCAG AA (4.5:1).
   Hover/focus dùng `#075985` (7.56:1). Chữ thương hiệu `#0b4f6c` dùng cho phần chữ để giữ độ tương phản cao.
   *(Ghi chú: `#0ea5e9` xanh cyan sáng hơn chỉ đạt 2.77:1 với chữ trắng nên không dùng làm nền nút.)*
-- **Dark mode:** hỗ trợ đầy đủ, mọi panel/ảnh/chữ đều có biến thể `dark:`.
+- **Giao diện sáng cố định:** dark mode đã được gỡ — `ThemeProvider` chỉ trả `light` và trong mã nguồn không còn class `dark:`; màu dùng qua token `brand` (`#0369a1`, hover `#075985`, chữ `#0b4f6c`).
 - **Mobile:** không tràn ngang ở 390px trên toàn bộ các route (đã kiểm tra tự động).
 
 ---
@@ -146,8 +157,11 @@ File `backend-core/src/main/resources/db_migration_new.sql` (chạy được nhi
 
 ```
 Turfzone/
-├── backend-core/    # Spring Boot API (cổng 8080)
+├── backend-core/    # Spring Boot API (cổng 8080) — 131 endpoint, JWT, MySQL
 ├── ai-service/      # FastAPI — gợi ý sân & ghép kèo theo phong độ (cổng 8000)
-├── frontend/        # Next.js app (cổng 3000)
+├── frontend/        # Next.js app (cổng 3000 / 3001)
+├── mobile-app/      # Expo / React Native
+├── docs/            # Kiến trúc, API, CSDL, frontend, AI, triển khai
+├── run.bat          # Chạy cả 4 tiến trình trong 1 terminal
 └── README.md
 ```
