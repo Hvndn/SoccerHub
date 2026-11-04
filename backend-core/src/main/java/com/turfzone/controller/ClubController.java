@@ -55,9 +55,16 @@ public class ClubController {
 
     /** Sinh slug duy nhất (thêm hậu tố -2, -3... nếu trùng). */
     private String uniqueSlug(String base) {
+        return uniqueSlug(base, null);
+    }
+
+    /** Sinh slug duy nhất, bỏ qua CLB có id = excludeId (dùng khi sửa CLB). */
+    private String uniqueSlug(String base, Long excludeId) {
         String slug = base;
         int i = 2;
-        while (clubRepository.existsBySlug(slug)) {
+        while (excludeId == null
+                ? clubRepository.existsBySlug(slug)
+                : clubRepository.existsBySlugAndIdNot(slug, excludeId)) {
             slug = base + "-" + i++;
         }
         return slug;
@@ -160,6 +167,20 @@ public class ClubController {
                 out.add(toDto(c, email));
             }
         }
+        // CLB ma toi la dai dien (kể ca CLB toi KHONG so huu - vi du: tao moi CLB sau do duoc bo nhiem).
+        List<Long> ownedIds = owned.stream().map(Club::getId).toList();
+        List<Club> repClubs = clubMemberRepository.findByMemberEmailOrderByJoinedAtDesc(email).stream()
+                .filter(m -> Boolean.TRUE.equals(m.getIsRepresentative()))
+                .map(ClubMember::getClubId)
+                .distinct()
+                .map(clubRepository::findById)
+                .filter(java.util.Optional::isPresent)
+                .map(java.util.Optional::get)
+                .filter(c -> !ownedIds.contains(c.getId()))
+                .toList();
+        for (Club c : repClubs) {
+            out.add(toDto(c, email));
+        }
         // CLB mà tôi là thành viên (không phải đại diện) — chỉ thông tin tối thiểu.
         List<Map<String, Object>> memberOf = clubMemberRepository.findByMemberEmailOrderByJoinedAtDesc(email).stream()
                 .filter(m -> !Boolean.TRUE.equals(m.getIsRepresentative()))
@@ -250,7 +271,12 @@ public class ClubController {
             if (name.length() < 3 || name.length() > 100) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Tên CLB phải từ 3 đến 100 ký tự."));
             }
+            String oldName = club.getName();
             club.setName(name);
+            // Dat lai slug tu ten moi (neu client khong cung cap slug).
+            if (body.get("slug") == null && (oldName == null || !name.equals(oldName))) {
+                club.setSlug(uniqueSlug(slugify(name), club.getId()));
+            }
         }
         if (body.get("description") != null) club.setDescription(body.get("description").toString().trim());
         if (body.get("area") != null) club.setArea(body.get("area").toString().trim());
@@ -278,8 +304,13 @@ public class ClubController {
         if (!isRepresentative(id, norm(u.getEmail()))) {
             return ResponseEntity.status(403).body(Map.of("message", "Chỉ đại diện CLB mới xóa được CLB."));
         }
+        List<String> memberEmails = clubMemberRepository.findByClubId(id).stream()
+                .map(ClubMember::getMemberEmail).distinct().toList();
         clubMemberRepository.deleteByClubId(id);
         clubRepository.deleteById(id);
+        for (String e : memberEmails) {
+            refreshClubRepFlag(e);
+        }
         refreshClubRepFlag(u.getEmail());
         return ResponseEntity.ok(Map.of("message", "Đã xóa CLB \"" + club.getName() + "\"."));
     }
@@ -375,8 +406,17 @@ public class ClubController {
         }
         boolean makeRep = body.get("isRepresentative") != null
                 && Boolean.parseBoolean(body.get("isRepresentative").toString());
-        if (makeRep && clubMemberRepository.countByClubIdAndIsRepresentativeTrue(id) >= 3) {
+        boolean currentlyRep = Boolean.TRUE.equals(found.get().getIsRepresentative());
+        if (makeRep && !currentlyRep && clubMemberRepository.countByClubIdAndIsRepresentativeTrue(id) >= 3) {
             return ResponseEntity.badRequest().body(Map.of("message", "Mỗi CLB tối đa 3 đại diện."));
+        }
+        if (!makeRep && target.equals(norm(u.getEmail()))) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Bạn không thể tự thu hồi vai trò đại diện của mình."));
+        }
+        // Không cho thu hồi vai trò của đại diện cuối cùng -> CLB sẽ mất nổi quyền sửa/xóa.
+        if (!makeRep && Boolean.TRUE.equals(found.get().getIsRepresentative())
+                && clubMemberRepository.countByClubIdAndIsRepresentativeTrue(id) <= 1) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không thể thu hồi vai trò của đại diện cuối cùng của CLB."));
         }
         found.get().setIsRepresentative(makeRep);
         clubMemberRepository.save(found.get());

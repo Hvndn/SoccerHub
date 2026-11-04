@@ -41,3 +41,4 @@ public class BookingWaitlist {
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }
+

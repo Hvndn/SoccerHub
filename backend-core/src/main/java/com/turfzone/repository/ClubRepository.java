@@ -14,5 +14,7 @@ public interface ClubRepository extends JpaRepository<Club, Long> {
 
     boolean existsBySlug(String slug);
 
+    boolean existsBySlugAndIdNot(String slug, Long id);
+
     List<Club> findByOwnerEmailOrderByCreatedAtDesc(String ownerEmail);
 }

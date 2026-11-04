@@ -13,6 +13,8 @@ public interface ClubMemberRepository extends JpaRepository<ClubMember, Long> {
 
     List<ClubMember> findByClubIdOrderByIsRepresentativeDescJoinedAtAsc(Long clubId);
 
+    List<ClubMember> findByClubId(Long clubId);
+
     List<ClubMember> findByMemberEmailOrderByJoinedAtDesc(String memberEmail);
 
     Optional<ClubMember> findByClubIdAndMemberEmail(Long clubId, String memberEmail);

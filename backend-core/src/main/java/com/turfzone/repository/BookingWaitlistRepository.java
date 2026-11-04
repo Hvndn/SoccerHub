@@ -22,3 +22,4 @@ public interface BookingWaitlistRepository extends JpaRepository<BookingWaitlist
             Long pitchId, String courtName, String bookingDate, String timeSlot, String customerEmail, String status
     );
 }
+
