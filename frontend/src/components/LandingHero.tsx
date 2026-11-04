@@ -68,7 +68,6 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
   const [timeSlot, setTimeSlot] = useState("gold");
   const [dateChoice, setDateChoice] = useState("today");
 
-  // Chế độ tương tác trên Hero Showcase
   const [activeMode, setActiveMode] = useState<ShowcaseMode>("pitch");
   const [selectedPreviewSlot, setSelectedPreviewSlot] = useState("17:30 - 18:30");
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -122,7 +121,6 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
           loading: false,
         });
 
-        // Tạo dải băng chuyền sự kiện trực tiếp từ dữ liệu thật
         const ticker: { id: string; badge: string; text: string; tab?: string }[] = [];
         pitchArr.slice(0, 3).forEach((p: any, idx: number) => {
           ticker.push({
@@ -179,7 +177,6 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
     };
   }, []);
 
-  // Tự động luân chuyển chế độ giới thiệu sau mỗi 7 giây nếu người dùng chưa thao tác
   useEffect(() => {
     const modes: ShowcaseMode[] = ["pitch", "tournament", "matchmaking"];
     const timer = setInterval(() => {
@@ -193,8 +190,8 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 10;
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -10;
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 8;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -8;
     setTilt({ x, y });
   };
 
@@ -206,19 +203,19 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
   ];
 
   const modeTabs: { id: ShowcaseMode; label: string; icon: any }[] = [
-    { id: "pitch", label: "Sơ đồ đặt sân", icon: Calendar },
+    { id: "pitch", label: "Lịch ca trống", icon: Calendar },
     { id: "tournament", label: "Nhánh giải đấu", icon: Trophy },
-    { id: "matchmaking", label: "Radar cáp kèo", icon: Swords },
+    { id: "matchmaking", label: "Sàn cáp kèo", icon: Swords },
   ];
 
   return (
     <div className="w-full space-y-6">
-      {/* 1. DẢI BĂNG CHUYỀN SỰ KIỆN TRỰC TIẾP (LIVE MATCHDAY TICKER) */}
+      {/* 1. DẢI BĂNG CHUYỀN SỰ KIỆN TRỰC TIẾP GIAO DIỆN SÁNG */}
       {liveItems.length > 0 && (
-        <div className="bg-slate-900 text-white landing-card-radius px-4 py-2.5 border border-slate-800 flex items-center gap-3 overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[13px] font-bold shrink-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 live-radar-dot" />
-            <Radio className="w-3.5 h-3.5" />
+        <div className="bg-gradient-to-r from-sky-50 via-white to-emerald-50 text-slate-800 landing-card-radius px-4 py-2.5 border border-sky-200/80 flex items-center gap-3 overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-[13px] font-bold shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 live-radar-dot" />
+            <Radio className="w-3.5 h-3.5 text-emerald-700" />
             <span>Trực tiếp sân cỏ</span>
           </div>
 
@@ -233,13 +230,13 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                       ? onNavigateTab(item.tab)
                       : onOpenAuth("login", "PLAYER")
                   }
-                  className="inline-flex items-center gap-2 text-[13px] font-semibold text-slate-200 hover:text-emerald-300 transition-colors cursor-pointer shrink-0"
+                  className="inline-flex items-center gap-2 text-[13px] font-semibold text-slate-700 hover:text-[#0369a1] transition-colors cursor-pointer shrink-0"
                 >
-                  <span className="px-2 py-0.5 rounded bg-white/10 text-sky-300 font-bold text-[13px]">
+                  <span className="px-2 py-0.5 rounded bg-sky-100 text-[#0369a1] border border-sky-200 font-bold text-[13px]">
                     {item.badge}
                   </span>
                   <span>{item.text}</span>
-                  <span className="text-slate-600 pl-4">•</span>
+                  <span className="text-slate-300 pl-4">•</span>
                 </button>
               ))}
             </div>
@@ -247,20 +244,20 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         </div>
       )}
 
-      {/* 2. HERO SÂN VẬN ĐỘNG ĐA CHẾ ĐỘ TƯƠNG TÁC */}
-      <div className="relative overflow-hidden landing-shell-radius bg-gradient-to-br from-[#041d2b] via-[#0b4f6c] to-[#0369a1] text-white border border-sky-700/60">
-        {/* Ánh sáng sân vận động & Lưới sân bóng */}
+      {/* 2. HERO BANNER GIAO DIỆN SÁNG TINH KHÔI (DAYLIGHT SPORTS CLUB) */}
+      <div className="relative overflow-hidden landing-shell-radius bg-gradient-to-br from-sky-50 via-white to-emerald-50/70 text-slate-900 border border-sky-200/90">
+        {/* Ánh sáng dịu nhẹ & Đường nét sân bóng trang nhã */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-25"
+          className="pointer-events-none absolute inset-0"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 82% 22%, rgba(16, 185, 129, 0.65) 0%, transparent 45%), radial-gradient(circle at 12% 85%, rgba(56, 189, 248, 0.5) 0%, transparent 50%)",
+              "radial-gradient(circle at 85% 18%, rgba(16, 185, 129, 0.14) 0%, transparent 45%), radial-gradient(circle at 10% 85%, rgba(3, 105, 161, 0.12) 0%, transparent 50%)",
           }}
         />
         <svg
           aria-hidden="true"
-          className="pointer-events-none absolute -right-12 -bottom-12 w-[500px] h-[500px] text-white/[0.05]"
+          className="pointer-events-none absolute -right-12 -bottom-12 w-[500px] h-[500px] text-[#0369a1]/[0.05]"
           viewBox="0 0 200 200"
           fill="none"
         >
@@ -271,36 +268,36 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         </svg>
 
         <div className="relative z-10 p-6 sm:p-10 lg:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-          {/* Cột Trái: Thông điệp & Hành động */}
+          {/* Cột Trái: Thông điệp Sáng Rõ & Hành động */}
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-7 space-y-5"
           >
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sky-100 text-[13px] font-bold">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 live-radar-dot" />
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white border border-sky-200 text-[#0369a1] text-[13px] font-bold shadow-2xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 live-radar-dot" />
               <span>Trung tâm đặt sân &amp; giải đấu bóng đá Đà Nẵng</span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl lg:text-[42px] font-black tracking-tight leading-[1.16] text-white">
+            <h1 className="text-2xl sm:text-4xl lg:text-[42px] font-black tracking-tight leading-[1.16] text-slate-900">
               Chạm Để Giữ Sân Cỏ,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-sky-200">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0369a1] via-sky-600 to-emerald-600">
                 Bùng Nổ Mọi Trận Cầu
               </span>{" "}
               Tại Đà Nẵng
             </h1>
 
-            <p className="text-sm sm:text-base text-sky-100/90 leading-relaxed max-w-2xl font-medium">
-              Trải nghiệm đặt sân bóng trực quan theo sơ đồ thực tế, thanh toán VietQR xác nhận ngay lập tức, ghép kèo giao hữu và vận hành giải đấu tự động.
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl font-medium">
+              Trải nghiệm đặt sân bóng trực quan theo khung giờ thực tế, thanh toán VietQR xác nhận ngay lập tức, ghép kèo giao hữu và vận hành giải đấu tự động.
             </p>
 
-            {/* Nút hành động có hiệu ứng quét sáng (btn-shine-effect) */}
+            {/* Nút hành động sáng rõ */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
                 type="button"
                 onClick={() => onOpenAuth("login", "PLAYER")}
-                className="btn-shine-effect px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[15px] transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="btn-shine-effect px-6 py-3.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[15px] transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Calendar className="w-4 h-4 stroke-[2.5]" />
                 <span>Đặt Sân Ngay</span>
@@ -312,40 +309,40 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                 onClick={() =>
                   onNavigateTab ? onNavigateTab("tournaments") : onOpenAuth("login", "PLAYER")
                 }
-                className="px-5 py-3.5 rounded-xl bg-white/12 hover:bg-white/22 text-white font-bold text-[15px] border border-white/25 backdrop-blur-sm transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="px-5 py-3.5 rounded-xl bg-white hover:bg-amber-50/70 text-slate-900 font-bold text-[15px] border border-slate-300 hover:border-amber-400 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
               >
-                <Trophy className="w-4 h-4 text-amber-300" />
+                <Trophy className="w-4 h-4 text-amber-600" />
                 <span>Đấu Trường Giải Đấu</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => onOpenAuth("login", "OWNER")}
-                className="px-5 py-3.5 rounded-xl bg-slate-950/35 hover:bg-slate-950/55 text-sky-100 font-bold text-[14px] border border-sky-300/25 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="px-5 py-3.5 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 text-emerald-800 font-bold text-[14px] border border-emerald-200 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
               >
-                <Shield className="w-4 h-4 text-emerald-300" />
+                <Shield className="w-4 h-4 text-emerald-600" />
                 <span>Dành Cho Chủ Sân</span>
               </button>
             </div>
 
             {/* 3 Cam kết nổi bật */}
-            <div className="pt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] font-semibold text-sky-100/90">
+            <div className="pt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] font-bold text-slate-700">
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>Giữ ca tự động 24/7</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <QrCode className="w-4 h-4 text-emerald-400 shrink-0" />
+                <QrCode className="w-4 h-4 text-[#0369a1] shrink-0" />
                 <span>Đặt cọc VietQR an toàn</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+                <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
                 <span>Lịch đấu &amp; bảng điểm thời gian thực</span>
               </div>
             </div>
           </motion.div>
 
-          {/* Cột Phải: Bảng Điều Khiển Sân Vận Động Tương Tác 3 Chế Độ (Interactive 3D Card) */}
+          {/* Cột Phải: Thẻ Tương Tác 3 Chế Độ Giao Diện Sáng (Daylight Interactive Card) */}
           <div
             className="lg:col-span-5"
             onMouseMove={handleMouseMove}
@@ -355,10 +352,10 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
               animate={{ rotateX: tilt.y, rotateY: tilt.x }}
               transition={{ type: "spring", stiffness: 200, damping: 20 }}
               style={{ transformPerspective: 1000 }}
-              className="rounded-2xl bg-slate-950/65 backdrop-blur-md border border-white/20 p-4 sm:p-5 space-y-4"
+              className="landing-card-radius bg-white border border-slate-200/90 p-4 sm:p-5 space-y-4 shadow-md"
             >
-              {/* Thanh chuyển đổi 3 chế độ tương tác */}
-              <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-white/10 border border-white/10">
+              {/* Thanh chuyển đổi 3 chế độ tương tác sáng sủa */}
+              <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200">
                 {modeTabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeMode === tab.id;
@@ -368,13 +365,13 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                       type="button"
                       onClick={() => setActiveMode(tab.id)}
                       className={`relative flex-1 py-2 px-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
-                        isActive ? "text-slate-950" : "text-sky-100 hover:text-white"
+                        isActive ? "text-white" : "text-slate-600 hover:text-slate-900"
                       }`}
                     >
                       {isActive && (
                         <motion.div
                           layoutId="heroShowcaseTabIndicator"
-                          className="absolute inset-0 rounded-lg bg-emerald-400"
+                          className="absolute inset-0 rounded-lg bg-[#0369a1]"
                           transition={{ type: "spring", stiffness: 380, damping: 30 }}
                         />
                       )}
@@ -385,7 +382,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                 })}
               </div>
 
-              {/* Nội dung động theo từng chế độ */}
+              {/* Nội dung động theo từng chế độ trên nền sáng */}
               <div className="min-h-[260px] flex flex-col justify-between">
                 <AnimatePresence mode="wait">
                   {activeMode === "pitch" && (
@@ -397,24 +394,20 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                       transition={{ duration: 0.25 }}
                       className="space-y-3.5"
                     >
-                      {/* Mô phỏng mặt sân cỏ chiến thuật */}
-                      <div className="relative rounded-xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-800 p-4 border border-emerald-400/40 overflow-hidden">
-                        <div className="flex items-center justify-between gap-2 relative z-10">
-                          <div>
-                            <span className="text-[13px] font-bold text-emerald-200 block">
-                              Sân 7A · Cụm Sân Trung Tâm Đà Nẵng
-                            </span>
-                            <h3 className="text-base font-black text-white">
-                              Chọn thử ca trống để xem giá ngay
-                            </h3>
-                          </div>
-                          <span className="px-2.5 py-1 rounded-lg bg-emerald-400 text-slate-950 font-black text-[13px]">
-                            Sẵn sàng
+                      <div className="rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50/70 to-sky-50 p-3.5 border border-emerald-200 flex items-center justify-between gap-2">
+                        <div>
+                          <span className="text-[13px] font-bold text-emerald-800 block">
+                            Sân 7A · Cụm Sân Trung Tâm Đà Nẵng
                           </span>
+                          <h3 className="text-base font-black text-slate-900">
+                            Chọn thử ca trống để xem giá ngay
+                          </h3>
                         </div>
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[13px] shrink-0">
+                          Đang mở ca
+                        </span>
                       </div>
 
-                      {/* Các khung giờ tương tác bấm chọn thử */}
                       <div className="grid grid-cols-2 gap-2">
                         {previewSlots.map((slot) => {
                           const selected = selectedPreviewSlot === slot.time;
@@ -425,33 +418,37 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                               onClick={() => setSelectedPreviewSlot(slot.time)}
                               className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                                 selected
-                                  ? "bg-emerald-500/25 border-emerald-400 text-white"
-                                  : "bg-white/5 hover:bg-white/10 border-white/15 text-slate-200"
+                                  ? "bg-sky-50 border-[#0369a1] ring-1 ring-[#0369a1]"
+                                  : "bg-slate-50/80 hover:bg-slate-100/80 border-slate-200"
                               }`}
                             >
                               <div className="flex items-center justify-between gap-1">
-                                <span className="text-[14px] font-black">{slot.time}</span>
+                                <span className="text-[14px] font-black text-slate-900">
+                                  {slot.time}
+                                </span>
                                 {slot.hot && (
-                                  <Flame className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                  <Flame className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                                 )}
                               </div>
-                              <div className="text-[13px] text-emerald-300 font-bold mt-0.5">
+                              <div className="text-[13px] text-[#0369a1] font-extrabold mt-0.5">
                                 {slot.price}/giờ
                               </div>
-                              <div className="text-[13px] text-sky-200/80">{slot.status}</div>
+                              <div className="text-[13px] text-slate-500 font-medium">
+                                {slot.status}
+                              </div>
                             </button>
                           );
                         })}
                       </div>
 
                       <div className="pt-1 flex items-center justify-between gap-2">
-                        <span className="text-[13px] text-sky-200 font-medium">
-                          Đang chọn: <strong className="text-white">{selectedPreviewSlot}</strong>
+                        <span className="text-[13px] text-slate-600 font-medium">
+                          Đang chọn: <strong className="text-slate-900">{selectedPreviewSlot}</strong>
                         </span>
                         <button
                           type="button"
                           onClick={() => onOpenAuth("login", "PLAYER")}
-                          className="px-3.5 py-2 rounded-lg bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[13px] flex items-center gap-1 cursor-pointer"
+                          className="px-3.5 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] flex items-center gap-1 cursor-pointer"
                         >
                           <span>Giữ ca này</span>
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -469,46 +466,45 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                       transition={{ duration: 0.25 }}
                       className="space-y-3.5"
                     >
-                      <div className="rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-transparent border border-amber-400/35 p-3.5 flex items-center justify-between gap-3">
+                      <div className="rounded-xl bg-amber-50/90 border border-amber-200 p-3.5 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-300/40 flex items-center justify-center shrink-0">
-                            <Trophy className="w-5 h-5 text-amber-300" />
+                          <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
+                            <Trophy className="w-5 h-5 text-amber-700" />
                           </div>
                           <div>
-                            <div className="text-[14px] font-black text-white">
+                            <div className="text-[14px] font-black text-slate-900">
                               Hệ Thống Chia Nhánh &amp; Bảng Điểm Tự Động
                             </div>
-                            <div className="text-[13px] text-amber-200">
+                            <div className="text-[13px] text-amber-800 font-medium">
                               {stats.tournaments} giải đấu · {stats.matchesPlayed} trận đã cập nhật tỷ số
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* Mô phỏng nhánh đấu trực quan */}
-                      <div className="rounded-xl bg-white/5 border border-white/15 p-3.5 space-y-2.5">
-                        <div className="flex items-center justify-between text-[13px] text-sky-200 font-bold">
+                      <div className="rounded-xl bg-slate-50 border border-slate-200 p-3.5 space-y-2.5">
+                        <div className="flex items-center justify-between text-[13px] text-slate-600 font-bold">
                           <span>Bán kết 1 · Sân 7A</span>
-                          <span className="text-emerald-300">Đã kết thúc</span>
+                          <span className="text-emerald-700">Đã kết thúc</span>
                         </div>
-                        <div className="flex items-center justify-between bg-slate-900/80 px-3 py-2 rounded-lg border border-white/10">
-                          <span className="text-[14px] font-bold text-white">FC Sông Hàn</span>
-                          <span className="px-2.5 py-0.5 rounded bg-emerald-500/25 text-emerald-300 font-black text-[14px]">
+                        <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200">
+                          <span className="text-[14px] font-bold text-slate-900">FC Sông Hàn</span>
+                          <span className="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-black text-[14px]">
                             3 - 1
                           </span>
-                          <span className="text-[14px] font-semibold text-slate-300">FC Hải Châu</span>
+                          <span className="text-[14px] font-semibold text-slate-600">FC Hải Châu</span>
                         </div>
 
-                        <div className="flex items-center justify-between text-[13px] text-sky-200 font-bold pt-1">
+                        <div className="flex items-center justify-between text-[13px] text-slate-600 font-bold pt-1">
                           <span>Bán kết 2 · Sân 7B</span>
-                          <span className="text-amber-300">19:30 tối nay</span>
+                          <span className="text-amber-700">19:30 tối nay</span>
                         </div>
-                        <div className="flex items-center justify-between bg-slate-900/80 px-3 py-2 rounded-lg border border-white/10">
-                          <span className="text-[14px] font-bold text-white">FC Sơn Trà</span>
-                          <span className="px-2.5 py-0.5 rounded bg-amber-500/25 text-amber-300 font-black text-[13px]">
+                        <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200">
+                          <span className="text-[14px] font-bold text-slate-900">FC Sơn Trà</span>
+                          <span className="px-2.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[13px]">
                             Sắp đá
                           </span>
-                          <span className="text-[14px] font-bold text-white">FC Thanh Khê</span>
+                          <span className="text-[14px] font-bold text-slate-900">FC Thanh Khê</span>
                         </div>
                       </div>
 
@@ -517,7 +513,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                         onClick={() =>
                           onNavigateTab ? onNavigateTab("tournaments") : onOpenAuth("login", "PLAYER")
                         }
-                        className="w-full py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-[13px] flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full py-2.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <Trophy className="w-4 h-4" />
                         <span>Mở Toàn Bộ Bảng Đấu &amp; Giải Đấu</span>
@@ -534,41 +530,41 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                       transition={{ duration: 0.25 }}
                       className="space-y-3.5"
                     >
-                      <div className="rounded-xl bg-gradient-to-r from-sky-500/20 to-emerald-500/20 border border-sky-300/35 p-3.5 flex items-center justify-between gap-3">
+                      <div className="rounded-xl bg-sky-50 border border-sky-200 p-3.5 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-emerald-400/20 border border-emerald-300/40 flex items-center justify-center shrink-0">
-                            <Swords className="w-5 h-5 text-emerald-300" />
+                          <div className="w-10 h-10 rounded-xl bg-white border border-sky-200 flex items-center justify-center shrink-0">
+                            <Swords className="w-5 h-5 text-[#0369a1]" />
                           </div>
                           <div>
-                            <div className="text-[14px] font-black text-white">
+                            <div className="text-[14px] font-black text-slate-900">
                               Sàn Cáp Kèo &amp; Tìm Đối Giao Hữu
                             </div>
-                            <div className="text-[13px] text-sky-200">
+                            <div className="text-[13px] text-slate-600 font-medium">
                               Đang có {stats.posts} kèo chờ bắt đối tại Đà Nẵng
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="rounded-xl bg-white/5 border border-white/15 p-4 flex items-center justify-between gap-3">
+                      <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 flex items-center justify-between gap-3">
                         <div className="text-center space-y-1 flex-1">
-                          <div className="w-11 h-11 rounded-full bg-sky-500/25 border border-sky-300/40 mx-auto flex items-center justify-center font-black text-white text-[14px]">
+                          <div className="w-11 h-11 rounded-full bg-sky-100 border border-sky-300 mx-auto flex items-center justify-center font-black text-[#0369a1] text-[14px]">
                             ĐN
                           </div>
-                          <div className="text-[14px] font-bold text-white">FC Đà Nẵng Trẻ</div>
-                          <div className="text-[13px] text-emerald-300 font-semibold">Đã có sân 7</div>
+                          <div className="text-[14px] font-bold text-slate-900">FC Đà Nẵng Trẻ</div>
+                          <div className="text-[13px] text-emerald-700 font-semibold">Đã có sân 7</div>
                         </div>
 
-                        <div className="px-3 py-1.5 rounded-full bg-emerald-400/20 border border-emerald-400/40 text-emerald-300 font-black text-[13px]">
+                        <div className="px-3 py-1.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 font-black text-[13px]">
                           Tìm đối 50/50
                         </div>
 
                         <div className="text-center space-y-1 flex-1">
-                          <div className="w-11 h-11 rounded-full bg-white/10 border border-dashed border-white/35 mx-auto flex items-center justify-center font-black text-sky-200 text-[14px]">
+                          <div className="w-11 h-11 rounded-full bg-white border border-dashed border-slate-300 mx-auto flex items-center justify-center font-black text-slate-500 text-[14px]">
                             ?
                           </div>
-                          <div className="text-[14px] font-bold text-sky-200">Đội của bạn</div>
-                          <div className="text-[13px] text-amber-300 font-semibold">18:30 tối nay</div>
+                          <div className="text-[14px] font-bold text-slate-700">Đội của bạn</div>
+                          <div className="text-[13px] text-amber-700 font-semibold">18:30 tối nay</div>
                         </div>
                       </div>
 
@@ -577,7 +573,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                         onClick={() =>
                           onNavigateTab ? onNavigateTab("matchmaking") : onOpenAuth("login", "PLAYER")
                         }
-                        className="w-full py-2.5 rounded-lg bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-[13px] flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full py-2.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <Zap className="w-4 h-4" />
                         <span>Vào Sàn Bắt Kèo Giao Hữu Ngay</span>
@@ -744,7 +740,7 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
         </div>
       </motion.div>
 
-      {/* 4. THỐNG KÊ HỆ THỐNG CÓ HIỆU ỨNG ĐẾM SỐ TĂNG DẦN (ANIMATED COUNTER) */}
+      {/* 4. THỐNG KÊ HỆ THỐNG CÓ HIỆU ỨNG ĐẾM SỐ TĂNG DẦN */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
         {[
           {

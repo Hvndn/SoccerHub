@@ -29,6 +29,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
   const [allPitches, setAllPitches] = useState<any[]>([]);
   const [loadingPitches, setLoadingPitches] = useState(true);
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [districtFilter, setDistrictFilter] = useState<string>("all");
   const [activeStep, setActiveStep] = useState<number>(0);
 
   useEffect(() => {
@@ -50,7 +51,6 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
     };
   }, []);
 
-  // Tự động chuyển bước minh họa mỗi 4 giây
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveStep((prev) => (prev + 1) % 3);
@@ -60,15 +60,20 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
 
   const filteredPitches = useMemo(() => {
     const list = allPitches.filter((p) => {
-      if (typeFilter === "all") return true;
-      const t = String(p.type || "").toUpperCase();
-      if (typeFilter === "7") return t.includes("7");
-      if (typeFilter === "5") return t.includes("5");
-      if (typeFilter === "11") return t.includes("11");
+      if (typeFilter !== "all") {
+        const t = String(p.type || "").toUpperCase();
+        if (typeFilter === "7" && !t.includes("7")) return false;
+        if (typeFilter === "5" && !t.includes("5")) return false;
+        if (typeFilter === "11" && !t.includes("11")) return false;
+      }
+      if (districtFilter !== "all") {
+        const loc = `${p.location || ""} ${p.address || ""} ${p.name || ""}`.toLowerCase();
+        if (!loc.includes(districtFilter.toLowerCase())) return false;
+      }
       return true;
     });
-    return list.slice(0, 3);
-  }, [allPitches, typeFilter]);
+    return (list.length > 0 ? list : allPitches).slice(0, 3);
+  }, [allPitches, typeFilter, districtFilter]);
 
   const services = [
     {
@@ -168,9 +173,18 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
     { id: "11", label: "Sân 11 người" },
   ];
 
+  const districtChips = [
+    { id: "all", label: "Toàn Đà Nẵng" },
+    { id: "Hải Châu", label: "Hải Châu" },
+    { id: "Sơn Trà", label: "Sơn Trà" },
+    { id: "Thanh Khê", label: "Thanh Khê" },
+    { id: "Cẩm Lệ", label: "Cẩm Lệ" },
+    { id: "Ngũ Hành Sơn", label: "Ngũ Hành Sơn" },
+  ];
+
   return (
     <div className="space-y-10 sm:space-y-14">
-      {/* PHẦN 1: KHÁM PHÁ CỤM SÂN TƯƠNG TÁC TRỰC TIẾP */}
+      {/* PHẦN 1: KHÁM PHÁ CỤM SÂN TƯƠNG TÁC TRỰC TIẾP (GIAO DIỆN SÁNG) */}
       {!loadingPitches && allPitches.length > 0 && (
         <section className="space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-3.5">
@@ -203,6 +217,28 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             </div>
           </div>
 
+          {/* Thanh chọn nhanh Quận/Huyện tại Đà Nẵng */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[13px] font-bold text-slate-500 flex items-center gap-1 mr-1">
+              <MapPin className="w-3.5 h-3.5 text-[#0369a1]" />
+              <span>Khu vực:</span>
+            </span>
+            {districtChips.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                onClick={() => setDistrictFilter(d.id)}
+                className={`px-3 py-1 rounded-lg text-[13px] font-bold transition-all cursor-pointer ${
+                  districtFilter === d.id
+                    ? "bg-sky-100 text-[#0369a1] border border-sky-300"
+                    : "bg-slate-100/80 hover:bg-slate-200/70 text-slate-600 border border-transparent"
+                }`}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+
           <motion.div layout className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <AnimatePresence mode="popLayout">
               {filteredPitches.map((pitch, idx) => {
@@ -219,31 +255,28 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                     className="group bg-white landing-card-interactive border border-slate-200 overflow-hidden flex flex-col justify-between cursor-pointer"
                   >
                     <div>
-                      <div className="relative h-44 bg-slate-900 overflow-hidden">
+                      <div className="relative h-44 bg-sky-50 overflow-hidden border-b border-slate-100">
                         <SafeImage
                           src={pitch.imageUrl || "/images/copa-action.png"}
                           alt={pitch.name || "Sân bóng Đà Nẵng"}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
                         <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
-                          <span className="px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950 font-black text-[13px] flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-950" />
+                          <span className="px-2.5 py-1 rounded-lg bg-white/95 backdrop-blur-xs text-emerald-700 border border-emerald-200 font-black text-[13px] flex items-center gap-1.5 shadow-2xs">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
                             <span>Đang mở đặt ca</span>
                           </span>
-                          <span className="px-2.5 py-1 rounded-lg bg-slate-900/80 backdrop-blur-xs text-white font-bold text-[13px]">
+                          <span className="px-2.5 py-1 rounded-lg bg-white/95 backdrop-blur-xs text-[#0369a1] border border-sky-200 font-bold text-[13px] shadow-2xs">
                             {pitchTypeLabel(pitch.type)}
-                          </span>
-                        </div>
-                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white">
-                          <span className="text-[13px] font-semibold flex items-center gap-1 text-slate-200 line-clamp-1">
-                            <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                            <span>{pitch.location || pitch.address || "Đà Nẵng"}</span>
                           </span>
                         </div>
                       </div>
 
                       <div className="p-5 space-y-2.5">
+                        <div className="text-[13px] font-bold text-[#0369a1] flex items-center gap-1 line-clamp-1">
+                          <MapPin className="w-3.5 h-3.5 shrink-0" />
+                          <span>{pitch.location || pitch.address || "Đà Nẵng"}</span>
+                        </div>
                         <h3 className="text-base sm:text-lg font-extrabold text-slate-900 group-hover:text-[#0369a1] transition-colors line-clamp-2">
                           {pitch.name}
                         </h3>
@@ -260,7 +293,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                       </div>
                     </div>
 
-                    <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <div className="px-5 py-3.5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-2">
                       <div>
                         <span className="text-[13px] text-slate-500 font-semibold block">
                           Giá thuê từ
@@ -419,17 +452,17 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
         </div>
       </section>
 
-      {/* PHẦN 4: BANNER KÊU GỌI HÀNH ĐỘNG CÓ HIỆU ỨNG NỔI */}
-      <section className="relative overflow-hidden landing-shell-radius bg-gradient-to-r from-[#041d2b] via-[#0b4f6c] to-[#0369a1] text-white p-6 sm:p-8 lg:p-10 border border-sky-800">
+      {/* PHẦN 4: BANNER KÊU GỌI HÀNH ĐỘNG GIAO DIỆN SÁNG (DAYLIGHT CTA) */}
+      <section className="relative overflow-hidden landing-shell-radius bg-gradient-to-br from-sky-50 via-white to-emerald-50 text-slate-900 p-6 sm:p-8 lg:p-10 border border-sky-200">
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
-            <span className="inline-block px-3 py-1 rounded-full bg-white/15 text-sky-100 text-[13px] font-bold">
+            <span className="inline-block px-3 py-1 rounded-full bg-sky-100 text-[#0369a1] border border-sky-200 text-[13px] font-bold">
               Bắt đầu cùng Turfzone ngay hôm nay
             </span>
-            <h3 className="text-xl sm:text-3xl font-black text-white leading-tight">
+            <h3 className="text-xl sm:text-3xl font-black text-slate-900 leading-tight">
               Bạn muốn đặt sân thi đấu hay đăng ký quản lý cụm sân?
             </h3>
-            <p className="text-[14px] sm:text-base text-sky-100/90 font-medium max-w-2xl">
+            <p className="text-[14px] sm:text-base text-slate-600 font-medium max-w-2xl">
               Chọn đúng vai trò của bạn để trải nghiệm trọn vẹn hệ thống đặt sân, ghép kèo và điều hành giải đấu tự động.
             </p>
 
@@ -437,7 +470,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               <button
                 type="button"
                 onClick={() => onExplore("PLAYER")}
-                className="btn-shine-effect px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                className="btn-shine-effect px-5 py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
               >
                 <Users className="w-4 h-4" />
                 <span>Tài Khoản Cầu Thủ</span>
@@ -446,7 +479,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               <button
                 type="button"
                 onClick={() => onExplore("OWNER")}
-                className="px-5 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                className="px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 font-extrabold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
               >
                 <Store className="w-4 h-4 text-[#0369a1]" />
                 <span>Tài Khoản Chủ Sân</span>
@@ -457,9 +490,9 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                 onClick={() =>
                   onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER")
                 }
-                className="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/25 font-bold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+                className="px-5 py-3 rounded-xl bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-200 font-bold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
               >
-                <Trophy className="w-4 h-4 text-amber-300" />
+                <Trophy className="w-4 h-4 text-amber-600" />
                 <span>Xem Giải Đấu</span>
               </button>
             </div>
@@ -470,7 +503,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               <SafeImage
                 src="/images/epic-goal-player.png"
                 alt="Cầu thủ Turfzone"
-                className="w-full h-full object-contain drop-shadow-2xl"
+                className="w-full h-full object-contain drop-shadow-xl"
               />
             </div>
           </div>
