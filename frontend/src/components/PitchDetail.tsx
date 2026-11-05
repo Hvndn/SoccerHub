@@ -20,6 +20,8 @@ import {
   Receipt,
   AlertCircle,
   RefreshCw,
+  Copy,
+  Sparkles,
 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { pitchTypeLabel, isPeakSlot } from "@/lib/pitchLabels";
@@ -30,6 +32,20 @@ import {
   cancelBookingApi,
 } from "@/lib/pitchService";
 import { broadcastBookingEvent, subscribeToBookingEvents } from "@/lib/realtimeService";
+
+export interface AddOnItem {
+  id: string;
+  name: string;
+  price: number;
+  desc: string;
+}
+
+const AVAILABLE_ADDONS: AddOnItem[] = [
+  { id: "bib", name: "2 bộ áo bib phân đội (Cam / Xanh)", price: 30000, desc: "Chia 2 đội đá tập nội bộ" },
+  { id: "ball", name: "Bóng thi đấu tiêu chuẩn (bơm căng)", price: 20000, desc: "Bóng số 4/số 5 tuyển chọn" },
+  { id: "water", name: "Thùng nước suối ướp lạnh (24 chai)", price: 60000, desc: "Ướp đá lạnh sẵn tại sân" },
+  { id: "gloves", name: "Găng tay thủ môn (đủ size)", price: 20000, desc: "Găng mút cao su bắt dính" },
+];
 
 interface PitchDetailProps {
   pitch: any | null;
@@ -81,6 +97,8 @@ export default function PitchDetail({ pitch, onBack, user }: PitchDetailProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
   const [splitCount, setSplitCount] = useState(14);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [bookingNote, setBookingNote] = useState<string>("");
 
   const [bookingMode, setBookingMode] = useState<"INDIVIDUAL" | "CLUB">("INDIVIDUAL");
   const [myClubs, setMyClubs] = useState<any[]>([]);
@@ -211,10 +229,84 @@ export default function PitchDetail({ pitch, onBack, user }: PitchDetailProps) {
     return `${first} - ${last}`;
   }, [selectedCourtData, venueData]);
 
+  const addOnsTotal = useMemo(() => {
+    return selectedAddOns.reduce((sum, id) => {
+      const item = AVAILABLE_ADDONS.find((a) => a.id === id);
+      return sum + (item ? item.price : 0);
+    }, 0);
+  }, [selectedAddOns]);
+
   const originalPrice = fullDayBooking ? fullDayTotal : selectedSlot?.price || 0;
-  const totalPrice = originalPrice;
+  const totalPrice = originalPrice + addOnsTotal;
   const depositAmount = depositOption === "50%" ? Math.round(totalPrice * 0.5) : totalPrice;
   const splitPerPlayer = Math.round(totalPrice / Math.max(1, splitCount));
+
+  const selectedDayObj = useMemo(() => {
+    return upcomingDays.find((d) => d.iso === selectedDate) || upcomingDays[0];
+  }, [upcomingDays, selectedDate]);
+
+  const weatherHint = useMemo(() => {
+    const isWeekend = selectedDayObj?.isWeekend;
+    const timeSlotStr = selectedSlot?.time || "";
+    const hour = parseInt(timeSlotStr.split(":")[0]) || 18;
+
+    if (hour >= 6 && hour < 11) {
+      return {
+        icon: "⛅",
+        badge: "Buổi sáng mát mẻ",
+        temp: "25°C",
+        advice: "Không khí trong lành, mặt cỏ khô ráo • Khuyên dùng giày đinh dăm TF.",
+      };
+    }
+    if (hour >= 11 && hour < 17) {
+      return {
+        icon: "☀️",
+        badge: "Nắng ráo",
+        temp: "32°C",
+        advice: "Trời nắng mạnh • Nên mang theo nhiều nước và khởi động kỹ khớp cơ.",
+      };
+    }
+    return {
+      icon: "🌙",
+      badge: isWeekend ? "Khung giờ vàng cuối tuần" : "Buổi tối mát mẻ",
+      temp: "26°C",
+      advice: "Thời tiết lý tưởng • Dàn đèn cao áp bật 100%, mặt sân bám bóng tốt.",
+    };
+  }, [selectedDayObj, selectedSlot]);
+
+  const generateZaloMessage = () => {
+    const timeStr = bookingConfirmed?.timeSlot || selectedSlot?.time || "";
+    const courtStr = bookingConfirmed?.courtName || selectedSlot?.courtName || "Sân bóng";
+    const codeStr = bookingConfirmed?.code || "";
+    const dateStr = `${selectedDayObj?.label} (${selectedDayObj?.dateFormatted})`;
+    const perPlayer = splitPerPlayer.toLocaleString("vi-VN");
+    const totalFormatted = (bookingConfirmed?.totalPrice || totalPrice).toLocaleString("vi-VN");
+    const addOnNames = selectedAddOns
+      .map((id) => AVAILABLE_ADDONS.find((a) => a.id === id)?.name)
+      .filter(Boolean);
+
+    let msg = `⚽ THÔNG BÁO CA ĐÁ TUẦN NÀY\n`;
+    msg += `📍 Cụm sân: ${venueData.name}\n`;
+    msg += `🏟️ Sân con: ${courtStr}\n`;
+    msg += `📅 Ngày đá: ${dateStr}\n`;
+    msg += `⏰ Khung giờ: ${timeStr}\n`;
+    if (codeStr) msg += `🎟️ Mã vé giữ chỗ: ${codeStr}\n`;
+    if (addOnNames.length > 0) msg += `🎒 Dịch vụ kèm: ${addOnNames.join(", ")}\n`;
+    msg += `💰 Tiền sân: ${totalFormatted}đ (~${perPlayer}đ / người, chia ${splitCount} anh em)\n`;
+    if (venueData.address) msg += `🗺️ Địa chỉ: ${venueData.address}\n`;
+    msg += `👉 Anh em có mặt trước 15 phút khởi động nhé! 🔥`;
+    return msg;
+  };
+
+  const copyZaloMessage = () => {
+    const text = generateZaloMessage();
+    if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+      showToast("✓ Đã sao chép tin nhắn ca đá! Hãy dán vào Zalo/Messenger của đội.");
+    } else {
+      showToast("Vui lòng chọn và sao chép văn bản lời nhắn bên dưới.");
+    }
+  };
 
   const handlePendingSlotClick = (court: any, slot: any) => {
     if (
@@ -369,12 +461,21 @@ export default function PitchDetail({ pitch, onBack, user }: PitchDetailProps) {
         depositPercent: depositOption === "100%" ? 100 : 50,
         isClubBooking: bookingMode === "CLUB",
         clubName: clubNameFinal,
-        via:
-          bookingMode === "CLUB"
-            ? "Đại diện " + clubNameFinal + " bao sân" + (fullDayBooking ? " cả ngày" : "")
-            : fullDayBooking
-            ? "Bao sân cả ngày"
-            : "Đặt qua Website",
+        via: (() => {
+          const addOnNames = selectedAddOns
+            .map((id) => AVAILABLE_ADDONS.find((a) => a.id === id)?.name)
+            .filter(Boolean);
+          const parts = [
+            bookingMode === "CLUB"
+              ? "Đại diện " + clubNameFinal + " bao sân" + (fullDayBooking ? " cả ngày" : "")
+              : fullDayBooking
+              ? "Bao sân cả ngày"
+              : "Đặt qua Website",
+          ];
+          if (addOnNames.length > 0) parts.push(`Kèm: ${addOnNames.join(", ")}`);
+          if (bookingNote.trim()) parts.push(`Ghi chú: ${bookingNote.trim()}`);
+          return parts.join(" • ");
+        })(),
       };
 
       const res = await apiRequest<any>(`/api/v1/pitches/${pitchId}/book`, {
@@ -383,6 +484,11 @@ export default function PitchDetail({ pitch, onBack, user }: PitchDetailProps) {
       });
 
       if (res && res.id) {
+        res.addOnsList = selectedAddOns
+          .map((id) => AVAILABLE_ADDONS.find((a) => a.id === id)?.name)
+          .filter(Boolean);
+        res.bookingNote = bookingNote.trim();
+        res.totalPrice = totalPrice;
         setBookingConfirmed(res);
         setPaymentDone(false);
         setShowQrModal(true);
@@ -635,6 +741,23 @@ export default function PitchDetail({ pitch, onBack, user }: PitchDetailProps) {
                   <div className="text-[14px] font-mono font-bold">{d.dateFormatted}</div>
                 </button>
               ))}
+            </div>
+
+            {/* Dự báo thời tiết & Tình trạng mặt sân theo ngày */}
+            <div className="p-3 rounded-lg bg-sky-50/80 border border-sky-200 flex flex-wrap items-center justify-between gap-2.5 text-[13px]">
+              <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                <span className="px-2 py-0.5 rounded bg-white border border-sky-300 text-sky-800 font-bold font-mono text-[13px] shrink-0">
+                  {weatherHint.icon} {weatherHint.temp}
+                </span>
+                <span className="text-slate-800">
+                  <strong>{selectedDayObj?.label} ({selectedDayObj?.dateFormatted}):</strong>{" "}
+                  {weatherHint.badge} • {weatherHint.advice}
+                </span>
+              </div>
+              <span className="text-slate-600 font-medium shrink-0 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                Hệ thống đèn &amp; thoát nước hoạt động 100%
+              </span>
             </div>
 
             {/* Bộ lọc sân con & khung giờ */}
@@ -1009,6 +1132,74 @@ export default function PitchDetail({ pitch, onBack, user }: PitchDetailProps) {
                 </p>
               </div>
 
+              {/* Trang bị đã chọn (nếu có) */}
+              {bookingConfirmed?.addOnsList && bookingConfirmed.addOnsList.length > 0 && (
+                <div className="p-2.5 rounded bg-sky-50 border border-sky-200 text-[13px] flex items-center justify-between">
+                  <span className="font-bold text-sky-900">Trang bị chuẩn bị sẵn:</span>
+                  <span className="text-slate-800 font-medium text-right">
+                    {bookingConfirmed.addOnsList.join(", ")}
+                  </span>
+                </div>
+              )}
+
+              {/* Công cụ kêu gọi anh em & chia tiền Zalo */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-md space-y-2 text-[14px]">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-800 flex items-center gap-1.5 text-[13px]">
+                    <span>📣</span> Kêu gọi anh em &amp; chia tiền
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-slate-600 text-[13px]">Chia:</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={40}
+                      value={splitCount}
+                      onChange={(e) =>
+                        setSplitCount(Math.min(40, Math.max(1, Number(e.target.value) || 1)))
+                      }
+                      className="w-12 px-1 py-0.5 rounded border border-slate-300 bg-white font-mono font-bold text-center text-[13px]"
+                    />
+                    <span className="text-slate-600 text-[13px]">người</span>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded bg-white border border-slate-200 font-mono text-[13px] text-slate-700 whitespace-pre-line leading-relaxed max-h-32 overflow-y-auto select-all">
+                  {generateZaloMessage()}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={copyZaloMessage}
+                  className="w-full py-2 px-3 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[13px] flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-xs"
+                >
+                  <Copy className="w-4 h-4" />
+                  <span>Sao Chép Lời Nhắn Gửi Nhóm Zalo</span>
+                </button>
+              </div>
+
+              {/* Chỉ đường Maps & Gọi chủ sân */}
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    venueData.name + " " + (venueData.address || "")
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-2 px-2.5 rounded bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold text-[13px] flex items-center justify-center gap-1.5 text-center"
+                >
+                  <Navigation className="w-3.5 h-3.5 text-sky-700 shrink-0" />
+                  <span>Chỉ Đường Maps</span>
+                </a>
+                <a
+                  href={`tel:${venueData.phone}`}
+                  className="py-2 px-2.5 rounded bg-slate-100 hover:bg-slate-200 border border-slate-300 text-[#0369a1] font-bold text-[13px] flex items-center justify-center gap-1.5 text-center"
+                >
+                  <PhoneCall className="w-3.5 h-3.5 text-[#0369a1] shrink-0" />
+                  <span>Gọi Chủ Sân</span>
+                </a>
+              </div>
+
               {!paymentDone ? (
                 <button
                   type="button"
@@ -1153,6 +1344,72 @@ export default function PitchDetail({ pitch, onBack, user }: PitchDetailProps) {
                     </label>
                   </div>
                 )}
+              </div>
+
+              {/* Trang bị & Dịch vụ đi kèm (Tùy chọn) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[14px] font-bold text-slate-700 block">
+                    Trang bị &amp; Dịch vụ kèm theo:
+                  </label>
+                  {selectedAddOns.length > 0 && (
+                    <span className="text-[13px] font-mono font-bold text-[#0369a1]">
+                      +{addOnsTotal.toLocaleString("vi-VN")}đ
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  {AVAILABLE_ADDONS.map((item) => {
+                    const isChecked = selectedAddOns.includes(item.id);
+                    return (
+                      <label
+                        key={item.id}
+                        className={`flex items-center justify-between p-2 rounded-md border text-[13px] transition-colors cursor-pointer ${
+                          isChecked
+                            ? "bg-sky-50/80 border-[#0369a1] text-slate-900"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedAddOns((prev) => [...prev, item.id]);
+                              } else {
+                                setSelectedAddOns((prev) => prev.filter((id) => id !== item.id));
+                              }
+                            }}
+                            className="accent-[#0369a1] rounded"
+                          />
+                          <div>
+                            <span className="font-bold text-slate-900 block">{item.name}</span>
+                            <span className="text-slate-500 text-[12px]">{item.desc}</span>
+                          </div>
+                        </div>
+                        <span className="font-mono font-bold text-sky-800 shrink-0">
+                          +{item.price.toLocaleString("vi-VN")}đ
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Ghi chú đặc biệt cho chủ sân */}
+              <div className="space-y-1">
+                <label className="text-[13px] font-bold text-slate-700 block">
+                  Ghi chú cho chủ sân (Tùy chọn):
+                </label>
+                <input
+                  type="text"
+                  placeholder="VD: Cần bóng số 5, bật đèn sớm 5 phút..."
+                  value={bookingNote}
+                  onChange={(e) => setBookingNote(e.target.value)}
+                  className="w-full px-3 py-1.5 rounded-md border border-slate-300 bg-white text-slate-900 text-[13px] outline-none focus:ring-1 focus:ring-[#0369a1]"
+                />
               </div>
 
               {/* Mức đặt cọc */}

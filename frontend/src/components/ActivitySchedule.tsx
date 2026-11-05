@@ -9,6 +9,8 @@ import {
   RefreshCw,
   CheckCircle2,
   X,
+  Copy,
+  Navigation,
 } from "lucide-react";
 import { API_BASE_URL, apiRequest, fetchWithTimeout } from "@/lib/api";
 import { pitchTypeLabel } from "@/lib/pitchLabels";
@@ -384,6 +386,39 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                         )
                       )}
                     </div>
+
+                    {/* Tiện ích Zalo & Chỉ đường cho vé đang hoạt động */}
+                    {b.status !== "CANCELLED" && (
+                      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const splitAmt = Math.round((b.totalPrice || 350000) / 14).toLocaleString("vi-VN");
+                            const totalAmt = (b.totalPrice || 350000).toLocaleString("vi-VN");
+                            const msg = `⚽ THÔNG BÁO CA ĐÁ TUẦN NÀY\n🏟️ Sân: ${pitchTypeLabel(b.courtName) || b.courtType || "Sân bóng"}\n📅 Ngày đá: ${prettyDate(b.bookingDate)}\n⏰ Khung giờ: ${b.timeSlot}\n🎟️ Mã vé: ${b.code}\n💰 Tiền sân: ${totalAmt}đ (~${splitAmt}đ / người, chia 14 anh em)\n👉 Anh em có mặt trước 15 phút khởi động nhé! 🔥`;
+                            if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+                              navigator.clipboard.writeText(msg);
+                              setNotice("✓ Đã sao chép tin nhắn ca đá để gửi nhóm Zalo / Messenger!");
+                              setTimeout(() => setNotice(null), 3000);
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 text-[13px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Sao chép tin Zalo ca đá</span>
+                        </button>
+
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.courtName || "Sân bóng đá")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 rounded bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 text-[13px] font-bold flex items-center gap-1 transition-colors"
+                        >
+                          <Navigation className="w-3.5 h-3.5 text-sky-700" />
+                          <span>Chỉ đường</span>
+                        </a>
+                      </div>
+                    )}
 
                     {b.status === "CANCELLED" && b.cancelReason && (
                       <p className="text-[13px] text-rose-600">Lý do hủy: {b.cancelReason}</p>
