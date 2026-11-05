@@ -48,6 +48,19 @@ public class MatchmakingPost {
     @Builder.Default
     private String status = "OPEN"; // OPEN, MATCHED, CANCELLED
 
+    // --- SOS Mượn Chân / Tìm Viện Binh Giờ Chót ---
+    @Builder.Default
+    private String postType = "MATCH"; // "MATCH" (Kèo giao hữu) hoặc "SOS_GUEST" (Mượn chân / tìm viện binh)
+
+    @Builder.Default
+    private String neededPosition = "BAT_KY"; // THU_MON, HAU_VE, TIEN_VE, TIEN_DAO, BAT_KY
+
+    @Builder.Default
+    private Integer neededCount = 1;
+
+    @Builder.Default
+    private Integer joinedCount = 0;
+
     // --- Phong độ live của đội đăng kèo (tính từ match_results, KHÔNG lưu DB) ---
     @Transient
     private String form;

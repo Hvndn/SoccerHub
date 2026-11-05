@@ -604,6 +604,76 @@ setIsSavingInfo(false);
    });
  }, [pitchMatrix, courtFormatFilter, courtSearchQuery]);
 
+  // Danh sách các ca đang đá hoặc sắp kết thúc hôm nay để chủ sân giám sát trả sân
+  const activeLiveSlots = useMemo(() => {
+    const todayIso = new Date().toISOString().slice(0, 10);
+    if (matrixDate !== todayIso) return [];
+    const list: Array<{
+      courtName: string;
+      slot: any;
+      start: Date;
+      end: Date;
+      isNearEnd: boolean;
+      isOverdue: boolean;
+      remainingFormatted: string;
+    }> = [];
+
+    const nowMs = new Date().getTime();
+
+    pitchMatrix.forEach((pitch) => {
+      (pitch.slots || []).forEach((slot: any) => {
+        if (slot.status === "empty") return;
+        const m = /(\d{1,2}):(\d{2})\s*[-–]\s*(\d{1,2}):(\d{2})/.exec(slot.time || "");
+        if (!m) return;
+        const start = new Date(`${todayIso}T${m[1].padStart(2, "0")}:${m[2]}:00`);
+        const end = new Date(`${todayIso}T${m[3].padStart(2, "0")}:${m[4]}:00`);
+        const startMs = start.getTime();
+        const endMs = end.getTime();
+
+        // Đang diễn ra hoặc lố giờ dưới 45 phút
+        if (nowMs >= startMs - 15 * 60000 && nowMs <= endMs + 45 * 60000) {
+          const isOverdue = nowMs > endMs;
+          const isNearEnd = !isOverdue && endMs - nowMs <= 10 * 60000;
+          const targetMs = isOverdue ? nowMs - endMs : endMs - nowMs;
+          const totalSec = Math.floor(targetMs / 1000);
+          const mins = Math.floor(totalSec / 60);
+          const secs = totalSec % 60;
+          const remainingFormatted = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+
+          list.push({
+            courtName: pitch.pitchName,
+            slot,
+            start,
+            end,
+            isNearEnd,
+            isOverdue,
+            remainingFormatted,
+          });
+        }
+      });
+    });
+
+    return list;
+  }, [pitchMatrix, matrixDate]);
+
+  const handleOwnerSendReminder = async (item: any) => {
+    try {
+      const msg = `⚽ Lời nhắc từ quản lý cụm sân: Ca đá [${item.slot.time}] tại [${pitchTypeLabel(item.courtName) || item.courtName}] sắp kết thúc. Đề nghị quý khách thu dọn đồ đạc để bàn giao sân cho ca tiếp theo. Xin cảm ơn quý khách! 🤝`;
+      if (item.slot.id) {
+        await apiRequest(`/api/v1/pitches/bookings/${item.slot.id}/remind-handover`, {
+          method: "POST",
+          body: JSON.stringify({ message: msg }),
+        });
+      }
+      if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg);
+      }
+      showToast(`✓ Đã phát tín hiệu nhắc trả sân & sao chép tin nhắn ca ${item.slot.time} của ${item.slot.customer}!`);
+    } catch {
+      showToast(`Đã sao chép lời nhắc trả sân của ca ${item.slot.time}!`);
+    }
+  };
+
  // Add new pitch handler (Lưu thật vào MySQL)
  const handleCreateNewPitch = async (e: React.FormEvent) => {
  e.preventDefault();
@@ -1531,6 +1601,69 @@ const handleConfirmCheckin = async (slot: any) => {
  })}
  </div>
  </div>
+
+  {/* THEO DÕI TRỰC CA & ĐẾM NGƯỢC GIỜ SÂN CHO CHỦ SÂN */}
+  {activeLiveSlots.length > 0 && (
+    <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-50/70 border border-amber-300 space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4 text-amber-700" />
+          <span className="font-bold text-slate-900 text-[14px]">
+            Đồng Hồ Trực Ca Sân Hiện Tại ({activeLiveSlots.length} ca đang thi đấu)
+          </span>
+        </div>
+        <span className="text-[13px] text-amber-800 font-semibold">
+          Chống đá lố giờ & Bàn giao ca đúng giờ
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        {activeLiveSlots.map((item, idx) => (
+          <div
+            key={idx}
+            className={`p-3 rounded-xl border flex items-center justify-between gap-2.5 bg-white ${
+              item.isOverdue
+                ? "border-rose-400 bg-rose-50/40"
+                : item.isNearEnd
+                ? "border-amber-400 bg-amber-50/40"
+                : "border-slate-200"
+            }`}
+          >
+            <div className="min-w-0">
+              <div className="font-bold text-[13px] text-slate-900 truncate">
+                {pitchTypeLabel(item.courtName) || item.courtName} • {item.slot.time}
+              </div>
+              <p className="text-[13px] text-slate-600 truncate mt-0.5">
+                Khách: <strong>{item.slot.customer || "Khách đặt"}</strong>
+              </p>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className={`px-2 py-0.5 rounded text-[13px] font-mono font-bold ${
+                  item.isOverdue
+                    ? "bg-rose-100 text-rose-800"
+                    : item.isNearEnd
+                    ? "bg-amber-100 text-amber-900"
+                    : "bg-emerald-100 text-emerald-900"
+                }`}>
+                  {item.isOverdue
+                    ? `⚠️ Đã lố ${item.remainingFormatted}`
+                    : `Còn ${item.remainingFormatted}`}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleOwnerSendReminder(item)}
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-[13px] font-bold text-slate-800 flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
+            >
+              <Bell className="w-3.5 h-3.5 text-amber-700" />
+              <span>Nhắc trả sân</span>
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
 
  {/* COLOR CODES LEGEND */}
  <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-sm font-bold pt-1">

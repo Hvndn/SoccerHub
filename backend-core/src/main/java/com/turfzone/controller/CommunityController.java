@@ -84,6 +84,19 @@ public class CommunityController {
         }
         String note = str(req.get("note"));
 
+        String postType = str(req.get("postType"));
+        if (postType == null || postType.isBlank()) postType = "MATCH";
+
+        String neededPosition = str(req.get("neededPosition"));
+        if (neededPosition == null || neededPosition.isBlank()) neededPosition = "BAT_KY";
+
+        Integer neededCount = 1;
+        if (req.get("neededCount") != null) {
+            try {
+                neededCount = Math.max(1, Integer.parseInt(req.get("neededCount").toString().trim()));
+            } catch (NumberFormatException ignored) {}
+        }
+
         MatchmakingPost post = MatchmakingPost.builder()
                 .teamName(teamName)
                 .captainName(captainName != null ? captainName : captainPhone)
@@ -95,6 +108,10 @@ public class CommunityController {
                 .paymentModel(paymentModel)
                 .estimatedFee(estimatedFee)
                 .note(note)
+                .postType(postType)
+                .neededPosition(neededPosition)
+                .neededCount(neededCount)
+                .joinedCount(0)
                 .status("OPEN")
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -129,9 +146,45 @@ public class CommunityController {
         String opponentCaptainName = str(req.get("opponentCaptainName"));
         String opponentCaptainPhone = str(req.get("opponentCaptainPhone"));
 
-        if (opponentTeamName == null || opponentCaptainPhone == null) {
+        if (opponentCaptainPhone == null) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "error", "Thiếu thông tin đội nhận kèo: cần opponentTeamName và opponentCaptainPhone."));
+                    "error", "Thiếu số điện thoại liên hệ để nhận kèo / nhận chân."));
+        }
+
+        if ("SOS_GUEST".equalsIgnoreCase(post.getPostType())) {
+            int currentJoined = (post.getJoinedCount() != null ? post.getJoinedCount() : 0) + 1;
+            post.setJoinedCount(currentJoined);
+            int needed = post.getNeededCount() != null ? post.getNeededCount() : 1;
+            if (currentJoined >= needed) {
+                post.setStatus("MATCHED");
+            }
+            post.setOpponentTeamName(opponentTeamName != null && !opponentTeamName.isBlank() ? opponentTeamName : "Viện Binh");
+            post.setOpponentCaptainName(opponentCaptainName != null ? opponentCaptainName : opponentCaptainPhone);
+            post.setOpponentCaptainPhone(opponentCaptainPhone);
+            post.setMatchedAt(LocalDateTime.now());
+            matchmakingPostRepository.save(post);
+
+            String ownerMail = post.getCaptainPhone() != null
+                    ? userRepository.findByPhone(post.getCaptainPhone().replaceAll("\\s+", ""))
+                            .map(u -> u.getEmail())
+                            .orElse(null)
+                    : null;
+            if (ownerMail != null) {
+                notificationService.notify("PLAYER", ownerMail,
+                        "Viện binh đã nhận lời đá ké: " + post.getTeamName(),
+                        post.getOpponentCaptainName() + " (" + post.getOpponentCaptainPhone() + ") đã nhận lời tham gia ca đá tại "
+                                + post.getPitchName() + " lúc " + post.getMatchTime() + ".",
+                        "SOS_GUEST", null);
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Nhận chân thành công! Vui lòng liên hệ đội trưởng (" + post.getCaptainPhone() + ") để chuẩn bị ra sân.",
+                    "post", post));
+        }
+
+        if (opponentTeamName == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Thiếu tên đội nhận kèo: cần opponentTeamName."));
         }
 
         post.setStatus("MATCHED");

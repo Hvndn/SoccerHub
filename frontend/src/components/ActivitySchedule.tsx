@@ -11,10 +11,15 @@ import {
   X,
   Copy,
   Navigation,
+  AlertTriangle,
+  Bell,
+  Users,
+  Check,
 } from "lucide-react";
 import { API_BASE_URL, apiRequest, fetchWithTimeout } from "@/lib/api";
 import { pitchTypeLabel } from "@/lib/pitchLabels";
 import { isPastDay } from "@/lib/dateUtils";
+import { sendHandoverReminderApi } from "@/lib/pitchService";
 import {
   fetchTournaments,
   type Tournament,
@@ -59,6 +64,21 @@ function parseStart(date?: string, slot?: string): Date | undefined {
   return Number.isNaN(d.getTime()) ? undefined : d;
 }
 
+function parseSlotRange(dateStr?: string, slotStr?: string): { start?: Date; end?: Date } {
+  if (!dateStr || !slotStr) return {};
+  const m = /(\d{1,2}):(\d{2})\s*[-–]\s*(\d{1,2}):(\d{2})/.exec(slotStr);
+  if (!m) {
+    const s = parseStart(dateStr, slotStr);
+    return { start: s, end: s ? new Date(s.getTime() + 120 * 60000) : undefined };
+  }
+  const start = new Date(`${dateStr}T${m[1].padStart(2, "0")}:${m[2]}:00`);
+  const end = new Date(`${dateStr}T${m[3].padStart(2, "0")}:${m[4]}:00`);
+  return {
+    start: Number.isNaN(start.getTime()) ? undefined : start,
+    end: Number.isNaN(end.getTime()) ? undefined : end,
+  };
+}
+
 function prettyDate(iso?: string): string {
   if (!iso) return "";
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
@@ -79,11 +99,33 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
   const [myBookings, setMyBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [now] = useState(() => new Date());
+  const [now, setNow] = useState(() => new Date());
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedMatchKey, setSelectedMatchKey] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
+
+  // SOS Mượn Chân state
+  const [sosBookingId, setSosBookingId] = useState<number | null>(null);
+  const [sosPosition, setSosPosition] = useState<string>("BAT_KY");
+  const [sosCount, setSosCount] = useState<number>(1);
+  const [sosFeeModel, setSosFeeModel] = useState<string>("HOST_COVER");
+  const [sosFeeAmount, setSosFeeAmount] = useState<number>(30000);
+  const [sosNote, setSosNote] = useState<string>("");
+  const [sosPosting, setSosPosting] = useState<boolean>(false);
+  const [sosSuccessId, setSosSuccessId] = useState<number | null>(null);
+
+  // Handover reminder state
+  const [sendingReminderId, setSendingReminderId] = useState<number | null>(null);
+  const [reminderSent, setReminderSent] = useState<boolean>(false);
+
+  // Live timer tick every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const cancelMyBooking = async (b: any) => {
     try {
@@ -191,6 +233,116 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
   const doneMatches = useMemo(() => allMatches.filter((m) => m.status === "DONE"), [allMatches]);
   const matchedPosts = useMemo(() => posts.filter((p: any) => p.status === "MATCHED"), [posts]);
 
+  // Vé đặt sân hôm nay hoặc sắp diễn ra gần nhất để đếm ngược
+  const todayActiveBooking = useMemo(() => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayList = myBookings.filter(
+      (b) => b.status !== "CANCELLED" && b.bookingDate === todayStr
+    );
+    if (todayList.length > 0) return todayList[0];
+    const upcomingList = myBookings
+      .filter((b) => b.status !== "CANCELLED" && !isPastDay(b.bookingDate))
+      .sort((a, b) => (a.bookingDate || "").localeCompare(b.bookingDate || ""));
+    return upcomingList[0] || null;
+  }, [myBookings]);
+
+  // Tính toán đếm ngược ca đá & tiến độ
+  const countdownData = useMemo(() => {
+    if (!todayActiveBooking) return null;
+    const { start, end } = parseSlotRange(todayActiveBooking.bookingDate, todayActiveBooking.timeSlot);
+    if (!start || !end) return null;
+
+    const startMs = start.getTime();
+    const endMs = end.getTime();
+    const nowMs = now.getTime();
+
+    const isUpcoming = nowMs < startMs;
+    const isPlaying = nowMs >= startMs && nowMs < endMs;
+    const isOverdue = nowMs >= endMs;
+
+    let targetMs = isUpcoming ? startMs - nowMs : isPlaying ? endMs - nowMs : nowMs - endMs;
+    if (targetMs < 0) targetMs = 0;
+
+    const totalSeconds = Math.floor(targetMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const timeFormatted = `${hours > 0 ? `${String(hours).padStart(2, "0")}:` : ""}${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+    const totalDurationMs = Math.max(1, endMs - startMs);
+    const elapsedMs = Math.max(0, nowMs - startMs);
+    const progressPercent = Math.min(100, Math.max(0, (elapsedMs / totalDurationMs) * 100));
+    const isNearEnd = isPlaying && endMs - nowMs <= 10 * 60 * 1000;
+
+    return {
+      booking: todayActiveBooking,
+      start,
+      end,
+      isUpcoming,
+      isPlaying,
+      isOverdue,
+      isNearEnd,
+      timeFormatted,
+      progressPercent,
+      minutesLeft: Math.floor((endMs - nowMs) / 60000),
+    };
+  }, [todayActiveBooking, now]);
+
+  const handlePostSosFromBooking = async (b: any) => {
+    try {
+      setSosPosting(true);
+      const teamName = b.customerName ? `FC ${b.customerName}` : (user?.fullName || "FC Đội Nhà");
+      const pitchName = pitchTypeLabel(b.courtName) || b.courtType || "Sân bóng";
+      const matchTime = `${b.timeSlot} ngày ${prettyDate(b.bookingDate)}`;
+      const note = sosNote.trim() || `Đội cần mượn chân gấp cho ca đá ${b.timeSlot} tại ${pitchName}. Anh em đam mê vào giao lưu nhé!`;
+
+      await apiRequest<any>("/api/v1/community/matchmaking-posts", {
+        method: "POST",
+        body: JSON.stringify({
+          teamName,
+          captainName: user?.fullName || b.customerName || "Đội trưởng",
+          captainPhone: user?.phone || b.customerPhone || "",
+          pitchName,
+          address: "",
+          matchTime,
+          pitchType: b.courtType || "SAN_7",
+          paymentModel: sosFeeModel,
+          estimatedFee: sosFeeModel === "HOST_COVER" ? 0 : sosFeeAmount,
+          note,
+          postType: "SOS_GUEST",
+          neededPosition: sosPosition,
+          neededCount: sosCount,
+        }),
+      });
+
+      setSosSuccessId(b.id);
+      setNotice(`✓ Đã phát tin SOS mượn chân lên Chợ Kèo thành công cho ca ${b.timeSlot}!`);
+      setTimeout(() => setNotice(null), 4000);
+      setSosBookingId(null);
+    } catch (err: any) {
+      setNotice(err?.message || "Lỗi khi phát tin SOS. Vui lòng thử lại.");
+    } finally {
+      setSosPosting(false);
+    }
+  };
+
+  const handleSendHandoverReminder = async (b: any) => {
+    try {
+      setSendingReminderId(b.id);
+      await sendHandoverReminderApi(b.id);
+      setReminderSent(true);
+      setNotice("✓ Đã gửi lời nhắc bàn giao sân văn minh đến đội và chủ sân!");
+      setTimeout(() => {
+        setNotice(null);
+        setReminderSent(false);
+      }, 4000);
+    } catch (err: any) {
+      setNotice(err?.message || "Lỗi gửi nhắc nhở. Vui lòng thử lại.");
+    } finally {
+      setSendingReminderId(null);
+    }
+  };
+
   const filterTabs: { id: typeof activeFilter; label: string; count: number }[] = [
     { id: "bookings", label: "Vé Đặt Sân Của Tôi", count: myBookings.length },
     { id: "upcoming", label: "Lịch Đấu Sắp Tới", count: upcoming.length },
@@ -278,6 +430,126 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
           ))}
         </div>
       </section>
+
+      {notice && (
+        <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-800 text-[14px] font-bold flex items-center justify-between gap-2 animate-fade-in">
+          <span>{notice}</span>
+          <button type="button" onClick={() => setNotice(null)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* WIDGET: ĐỒNG HỒ ĐẾM NGƯỢC CA ĐÁ & NHẮC TRẢ SÂN VĂN MINH */}
+      {countdownData && (
+        <section className={`p-4 sm:p-5 rounded-lg border transition-all ${
+          countdownData.isNearEnd
+            ? "bg-amber-50/70 border-amber-300"
+            : countdownData.isOverdue
+            ? "bg-rose-50/70 border-rose-300"
+            : countdownData.isPlaying
+            ? "bg-sky-50/60 border-sky-300"
+            : "bg-white border-slate-300"
+        }`}>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-1.5 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`px-2.5 py-0.5 rounded text-[13px] font-bold border ${
+                  countdownData.isNearEnd
+                    ? "bg-amber-100 text-amber-900 border-amber-300"
+                    : countdownData.isOverdue
+                    ? "bg-rose-100 text-rose-800 border-rose-300"
+                    : countdownData.isPlaying
+                    ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                    : "bg-sky-100 text-sky-900 border-sky-300"
+                }`}>
+                  {countdownData.isNearEnd
+                    ? "⚠️ Sắp hết ca (Dưới 10 phút)"
+                    : countdownData.isOverdue
+                    ? "⚠️ Đã quá giờ ca đá"
+                    : countdownData.isPlaying
+                    ? "🟢 Đang trong ca thi đấu"
+                    : "📅 Sắp đến giờ bóng lăn"}
+                </span>
+                <span className="font-bold text-slate-800 text-[14px]">
+                  {pitchTypeLabel(countdownData.booking.courtName) || countdownData.booking.courtName} • {countdownData.booking.timeSlot}
+                </span>
+                <span className="text-[13px] text-slate-500 font-mono">
+                  ({prettyDate(countdownData.booking.bookingDate)})
+                </span>
+              </div>
+
+              <p className="text-[14px] text-slate-600">
+                {countdownData.isNearEnd
+                  ? "Ca đá của bạn còn dưới 10 phút. Quý anh em vui lòng chuẩn bị nhặt bóng, dọn đồ và bàn giao sân sạch sẽ cho đội tiếp theo!"
+                  : countdownData.isOverdue
+                  ? "Ca đá đã kết thúc quá thời gian quy định. Quý anh em vui lòng nhường sân ngay để tránh phát sinh chi phí phụ trội!"
+                  : countdownData.isPlaying
+                  ? "Trận đấu đang diễn ra. Chúc anh em thi đấu fairplay, cống hiến và tràn đầy năng lượng!"
+                  : "Vé thi đấu gần nhất của bạn. Anh em hãy có mặt trước 15 phút để khởi động và nhận bóng nhé!"}
+              </p>
+
+              {/* Progress Bar for Active Match */}
+              {countdownData.isPlaying && (
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden mt-2">
+                  <div
+                    className={`h-full transition-all duration-1000 ${
+                      countdownData.isNearEnd ? "bg-amber-500" : "bg-[#0369a1]"
+                    }`}
+                    style={{ width: `${countdownData.progressPercent}%` }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Live Timer Box & Quick Actions */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+              <div className="text-left sm:text-right">
+                <span className="text-[13px] font-bold text-slate-500 block">
+                  {countdownData.isUpcoming ? "Thời gian đếm ngược:" : countdownData.isPlaying ? "Thời gian ca còn lại:" : "Đã lố giờ:"}
+                </span>
+                <strong className={`font-mono text-2xl sm:text-3xl font-black ${
+                  countdownData.isNearEnd
+                    ? "text-amber-700"
+                    : countdownData.isOverdue
+                    ? "text-rose-600"
+                    : "text-[#0369a1]"
+                }`}>
+                  {countdownData.timeFormatted}
+                </strong>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const msg = `⚽ LỜI NHẮC BÀN GIAO SÂN VĂN MINH:\n🏟️ Sân: ${pitchTypeLabel(countdownData.booking.courtName) || countdownData.booking.courtName}\n⏰ Ca thi đấu: ${countdownData.booking.timeSlot} (${prettyDate(countdownData.booking.bookingDate)})\n👉 Đội ca sau đã có mặt sẵn sàng khởi động. Nhờ anh em thu dọn đồ đạc để bàn giao sân đúng giờ nhé! Cảm ơn anh em! 🤝`;
+                    if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+                      navigator.clipboard.writeText(msg);
+                      setNotice("✓ Đã sao chép lời nhắc trả sân văn minh để gửi Zalo / Messenger!");
+                      setTimeout(() => setNotice(null), 3500);
+                    }
+                  }}
+                  className="px-3 py-2 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 text-[13px] font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <Copy className="w-4 h-4 text-slate-600" />
+                  <span>Sao chép lời nhắc bàn giao</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSendHandoverReminder(countdownData.booking)}
+                  disabled={sendingReminderId === countdownData.booking.id || reminderSent}
+                  className="px-3 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
+                >
+                  <Bell className="w-4 h-4" />
+                  <span>{reminderSent ? "Đã gửi nhắc nhở!" : "Báo chuông nhắc trả sân"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {loadError && (
         <p className="rounded-lg bg-rose-50 border border-rose-300 px-4 py-3 text-[14px] font-bold text-rose-700">
@@ -417,7 +689,124 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                           <Navigation className="w-3.5 h-3.5 text-sky-700" />
                           <span>Chỉ đường</span>
                         </a>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (sosBookingId === b.id) {
+                              setSosBookingId(null);
+                            } else {
+                              setSosBookingId(b.id);
+                              setSosFeeAmount(Math.round((b.totalPrice || 350000) / 14));
+                            }
+                          }}
+                          className={`px-2.5 py-1 rounded text-[13px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                            sosBookingId === b.id
+                              ? "bg-rose-600 text-white"
+                              : "bg-rose-50 text-rose-800 border border-rose-300 hover:bg-rose-100"
+                          }`}
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          <span>{sosBookingId === b.id ? "Đóng SOS" : "🚨 Báo SOS Thiếu Chân"}</span>
+                        </button>
                       </div>
+                    )}
+
+                    {/* INLINE SOS FORM CHO TỪNG VÉ */}
+                    {sosBookingId === b.id && (
+                      <div className="p-3.5 rounded-md bg-rose-50/60 border border-rose-300 space-y-3 mt-2 text-[13px] animate-fade-in">
+                        <div className="flex items-center justify-between border-b border-rose-200 pb-2">
+                          <span className="font-bold text-rose-950 text-[14px]">
+                            🚨 Phát Tin SOS Mượn Viện Binh Cho Ca {b.timeSlot}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setSosBookingId(null)}
+                            className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Vị trí cần tuyển:</label>
+                            <select
+                              value={sosPosition}
+                              onChange={(e) => setSosPosition(e.target.value)}
+                              className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-rose-500"
+                            >
+                              <option value="BAT_KY">⭐ Bất kỳ vị trí</option>
+                              <option value="THU_MON">🧤 Thủ Môn (Gôn)</option>
+                              <option value="HAU_VE">🛡️ Hậu Vệ (Thòng/Biên)</option>
+                              <option value="TIEN_VE">⚡ Tiền Vệ (Giữa)</option>
+                              <option value="TIEN_DAO">🎯 Tiền Đạo</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Số lượng thiếu:</label>
+                            <select
+                              value={sosCount}
+                              onChange={(e) => setSosCount(Number(e.target.value))}
+                              className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-rose-500"
+                            >
+                              <option value={1}>Cần 1 người</option>
+                              <option value={2}>Cần 2 người</option>
+                              <option value={3}>Cần 3 người</option>
+                              <option value={4}>Cần 4+ người</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Chi phí cho viện binh:</label>
+                            <select
+                              value={sosFeeModel}
+                              onChange={(e) => setSosFeeModel(e.target.value)}
+                              className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-rose-500"
+                            >
+                              <option value="HOST_COVER">Đội bao sân (Miễn phí 0đ)</option>
+                              <option value="SPLIT_EQUAL">Cưa đôi tiền sân ({sosFeeAmount.toLocaleString("vi-VN")}đ)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">Lời nhắn / Lưu ý:</label>
+                          <input
+                            type="text"
+                            value={sosNote}
+                            onChange={(e) => setSosNote(e.target.value)}
+                            placeholder="Ví dụ: Đội đá giao lưu vui vẻ, anh em văn phòng, thiếu 1 gôn nhiệt tình..."
+                            className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 focus:outline-none focus:border-rose-500"
+                          />
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => setSosBookingId(null)}
+                            className="px-3 py-1.5 rounded bg-white border border-slate-300 text-slate-700 font-bold cursor-pointer"
+                          >
+                            Hủy
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handlePostSosFromBooking(b)}
+                            disabled={sosPosting}
+                            className="px-4 py-1.5 rounded bg-rose-600 hover:bg-rose-700 text-white font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          >
+                            {sosPosting && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                            <span>{sosPosting ? "Đang phát tin..." : "Phát Tin SOS Lên Chợ Kèo"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {sosSuccessId === b.id && (
+                      <p className="p-2.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[13px] font-bold animate-fade-in">
+                        ✓ Đã phát tin SOS mượn chân lên Chợ Kèo! Các viện binh tự do sẽ thấy tin và liên hệ với bạn.
+                      </p>
                     )}
 
                     {b.status === "CANCELLED" && b.cancelReason && (

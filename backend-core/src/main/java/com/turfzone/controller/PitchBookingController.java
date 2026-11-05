@@ -1440,6 +1440,58 @@ public ResponseEntity<?> rescheduleBooking(
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy vé đặt này.")));
     }
 
+    /**
+     * Gửi Lời Nhắc Nhở Trả Sân Văn Minh.
+     * Cho phép đội ca sau hoặc chủ sân gửi thông báo lịch sự, văn minh nhắc nhở ca đang đá sắp hết giờ.
+     */
+    @PostMapping("/bookings/{bookingId}/remind-handover")
+    public ResponseEntity<?> remindHandover(
+            @PathVariable Long bookingId,
+            @RequestBody(required = false) Map<String, Object> req,
+            @AuthenticationPrincipal User me
+    ) {
+        return bookingRepository.findById(bookingId).map(b -> {
+            String court = b.getCourtName();
+            String slot = b.getTimeSlot();
+            String senderName = me != null && me.getFullName() != null ? me.getFullName() : "Đội ca kế tiếp";
+            String customMessage = req != null && req.get("message") != null ? req.get("message").toString().trim() : "";
+
+            String reminderText = customMessage.isEmpty()
+                    ? "⚽ Lời nhắc bàn giao sân văn minh: Ca thi đấu [" + slot + "] tại sân [" + court + "] sắp kết thúc. "
+                      + senderName + " đã có mặt sẵn sàng, xin mời anh em hoàn tất bàn giao sân nhé! Cảm ơn anh em! 🤝"
+                    : customMessage;
+
+            // Gửi thông báo đến người đặt vé
+            String customerPhone = b.getCustomerPhone() != null ? b.getCustomerPhone().replaceAll("\\s+", "") : "";
+            if (!customerPhone.isEmpty()) {
+                userRepository.findByPhone(customerPhone).ifPresent(u -> {
+                    notificationService.notify("PLAYER", u.getEmail(),
+                            "📢 Lời nhắc bàn giao sân: " + court,
+                            reminderText,
+                            "HANDOVER_REMINDER", "/pitches/" + b.getPitchId());
+                });
+            }
+
+            // Gửi thông báo đến chủ sân
+            pitchRepository.findById(b.getPitchId()).ifPresent(p -> {
+                if (p.getOwnerId() != null) {
+                    userRepository.findById(p.getOwnerId()).ifPresent(owner -> {
+                        notificationService.notify("OWNER", owner.getEmail(),
+                                "Báo nhắc trả sân ca " + slot + " (" + court + ")",
+                                reminderText,
+                                "HANDOVER_REMINDER", "/pitches/" + b.getPitchId());
+                    });
+                }
+            });
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Đã gửi lời nhắc bàn giao sân văn minh thành công!",
+                    "reminderText", reminderText
+            ));
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy vé đặt sân")));
+    }
+
 @DeleteMapping("/bookings/{bookingId}")
     @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     public ResponseEntity<?> cancelBooking(

@@ -384,3 +384,14 @@ export async function confirmBookingPaymentApi(
     method: 'PUT',
   });
 }
+
+/** Gửi Lời Nhắc Nhở Bàn Giao Sân Văn Minh (đội sau hoặc chủ sân nhắc đội ca trước sắp hết giờ) */
+export async function sendHandoverReminderApi(
+  bookingId: number | string,
+  message?: string
+): Promise<{ success: boolean; message: string; reminderText?: string }> {
+  return await apiRequest(`/api/v1/pitches/bookings/${bookingId}/remind-handover`, {
+    method: 'POST',
+    body: JSON.stringify({ message: message || '' }),
+  });
+}
