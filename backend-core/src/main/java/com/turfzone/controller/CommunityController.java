@@ -97,6 +97,21 @@ public class CommunityController {
             } catch (NumberFormatException ignored) {}
         }
 
+        String matchStyle = str(req.get("matchStyle"));
+        if (matchStyle == null || matchStyle.isBlank()) matchStyle = "DUONG_SINH";
+
+        String ageGroup = str(req.get("ageGroup"));
+        if (ageGroup == null || ageGroup.isBlank()) ageGroup = "U25_U35";
+
+        String homeKitColor = str(req.get("homeKitColor"));
+        if (homeKitColor == null || homeKitColor.isBlank()) homeKitColor = "Đỏ";
+
+        String refereeOption = str(req.get("refereeOption"));
+        if (refereeOption == null || refereeOption.isBlank()) refereeOption = "TU_BAT";
+
+        String waterOption = str(req.get("waterOption"));
+        if (waterOption == null || waterOption.isBlank()) waterOption = "CAM_THUNG";
+
         MatchmakingPost post = MatchmakingPost.builder()
                 .teamName(teamName)
                 .captainName(captainName != null ? captainName : captainPhone)
@@ -112,6 +127,11 @@ public class CommunityController {
                 .neededPosition(neededPosition)
                 .neededCount(neededCount)
                 .joinedCount(0)
+                .matchStyle(matchStyle)
+                .ageGroup(ageGroup)
+                .homeKitColor(homeKitColor)
+                .refereeOption(refereeOption)
+                .waterOption(waterOption)
                 .status("OPEN")
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -185,6 +205,11 @@ public class CommunityController {
         if (opponentTeamName == null) {
             return ResponseEntity.badRequest().body(Map.of(
                     "error", "Thiếu tên đội nhận kèo: cần opponentTeamName."));
+        }
+
+        String awayKitColor = str(req.get("awayKitColor"));
+        if (awayKitColor != null && !awayKitColor.isBlank()) {
+            post.setAwayKitColor(awayKitColor);
         }
 
         post.setStatus("MATCHED");

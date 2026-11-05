@@ -4,9 +4,11 @@ import com.turfzone.dto.CreatePitchRequest;
 import com.turfzone.util.RevenueUtil;
 import com.turfzone.util.TimeSlotUtil;
 import com.turfzone.model.Booking;
+import com.turfzone.model.BookingAttendance;
 import com.turfzone.model.Pitch;
 import com.turfzone.model.User;
 import com.turfzone.repository.BookingRepository;
+import com.turfzone.repository.BookingAttendanceRepository;
 import com.turfzone.repository.PitchRepository;
 import com.turfzone.model.BookingWaitlist;
 import com.turfzone.repository.BookingWaitlistRepository;
@@ -37,6 +39,7 @@ public class PitchBookingController {
     private final com.turfzone.service.EmailService emailService;
     private final com.turfzone.repository.UserRepository userRepository;
     private final BookingWaitlistRepository bookingWaitlistRepository;
+    private final BookingAttendanceRepository bookingAttendanceRepository;
 
     @GetMapping
     public ResponseEntity<List<Pitch>> getAllPitches() {
@@ -2084,6 +2087,92 @@ public ResponseEntity<?> rescheduleBooking(
     /**
      * API Cầu thủ xem danh sách các đơn đặt sân của chính mình (đối chiếu SĐT hoặc tìm các đơn của mình)
      */
+    /**
+     * API Lay danh sach diem danh quan so cho ca da.
+     */
+    @GetMapping("/bookings/{bookingId}/attendance")
+    public ResponseEntity<?> getBookingAttendance(@PathVariable Long bookingId) {
+        List<BookingAttendance> list = bookingAttendanceRepository.findByBookingIdOrderByVotedAtAsc(bookingId);
+        return ResponseEntity.ok(list);
+    }
+
+    /**
+     * API Cau thu hoac doi truong diem danh ca da (Di / Chua chac / Vang).
+     */
+    @PostMapping("/bookings/{bookingId}/attendance")
+    public ResponseEntity<?> voteBookingAttendance(
+            @PathVariable Long bookingId,
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal User currentUser) {
+        String playerName = req.get("playerName") != null ? req.get("playerName").toString().trim() : null;
+        if (playerName == null || playerName.isBlank()) {
+            if (currentUser != null && currentUser.getFullName() != null && !currentUser.getFullName().isBlank()) {
+                playerName = currentUser.getFullName().trim();
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập họ tên cầu thủ để điểm danh."));
+            }
+        }
+
+        String playerPhone = req.get("playerPhone") != null ? req.get("playerPhone").toString().trim() : null;
+        if ((playerPhone == null || playerPhone.isBlank()) && currentUser != null && currentUser.getPhone() != null) {
+            playerPhone = currentUser.getPhone().trim();
+        }
+
+        String status = req.get("status") != null ? req.get("status").toString().trim().toUpperCase() : "GOING";
+        if (!"GOING".equals(status) && !"MAYBE".equals(status) && !"ABSENT".equals(status)) {
+            status = "GOING";
+        }
+
+        final String finalPlayerName = playerName;
+        final String finalPlayerPhone = playerPhone;
+        final String finalStatus = status;
+
+        BookingAttendance record = bookingAttendanceRepository
+                .findByBookingIdAndPlayerName(bookingId, finalPlayerName)
+                .map(existing -> {
+                    existing.setStatus(finalStatus);
+                    if (finalPlayerPhone != null && !finalPlayerPhone.isBlank()) {
+                        existing.setPlayerPhone(finalPlayerPhone);
+                    }
+                    existing.setVotedAt(java.time.LocalDateTime.now());
+                    return existing;
+                })
+                .orElseGet(() -> BookingAttendance.builder()
+                        .bookingId(bookingId)
+                        .playerName(finalPlayerName)
+                        .playerPhone(finalPlayerPhone)
+                        .status(finalStatus)
+                        .votedAt(java.time.LocalDateTime.now())
+                        .build());
+
+        bookingAttendanceRepository.save(record);
+        List<BookingAttendance> updatedList = bookingAttendanceRepository.findByBookingIdOrderByVotedAtAsc(bookingId);
+        return ResponseEntity.ok(Map.of(
+                "message", "Điểm danh thành công!",
+                "record", record,
+                "attendance", updatedList
+        ));
+    }
+
+    /**
+     * API Xoa cau thu khoi danh sach diem danh ca da.
+     */
+    @DeleteMapping("/bookings/{bookingId}/attendance")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> removeBookingAttendance(
+            @PathVariable Long bookingId,
+            @RequestParam String playerName) {
+        if (playerName == null || playerName.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu tên cầu thủ cần xóa."));
+        }
+        bookingAttendanceRepository.deleteByBookingIdAndPlayerName(bookingId, playerName.trim());
+        List<BookingAttendance> updatedList = bookingAttendanceRepository.findByBookingIdOrderByVotedAtAsc(bookingId);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã xóa cầu thủ khỏi danh sách điểm danh.",
+                "attendance", updatedList
+        ));
+    }
+
     @GetMapping("/bookings/my-bookings")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getMyBookings(@AuthenticationPrincipal User currentUser) {

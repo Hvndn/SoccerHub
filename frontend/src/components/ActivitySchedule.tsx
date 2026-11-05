@@ -19,7 +19,14 @@ import {
 import { API_BASE_URL, apiRequest, fetchWithTimeout } from "@/lib/api";
 import { pitchTypeLabel } from "@/lib/pitchLabels";
 import { isPastDay } from "@/lib/dateUtils";
-import { sendHandoverReminderApi } from "@/lib/pitchService";
+import {
+  sendHandoverReminderApi,
+  getBookingAttendanceApi,
+  voteBookingAttendanceApi,
+  removeBookingAttendanceApi,
+  type BookingAttendanceItem,
+} from "@/lib/pitchService";
+import { UserCheck, UserX, UserMinus, Plus } from "lucide-react";
 import {
   fetchTournaments,
   type Tournament,
@@ -118,6 +125,88 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
   // Handover reminder state
   const [sendingReminderId, setSendingReminderId] = useState<number | null>(null);
   const [reminderSent, setReminderSent] = useState<boolean>(false);
+
+  // Điểm danh quân số ca đá state
+  const [attendanceBookingId, setAttendanceBookingId] = useState<number | null>(null);
+  const [attendanceMap, setAttendanceMap] = useState<Record<number, BookingAttendanceItem[]>>({});
+  const [attendanceLoadingId, setAttendanceLoadingId] = useState<number | null>(null);
+  const [newPlayerName, setNewPlayerName] = useState<string>("");
+  const [newPlayerStatus, setNewPlayerStatus] = useState<"GOING" | "MAYBE" | "ABSENT">("GOING");
+  const [votingBookingId, setVotingBookingId] = useState<number | null>(null);
+
+  const loadAttendance = async (bookingId: number) => {
+    try {
+      setAttendanceLoadingId(bookingId);
+      const list = await getBookingAttendanceApi(bookingId);
+      setAttendanceMap((prev) => ({ ...prev, [bookingId]: list }));
+    } catch (e) {
+      console.warn("Lỗi tải điểm danh:", e);
+    } finally {
+      setAttendanceLoadingId(null);
+    }
+  };
+
+  const handleToggleAttendance = (bookingId: number) => {
+    if (attendanceBookingId === bookingId) {
+      setAttendanceBookingId(null);
+    } else {
+      setAttendanceBookingId(bookingId);
+      if (!attendanceMap[bookingId]) {
+        loadAttendance(bookingId);
+      }
+    }
+  };
+
+  const handleVoteAttendance = async (
+    bookingId: number,
+    playerName: string,
+    status: "GOING" | "MAYBE" | "ABSENT",
+    playerPhone?: string
+  ) => {
+    if (!playerName.trim()) return;
+    try {
+      setVotingBookingId(bookingId);
+      const res = await voteBookingAttendanceApi(bookingId, {
+        playerName: playerName.trim(),
+        playerPhone: playerPhone || user?.phone || "",
+        status,
+      });
+      setAttendanceMap((prev) => ({ ...prev, [bookingId]: res.attendance }));
+      const statusLabel =
+        status === "GOING"
+          ? "Chắc chắn đi đá 🟢"
+          : status === "MAYBE"
+          ? "50/50 chưa chắc 🟡"
+          : "Báo bận vắng 🔴";
+      setNotice(`✓ Đã điểm danh cho "${playerName.trim()}": ${statusLabel}`);
+      setTimeout(() => setNotice(null), 3000);
+    } catch (e: any) {
+      setNotice(e?.message || "Lỗi khi điểm danh");
+    } finally {
+      setVotingBookingId(null);
+    }
+  };
+
+  const handleRemoveAttendance = async (bookingId: number, playerName: string) => {
+    try {
+      setVotingBookingId(bookingId);
+      const res = await removeBookingAttendanceApi(bookingId, playerName);
+      setAttendanceMap((prev) => ({ ...prev, [bookingId]: res.attendance }));
+      setNotice(`✓ Đã xóa "${playerName}" khỏi bảng điểm danh.`);
+      setTimeout(() => setNotice(null), 3000);
+    } catch (e: any) {
+      setNotice(e?.message || "Lỗi xóa cầu thủ");
+    } finally {
+      setVotingBookingId(null);
+    }
+  };
+
+  const getPitchCapacity = (courtName?: string, courtType?: string) => {
+    const raw = `${courtName || ""} ${courtType || ""}`.toLowerCase();
+    if (raw.includes("11")) return 22;
+    if (raw.includes("7")) return 14;
+    return 10; // Sân 5 / Futsal
+  };
 
   // Live timer tick every second
   useEffect(() => {
@@ -709,8 +798,325 @@ export const ActivitySchedule: React.FC<ActivityScheduleProps> = ({
                           <AlertTriangle className="w-3.5 h-3.5" />
                           <span>{sosBookingId === b.id ? "Đóng SOS" : "🚨 Báo SOS Thiếu Chân"}</span>
                         </button>
+
+                        {/* Nút Điểm Danh Quân Số */}
+                        {(() => {
+                          const cap = getPitchCapacity(b.courtName, b.courtType);
+                          const att = attendanceMap[b.id] || [];
+                          const going = att.filter((x) => x.status === "GOING").length;
+                          const isOpen = attendanceBookingId === b.id;
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleAttendance(b.id)}
+                              className={`px-2.5 py-1 rounded text-[13px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                                isOpen
+                                  ? "bg-[#0369a1] text-white"
+                                  : "bg-sky-50 text-sky-800 border border-sky-300 hover:bg-sky-100"
+                              }`}
+                            >
+                              <Users className="w-3.5 h-3.5" />
+                              <span>{isOpen ? "Đóng Điểm Danh" : `📋 Điểm Danh (${going}/${cap})`}</span>
+                            </button>
+                          );
+                        })()}
                       </div>
                     )}
+
+                    {/* INLINE BẢNG ĐIỂM DANH QUÂN SỐ CA ĐÁ */}
+                    {attendanceBookingId === b.id && (() => {
+                      const capacity = getPitchCapacity(b.courtName, b.courtType);
+                      const attList = attendanceMap[b.id] || [];
+                      const goingList = attList.filter((a) => a.status === "GOING");
+                      const maybeList = attList.filter((a) => a.status === "MAYBE");
+                      const absentList = attList.filter((a) => a.status === "ABSENT");
+                      const myVote = attList.find(
+                        (a) =>
+                          (user?.phone && a.playerPhone === user.phone) ||
+                          (user?.fullName && a.playerName.toLowerCase() === user.fullName.toLowerCase())
+                      );
+                      const missingCount = Math.max(0, capacity - goingList.length);
+
+                      return (
+                        <div className="p-3.5 rounded-md bg-sky-50/70 border border-sky-300 space-y-3.5 mt-2 text-[13px] animate-fade-in">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-sky-200 pb-2.5">
+                            <div>
+                              <span className="font-bold text-sky-950 text-[14px] flex items-center gap-1.5">
+                                <Users className="w-4 h-4 text-[#0369a1]" />
+                                <span>Bảng Điểm Danh Quân Số ({goingList.length}/{capacity} người)</span>
+                              </span>
+                              <p className="text-[13px] text-slate-600 mt-0.5">
+                                {pitchTypeLabel(b.courtName) || b.courtType || "Sân bóng"} • {b.timeSlot} ({prettyDate(b.bookingDate)})
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const lines: string[] = [
+                                    `⚽ [ĐIỂM DANH CA ĐÁ TURFZONE]`,
+                                    `🏟️ Sân: ${pitchTypeLabel(b.courtName) || b.courtName}`,
+                                    `📅 Ngày đá: ${prettyDate(b.bookingDate)}`,
+                                    `⏰ Giờ: ${b.timeSlot}`,
+                                    `👥 SĨ SỐ HIỆN TẠI: ${goingList.length}/${capacity} người sẵn sàng`,
+                                    ``,
+                                    `🟢 CHẮC CHẮN ĐI (${goingList.length}):`,
+                                    ...(goingList.length > 0
+                                      ? goingList.map((p, i) => `${i + 1}. ${p.playerName}`)
+                                      : ["(Chưa có ai điểm danh)"]),
+                                    ``,
+                                    `🟡 50/50 CHƯA CHẮC (${maybeList.length}):`,
+                                    ...(maybeList.length > 0 ? maybeList.map((p) => `- ${p.playerName}`) : ["(Không có)"]),
+                                    ``,
+                                    `🔴 BÁO BẬN (${absentList.length}):`,
+                                    ...(absentList.length > 0 ? absentList.map((p) => `- ${p.playerName}`) : ["(Không có)"]),
+                                    ``,
+                                    `👉 Anh em vào điểm danh hoặc báo bận sớm để chốt quân số nhé!`,
+                                  ];
+                                  const msg = lines.join("\n");
+                                  if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+                                    navigator.clipboard.writeText(msg);
+                                    setNotice("✓ Đã sao chép danh sách điểm danh định dạng Zalo chuẩn!");
+                                    setTimeout(() => setNotice(null), 3000);
+                                  }
+                                }}
+                                className="px-2.5 py-1 rounded bg-white border border-sky-300 hover:bg-sky-100 text-sky-900 font-bold text-[13px] flex items-center gap-1 cursor-pointer transition-colors"
+                              >
+                                <Copy className="w-3.5 h-3.5 text-[#0369a1]" />
+                                <span>Sao chép gửi Zalo</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setAttendanceBookingId(null)}
+                                className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* SĨ SỐ PROGRESS BAR */}
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-[13px]">
+                              <span className="font-bold text-slate-700">Tiến độ gom quân:</span>
+                              <span className="font-mono font-bold text-slate-900">
+                                {goingList.length} / {capacity} cầu thủ ({Math.min(100, Math.round((goingList.length / capacity) * 100))}%)
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                              <div
+                                className={`h-2.5 rounded-full transition-all ${
+                                  goingList.length >= capacity ? "bg-emerald-600" : goingList.length >= capacity / 2 ? "bg-amber-500" : "bg-sky-600"
+                                }`}
+                                style={{ width: `${Math.min(100, (goingList.length / capacity) * 100)}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* NẾU THIẾU NGƯỜI -> CẢNH BÁO & NÚT 1 CHẠM KẾT NỐI SOS */}
+                          {missingCount > 0 && (
+                            <div className="p-2.5 rounded bg-amber-50 border border-amber-300 text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5 font-bold">
+                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                                <span>Đang thiếu {missingCount} người để đủ quân 2 đội!</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSosBookingId(b.id);
+                                  setSosCount(Math.min(4, missingCount));
+                                  setSosFeeAmount(Math.round((b.totalPrice || 350000) / 14));
+                                }}
+                                className="px-3 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white font-bold text-[13px] flex items-center gap-1 self-start sm:self-auto cursor-pointer shadow-xs transition-colors"
+                              >
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                                <span>🚨 Báo SOS Mượn {Math.min(4, missingCount)} Chân Viện Binh</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* ĐIỂM DANH 1 CHẠM CHO TÀI KHOẢN ĐANG ĐĂNG NHẬP */}
+                          {user && (
+                            <div className="p-2.5 rounded bg-white border border-sky-200 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-slate-800">
+                                  Bạn ({user.fullName || user.name || "Tôi"}):
+                                </span>
+                                {myVote && (
+                                  <span className="text-[13px] font-bold text-slate-600">
+                                    Đang báo:{" "}
+                                    <strong className={myVote.status === "GOING" ? "text-emerald-700" : myVote.status === "MAYBE" ? "text-amber-700" : "text-rose-700"}>
+                                      {myVote.status === "GOING" ? "Chắc chắn đi" : myVote.status === "MAYBE" ? "50/50 chưa chắc" : "Báo vắng"}
+                                    </strong>
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  type="button"
+                                  disabled={votingBookingId === b.id}
+                                  onClick={() => handleVoteAttendance(b.id, user.fullName || user.name || "Tôi", "GOING")}
+                                  className={`px-3 py-1.5 rounded-md font-bold text-[13px] flex items-center gap-1.5 cursor-pointer transition-colors ${
+                                    myVote?.status === "GOING"
+                                      ? "bg-emerald-600 text-white shadow-xs"
+                                      : "bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100"
+                                  }`}
+                                >
+                                  <span>🟢 Tôi Chắc Chắn Đi</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={votingBookingId === b.id}
+                                  onClick={() => handleVoteAttendance(b.id, user.fullName || user.name || "Tôi", "MAYBE")}
+                                  className={`px-3 py-1.5 rounded-md font-bold text-[13px] flex items-center gap-1.5 cursor-pointer transition-colors ${
+                                    myVote?.status === "MAYBE"
+                                      ? "bg-amber-600 text-white shadow-xs"
+                                      : "bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100"
+                                  }`}
+                                >
+                                  <span>🟡 50/50 Chưa Chắc</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={votingBookingId === b.id}
+                                  onClick={() => handleVoteAttendance(b.id, user.fullName || user.name || "Tôi", "ABSENT")}
+                                  className={`px-3 py-1.5 rounded-md font-bold text-[13px] flex items-center gap-1.5 cursor-pointer transition-colors ${
+                                    myVote?.status === "ABSENT"
+                                      ? "bg-rose-600 text-white shadow-xs"
+                                      : "bg-rose-50 text-rose-800 border border-rose-300 hover:bg-rose-100"
+                                  }`}
+                                >
+                                  <span>🔴 Tôi Bận Việc (Vắng)</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* THÊM TÊN ĐỒNG ĐỘI NHANH */}
+                          <div className="p-2.5 rounded bg-white border border-sky-200 space-y-2">
+                            <span className="font-bold text-slate-800 block text-[13px]">
+                              + Điểm danh hộ đồng đội (cho bạn bè chưa vào web):
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <input
+                                type="text"
+                                value={newPlayerName}
+                                onChange={(e) => setNewPlayerName(e.target.value)}
+                                placeholder="Nhập tên bạn bè (vd: Tuấn Anh, Hải...)"
+                                className="bg-white px-2.5 py-1.5 rounded border border-slate-300 text-[13px] flex-1 min-w-[160px] focus:outline-none focus:border-[#0369a1]"
+                              />
+                              <select
+                                value={newPlayerStatus}
+                                onChange={(e) => setNewPlayerStatus(e.target.value as any)}
+                                className="bg-white px-2.5 py-1.5 rounded border border-slate-300 text-[13px] font-bold focus:outline-none focus:border-[#0369a1]"
+                              >
+                                <option value="GOING">🟢 Đi đá</option>
+                                <option value="MAYBE">🟡 50/50</option>
+                                <option value="ABSENT">🔴 Vắng</option>
+                              </select>
+                              <button
+                                type="button"
+                                disabled={!newPlayerName.trim() || votingBookingId === b.id}
+                                onClick={() => {
+                                  if (newPlayerName.trim()) {
+                                    handleVoteAttendance(b.id, newPlayerName.trim(), newPlayerStatus);
+                                    setNewPlayerName("");
+                                  }
+                                }}
+                                className="px-3 py-1.5 rounded bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] cursor-pointer disabled:opacity-50"
+                              >
+                                + Thêm
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* DANH SÁCH ANH EM ĐÃ ĐIỂM DANH */}
+                          <div className="space-y-2 pt-1">
+                            <div>
+                              <span className="font-bold text-emerald-900 block mb-1">
+                                🟢 Chắc chắn đi ({goingList.length}):
+                              </span>
+                              {goingList.length === 0 ? (
+                                <p className="text-slate-500 text-[13px] italic">Chưa có ai xác nhận đi chắc chắn.</p>
+                              ) : (
+                                <div className="flex flex-wrap gap-1.5">
+                                  {goingList.map((p, idx) => (
+                                    <span
+                                      key={p.id || idx}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-100 text-emerald-900 font-bold text-[13px] border border-emerald-300"
+                                    >
+                                      <span>{p.playerName}</span>
+                                      <button
+                                        type="button"
+                                        title="Xóa khỏi danh sách"
+                                        onClick={() => handleRemoveAttendance(b.id, p.playerName)}
+                                        className="text-emerald-700 hover:text-rose-700 ml-1 cursor-pointer font-bold"
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {maybeList.length > 0 && (
+                              <div>
+                                <span className="font-bold text-amber-900 block mb-1">
+                                  🟡 50/50 Chưa chắc ({maybeList.length}):
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {maybeList.map((p, idx) => (
+                                    <span
+                                      key={p.id || idx}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-amber-100 text-amber-900 font-bold text-[13px] border border-amber-300"
+                                    >
+                                      <span>{p.playerName}</span>
+                                      <button
+                                        type="button"
+                                        title="Xóa khỏi danh sách"
+                                        onClick={() => handleRemoveAttendance(b.id, p.playerName)}
+                                        className="text-amber-700 hover:text-rose-700 ml-1 cursor-pointer font-bold"
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {absentList.length > 0 && (
+                              <div>
+                                <span className="font-bold text-rose-900 block mb-1">
+                                  🔴 Báo bận vắng ({absentList.length}):
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {absentList.map((p, idx) => (
+                                    <span
+                                      key={p.id || idx}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-rose-100 text-rose-900 font-bold text-[13px] border border-rose-300"
+                                    >
+                                      <span>{p.playerName}</span>
+                                      <button
+                                        type="button"
+                                        title="Xóa khỏi danh sách"
+                                        onClick={() => handleRemoveAttendance(b.id, p.playerName)}
+                                        className="text-rose-700 hover:text-rose-900 ml-1 cursor-pointer font-bold"
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {/* INLINE SOS FORM CHO TỪNG VÉ */}
                     {sosBookingId === b.id && (

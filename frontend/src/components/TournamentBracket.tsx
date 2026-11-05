@@ -58,6 +58,7 @@ import {
  type TournamentBracketData,
  type BracketMatch,
 } from "@/lib/tournamentService";
+import { apiRequest } from "@/lib/api";
 
 export default function TournamentBracket({
  initialTournamentId,
@@ -122,6 +123,37 @@ const [addCount, setAddCount] = useState("4");
  const [toastMessage, setToastMessage] = useState<string | null>(null);
  const [selectedCameraAngle, setSelectedCameraAngle] = useState<string>("Cam 1 - Góc Chính");
 
+ // Vua phá lưới & Sự kiện biên bản trận đấu
+ const [standingsSubTab, setStandingsSubTab] = useState<"teams" | "scorers">("teams");
+ const [topScorers, setTopScorers] = useState<any[]>([]);
+ const [loadingScorers, setLoadingScorers] = useState(false);
+
+ // VAR Live Match Events
+ const [varEvents, setVarEvents] = useState<{
+ id: string;
+ type: "GOAL" | "YELLOW_CARD" | "RED_CARD";
+ teamName: string;
+ playerName: string;
+ minute?: string;
+ }[]>([]);
+ const [newEventTeam, setNewEventTeam] = useState<string>("");
+ const [newEventPlayer, setNewEventPlayer] = useState<string>("");
+ const [newEventMinute, setNewEventMinute] = useState<string>("");
+ const [newEventType, setNewEventType] = useState<"GOAL" | "YELLOW_CARD" | "RED_CARD">("GOAL");
+
+ const loadTopScorers = async (tournamentId: number) => {
+ try {
+ setLoadingScorers(true);
+ const res = await apiRequest<any[]>(`/api/v1/tournaments/${tournamentId}/scorers`);
+ setTopScorers(Array.isArray(res) ? res : []);
+ } catch (e) {
+ console.warn("Lỗi tải Vua phá lưới:", e);
+ setTopScorers([]);
+ } finally {
+ setLoadingScorers(false);
+ }
+ };
+
  const triggerToast = (msg: string) => {
  setToastMessage(msg);
  setTimeout(() => setToastMessage(null), 3500);
@@ -167,6 +199,12 @@ const [addCount, setAddCount] = useState("4");
   () => tournaments.find((t) => String(t.id) === selectedId) ?? null,
   [tournaments, selectedId]
  );
+
+ useEffect(() => {
+  if (selected?.id) {
+    loadTopScorers(selected.id);
+  }
+ }, [selected?.id, activeTab]);
 
   // Kiểm tra giải đấu đã kết thúc hoặc hết thời gian tổ chức
   const isClosed = Boolean(
@@ -610,6 +648,7 @@ const [addCount, setAddCount] = useState("4");
  .map((c: any) => `${c.team} ${c.after?.record ?? ""}`)
  .join(" • ");
  triggerToast(`${res.message}${forms ? ` | Phong độ: ${forms}` : ""}`);
+ if (selected?.id) loadTopScorers(selected.id);
  setScorerRows((prev) => {
  const next = { ...prev };
  delete next[m.matchId];
@@ -664,10 +703,27 @@ const [addCount, setAddCount] = useState("4");
  }
  try {
  setSavingMatch(varMatch.matchId);
+ const goalEvents = varEvents
+   .filter((e) => e.type === "GOAL")
+   .map((e) => ({
+     playerName: e.playerName.trim(),
+     teamName: e.teamName,
+     goals: 1,
+     assists: 0,
+   }));
+ const yellowA = varEvents.filter((e) => e.type === "YELLOW_CARD" && e.teamName === varMatch.teamA?.name).length;
+ const yellowB = varEvents.filter((e) => e.type === "YELLOW_CARD" && e.teamName === varMatch.teamB?.name).length;
+ const redA = varEvents.filter((e) => e.type === "RED_CARD" && e.teamName === varMatch.teamA?.name).length;
+ const redB = varEvents.filter((e) => e.type === "RED_CARD" && e.teamName === varMatch.teamB?.name).length;
  const res = await saveMatchResult(selected.id, {
  matchId: varMatch.matchId,
  scoreA: varScoreA,
  scoreB: varScoreB,
+ scorers: goalEvents.length > 0 ? goalEvents : undefined,
+ yellowCardsA: yellowA,
+ yellowCardsB: yellowB,
+ redCardsA: redA,
+ redCardsB: redB,
  });
  const forms = (res.formChanges ?? [])
  .map((c: any) => `${c.team} ${c.after?.record ?? ""}`)
@@ -677,6 +733,7 @@ const [addCount, setAddCount] = useState("4");
  "ok"
  );
  triggerToast(`${res.message}${forms ? ` | Phong độ: ${forms}` : ""}`);
+ if (selected?.id) loadTopScorers(selected.id);
  } catch (err: any) {
  triggerToast(err?.message || "Lưu kết quả thất bại.");
  } finally {
@@ -1906,6 +1963,125 @@ const [addCount, setAddCount] = useState("4");
  </div>
  </div>
 
+ <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5 text-[13px]">
+  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+   <span className="font-bold text-slate-800 text-[14px] flex items-center gap-1.5">
+    <FileText className="w-4 h-4 text-[#0369a1]" />
+    <span>Ghi Nhận Sự Kiện Trực Tiếp (Bàn Thắng & Thẻ Phạt)</span>
+   </span>
+   <span className="text-slate-500 font-mono font-bold">
+    {varEvents.length} sự kiện
+   </span>
+  </div>
+
+  {varMatch.status !== "DONE" && (
+   <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+    <select
+     value={newEventType}
+     onChange={(e) => setNewEventType(e.target.value as any)}
+     className="px-2 py-1.5 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 focus:outline-none"
+    >
+     <option value="GOAL">⚽ Bàn Thắng</option>
+     <option value="YELLOW_CARD">🟨 Thẻ Vàng</option>
+     <option value="RED_CARD">🟥 Thẻ Đỏ</option>
+    </select>
+
+    <select
+     value={newEventTeam || varMatch.teamA?.name || ""}
+     onChange={(e) => setNewEventTeam(e.target.value)}
+     className="px-2 py-1.5 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 focus:outline-none truncate"
+    >
+     <option value={varMatch.teamA?.name}>{varMatch.teamA?.name}</option>
+     <option value={varMatch.teamB?.name}>{varMatch.teamB?.name}</option>
+    </select>
+
+    <input
+     type="text"
+     placeholder="Tên cầu thủ (vd: Tuấn Anh)..."
+     value={newEventPlayer}
+     onChange={(e) => setNewEventPlayer(e.target.value)}
+     className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[13px] focus:outline-none"
+    />
+
+    <div className="flex items-center gap-1.5">
+     <input
+      type="text"
+      placeholder="Phút (24')"
+      value={newEventMinute}
+      onChange={(e) => setNewEventMinute(e.target.value)}
+      className="w-20 px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-[13px] focus:outline-none"
+     />
+     <button
+      type="button"
+      onClick={() => {
+       if (!newEventPlayer.trim()) {
+        triggerToast("Vui lòng nhập tên cầu thủ");
+        return;
+       }
+       const team = newEventTeam || varMatch.teamA?.name || "";
+       const ev = {
+        id: `${Date.now()}-${Math.random()}`,
+        type: newEventType,
+        teamName: team,
+        playerName: newEventPlayer.trim(),
+        minute: newEventMinute.trim() || undefined,
+       };
+       setVarEvents((prev) => [...prev, ev]);
+       if (newEventType === "GOAL") {
+        if (team === varMatch.teamA?.name) setVarScoreA((s) => s + 1);
+        if (team === varMatch.teamB?.name) setVarScoreB((s) => s + 1);
+       }
+       pushVarLog(
+        `${newEventType === "GOAL" ? "⚽ Bàn thắng" : newEventType === "YELLOW_CARD" ? "🟨 Thẻ vàng" : "🟥 Thẻ đỏ"} [${newEventMinute || "Trận"}] ${newEventPlayer.trim()} (${team})`,
+        "ok"
+       );
+       setNewEventPlayer("");
+       setNewEventMinute("");
+      }}
+      className="px-3 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shrink-0 cursor-pointer"
+     >
+      + Ghi
+     </button>
+    </div>
+   </div>
+  )}
+
+  {varEvents.length > 0 && (
+   <div className="flex flex-wrap gap-1.5 pt-1">
+    {varEvents.map((ev) => (
+     <span
+      key={ev.id}
+      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[13px] font-bold border ${
+       ev.type === "GOAL"
+        ? "bg-emerald-50 text-emerald-900 border-emerald-300"
+        : ev.type === "YELLOW_CARD"
+        ? "bg-amber-50 text-amber-900 border-amber-300"
+        : "bg-rose-50 text-rose-900 border-rose-300"
+      }`}
+     >
+      <span>
+       {ev.type === "GOAL" ? "⚽" : ev.type === "YELLOW_CARD" ? "🟨" : "🟥"}{" "}
+       {ev.minute ? `${ev.minute} ` : ""}{ev.playerName} ({ev.teamName})
+      </span>
+      <button
+       type="button"
+       onClick={() => {
+        setVarEvents((prev) => prev.filter((x) => x.id !== ev.id));
+        if (ev.type === "GOAL") {
+         if (ev.teamName === varMatch.teamA?.name) setVarScoreA((s) => Math.max(0, s - 1));
+         if (ev.teamName === varMatch.teamB?.name) setVarScoreB((s) => Math.max(0, s - 1));
+        }
+       }}
+       className="text-slate-400 hover:text-rose-700 ml-1 font-bold cursor-pointer"
+      >
+       ×
+      </button>
+     </span>
+    ))}
+   </div>
+  )}
+ </div>
+
  {varMatch.status !== "DONE" && (
  <button
  onClick={saveVarScore}
@@ -2148,11 +2324,40 @@ const [addCount, setAddCount] = useState("4");
  <span>Bảng Xếp Hạng {selected ? `— ${selected.title}` : ""}</span>
  </h2>
  <span className="text-[14px] text-slate-600">
- Thắng = 3 điểm • Phong độ cập nhật tự động từ lịch sử sau mỗi trận
+ Thắng = 3 điểm • Phong độ & bàn thắng cập nhật tự động sau mỗi trận
  </span>
  </div>
 
- {tableRows.length === 0 ? (
+ <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+  <button
+   type="button"
+   onClick={() => setStandingsSubTab("teams")}
+   className={`px-3.5 py-1.5 rounded-lg text-[13px] font-bold border transition-colors cursor-pointer ${
+    standingsSubTab === "teams"
+     ? "bg-[#0369a1] text-white border-[#0369a1]"
+     : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+   }`}
+  >
+   📊 Bảng Xếp Hạng Đội Bóng
+  </button>
+  <button
+   type="button"
+   onClick={() => {
+    setStandingsSubTab("scorers");
+    if (selected?.id) loadTopScorers(selected.id);
+   }}
+   className={`px-3.5 py-1.5 rounded-lg text-[13px] font-bold border transition-colors cursor-pointer ${
+    standingsSubTab === "scorers"
+     ? "bg-[#0369a1] text-white border-[#0369a1]"
+     : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+   }`}
+  >
+   👑 Vua Phá Lưới & Kiến Tạo ({topScorers.length})
+  </button>
+ </div>
+
+ {standingsSubTab === "teams" ? (
+ tableRows.length === 0 ? (
  <div className="p-4 sm:p-8 text-center">
  <Users className="w-8 h-8 text-slate-400 mx-auto" />
  <p className="mt-3 text-sm text-slate-500">
@@ -2204,6 +2409,58 @@ const [addCount, setAddCount] = useState("4");
  </tbody>
  </table>
  </div>
+ )
+ ) : (
+  <div className="space-y-3">
+   {topScorers.length === 0 ? (
+    <div className="p-8 text-center space-y-2">
+     <Trophy className="w-8 h-8 text-amber-500 mx-auto" />
+     <p className="text-[14px] font-bold text-slate-700">
+      Chưa có bàn thắng nào được ghi nhận trong giải đấu.
+     </p>
+     <p className="text-[13px] text-slate-500">
+      Khi trọng tài hoặc ban tổ chức nhập tỷ số kèm danh sách cầu thủ ghi bàn, bảng xếp hạng Vua Phá Lưới sẽ tự động cập nhật tại đây.
+     </p>
+    </div>
+   ) : (
+    <div className="overflow-x-auto -mx-1 px-1">
+     <table className="w-full text-left border-collapse text-[14px] min-w-[560px]">
+      <thead>
+       <tr className="border-b border-slate-200 text-slate-500 font-bold text-[13px]">
+        <th className="py-2.5 px-3">Hạng</th>
+        <th className="py-2.5 px-3">Cầu Thủ</th>
+        <th className="py-2.5 px-3">Đội Bóng / CLB</th>
+        <th className="py-2.5 px-3 text-center">Bàn Thắng ⚽</th>
+        <th className="py-2.5 px-3 text-center">Kiến Tạo 👟</th>
+        <th className="py-2.5 px-3 text-center">Tổng G+A</th>
+       </tr>
+      </thead>
+      <tbody className="divide-y divide-slate-100 font-medium">
+       {topScorers.map((s, idx) => (
+        <tr key={idx} className={idx === 0 ? "bg-amber-50/60 font-bold" : "hover:bg-slate-50"}>
+         <td className="py-3 px-3 font-bold font-mono">
+          {idx === 0 ? "🥇 #1" : idx === 1 ? "🥈 #2" : idx === 2 ? "🥉 #3" : `#${idx + 1}`}
+         </td>
+         <td className="py-3 px-3 font-bold text-slate-900">
+          {idx === 0 && "👑 "}{s.playerName}
+         </td>
+         <td className="py-3 px-3 text-slate-700 font-semibold">{s.teamName}</td>
+         <td className="py-3 px-3 text-center font-mono font-black text-rose-600 text-base">
+          {s.goals || 0}
+         </td>
+         <td className="py-3 px-3 text-center font-mono font-bold text-sky-700">
+          {s.assists || 0}
+         </td>
+         <td className="py-3 px-3 text-center font-mono font-extrabold text-slate-900">
+          {(s.goals || 0) + (s.assists || 0)}
+         </td>
+        </tr>
+       ))}
+      </tbody>
+     </table>
+    </div>
+   )}
+  </div>
  )}
  </div>
  )}
@@ -2340,6 +2597,57 @@ const [addCount, setAddCount] = useState("4");
  ))}
  </tbody>
  </table>
+ </div>
+
+ {/* Sự kiện ghi bàn & kỷ luật trong trận */}
+ <div className="space-y-2 pt-2 border-t border-slate-200 print:border-slate-300">
+  <h4 className="font-bold text-slate-800 text-[14px]">
+   Diễn Biến Trận Đấu & Kỷ Luật
+  </h4>
+  {varEvents.length === 0 ? (
+   <p className="text-[13px] text-slate-500 italic">
+    Không có sự kiện bàn thắng hoặc thẻ phạt nào được ghi nhận riêng trong phiên làm việc này.
+   </p>
+  ) : (
+   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[13px]">
+    {varEvents.map((ev) => (
+     <div
+      key={ev.id}
+      className={`p-2 rounded border flex items-center justify-between gap-2 ${
+       ev.type === "GOAL"
+        ? "bg-emerald-50 border-emerald-200 text-emerald-950 font-bold"
+        : ev.type === "YELLOW_CARD"
+        ? "bg-amber-50 border-amber-200 text-amber-950 font-bold"
+        : "bg-rose-50 border-rose-200 text-rose-950 font-bold"
+      }`}
+     >
+      <div className="flex items-center gap-1.5">
+       <span>{ev.type === "GOAL" ? "⚽ Bàn thắng" : ev.type === "YELLOW_CARD" ? "🟨 Thẻ vàng" : "🟥 Thẻ đỏ"}</span>
+       <span>•</span>
+       <span>{ev.playerName}</span>
+       <span className="font-normal text-slate-600">({ev.teamName})</span>
+      </div>
+      {ev.minute && <span className="font-mono text-slate-600">Phút {ev.minute}</span>}
+     </div>
+    ))}
+   </div>
+  )}
+ </div>
+
+ {/* Chữ ký xác nhận */}
+ <div className="grid grid-cols-3 gap-4 pt-6 text-center text-[13px] text-slate-700">
+  <div className="space-y-8">
+   <div className="font-bold">ĐẠI DIỆN ĐỘI A</div>
+   <div className="italic text-slate-400 font-mono text-[12px]">(Ký & ghi rõ họ tên)</div>
+  </div>
+  <div className="space-y-8">
+   <div className="font-bold">ĐẠI DIỆN ĐỘI B</div>
+   <div className="italic text-slate-400 font-mono text-[12px]">(Ký & ghi rõ họ tên)</div>
+  </div>
+  <div className="space-y-8">
+   <div className="font-bold">TRỌNG TÀI CHÍNH</div>
+   <div className="italic text-slate-400 font-mono text-[12px]">(Ký & ghi rõ họ tên)</div>
+  </div>
  </div>
 
  {/* Ghi chú trung thực */}

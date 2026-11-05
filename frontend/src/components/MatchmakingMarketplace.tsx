@@ -124,6 +124,28 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
   const [createNote, setCreateNote] = useState("");
   const [creating, setCreating] = useState(false);
 
+  // Thỏa thuận kèo giao hữu state
+  const [createMatchStyle, setCreateMatchStyle] = useState<"DUONG_SINH" | "NHIET_HUYET">("DUONG_SINH");
+  const [createAgeGroup, setCreateAgeGroup] = useState<"U20_U25" | "U25_U35" | "U35_PLUS">("U25_U35");
+  const [createHomeKitColor, setCreateHomeKitColor] = useState<string>("Đỏ");
+  const [createRefereeOption, setCreateRefereeOption] = useState<"TU_BAT" | "THUE_TRONG_TAI">("TU_BAT");
+  const [createWaterOption, setCreateWaterOption] = useState<"CAM_THUNG" | "TU_MANG">("CAM_THUNG");
+  const [acceptAwayKitColor, setAcceptAwayKitColor] = useState<string>("Xanh dương");
+
+  const KIT_COLORS = ["Đỏ", "Xanh dương", "Trắng", "Đen", "Vàng", "Xanh lá", "Cam", "Tím"];
+
+  const isKitClashing = (c1?: string, c2?: string) => {
+    if (!c1 || !c2) return false;
+    const n1 = c1.trim().toLowerCase();
+    const n2 = c2.trim().toLowerCase();
+    if (n1 === n2) return true;
+    const darks = ["đen", "xanh đen", "xanh navy", "tím than", "xanh đậm"];
+    if (darks.includes(n1) && darks.includes(n2)) return true;
+    const lights = ["trắng", "vàng nhạt", "xám sáng", "kem"];
+    if (lights.includes(n1) && lights.includes(n2)) return true;
+    return false;
+  };
+
   // Inline accept form
   const [acceptingPost, setAcceptingPost] = useState<any | null>(null);
   const [acceptOpponentTeam, setAcceptOpponentTeam] = useState("");
@@ -308,6 +330,11 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
           postType: createPostType,
           neededPosition: createNeededPosition,
           neededCount: createNeededCount,
+          matchStyle: createMatchStyle,
+          ageGroup: createAgeGroup,
+          homeKitColor: createHomeKitColor,
+          refereeOption: createRefereeOption,
+          waterOption: createWaterOption,
         }),
       });
 
@@ -337,6 +364,7 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
             opponentTeamName: acceptOpponentTeam.trim() || (acceptingPost.postType === "SOS_GUEST" ? "Viện Binh" : `FC ${userName}`),
             opponentCaptainName: userName,
             opponentCaptainPhone: acceptOpponentPhone.trim() || user?.phone || "",
+            awayKitColor: acceptAwayKitColor,
           }),
         }
       );
@@ -637,6 +665,66 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                   className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 font-mono focus:outline-none focus:border-[#0369a1]"
                 />
               </div>
+
+              {createPostType === "MATCH" && (
+                <div className="sm:col-span-2 lg:col-span-4 p-3 rounded-md bg-white border border-slate-200 space-y-3">
+                  <span className="font-bold text-slate-900 text-[14px] block border-b border-slate-100 pb-1.5">
+                    📑 Phiếu Thỏa Thuận Kèo Giao Hữu (Tránh Va Chạm & Trùng Màu Áo)
+                  </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[13px]">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Tính chất thi đấu</label>
+                      <select
+                        value={createMatchStyle}
+                        onChange={(e) => setCreateMatchStyle(e.target.value as any)}
+                        className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
+                      >
+                        <option value="DUONG_SINH">🧘 Văn phòng dưỡng sinh</option>
+                        <option value="NHIET_HUYET">🔥 Cọ xát nhiệt huyết</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Độ tuổi đội hình</label>
+                      <select
+                        value={createAgeGroup}
+                        onChange={(e) => setCreateAgeGroup(e.target.value as any)}
+                        className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
+                      >
+                        <option value="U25_U35">U25 - U35 (Đi làm/Công sở)</option>
+                        <option value="U20_U25">U20 - U25 (Sinh viên/Trẻ)</option>
+                        <option value="U35_PLUS">U35+ (Lão tướng U35+)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Màu áo đội nhà</label>
+                      <select
+                        value={createHomeKitColor}
+                        onChange={(e) => setCreateHomeKitColor(e.target.value)}
+                        className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-bold focus:outline-none focus:border-[#0369a1]"
+                      >
+                        {KIT_COLORS.map((c) => (
+                          <option key={c} value={c}>Áo màu {c}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Trọng tài điều khiển</label>
+                      <select
+                        value={createRefereeOption}
+                        onChange={(e) => setCreateRefereeOption(e.target.value as any)}
+                        className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
+                      >
+                        <option value="TU_BAT">🤝 Hai bên tự bắt Fairplay</option>
+                        <option value="THUE_TRONG_TAI">⚖️ Thuê trọng tài (Cưa đôi)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="sm:col-span-2">
                 <label className="block text-[13px] font-bold text-slate-700 mb-1">Lời nhắn / Yêu cầu</label>
@@ -946,6 +1034,37 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                           <strong className="text-slate-700">Lời nhắn:</strong> {post.note}
                         </p>
                       )}
+
+                      {!isSos && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[13px]">
+                          <span
+                            className={`px-2 py-0.5 rounded font-bold border ${
+                              post.matchStyle === "NHIET_HUYET"
+                                ? "bg-rose-50 text-rose-800 border-rose-200"
+                                : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                            }`}
+                          >
+                            {post.matchStyle === "NHIET_HUYET" ? "🔥 Cọ xát nhiệt huyết" : "🧘 Dưỡng sinh văn phòng"}
+                          </span>
+
+                          <span className="px-2 py-0.5 rounded font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                            {post.ageGroup === "U20_U25"
+                              ? "U20 - U25"
+                              : post.ageGroup === "U35_PLUS"
+                              ? "U35+ Lão tướng"
+                              : "U25 - U35"}
+                          </span>
+
+                          <span className="px-2 py-0.5 rounded font-bold bg-white text-slate-800 border border-slate-300 flex items-center gap-1">
+                            <span>Áo chủ nhà:</span>
+                            <strong className="text-[#0369a1]">{post.homeKitColor || "Đỏ"}</strong>
+                          </span>
+
+                          <span className="px-2 py-0.5 rounded font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                            {post.refereeOption === "THUE_TRONG_TAI" ? "⚖️ Thuê trọng tài" : "🤝 Tự bắt Fairplay"}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Bottom Action or Inline Accept Form */}
@@ -986,6 +1105,47 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                             className="bg-white px-2.5 py-1.5 rounded border border-slate-300 focus:outline-none focus:border-[#0369a1]"
                           />
                         </div>
+
+                        {!isSos && (
+                          <div className="space-y-2 p-2.5 rounded bg-white border border-sky-100">
+                            <div>
+                              <label className="block font-bold text-slate-700 text-[13px] mb-1">
+                                Màu áo thi đấu đội bạn (Kiểm tra tránh trùng màu):
+                              </label>
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                {KIT_COLORS.map((c) => (
+                                  <button
+                                    key={c}
+                                    type="button"
+                                    onClick={() => setAcceptAwayKitColor(c)}
+                                    className={`px-2.5 py-1 rounded text-[13px] font-bold border transition-colors cursor-pointer ${
+                                      acceptAwayKitColor === c
+                                        ? "bg-[#0369a1] text-white border-[#0369a1]"
+                                        : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+                                    }`}
+                                  >
+                                    Áo {c}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {isKitClashing(post.homeKitColor, acceptAwayKitColor) && (
+                              <div className="p-2 rounded bg-amber-50 border border-amber-300 text-amber-900 text-[13px] font-bold flex items-center gap-1.5 animate-fade-in">
+                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                                <span>
+                                  ⚠️ Trùng tông màu áo với chủ nhà ({post.homeKitColor || "Đỏ"})! Đội khách nên mang áo phụ hoặc mượn áo bib tại quầy lễ tân sân.
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="text-[13px] text-slate-600 space-y-0.5 pt-1 border-t border-slate-100">
+                              <div>• Tính chất: <strong>{post.matchStyle === "NHIET_HUYET" ? "Cọ xát nhiệt huyết" : "Dưỡng sinh văn phòng"}</strong></div>
+                              <div>• Độ tuổi: <strong>{post.ageGroup === "U20_U25" ? "U20 - U25" : post.ageGroup === "U35_PLUS" ? "U35+ Lão tướng" : "U25 - U35"}</strong></div>
+                              <div>• Trọng tài: <strong>{post.refereeOption === "THUE_TRONG_TAI" ? "Thuê trọng tài sân (Cưa đôi phí)" : "Hai bên tự bắt Fairplay"}</strong></div>
+                            </div>
+                          </div>
+                        )}
                         <div className="flex justify-end gap-2">
                           <button
                             type="button"

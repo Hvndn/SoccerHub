@@ -395,3 +395,49 @@ export async function sendHandoverReminderApi(
     body: JSON.stringify({ message: message || '' }),
   });
 }
+
+
+export interface BookingAttendanceItem {
+  id?: number;
+  bookingId: number;
+  playerName: string;
+  playerPhone?: string;
+  status: 'GOING' | 'MAYBE' | 'ABSENT';
+  votedAt?: string;
+}
+
+/** Lấy danh sách điểm danh ca đá */
+export async function getBookingAttendanceApi(bookingId: number | string): Promise<BookingAttendanceItem[]> {
+  try {
+    return await apiRequest<BookingAttendanceItem[]>(`/api/v1/pitches/bookings/${bookingId}/attendance`, {
+      method: 'GET',
+    });
+  } catch (err) {
+    console.warn('Lỗi lấy điểm danh ca đá:', err);
+    return [];
+  }
+}
+
+/** Cầu thủ hoặc Đội trưởng bấm điểm danh (Đi / 50-50 / Vắng) */
+export async function voteBookingAttendanceApi(
+  bookingId: number | string,
+  payload: { playerName: string; playerPhone?: string; status: 'GOING' | 'MAYBE' | 'ABSENT' }
+): Promise<{ message: string; record: BookingAttendanceItem; attendance: BookingAttendanceItem[] }> {
+  return await apiRequest(`/api/v1/pitches/bookings/${bookingId}/attendance`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Xóa cầu thủ khỏi danh sách điểm danh */
+export async function removeBookingAttendanceApi(
+  bookingId: number | string,
+  playerName: string
+): Promise<{ message: string; attendance: BookingAttendanceItem[] }> {
+  return await apiRequest(
+    `/api/v1/pitches/bookings/${bookingId}/attendance?playerName=${encodeURIComponent(playerName)}`,
+    {
+      method: 'DELETE',
+    }
+  );
+}

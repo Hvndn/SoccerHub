@@ -61,6 +61,24 @@ public class MatchmakingPost {
     @Builder.Default
     private Integer joinedCount = 0;
 
+    // --- Thỏa thuận kèo giao hữu (Match Terms Agreement) ---
+    @Builder.Default
+    private String matchStyle = "DUONG_SINH"; // "DUONG_SINH" (Văn phòng dưỡng sinh), "NHIET_HUYET" (Cọ xát nhiệt huyết)
+
+    @Builder.Default
+    private String ageGroup = "U25_U35"; // "U20_U25", "U25_U35", "U35_PLUS"
+
+    @Builder.Default
+    private String homeKitColor = "Đỏ"; // Màu áo đội tạo kèo
+
+    private String awayKitColor; // Màu áo đội nhận kèo
+
+    @Builder.Default
+    private String refereeOption = "TU_BAT"; // "TU_BAT" (Hai đội tự bắt fairplay), "THUE_TRONG_TAI" (Thuê trọng tài sân)
+
+    @Builder.Default
+    private String waterOption = "CAM_THUNG"; // "CAM_THUNG" (Cưa đôi thùng nước), "TU_MANG" (Tự túc)
+
     // --- Phong độ live của đội đăng kèo (tính từ match_results, KHÔNG lưu DB) ---
     @Transient
     private String form;
