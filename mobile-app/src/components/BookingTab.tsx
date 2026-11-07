@@ -10,6 +10,7 @@ import {
   Linking,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { Feather } from '@expo/vector-icons';
 import {
   COLORS,
   useResponsiveLayout,
@@ -77,8 +78,16 @@ export default function BookingTab({
 }: BookingTabProps) {
   const layout = useResponsiveLayout();
 
-  // Guest Landing Toggle (Allows viewing LandingHero & LandingFeatures just like Web Guest mode)
+  // Guest Landing Toggle (Matches Web page.tsx: Guest sees LandingHero + LandingFeatures + PitchSearch; Logged-in player can also toggle it)
   const [showGuestLanding, setShowGuestLanding] = useState<boolean>(false);
+  const [activeShowcaseTab, setActiveShowcaseTab] = useState<
+    'BOOKING' | 'TOURNAMENT' | 'MATCHMAKING'
+  >('BOOKING');
+
+  // Inline dropdown selectors for the 4-column filter bar (NO MODAL)
+  const [openFilterMenu, setOpenFilterMenu] = useState<
+    null | 'DISTRICT' | 'TIMESLOT' | 'BUDGET'
+  >(null);
 
   // ============================================================
   // 1. PITCH SEARCH FILTER STATES (100% Parity with PitchSearch.tsx)
@@ -89,7 +98,6 @@ export default function BookingTab({
   const [selectedTimeSlotFilter, setSelectedTimeSlotFilter] = useState('ALL');
   const [maxBudget, setMaxBudget] = useState<number>(800000);
   const [onlyAvailableTonight, setOnlyAvailableTonight] = useState<boolean>(false);
-  const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PITCHES_PER_PAGE = 8;
 
@@ -199,7 +207,14 @@ export default function BookingTab({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedSport, selectedDistrict, selectedTimeSlotFilter, maxBudget, onlyAvailableTonight]);
+  }, [
+    searchQuery,
+    selectedSport,
+    selectedDistrict,
+    selectedTimeSlotFilter,
+    maxBudget,
+    onlyAvailableTonight,
+  ]);
 
   const sportsTabs = [
     { id: 'ALL', name: 'Tất cả loại sân' },
@@ -247,6 +262,7 @@ export default function BookingTab({
     setSelectedTimeSlotFilter('ALL');
     setMaxBudget(800000);
     setOnlyAvailableTonight(false);
+    setOpenFilterMenu(null);
   };
 
   const filteredPitches = pitches.filter((pitch) => {
@@ -385,9 +401,9 @@ export default function BookingTab({
     return {
       temp: '26°C',
       condition: 'Buổi tối mát mẻ, gió nhẹ',
-      turfStatus: 'Hệ thống đèn LED & mặt cỏ đạt 100% tiêu chuẩn',
+      turfStatus: 'Hệ thống đèn & thoát nước hoạt động 100%',
       packingTips: ['Giày đinh TF', 'Áo bib chia đội', 'Bình nước cá nhân'],
-      tone: 'emerald' as const,
+      tone: 'sky' as const,
     };
   };
 
@@ -477,7 +493,7 @@ export default function BookingTab({
     } finally {
       setBookingBusy(false);
       setCheckoutStep('TICKET');
-      showToast('🎉 Đặt sân thành công! Phiếu giữ chỗ điện tử đã sẵn sàng.');
+      showToast('✓ Đặt sân thành công! Phiếu giữ chỗ điện tử đã sẵn sàng.');
     }
   };
 
@@ -507,7 +523,7 @@ export default function BookingTab({
           </View>
         )}
 
-        {/* 1. TOP BREADCRUMB BAR (Matches PitchDetail.tsx) */}
+        {/* 1. TOP BREADCRUMB BAR (Matches PitchDetail.tsx lines 417-460) */}
         <View style={styles.breadcrumbBar}>
           <View style={styles.wrapRow}>
             <TouchableOpacity
@@ -515,10 +531,11 @@ export default function BookingTab({
               style={styles.backToListBtn}
               activeOpacity={0.8}
             >
-              <Text style={styles.backToListBtnText}>← Danh sách sân</Text>
+              <Feather name="arrow-left" size={15} color={COLORS.textSecondary} />
+              <Text style={styles.backToListBtnText}>Danh sách sân</Text>
             </TouchableOpacity>
             <Text style={styles.breadcrumbPath} numberOfLines={1}>
-              Đặt sân {'>'} <Text style={{ color: COLORS.text, fontWeight: '800' }}>{pitch.name}</Text>
+              Đặt sân {'>'} <Text style={{ color: COLORS.text, fontWeight: '700' }}>{pitch.name}</Text>
             </Text>
           </View>
 
@@ -536,8 +553,9 @@ export default function BookingTab({
               }
               style={styles.breadcrumbActionBtn}
             >
+              <Feather name="share-2" size={14} color={COLORS.textSecondary} />
               <Text style={styles.breadcrumbActionText}>
-                {shareCopied ? '✓ Đã lưu link' : '🔗 Chia sẻ'}
+                {shareCopied ? 'Đã lưu link' : 'Chia sẻ'}
               </Text>
             </TouchableOpacity>
 
@@ -551,26 +569,27 @@ export default function BookingTab({
               }
               style={styles.breadcrumbActionBtn}
             >
-              <Text style={styles.breadcrumbActionText}>🗺️ Bản đồ</Text>
+              <Feather name="navigation" size={14} color={COLORS.primary} />
+              <Text style={styles.breadcrumbActionText}>Bản đồ</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* 2. VENUE SUMMARY CARD */}
+        {/* 2. VENUE SUMMARY CARD (Matches PitchDetail.tsx lines 463-522) */}
         <View style={styles.detailVenueCard}>
           <View style={[styles.detailVenueInner, layout.isTablet && { flexDirection: 'row' }]}>
             <Image
               source={{ uri: pitch.imageUrl }}
               style={[
                 styles.detailVenueImg,
-                layout.isTablet ? { width: 260, height: 185 } : { width: '100%', height: 180 },
+                layout.isTablet ? { width: 256, height: 176 } : { width: '100%', height: 176 },
               ]}
               contentFit="cover"
             />
             <View style={styles.detailVenueInfo}>
               <View style={styles.wrapRow}>
-                <View style={styles.emeraldTag}>
-                  <Text style={styles.emeraldTagText}>Sân cỏ nhân tạo</Text>
+                <View style={styles.skyTag}>
+                  <Text style={styles.skyTagText}>Sân cỏ nhân tạo</Text>
                 </View>
                 <View style={styles.slateTag}>
                   <Text style={styles.slateTagText}>{courts.length} sân con</Text>
@@ -583,7 +602,10 @@ export default function BookingTab({
               </View>
 
               <Text style={styles.detailVenueName}>{pitch.name}</Text>
-              <Text style={styles.detailVenueAddr}>📍 {pitch.address}</Text>
+              <View style={styles.wrapRow}>
+                <Feather name="map-pin" size={14} color={COLORS.primary} />
+                <Text style={styles.detailVenueAddr}>{pitch.address}</Text>
+              </View>
 
               <View style={styles.venueMetaGrid}>
                 <View style={styles.venueMetaCell}>
@@ -599,7 +621,7 @@ export default function BookingTab({
                 <View style={[styles.venueMetaCell, { flex: 1.5 }]}>
                   <Text style={styles.venueMetaLabel}>Tiện ích:</Text>
                   <Text style={styles.venueMetaValue} numberOfLines={2}>
-                    {(pitch.amenities || ['Giữ xe', 'Wifi', 'Nước uống', 'Đèn LED']).join(' • ')}
+                    {(pitch.amenities || ['Giữ xe', 'Wifi', 'Nước uống', 'Đèn LED']).join(', ')}
                   </Text>
                 </View>
               </View>
@@ -618,34 +640,37 @@ export default function BookingTab({
           <View style={[styles.matrixCard, layout.isDesktop && { flex: 7 }]}>
             <View style={styles.matrixHeaderRow}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.matrixTitle}>📅 Chọn Ngày & Khung Giờ Đặt Sân</Text>
+                <View style={styles.wrapRow}>
+                  <Feather name="calendar" size={18} color={COLORS.primary} />
+                  <Text style={styles.matrixTitle}>Chọn Ngày & Khung Giờ Đặt Sân</Text>
+                </View>
                 <Text style={styles.matrixSubtitle}>
                   Bấm vào ô giờ còn trống để chọn (có thể chọn gộp nhiều ca)
                 </Text>
               </View>
 
-              {/* Status Legend */}
+              {/* Status Legend (Matches PitchDetail.tsx lines 538-555) */}
               <View style={styles.legendWrap}>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendBox, { borderColor: '#6ee7b7', backgroundColor: '#fff' }]} />
+                  <View style={[styles.legendBox, { borderColor: '#94a3b8', backgroundColor: '#fff' }]} />
                   <Text style={styles.legendText}>Còn trống</Text>
                 </View>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendBox, { borderColor: COLORS.emerald, backgroundColor: COLORS.emerald }]} />
+                  <View style={[styles.legendBox, { borderColor: COLORS.primary, backgroundColor: COLORS.primary }]} />
                   <Text style={styles.legendText}>Đang chọn</Text>
                 </View>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendBox, { borderColor: '#fcd34d', backgroundColor: '#fffbeb' }]} />
+                  <View style={[styles.legendBox, { borderColor: '#fbbf24', backgroundColor: '#fffbeb' }]} />
                   <Text style={styles.legendText}>Chờ khóa ca</Text>
                 </View>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendBox, { borderColor: COLORS.border, backgroundColor: '#f1f5f9' }]} />
+                  <View style={[styles.legendBox, { borderColor: COLORS.border, backgroundColor: '#e2e8f0' }]} />
                   <Text style={styles.legendText}>Đã đặt</Text>
                 </View>
               </View>
             </View>
 
-            {/* 7-Day Date Selector */}
+            {/* 7-Day Date Selector (Matches PitchDetail.tsx lines 559-586) */}
             <View style={styles.wrapRow}>
               {availableDates.map((d) => {
                 const active = selectedDateOffset === d.offset;
@@ -661,7 +686,7 @@ export default function BookingTab({
                     <Text style={[styles.dayButtonName, active && { color: COLORS.white }]}>
                       {d.dayName}
                     </Text>
-                    <Text style={[styles.dayButtonDate, active && { color: '#d1fae5' }]}>
+                    <Text style={[styles.dayButtonDate, active && { color: '#e0f2fe' }]}>
                       {d.dateStr}
                     </Text>
                   </TouchableOpacity>
@@ -669,19 +694,24 @@ export default function BookingTab({
               })}
             </View>
 
-            {/* Weather & Turf Status Bar (Matches PitchDetail.tsx) */}
+            {/* Weather & Turf Status Bar (Matches PitchDetail.tsx lines 589-612) */}
             <View
               style={[
                 styles.weatherBar,
-                weather.tone === 'amber' ? styles.weatherBarAmber : styles.weatherBarEmerald,
+                weather.tone === 'amber' ? styles.weatherBarAmber : styles.weatherBarSky,
               ]}
             >
-              <Text style={styles.weatherConditionText}>
-                {weather.tone === 'amber' ? '🌤️' : '🌙'} {weather.temp} — {weather.condition} •{' '}
-                {weather.turfStatus}
-              </Text>
               <View style={styles.wrapRow}>
-                <Text style={styles.weatherTipLabel}>Gợi ý đồ mang theo:</Text>
+                <View style={styles.weatherTempPill}>
+                  <Text style={styles.weatherTempPillText}>
+                    {weather.tone === 'amber' ? '🌤️' : '🌙'} {weather.temp}
+                  </Text>
+                </View>
+                <Text style={styles.weatherConditionText}>{weather.condition}</Text>
+                <Text style={styles.weatherTurfStatusText}>• {weather.turfStatus}</Text>
+              </View>
+              <View style={styles.wrapRow}>
+                <Text style={styles.weatherTipLabel}>Gợi ý mang theo:</Text>
                 {weather.packingTips.map((tip, idx) => (
                   <View key={idx} style={styles.weatherTipPill}>
                     <Text style={styles.weatherTipPillText}>{tip}</Text>
@@ -690,7 +720,7 @@ export default function BookingTab({
               </View>
             </View>
 
-            {/* Sub-court filter */}
+            {/* Sub-court filter (Matches PitchDetail.tsx lines 614-639) */}
             <View style={styles.subCourtFilterBar}>
               <View style={styles.wrapRow}>
                 {[
@@ -715,17 +745,17 @@ export default function BookingTab({
                   );
                 })}
               </View>
-              <Text style={styles.peakNoticeText}>🔥 Khung 17:00 - 20:00 là giờ cao điểm</Text>
+              <Text style={styles.peakNoticeText}>Khung 17:00 - 20:00 là giờ cao điểm</Text>
             </View>
 
-            {/* Courts & Slots Matrix */}
+            {/* Courts & Slots Matrix (Matches PitchDetail.tsx lines 642-732) */}
             {matrixLoading ? (
               <View style={styles.loadingBox}>
-                <ActivityIndicator color={COLORS.emerald} />
+                <ActivityIndicator color={COLORS.primary} />
                 <Text style={styles.loadingText}>Đang tải bảng giờ trống các sân con...</Text>
               </View>
             ) : (
-              <View style={{ gap: 12 }}>
+              <View style={{ gap: 14 }}>
                 {filteredCourts.map((court, cIdx) => {
                   const emptyCount = (court.slots || []).filter((s) => s.status === 'empty').length;
                   return (
@@ -742,7 +772,7 @@ export default function BookingTab({
                         <Text
                           style={[
                             styles.subCourtAvailText,
-                            emptyCount > 0 ? { color: COLORS.emeraldDark } : { color: COLORS.textMuted },
+                            emptyCount > 0 ? { color: COLORS.primary } : { color: COLORS.textMuted },
                           ]}
                         >
                           {emptyCount > 0 ? `Còn ${emptyCount} ca trống` : 'Hết ca trống'}
@@ -777,9 +807,6 @@ export default function BookingTab({
                               ]}
                               activeOpacity={0.8}
                             >
-                              {isPeak && isEmpty && !isSelected && (
-                                <View style={styles.peakDot} />
-                              )}
                               <Text
                                 style={[
                                   styles.matrixSlotTime,
@@ -794,24 +821,14 @@ export default function BookingTab({
                                   style={[
                                     styles.matrixSlotPrice,
                                     isSelected && { color: COLORS.white },
-                                    isEmpty && !isSelected && { color: COLORS.emeraldDark },
+                                    isEmpty && !isSelected && { color: COLORS.primary },
                                     isPending && { color: COLORS.amber },
                                   ]}
                                 >
-                                  {priceLabel}
-                                </Text>
-                                <Text
-                                  style={[
-                                    styles.matrixSlotStatus,
-                                    isSelected && { color: '#d1fae5' },
-                                  ]}
-                                >
-                                  {isSelected
-                                    ? '✓ Đang chọn'
-                                    : isEmpty
-                                    ? 'Còn trống'
+                                  {isEmpty || isSelected
+                                    ? `${priceLabel}${isPeak ? ' (Cao điểm)' : ''}`
                                     : isPending
-                                    ? 'Chờ khóa'
+                                    ? 'Chờ khóa ca'
                                     : 'Đã đặt'}
                                 </Text>
                               </View>
@@ -853,17 +870,17 @@ export default function BookingTab({
                           if (!isRegistered) {
                             setWaitlistRegistrations((prev) => [...prev, wlKey]);
                             showToast(
-                              `🔔 Đã đăng ký hàng chờ ca ${pendingSlotInfo.time} (${pendingSlotInfo.pitchName})!`
+                              `✓ Đã đăng ký hàng chờ ca ${pendingSlotInfo.time} (${pendingSlotInfo.pitchName})!`
                             );
                           }
                         }}
                         style={[
                           styles.waitlistInlineBtn,
-                          isRegistered && { backgroundColor: COLORS.emerald },
+                          isRegistered && { backgroundColor: COLORS.primary },
                         ]}
                       >
                         <Text style={styles.waitlistInlineBtnText}>
-                          {isRegistered ? '✓ Đã Đăng Ký Hàng Chờ' : '🔔 Đăng Ký Hàng Chờ Ca Này'}
+                          {isRegistered ? '✓ Đã Đăng Ký Hàng Chờ' : 'Đăng Ký Hàng Chờ Ca Này'}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -885,7 +902,7 @@ export default function BookingTab({
               <View style={{ gap: 14 }}>
                 <View style={styles.ticketHeaderBar}>
                   <View>
-                    <Text style={styles.ticketHeaderTitle}>🧾 Phiếu Đặt Sân</Text>
+                    <Text style={styles.ticketHeaderTitle}>Phiếu Đặt Sân</Text>
                     <Text style={styles.ticketHeaderSub}>
                       Kiểm tra ca đá và xác nhận giữ chỗ
                     </Text>
@@ -911,7 +928,7 @@ export default function BookingTab({
                   </View>
                   <View style={styles.ticketSummaryRow}>
                     <Text style={styles.ticketSummaryLabel}>Ngày đá:</Text>
-                    <Text style={[styles.ticketSummaryVal, { color: COLORS.emeraldDark }]}>
+                    <Text style={[styles.ticketSummaryVal, { color: COLORS.primary }]}>
                       {activeDateObj.dayName}, {activeDateObj.dateStr}
                     </Text>
                   </View>
@@ -927,7 +944,7 @@ export default function BookingTab({
                   {selectedSlots.length === 0 ? (
                     <View style={styles.emptySelectedBox}>
                       <Text style={styles.emptySelectedText}>
-                        👈 Hãy bấm chọn một hoặc nhiều khung giờ còn trống ở bảng bên cạnh để bắt đầu đặt sân
+                        Hãy bấm chọn một hoặc nhiều khung giờ còn trống ở bảng bên cạnh để bắt đầu đặt sân
                       </Text>
                     </View>
                   ) : (
@@ -935,7 +952,7 @@ export default function BookingTab({
                       <View key={s.key} style={styles.selectedSlotRow}>
                         <View style={{ flex: 1 }}>
                           <Text style={styles.selectedSlotCourt}>{s.pitchName}</Text>
-                          <Text style={styles.selectedSlotTime}>⏰ {s.time}</Text>
+                          <Text style={styles.selectedSlotTime}>Ca {s.time}</Text>
                         </View>
                         <View style={styles.wrapRow}>
                           <Text style={styles.selectedSlotPrice}>
@@ -975,7 +992,7 @@ export default function BookingTab({
                           bookingEntityType === 'INDIVIDUAL' && styles.entityTabBtnTextActive,
                         ]}
                       >
-                        👤 Cá nhân
+                        Cá nhân
                       </Text>
                     </TouchableOpacity>
 
@@ -992,7 +1009,7 @@ export default function BookingTab({
                           bookingEntityType === 'CLUB' && styles.entityTabBtnTextActive,
                         ]}
                       >
-                        🛡️ Đại diện CLB
+                        Đại diện CLB
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -1102,7 +1119,7 @@ export default function BookingTab({
                       <Text
                         style={[
                           styles.depositOptionTitle,
-                          depositOption === '50' && { color: COLORS.emeraldDark },
+                          depositOption === '50' && { color: COLORS.primary },
                         ]}
                       >
                         Đặt cọc 50%
@@ -1120,7 +1137,7 @@ export default function BookingTab({
                       <Text
                         style={[
                           styles.depositOptionTitle,
-                          depositOption === '100' && { color: COLORS.emeraldDark },
+                          depositOption === '100' && { color: COLORS.primary },
                         ]}
                       >
                         Trả đủ 100%
@@ -1158,7 +1175,7 @@ export default function BookingTab({
                   {totalCost > 0 && (
                     <View style={styles.splitterBar}>
                       <View style={styles.wrapRow}>
-                        <Text style={styles.splitterLabel}>👥 Chia cho:</Text>
+                        <Text style={styles.splitterLabel}>Chia cho:</Text>
                         <TouchableOpacity
                           onPress={() => setSplitPlayerCount((c) => Math.max(2, c - 1))}
                           style={styles.splitterStepBtn}
@@ -1199,15 +1216,15 @@ export default function BookingTab({
                 ) : (
                   <View style={styles.inlinePaymentConfirmBox}>
                     <Text style={styles.inlinePaymentTitle}>
-                      💳 Xác nhận thanh toán cọc giữ sân ({amountDueNow.toLocaleString('vi-VN')}đ)
+                      Xác nhận thanh toán cọc giữ sân ({amountDueNow.toLocaleString('vi-VN')}đ)
                     </Text>
                     <Text style={styles.inlinePaymentSub}>
                       Chuyển khoản VietQR hoặc xác nhận giữ chỗ trực tiếp với chủ sân:
                     </Text>
                     <View style={styles.bankInfoBox}>
-                      <Text style={styles.bankInfoText}>🏦 Ngân hàng: MB Bank • STK: 0905123456</Text>
+                      <Text style={styles.bankInfoText}>Ngân hàng: MB Bank • STK: 0905123456</Text>
                       <Text style={styles.bankInfoText}>
-                        📝 Nội dung: TURFZONE {pitch.id} {customerPhone}
+                        Nội dung: TURFZONE {pitch.id} {customerPhone}
                       </Text>
                     </View>
                     <View style={styles.wrapRow}>
@@ -1241,7 +1258,7 @@ export default function BookingTab({
                     <Text style={styles.eTicketCode}>#{bookingCode}</Text>
                   </View>
                   <Text style={styles.eTicketVenueName}>{pitch.name}</Text>
-                  <Text style={styles.eTicketVenueAddr}>📍 {pitch.address}</Text>
+                  <Text style={styles.eTicketVenueAddr}>{pitch.address}</Text>
                 </View>
 
                 <View style={styles.costBreakdownBox}>
@@ -1253,13 +1270,13 @@ export default function BookingTab({
                   </View>
                   <View style={styles.ticketSummaryRow}>
                     <Text style={styles.costLabel}>Sân & Giờ:</Text>
-                    <Text style={[styles.costValue, { color: COLORS.emeraldDark }]}>
+                    <Text style={[styles.costValue, { color: COLORS.primary }]}>
                       {summarySlotsText}
                     </Text>
                   </View>
                   <View style={styles.ticketSummaryRow}>
                     <Text style={styles.costLabel}>Đã thanh toán ({depositOption}%):</Text>
-                    <Text style={[styles.costValue, { color: COLORS.emeraldDark }]}>
+                    <Text style={[styles.costValue, { color: COLORS.primary }]}>
                       {amountDueNow.toLocaleString('vi-VN')}đ
                     </Text>
                   </View>
@@ -1276,7 +1293,7 @@ export default function BookingTab({
                 {/* Kêu gọi anh em & chia tiền Zalo */}
                 <View style={styles.zaloInviteBox}>
                   <View style={styles.ticketSummaryRow}>
-                    <Text style={styles.zaloInviteTitle}>📣 Kêu gọi anh em & chia tiền</Text>
+                    <Text style={styles.zaloInviteTitle}>Kêu gọi anh em & chia tiền</Text>
                     <Text style={styles.zaloSplitTag}>
                       ~{perPersonCost.toLocaleString('vi-VN')}đ / người
                     </Text>
@@ -1298,7 +1315,7 @@ export default function BookingTab({
                     <Text style={styles.copyZaloBtnText}>
                       {copiedInvite
                         ? '✓ Đã Sao Chép Tin Nhắn Kèo!'
-                        : '📋 Sao Chép Lời Nhắn Gửi Nhóm Zalo'}
+                        : 'Sao Chép Lời Nhắn Gửi Nhóm Zalo'}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -1309,7 +1326,7 @@ export default function BookingTab({
                     style={[styles.proceedBookBtn, { flex: 1 }]}
                   >
                     <Text style={styles.proceedBookBtnText}>
-                      📋 Mở Lịch Trình & Điểm Danh Quân Số
+                      Mở Lịch Trình & Điểm Danh Quân Số
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -1331,8 +1348,15 @@ export default function BookingTab({
   }
 
   // ============================================================
-  // VIEW B: PITCH SEARCH LIST VIEW (100% Parity with PitchSearch.tsx)
+  // VIEW B: PITCH SEARCH LIST VIEW + LANDING HERO (100% Parity with LandingHero.tsx, LandingFeatures.tsx & PitchSearch.tsx)
   // ============================================================
+  const selectedDistrictLabel =
+    districtList.find((d) => d.id === selectedDistrict)?.name || 'Toàn TP. Đà Nẵng';
+  const selectedTimeSlotLabel =
+    timeSlotFilters.find((t) => t.id === selectedTimeSlotFilter)?.name || 'Tất cả khung giờ';
+  const selectedBudgetLabel =
+    budgetOptions.find((b) => b.value === maxBudget)?.label || 'Mọi mức giá';
+
   return (
     <View style={[styles.container, { paddingHorizontal: layout.horizontalPadding }]}>
       {inlineToast && (
@@ -1341,60 +1365,352 @@ export default function BookingTab({
         </View>
       )}
 
-      {/* Optional Guest / Overview Landing Hero (Matches LandingHero.tsx on Web) */}
+      {/* ============================================================ */}
+      {/* LANDING HERO & LANDING FEATURES (100% Parity with LandingHero.tsx & LandingFeatures.tsx) */}
+      {/* ============================================================ */}
       {(isGuest || showGuestLanding) && (
-        <View style={styles.landingHeroBox}>
-          <View style={styles.landingBadge}>
-            <View style={styles.liveDot} />
-            <Text style={styles.landingBadgeText}>
-              Hệ Thống Quản Lý Bóng Đá Phong Trào Toàn Diện
-            </Text>
+        <View style={{ gap: 16 }}>
+          {/* 1. LIVE TICKER BAR (Matches LandingHero.tsx lines 82-112) */}
+          <View style={styles.liveTickerCard}>
+            <View style={styles.liveTickerBadge}>
+              <View style={styles.emeraldDot} />
+              <Text style={styles.liveTickerBadgeText}>Trực tiếp sân cỏ</Text>
+            </View>
+            <View style={[styles.wrapRow, { flex: 1 }]}>
+              <Text style={styles.liveTickerItem} numberOfLines={1}>
+                <Text style={{ fontWeight: '700', color: COLORS.emeraldDark }}>[Sân trống]</Text>{' '}
+                Sân 7B Cụm Sân Bóng Đá Đại Nắng (Hải Châu) vừa mở trống ca 18:00 - 20:00
+              </Text>
+              {layout.isDesktop && (
+                <Text style={styles.liveTickerItem} numberOfLines={1}>
+                  • <Text style={{ fontWeight: '700', color: COLORS.primary }}>[Giải đấu]</Text>{' '}
+                  Giải Bóng Đá Mùa Hè Đà Nẵng (Sân 7) còn 2 suất đăng ký cuối
+                </Text>
+              )}
+            </View>
           </View>
-          <Text style={[styles.landingTitle, layout.isTablet && { fontSize: 28, lineHeight: 36 }]}>
-            Đặt Sân Bóng Đá, Cáp Kèo Giao Hữu &{' '}
-            <Text style={{ color: '#34d399' }}>Quản Lý Giải Đấu Phong Trào</Text>
-          </Text>
-          <Text style={styles.landingDesc}>
-            Kết nối trực tiếp cầu thủ, đội trưởng, chủ cụm sân và ban tổ chức giải đấu trên một nền tảng duy nhất. Tra cứu ca trống tức thì, tìm đối thủ vừa tầm và cập nhật bảng xếp hạng trực tuyến.
-          </Text>
-          <View style={styles.wrapRow}>
-            <TouchableOpacity
-              onPress={() => setShowGuestLanding(false)}
-              style={styles.landingPrimaryBtn}
+
+          {/* 2. FLAT WHITE HERO CARD (Matches LandingHero.tsx lines 115-373) */}
+          <View style={styles.webHeroWhiteCard}>
+            <View
+              style={[
+                styles.webHeroGrid,
+                layout.isDesktop && { flexDirection: 'row', alignItems: 'center' },
+              ]}
             >
-              <Text style={styles.landingPrimaryBtnText}>⚽ Đặt Sân Bóng Ngay →</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => onNavigateTab('matchmaking')}
-              style={styles.landingSecondaryBtn}
-            >
-              <Text style={styles.landingSecondaryBtnText}>🔥 Chợ Kèo Giao Hữu</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => onNavigateTab('tournaments')}
-              style={styles.landingSecondaryBtn}
-            >
-              <Text style={styles.landingSecondaryBtnText}>🏆 Giải Đấu & BXH</Text>
-            </TouchableOpacity>
+              {/* Left Column (7/12): Value Proposition & CTAs */}
+              <View style={[styles.webHeroLeftCol, layout.isDesktop && { flex: 7 }]}>
+                <View style={styles.webHeroSkyBadge}>
+                  <View style={[styles.emeraldDot, { backgroundColor: COLORS.primary }]} />
+                  <Text style={styles.webHeroSkyBadgeText}>
+                    Trung tâm đặt sân & giải đấu bóng đá Đà Nẵng
+                  </Text>
+                </View>
+
+                <Text
+                  style={[
+                    styles.webHeroH1,
+                    layout.isTablet && { fontSize: 30, lineHeight: 38 },
+                  ]}
+                >
+                  Chạm Để Giữ Sân Cỏ,{' '}
+                  <Text style={{ color: COLORS.primary }}>Bùng Nổ Mọi Trận Cầu</Text> Tại Đà Nẵng
+                </Text>
+
+                <Text style={styles.webHeroDesc}>
+                  Tra cứu lịch trống thời gian thực tại các cụm sân cỏ nhân tạo 5, 7, 11 người khắp Hải Châu, Liên Chiểu, Cẩm Lệ, Sơn Trà. Giữ sân tự động trong 30 giây, cáp kèo giao hữu và theo dõi bảng điểm giải đấu trực tuyến.
+                </Text>
+
+                {/* Primary & Secondary CTA Buttons */}
+                <View style={styles.wrapRow}>
+                  <TouchableOpacity
+                    onPress={() => setShowGuestLanding(false)}
+                    style={styles.webHeroPrimaryBtn}
+                  >
+                    <Text style={styles.webHeroPrimaryBtnText}>Đặt Sân Ngay</Text>
+                    <Feather name="arrow-right" size={16} color={COLORS.white} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => onNavigateTab('tournaments')}
+                    style={styles.webHeroOutlineBtn}
+                  >
+                    <Feather name="award" size={16} color={COLORS.amber} />
+                    <Text style={styles.webHeroOutlineBtnText}>Đấu Trường Giải Đấu</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => onNavigateTab('admin')}
+                    style={styles.webHeroOwnerBtn}
+                  >
+                    <Feather name="shield" size={15} color={COLORS.primary} />
+                    <Text style={styles.webHeroOwnerBtnText}>Dành Cho Chủ Sân</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Trust Badges */}
+                <View style={styles.webHeroTrustRow}>
+                  <View style={styles.trustItem}>
+                    <Feather name="check-circle" size={15} color={COLORS.emerald} />
+                    <Text style={styles.trustItemText}>Giữ ca tự động 24/7</Text>
+                  </View>
+                  <View style={styles.trustItem}>
+                    <Feather name="zap" size={15} color={COLORS.primary} />
+                    <Text style={styles.trustItemText}>Đặt cọc VietQR an toàn</Text>
+                  </View>
+                  <View style={styles.trustItem}>
+                    <Feather name="award" size={15} color={COLORS.amber} />
+                    <Text style={styles.trustItemText}>Lịch đấu & bảng điểm thời gian thực</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Right Column (5/12): Interactive 3-Mode Live Showcase Card */}
+              <View style={[styles.webShowcaseCol, layout.isDesktop && { flex: 5 }]}>
+                {/* 3 Mode Switcher Tabs */}
+                <View style={styles.showcaseTabBar}>
+                  {[
+                    { id: 'BOOKING' as const, label: 'Lịch ca trống' },
+                    { id: 'TOURNAMENT' as const, label: 'Nhánh giải đấu' },
+                    { id: 'MATCHMAKING' as const, label: 'Sàn cáp kèo' },
+                  ].map((tab) => {
+                    const active = activeShowcaseTab === tab.id;
+                    return (
+                      <TouchableOpacity
+                        key={tab.id}
+                        onPress={() => setActiveShowcaseTab(tab.id)}
+                        style={[
+                          styles.showcaseTabBtn,
+                          active && styles.showcaseTabBtnActive,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.showcaseTabBtnText,
+                            active && styles.showcaseTabBtnTextActive,
+                          ]}
+                        >
+                          {tab.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {/* Showcase Card Body */}
+                <View style={styles.showcaseCardBody}>
+                  {activeShowcaseTab === 'BOOKING' && (
+                    <View style={{ gap: 12 }}>
+                      <View style={styles.ticketSummaryRow}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.showcaseTitle}>Cụm Sân Bóng Đá Đại Nắng</Text>
+                          <Text style={styles.showcaseSub}>
+                            Hải Châu, Đà Nẵng • Sân 5 / Sân 7 / Sân 11
+                          </Text>
+                        </View>
+                        <View style={styles.emeraldAvailableBadge}>
+                          <Text style={styles.emeraldAvailableBadgeText}>Còn 3 ca trống</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.showcaseSlotsGrid}>
+                        {[
+                          { time: '16:00 - 18:00', court: 'Sân 5A', price: '400.000đ', available: true },
+                          { time: '18:00 - 20:00', court: 'Sân 7A', price: '560.000đ', available: true },
+                          { time: '20:00 - 22:00', court: 'Sân 7B', price: '520.000đ', available: true },
+                          { time: '22:00 - 23:30', court: 'Sân 5B', price: '320.000đ', available: false },
+                        ].map((s, idx) => (
+                          <TouchableOpacity
+                            key={idx}
+                            disabled={!s.available}
+                            onPress={() => {
+                              if (pitches[0]) handleOpenPitchDetail(pitches[0], s.time);
+                            }}
+                            style={[
+                              styles.showcaseSlotItem,
+                              !s.available && { opacity: 0.55, backgroundColor: COLORS.bg },
+                            ]}
+                          >
+                            <View style={styles.ticketSummaryRow}>
+                              <Text style={styles.showcaseSlotCourt}>{s.court}</Text>
+                              <Text
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: '700',
+                                  color: s.available ? COLORS.emeraldDark : COLORS.textMuted,
+                                }}
+                              >
+                                {s.available ? 'Trống' : 'Đã kín'}
+                              </Text>
+                            </View>
+                            <Text style={styles.showcaseSlotTime}>{s.time}</Text>
+                            <Text style={styles.showcaseSlotPrice}>{s.price}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+
+                      <View style={styles.showcaseFooterRow}>
+                        <Text style={styles.showcaseFooterLeft}>
+                          Giá từ:{' '}
+                          <Text style={{ fontWeight: '800', color: COLORS.text }}>
+                            200.000đ - 560.000đ
+                          </Text>{' '}
+                          / ca
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (pitches[0]) handleOpenPitchDetail(pitches[0]);
+                          }}
+                        >
+                          <Text style={styles.showcaseFooterAction}>Chọn ca ngay →</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+
+                  {activeShowcaseTab === 'TOURNAMENT' && (
+                    <View style={{ gap: 10 }}>
+                      <Text style={styles.showcaseTitle}>Giải Bóng Đá Mùa Hè Đà Nẵng 2026</Text>
+                      <Text style={styles.showcaseSub}>
+                        Đang thi đấu • Sân 7 người • Tổng thưởng 15.000.000đ
+                      </Text>
+                      <View style={styles.showcaseMatchBox}>
+                        <View style={styles.ticketSummaryRow}>
+                          <Text style={styles.showcaseSub}>Vòng bảng • Bảng A</Text>
+                          <Text style={{ fontSize: 13, fontWeight: '700', color: COLORS.rose }}>
+                            Phút 42&apos;
+                          </Text>
+                        </View>
+                        <View style={styles.ticketSummaryRow}>
+                          <Text style={styles.showcaseTeamName}>FC Hải Châu United</Text>
+                          <View style={styles.showcaseScoreBadge}>
+                            <Text style={styles.showcaseScoreText}>2 - 1</Text>
+                          </View>
+                          <Text style={styles.showcaseTeamName}>Đà Nẵng Citi FC</Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => onNavigateTab('tournaments')}
+                        style={styles.showcaseFullBtn}
+                      >
+                        <Text style={styles.showcaseFullBtnText}>
+                          Xem bảng xếp hạng & lịch thi đấu →
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  {activeShowcaseTab === 'MATCHMAKING' && (
+                    <View style={{ gap: 10 }}>
+                      <View style={styles.ticketSummaryRow}>
+                        <Text style={styles.showcaseTitle}>Sàn Cáp Kèo & Tuyển Quân Đà Nẵng</Text>
+                        <Text style={{ fontSize: 13, fontWeight: '700', color: COLORS.amber }}>
+                          18 kèo tối nay
+                        </Text>
+                      </View>
+                      {[
+                        {
+                          team: 'FC Anh Em Liên Chiểu',
+                          type: 'Tìm đối 50/50',
+                          info: 'Sân 7 • 19:00 tối nay • Đã đặt sân',
+                        },
+                        {
+                          team: 'Sơn Trà United',
+                          type: 'Tuyển 2 vị trí',
+                          info: 'Cần 1 Thủ môn, 1 Hậu vệ • 20:00 tối nay',
+                        },
+                      ].map((k, idx) => (
+                        <View key={idx} style={styles.showcaseMatchBox}>
+                          <View style={styles.ticketSummaryRow}>
+                            <Text style={styles.showcaseTeamName}>{k.team}</Text>
+                            <Text style={{ fontSize: 13, fontWeight: '700', color: COLORS.primary }}>
+                              {k.type}
+                            </Text>
+                          </View>
+                          <Text style={styles.showcaseSub}>{k.info}</Text>
+                        </View>
+                      ))}
+                      <TouchableOpacity
+                        onPress={() => onNavigateTab('matchmaking')}
+                        style={styles.showcaseFullBtn}
+                      >
+                        <Text style={styles.showcaseFullBtnText}>
+                          Vào Chợ Kèo Bắt Đối Ngay →
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </View>
           </View>
-          <View style={styles.landingStatsGrid}>
+
+          {/* 3. KPI COUNTER BAR (Matches LandingHero.tsx lines 458-484) */}
+          <View style={styles.kpiGridRow}>
             {[
-              { val: '25+', label: 'Cụm Sân Liên Kết', sub: 'Cập nhật lịch trống trực tiếp' },
-              { val: '450+', label: 'Đội Bóng Hoạt Động', sub: 'Sẵn sàng cáp kèo giao hữu' },
-              { val: '150+', label: 'Giải Đấu Phong Trào', sub: 'Tự động hóa lịch & bảng điểm' },
-              { val: '24/7', label: 'Đặt Sân & Cáp Kèo', sub: 'Xác nhận giữ chỗ tức thì' },
-            ].map((st, idx) => (
-              <View key={idx} style={styles.landingStatCard}>
-                <Text style={styles.landingStatVal}>{st.val}</Text>
-                <Text style={styles.landingStatLabel}>{st.label}</Text>
-                <Text style={styles.landingStatSub}>{st.sub}</Text>
+              { value: '8+', label: 'Cụm sân hoạt động', sub: 'Khắp các quận Đà Nẵng', color: COLORS.primary },
+              { value: '12+', label: 'Giải đấu phong trào', sub: 'Cập nhật tỉ số trực tiếp', color: COLORS.amber },
+              { value: '350+', label: 'Trận đấu hoàn tất', sub: 'Đặt lịch tự động 100%', color: COLORS.emeraldDark },
+              { value: '24/7', label: 'Kèo giao hữu đang mở', sub: 'Bắt đối nhanh trong 5 phút', color: COLORS.text },
+            ].map((stat, idx) => (
+              <View key={idx} style={styles.kpiStatCard}>
+                <Text style={[styles.kpiStatValue, { color: stat.color }]}>{stat.value}</Text>
+                <Text style={styles.kpiStatLabel}>{stat.label}</Text>
+                <Text style={styles.kpiStatSub}>{stat.sub}</Text>
               </View>
             ))}
+          </View>
+
+          {/* 4. LANDING FEATURES: 3-STEP WORKFLOW & 4 PILLARS (Matches LandingFeatures.tsx) */}
+          <View style={styles.webHeroWhiteCard}>
+            <View style={styles.ticketSummaryRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.featureSectionEyebrow}>Hướng dẫn nhanh</Text>
+                <Text style={styles.featureSectionTitle}>
+                  Quy Trình Đặt Sân 3 Bước Đơn Giản
+                </Text>
+              </View>
+              <Text style={styles.showcaseSub}>
+                Không cần gọi điện hỏi từng sân — hoàn tất giữ chỗ trong 30 giây.
+              </Text>
+            </View>
+
+            <View style={styles.stepsGridRow}>
+              {[
+                {
+                  step: '01',
+                  title: 'Chọn Cụm Sân & Khung Giờ',
+                  desc: 'Lọc nhanh sân 5, sân 7, sân 11 theo quận (Hải Châu, Liên Chiểu, Cẩm Lệ, Sơn Trà) và xem lịch ca trống thực tế.',
+                },
+                {
+                  step: '02',
+                  title: 'Đặt Cọc Giữ Sân Tự Động',
+                  desc: 'Chọn đặt cọc 50% hoặc thanh toán 100% qua mã QR ngân hàng. Hệ thống tự động khóa ca ngay lập tức.',
+                },
+                {
+                  step: '03',
+                  title: 'Nhận Vé QR & Ra Sân Thi Đấu',
+                  desc: 'Nhận phiếu đặt sân điện tử kèm công cụ chia tiền sân tự động để gửi ngay vào nhóm Zalo đội bóng.',
+                },
+              ].map((item) => (
+                <View key={item.step} style={styles.stepFeatureCard}>
+                  <View style={styles.wrapRow}>
+                    <View style={styles.stepNumBadge}>
+                      <Text style={styles.stepNumBadgeText}>{item.step}</Text>
+                    </View>
+                    <Text style={styles.stepCardTitle}>{item.title}</Text>
+                  </View>
+                  <Text style={styles.stepCardDesc}>{item.desc}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         </View>
       )}
 
-      {/* 1. COMPACT HEADER & FILTER BAR (Matches PitchSearch.tsx 100%) */}
+      {/* ============================================================ */}
+      {/* 1. COMPACT HEADER & FILTER BAR (Matches PitchSearch.tsx lines 187-320 100%) */}
+      {/* ============================================================ */}
       <View style={styles.pitchSearchHeaderBox}>
         <View style={styles.pitchSearchTopRow}>
           <View style={{ flex: 1 }}>
@@ -1406,24 +1722,31 @@ export default function BookingTab({
           <View style={styles.wrapRow}>
             <View style={styles.displayCountPill}>
               <Text style={styles.displayCountPillText}>
-                Hiển thị <Text style={{ color: COLORS.emeraldDark, fontWeight: '900' }}>{filteredPitches.length}</Text> cụm sân
+                Hiển thị{' '}
+                <Text style={{ color: COLORS.primary, fontWeight: '700' }}>
+                  {filteredPitches.length}
+                </Text>{' '}
+                cụm sân
               </Text>
             </View>
-            <TouchableOpacity
-              onPress={() => setShowGuestLanding(!showGuestLanding)}
-              style={styles.toggleHeroBtn}
-            >
-              <Text style={styles.toggleHeroBtnText}>
-                {showGuestLanding ? 'Ẩn giới thiệu' : 'Giới thiệu nền tảng'}
-              </Text>
-            </TouchableOpacity>
+            {!isGuest && (
+              <TouchableOpacity
+                onPress={() => setShowGuestLanding(!showGuestLanding)}
+                style={styles.toggleHeroBtn}
+              >
+                <Text style={styles.toggleHeroBtnText}>
+                  {showGuestLanding ? 'Ẩn trang giới thiệu' : 'Xem trang giới thiệu'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
-        {/* Filter Row 1: Search Input + District + TimeSlot + Budget */}
-        <View style={styles.searchFilterRow}>
-          <View style={[styles.searchInputWrap, { flex: 2, minWidth: 220 }]}>
-            <Text style={styles.searchIcon}>🔍</Text>
+        {/* Filter Row 1: 4 Inline Controls (Search + District + TimeSlot + Budget) matching PitchSearch.tsx lines 202-277 */}
+        <View style={styles.searchFilterGridRow}>
+          {/* 1. Search Input */}
+          <View style={[styles.searchInputWrap, { flex: 1.5, minWidth: 210 }]}>
+            <Feather name="search" size={16} color="#94a3b8" style={{ marginRight: 8 }} />
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -1433,44 +1756,83 @@ export default function BookingTab({
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Text style={styles.clearSearchText}>✕</Text>
+                <Feather name="x" size={15} color="#64748b" />
               </TouchableOpacity>
             )}
           </View>
 
-          {layout.isPhone && (
-            <TouchableOpacity
-              onPress={() => setShowMobileFilters(!showMobileFilters)}
-              style={[
-                styles.mobileFilterToggleBtn,
-                (showMobileFilters || hasActiveFilters) && styles.mobileFilterToggleBtnActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.mobileFilterToggleText,
-                  (showMobileFilters || hasActiveFilters) && { color: COLORS.emeraldDark },
-                ]}
-              >
-                ⚙️ Bộ lọc nâng cao {showMobileFilters ? '▲' : '▼'}
+          {/* 2. District Select Box */}
+          <TouchableOpacity
+            onPress={() =>
+              setOpenFilterMenu(openFilterMenu === 'DISTRICT' ? null : 'DISTRICT')
+            }
+            style={[
+              styles.selectBoxControl,
+              openFilterMenu === 'DISTRICT' && styles.selectBoxControlActive,
+            ]}
+          >
+            <View style={styles.wrapRow}>
+              <Feather name="map-pin" size={14} color={COLORS.primary} />
+              <Text style={styles.selectBoxControlText} numberOfLines={1}>
+                {selectedDistrictLabel}
               </Text>
-            </TouchableOpacity>
-          )}
+            </View>
+            <Feather name="chevron-down" size={15} color="#64748b" />
+          </TouchableOpacity>
+
+          {/* 3. Time Slot Select Box */}
+          <TouchableOpacity
+            onPress={() =>
+              setOpenFilterMenu(openFilterMenu === 'TIMESLOT' ? null : 'TIMESLOT')
+            }
+            style={[
+              styles.selectBoxControl,
+              openFilterMenu === 'TIMESLOT' && styles.selectBoxControlActive,
+            ]}
+          >
+            <View style={styles.wrapRow}>
+              <Feather name="clock" size={14} color={COLORS.primary} />
+              <Text style={styles.selectBoxControlText} numberOfLines={1}>
+                {selectedTimeSlotLabel}
+              </Text>
+            </View>
+            <Feather name="chevron-down" size={15} color="#64748b" />
+          </TouchableOpacity>
+
+          {/* 4. Max Budget Select Box */}
+          <TouchableOpacity
+            onPress={() =>
+              setOpenFilterMenu(openFilterMenu === 'BUDGET' ? null : 'BUDGET')
+            }
+            style={[
+              styles.selectBoxControl,
+              openFilterMenu === 'BUDGET' && styles.selectBoxControlActive,
+            ]}
+          >
+            <View style={styles.wrapRow}>
+              <Feather name="tag" size={14} color={COLORS.primary} />
+              <Text style={styles.selectBoxControlText} numberOfLines={1}>
+                {selectedBudgetLabel}
+              </Text>
+            </View>
+            <Feather name="chevron-down" size={15} color="#64748b" />
+          </TouchableOpacity>
         </View>
 
-        {/* District / TimeSlot / Budget Selector Pills (Always visible on Tablet/Desktop, collapsible on Phone) */}
-        {(!layout.isPhone || showMobileFilters) && (
-          <View style={styles.advancedFiltersContainer}>
-            {/* District Pills */}
-            <View style={{ gap: 6 }}>
-              <Text style={styles.filterCategoryLabel}>📍 Khu vực Quận / Huyện (TP. Đà Nẵng):</Text>
+        {/* Inline Option Picker when one of the 3 select boxes is clicked (NO MODAL) */}
+        {openFilterMenu && (
+          <View style={styles.inlineDropdownOptionsPanel}>
+            {openFilterMenu === 'DISTRICT' && (
               <View style={styles.wrapRow}>
                 {districtList.map((d) => {
                   const active = selectedDistrict === d.id;
                   return (
                     <TouchableOpacity
                       key={d.id}
-                      onPress={() => setSelectedDistrict(d.id)}
+                      onPress={() => {
+                        setSelectedDistrict(d.id);
+                        setOpenFilterMenu(null);
+                      }}
                       style={[styles.filterSelectPill, active && styles.filterSelectPillActive]}
                     >
                       <Text
@@ -1485,18 +1847,19 @@ export default function BookingTab({
                   );
                 })}
               </View>
-            </View>
+            )}
 
-            {/* Time Slot Filter Pills */}
-            <View style={{ gap: 6 }}>
-              <Text style={styles.filterCategoryLabel}>🕒 Khung giờ tìm sân:</Text>
+            {openFilterMenu === 'TIMESLOT' && (
               <View style={styles.wrapRow}>
                 {timeSlotFilters.map((tf) => {
                   const active = selectedTimeSlotFilter === tf.id;
                   return (
                     <TouchableOpacity
                       key={tf.id}
-                      onPress={() => setSelectedTimeSlotFilter(tf.id)}
+                      onPress={() => {
+                        setSelectedTimeSlotFilter(tf.id);
+                        setOpenFilterMenu(null);
+                      }}
                       style={[styles.filterSelectPill, active && styles.filterSelectPillActive]}
                     >
                       <Text
@@ -1511,18 +1874,19 @@ export default function BookingTab({
                   );
                 })}
               </View>
-            </View>
+            )}
 
-            {/* Max Budget Filter Pills */}
-            <View style={{ gap: 6 }}>
-              <Text style={styles.filterCategoryLabel}>💰 Mức giá thuê tối đa:</Text>
+            {openFilterMenu === 'BUDGET' && (
               <View style={styles.wrapRow}>
                 {budgetOptions.map((b) => {
                   const active = maxBudget === b.value;
                   return (
                     <TouchableOpacity
                       key={b.value}
-                      onPress={() => setMaxBudget(b.value)}
+                      onPress={() => {
+                        setMaxBudget(b.value);
+                        setOpenFilterMenu(null);
+                      }}
                       style={[styles.filterSelectPill, active && styles.filterSelectPillActive]}
                     >
                       <Text
@@ -1537,11 +1901,11 @@ export default function BookingTab({
                   );
                 })}
               </View>
-            </View>
+            )}
           </View>
         )}
 
-        {/* Filter Row 2: Sport Tabs + Còn ca trống tối nay + Xóa bộ lọc */}
+        {/* Filter Row 2: Sport Tabs + Còn ca trống tối nay + Xóa bộ lọc (Matches PitchSearch.tsx lines 280-319) */}
         <View style={styles.sportTabsBottomRow}>
           <View style={styles.wrapRow}>
             {sportsTabs.map((sport) => {
@@ -1598,7 +1962,7 @@ export default function BookingTab({
       {/* 2. PITCH LIST (2-COLUMN SPLIT-CARD GRID ON TABLET/DESKTOP, 1-COL ON PHONE) */}
       {loading ? (
         <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color={COLORS.emerald} />
+          <ActivityIndicator size="large" color={COLORS.primary} />
           <Text style={styles.loadingText}>Đang tải danh sách cụm sân...</Text>
         </View>
       ) : filteredPitches.length === 0 ? (
@@ -1640,11 +2004,11 @@ export default function BookingTab({
                   useHorizontalSplit && { flexDirection: 'row' },
                 ]}
               >
-                {/* Left / Top Image Block */}
+                {/* Left / Top Image Block (Matches PitchSearch.tsx lines 331-351) */}
                 <View
                   style={[
                     styles.webPitchImageWrap,
-                    useHorizontalSplit ? { width: 215, minHeight: 220 } : { height: 185 },
+                    useHorizontalSplit ? { width: 220, minHeight: 220 } : { height: 185 },
                   ]}
                 >
                   <Image
@@ -1661,16 +2025,19 @@ export default function BookingTab({
                   </View>
                   {/* Bottom Dark Bar: District + Open/Close Time */}
                   <View style={styles.webImgBottomBar}>
-                    <Text style={styles.webImgBottomDistrict} numberOfLines={1}>
-                      📍 {pitch.districtName || pitch.area}
-                    </Text>
+                    <View style={[styles.wrapRow, { gap: 4, flex: 1 }]}>
+                      <Feather name="map-pin" size={12} color="#38bdf8" />
+                      <Text style={styles.webImgBottomDistrict} numberOfLines={1}>
+                        {pitch.districtName || pitch.area}
+                      </Text>
+                    </View>
                     <Text style={styles.webImgBottomHours}>
                       {pitch.openTime} - {pitch.closeTime}
                     </Text>
                   </View>
                 </View>
 
-                {/* Right / Bottom Content Block */}
+                {/* Right / Bottom Content Block (Matches PitchSearch.tsx lines 354-420) */}
                 <View style={styles.webPitchContent}>
                   {/* Title + Rating */}
                   <View style={styles.webPitchTitleRow}>
@@ -1687,13 +2054,19 @@ export default function BookingTab({
                   </View>
 
                   {/* Address */}
-                  <Text style={styles.webPitchAddress} numberOfLines={1}>
-                    📍 {pitch.address}
-                  </Text>
+                  <View style={[styles.wrapRow, { gap: 5 }]}>
+                    <Feather name="map-pin" size={13} color="#64748b" />
+                    <Text style={styles.webPitchAddress} numberOfLines={1}>
+                      {pitch.address}
+                    </Text>
+                  </View>
 
                   {/* Phone */}
                   {pitch.phone ? (
-                    <Text style={styles.webPitchPhone}>📞 Liên hệ: {pitch.phone}</Text>
+                    <View style={[styles.wrapRow, { gap: 5 }]}>
+                      <Feather name="phone-call" size={13} color={COLORS.primary} />
+                      <Text style={styles.webPitchPhone}>Liên hệ: {pitch.phone}</Text>
+                    </View>
                   ) : null}
 
                   {/* Amenities */}
@@ -1717,7 +2090,7 @@ export default function BookingTab({
                   {/* Ca sân trong ngày (120 phút/ca) */}
                   <View style={styles.webSlotsPreviewBlock}>
                     <Text style={styles.webSlotsPreviewLabel}>
-                      🕒 Ca sân trong ngày ({pitch.slotDurationMinutes || 120} phút/ca):
+                      Ca sân trong ngày ({pitch.slotDurationMinutes || 120} phút/ca):
                     </Text>
                     <View style={styles.wrapRow}>
                       {(pitch.timeSlots || []).slice(0, 4).map((slot, i) => (
@@ -1732,7 +2105,7 @@ export default function BookingTab({
                     </View>
                   </View>
 
-                  {/* Footer: Price & CTA */}
+                  {/* Footer: Price & CTA (Matches PitchSearch.tsx lines 404-419) */}
                   <View style={styles.webPitchFooter}>
                     <View>
                       <Text style={styles.webPriceCaption}>Giá thuê từ</Text>
@@ -1749,7 +2122,8 @@ export default function BookingTab({
                       style={styles.webSelectSlotBtn}
                       activeOpacity={0.85}
                     >
-                      <Text style={styles.webSelectSlotBtnText}>Chọn Ca Đặt Sân →</Text>
+                      <Text style={styles.webSelectSlotBtnText}>Chọn Ca Đặt Sân</Text>
+                      <Feather name="chevron-right" size={15} color={COLORS.white} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1759,7 +2133,7 @@ export default function BookingTab({
         </View>
       )}
 
-      {/* 3. PAGINATION BAR (Matches PitchSearch.tsx) */}
+      {/* 3. PAGINATION BAR (Matches PitchSearch.tsx lines 426-462) */}
       {totalPages > 1 && (
         <View style={styles.paginationBar}>
           <Text style={styles.paginationInfoText}>
@@ -1806,7 +2180,7 @@ export default function BookingTab({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    maxWidth: 1280,
+    maxWidth: 1440,
     alignSelf: 'center',
     gap: 16,
     paddingTop: 12,
@@ -1818,8 +2192,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   toastBanner: {
-    backgroundColor: COLORS.emerald,
-    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
@@ -1828,111 +2202,393 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
   },
-  // Landing Hero Box
-  landingHeroBox: {
-    backgroundColor: '#064e3b',
-    borderRadius: 20,
-    padding: 20,
-    gap: 12,
+
+  // ============================================================
+  // LANDING HERO & FEATURES STYLES (Matches LandingHero.tsx & LandingFeatures.tsx)
+  // ============================================================
+  liveTickerCard: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 10,
   },
-  landingBadge: {
+  liveTickerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.emeraldSoft,
+    borderWidth: 1,
+    borderColor: COLORS.emeraldLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  emeraldDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.emerald,
+  },
+  liveTickerBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.emeraldDark,
+  },
+  liveTickerItem: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    flex: 1,
+  },
+  webHeroWhiteCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    padding: 20,
+    gap: 16,
+  },
+  webHeroGrid: {
+    gap: 20,
+  },
+  webHeroLeftCol: {
+    gap: 14,
+  },
+  webHeroSkyBadge: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    backgroundColor: COLORS.primarySoft,
     borderWidth: 1,
-    borderColor: 'rgba(52, 211, 153, 0.35)',
+    borderColor: '#bae6fd',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
   },
-  liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#34d399',
+  webHeroSkyBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
-  landingBadgeText: {
-    color: '#a7f3d0',
+  webHeroH1: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: COLORS.text,
+    lineHeight: 32,
+  },
+  webHeroDesc: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 22,
+  },
+  webHeroPrimaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+    borderRadius: 8,
+  },
+  webHeroPrimaryBtnText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  webHeroOutlineBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    borderRadius: 8,
+  },
+  webHeroOutlineBtnText: {
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  webHeroOwnerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.surfaceMuted,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderRadius: 8,
+  },
+  webHeroOwnerBtnText: {
+    color: COLORS.textSecondary,
     fontSize: 13,
     fontWeight: '700',
   },
-  landingTitle: {
-    color: COLORS.white,
-    fontSize: 22,
-    fontWeight: '900',
-    lineHeight: 30,
-  },
-  landingDesc: {
-    color: '#cbd5e1',
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  landingPrimaryBtn: {
-    backgroundColor: COLORS.emerald,
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-    borderRadius: 12,
-  },
-  landingPrimaryBtnText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  landingSecondaryBtn: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    borderRadius: 12,
-  },
-  landingSecondaryBtnText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  landingStatsGrid: {
+  webHeroTrustRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 6,
+    gap: 16,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.12)',
+    borderTopColor: COLORS.borderLight,
   },
-  landingStatCard: {
-    flex: 1,
-    minWidth: 130,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+  trustItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  trustItemText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  webShowcaseCol: {
+    backgroundColor: COLORS.bg,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    padding: 14,
+    gap: 12,
+  },
+  showcaseTabBar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    backgroundColor: COLORS.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    padding: 3,
+    gap: 4,
+  },
+  showcaseTabBtn: {
+    flex: 1,
+    minWidth: 90,
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  showcaseTabBtnActive: {
+    backgroundColor: COLORS.primary,
+  },
+  showcaseTabBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  showcaseTabBtnTextActive: {
+    color: COLORS.white,
+  },
+  showcaseCardBody: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    padding: 14,
+  },
+  showcaseTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  showcaseSub: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+  },
+  emeraldAvailableBadge: {
+    backgroundColor: COLORS.emeraldSoft,
+    borderWidth: 1,
+    borderColor: COLORS.emeraldLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  emeraldAvailableBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.emeraldDark,
+  },
+  showcaseSlotsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  showcaseSlotItem: {
+    flex: 1,
+    minWidth: 125,
+    backgroundColor: 'rgba(236, 253, 245, 0.5)',
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+    borderRadius: 8,
     padding: 10,
     gap: 2,
   },
-  landingStatVal: {
-    color: '#34d399',
-    fontSize: 20,
-    fontWeight: '900',
+  showcaseSlotCourt: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.text,
   },
-  landingStatLabel: {
+  showcaseSlotTime: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  showcaseSlotPrice: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  showcaseFooterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.borderLight,
+  },
+  showcaseFooterLeft: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  showcaseFooterAction: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  showcaseMatchBox: {
+    backgroundColor: COLORS.bg,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    padding: 10,
+    gap: 4,
+  },
+  showcaseTeamName: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  showcaseScoreBadge: {
+    backgroundColor: COLORS.text,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  showcaseScoreText: {
     color: COLORS.white,
     fontSize: 13,
     fontWeight: '800',
   },
-  landingStatSub: {
-    color: '#94a3b8',
+  showcaseFullBtn: {
+    backgroundColor: COLORS.primarySoft,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    paddingVertical: 9,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  showcaseFullBtnText: {
     fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  kpiGridRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  kpiStatCard: {
+    flex: 1,
+    minWidth: 150,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    padding: 14,
+    gap: 2,
+  },
+  kpiStatValue: {
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  kpiStatLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  kpiStatSub: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+  },
+  featureSectionEyebrow: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  featureSectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  stepsGridRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  stepFeatureCard: {
+    flex: 1,
+    minWidth: 230,
+    backgroundColor: COLORS.bg,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    padding: 14,
+    gap: 8,
+  },
+  stepNumBadge: {
+    backgroundColor: COLORS.primarySoft,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  stepNumBadgeText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  stepCardTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.text,
+    flex: 1,
+  },
+  stepCardDesc: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 19,
   },
 
-  // PitchSearch Header & Filter Box
+  // ============================================================
+  // PITCH SEARCH HEADER & FILTER BOX (Matches PitchSearch.tsx lines 187-320)
+  // ============================================================
   pitchSearchHeaderBox: {
     backgroundColor: COLORS.surface,
-    borderRadius: 18,
+    borderRadius: 8,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
-    gap: 14,
+    gap: 12,
   },
   pitchSearchTopRow: {
     flexDirection: 'row',
@@ -1946,7 +2602,7 @@ const styles = StyleSheet.create({
   },
   pitchSearchTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '700',
     color: COLORS.text,
   },
   pitchSearchSubtitle: {
@@ -1957,30 +2613,30 @@ const styles = StyleSheet.create({
   displayCountPill: {
     backgroundColor: COLORS.bg,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: 6,
   },
   displayCountPillText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '500',
     color: COLORS.textSecondary,
   },
   toggleHeroBtn: {
-    backgroundColor: COLORS.emeraldSoft,
+    backgroundColor: COLORS.primarySoft,
     borderWidth: 1,
-    borderColor: COLORS.emeraldLight,
+    borderColor: '#bae6fd',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: 6,
   },
   toggleHeroBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.emeraldDark,
+    color: COLORS.primary,
   },
-  searchFilterRow: {
+  searchFilterGridRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
@@ -1989,74 +2645,63 @@ const styles = StyleSheet.create({
   searchInputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.bg,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    minHeight: 44,
-  },
-  searchIcon: {
-    fontSize: 15,
-    marginRight: 8,
+    borderRadius: 6,
+    paddingHorizontal: 11,
+    minHeight: 40,
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
     color: COLORS.text,
-    paddingVertical: 8,
+    paddingVertical: 7,
   },
-  clearSearchText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.textMuted,
-    paddingHorizontal: 6,
-  },
-  mobileFilterToggleBtn: {
-    backgroundColor: COLORS.bg,
+  selectBoxControl: {
+    flex: 1,
+    minWidth: 170,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    borderRadius: 6,
+    paddingHorizontal: 11,
+    minHeight: 40,
   },
-  mobileFilterToggleBtnActive: {
-    backgroundColor: COLORS.emeraldSoft,
-    borderColor: COLORS.emeraldLight,
+  selectBoxControlActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primarySoft,
   },
-  mobileFilterToggleText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
+  selectBoxControlText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.text,
   },
-  advancedFiltersContainer: {
+  inlineDropdownOptionsPanel: {
     backgroundColor: COLORS.bg,
-    borderRadius: 14,
-    padding: 12,
+    borderRadius: 6,
+    padding: 10,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
-    gap: 10,
-  },
-  filterCategoryLabel: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.textSecondary,
   },
   filterSelectPill: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    paddingHorizontal: 11,
+    paddingHorizontal: 12,
     paddingVertical: 7,
-    borderRadius: 10,
+    borderRadius: 6,
   },
   filterSelectPillActive: {
-    backgroundColor: COLORS.emerald,
-    borderColor: COLORS.emerald,
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   filterSelectPillText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.textSecondary,
   },
   filterSelectPillTextActive: {
@@ -2073,21 +2718,25 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.borderLight,
   },
   webSportTab: {
-    backgroundColor: COLORS.surfaceMuted,
+    backgroundColor: COLORS.bg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
   webSportTabActive: {
-    backgroundColor: COLORS.emerald,
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   webSportTabText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '500',
     color: COLORS.textSecondary,
   },
   webSportTabTextActive: {
     color: COLORS.white,
+    fontWeight: '600',
   },
   tonightCheckboxRow: {
     flexDirection: 'row',
@@ -2095,36 +2744,38 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tonightCheckboxLabel: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '500',
     color: COLORS.textSecondary,
   },
   clearFiltersBtn: {
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingVertical: 5,
+    borderRadius: 6,
     backgroundColor: COLORS.roseSoft,
   },
   clearFiltersBtnText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.rose,
   },
 
-  // Split-Card Pitch Grid (Matches PitchSearch.tsx)
+  // ============================================================
+  // SPLIT-CARD PITCH GRID (Matches PitchSearch.tsx lines 323-423)
+  // ============================================================
   pitchGridWrap: {
-    gap: 14,
+    gap: 16,
   },
   webPitchCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: 18,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
     overflow: 'hidden',
   },
   webPitchImageWrap: {
     position: 'relative',
-    backgroundColor: '#e2e8f0',
+    backgroundColor: COLORS.surfaceMuted,
   },
   webPitchImage: {
     width: '100%',
@@ -2134,15 +2785,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     left: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.82)',
+    backgroundColor: 'rgba(15, 23, 42, 0.80)',
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   webSportBadgeOnImgText: {
     color: COLORS.white,
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   webImgBottomBar: {
     position: 'absolute',
@@ -2159,17 +2810,15 @@ const styles = StyleSheet.create({
   webImgBottomDistrict: {
     color: COLORS.white,
     fontSize: 13,
-    fontWeight: '700',
-    flex: 1,
+    fontWeight: '500',
   },
   webImgBottomHours: {
-    color: '#cbd5e1',
+    color: '#e2e8f0',
     fontSize: 13,
-    fontWeight: '600',
   },
   webPitchContent: {
     flex: 1,
-    padding: 14,
+    padding: 16,
     justifyContent: 'space-between',
     gap: 8,
   },
@@ -2182,25 +2831,26 @@ const styles = StyleSheet.create({
   webPitchName: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.text,
   },
   webRatingPill: {
     backgroundColor: COLORS.amberSoft,
     borderWidth: 1,
-    borderColor: COLORS.amberLight,
+    borderColor: '#fde68a',
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   webRatingPillText: {
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.amber,
+    fontWeight: '700',
+    color: '#92400e',
   },
   webPitchAddress: {
-    fontSize: 13,
+    fontSize: 14,
     color: COLORS.textSecondary,
+    flex: 1,
   },
   webPitchPhone: {
     fontSize: 13,
@@ -2208,50 +2858,48 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   webAmenityPill: {
-    backgroundColor: COLORS.bg,
+    backgroundColor: COLORS.surfaceMuted,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   webAmenityPillText: {
     fontSize: 13,
     color: COLORS.textSecondary,
-    fontWeight: '600',
   },
   webAmenityMorePill: {
     backgroundColor: COLORS.surfaceMuted,
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   webAmenityMoreText: {
     fontSize: 13,
     color: COLORS.textMuted,
-    fontWeight: '700',
   },
   webSlotsPreviewBlock: {
-    paddingTop: 6,
+    paddingTop: 4,
     gap: 6,
   },
   webSlotsPreviewLabel: {
     fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
+    fontWeight: '500',
+    color: COLORS.textMuted,
   },
   webPreviewSlotChip: {
-    backgroundColor: COLORS.emeraldSoft,
+    backgroundColor: COLORS.bg,
     borderWidth: 1,
-    borderColor: COLORS.emeraldLight,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: 8,
+    borderColor: COLORS.border,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   webPreviewSlotChipText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.emeraldDark,
+    fontWeight: '600',
+    color: '#1e293b',
   },
   webPitchFooter: {
     marginTop: 6,
@@ -2270,30 +2918,34 @@ const styles = StyleSheet.create({
   },
   webPriceValue: {
     fontSize: 16,
-    fontWeight: '900',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   webPriceUnit: {
     fontSize: 13,
     color: COLORS.textMuted,
   },
   webSelectSlotBtn: {
-    backgroundColor: COLORS.emerald,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 9,
+    borderRadius: 6,
   },
   webSelectSlotBtnText: {
     color: COLORS.white,
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '600',
   },
 
-  // Pagination
+  // Pagination (Matches PitchSearch.tsx lines 426-462)
   paginationBar: {
     backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    padding: 12,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderWidth: 1,
     borderColor: COLORS.border,
     flexDirection: 'row',
@@ -2303,44 +2955,45 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   paginationInfoText: {
-    fontSize: 13,
+    fontSize: 14,
     color: COLORS.textSecondary,
-    fontWeight: '600',
   },
   pageBtn: {
-    backgroundColor: COLORS.bg,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
     paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
   pageBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
   },
   pageNumBtn: {
     width: 36,
     height: 36,
-    borderRadius: 8,
-    backgroundColor: COLORS.bg,
+    borderRadius: 6,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   pageNumBtnActive: {
-    backgroundColor: COLORS.emerald,
-    borderColor: COLORS.emerald,
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   pageNumBtnText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
   },
 
-  // PitchDetail View Styles
+  // ============================================================
+  // PITCH DETAIL VIEW STYLES (Matches PitchDetail.tsx 100%)
+  // ============================================================
   breadcrumbBar: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -2349,94 +3002,100 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   backToListBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 6,
   },
   backToListBtnText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
   },
   breadcrumbPath: {
-    fontSize: 13,
+    fontSize: 14,
     color: COLORS.textSecondary,
   },
   breadcrumbActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 6,
   },
   breadcrumbActionText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '500',
     color: COLORS.textSecondary,
   },
   detailVenueCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: 18,
-    padding: 14,
+    borderRadius: 8,
+    padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
   detailVenueInner: {
-    gap: 14,
+    gap: 16,
   },
   detailVenueImg: {
-    borderRadius: 14,
-    backgroundColor: '#e2e8f0',
+    borderRadius: 6,
+    backgroundColor: COLORS.surfaceMuted,
   },
   detailVenueInfo: {
     flex: 1,
     justifyContent: 'space-between',
     gap: 8,
   },
-  emeraldTag: {
-    backgroundColor: COLORS.emeraldSoft,
+  skyTag: {
+    backgroundColor: COLORS.primarySoft,
     borderWidth: 1,
-    borderColor: COLORS.emeraldLight,
+    borderColor: '#bae6fd',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
-  emeraldTagText: {
+  skyTagText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.emeraldDark,
+    fontWeight: '600',
+    color: COLORS.primary,
   },
   slateTag: {
     backgroundColor: COLORS.surfaceMuted,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
   slateTagText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.textSecondary,
   },
   amberRatingTag: {
     backgroundColor: COLORS.amberSoft,
     borderWidth: 1,
-    borderColor: COLORS.amberLight,
+    borderColor: '#fde68a',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
   amberRatingTagText: {
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.amber,
+    fontWeight: '700',
+    color: '#92400e',
   },
   detailVenueName: {
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '700',
     color: COLORS.text,
   },
   detailVenueAddr: {
@@ -2460,8 +3119,8 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
   },
   venueMetaValue: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: COLORS.text,
   },
 
@@ -2471,7 +3130,7 @@ const styles = StyleSheet.create({
   },
   matrixCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: 18,
+    borderRadius: 8,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -2483,96 +3142,122 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 10,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.borderLight,
   },
   matrixTitle: {
-    fontSize: 17,
-    fontWeight: '900',
+    fontSize: 18,
+    fontWeight: '700',
     color: COLORS.text,
   },
   matrixSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: COLORS.textSecondary,
+    marginTop: 2,
   },
   legendWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 12,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
   },
   legendBox: {
     width: 14,
     height: 14,
-    borderRadius: 4,
-    borderWidth: 2,
+    borderRadius: 3,
+    borderWidth: 1,
   },
   legendText: {
     fontSize: 13,
     color: COLORS.textSecondary,
-    fontWeight: '600',
   },
   dayButton: {
     minWidth: 82,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 6,
     backgroundColor: COLORS.bg,
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
   },
   dayButtonActive: {
-    backgroundColor: COLORS.emerald,
-    borderColor: COLORS.emerald,
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   dayButtonName: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '600',
     color: COLORS.text,
   },
   dayButtonDate: {
-    fontSize: 13,
+    fontSize: 14,
+    fontWeight: '700',
     color: COLORS.textSecondary,
   },
   weatherBar: {
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderWidth: 1,
-    gap: 6,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
   },
-  weatherBarEmerald: {
-    backgroundColor: COLORS.emeraldSoft,
-    borderColor: COLORS.emeraldLight,
+  weatherBarSky: {
+    backgroundColor: COLORS.primarySoft,
+    borderColor: '#bae6fd',
   },
   weatherBarAmber: {
     backgroundColor: COLORS.amberSoft,
-    borderColor: COLORS.amberLight,
+    borderColor: '#fde68a',
+  },
+  weatherTempPill: {
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+  },
+  weatherTempPillText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
   },
   weatherConditionText: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '600',
     color: COLORS.text,
+  },
+  weatherTurfStatusText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
   },
   weatherTipLabel: {
     fontSize: 13,
     color: COLORS.textSecondary,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   weatherTipPill: {
     backgroundColor: COLORS.surface,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: 4,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
   },
   weatherTipPillText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.text,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
   },
   subCourtFilterBar: {
     flexDirection: 'row',
@@ -2580,36 +3265,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 8,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
   },
   subCourtTab: {
     backgroundColor: COLORS.surfaceMuted,
-    paddingHorizontal: 11,
-    paddingVertical: 7,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
   subCourtTabActive: {
-    backgroundColor: COLORS.text,
+    backgroundColor: '#1e293b',
   },
   subCourtTabText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.textSecondary,
   },
   subCourtTabTextActive: {
     color: COLORS.white,
+    fontWeight: '600',
   },
   peakNoticeText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.amber,
+    color: COLORS.textMuted,
   },
   subCourtCard: {
-    backgroundColor: COLORS.bg,
-    borderRadius: 14,
-    padding: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: 8,
+    padding: 14,
     borderWidth: 1,
     borderColor: COLORS.border,
     gap: 10,
@@ -2620,73 +3302,67 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 8,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.borderLight,
   },
   subCourtName: {
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 16,
+    fontWeight: '700',
     color: COLORS.text,
   },
   subCourtTypeBadge: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.surfaceMuted,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   subCourtTypeBadgeText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.textSecondary,
   },
   subCourtAvailText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   slotButtonsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
   },
   matrixSlotBtn: {
-    minWidth: 135,
+    minWidth: 140,
     flex: 1,
-    borderRadius: 10,
+    borderRadius: 6,
     padding: 10,
-    borderWidth: 1.5,
+    borderWidth: 1,
     position: 'relative',
     gap: 4,
   },
   matrixSlotBtnEmpty: {
     backgroundColor: COLORS.surface,
-    borderColor: '#a7f3d0',
+    borderColor: COLORS.border,
   },
   matrixSlotBtnSelected: {
-    backgroundColor: COLORS.emerald,
-    borderColor: COLORS.emeraldDark,
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   matrixSlotBtnPending: {
     backgroundColor: COLORS.amberSoft,
-    borderColor: COLORS.amberLight,
+    borderColor: '#fcd34d',
   },
   matrixSlotBtnBooked: {
-    backgroundColor: '#f1f5f9',
-    borderColor: COLORS.border,
+    backgroundColor: COLORS.surfaceMuted,
+    borderColor: COLORS.borderLight,
     opacity: 0.65,
   },
-  peakDot: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: COLORS.amber,
-  },
   matrixSlotTime: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1e293b',
   },
   matrixSlotBottom: {
     flexDirection: 'row',
@@ -2695,18 +3371,13 @@ const styles = StyleSheet.create({
   },
   matrixSlotPrice: {
     fontSize: 13,
-    fontWeight: '800',
-  },
-  matrixSlotStatus: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   pendingInfoCard: {
     backgroundColor: COLORS.amberSoft,
     borderWidth: 1,
-    borderColor: COLORS.amberLight,
-    borderRadius: 14,
+    borderColor: '#fcd34d',
+    borderRadius: 8,
     padding: 12,
     gap: 10,
   },
@@ -2714,16 +3385,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fde68a',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   pendingBadgeText: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#92400e',
   },
   pendingSlotTitle: {
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.text,
   },
   pendingSlotDesc: {
@@ -2733,32 +3404,32 @@ const styles = StyleSheet.create({
   waitlistInlineBtn: {
     backgroundColor: COLORS.amber,
     paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 6,
   },
   waitlistInlineBtnText: {
     color: COLORS.white,
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   closePendingBtn: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
     paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 6,
   },
   closePendingBtnText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.textSecondary,
   },
 
-  // Right Ticket Sidebar Card
+  // Right Ticket Sidebar Card (Matches PitchDetail.tsx lines 781-1180)
   ticketSidebarCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: 18,
+    borderRadius: 8,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -2772,8 +3443,8 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.borderLight,
   },
   ticketHeaderTitle: {
-    fontSize: 17,
-    fontWeight: '900',
+    fontSize: 18,
+    fontWeight: '700',
     color: COLORS.text,
   },
   ticketHeaderSub: {
@@ -2782,12 +3453,12 @@ const styles = StyleSheet.create({
   },
   resetTicketText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.rose,
   },
   ticketSummaryBox: {
     backgroundColor: COLORS.bg,
-    borderRadius: 12,
+    borderRadius: 6,
     padding: 12,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
@@ -2805,24 +3476,24 @@ const styles = StyleSheet.create({
   },
   ticketSummaryVal: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.text,
   },
   fieldSectionLabel: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '700',
     color: COLORS.text,
   },
   slotCountBadgeText: {
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   emptySelectedBox: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: COLORS.border,
-    borderRadius: 12,
+    borderRadius: 6,
     padding: 14,
     backgroundColor: COLORS.bg,
   },
@@ -2836,27 +3507,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.emeraldSoft,
+    backgroundColor: COLORS.primarySoft,
     borderWidth: 1,
-    borderColor: COLORS.emeraldLight,
-    borderRadius: 10,
+    borderColor: '#bae6fd',
+    borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   selectedSlotCourt: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '700',
     color: COLORS.text,
   },
   selectedSlotTime: {
     fontSize: 13,
-    color: COLORS.emeraldDark,
+    color: COLORS.primary,
     fontWeight: '600',
   },
   selectedSlotPrice: {
     fontSize: 14,
-    fontWeight: '900',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   removeSlotBtn: {
     paddingHorizontal: 6,
@@ -2864,36 +3535,36 @@ const styles = StyleSheet.create({
   },
   removeSlotBtnText: {
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.rose,
   },
   entityTabBtn: {
     flex: 1,
     minWidth: 120,
-    paddingVertical: 9,
+    paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
   },
   entityTabBtnActive: {
-    backgroundColor: COLORS.emeraldSoft,
-    borderColor: COLORS.emerald,
+    backgroundColor: COLORS.primarySoft,
+    borderColor: COLORS.primary,
   },
   entityTabBtnText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.textSecondary,
   },
   entityTabBtnTextActive: {
-    color: COLORS.emeraldDark,
-    fontWeight: '800',
+    color: COLORS.primary,
+    fontWeight: '700',
   },
   clubBox: {
     backgroundColor: COLORS.bg,
-    borderRadius: 12,
+    borderRadius: 6,
     padding: 10,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
@@ -2908,9 +3579,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 10,
+    borderRadius: 6,
     paddingHorizontal: 12,
-    paddingVertical: 9,
+    paddingVertical: 8,
     fontSize: 14,
     color: COLORS.text,
   },
@@ -2920,10 +3591,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   checkboxBox: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
-    borderWidth: 1.5,
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.surface,
     justifyContent: 'center',
@@ -2931,17 +3602,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   checkboxBoxChecked: {
-    backgroundColor: COLORS.emerald,
-    borderColor: COLORS.emerald,
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   checkboxTick: {
     color: COLORS.white,
     fontSize: 13,
-    fontWeight: '900',
+    fontWeight: '800',
   },
   checkboxTitle: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.text,
   },
   checkboxSub: {
@@ -2953,14 +3624,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.surface,
   },
   addonItemCardActive: {
-    backgroundColor: COLORS.emeraldSoft,
-    borderColor: COLORS.emeraldLight,
+    backgroundColor: COLORS.primarySoft,
+    borderColor: '#bae6fd',
   },
   addonName: {
     fontSize: 13,
@@ -2973,26 +3644,26 @@ const styles = StyleSheet.create({
   },
   addonPrice: {
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   depositOptionCard: {
     flex: 1,
     minWidth: 130,
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.surface,
     gap: 2,
   },
   depositOptionCardActive: {
-    backgroundColor: COLORS.emeraldSoft,
-    borderColor: COLORS.emerald,
+    backgroundColor: COLORS.primarySoft,
+    borderColor: COLORS.primary,
   },
   depositOptionTitle: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.text,
   },
   depositOptionSub: {
@@ -3001,7 +3672,7 @@ const styles = StyleSheet.create({
   },
   costBreakdownBox: {
     backgroundColor: COLORS.bg,
-    borderRadius: 12,
+    borderRadius: 6,
     padding: 12,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -3018,23 +3689,23 @@ const styles = StyleSheet.create({
   },
   costTotalLabel: {
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.text,
   },
   costTotalValue: {
     fontSize: 15,
-    fontWeight: '900',
+    fontWeight: '800',
     color: COLORS.text,
   },
   costDueLabel: {
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   costDueValue: {
     fontSize: 17,
-    fontWeight: '900',
-    color: COLORS.emeraldDark,
+    fontWeight: '800',
+    color: COLORS.primary,
   },
   splitterBar: {
     marginTop: 4,
@@ -3055,7 +3726,7 @@ const styles = StyleSheet.create({
   splitterStepBtn: {
     width: 26,
     height: 26,
-    borderRadius: 6,
+    borderRadius: 4,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -3064,43 +3735,43 @@ const styles = StyleSheet.create({
   },
   splitterStepText: {
     fontSize: 14,
-    fontWeight: '900',
+    fontWeight: '800',
     color: COLORS.text,
   },
   splitterCountText: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.text,
   },
   splitterResultText: {
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   proceedBookBtn: {
-    backgroundColor: COLORS.emerald,
-    paddingVertical: 13,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 6,
     alignItems: 'center',
   },
   proceedBookBtnText: {
     color: COLORS.white,
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   inlinePaymentConfirmBox: {
-    backgroundColor: COLORS.emeraldSoft,
+    backgroundColor: COLORS.primarySoft,
     borderWidth: 1,
-    borderColor: COLORS.emeraldLight,
-    borderRadius: 12,
+    borderColor: '#bae6fd',
+    borderRadius: 6,
     padding: 12,
     gap: 8,
   },
   inlinePaymentTitle: {
     fontSize: 14,
-    fontWeight: '900',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   inlinePaymentSub: {
     fontSize: 13,
@@ -3108,7 +3779,7 @@ const styles = StyleSheet.create({
   },
   bankInfoBox: {
     backgroundColor: COLORS.surface,
-    borderRadius: 10,
+    borderRadius: 6,
     padding: 10,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -3116,7 +3787,7 @@ const styles = StyleSheet.create({
   },
   bankInfoText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.text,
   },
   backStepBtn: {
@@ -3124,88 +3795,86 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 11,
+    borderRadius: 6,
   },
   backStepBtnText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.textSecondary,
   },
 
   // E-Ticket Styles
   eTicketHeader: {
-    backgroundColor: COLORS.emerald,
-    borderRadius: 14,
+    backgroundColor: COLORS.primary,
+    borderRadius: 6,
     padding: 14,
     gap: 4,
   },
   eTicketHeaderBadge: {
-    color: '#d1fae5',
+    color: '#e0f2fe',
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   eTicketCode: {
     color: COLORS.white,
     fontSize: 14,
-    fontWeight: '900',
+    fontWeight: '800',
     backgroundColor: 'rgba(0,0,0,0.2)',
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   eTicketVenueName: {
     color: COLORS.white,
     fontSize: 17,
-    fontWeight: '900',
+    fontWeight: '800',
   },
   eTicketVenueAddr: {
-    color: '#ecfdf5',
+    color: '#f0f9ff',
     fontSize: 13,
   },
   zaloInviteBox: {
-    backgroundColor: COLORS.emeraldSoft,
+    backgroundColor: COLORS.primarySoft,
     borderWidth: 1,
-    borderColor: COLORS.emeraldLight,
-    borderRadius: 12,
+    borderColor: '#bae6fd',
+    borderRadius: 6,
     padding: 12,
     gap: 8,
   },
   zaloInviteTitle: {
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   zaloSplitTag: {
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   zaloMessagePreview: {
     backgroundColor: COLORS.surface,
-    borderRadius: 8,
+    borderRadius: 6,
     padding: 10,
     fontSize: 13,
     color: COLORS.text,
     lineHeight: 19,
   },
   copyZaloBtn: {
-    backgroundColor: COLORS.emerald,
+    backgroundColor: COLORS.primary,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 6,
     alignItems: 'center',
   },
   copyZaloBtnText: {
     color: COLORS.white,
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
   },
-
-  // Loading & Error
   loadingBox: {
     backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 28,
+    borderRadius: 8,
+    padding: 36,
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
@@ -3214,65 +3883,62 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 14,
     color: COLORS.textSecondary,
-    fontWeight: '600',
   },
   errorBanner: {
     backgroundColor: COLORS.roseSoft,
     borderWidth: 1,
     borderColor: COLORS.roseLight,
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 8,
+    padding: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 10,
   },
   errorBannerText: {
     fontSize: 13,
     color: COLORS.rose,
-    fontWeight: '700',
     flex: 1,
   },
   retryBtn: {
     backgroundColor: COLORS.rose,
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
   retryBtnText: {
     color: COLORS.white,
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   emptySearchBox: {
     backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 28,
+    borderRadius: 8,
+    padding: 32,
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
   emptySearchTitle: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.text,
   },
   emptySearchSub: {
-    fontSize: 13,
+    fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
   resetFiltersPrimaryBtn: {
-    backgroundColor: COLORS.emerald,
+    marginTop: 6,
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 9,
+    borderRadius: 6,
   },
   resetFiltersPrimaryBtnText: {
     color: COLORS.white,
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

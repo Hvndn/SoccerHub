@@ -9,8 +9,10 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Image as RNImage,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
 import {
   COLORS,
   useResponsiveLayout,
@@ -35,6 +37,8 @@ import CommunityHubTab from './src/components/CommunityHubTab';
 import TournamentsTab from './src/components/TournamentsTab';
 import OwnerDashboardTab from './src/components/OwnerDashboardTab';
 import ProfileAndClubsTab from './src/components/ProfileAndClubsTab';
+
+const TURFZONE_LOGO = require('./src/assets/turfzone-logo.png');
 
 export type WebNavTabId =
   | 'booking'
@@ -66,13 +70,17 @@ function MainApp() {
     email: 'player@Turfzone.vn',
     phone: '0905123456',
     role: 'PLAYER',
-    level: 'Cầu Thủ Đặt Sân',
+    level: 'Phong trào',
   });
 
-  // Inline Header Drawers (NO MODAL!)
+  // Inline Header Drawers (NO MODAL - 100% Inline)
   const [showNotifDrawer, setShowNotifDrawer] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
+  const [showSkillFilterPanel, setShowSkillFilterPanel] = useState(false);
+  const [selectedSkillLevel, setSelectedSkillLevel] = useState('Phong trào');
+  const [selectedLocation, setSelectedLocation] = useState('Toàn quốc');
+
   const [loginEmail, setLoginEmail] = useState('player@Turfzone.vn');
   const [loginPassword, setLoginPassword] = useState('player123');
   const [loginBusy, setLoginBusy] = useState(false);
@@ -189,7 +197,6 @@ function MainApp() {
   }, []);
 
   const navigateToTab = (nextTab: WebNavTabId) => {
-    // Normalize legacy aliases
     const resolved: WebNavTabId =
       nextTab === 'activities'
         ? 'my-activities'
@@ -200,6 +207,7 @@ function MainApp() {
     setShowHamburgerMenu(false);
     setShowNotifDrawer(false);
     setShowUserDropdown(false);
+    setShowSkillFilterPanel(false);
   };
 
   const handleSwitchRoleOrLogin = async (
@@ -209,15 +217,9 @@ function MainApp() {
   ) => {
     if (roleOverride === 'GUEST') {
       setToken(null);
-      setUser({
-        id: 0,
-        fullName: 'Khách Tham Quan',
-        name: 'Khách Tham Quan',
-        email: '',
-        role: 'GUEST',
-      });
+      setUser(null);
       setActiveTab('booking');
-      setLoginMessage('Đã chuyển sang chế độ Khách (Hiển thị Trang chủ giới thiệu + Đặt sân).');
+      setLoginMessage('Đã chuyển sang chế độ Khách (Hiển thị Trang chủ LandingHero + Đặt sân giống Web).');
       return;
     }
 
@@ -240,6 +242,7 @@ function MainApp() {
           email: targetEmail,
           phone: data.user?.phone || '0905123456',
           role: resolvedRole,
+          level: 'Phong trào',
         });
         fetchAllBackendData(data.token);
         setActiveTab(
@@ -291,7 +294,7 @@ function MainApp() {
         email: targetEmail || 'player@Turfzone.vn',
         phone: '0905123456',
         role: 'PLAYER',
-        level: 'Cầu Thủ Đặt Sân',
+        level: 'Phong trào',
       });
       setActiveTab('booking');
       setLoginMessage('✓ Đã chuyển sang giao diện Cầu Thủ Đặt Sân');
@@ -301,55 +304,66 @@ function MainApp() {
   const role = user?.role || 'PLAYER';
   const isGuest = !user || role === 'GUEST' || !user.email;
 
-  // Desktop/Tablet Top Nav Items (Matches Navbar.tsx 100%)
-  const topNavItems: { id: WebNavTabId; label: string; badge?: string }[] =
+  // Desktop/Tablet Top Nav Items (Matches Navbar.tsx lines 186-214 100%)
+  const topNavItems: {
+    id: WebNavTabId;
+    label: string;
+    featherIcon: keyof typeof Feather.glyphMap;
+    badge?: string;
+    isSpecial?: boolean;
+  }[] =
     role === 'OWNER'
       ? [
-          { id: 'admin', label: 'Quản Lý Cụm Sân' },
-          { id: 'multi-sport', label: 'Sơ Đồ Sân' },
-          { id: 'organizer', label: 'Điều Hành Giải Đấu' },
-          { id: 'community', label: 'Cộng Đồng' },
-          { id: 'profile', label: 'Hồ Sơ Cá Nhân' },
+          { id: 'admin', label: 'Quản Lý Cụm Sân', featherIcon: 'grid' },
+          { id: 'multi-sport', label: 'Sơ Đồ Sân', featherIcon: 'calendar' },
+          { id: 'organizer', label: 'Điều Hành Giải Đấu', featherIcon: 'award' },
+          { id: 'community', label: 'Cộng Đồng', featherIcon: 'message-circle' },
+          { id: 'profile', label: 'Hồ Sơ Cá Nhân', featherIcon: 'user' },
         ]
       : role === 'ORGANIZER'
       ? [
-          { id: 'organizer', label: 'Điều Hành Giải Đấu', badge: 'BTC' },
-          { id: 'tournaments', label: 'Giải Đấu & BXH' },
-          { id: 'community', label: 'Cộng Đồng' },
-          { id: 'profile', label: 'Hồ Sơ Ban Tổ Chức' },
+          { id: 'organizer', label: 'Điều Hành Giải Đấu', featherIcon: 'shield', badge: 'BTC', isSpecial: true },
+          { id: 'tournaments', label: 'Giải Đấu & BXH', featherIcon: 'award' },
+          { id: 'community', label: 'Cộng Đồng', featherIcon: 'message-circle' },
+          { id: 'profile', label: 'Hồ Sơ Ban Tổ Chức', featherIcon: 'user' },
         ]
       : [
-          { id: 'booking', label: 'Đặt Sân' },
-          { id: 'matchmaking', label: 'Chợ Kèo', badge: 'Hot' },
-          { id: 'community', label: 'Cộng Đồng' },
-          { id: 'tournaments', label: 'Giải Đấu' },
-          { id: 'team-management', label: 'Đội Bóng' },
-          { id: 'membership', label: 'Thẻ Hội Viên' },
+          { id: 'booking', label: 'Đặt Sân', featherIcon: 'calendar' },
+          { id: 'matchmaking', label: 'Chợ Kèo', featherIcon: 'zap', badge: 'Hot', isSpecial: true },
+          { id: 'community', label: 'Cộng Đồng', featherIcon: 'message-circle' },
+          { id: 'tournaments', label: 'Giải Đấu', featherIcon: 'award' },
+          { id: 'team-management', label: 'Đội Bóng', featherIcon: 'users' },
+          { id: 'membership', label: 'Thẻ Hội Viên', featherIcon: 'credit-card' },
         ];
 
-  // Mobile Bottom Navigation Bar (Matches Navbar.tsx lines 696-749 100%)
-  const bottomNavItems: { id: WebNavTabId; label: string; icon: string; badge?: string }[] =
+  // Mobile Bottom Navigation Bar (Matches Navbar.tsx lines 1360-1409 100%)
+  const bottomNavItems: {
+    id: WebNavTabId;
+    label: string;
+    featherIcon: keyof typeof Feather.glyphMap;
+    badge?: string;
+  }[] =
     role === 'OWNER'
       ? [
-          { id: 'admin', label: 'Quản lý', icon: '🏟️' },
-          { id: 'multi-sport', label: 'Sơ đồ sân', icon: '📅' },
-          { id: 'organizer', label: 'Giải đấu', icon: '🏆' },
-          { id: 'community', label: 'Cộng Đồng', icon: '💬' },
-          { id: 'profile', label: 'Hồ sơ', icon: '👤' },
+          { id: 'admin', label: 'Quản lý', featherIcon: 'grid' },
+          { id: 'multi-sport', label: 'Sơ đồ sân', featherIcon: 'calendar' },
+          { id: 'organizer', label: 'Giải đấu', featherIcon: 'award' },
+          { id: 'community', label: 'Cộng Đồng', featherIcon: 'message-circle' },
+          { id: 'profile', label: 'Hồ sơ', featherIcon: 'user' },
         ]
       : role === 'ORGANIZER'
       ? [
-          { id: 'organizer', label: 'Điều hành', icon: '🛡️' },
-          { id: 'tournaments', label: 'BXH Giải', icon: '🏆' },
-          { id: 'community', label: 'Cộng Đồng', icon: '💬' },
-          { id: 'profile', label: 'Hồ sơ', icon: '👤' },
+          { id: 'organizer', label: 'Điều hành', featherIcon: 'shield' },
+          { id: 'tournaments', label: 'BXH Giải', featherIcon: 'award' },
+          { id: 'community', label: 'Cộng Đồng', featherIcon: 'message-circle' },
+          { id: 'profile', label: 'Hồ sơ', featherIcon: 'user' },
         ]
       : [
-          { id: 'booking', label: 'Đặt sân', icon: '⚽' },
-          { id: 'matchmaking', label: 'Chợ Kèo', icon: '🔥', badge: 'Hot' },
-          { id: 'community', label: 'Cộng Đồng', icon: '💬' },
-          { id: 'tournaments', label: 'Giải đấu', icon: '🏆' },
-          { id: 'profile', label: isGuest ? 'Đăng nhập' : 'Hồ sơ', icon: '👤' },
+          { id: 'booking', label: 'Đặt sân', featherIcon: 'calendar' },
+          { id: 'matchmaking', label: 'Chợ Kèo', featherIcon: 'zap', badge: 'Hot' },
+          { id: 'community', label: 'Cộng Đồng', featherIcon: 'message-circle' },
+          { id: 'tournaments', label: 'Giải đấu', featherIcon: 'award' },
+          { id: 'profile', label: isGuest ? 'Đăng nhập' : 'Hồ sơ', featherIcon: 'user' },
         ];
 
   return (
@@ -366,26 +380,25 @@ function MainApp() {
             { paddingHorizontal: layout.horizontalPadding },
           ]}
         >
-          {/* Left: Brand Logo */}
+          {/* Left: Real Turfzone Logo Image (/turfzone-logo.png) */}
           <TouchableOpacity
             onPress={() =>
               navigateToTab(
                 role === 'OWNER' ? 'admin' : role === 'ORGANIZER' ? 'organizer' : 'booking'
               )
             }
-            activeOpacity={0.8}
+            activeOpacity={0.85}
             style={styles.brandRow}
           >
-            <View style={styles.logoBox}>
-              <Text style={styles.logoEmoji}>🏆</Text>
-            </View>
-            <Text style={styles.brandName}>
-              Turf<Text style={{ color: COLORS.emerald }}>zone</Text>
-            </Text>
+            <RNImage
+              source={TURFZONE_LOGO}
+              style={layout.isPhone ? styles.brandLogoImgPhone : styles.brandLogoImgDesktop}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
 
-          {/* Center Navigation Links on Tablet / Desktop */}
-          {!layout.isPhone && (
+          {/* Center Navigation Links on Desktop (lg:flex in Navbar.tsx) */}
+          {layout.isDesktop && (
             <View style={styles.desktopNavRow}>
               {topNavItems.map((item) => {
                 const active = activeTab === item.id;
@@ -393,8 +406,24 @@ function MainApp() {
                   <TouchableOpacity
                     key={item.id}
                     onPress={() => navigateToTab(item.id)}
-                    style={[styles.desktopNavPill, active && styles.desktopNavPillActive]}
+                    style={[
+                      styles.desktopNavPill,
+                      active && styles.desktopNavPillActive,
+                      item.isSpecial && !active && styles.desktopNavPillSpecial,
+                    ]}
+                    activeOpacity={0.8}
                   >
+                    <Feather
+                      name={item.featherIcon}
+                      size={15}
+                      color={
+                        active
+                          ? COLORS.primary
+                          : item.isSpecial
+                          ? COLORS.amber
+                          : COLORS.textSecondary
+                      }
+                    />
                     <Text
                       style={[
                         styles.desktopNavText,
@@ -407,7 +436,7 @@ function MainApp() {
                       <View
                         style={[
                           styles.navHotBadge,
-                          item.badge === 'BTC' && { backgroundColor: COLORS.emerald },
+                          item.badge === 'BTC' && { backgroundColor: COLORS.primary },
                         ]}
                       >
                         <Text style={styles.navHotBadgeText}>{item.badge}</Text>
@@ -419,62 +448,123 @@ function MainApp() {
             </View>
           )}
 
-          {/* Right: Notification Bell + User Profile Pill + Hamburger Menu (Danh Mục Nền Tảng) */}
+          {/* Right Side Actions (Matches Navbar.tsx lines 504-914 100%) */}
           <View style={styles.navRightRow}>
-            {/* Notification Bell */}
+            {/* Skill & Location Pill for Player on Tablet/Desktop (★ Phong trào | Toàn quốc) */}
+            {role === 'PLAYER' && !layout.isPhone && (
+              <TouchableOpacity
+                onPress={() => {
+                  setShowSkillFilterPanel(!showSkillFilterPanel);
+                  setShowNotifDrawer(false);
+                  setShowUserDropdown(false);
+                  setShowHamburgerMenu(false);
+                }}
+                style={styles.skillLocationPill}
+                activeOpacity={0.8}
+              >
+                <View style={styles.skillPillPart}>
+                  <Feather name="star" size={14} color="#eab308" />
+                  <Text style={styles.skillPillText}>{selectedSkillLevel}</Text>
+                </View>
+                <View style={styles.skillPillDivider} />
+                <View style={styles.skillPillPart}>
+                  <Feather name="compass" size={14} color={COLORS.primary} />
+                  <Text style={styles.skillPillText}>{selectedLocation}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+
+            {/* Notification Bell Button */}
             <TouchableOpacity
               onPress={() => {
                 setShowNotifDrawer(!showNotifDrawer);
                 setShowUserDropdown(false);
                 setShowHamburgerMenu(false);
+                setShowSkillFilterPanel(false);
               }}
               style={[
                 styles.iconBtn,
                 showNotifDrawer && {
-                  backgroundColor: COLORS.emeraldSoft,
-                  borderColor: COLORS.emeraldLight,
+                  backgroundColor: COLORS.primarySoft,
+                  borderColor: '#7dd3fc',
                 },
               ]}
+              activeOpacity={0.8}
             >
-              <Text style={{ fontSize: 16 }}>🔔</Text>
-              {unreadCount > 0 && (
-                <View style={styles.notifCountBadge}>
-                  <Text style={styles.notifCountText}>{unreadCount}</Text>
-                </View>
-              )}
+              <Feather
+                name="bell"
+                size={18}
+                color={showNotifDrawer ? COLORS.primary : COLORS.textSecondary}
+              />
+              {unreadCount > 0 && <View style={styles.notifPingDot} />}
             </TouchableOpacity>
 
-            {/* User Profile / Role Switcher Button */}
-            <TouchableOpacity
-              onPress={() => {
-                setShowUserDropdown(!showUserDropdown);
-                setShowNotifDrawer(false);
-                setShowHamburgerMenu(false);
-              }}
-              style={styles.userPillBtn}
-            >
-              <View style={styles.userAvatarSmall}>
-                <Text style={styles.userAvatarSmallText}>
-                  {(user?.fullName || user?.name || 'N').trim().charAt(0).toUpperCase()}
-                </Text>
-              </View>
-              {!layout.isSmallPhone && (
-                <View>
-                  <Text style={styles.userPillName} numberOfLines={1}>
-                    {isGuest ? 'Đăng Nhập' : user?.fullName || 'Nguyễn Văn Cầu Thủ'}
-                  </Text>
-                  <Text style={styles.userPillRole}>
-                    {role === 'OWNER'
-                      ? 'Đối Tác Chủ Sân'
-                      : role === 'ORGANIZER'
-                      ? 'Ban Tổ Chức Giải'
-                      : isGuest
-                      ? 'Khách Tham Quan'
-                      : 'Cầu Thủ Đặt Sân'}
+            {/* User Profile Pill OR Guest Login/Register Buttons (Matches Navbar.tsx lines 675-885) */}
+            {!isGuest ? (
+              <TouchableOpacity
+                onPress={() => {
+                  setShowUserDropdown(!showUserDropdown);
+                  setShowNotifDrawer(false);
+                  setShowHamburgerMenu(false);
+                  setShowSkillFilterPanel(false);
+                }}
+                style={styles.userProfileWrap}
+                activeOpacity={0.8}
+              >
+                {/* Name & Role on the LEFT (Hidden on compact phone, shown on sm+) */}
+                {!layout.isPhone && (
+                  <View style={styles.userTextColRightAligned}>
+                    <Text style={styles.userPillName} numberOfLines={1}>
+                      {user?.fullName || 'Nguyễn Văn Cầu Thủ'}
+                    </Text>
+                    <View style={styles.userRoleRow}>
+                      <Text style={styles.userPillRole}>
+                        {role === 'OWNER'
+                          ? 'Chủ Sân'
+                          : role === 'ORGANIZER'
+                          ? 'Ban Tổ Chức'
+                          : 'Cầu Thủ'}{' '}
+                        • {selectedSkillLevel}
+                      </Text>
+                      <Feather name="chevron-down" size={13} color={COLORS.primary} />
+                    </View>
+                  </View>
+                )}
+
+                {/* Circular #0369a1 Avatar with sky-400 border on the RIGHT */}
+                <View style={styles.userAvatarCircle}>
+                  <Text style={styles.userAvatarCircleText}>
+                    {(user?.fullName || user?.name || 'N').trim().charAt(0).toUpperCase()}
                   </Text>
                 </View>
-              )}
-            </TouchableOpacity>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.guestButtonsRow}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowUserDropdown(!showUserDropdown);
+                    setShowNotifDrawer(false);
+                    setShowHamburgerMenu(false);
+                  }}
+                  style={styles.guestLoginBtn}
+                >
+                  <Feather name="log-in" size={14} color={COLORS.textSecondary} />
+                  <Text style={styles.guestLoginBtnText}>Đăng Nhập</Text>
+                </TouchableOpacity>
+                {!layout.isSmallPhone && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowUserDropdown(true);
+                      setShowNotifDrawer(false);
+                      setShowHamburgerMenu(false);
+                    }}
+                    style={styles.guestRegisterBtn}
+                  >
+                    <Text style={styles.guestRegisterBtnText}>Đăng Ký</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
 
             {/* Hamburger Menu Button (Danh Mục Nền Tảng) */}
             <TouchableOpacity
@@ -482,21 +572,88 @@ function MainApp() {
                 setShowHamburgerMenu(!showHamburgerMenu);
                 setShowNotifDrawer(false);
                 setShowUserDropdown(false);
+                setShowSkillFilterPanel(false);
               }}
               style={[
                 styles.hamburgerBtn,
                 showHamburgerMenu && {
-                  backgroundColor: COLORS.emeraldSoft,
-                  borderColor: COLORS.emerald,
+                  backgroundColor: COLORS.primarySoft,
+                  borderColor: COLORS.primary,
                 },
               ]}
+              activeOpacity={0.8}
             >
-              <Text style={styles.hamburgerIconText}>
-                {showHamburgerMenu ? '✕' : '☰'}
-              </Text>
+              <Feather
+                name={showHamburgerMenu ? 'x' : 'menu'}
+                size={20}
+                color={showHamburgerMenu ? COLORS.primary : COLORS.textSecondary}
+              />
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* ============================================================ */}
+        {/* INLINE PANEL 0: TRÌNH ĐỘ & KHU VỰC (Matches Navbar.tsx Skill Filter) */}
+        {/* ============================================================ */}
+        {showSkillFilterPanel && (
+          <View
+            style={[
+              styles.inlineHeaderDrawer,
+              { paddingHorizontal: layout.horizontalPadding },
+            ]}
+          >
+            <View style={styles.drawerHeaderRow}>
+              <Text style={styles.drawerTitle}>Cài Đặt Trình Độ & Khu Vực Tìm Sân</Text>
+              <TouchableOpacity onPress={() => setShowSkillFilterPanel(false)}>
+                <Text style={styles.closeDrawerText}>Đóng ▲</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.wrapRow}>
+              <Text style={styles.sectionSubHeader}>Trình độ:</Text>
+              {['Vui vẻ', 'Phong trào', 'Bán chuyên'].map((lv) => {
+                const active = selectedSkillLevel === lv;
+                return (
+                  <TouchableOpacity
+                    key={lv}
+                    onPress={() => setSelectedSkillLevel(lv)}
+                    style={[styles.roleSwitchBtn, active && styles.roleSwitchBtnActive]}
+                  >
+                    <Text
+                      style={[
+                        styles.roleSwitchBtnText,
+                        active && styles.roleSwitchBtnTextActive,
+                      ]}
+                    >
+                      {lv}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <View style={styles.wrapRow}>
+              <Text style={styles.sectionSubHeader}>Khu vực:</Text>
+              {['Toàn quốc', 'Đà Nẵng', 'Hà Nội', 'TP.HCM'].map((loc) => {
+                const active = selectedLocation === loc;
+                return (
+                  <TouchableOpacity
+                    key={loc}
+                    onPress={() => setSelectedLocation(loc)}
+                    style={[styles.roleSwitchBtn, active && styles.roleSwitchBtnActive]}
+                  >
+                    <Text
+                      style={[
+                        styles.roleSwitchBtnText,
+                        active && styles.roleSwitchBtnTextActive,
+                      ]}
+                    >
+                      {loc}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        )}
 
         {/* ============================================================ */}
         {/* INLINE DRAWER 1: TRUNG TÂM THÔNG BÁO (Matches Navbar.tsx) */}
@@ -510,10 +667,11 @@ function MainApp() {
           >
             <View style={styles.drawerHeaderRow}>
               <View style={styles.wrapRow}>
-                <Text style={styles.drawerTitle}>🔔 Trung Tâm Thông Báo</Text>
+                <Feather name="bell" size={16} color={COLORS.primary} />
+                <Text style={styles.drawerTitle}>Thông báo</Text>
                 {unreadCount > 0 && (
-                  <View style={styles.emeraldCountPill}>
-                    <Text style={styles.emeraldCountPillText}>{unreadCount} mới</Text>
+                  <View style={styles.primaryCountPill}>
+                    <Text style={styles.primaryCountPillText}>{unreadCount} mới</Text>
                   </View>
                 )}
               </View>
@@ -546,8 +704,8 @@ function MainApp() {
                   style={[
                     styles.notifItemCard,
                     item.unread && {
-                      backgroundColor: COLORS.emeraldSoft,
-                      borderColor: COLORS.emeraldLight,
+                      backgroundColor: COLORS.primarySoft,
+                      borderColor: '#bae6fd',
                     },
                   ]}
                 >
@@ -576,7 +734,9 @@ function MainApp() {
             <View style={styles.drawerHeaderRow}>
               <View>
                 <Text style={styles.drawerTitle}>
-                  👤 {user?.fullName || 'Nguyễn Văn Cầu Thủ'} ({user?.email || 'Khách'})
+                  {isGuest
+                    ? 'Đăng Nhập Tài Khoản Turfzone'
+                    : `${user?.fullName || 'Nguyễn Văn Cầu Thủ'} (${user?.email})`}
                 </Text>
                 <Text style={styles.drawerSub}>
                   Truy cập nhanh hồ sơ cá nhân hoặc chuyển đổi vai trò trải nghiệm (Đồng bộ 100% Web)
@@ -593,15 +753,21 @@ function MainApp() {
                 onPress={() => navigateToTab('profile')}
                 style={styles.quickMenuCard}
               >
-                <Text style={styles.quickMenuTitle}>👤 Hồ Sơ VĐV & Rating</Text>
-                <Text style={styles.quickMenuSub}>Cập nhật kỹ năng & lịch sử đấu</Text>
+                <View style={styles.wrapRow}>
+                  <Feather name="user" size={16} color={COLORS.primary} />
+                  <Text style={styles.quickMenuTitle}>Hồ Sơ VĐV & Lịch Sử Thi Đấu</Text>
+                </View>
+                <Text style={styles.quickMenuSub}>Chỉnh sửa hồ sơ, chỉ số & lịch sử đấu</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => navigateToTab('my-activities')}
                 style={styles.quickMenuCard}
               >
-                <Text style={styles.quickMenuTitle}>🎫 Lịch Trình & Vé Đã Đặt</Text>
+                <View style={styles.wrapRow}>
+                  <Feather name="calendar" size={16} color={COLORS.emerald} />
+                  <Text style={styles.quickMenuTitle}>Lịch Trình & Vé Đã Đặt</Text>
+                </View>
                 <Text style={styles.quickMenuSub}>
                   Vé giữ chỗ ({myBookings.length}), Điểm danh & Kèo đã nhận
                 </Text>
@@ -611,7 +777,10 @@ function MainApp() {
                 onPress={() => navigateToTab('team-management')}
                 style={styles.quickMenuCard}
               >
-                <Text style={styles.quickMenuTitle}>🛡️ Đội Bóng Của Tôi</Text>
+                <View style={styles.wrapRow}>
+                  <Feather name="users" size={16} color="#0284c7" />
+                  <Text style={styles.quickMenuTitle}>Đội Bóng Của Tôi</Text>
+                </View>
                 <Text style={styles.quickMenuSub}>Quản lý CLB & Sổ quỹ đội</Text>
               </TouchableOpacity>
 
@@ -619,41 +788,44 @@ function MainApp() {
                 onPress={() => navigateToTab('membership')}
                 style={styles.quickMenuCard}
               >
-                <Text style={styles.quickMenuTitle}>⚡ Thẻ Hội Viên #SH-1</Text>
+                <View style={styles.wrapRow}>
+                  <Feather name="credit-card" size={16} color={COLORS.amber} />
+                  <Text style={styles.quickMenuTitle}>Thẻ Hội Viên #SH-1</Text>
+                </View>
                 <Text style={styles.quickMenuSub}>Mã QR Check-in sân & Ưu đãi</Text>
               </TouchableOpacity>
             </View>
 
             {/* Role Switcher (Cầu Thủ / Chủ Sân / Ban Tổ Chức / Khách) */}
-            <Text style={styles.sectionSubHeader}>🔄 Chuyển nhanh chế độ vai trò:</Text>
+            <Text style={styles.sectionSubHeader}>Chuyển nhanh chế độ vai trò (Đồng bộ Web):</Text>
             <View style={styles.wrapRow}>
               {[
                 {
                   roleId: 'PLAYER' as const,
-                  label: '⚽ Cầu Thủ Đặt Sân',
+                  label: 'Cầu Thủ Đặt Sân',
                   email: 'player@Turfzone.vn',
                   pass: 'player123',
                 },
                 {
                   roleId: 'OWNER' as const,
-                  label: '🏟️ Đối Tác Chủ Sân',
+                  label: 'Đối Tác Chủ Sân',
                   email: 'owner@Turfzone.vn',
                   pass: 'owner123',
                 },
                 {
                   roleId: 'ORGANIZER' as const,
-                  label: '🏆 Ban Tổ Chức Giải (BTC)',
+                  label: 'Ban Tổ Chức Giải (BTC)',
                   email: 'btc@Turfzone.vn',
                   pass: 'btc123',
                 },
                 {
                   roleId: 'GUEST' as const,
-                  label: '🌐 Chế Độ Khách (Trang Chủ)',
+                  label: 'Chế Độ Khách (Trang Chủ Landing)',
                   email: '',
                   pass: '',
                 },
               ].map((r) => {
-                const active = role === r.roleId;
+                const active = (isGuest && r.roleId === 'GUEST') || (!isGuest && role === r.roleId);
                 return (
                   <TouchableOpacity
                     key={r.roleId}
@@ -715,7 +887,14 @@ function MainApp() {
             ]}
           >
             <View style={styles.drawerHeaderRow}>
-              <Text style={styles.drawerTitle}>📂 Danh Mục Nền Tảng</Text>
+              <View style={styles.wrapRow}>
+                <RNImage
+                  source={TURFZONE_LOGO}
+                  style={{ width: 110, height: 28 }}
+                  resizeMode="contain"
+                />
+                <Text style={styles.drawerTitle}>• Danh Mục Nền Tảng</Text>
+              </View>
               <TouchableOpacity onPress={() => setShowHamburgerMenu(false)}>
                 <Text style={styles.closeDrawerText}>Đóng ✕</Text>
               </TouchableOpacity>
@@ -725,62 +904,62 @@ function MainApp() {
               {[
                 {
                   id: 'booking' as WebNavTabId,
-                  icon: '📅',
+                  featherIcon: 'calendar' as const,
                   title: 'Đặt Sân Bóng Đá',
                   sub: 'Tìm cụm sân gần nhất & giữ chỗ online',
                 },
                 {
                   id: 'matchmaking' as WebNavTabId,
-                  icon: '🔥',
+                  featherIcon: 'zap' as const,
                   title: 'Chợ Kèo Hot',
                   sub: 'Ghép đối giao hữu & SOS thiếu chân',
                   badge: 'Hot',
                 },
                 {
                   id: 'community' as WebNavTabId,
-                  icon: '💬',
+                  featherIcon: 'message-circle' as const,
                   title: 'Cộng Đồng',
                   sub: 'Kênh thảo luận, nhóm đội bóng & tin nhắn riêng',
                 },
                 {
                   id: 'tournaments' as WebNavTabId,
-                  icon: '🏆',
+                  featherIcon: 'award' as const,
                   title: 'Giải Đấu & BXH',
                   sub: 'Đăng ký giải, nhánh đấu & lịch sử thi đấu',
                 },
                 {
                   id: 'membership' as WebNavTabId,
-                  icon: '⚡',
+                  featherIcon: 'credit-card' as const,
                   title: 'Thẻ Hội Viên & Ưu Đãi',
                   sub: `Mã VĐV #SH-${user?.id || 1} check-in sân & giải đấu`,
                 },
                 {
                   id: 'my-activities' as WebNavTabId,
-                  icon: '🎫',
+                  featherIcon: 'check-square' as const,
                   title: 'Lịch Trình & Vé Đã Đặt',
                   sub: 'Vé điện tử, Đồng hồ đếm ngược & Điểm danh quân số',
                 },
                 {
                   id: 'profile' as WebNavTabId,
-                  icon: '👤',
+                  featherIcon: 'user' as const,
                   title: 'Hồ Sơ VĐV & Lịch Sử Thi Đấu',
                   sub: 'Chỉnh sửa hồ sơ VĐV, chỉ số, lịch sử trận đấu',
                 },
                 {
                   id: 'team-management' as WebNavTabId,
-                  icon: '🛡️',
+                  featherIcon: 'users' as const,
                   title: 'Đội Bóng Của Tôi',
                   sub: 'Đội đã đăng ký & Lịch đấu của đội',
                 },
                 {
                   id: 'organizer' as WebNavTabId,
-                  icon: '📋',
+                  featherIcon: 'shield' as const,
                   title: 'Điều Hành Giải Đấu (BTC)',
                   sub: 'Duyệt đội đăng ký & Bốc thăm chia bảng inline',
                 },
                 {
                   id: 'admin' as WebNavTabId,
-                  icon: '🏟️',
+                  featherIcon: 'grid' as const,
                   title: 'Quản Lý Cụm Sân (Chủ Sân)',
                   sub: 'Sơ đồ sân trực tiếp, duyệt cọc & doanh thu ca',
                 },
@@ -798,17 +977,21 @@ function MainApp() {
                     <View
                       style={[
                         styles.hamburgerIconBox,
-                        active && { backgroundColor: COLORS.emerald },
+                        active && { backgroundColor: COLORS.primary },
                       ]}
                     >
-                      <Text style={{ fontSize: 18 }}>{item.icon}</Text>
+                      <Feather
+                        name={item.featherIcon}
+                        size={18}
+                        color={active ? COLORS.white : COLORS.primary}
+                      />
                     </View>
                     <View style={{ flex: 1 }}>
                       <View style={styles.wrapRow}>
                         <Text
                           style={[
                             styles.hamburgerItemTitle,
-                            active && { color: COLORS.emeraldDark },
+                            active && { color: COLORS.primary },
                           ]}
                         >
                           {item.title}
@@ -920,13 +1103,13 @@ function MainApp() {
       </KeyboardAvoidingView>
 
       {/* ============================================================ */}
-      {/* 3. MOBILE BOTTOM NAVIGATION BAR (100% Parity with Navbar.tsx) */}
+      {/* 3. MOBILE / TABLET BOTTOM NAVIGATION BAR (Matches Navbar.tsx lines 1360-1409) */}
       {/* ============================================================ */}
-      {layout.isPhone && (
+      {!layout.isDesktop && (
         <View
           style={[
             styles.bottomNav,
-            { paddingBottom: Math.max(layout.insets.bottom, 8) },
+            { paddingBottom: Math.max(layout.insets.bottom, 6) },
           ]}
         >
           {bottomNavItems.map((tab) => {
@@ -934,19 +1117,29 @@ function MainApp() {
             return (
               <TouchableOpacity
                 key={tab.id}
-                onPress={() => navigateToTab(tab.id)}
+                onPress={() => {
+                  if (tab.id === 'profile' && isGuest) {
+                    setShowUserDropdown(true);
+                  } else {
+                    navigateToTab(tab.id);
+                  }
+                }}
                 style={styles.bottomNavItem}
                 activeOpacity={0.75}
               >
-                <View
-                  style={[
-                    styles.bottomIconWrap,
-                    isCurrent && styles.bottomIconWrapActive,
-                  ]}
-                >
-                  <Text style={styles.bottomNavIcon}>{tab.icon}</Text>
+                {/* Top #0369a1 indicator bar when active (Matches Navbar.tsx line 1397) */}
+                {isCurrent && <View style={styles.bottomTopActiveBar} />}
+
+                <View style={styles.bottomIconWrap}>
+                  <Feather
+                    name={tab.featherIcon}
+                    size={20}
+                    color={isCurrent ? COLORS.primary : COLORS.textMuted}
+                  />
                   {tab.badge && (
-                    <View style={styles.bottomHotDot} />
+                    <View style={styles.bottomHotPill}>
+                      <Text style={styles.bottomHotPillText}>{tab.badge}</Text>
+                    </View>
                   )}
                 </View>
                 <Text
@@ -954,6 +1147,7 @@ function MainApp() {
                     styles.bottomNavLabel,
                     isCurrent && styles.bottomNavLabelActive,
                   ]}
+                  numberOfLines={1}
                 >
                   {tab.label}
                 </Text>
@@ -988,76 +1182,77 @@ const styles = StyleSheet.create({
   navbarWrapper: {
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: COLORS.borderLight,
     zIndex: 20,
-    elevation: 3,
+    elevation: 2,
   },
   navbarInner: {
     width: '100%',
-    maxWidth: 1280,
+    maxWidth: 1440,
     alignSelf: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    minHeight: 60,
+    paddingVertical: 8,
     gap: 10,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
   },
-  logoBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 11,
-    backgroundColor: COLORS.emerald,
-    justifyContent: 'center',
-    alignItems: 'center',
+  brandLogoImgPhone: {
+    width: 124,
+    height: 32,
   },
-  logoEmoji: {
-    fontSize: 19,
-  },
-  brandName: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: COLORS.text,
+  brandLogoImgDesktop: {
+    width: 142,
+    height: 36,
   },
   desktopNavRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 4,
+    flex: 1,
+    marginLeft: 12,
   },
   desktopNavPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 13,
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
     backgroundColor: 'transparent',
   },
   desktopNavPillActive: {
-    backgroundColor: COLORS.emeraldSoft,
+    backgroundColor: 'rgba(3, 105, 161, 0.10)',
+    borderColor: 'rgba(3, 105, 161, 0.30)',
+  },
+  desktopNavPillSpecial: {
+    backgroundColor: COLORS.amberSoft,
+    borderColor: COLORS.amberLight,
   },
   desktopNavText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: '#475569',
   },
   desktopNavTextActive: {
-    color: COLORS.emeraldDark,
+    color: COLORS.primary,
     fontWeight: '800',
   },
   navHotBadge: {
-    backgroundColor: COLORS.rose,
+    backgroundColor: COLORS.amberBright,
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: 1,
     borderRadius: 6,
   },
   navHotBadgeText: {
-    color: COLORS.white,
+    color: COLORS.text,
     fontSize: 13,
     fontWeight: '800',
   },
@@ -1066,93 +1261,144 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  skillLocationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surfaceMuted,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    borderRadius: 12,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    gap: 8,
+  },
+  skillPillPart: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  skillPillDivider: {
+    width: 1,
+    height: 14,
+    backgroundColor: COLORS.border,
+  },
+  skillPillText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
   iconBtn: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.surfaceMuted,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
     position: 'relative',
   },
-  notifCountBadge: {
+  notifPingDot: {
     position: 'absolute',
-    top: -4,
-    right: -4,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: COLORS.rose,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
   },
-  notifCountText: {
-    color: COLORS.white,
-    fontSize: 13,
-    fontWeight: '900',
-  },
-  userPillBtn: {
+  userProfileWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    minHeight: 40,
+    gap: 10,
+    paddingLeft: 8,
+    borderLeftWidth: 1,
+    borderLeftColor: COLORS.borderLight,
   },
-  userAvatarSmall: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: COLORS.emerald,
-    justifyContent: 'center',
+  userTextColRightAligned: {
+    alignItems: 'flex-end',
+  },
+  userRoleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  userAvatarSmallText: {
-    color: COLORS.white,
-    fontSize: 13,
-    fontWeight: '900',
+    gap: 3,
   },
   userPillName: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
     color: COLORS.text,
   },
   userPillRole: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.emeraldDark,
+    color: COLORS.primary,
+  },
+  userAvatarCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.primary,
+    borderWidth: 2,
+    borderColor: '#38bdf8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userAvatarCircleText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  guestButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  guestLoginBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: COLORS.surfaceMuted,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  guestLoginBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  guestRegisterBtn: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  guestRegisterBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.white,
   },
   hamburgerBtn: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.surfaceMuted,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  hamburgerIconText: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: COLORS.text,
   },
 
   // Inline Header Drawers
   inlineHeaderDrawer: {
     width: '100%',
-    maxWidth: 1280,
+    maxWidth: 1440,
     alignSelf: 'center',
     backgroundColor: COLORS.bg,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: COLORS.borderLight,
     paddingVertical: 14,
     gap: 12,
   },
@@ -1165,7 +1411,7 @@ const styles = StyleSheet.create({
   },
   drawerTitle: {
     fontSize: 15,
-    fontWeight: '900',
+    fontWeight: '800',
     color: COLORS.text,
   },
   drawerSub: {
@@ -1173,21 +1419,23 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 2,
   },
-  emeraldCountPill: {
-    backgroundColor: COLORS.emeraldSoft,
+  primaryCountPill: {
+    backgroundColor: COLORS.primarySoft,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 8,
   },
-  emeraldCountPillText: {
+  primaryCountPillText: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.emeraldDark,
+    color: COLORS.primary,
   },
   markAllReadText: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.emeraldDark,
+    color: COLORS.primary,
   },
   closeDrawerText: {
     fontSize: 13,
@@ -1196,10 +1444,10 @@ const styles = StyleSheet.create({
   },
   notifItemCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 12,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
     gap: 4,
   },
   notifItemTitle: {
@@ -1218,18 +1466,18 @@ const styles = StyleSheet.create({
   notifOpenLink: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.emeraldDark,
+    color: COLORS.primary,
     marginTop: 2,
   },
   quickMenuCard: {
     flex: 1,
     minWidth: 200,
     backgroundColor: COLORS.surface,
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 12,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 2,
+    borderColor: COLORS.borderLight,
+    gap: 4,
   },
   quickMenuTitle: {
     fontSize: 14,
@@ -1247,19 +1495,19 @@ const styles = StyleSheet.create({
   },
   roleSwitchBtn: {
     paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
   roleSwitchBtnActive: {
-    backgroundColor: COLORS.emerald,
-    borderColor: COLORS.emerald,
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   roleSwitchBtnText: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.textSecondary,
   },
   roleSwitchBtnTextActive: {
@@ -1275,7 +1523,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 10,
+    borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
@@ -1283,10 +1531,10 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   authSubmitBtn: {
-    backgroundColor: COLORS.text,
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 8,
     minHeight: 40,
     justifyContent: 'center',
   },
@@ -1298,7 +1546,7 @@ const styles = StyleSheet.create({
   loginFeedbackText: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.emeraldDark,
+    color: COLORS.primary,
   },
 
   // Hamburger Menu (Danh Mục Nền Tảng)
@@ -1314,20 +1562,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     backgroundColor: COLORS.surface,
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
   },
   hamburgerItemCardActive: {
-    backgroundColor: COLORS.emeraldSoft,
-    borderColor: COLORS.emerald,
+    backgroundColor: COLORS.primarySoft,
+    borderColor: '#7dd3fc',
   },
   hamburgerIconBox: {
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: COLORS.bg,
+    backgroundColor: COLORS.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1341,7 +1589,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  // Body & Bottom Nav
+  // Body & Bottom Nav (Matches Navbar.tsx lines 1360-1409)
   scrollContent: {
     flexGrow: 1,
   },
@@ -1350,51 +1598,58 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: COLORS.borderLight,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingTop: 6,
+    alignItems: 'stretch',
+    minHeight: 62,
     elevation: 12,
   },
   bottomNavItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
-    minHeight: 52,
-  },
-  bottomIconWrap: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 10,
+    paddingTop: 6,
+    paddingBottom: 4,
     position: 'relative',
   },
-  bottomIconWrapActive: {
-    backgroundColor: COLORS.emeraldSoft,
-  },
-  bottomNavIcon: {
-    fontSize: 18,
-  },
-  bottomHotDot: {
+  bottomTopActiveBar: {
     position: 'absolute',
-    top: 2,
-    right: 6,
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: COLORS.rose,
+    top: 0,
+    width: 40,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: COLORS.primary,
+  },
+  bottomIconWrap: {
+    position: 'relative',
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+  },
+  bottomHotPill: {
+    position: 'absolute',
+    top: -4,
+    right: -12,
+    backgroundColor: COLORS.amberBright,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  bottomHotPillText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.text,
   },
   bottomNavLabel: {
     fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
+    fontWeight: '500',
+    color: COLORS.textMuted,
     marginTop: 2,
   },
   bottomNavLabelActive: {
-    color: COLORS.emeraldDark,
-    fontWeight: '800',
+    color: '#0b4f6c',
+    fontWeight: '700',
   },
 });

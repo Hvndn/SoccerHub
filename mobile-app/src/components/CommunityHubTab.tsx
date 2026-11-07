@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
   },
   headerCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: 18,
+    borderRadius: 8,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -515,17 +515,17 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   liveBadge: {
-    backgroundColor: COLORS.emeraldSoft,
+    backgroundColor: COLORS.primarySoft,
     borderWidth: 1,
-    borderColor: COLORS.emeraldLight,
+    borderColor: '#bae6fd',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   liveBadgeText: {
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   onlineSummaryText: {
     fontSize: 13,
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '800',
     color: COLORS.text,
     marginTop: 4,
   },
@@ -548,33 +548,33 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.roseLight,
     paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 6,
   },
   shortcutBtnRoseText: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.rose,
   },
   shortcutBtnEmerald: {
-    backgroundColor: COLORS.emeraldSoft,
+    backgroundColor: COLORS.primarySoft,
     borderWidth: 1,
-    borderColor: COLORS.emeraldLight,
+    borderColor: '#bae6fd',
     paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 6,
   },
   shortcutBtnEmeraldText: {
     fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.emeraldDark,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   mainGrid: {
     gap: 16,
   },
   sidebarCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: 18,
+    borderRadius: 8,
     padding: 14,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -582,16 +582,16 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '900',
+    fontWeight: '800',
     color: COLORS.text,
   },
   searchInput: {
     backgroundColor: COLORS.bg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 10,
+    borderRadius: 6,
     paddingHorizontal: 12,
-    paddingVertical: 9,
+    paddingVertical: 8,
     fontSize: 14,
     color: COLORS.text,
   },
@@ -599,14 +599,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceMuted,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   filterChipActive: {
-    backgroundColor: COLORS.emerald,
+    backgroundColor: COLORS.primary,
   },
   filterChipText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.textSecondary,
   },
   filterChipTextActive: {
@@ -614,15 +614,15 @@ const styles = StyleSheet.create({
   },
   roomCard: {
     backgroundColor: COLORS.bg,
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 11,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
     gap: 4,
   },
   roomCardActive: {
-    backgroundColor: COLORS.emeraldSoft,
-    borderColor: COLORS.emerald,
+    backgroundColor: COLORS.primarySoft,
+    borderColor: COLORS.primary,
   },
   roomTopRow: {
     flexDirection: 'row',
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
   },
   roomName: {
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.text,
     flex: 1,
   },
@@ -640,17 +640,17 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.rose,
     paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   unreadPillText: {
     color: COLORS.white,
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   onlineCountText: {
     fontSize: 13,
-    color: COLORS.emeraldDark,
-    fontWeight: '700',
+    color: COLORS.primary,
+    fontWeight: '600',
   },
   roomSubtitle: {
     fontSize: 13,
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   },
   chatAreaCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: 18,
+    borderRadius: 8,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -676,7 +676,7 @@ const styles = StyleSheet.create({
   },
   chatHeaderTitle: {
     fontSize: 17,
-    fontWeight: '900',
+    fontWeight: '800',
     color: COLORS.text,
   },
   chatHeaderSub: {
@@ -689,11 +689,11 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 6,
   },
   callBtnText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.text,
   },
   zaloBtn: {
@@ -702,18 +702,18 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primaryLight,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 6,
   },
   zaloBtnText: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.primary,
   },
   messagesList: {
     gap: 10,
   },
   messageBubble: {
-    borderRadius: 14,
+    borderRadius: 8,
     padding: 12,
     borderWidth: 1,
     gap: 4,
@@ -723,8 +723,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.borderLight,
   },
   messageBubbleMe: {
-    backgroundColor: COLORS.emeraldSoft,
-    borderColor: COLORS.emeraldLight,
+    backgroundColor: COLORS.primarySoft,
+    borderColor: '#bae6fd',
   },
   messageHeaderRow: {
     flexDirection: 'row',
@@ -734,18 +734,18 @@ const styles = StyleSheet.create({
   },
   messageSender: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.text,
   },
   roleTag: {
     backgroundColor: COLORS.surfaceMuted,
     paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   roleTagText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.textSecondary,
   },
   messageTime: {
@@ -759,13 +759,13 @@ const styles = StyleSheet.create({
   },
   quickReplySection: {
     backgroundColor: COLORS.bg,
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 10,
     gap: 6,
   },
   quickReplyLabel: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.textSecondary,
   },
   quickReplyChip: {
@@ -774,7 +774,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   quickReplyChipText: {
     fontSize: 13,
@@ -793,21 +793,22 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
+    borderRadius: 6,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
     color: COLORS.text,
   },
   sendBtn: {
-    backgroundColor: COLORS.emerald,
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 16,
     paddingVertical: 11,
-    borderRadius: 12,
+    borderRadius: 6,
   },
   sendBtnText: {
     color: COLORS.white,
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '700',
   },
 });
+
