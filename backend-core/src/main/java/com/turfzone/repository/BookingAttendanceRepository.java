@@ -11,3 +11,4 @@ public interface BookingAttendanceRepository extends JpaRepository<BookingAttend
     void deleteByBookingIdAndPlayerName(Long bookingId, String playerName);
     void deleteByBookingId(Long bookingId);
 }
+

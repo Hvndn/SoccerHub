@@ -31,3 +31,4 @@ public class BookingAttendance {
     @Builder.Default
     private LocalDateTime votedAt = LocalDateTime.now();
 }
+
