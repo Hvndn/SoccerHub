@@ -74,9 +74,9 @@ export function useResponsiveLayout() {
   const isDesktop = width >= 1024;
 
   const horizontalPadding = isCompactPhone ? 12 : isPhone ? 16 : isTablet ? 24 : 32;
-  const maxContentWidth = 1240;
+  const maxContentWidth = 1280;
   const effectiveWidth = Math.min(width, maxContentWidth);
-  const gridColumns = isDesktop ? 3 : isTablet ? 2 : 1;
+  const gridColumns = isDesktop ? 2 : isTablet ? 2 : 1;
   const cardGap = isPhone ? 12 : 16;
 
   // Calculate exact card width when using multi-column flexWrap grids on tablet/desktop
@@ -91,6 +91,7 @@ export function useResponsiveLayout() {
     height,
     insets,
     isCompactPhone,
+    isSmallPhone: isCompactPhone,
     isPhone,
     isTablet,
     isDesktop,
@@ -145,3 +146,4 @@ export async function copyTextWithFeedback(title: string, content: string, onInl
     Alert.alert(title, content);
   }
 }
+

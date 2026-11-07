@@ -26,41 +26,59 @@ import {
   FALLBACK_BOOKINGS,
   FALLBACK_MATCHMAKING,
   FALLBACK_TOURNAMENTS,
+  normalizePitchItem,
 } from './src/services/api';
 import BookingTab from './src/components/BookingTab';
 import ActivitiesTab from './src/components/ActivitiesTab';
 import MatchmakingTab from './src/components/MatchmakingTab';
+import CommunityHubTab from './src/components/CommunityHubTab';
 import TournamentsTab from './src/components/TournamentsTab';
 import OwnerDashboardTab from './src/components/OwnerDashboardTab';
+import ProfileAndClubsTab from './src/components/ProfileAndClubsTab';
 
-type NavTabId = 'booking' | 'activities' | 'community' | 'tournaments' | 'owner';
+export type WebNavTabId =
+  | 'booking'
+  | 'matchmaking'
+  | 'community'
+  | 'tournaments'
+  | 'team-management'
+  | 'membership'
+  | 'my-activities'
+  | 'profile'
+  | 'admin'
+  | 'multi-sport'
+  | 'organizer'
+  | 'activities'
+  | 'owner';
 
 function MainApp() {
   const layout = useResponsiveLayout();
 
-  // Active Navigation Tab
-  const [activeTab, setActiveTab] = useState<NavTabId>('booking');
+  // Active Navigation Tab (100% synchronized with Web page.tsx & Navbar.tsx)
+  const [activeTab, setActiveTab] = useState<WebNavTabId>('booking');
 
-  // Auth State (Defaults to logged-in demo player for instant frictionless experience, with inline switcher)
+  // Auth State (Synchronized with Web page.tsx default player account)
   const [token, setToken] = useState<string | null>('demo-jwt-token');
   const [user, setUser] = useState<AuthUser | null>({
     id: 1,
-    fullName: 'Nguyễn Minh Quân',
+    fullName: 'Nguyễn Văn Cầu Thủ',
+    name: 'Nguyễn Văn Cầu Thủ',
     email: 'player@Turfzone.vn',
-    phone: '0909123456',
+    phone: '0905123456',
     role: 'PLAYER',
-    level: 'Đội Trưởng Phủi',
+    level: 'Cầu Thủ Đặt Sân',
   });
 
-  // Inline Account / Login Drawer in Header (NO MODAL!)
-  const [showAuthDrawer, setShowAuthDrawer] = useState(false);
+  // Inline Header Drawers (NO MODAL!)
   const [showNotifDrawer, setShowNotifDrawer] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
   const [loginEmail, setLoginEmail] = useState('player@Turfzone.vn');
   const [loginPassword, setLoginPassword] = useState('player123');
   const [loginBusy, setLoginBusy] = useState(false);
   const [loginMessage, setLoginMessage] = useState<string | null>(null);
 
-  // Live Data States (Synchronized with Spring Boot Backend + Fallback Seed)
+  // Live Data States (Synchronized with Spring Boot Backend + Đà Nẵng Fallback Seed)
   const [pitches, setPitches] = useState<Pitch[]>(FALLBACK_PITCHES);
   const [pitchesLoading, setPitchesLoading] = useState<boolean>(false);
   const [pitchesError, setPitchesError] = useState<string | null>(null);
@@ -68,6 +86,35 @@ function MainApp() {
   const [myBookings, setMyBookings] = useState<BookingItem[]>(FALLBACK_BOOKINGS);
   const [matchPosts, setMatchPosts] = useState<MatchmakingPostItem[]>(FALLBACK_MATCHMAKING);
   const [tournaments, setTournaments] = useState<TournamentItem[]>(FALLBACK_TOURNAMENTS);
+
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      title: 'Đặt sân thành công',
+      desc: 'Sân 7A (Cụm Sân Bóng Đá Đại Nắng) lúc 18:00 hôm nay đã được giữ chỗ.',
+      time: 'Vừa xong',
+      unread: true,
+      targetTab: 'my-activities' as WebNavTabId,
+    },
+    {
+      id: 2,
+      title: 'Kèo giao hữu mới gần bạn',
+      desc: 'FC Anh Em Văn Phòng Hải Châu vừa đăng tìm đối thủ Sân 7 (50/50) tối nay.',
+      time: '15 phút trước',
+      unread: true,
+      targetTab: 'matchmaking' as WebNavTabId,
+    },
+    {
+      id: 3,
+      title: 'Giải đấu đang mở đăng ký',
+      desc: 'Siêu Cúp Bóng Đá Phủi Đà Nẵng Mở Rộng 2026 còn 4 suất đăng ký cuối cùng.',
+      time: '1 giờ trước',
+      unread: false,
+      targetTab: 'tournaments' as WebNavTabId,
+    },
+  ]);
+
+  const unreadCount = notifications.filter((n) => n.unread).length;
 
   const fetchPitches = async () => {
     setPitchesLoading(true);
@@ -79,11 +126,11 @@ function MainApp() {
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
-          setPitches(data);
+          setPitches(data.map((item, idx) => normalizePitchItem(item, idx)));
         }
       }
     } catch {
-      // Keep FALLBACK_PITCHES so UI never breaks when offline
+      // Keep FALLBACK_PITCHES (Đà Nẵng)
     } finally {
       clearTimeout(timer);
       setPitchesLoading(false);
@@ -95,7 +142,6 @@ function MainApp() {
       ? { Authorization: `Bearer ${activeToken}` }
       : {};
 
-    // 1. Fetch Matchmaking Posts
     try {
       const res = await fetch(`${API_URL}/community/matchmaking-posts`);
       if (res.ok) {
@@ -108,7 +154,6 @@ function MainApp() {
       // Keep FALLBACK_MATCHMAKING
     }
 
-    // 2. Fetch Tournaments
     try {
       const res = await fetch(`${API_URL}/tournaments`);
       if (res.ok) {
@@ -121,7 +166,6 @@ function MainApp() {
       // Keep FALLBACK_TOURNAMENTS
     }
 
-    // 3. Fetch Bookings
     if (activeToken && activeToken !== 'demo-jwt-token') {
       try {
         const res = await fetch(`${API_URL}/pitches/bookings/search`, {
@@ -144,9 +188,38 @@ function MainApp() {
     fetchAllBackendData(token);
   }, []);
 
-  const handleDoLogin = async (customEmail?: string, customPass?: string, roleOverride?: string) => {
-    const targetEmail = (customEmail ?? loginEmail).trim();
-    const targetPass = customPass ?? loginPassword;
+  const navigateToTab = (nextTab: WebNavTabId) => {
+    // Normalize legacy aliases
+    const resolved: WebNavTabId =
+      nextTab === 'activities'
+        ? 'my-activities'
+        : nextTab === 'owner'
+        ? 'admin'
+        : nextTab;
+    setActiveTab(resolved);
+    setShowHamburgerMenu(false);
+    setShowNotifDrawer(false);
+    setShowUserDropdown(false);
+  };
+
+  const handleSwitchRoleOrLogin = async (
+    targetEmail: string,
+    targetPass: string,
+    roleOverride: 'PLAYER' | 'OWNER' | 'ORGANIZER' | 'GUEST'
+  ) => {
+    if (roleOverride === 'GUEST') {
+      setToken(null);
+      setUser({
+        id: 0,
+        fullName: 'Khách Tham Quan',
+        name: 'Khách Tham Quan',
+        email: '',
+        role: 'GUEST',
+      });
+      setActiveTab('booking');
+      setLoginMessage('Đã chuyển sang chế độ Khách (Hiển thị Trang chủ giới thiệu + Đặt sân).');
+      return;
+    }
 
     setLoginBusy(true);
     setLoginMessage(null);
@@ -154,91 +227,137 @@ function MainApp() {
       const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: targetEmail, password: targetPass }),
+        body: JSON.stringify({ email: targetEmail.trim(), password: targetPass }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.token) {
         setToken(data.token);
-        setUser(data.user || { email: targetEmail, fullName: targetEmail.split('@')[0], role: roleOverride || 'PLAYER' });
-        setLoginMessage(`✅ Đã kết nối tài khoản thực: ${targetEmail}`);
+        const resolvedRole = data.user?.role || roleOverride;
+        setUser({
+          id: data.user?.id || 1,
+          fullName: data.user?.fullName || data.user?.name || targetEmail.split('@')[0],
+          name: data.user?.fullName || data.user?.name || targetEmail.split('@')[0],
+          email: targetEmail,
+          phone: data.user?.phone || '0905123456',
+          role: resolvedRole,
+        });
         fetchAllBackendData(data.token);
-        if (data.user?.role === 'OWNER' || roleOverride === 'OWNER') {
-          setActiveTab('owner');
-        }
+        setActiveTab(
+          resolvedRole === 'OWNER'
+            ? 'admin'
+            : resolvedRole === 'ORGANIZER'
+            ? 'organizer'
+            : 'booking'
+        );
+        setLoginMessage(`✓ Đã kết nối tài khoản: ${targetEmail}`);
         return;
       }
     } catch {
-      // Fallback to local profile switch
+      // Fallback local role switch
     } finally {
       setLoginBusy(false);
     }
 
-    // Smooth local profile switch if backend auth is offline
-    const isOwner = roleOverride === 'OWNER' || targetEmail.toLowerCase().includes('owner');
     setToken('demo-jwt-token');
-    setUser({
-      id: isOwner ? 2 : 1,
-      fullName: isOwner ? 'Trần Quốc Tuấn (Chủ Sân)' : 'Nguyễn Minh Quân',
-      email: targetEmail,
-      phone: isOwner ? '0918888999' : '0909123456',
-      role: isOwner ? 'OWNER' : 'PLAYER',
-      level: isOwner ? 'Chủ Cụm Sân' : 'Đội Trưởng Phủi',
-    });
-    if (isOwner) {
-      setActiveTab('owner');
-    } else if (activeTab === 'owner') {
+    if (roleOverride === 'OWNER') {
+      setUser({
+        id: 2,
+        fullName: 'Trần Quốc Tuấn (Chủ Sân)',
+        name: 'Trần Quốc Tuấn (Chủ Sân)',
+        email: 'owner@Turfzone.vn',
+        phone: '0905888999',
+        role: 'OWNER',
+        level: 'Đối Tác Chủ Sân',
+      });
+      setActiveTab('admin');
+      setLoginMessage('✓ Đã chuyển sang giao diện Đối Tác Chủ Sân');
+    } else if (roleOverride === 'ORGANIZER') {
+      setUser({
+        id: 3,
+        fullName: 'Lê Hoàng Minh (BTC Giải)',
+        name: 'Lê Hoàng Minh (BTC Giải)',
+        email: 'btc@Turfzone.vn',
+        phone: '0905777888',
+        role: 'ORGANIZER',
+        level: 'Ban Tổ Chức Giải',
+      });
+      setActiveTab('organizer');
+      setLoginMessage('✓ Đã chuyển sang giao diện Ban Tổ Chức Giải');
+    } else {
+      setUser({
+        id: 1,
+        fullName: 'Nguyễn Văn Cầu Thủ',
+        name: 'Nguyễn Văn Cầu Thủ',
+        email: targetEmail || 'player@Turfzone.vn',
+        phone: '0905123456',
+        role: 'PLAYER',
+        level: 'Cầu Thủ Đặt Sân',
+      });
       setActiveTab('booking');
+      setLoginMessage('✓ Đã chuyển sang giao diện Cầu Thủ Đặt Sân');
     }
-    setLoginMessage(`✅ Đã chuyển sang tài khoản: ${isOwner ? 'Chủ Sân' : 'Cầu Thủ'} (${targetEmail})`);
   };
 
-  const navItems: { id: NavTabId; label: string; shortLabel: string; icon: string; badge?: number }[] = [
-    { id: 'booking', label: 'Đặt Sân Bóng', shortLabel: 'Đặt Sân', icon: '⚽' },
-    {
-      id: 'activities',
-      label: 'Vé & Điểm Danh',
-      shortLabel: 'Điểm Danh',
-      icon: '📋',
-      badge: myBookings.length,
-    },
-    {
-      id: 'community',
-      label: 'Chợ Kèo & SOS',
-      shortLabel: 'Chợ Kèo',
-      icon: '🤝',
-      badge: matchPosts.filter((p) => p.postType === 'SOS' && p.status === 'OPEN').length,
-    },
-    { id: 'tournaments', label: 'Giải Đấu & BXH', shortLabel: 'Giải Đấu', icon: '🏆' },
-    { id: 'owner', label: 'Quản Lý Sân', shortLabel: 'Chủ Sân', icon: '🏟️' },
-  ];
+  const role = user?.role || 'PLAYER';
+  const isGuest = !user || role === 'GUEST' || !user.email;
 
-  const notifications = [
-    {
-      id: 'n1',
-      title: '⏱️ Nhắc giờ ra sân hôm nay (19:00 - 20:30)',
-      desc: 'Sân 7A Chảo Lửa Pro • Hiện đã có 6/14 cầu thủ điểm danh Đi chắc chắn.',
-      tab: 'activities' as NavTabId,
-    },
-    {
-      id: 'n2',
-      title: '🚨 SOS Thiếu Chân gần bạn: FC Bình Thạnh cần 2 vị trí',
-      desc: 'Cần gấp 1 Thủ môn & 1 Tiền vệ lúc 18:30 tại Sân Gia Định Arena (Miễn phí tiền sân).',
-      tab: 'community' as NavTabId,
-    },
-    {
-      id: 'n3',
-      title: '👑 Cập nhật Bảng Vua Phá Lưới Siêu Cúp Turfzone',
-      desc: 'Nguyễn Quang Hải đang dẫn đầu danh sách Chiếc Giày Vàng với 7 bàn thắng.',
-      tab: 'tournaments' as NavTabId,
-    },
-  ];
+  // Desktop/Tablet Top Nav Items (Matches Navbar.tsx 100%)
+  const topNavItems: { id: WebNavTabId; label: string; badge?: string }[] =
+    role === 'OWNER'
+      ? [
+          { id: 'admin', label: 'Quản Lý Cụm Sân' },
+          { id: 'multi-sport', label: 'Sơ Đồ Sân' },
+          { id: 'organizer', label: 'Điều Hành Giải Đấu' },
+          { id: 'community', label: 'Cộng Đồng' },
+          { id: 'profile', label: 'Hồ Sơ Cá Nhân' },
+        ]
+      : role === 'ORGANIZER'
+      ? [
+          { id: 'organizer', label: 'Điều Hành Giải Đấu', badge: 'BTC' },
+          { id: 'tournaments', label: 'Giải Đấu & BXH' },
+          { id: 'community', label: 'Cộng Đồng' },
+          { id: 'profile', label: 'Hồ Sơ Ban Tổ Chức' },
+        ]
+      : [
+          { id: 'booking', label: 'Đặt Sân' },
+          { id: 'matchmaking', label: 'Chợ Kèo', badge: 'Hot' },
+          { id: 'community', label: 'Cộng Đồng' },
+          { id: 'tournaments', label: 'Giải Đấu' },
+          { id: 'team-management', label: 'Đội Bóng' },
+          { id: 'membership', label: 'Thẻ Hội Viên' },
+        ];
+
+  // Mobile Bottom Navigation Bar (Matches Navbar.tsx lines 696-749 100%)
+  const bottomNavItems: { id: WebNavTabId; label: string; icon: string; badge?: string }[] =
+    role === 'OWNER'
+      ? [
+          { id: 'admin', label: 'Quản lý', icon: '🏟️' },
+          { id: 'multi-sport', label: 'Sơ đồ sân', icon: '📅' },
+          { id: 'organizer', label: 'Giải đấu', icon: '🏆' },
+          { id: 'community', label: 'Cộng Đồng', icon: '💬' },
+          { id: 'profile', label: 'Hồ sơ', icon: '👤' },
+        ]
+      : role === 'ORGANIZER'
+      ? [
+          { id: 'organizer', label: 'Điều hành', icon: '🛡️' },
+          { id: 'tournaments', label: 'BXH Giải', icon: '🏆' },
+          { id: 'community', label: 'Cộng Đồng', icon: '💬' },
+          { id: 'profile', label: 'Hồ sơ', icon: '👤' },
+        ]
+      : [
+          { id: 'booking', label: 'Đặt sân', icon: '⚽' },
+          { id: 'matchmaking', label: 'Chợ Kèo', icon: '🔥', badge: 'Hot' },
+          { id: 'community', label: 'Cộng Đồng', icon: '💬' },
+          { id: 'tournaments', label: 'Giải đấu', icon: '🏆' },
+          { id: 'profile', label: isGuest ? 'Đăng nhập' : 'Hồ sơ', icon: '👤' },
+        ];
 
   return (
     <View style={[styles.root, { paddingTop: layout.insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.surface} />
 
       {/* ============================================================ */}
-      {/* 1. TOP NAVBAR (Đồng bộ 100% thương hiệu Turfzone Pro trên Web) */}
+      {/* 1. TOP NAVBAR (100% Parity with frontend/src/components/Navbar.tsx) */}
       {/* ============================================================ */}
       <View style={styles.navbarWrapper}>
         <View
@@ -249,36 +368,33 @@ function MainApp() {
         >
           {/* Left: Brand Logo */}
           <TouchableOpacity
-            onPress={() => setActiveTab('booking')}
+            onPress={() =>
+              navigateToTab(
+                role === 'OWNER' ? 'admin' : role === 'ORGANIZER' ? 'organizer' : 'booking'
+              )
+            }
             activeOpacity={0.8}
             style={styles.brandRow}
           >
             <View style={styles.logoBox}>
-              <Text style={styles.logoEmoji}>⚽</Text>
+              <Text style={styles.logoEmoji}>🏆</Text>
             </View>
-            <View>
-              <View style={styles.brandTitleWrap}>
-                <Text style={styles.brandName}>Turfzone</Text>
-                <View style={styles.proPill}>
-                  <Text style={styles.proPillText}>Pro</Text>
-                </View>
-              </View>
-              <Text style={styles.brandTagline}>Đặt Sân • Chợ Kèo • Giải Đấu</Text>
-            </View>
+            <Text style={styles.brandName}>
+              Turf<Text style={{ color: COLORS.emerald }}>zone</Text>
+            </Text>
           </TouchableOpacity>
 
-          {/* Center Navigation Pills on Tablet / Desktop */}
+          {/* Center Navigation Links on Tablet / Desktop */}
           {!layout.isPhone && (
             <View style={styles.desktopNavRow}>
-              {navItems.map((item) => {
+              {topNavItems.map((item) => {
                 const active = activeTab === item.id;
                 return (
                   <TouchableOpacity
                     key={item.id}
-                    onPress={() => setActiveTab(item.id)}
+                    onPress={() => navigateToTab(item.id)}
                     style={[styles.desktopNavPill, active && styles.desktopNavPillActive]}
                   >
-                    <Text style={styles.desktopNavIcon}>{item.icon}</Text>
                     <Text
                       style={[
                         styles.desktopNavText,
@@ -287,48 +403,104 @@ function MainApp() {
                     >
                       {item.label}
                     </Text>
+                    {item.badge && (
+                      <View
+                        style={[
+                          styles.navHotBadge,
+                          item.badge === 'BTC' && { backgroundColor: COLORS.emerald },
+                        ]}
+                      >
+                        <Text style={styles.navHotBadgeText}>{item.badge}</Text>
+                      </View>
+                    )}
                   </TouchableOpacity>
                 );
               })}
             </View>
           )}
 
-          {/* Right: Notification Bell & Account Switcher */}
+          {/* Right: Notification Bell + User Profile Pill + Hamburger Menu (Danh Mục Nền Tảng) */}
           <View style={styles.navRightRow}>
+            {/* Notification Bell */}
             <TouchableOpacity
               onPress={() => {
                 setShowNotifDrawer(!showNotifDrawer);
-                setShowAuthDrawer(false);
+                setShowUserDropdown(false);
+                setShowHamburgerMenu(false);
               }}
               style={[
                 styles.iconBtn,
-                showNotifDrawer && { backgroundColor: COLORS.primarySoft, borderColor: COLORS.primary },
+                showNotifDrawer && {
+                  backgroundColor: COLORS.emeraldSoft,
+                  borderColor: COLORS.emeraldLight,
+                },
               ]}
             >
               <Text style={{ fontSize: 16 }}>🔔</Text>
-              <View style={styles.redDot} />
+              {unreadCount > 0 && (
+                <View style={styles.notifCountBadge}>
+                  <Text style={styles.notifCountText}>{unreadCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
 
+            {/* User Profile / Role Switcher Button */}
             <TouchableOpacity
               onPress={() => {
-                setShowAuthDrawer(!showAuthDrawer);
+                setShowUserDropdown(!showUserDropdown);
                 setShowNotifDrawer(false);
+                setShowHamburgerMenu(false);
               }}
               style={styles.userPillBtn}
             >
               <View style={styles.userAvatarSmall}>
                 <Text style={styles.userAvatarSmallText}>
-                  {(user?.fullName || 'Q').trim().charAt(0).toUpperCase()}
+                  {(user?.fullName || user?.name || 'N').trim().charAt(0).toUpperCase()}
                 </Text>
               </View>
-              <Text style={styles.userPillName} numberOfLines={1}>
-                {user?.role === 'OWNER' ? 'Chủ Sân' : 'Cầu Thủ'} ▾
+              {!layout.isSmallPhone && (
+                <View>
+                  <Text style={styles.userPillName} numberOfLines={1}>
+                    {isGuest ? 'Đăng Nhập' : user?.fullName || 'Nguyễn Văn Cầu Thủ'}
+                  </Text>
+                  <Text style={styles.userPillRole}>
+                    {role === 'OWNER'
+                      ? 'Đối Tác Chủ Sân'
+                      : role === 'ORGANIZER'
+                      ? 'Ban Tổ Chức Giải'
+                      : isGuest
+                      ? 'Khách Tham Quan'
+                      : 'Cầu Thủ Đặt Sân'}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Hamburger Menu Button (Danh Mục Nền Tảng) */}
+            <TouchableOpacity
+              onPress={() => {
+                setShowHamburgerMenu(!showHamburgerMenu);
+                setShowNotifDrawer(false);
+                setShowUserDropdown(false);
+              }}
+              style={[
+                styles.hamburgerBtn,
+                showHamburgerMenu && {
+                  backgroundColor: COLORS.emeraldSoft,
+                  borderColor: COLORS.emerald,
+                },
+              ]}
+            >
+              <Text style={styles.hamburgerIconText}>
+                {showHamburgerMenu ? '✕' : '☰'}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* INLINE NOTIFICATION PANEL (Không dùng Modal!) */}
+        {/* ============================================================ */}
+        {/* INLINE DRAWER 1: TRUNG TÂM THÔNG BÁO (Matches Navbar.tsx) */}
+        {/* ============================================================ */}
         {showNotifDrawer && (
           <View
             style={[
@@ -337,29 +509,64 @@ function MainApp() {
             ]}
           >
             <View style={styles.drawerHeaderRow}>
-              <Text style={styles.drawerTitle}>🔔 Thông Báo Trực Tiếp Từ Sân Bóng</Text>
-              <TouchableOpacity onPress={() => setShowNotifDrawer(false)}>
-                <Text style={styles.closeDrawerText}>Đóng ▲</Text>
-              </TouchableOpacity>
+              <View style={styles.wrapRow}>
+                <Text style={styles.drawerTitle}>🔔 Trung Tâm Thông Báo</Text>
+                {unreadCount > 0 && (
+                  <View style={styles.emeraldCountPill}>
+                    <Text style={styles.emeraldCountPillText}>{unreadCount} mới</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.wrapRow}>
+                {unreadCount > 0 && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })))
+                    }
+                  >
+                    <Text style={styles.markAllReadText}>✓ Đánh dấu đã đọc</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity onPress={() => setShowNotifDrawer(false)}>
+                  <Text style={styles.closeDrawerText}>Đóng ▲</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            {notifications.map((n) => (
-              <TouchableOpacity
-                key={n.id}
-                onPress={() => {
-                  setActiveTab(n.tab);
-                  setShowNotifDrawer(false);
-                }}
-                style={styles.notifItemCard}
-              >
-                <Text style={styles.notifItemTitle}>{n.title}</Text>
-                <Text style={styles.notifItemDesc}>{n.desc}</Text>
-              </TouchableOpacity>
-            ))}
+
+            <View style={{ gap: 8 }}>
+              {notifications.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  onPress={() => {
+                    setNotifications((prev) =>
+                      prev.map((n) => (n.id === item.id ? { ...n, unread: false } : n))
+                    );
+                    navigateToTab(item.targetTab);
+                  }}
+                  style={[
+                    styles.notifItemCard,
+                    item.unread && {
+                      backgroundColor: COLORS.emeraldSoft,
+                      borderColor: COLORS.emeraldLight,
+                    },
+                  ]}
+                >
+                  <View style={styles.drawerHeaderRow}>
+                    <Text style={styles.notifItemTitle}>{item.title}</Text>
+                    <Text style={styles.notifTimeText}>{item.time}</Text>
+                  </View>
+                  <Text style={styles.notifItemDesc}>{item.desc}</Text>
+                  <Text style={styles.notifOpenLink}>Mở xem ngay →</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         )}
 
-        {/* INLINE ACCOUNT & ROLE SWITCHER PANEL (Không dùng Modal!) */}
-        {showAuthDrawer && (
+        {/* ============================================================ */}
+        {/* INLINE DRAWER 2: HỒ SƠ & CHUYỂN ĐỔI VAI TRÒ (Matches Navbar.tsx) */}
+        {/* ============================================================ */}
+        {showUserDropdown && (
           <View
             style={[
               styles.inlineHeaderDrawer,
@@ -367,60 +574,103 @@ function MainApp() {
             ]}
           >
             <View style={styles.drawerHeaderRow}>
-              <Text style={styles.drawerTitle}>
-                👤 Tài Khoản Đang Dùng: {user?.fullName} ({user?.email})
-              </Text>
-              <TouchableOpacity onPress={() => setShowAuthDrawer(false)}>
+              <View>
+                <Text style={styles.drawerTitle}>
+                  👤 {user?.fullName || 'Nguyễn Văn Cầu Thủ'} ({user?.email || 'Khách'})
+                </Text>
+                <Text style={styles.drawerSub}>
+                  Truy cập nhanh hồ sơ cá nhân hoặc chuyển đổi vai trò trải nghiệm (Đồng bộ 100% Web)
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowUserDropdown(false)}>
                 <Text style={styles.closeDrawerText}>Đóng ▲</Text>
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.drawerSub}>
-              Chuyển nhanh vai trò trải nghiệm 1 chạm (Cầu Thủ Đặt Sân hoặc Chủ Sân Quản Lý):
-            </Text>
-
+            {/* Quick Links matching User Dropdown on Web */}
             <View style={styles.wrapRow}>
               <TouchableOpacity
-                onPress={() => {
-                  setLoginEmail('player@Turfzone.vn');
-                  setLoginPassword('player123');
-                  handleDoLogin('player@Turfzone.vn', 'player123', 'PLAYER');
-                }}
-                style={[
-                  styles.roleSwitchBtn,
-                  user?.role !== 'OWNER' && styles.roleSwitchBtnActive,
-                ]}
+                onPress={() => navigateToTab('profile')}
+                style={styles.quickMenuCard}
               >
-                <Text
-                  style={[
-                    styles.roleSwitchBtnText,
-                    user?.role !== 'OWNER' && styles.roleSwitchBtnTextActive,
-                  ]}
-                >
-                  ⚽ Chế Độ Cầu Thủ (player@Turfzone.vn)
+                <Text style={styles.quickMenuTitle}>👤 Hồ Sơ VĐV & Rating</Text>
+                <Text style={styles.quickMenuSub}>Cập nhật kỹ năng & lịch sử đấu</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => navigateToTab('my-activities')}
+                style={styles.quickMenuCard}
+              >
+                <Text style={styles.quickMenuTitle}>🎫 Lịch Trình & Vé Đã Đặt</Text>
+                <Text style={styles.quickMenuSub}>
+                  Vé giữ chỗ ({myBookings.length}), Điểm danh & Kèo đã nhận
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => {
-                  setLoginEmail('owner@Turfzone.vn');
-                  setLoginPassword('owner123');
-                  handleDoLogin('owner@Turfzone.vn', 'owner123', 'OWNER');
-                }}
-                style={[
-                  styles.roleSwitchBtn,
-                  user?.role === 'OWNER' && styles.roleSwitchBtnActive,
-                ]}
+                onPress={() => navigateToTab('team-management')}
+                style={styles.quickMenuCard}
               >
-                <Text
-                  style={[
-                    styles.roleSwitchBtnText,
-                    user?.role === 'OWNER' && styles.roleSwitchBtnTextActive,
-                  ]}
-                >
-                  🏟️ Chế Độ Chủ Sân (owner@Turfzone.vn)
-                </Text>
+                <Text style={styles.quickMenuTitle}>🛡️ Đội Bóng Của Tôi</Text>
+                <Text style={styles.quickMenuSub}>Quản lý CLB & Sổ quỹ đội</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => navigateToTab('membership')}
+                style={styles.quickMenuCard}
+              >
+                <Text style={styles.quickMenuTitle}>⚡ Thẻ Hội Viên #SH-1</Text>
+                <Text style={styles.quickMenuSub}>Mã QR Check-in sân & Ưu đãi</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Role Switcher (Cầu Thủ / Chủ Sân / Ban Tổ Chức / Khách) */}
+            <Text style={styles.sectionSubHeader}>🔄 Chuyển nhanh chế độ vai trò:</Text>
+            <View style={styles.wrapRow}>
+              {[
+                {
+                  roleId: 'PLAYER' as const,
+                  label: '⚽ Cầu Thủ Đặt Sân',
+                  email: 'player@Turfzone.vn',
+                  pass: 'player123',
+                },
+                {
+                  roleId: 'OWNER' as const,
+                  label: '🏟️ Đối Tác Chủ Sân',
+                  email: 'owner@Turfzone.vn',
+                  pass: 'owner123',
+                },
+                {
+                  roleId: 'ORGANIZER' as const,
+                  label: '🏆 Ban Tổ Chức Giải (BTC)',
+                  email: 'btc@Turfzone.vn',
+                  pass: 'btc123',
+                },
+                {
+                  roleId: 'GUEST' as const,
+                  label: '🌐 Chế Độ Khách (Trang Chủ)',
+                  email: '',
+                  pass: '',
+                },
+              ].map((r) => {
+                const active = role === r.roleId;
+                return (
+                  <TouchableOpacity
+                    key={r.roleId}
+                    onPress={() => handleSwitchRoleOrLogin(r.email, r.pass, r.roleId)}
+                    style={[styles.roleSwitchBtn, active && styles.roleSwitchBtnActive]}
+                  >
+                    <Text
+                      style={[
+                        styles.roleSwitchBtnText,
+                        active && styles.roleSwitchBtnTextActive,
+                      ]}
+                    >
+                      {r.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
             {/* Manual Login Form */}
@@ -440,7 +690,7 @@ function MainApp() {
                 style={[styles.authInput, { flex: 1, minWidth: 120 }]}
               />
               <TouchableOpacity
-                onPress={() => handleDoLogin()}
+                onPress={() => handleSwitchRoleOrLogin(loginEmail, loginPassword, 'PLAYER')}
                 disabled={loginBusy}
                 style={styles.authSubmitBtn}
               >
@@ -450,15 +700,137 @@ function MainApp() {
               </TouchableOpacity>
             </View>
 
-            {loginMessage && (
-              <Text style={styles.loginFeedbackText}>{loginMessage}</Text>
-            )}
+            {loginMessage && <Text style={styles.loginFeedbackText}>{loginMessage}</Text>}
+          </View>
+        )}
+
+        {/* ============================================================ */}
+        {/* INLINE DRAWER 3: DANH MỤC NỀN TẢNG (Matches Hamburger Menu in Navbar.tsx 100%) */}
+        {/* ============================================================ */}
+        {showHamburgerMenu && (
+          <View
+            style={[
+              styles.inlineHeaderDrawer,
+              { paddingHorizontal: layout.horizontalPadding },
+            ]}
+          >
+            <View style={styles.drawerHeaderRow}>
+              <Text style={styles.drawerTitle}>📂 Danh Mục Nền Tảng</Text>
+              <TouchableOpacity onPress={() => setShowHamburgerMenu(false)}>
+                <Text style={styles.closeDrawerText}>Đóng ✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.hamburgerGrid}>
+              {[
+                {
+                  id: 'booking' as WebNavTabId,
+                  icon: '📅',
+                  title: 'Đặt Sân Bóng Đá',
+                  sub: 'Tìm cụm sân gần nhất & giữ chỗ online',
+                },
+                {
+                  id: 'matchmaking' as WebNavTabId,
+                  icon: '🔥',
+                  title: 'Chợ Kèo Hot',
+                  sub: 'Ghép đối giao hữu & SOS thiếu chân',
+                  badge: 'Hot',
+                },
+                {
+                  id: 'community' as WebNavTabId,
+                  icon: '💬',
+                  title: 'Cộng Đồng',
+                  sub: 'Kênh thảo luận, nhóm đội bóng & tin nhắn riêng',
+                },
+                {
+                  id: 'tournaments' as WebNavTabId,
+                  icon: '🏆',
+                  title: 'Giải Đấu & BXH',
+                  sub: 'Đăng ký giải, nhánh đấu & lịch sử thi đấu',
+                },
+                {
+                  id: 'membership' as WebNavTabId,
+                  icon: '⚡',
+                  title: 'Thẻ Hội Viên & Ưu Đãi',
+                  sub: `Mã VĐV #SH-${user?.id || 1} check-in sân & giải đấu`,
+                },
+                {
+                  id: 'my-activities' as WebNavTabId,
+                  icon: '🎫',
+                  title: 'Lịch Trình & Vé Đã Đặt',
+                  sub: 'Vé điện tử, Đồng hồ đếm ngược & Điểm danh quân số',
+                },
+                {
+                  id: 'profile' as WebNavTabId,
+                  icon: '👤',
+                  title: 'Hồ Sơ VĐV & Lịch Sử Thi Đấu',
+                  sub: 'Chỉnh sửa hồ sơ VĐV, chỉ số, lịch sử trận đấu',
+                },
+                {
+                  id: 'team-management' as WebNavTabId,
+                  icon: '🛡️',
+                  title: 'Đội Bóng Của Tôi',
+                  sub: 'Đội đã đăng ký & Lịch đấu của đội',
+                },
+                {
+                  id: 'organizer' as WebNavTabId,
+                  icon: '📋',
+                  title: 'Điều Hành Giải Đấu (BTC)',
+                  sub: 'Duyệt đội đăng ký & Bốc thăm chia bảng inline',
+                },
+                {
+                  id: 'admin' as WebNavTabId,
+                  icon: '🏟️',
+                  title: 'Quản Lý Cụm Sân (Chủ Sân)',
+                  sub: 'Sơ đồ sân trực tiếp, duyệt cọc & doanh thu ca',
+                },
+              ].map((item) => {
+                const active = activeTab === item.id;
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() => navigateToTab(item.id)}
+                    style={[
+                      styles.hamburgerItemCard,
+                      active && styles.hamburgerItemCardActive,
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.hamburgerIconBox,
+                        active && { backgroundColor: COLORS.emerald },
+                      ]}
+                    >
+                      <Text style={{ fontSize: 18 }}>{item.icon}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={styles.wrapRow}>
+                        <Text
+                          style={[
+                            styles.hamburgerItemTitle,
+                            active && { color: COLORS.emeraldDark },
+                          ]}
+                        >
+                          {item.title}
+                        </Text>
+                        {item.badge && (
+                          <View style={styles.navHotBadge}>
+                            <Text style={styles.navHotBadgeText}>{item.badge}</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.hamburgerItemSub}>{item.sub}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
         )}
       </View>
 
       {/* ============================================================ */}
-      {/* 2. BODY CONTENT (Bọc trong KeyboardAvoidingView chuẩn Mobile) */}
+      {/* 2. MAIN CONTENT AREA (100% Parity with frontend/src/app/page.tsx) */}
       {/* ============================================================ */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -468,7 +840,7 @@ function MainApp() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: Math.max(layout.insets.bottom, 16) + 84 },
+            { paddingBottom: Math.max(layout.insets.bottom, 16) + 88 },
           ]}
         >
           {activeTab === 'booking' && (
@@ -480,30 +852,22 @@ function MainApp() {
               user={user}
               token={token}
               onBookingSuccess={(newB) => setMyBookings((prev) => [newB, ...prev])}
-              onNavigateTab={setActiveTab}
+              onNavigateTab={navigateToTab}
+              isGuest={isGuest}
             />
           )}
 
-          {activeTab === 'activities' && (
-            <ActivitiesTab
-              user={user}
-              token={token}
-              bookings={myBookings}
-              onUpdateBookings={setMyBookings}
-              onBroadcastSosSuccess={(newSos) =>
-                setMatchPosts((prev) => [newSos, ...prev])
-              }
-              onNavigateTab={setActiveTab}
-            />
-          )}
-
-          {activeTab === 'community' && (
+          {activeTab === 'matchmaking' && (
             <MatchmakingTab
               user={user}
               token={token}
               posts={matchPosts}
               onUpdatePosts={setMatchPosts}
             />
+          )}
+
+          {activeTab === 'community' && (
+            <CommunityHubTab user={user} onNavigateTab={navigateToTab} />
           )}
 
           {activeTab === 'tournaments' && (
@@ -515,7 +879,36 @@ function MainApp() {
             />
           )}
 
-          {activeTab === 'owner' && (
+          {(activeTab === 'my-activities' || activeTab === 'activities') && (
+            <ActivitiesTab
+              user={user}
+              token={token}
+              bookings={myBookings}
+              onUpdateBookings={setMyBookings}
+              onBroadcastSosSuccess={(newSos) => {
+                setMatchPosts((prev) => [newSos, ...prev]);
+                navigateToTab('matchmaking');
+              }}
+              onNavigateTab={navigateToTab}
+            />
+          )}
+
+          {(activeTab === 'profile' ||
+            activeTab === 'team-management' ||
+            activeTab === 'membership' ||
+            activeTab === 'organizer') && (
+            <ProfileAndClubsTab
+              mode={activeTab}
+              user={user}
+              onUpdateUser={setUser}
+              tournaments={tournaments}
+              onNavigateTab={navigateToTab}
+            />
+          )}
+
+          {(activeTab === 'admin' ||
+            activeTab === 'multi-sport' ||
+            activeTab === 'owner') && (
             <OwnerDashboardTab
               user={user}
               pitches={pitches}
@@ -527,7 +920,7 @@ function MainApp() {
       </KeyboardAvoidingView>
 
       {/* ============================================================ */}
-      {/* 3. BOTTOM NAVIGATION BAR (Responsive cho Điện Thoại) */}
+      {/* 3. MOBILE BOTTOM NAVIGATION BAR (100% Parity with Navbar.tsx) */}
       {/* ============================================================ */}
       {layout.isPhone && (
         <View
@@ -536,34 +929,25 @@ function MainApp() {
             { paddingBottom: Math.max(layout.insets.bottom, 8) },
           ]}
         >
-          {navItems.map((tab) => {
+          {bottomNavItems.map((tab) => {
             const isCurrent = activeTab === tab.id;
             return (
               <TouchableOpacity
                 key={tab.id}
-                onPress={() => setActiveTab(tab.id)}
+                onPress={() => navigateToTab(tab.id)}
                 style={styles.bottomNavItem}
                 activeOpacity={0.75}
               >
-                <View style={styles.bottomIconWrap}>
-                  <Text
-                    style={[
-                      styles.bottomNavIcon,
-                      isCurrent && styles.bottomNavIconActive,
-                    ]}
-                  >
-                    {tab.icon}
-                  </Text>
-                  {tab.badge && tab.badge > 0 ? (
-                    <View
-                      style={[
-                        styles.navBadge,
-                        tab.id === 'community' && { backgroundColor: COLORS.rose },
-                      ]}
-                    >
-                      <Text style={styles.navBadgeText}>{tab.badge}</Text>
-                    </View>
-                  ) : null}
+                <View
+                  style={[
+                    styles.bottomIconWrap,
+                    isCurrent && styles.bottomIconWrapActive,
+                  ]}
+                >
+                  <Text style={styles.bottomNavIcon}>{tab.icon}</Text>
+                  {tab.badge && (
+                    <View style={styles.bottomHotDot} />
+                  )}
                 </View>
                 <Text
                   style={[
@@ -571,9 +955,8 @@ function MainApp() {
                     isCurrent && styles.bottomNavLabelActive,
                   ]}
                 >
-                  {tab.shortLabel}
+                  {tab.label}
                 </Text>
-                {isCurrent && <View style={styles.bottomActiveBar} />}
               </TouchableOpacity>
             );
           })}
@@ -605,13 +988,13 @@ const styles = StyleSheet.create({
   navbarWrapper: {
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
+    borderBottomColor: COLORS.border,
     zIndex: 20,
     elevation: 3,
   },
   navbarInner: {
     width: '100%',
-    maxWidth: 1240,
+    maxWidth: 1280,
     alignSelf: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -627,68 +1010,56 @@ const styles = StyleSheet.create({
   logoBox: {
     width: 38,
     height: 38,
-    borderRadius: 12,
-    backgroundColor: COLORS.primary,
+    borderRadius: 11,
+    backgroundColor: COLORS.emerald,
     justifyContent: 'center',
     alignItems: 'center',
   },
   logoEmoji: {
-    fontSize: 20,
-  },
-  brandTitleWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+    fontSize: 19,
   },
   brandName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
     color: COLORS.text,
-  },
-  proPill: {
-    backgroundColor: COLORS.emerald,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  proPillText: {
-    color: COLORS.white,
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  brandTagline: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-    fontWeight: '500',
   },
   desktopNavRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
   desktopNavPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     paddingVertical: 8,
-    borderRadius: 12,
-    backgroundColor: COLORS.bg,
+    borderRadius: 10,
+    backgroundColor: 'transparent',
   },
   desktopNavPillActive: {
-    backgroundColor: COLORS.primary,
-  },
-  desktopNavIcon: {
-    fontSize: 14,
+    backgroundColor: COLORS.emeraldSoft,
   },
   desktopNavText: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '700',
     color: COLORS.textSecondary,
   },
   desktopNavTextActive: {
+    color: COLORS.emeraldDark,
+    fontWeight: '800',
+  },
+  navHotBadge: {
+    backgroundColor: COLORS.rose,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  navHotBadgeText: {
     color: COLORS.white,
+    fontSize: 13,
+    fontWeight: '800',
   },
   navRightRow: {
     flexDirection: 'row',
@@ -698,40 +1069,48 @@ const styles = StyleSheet.create({
   iconBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.surfaceMuted,
+    borderRadius: 12,
+    backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
+    borderColor: COLORS.border,
     position: 'relative',
   },
-  redDot: {
+  notifCountBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: COLORS.rose,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notifCountText: {
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: '900',
   },
   userPillBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: COLORS.primarySoft,
+    gap: 8,
+    backgroundColor: COLORS.surface,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: COLORS.primaryLight,
+    borderColor: COLORS.border,
     minHeight: 40,
   },
   userAvatarSmall: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: COLORS.primary,
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: COLORS.emerald,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -743,53 +1122,127 @@ const styles = StyleSheet.create({
   userPillName: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.primary,
+    color: COLORS.text,
   },
+  userPillRole: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.emeraldDark,
+  },
+  hamburgerBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  hamburgerIconText: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: COLORS.text,
+  },
+
+  // Inline Header Drawers
   inlineHeaderDrawer: {
     width: '100%',
-    maxWidth: 1240,
+    maxWidth: 1280,
     alignSelf: 'center',
     backgroundColor: COLORS.bg,
     borderTopWidth: 1,
-    borderTopColor: COLORS.borderLight,
-    paddingVertical: 12,
-    gap: 10,
+    borderTopColor: COLORS.border,
+    paddingVertical: 14,
+    gap: 12,
   },
   drawerHeaderRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 8,
   },
   drawerTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '900',
     color: COLORS.text,
-    flex: 1,
+  },
+  drawerSub: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  emeraldCountPill: {
+    backgroundColor: COLORS.emeraldSoft,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  emeraldCountPillText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.emeraldDark,
+  },
+  markAllReadText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.emeraldDark,
   },
   closeDrawerText: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.primary,
-  },
-  drawerSub: {
-    fontSize: 13,
     color: COLORS.textSecondary,
   },
   notifItemCard: {
     backgroundColor: COLORS.surface,
     borderRadius: 12,
-    padding: 10,
+    padding: 12,
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    gap: 2,
+    borderColor: COLORS.border,
+    gap: 4,
   },
   notifItemTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
     color: COLORS.text,
   },
+  notifTimeText: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+  },
   notifItemDesc: {
     fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  notifOpenLink: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.emeraldDark,
+    marginTop: 2,
+  },
+  quickMenuCard: {
+    flex: 1,
+    minWidth: 200,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    gap: 2,
+  },
+  quickMenuTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  quickMenuSub: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  sectionSubHeader: {
+    fontSize: 13,
+    fontWeight: '800',
     color: COLORS.textSecondary,
   },
   roleSwitchBtn: {
@@ -801,8 +1254,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   roleSwitchBtnActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: COLORS.emerald,
+    borderColor: COLORS.emerald,
   },
   roleSwitchBtnText: {
     fontSize: 13,
@@ -830,8 +1283,8 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   authSubmitBtn: {
-    backgroundColor: COLORS.emerald,
-    paddingHorizontal: 14,
+    backgroundColor: COLORS.text,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 10,
     minHeight: 40,
@@ -844,11 +1297,53 @@ const styles = StyleSheet.create({
   },
   loginFeedbackText: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.emeraldDark,
   },
+
+  // Hamburger Menu (Danh Mục Nền Tảng)
+  hamburgerGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  hamburgerItemCard: {
+    flex: 1,
+    minWidth: 250,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  hamburgerItemCardActive: {
+    backgroundColor: COLORS.emeraldSoft,
+    borderColor: COLORS.emerald,
+  },
+  hamburgerIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: COLORS.bg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  hamburgerItemTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  hamburgerItemSub: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+
+  // Body & Bottom Nav
   scrollContent: {
-    paddingTop: 14,
+    flexGrow: 1,
   },
   bottomNav: {
     position: 'absolute',
@@ -857,64 +1352,49 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: COLORS.surface,
     borderTopWidth: 1,
-    borderTopColor: COLORS.borderLight,
+    borderTopColor: COLORS.border,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 10,
+    alignItems: 'center',
+    paddingTop: 6,
+    elevation: 12,
   },
   bottomNavItem: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 2,
-    flex: 1,
-    position: 'relative',
+    paddingVertical: 4,
+    minHeight: 52,
   },
   bottomIconWrap: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 10,
     position: 'relative',
   },
+  bottomIconWrapActive: {
+    backgroundColor: COLORS.emeraldSoft,
+  },
   bottomNavIcon: {
-    fontSize: 19,
-    opacity: 0.55,
+    fontSize: 18,
   },
-  bottomNavIconActive: {
-    opacity: 1,
-  },
-  navBadge: {
+  bottomHotDot: {
     position: 'absolute',
-    top: -4,
-    right: -10,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 5,
-    borderRadius: 8,
-    minWidth: 18,
-    alignItems: 'center',
-  },
-  navBadgeText: {
-    color: COLORS.white,
-    fontSize: 13,
-    fontWeight: '900',
+    top: 2,
+    right: 6,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: COLORS.rose,
   },
   bottomNavLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: COLORS.textMuted,
+    color: COLORS.textSecondary,
     marginTop: 2,
   },
   bottomNavLabelActive: {
-    color: COLORS.primary,
-    fontWeight: '900',
-  },
-  bottomActiveBar: {
-    position: 'absolute',
-    top: -8,
-    width: 24,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: COLORS.primary,
+    color: COLORS.emeraldDark,
+    fontWeight: '800',
   },
 });
