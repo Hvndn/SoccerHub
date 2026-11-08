@@ -285,7 +285,7 @@ export default function AuthModal({
  role="dialog"
  aria-modal="true"
  aria-labelledby="auth-title"
- className="animate-modal-pop relative w-full max-w-[880px] my-auto grid md:grid-cols-[2fr,3fr] rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-2xl max-h-[94vh] transition-colors"
+ className="animate-modal-pop relative w-full max-w-[880px] my-auto grid md:grid-cols-[2fr,3fr] rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-2xl max-h-[88vh] transition-colors"
  >
  {/* Nút đóng */}
  <button
@@ -339,7 +339,7 @@ export default function AuthModal({
  </div>
 
  {/* Panel phải: form */}
- <div className="p-5 sm:p-8 overflow-y-auto">
+ <div className="p-5 sm:p-7 md:p-8 overflow-y-auto max-h-[88vh] overscroll-contain">
  <h2 id="auth-title" className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
  {mode === "login" ? "Đăng nhập" : "Tạo tài khoản mới"}
  </h2>

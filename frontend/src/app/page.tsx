@@ -407,6 +407,10 @@ if (newTab === activeTab) return;
  mode: "login" | "register",
  role: "PLAYER" | "OWNER" | "ORGANIZER" = "PLAYER"
  ) => {
+ if (mode === "register") {
+ router.push("/register");
+ return;
+ }
  setAuthMode(mode);
  setAuthRole(role);
  setIsAuthOpen(true);
