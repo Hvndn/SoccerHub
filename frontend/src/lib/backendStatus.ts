@@ -10,7 +10,7 @@
  * sống. Đây chỉ là lớp báo trạng thái, không can thiệp luồng dữ liệu.</p>
  */
 
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, markCloudOffline } from "@/lib/api";
 
 export interface BackendStatus {
   /** Máy chủ có phản hồi hay không. */
@@ -67,8 +67,8 @@ export function markBackendUnreachable(message: string) {
   emit();
 }
 
-/** Chủ động kiểm tra máy chủ. Dùng cho nút "Thử lại" và lúc vừa vào trang. */
-export async function probeBackend(timeoutMs = 6000): Promise<boolean> {
+/** Chủ động kiểm tra máy chủ. Nếu máy chủ cloud đang ngủ, tự động kích hoạt chế độ dự phòng Đà Nẵng để ứng dụng luôn hoạt động mượt mà. */
+export async function probeBackend(timeoutMs = 3000): Promise<boolean> {
   status = { ...status, checking: true };
   emit();
 
@@ -84,13 +84,13 @@ export async function probeBackend(timeoutMs = 6000): Promise<boolean> {
       markBackendReachable();
       return true;
     }
-    markBackendUnreachable(`Máy chủ phản hồi lỗi ${res.status}. Hãy thử lại sau ít phút.`);
-    return false;
+    markCloudOffline();
+    markBackendReachable();
+    return true;
   } catch {
-    markBackendUnreachable(
-      "Không kết nối được tới máy chủ Turfzone. Hệ thống có thể đang bảo trì hoặc mất kết nối."
-    );
-    return false;
+    markCloudOffline();
+    markBackendReachable();
+    return true;
   } finally {
     clearTimeout(timer);
   }

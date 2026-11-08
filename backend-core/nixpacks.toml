@@ -7,4 +7,4 @@ NIXPACKS_JDK_VERSION = "17"
 cmds = ["mvn clean package -DskipTests"]
 
 [start]
-cmd = "java -Xmx384m -Xms128m -XX:+UseG1GC -jar target/backend-core-1.0.0.jar"
+cmd = "java -Xmx256m -Xms128m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=48m -Xss512k -XX:+UseSerialGC -jar target/backend-core-1.0.0.jar"

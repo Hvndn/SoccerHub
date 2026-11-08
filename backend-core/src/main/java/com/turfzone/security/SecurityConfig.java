@@ -61,10 +61,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Allow specific origins - configure via environment variable
+        // Allow specific origins & wildcard patterns (Vercel preview/prod, Railway, Localhost, Expo Web)
         String allowedOrigins = System.getenv().getOrDefault("ALLOWED_ORIGINS",
-            "http://localhost:3000,http://localhost:3001,https://turfzone-wheat.vercel.app,https://soccer-hub-wheat.vercel.app");
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+            "http://localhost:3000,http://localhost:3001,http://localhost:8081,https://turfzone-wheat.vercel.app,https://soccer-hub-wheat.vercel.app");
+        java.util.List<String> patterns = new java.util.ArrayList<>(Arrays.asList(allowedOrigins.split(",")));
+        patterns.add("http://localhost:*");
+        patterns.add("http://127.0.0.1:*");
+        patterns.add("https://*.vercel.app");
+        patterns.add("https://*.up.railway.app");
+        configuration.setAllowedOriginPatterns(patterns);
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));

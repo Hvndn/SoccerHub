@@ -692,6 +692,7 @@ private void seedUsers() {
         java.util.Random rnd = new java.util.Random(20261022L);
         LocalDate today = LocalDate.now();
         int created = 0;
+        List<Booking> batch = new ArrayList<>();
         for (Pitch pitch : pitches) {
             List<String> courts = (pitch.getPitchTypes() != null && !pitch.getPitchTypes().isEmpty())
                     ? pitch.getPitchTypes() : List.of("Sân 1", "Sân 2");
@@ -706,10 +707,10 @@ private void seedUsers() {
             int peakPrice = (pitch.getPeakPricePerHour() != null && pitch.getPeakPricePerHour() > 0)
                     ? pitch.getPeakPricePerHour() : (int) Math.round(basePrice * 1.3);
 
-            for (int offset = -14; offset <= 7; offset++) {
+            for (int offset = -4; offset <= 4; offset++) {
                 LocalDate day = today.plusDays(offset);
                 String dateStr = day.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE);
-                int wanted = 3 + rnd.nextInt(4);
+                int wanted = 2 + rnd.nextInt(3);
                 List<String> used = new ArrayList<>();
                 for (int i = 0; i < wanted; i++) {
                     String court = courts.get(rnd.nextInt(courts.size()));
@@ -741,7 +742,7 @@ private void seedUsers() {
 
                     String family = families[rnd.nextInt(families.length)];
                     String given = givens[rnd.nextInt(givens.length)];
-                    bookingRepository.save(Booking.builder()
+                    batch.add(Booking.builder()
                             .pitchId(pitch.getId())
                             .courtName(court)
                             .courtType(court)
@@ -758,6 +759,9 @@ private void seedUsers() {
                             .build());
                 }
             }
+        }
+        if (!batch.isEmpty()) {
+            bookingRepository.saveAll(batch);
         }
         log.info("[DataInitializer] Đã seed {} đơn đặt sân mẫu cho {} cụm sân.", created, pitches.size());
     }

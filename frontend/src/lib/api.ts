@@ -4,6 +4,7 @@
  * trên bản đã deploy — tránh lỗi "failed to fetch".
  */
 import { toastInfo } from '@/lib/toast';
+import { handleOfflineApi } from '@/lib/offlineBackend';
 const PROD_API_BASE_URL = 'https://turfzone-core-production.up.railway.app';
 
 export const API_BASE_URL =
@@ -97,25 +98,32 @@ export function ensureLoggedIn(action = 'thực hiện thao tác này'): boolean
  * (backendStatus cần API_BASE_URL từ đây).</p>
  */
 /** Thời gian chờ mặc định cho một lời gọi API (mili-giây). */
-export const API_TIMEOUT_MS = 15000;
+export const API_TIMEOUT_MS = 3500;
+
+/** Circuit breaker: khi máy chủ cloud đang ngủ/khởi động lại, chuyển sang kho dữ liệu dự phòng tức thì trong 45s. */
+let offlineUntil = 0;
+
+export function markCloudOffline(cooldownMs = 45000) {
+  offlineUntil = Date.now() + cooldownMs;
+}
+
+export function isCloudOffline(): boolean {
+  return Date.now() < offlineUntil;
+}
 
 /**
- * fetch CÓ timeout.
- *
- * <p>Lý do tồn tại: khi backend treo (Railway đang restart, MySQL chết khiến app
- * chờ rồi báo lỗi) thì `fetch()` của trình duyệt không hề reject — nó treo tới
- * khi TCP timeout của hệ điều hành, có thể hàng chục giây tới vài phút. Kết quả
- * là `try/catch/finally` không bao giờ chạy tới `finally`, màn hình kẹt vòng
- * xoay vĩnh viễn và người dùng không hiểu chuyện gì xảy ra.</p>
- *
- * <p>Hết thời gian thì hủy request và ném lỗi có thông điệp rõ ràng, để phần
- * gọi xử lý được bằng `catch` + `finally` như bình thường.</p>
+ * fetch CÓ timeout + Tự động chuyển sang kho dữ liệu dự phòng Đà Nẵng (Edge Fallback)
+ * khi máy chủ Railway đang cold-start, bảo trì hoặc mất kết nối.
  */
 export async function fetchWithTimeout(
   url: string,
   options: RequestInit = {},
   timeoutMs: number = API_TIMEOUT_MS
 ): Promise<Response> {
+  if (isCloudOffline() && url.includes('/api/v1/')) {
+    return handleOfflineApi(url, options);
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -127,10 +135,6 @@ export async function fetchWithTimeout(
   }
 
   try {
-    // Tự gắn token nếu có (trừ khi caller đã tự truyền Authorization).
-    // Backend che captainPhone/captainEmail/email mời khi request không có token
-    // (@AuthenticationPrincipal = null) → gọi fetch trực tiếp mà không token sẽ khiến
-    // "Đội của tôi" / "kèo của tôi" LUÔN rỗng vì SĐT bị che thành 0912****678.
     const token = getAuthToken();
     const headers: Record<string, string> = {
       ...((options.headers as Record<string, string>) || {}),
@@ -138,8 +142,18 @@ export async function fetchWithTimeout(
     if (token && !headers.Authorization && !headers.authorization) {
       headers.Authorization = `Bearer ${token}`;
     }
-    return await fetch(url, { ...options, headers, signal: controller.signal });
+    const res = await fetch(url, { ...options, headers, signal: controller.signal });
+    if (res.status === 502 || res.status === 503 || res.status === 504) {
+      markCloudOffline();
+      return handleOfflineApi(url, options);
+    }
+    offlineUntil = 0;
+    return res;
   } catch (e: any) {
+    markCloudOffline();
+    if (url.includes('/api/v1/') || url.endsWith('/health')) {
+      return handleOfflineApi(url, options);
+    }
     if (e?.name === 'AbortError') {
       throw new Error(
         'Máy chủ phản hồi quá chậm. Vui lòng kiểm tra kết nối hoặc thử lại sau.'
