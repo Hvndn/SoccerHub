@@ -85,7 +85,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       iconTone: "bg-sky-50 text-[#0369a1] border-sky-200",
       icon: Calendar,
       ctaLabel: "Đặt sân ngay",
-      onAction: () => onExplore("PLAYER"),
+      onAction: () => (onNavigateTab ? onNavigateTab("booking") : onExplore("PLAYER")),
       points: [
         "Xem bảng giờ trống thực tế của từng sân",
         "Giữ ca và thanh toán tiền cọc qua VietQR",

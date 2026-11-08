@@ -32,19 +32,19 @@ import { useAuth } from "@/context/AuthContext";
 export default function Home() {
  const router = useRouter();
  const [targetTournamentId, setTargetTournamentId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("booking");
+  const [activeTab, setActiveTab] = useState<string>("home");
 
   /** Xác định tab trang chủ mặc định chuẩn theo vai trò người dùng (tránh bị lệch role khi Back/vào URL gốc). */
   const getDefaultHomeTab = (role?: string) => {
     if (role === "OWNER") return "admin";
     if (role === "ORGANIZER") return "organizer";
-    return "booking";
+    return "home"; // Landing Page là trang bắt đầu mặc định!
   };
 
   /** Kiểm tra và chuẩn hoá tab theo vai trò hiện tại (ngăn ngừa tab rác từ history cũ). */
   const sanitizeTabForRole = (tab: string, role?: string): string => {
     if (role === "OWNER") {
-      // Chủ sân chỉ được xem các tab quản lý + cộng đồng + giải đấu, cấm vào khu vực đặt sân của cầu thủ
+      // Chủ sân chỉ được xem các tab quản lý + cộng đồng + giải đấu + trang chủ, cấm vào khu vực đặt sân của cầu thủ
       if (tab === "booking") return "admin";
       return tab;
     }
@@ -56,18 +56,20 @@ export default function Home() {
       return tab;
     }
     if (role === "ORGANIZER") {
-      // Ban tổ chức chỉ sử dụng các tab điều hành giải, giải đấu, cộng đồng và hồ sơ — cấm vào trang đặt sân của cầu thủ & quản lý sân
-      const allowedOrganizerTabs = ["organizer", "tournaments", "community", "profile"];
+      // Ban tổ chức chỉ sử dụng các tab điều hành giải, giải đấu, cộng đồng, hồ sơ và trang chủ
+      const allowedOrganizerTabs = ["home", "landing", "organizer", "tournaments", "community", "profile"];
       if (!allowedOrganizerTabs.includes(tab)) {
         return "organizer";
       }
       return tab;
     }
     if (!role) {
-      // Khách chưa đăng nhập
-      if (["admin", "owner-onboarding", "multi-sport", "organizer", "my-activities", "profile", "team-management", "membership"].includes(tab)) {
-        return "booking";
+      // Khách chưa đăng nhập: Được khám phá Trang Chủ (home/landing), Đặt Sân (booking), Chợ Kèo, Cộng Đồng, Giải Đấu
+      const guestAllowedTabs = ["home", "landing", "booking", "matchmaking", "community", "tournaments"];
+      if (!guestAllowedTabs.includes(tab)) {
+        return "home";
       }
+      return tab;
     }
     return tab;
   };
@@ -566,6 +568,19 @@ if (newTab === activeTab) return;
  exit={{ y: -8 }}
  transition={{ duration: 0.38, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
  >
+ {(activeTab === "home" || activeTab === "landing") && (
+ <div className="space-y-8 sm:space-y-12">
+ <LandingHero 
+ onOpenAuth={handleOpenAuth} 
+ onNavigateTab={handleTabChange}
+ />
+ <LandingFeatures
+ onExplore={(role) => handleOpenAuth("login", role || "PLAYER")}
+ onNavigateTab={handleTabChange}
+ />
+ </div>
+ )}
+
  {activeTab === "booking" && (
  currentUser?.role === "OWNER" ? (
  <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">
@@ -599,21 +614,10 @@ if (newTab === activeTab) return;
      handleTabChange("tournaments");
    }}
  />
- ) : currentUser ? (
+ ) : (
  <PitchSearch
  user={currentUser}
  />
- ) : (
- <div className="space-y-8 sm:space-y-12">
- <LandingHero 
- onOpenAuth={handleOpenAuth} 
- onNavigateTab={handleTabChange}
- />
- <LandingFeatures
- onExplore={(role) => handleOpenAuth("login", role || "PLAYER")}
- onNavigateTab={handleTabChange}
- />
- </div>
  )
  )}
 

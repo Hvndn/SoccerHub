@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import SafeImage from "@/components/SafeImage";
 import NavbarAvatar from "@/components/NavbarAvatar";
 import {
+  Home,
   Trophy,
   Building2,
  Users,
@@ -178,6 +179,7 @@ export default function Navbar({
 const mobileNav: MobileNavItem[] =
   user?.role === "ORGANIZER"
   ? [
+  { key: "home", label: "Trang chủ", tab: "home", icon: Home },
   { key: "organizer", label: "Điều hành", tab: "organizer", icon: ShieldCheck },
   { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
   { key: "community", label: "Cộng đồng", tab: "community", icon: MessageCircle },
@@ -185,16 +187,16 @@ const mobileNav: MobileNavItem[] =
   ]
   : user
   ? [
+  { key: "home", label: "Trang chủ", tab: "home", icon: Home },
   { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
   { key: "matchmaking", label: "Chợ kèo", tab: "matchmaking", icon: Flame },
   { key: "community", label: "Cộng đồng", tab: "community", icon: MessageCircle },
-  { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
   { key: "profile", label: "Hồ sơ", tab: "profile", icon: User },
   ]
   : [
+  { key: "home", label: "Trang chủ", tab: "home", icon: Home },
   { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
   { key: "matchmaking", label: "Chợ kèo", tab: "matchmaking", icon: Flame },
-  { key: "community", label: "Cộng đồng", tab: "community", icon: MessageCircle },
   { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
   { key: "login", label: "Đăng nhập", auth: true, icon: LogIn },
   ];
@@ -215,7 +217,7 @@ const mobileNav: MobileNavItem[] =
  window.location.assign("/admin");
  return;
  }
- handleSelectSubTab(user?.role === "OWNER" ? "admin" : user?.role === "ORGANIZER" ? "organizer" : "booking");
+ handleSelectSubTab(user?.role === "OWNER" ? "admin" : user?.role === "ORGANIZER" ? "organizer" : "home");
  }}
  className="flex items-center space-x-2 cursor-pointer select-none shrink-0 group"
  title="Turfzone - Hệ Thống Đặt Sân Bóng Đá & Tổ Chức Giải Đấu"
@@ -357,6 +359,19 @@ const mobileNav: MobileNavItem[] =
  ) : !user ? (
  /* GUEST NAVBAR ITEMS — khám phá + CTA tham gia */
  <>
+  <button
+  type="button"
+  onClick={() => handleSelectSubTab("home")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+  activeTab === "home" || activeTab === "landing"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <Home className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
+  <span>Trang Chủ</span>
+  </button>
+
  <button
  type="button"
  onClick={() => handleSelectSubTab("booking")}
@@ -416,6 +431,19 @@ const mobileNav: MobileNavItem[] =
  ) : (
  /* PLAYER NAVBAR ITEMS */
  <>
+  <button
+  type="button"
+  onClick={() => handleSelectSubTab("home")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+  activeTab === "home" || activeTab === "landing"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <Home className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
+  <span>Trang Chủ</span>
+  </button>
+
  <button
  type="button"
  onClick={() => handleSelectSubTab("booking")}
@@ -1195,6 +1223,30 @@ const mobileNav: MobileNavItem[] =
  </div>
  ) : (
  <div className="space-y-3">
+  {/* ITEM 0: TRANG CHỦ LANDING */}
+  <button
+  type="button"
+  onClick={() => {
+    handleSelectSubTab("home");
+    setShowMobileDrawer(false);
+  }}
+  className={`w-full text-left p-3.5 rounded-2xl flex items-center space-x-3 transition-all ${
+  activeTab === "home" || activeTab === "landing"
+  ? "bg-[#0369a1] text-white shadow-md font-extrabold"
+  : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/80"
+  }`}
+  >
+  <div className="w-9 h-9 rounded-xl bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center shrink-0">
+  <Home className="w-[18px] h-[18px] text-[#0369a1]" />
+  </div>
+  <div>
+  <div className="text-[14px] font-extrabold leading-tight">Trang Chủ</div>
+  <div className={`text-[14px] ${activeTab === "home" || activeTab === "landing" ? "text-white/80" : "text-slate-500"}`}>
+  Giới thiệu nền tảng & sự kiện trực tiếp
+  </div>
+  </div>
+  </button>
+
  {/* ITEM 1: ĐẶT SÂN BÓNG ĐÁ */}
  <button
  type="button"

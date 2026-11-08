@@ -284,7 +284,9 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
                 type="button"
-                onClick={() => onOpenAuth("login", "PLAYER")}
+                onClick={() =>
+                  onNavigateTab ? onNavigateTab("booking") : onOpenAuth("login", "PLAYER")
+                }
                 className="px-6 py-3.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[15px] transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Calendar className="w-4 h-4 stroke-[2.5]" />
