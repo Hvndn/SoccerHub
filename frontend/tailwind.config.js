@@ -33,8 +33,8 @@ module.exports = {
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       fontSize: {
-        // Thang chữ mobile-first, tăng nhẹ để dễ đọc trên điện thoại
-        "2xs": ["0.6875rem", { lineHeight: "1rem" }],
+        // Thang chữ chuẩn mực, loại bỏ chữ li ti nhỏ hơn 13px
+        "2xs": ["0.8125rem", { lineHeight: "1.15rem" }],
       },
     },
   },
