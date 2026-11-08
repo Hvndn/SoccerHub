@@ -765,7 +765,7 @@ const [addCount, setAddCount] = useState("4");
  return (
  <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className={`animate-fade-in-up rounded-2xl border overflow-hidden text-[14px] shadow-xs ${isMyMatch ? "ring-2 ring-[#0369a1] border-sky-400 bg-sky-50/70" : done ? "bg-sky-50 border-sky-300 " : "bg-slate-50 border-slate-200 "}`}>
  <div className="px-2.5 pt-2 font-mono text-[14px] font-black text-slate-500 flex items-center justify-between gap-1">
- <span>{match.matchId} {isMyMatch && <span className="ml-1 px-1.5 py-0.5 rounded bg-[#0369a1] text-white text-[11px] font-bold">Trận của bạn</span>}</span>
+ <span>{match.matchId} {isMyMatch && <span className="ml-1 px-1.5 py-0.5 rounded bg-[#0369a1] text-white text-[13px] font-bold">Trận của bạn</span>}</span>
  <div className="flex items-center gap-1">
  {done && <span className="text-sky-700 ">{match.winner ? "✓ ĐÃ ĐÁ" : "= HÒA"}</span>}
  {canManage && !isClosed && done && (

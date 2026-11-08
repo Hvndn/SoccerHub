@@ -311,14 +311,14 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
           </Link>
         </div>
 
-        {/* 4 Tab chức năng chính của trang Giải Đấu */}
-        <div className="flex flex-wrap items-center gap-2" role="tablist">
+        {/* 4 Tab chức năng chính của trang Giải Đấu - Cuộn ngang mượt mà trên mobile */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth" role="tablist">
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === "open"}
             onClick={() => setActiveTab("open")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === "open"
                 ? "bg-[#0369a1] text-white border-[#0369a1]"
                 : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
@@ -333,7 +333,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             role="tab"
             aria-selected={activeTab === "bracket"}
             onClick={() => setActiveTab("bracket")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === "bracket"
                 ? "bg-[#0369a1] text-white border-[#0369a1]"
                 : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
@@ -348,7 +348,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             role="tab"
             aria-selected={activeTab === "live"}
             onClick={() => setActiveTab("live")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === "live"
                 ? "bg-[#0369a1] text-white border-[#0369a1]"
                 : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
@@ -363,7 +363,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             role="tab"
             aria-selected={activeTab === "rankings"}
             onClick={() => setActiveTab("rankings")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === "rankings"
                 ? "bg-[#0369a1] text-white border-[#0369a1]"
                 : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"

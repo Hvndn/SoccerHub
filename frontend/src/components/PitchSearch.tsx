@@ -408,14 +408,14 @@ export default function PitchSearch({ user }: PitchSearchProps) {
         </div>
 
         {/* Hàng lọc 2: Các tab loại sân + Checkbox ca trống tối nay */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-          <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth">
             {sportsTabs.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setSelectedSport(tab.id)}
-                className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold transition-colors cursor-pointer border ${
+                className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold transition-colors cursor-pointer border shrink-0 whitespace-nowrap ${
                   selectedSport === tab.id
                     ? "bg-[#0369a1] text-white border-[#0369a1]"
                     : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"

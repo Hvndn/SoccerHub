@@ -180,21 +180,21 @@ const mobileNav: MobileNavItem[] =
   ? [
   { key: "organizer", label: "Điều hành", tab: "organizer", icon: ShieldCheck },
   { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
-  { key: "community", label: "Cộng Đồng", tab: "community", icon: MessageCircle },
+  { key: "community", label: "Cộng đồng", tab: "community", icon: MessageCircle },
   { key: "profile", label: "Hồ sơ", tab: "profile", icon: User },
   ]
   : user
   ? [
   { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
-  { key: "matchmaking", label: "Chợ Kèo", tab: "matchmaking", icon: Flame },
-  { key: "community", label: "Cộng Đồng", tab: "community", icon: MessageCircle },
+  { key: "matchmaking", label: "Chợ kèo", tab: "matchmaking", icon: Flame },
+  { key: "community", label: "Cộng đồng", tab: "community", icon: MessageCircle },
   { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
   { key: "profile", label: "Hồ sơ", tab: "profile", icon: User },
   ]
   : [
   { key: "booking", label: "Đặt sân", tab: "booking", icon: Calendar },
-  { key: "matchmaking", label: "Chợ Kèo", tab: "matchmaking", icon: Flame },
-  { key: "community", label: "Cộng Đồng", tab: "community", icon: MessageCircle },
+  { key: "matchmaking", label: "Chợ kèo", tab: "matchmaking", icon: Flame },
+  { key: "community", label: "Cộng đồng", tab: "community", icon: MessageCircle },
   { key: "tournaments", label: "Giải đấu", tab: "tournaments", icon: Trophy },
   { key: "login", label: "Đăng nhập", auth: true, icon: LogIn },
   ];
@@ -1396,7 +1396,7 @@ const mobileNav: MobileNavItem[] =
  <Icon className="w-[21px] h-[21px]" />
  <span
   className={`font-bold leading-none tracking-tight ${
-  bottomNavDense ? "text-[8.5px]" : "text-[14px]"
+  "text-[13px]"
   }`}
   >
  {item.label}

@@ -774,14 +774,14 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
 
         {/* TAB SWITCHER & FILTERS */}
         <div className="pt-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth">
             <button
               type="button"
               onClick={() => {
                 setActiveTab("open");
                 setPostTypeFilter("ALL");
               }}
-              className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold border transition-colors cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "open" && postTypeFilter === "ALL"
                   ? "bg-[#0369a1] text-white border-[#0369a1]"
                   : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
@@ -795,7 +795,7 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                 setActiveTab("open");
                 setPostTypeFilter("MATCH");
               }}
-              className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold border transition-colors cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "open" && postTypeFilter === "MATCH"
                   ? "bg-[#0369a1] text-white border-[#0369a1]"
                   : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
@@ -809,7 +809,7 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                 setActiveTab("open");
                 setPostTypeFilter("SOS_GUEST");
               }}
-              className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold border transition-colors cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "open" && postTypeFilter === "SOS_GUEST"
                   ? "bg-rose-600 text-white border-rose-600"
                   : "bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100"
@@ -820,7 +820,7 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
             <button
               type="button"
               onClick={() => setActiveTab("matched")}
-              className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold border transition-colors cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "matched"
                   ? "bg-[#0369a1] text-white border-[#0369a1]"
                   : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"

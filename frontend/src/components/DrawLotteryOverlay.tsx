@@ -394,16 +394,16 @@ export default function DrawLotteryOverlay({
                         {p.matchId}
                       </span>
                       {isPairLocked ? (
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                        <span className="text-[13px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" />
                           <span>Đã chốt</span>
                         </span>
                       ) : isCurrent ? (
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800 flex items-center gap-1 animate-pulse">
+                        <span className="text-[13px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800 flex items-center gap-1 animate-pulse">
                           <span>Đang bốc…</span>
                         </span>
                       ) : (
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-600">
+                        <span className="text-[13px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-600">
                           Chờ lượt
                         </span>
                       )}
@@ -414,14 +414,14 @@ export default function DrawLotteryOverlay({
                         <span className="font-bold text-slate-800 truncate">
                           {isPairLocked ? p.teamA : "—"}
                         </span>
-                        <span className="text-[11px] font-bold text-slate-400 shrink-0">Hạt giống 1</span>
+                        <span className="text-[13px] font-bold text-slate-400 shrink-0">Hạt giống 1</span>
                       </div>
                       <div className="border-t border-slate-200/60 my-1" />
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-bold text-slate-800 truncate">
                           {isPairLocked ? p.teamB : "—"}
                         </span>
-                        <span className="text-[11px] font-bold text-slate-400 shrink-0">Hạt giống 2</span>
+                        <span className="text-[13px] font-bold text-slate-400 shrink-0">Hạt giống 2</span>
                       </div>
                     </div>
                   </div>

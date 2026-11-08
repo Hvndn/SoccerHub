@@ -1569,3 +1569,4 @@ export async function handleOfflineApi(urlStr: string, options: RequestInit = {}
 
   return jsonResponse({ ok: true, message: 'Thành công' });
 }
+

@@ -261,6 +261,16 @@ button.bg-emerald-700,
   }
 }
 
+/* Tối ưu chạm & vuốt di động chuẩn App */
+@media (max-width: 767px) {
+  html {
+    touch-action: manipulation;
+  }
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 /* Quy định kích thước chữ tối thiểu toàn trang web (CHỮ TỐI THIỂU >= 13.5px) */
 .text-\[8px\],
 .text-\[9px\],
