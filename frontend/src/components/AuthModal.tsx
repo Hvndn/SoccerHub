@@ -42,7 +42,7 @@ const SPORTS = ["Bóng Đá Sân 5", "Bóng Đá Sân 7", "Bóng Đá Sân 11", 
 
 const inputCls =
  "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-[#0369a1] focus:border-emerald-500 placeholder:text-slate-500 transition-shadow";
-const labelCls = "block text-[14px] font-bold text-slate-700 mb-1.5";
+const labelCls = "block text-[13px] font-bold text-slate-700 mb-1";
 
 function passwordScore(pw: string): number {
  let s = 0;
@@ -339,7 +339,7 @@ export default function AuthModal({
  </div>
 
  {/* Panel phải: form */}
- <div className="p-5 sm:p-7 md:p-8 overflow-y-auto max-h-[88vh] overscroll-contain">
+ <div className="p-4 sm:p-6 overflow-hidden">
  <h2 id="auth-title" className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
  {mode === "login" ? "Đăng nhập" : "Tạo tài khoản mới"}
  </h2>
@@ -396,7 +396,7 @@ export default function AuthModal({
  )}
 
  {mode === "login" ? (
- <form onSubmit={handleLogin} className="mt-3 space-y-3 sm:mt-4 sm:space-y-4" noValidate={false}>
+ <form onSubmit={handleLogin} className="mt-2.5 space-y-2.5" noValidate={false}>
  <div>
  <label htmlFor="auth-identifier" className={labelCls}>Email hoặc số điện thoại</label>
  <input
@@ -472,7 +472,7 @@ export default function AuthModal({
  </div>
  </form>
  ) : (
- <form onSubmit={handleRegister} className="mt-3 space-y-3 sm:mt-4 sm:space-y-4">
+ <form onSubmit={handleRegister} className="mt-2.5 space-y-2.5">
  {regStep === 1 ? (
  <>
  <div>
@@ -502,7 +502,7 @@ export default function AuthModal({
  />
  </div>
  <div>
- <label htmlFor="reg-password" className={labelCls}>Mật khẩu (tối thiểu 6 ký tự) *</label>
+ <label htmlFor="reg-password" className={labelCls}>Mật khẩu *</label>
  <div className="relative">
  <input
  id="reg-password"
@@ -549,7 +549,7 @@ export default function AuthModal({
  role="radio"
  aria-checked={role === r.id}
  onClick={() => setRole(r.id)}
- className={`auth-role-card rounded-xl p-2.5 flex flex-col items-center gap-1 text-center transition-all cursor-pointer ${
+ className={`auth-role-card rounded-lg py-1.5 px-2 flex flex-col items-center gap-0.5 text-center transition-all cursor-pointer ${
  role === r.id ? "auth-role-card-active" : ""
  }`}
  >
@@ -558,9 +558,7 @@ export default function AuthModal({
  </button>
  ))}
  </div>
- <p className="mt-1.5 text-[14px] text-slate-500">
- {ROLES.find((r) => r.id === role)?.desc}
- </p>
+ 
  </div>
  </>
  ) : (
@@ -664,26 +662,12 @@ export default function AuthModal({
  )}
  </button>
  </div>
-  {/* Google Sign-In */}
-  <div className="mt-4 pt-4 border-t border-slate-100">
-  <p className="text-center text-[14px] font-bold tracking-wider text-slate-500 mb-2">
-  Hoặc tiếp tục với
-  </p>
-  <div className="flex justify-center">
-  <GoogleLoginButton
-  mode={mode}
-  onSuccess={(u) => {
-  onLoginSuccess({ ...u, isNewOwner: u?.role === "OWNER" });
-  onClose();
-  }}
-  />
-  </div>
-  </div>
  </form>
  )}
 
- {/* Demo 1-click */}
- <div className="mt-5 pt-4 border-t border-slate-100">
+ {/* Demo 1-click chỉ hiện khi đăng nhập */}
+ {mode === "login" && (
+ <div className="mt-4 pt-3 border-t border-slate-100">
  <p className="text-center text-[14px] font-bold tracking-wider text-slate-500">
  Demo
  </p>
@@ -713,7 +697,9 @@ export default function AuthModal({
  🏆 Ban Tổ Chức
  </button>
  </div>
- <p className="mt-3 text-center text-[14px] text-slate-500">
+ </div>
+ )}
+ <p className="mt-2.5 text-center text-[13px] text-slate-500">
  {mode === "login" ? (
  <>Chưa có tài khoản?{" "}
  <button type="button" onClick={() => switchMode("register")} className="font-bold text-sky-800 hover:underline">
@@ -728,7 +714,6 @@ export default function AuthModal({
  </>
  )}
  </p>
- </div>
  </div>
  </div>
  </div>
