@@ -625,7 +625,7 @@ export default function MatchmakingMarketplace({
               Đăng tin bắt đối thủ giao lưu hoặc phát tín hiệu SOS mượn người đá ké khi đội thiếu chân trước giờ bóng lăn.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:items-center shrink-0">
             <button
               type="button"
               onClick={() => {
@@ -637,10 +637,11 @@ export default function MatchmakingMarketplace({
                 setCreatePostType("SOS_GUEST");
                 setShowCreateForm(true);
               }}
-              className="px-3.5 py-2 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-bold text-[14px] flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              className="px-3 sm:px-3.5 py-2 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-bold text-[13px] sm:text-[14px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             >
-              {user ? <AlertTriangle className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-              <span>🚨 Báo SOS Thiếu Chân</span>
+              {user ? <AlertTriangle className="w-4 h-4 shrink-0" /> : <Lock className="w-4 h-4 shrink-0" />}
+              <span>🚨 Báo SOS</span>
+              <span className="hidden sm:inline">Thiếu Chân</span>
             </button>
             <button
               type="button"
@@ -653,10 +654,19 @@ export default function MatchmakingMarketplace({
                 setCreatePostType("MATCH");
                 setShowCreateForm((v) => !v);
               }}
-              className="px-4 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 sm:px-4 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] sm:text-[14px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
-              {user ? <PlusCircle className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-              <span>{showCreateForm && createPostType === "MATCH" ? "Đóng Form" : "+ Đăng Kèo Giao Lưu"}</span>
+              {user ? <PlusCircle className="w-4 h-4 shrink-0" /> : <Lock className="w-4 h-4 shrink-0" />}
+              <span>
+                {showCreateForm && createPostType === "MATCH" ? (
+                  "Đóng Form"
+                ) : (
+                  <>
+                    <span>+ Đăng Kèo</span>
+                    <span className="hidden sm:inline"> Giao Lưu</span>
+                  </>
+                )}
+              </span>
             </button>
           </div>
         </div>
