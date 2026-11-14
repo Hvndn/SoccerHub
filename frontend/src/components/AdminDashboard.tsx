@@ -68,7 +68,13 @@ import {
  ChevronDown,
  ChevronUp,
  Package,
- FileSpreadsheet
+ FileSpreadsheet,
+ Printer,
+ Copy,
+ FileText,
+ Award,
+ Users,
+ Crown
 } from "lucide-react";
 import {
  playNotificationChime,
@@ -98,7 +104,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
  counterBookings: 0
  });
 
- const [activeSubTab, setActiveSubTab] = useState<"matrix" | "pitches" | "pricing" | "canteen" | "reports">("matrix");
+ const [activeSubTab, setActiveSubTab] = useState<"matrix" | "pitches" | "pricing" | "canteen" | "reports" | "vip">("matrix");
  const [matrixFilterStatus, setMatrixFilterStatus] = useState<string>("ALL");
  const [matrixFilterType, setMatrixFilterType] = useState<string>("ALL");
  const [matrixFilterTime, setMatrixFilterTime] = useState<string>("ALL");
@@ -423,6 +429,209 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
  const [selectedSlotForAction, setSelectedSlotForAction] = useState<any | null>(null);
  const [searchCodeInput, setSearchCodeInput] = useState("");
  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  // =========================================================================
+  // TIỆN ÍCH A1: XUẤT PHIẾU THU CA ĐÁ & CHIA TIỀN ZALO (INLINE 100%)
+  // =========================================================================
+  const [showReceiptInline, setShowReceiptInline] = useState<boolean>(false);
+  const [receiptSplitCount, setReceiptSplitCount] = useState<number>(14);
+  const [receiptExtraNote, setReceiptExtraNote] = useState<string>("5 chai nước Revive + 1 bộ áo bib");
+  const [receiptExtraCost, setReceiptExtraCost] = useState<number>(75000);
+  const [copiedZaloSuccess, setCopiedZaloSuccess] = useState<boolean>(false);
+
+  const parseMoneyNumber = (raw: any): number => {
+    if (typeof raw === "number") return raw;
+    if (!raw) return 0;
+    const s = String(raw).toLowerCase().replace(/[^0-9]/g, "");
+    const n = parseInt(s, 10);
+    if (isNaN(n)) return 0;
+    if (String(raw).toLowerCase().includes("k") && !s.endsWith("000")) return n * 1000;
+    return n;
+  };
+
+  const handleCopyZaloBill = (slot: any, total: number, perPerson: number) => {
+    const pitchTitle = activePitch?.name || "Cụm Sân Bóng Đá Turfzone";
+    const courtName = slot?.pitchSubName || slot?.courtName || "Sân bóng";
+    const timeStr = slot?.time || "Ca đá";
+    const dateStr = matrixDate || new Date().toISOString().slice(0, 10);
+    const teamName = slot?.customerName || "Khách lẻ";
+    const phoneStr = slot?.customerPhone || "";
+    const deposit = parseMoneyNumber(slot?.depositAmount);
+    const courtFee = parseMoneyNumber(slot?.price || slot?.totalPrice) || 300000;
+
+    const billText = `⚽ KẾT QUẢ & CHIA TIỀN CA ĐÁ
+🏟️ Sân: ${pitchTitle} (${courtName})
+⏰ Khung giờ: ${timeStr} | Ngày: ${dateStr}
+👤 Đội/Đại diện: ${teamName} ${phoneStr ? `(${phoneStr})` : ""}
+───────────────────
+💵 Tiền thuê sân: ${courtFee.toLocaleString("vi-VN")}đ
+${receiptExtraCost > 0 ? `🥤 Phụ phí (${receiptExtraNote || "Nước / Thiết bị"}): ${receiptExtraCost.toLocaleString("vi-VN")}đ\n` : ""}${deposit > 0 ? `🎟️ Tiền cọc đã trừ: -${deposit.toLocaleString("vi-VN")}đ\n` : ""}👉 TỔNG CẦN THANH TOÁN: ${total.toLocaleString("vi-VN")}đ
+───────────────────
+👥 Chia đều ${receiptSplitCount} anh em: ${perPerson.toLocaleString("vi-VN")}đ / người
+${activePitch?.bankAccount ? `📲 STK Sân: ${activePitch.bankAccount} (${activePitch.bankCode || "Vietinbank"} - ${activePitch.accountName || ""})\n` : ""}Cảm ơn anh em đã thi đấu hết mình!`;
+
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(billText);
+      setCopiedZaloSuccess(true);
+      showToast("📋 Đã sao chép nội dung chia tiền Zalo!");
+      setTimeout(() => setCopiedZaloSuccess(false), 2500);
+    }
+  };
+
+  // =========================================================================
+  // TIỆN ÍCH A2: QUẢN LÝ ĐỘI BÓNG RUỘT & HỘI VIÊN VIP (REGULAR TEAMS)
+  // =========================================================================
+  interface VipTeam {
+    id: string;
+    teamName: string;
+    captainName: string;
+    phone: string;
+    tier: "SILVER" | "GOLD" | "DIAMOND";
+    discountPercent: number;
+    regularSchedule?: string;
+    matchesPlayed: number;
+    notes?: string;
+    joinedDate: string;
+  }
+
+  const INITIAL_VIP_TEAMS: VipTeam[] = [
+    {
+      id: "vip-1",
+      teamName: "FC Lão Tướng Hải Châu",
+      captainName: "Anh Tuấn",
+      phone: "0905123456",
+      tier: "GOLD",
+      discountPercent: 10,
+      regularSchedule: "T3 - T5 - T7 (17:30 - 19:30)",
+      matchesPlayed: 28,
+      notes: "Đội ruột đá trên 6 tháng, thường gọi 1 thùng Revive",
+      joinedDate: "15/01/2026",
+    },
+    {
+      id: "vip-2",
+      teamName: "FC Bách Khoa Đà Nẵng",
+      captainName: "Hoàng Nam",
+      phone: "0914888999",
+      tier: "SILVER",
+      discountPercent: 5,
+      regularSchedule: "T2 - T6 (19:30 - 21:30)",
+      matchesPlayed: 16,
+      notes: "Đội sinh viên cựu trào, thanh toán chuyển khoản nhanh",
+      joinedDate: "10/03/2026",
+    },
+    {
+      id: "vip-3",
+      teamName: "FC Xây Dựng Miền Trung",
+      captainName: "Chú Hùng",
+      phone: "0983112233",
+      tier: "DIAMOND",
+      discountPercent: 15,
+      regularSchedule: "Chủ Nhật (16:00 - 18:00)",
+      matchesPlayed: 45,
+      notes: "Hội viên Kim Cương, bao trọn 2 sân 7 đá giải nội bộ",
+      joinedDate: "02/11/2025",
+    },
+  ];
+
+  const [vipTeams, setVipTeams] = useState<VipTeam[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("turfzone_vip_teams");
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return INITIAL_VIP_TEAMS;
+  });
+
+  const saveVipTeams = (list: VipTeam[]) => {
+    setVipTeams(list);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("turfzone_vip_teams", JSON.stringify(list));
+      } catch {}
+    }
+  };
+
+  const [showAddVipForm, setShowAddVipForm] = useState<boolean>(false);
+  const [editingVipId, setEditingVipId] = useState<string | null>(null);
+  const [searchVipQuery, setSearchVipQuery] = useState<string>("");
+  const [vipTierFilter, setVipTierFilter] = useState<string>("ALL");
+  const [vipForm, setVipForm] = useState({
+    teamName: "",
+    captainName: "",
+    phone: "",
+    tier: "SILVER" as "SILVER" | "GOLD" | "DIAMOND",
+    discountPercent: "5",
+    regularSchedule: "",
+    notes: "",
+  });
+
+  const handleSaveVipTeam = () => {
+    if (!vipForm.teamName.trim()) {
+      showToast("❌ Vui lòng nhập tên đội bóng.");
+      return;
+    }
+    if (!vipForm.captainName.trim()) {
+      showToast("❌ Vui lòng nhập tên đội trưởng.");
+      return;
+    }
+    if (!vipForm.phone.trim()) {
+      showToast("❌ Vui lòng nhập số điện thoại.");
+      return;
+    }
+
+    if (editingVipId) {
+      const updated = vipTeams.map((t) =>
+        t.id === editingVipId
+          ? {
+              ...t,
+              teamName: vipForm.teamName.trim(),
+              captainName: vipForm.captainName.trim(),
+              phone: vipForm.phone.trim(),
+              tier: vipForm.tier,
+              discountPercent: Number(vipForm.discountPercent) || 5,
+              regularSchedule: vipForm.regularSchedule.trim(),
+              notes: vipForm.notes.trim(),
+            }
+          : t
+      );
+      saveVipTeams(updated);
+      showToast("✅ Đã cập nhật thông tin Đội bóng ruột!");
+    } else {
+      const newVip: VipTeam = {
+        id: "vip-" + Date.now(),
+        teamName: vipForm.teamName.trim(),
+        captainName: vipForm.captainName.trim(),
+        phone: vipForm.phone.trim(),
+        tier: vipForm.tier,
+        discountPercent: Number(vipForm.discountPercent) || 5,
+        regularSchedule: vipForm.regularSchedule.trim(),
+        notes: vipForm.notes.trim(),
+        matchesPlayed: 1,
+        joinedDate: new Date().toLocaleDateString("vi-VN"),
+      };
+      saveVipTeams([newVip, ...vipTeams]);
+      showToast("🎉 Đã thêm Đội bóng ruột mới vào danh sách!");
+    }
+
+    setVipForm({
+      teamName: "",
+      captainName: "",
+      phone: "",
+      tier: "SILVER",
+      discountPercent: "5",
+      regularSchedule: "",
+      notes: "",
+    });
+    setEditingVipId(null);
+    setShowAddVipForm(false);
+  };
+
+  const handleRemoveVipTeam = (id: string) => {
+    const updated = vipTeams.filter((t) => t.id !== id);
+    saveVipTeams(updated);
+    showToast("🗑️ Đã xóa đội khỏi danh sách đội ruột.");
+  };
+
 
  // Cancel Reason Modal State
  const [showCancelModal, setShowCancelModal] = useState(false);
@@ -2014,6 +2223,19 @@ const handleConfirmCheckin = async (slot: any) => {
             <PieChart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
             <span>Báo Cáo</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSubTab("vip")}
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
+              activeSubTab === "vip"
+                ? "bg-[#0369a1] text-white shadow-md"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            }`}
+          >
+            <Crown className="w-4 h-4 text-amber-500" />
+            <span>Đội Ruột & VIP ({vipTeams.length})</span>
+          </button>
         </div>
       </div>
 
@@ -2488,6 +2710,19 @@ const handleConfirmCheckin = async (slot: any) => {
 
                     <button
                       type="button"
+                      onClick={() => setShowReceiptInline(!showReceiptInline)}
+                      className={`py-2.5 px-4 rounded-xl font-bold text-[13px] border transition-all flex items-center justify-center space-x-1.5 active:scale-95 cursor-pointer ${
+                        showReceiptInline
+                          ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
+                          : "bg-white hover:bg-slate-100 text-slate-800 border-slate-300 shadow-2xs"
+                      }`}
+                    >
+                      <FileText className="w-4 h-4 text-[#0369a1]" />
+                      <span>{showReceiptInline ? "Đóng Phiếu Thu" : "Xuất Phiếu Thu & Chia Tiền Zalo"}</span>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => handleCancelBooking(selectedSlotForAction)}
                       className="py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-[13px] border border-rose-200 transition-all flex items-center justify-center space-x-1.5 active:scale-95 cursor-pointer"
                     >
@@ -2507,7 +2742,131 @@ const handleConfirmCheckin = async (slot: any) => {
               </div>
             )}
 
-            {/* HỘP THOẠI XÁC NHẬN HỦY CA ĐẶT SÂN (INLINE TẠI CHỖ) */}
+            {/* KHỐI PHIẾU THU CA ĐÁ & CHIA TIỀN ZALO (INLINE 100%) */}
+                  {showReceiptInline && selectedSlotForAction && (() => {
+                      const courtFee = parseMoneyNumber(selectedSlotForAction.price || selectedSlotForAction.totalPrice) || 300000;
+                      const deposit = parseMoneyNumber(selectedSlotForAction.depositAmount);
+                      const totalDue = Math.max(0, courtFee + receiptExtraCost - deposit);
+                      const splitPerPerson = receiptSplitCount > 0 ? Math.ceil(totalDue / receiptSplitCount) : totalDue;
+
+                      return (
+                        <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4 animate-fadeIn">
+                          {/* Header Phiếu Thu */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200 pb-3">
+                            <div className="flex items-center space-x-2.5">
+                              <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#0369a1] shadow-2xs">
+                                <FileText className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <h4 className="text-[15px] font-black text-slate-900 leading-tight">
+                                  Phiếu Thu Ca Đá & Chia Tiền Nhóm
+                                </h4>
+                                <p className="text-[13px] text-slate-500 font-medium">
+                                  Mã ca: #{selectedSlotForAction.bookingCode || selectedSlotForAction.id} • {selectedSlotForAction.pitchSubName || "Sân con"}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleCopyZaloBill(selectedSlotForAction, totalDue, splitPerPerson)}
+                                className="px-3 py-1.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                                <span>{copiedZaloSuccess ? "Đã Sao Chép!" : "Sao Chép Gửi Zalo"}</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (typeof window !== "undefined") window.print();
+                                }}
+                                className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-[13px] font-bold border border-slate-200 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                              >
+                                <Printer className="w-3.5 h-3.5" />
+                                <span>In Phiếu Thu</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Chi tiết các khoản */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
+                            <div className="space-y-1.5 bg-white p-3 rounded-xl border border-slate-200/80">
+                              <div className="flex justify-between text-slate-600">
+                                <span>Tiền thuê sân ({selectedSlotForAction.time}):</span>
+                                <span className="font-mono font-bold text-slate-900">{courtFee.toLocaleString("vi-VN")}đ</span>
+                              </div>
+                              {deposit > 0 && (
+                                <div className="flex justify-between text-slate-600">
+                                  <span>Tiền cọc đã thanh toán:</span>
+                                  <span className="font-mono font-bold text-emerald-600">-{deposit.toLocaleString("vi-VN")}đ</span>
+                                </div>
+                              )}
+                              <div className="flex justify-between items-center pt-1 border-t border-slate-100">
+                                <span className="font-bold text-slate-800">Thêm phụ phí / nước:</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="5000"
+                                  value={receiptExtraCost}
+                                  onChange={(e) => setReceiptExtraCost(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                                  className="w-28 px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 font-mono font-bold text-right text-[13px] text-slate-900"
+                                />
+                              </div>
+                              <input
+                                value={receiptExtraNote}
+                                onChange={(e) => setReceiptExtraNote(e.target.value)}
+                                placeholder="Ghi chú món (VD: 5 chai Revive, 1 áo bib...)"
+                                className="w-full px-2 py-1 rounded-lg border border-slate-200 text-[13px] text-slate-700 bg-white"
+                              />
+                            </div>
+
+                            {/* Cột Tính Tiền Chia Đều (Campuchia Zalo) */}
+                            <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-slate-700">Số anh em chia tiền:</span>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => setReceiptSplitCount(Math.max(2, receiptSplitCount - 1))}
+                                    className="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-[13px]"
+                                  >
+                                    -
+                                  </button>
+                                  <span className="font-mono font-black text-slate-900 px-2">{receiptSplitCount}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setReceiptSplitCount(receiptSplitCount + 1)}
+                                    className="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-[13px]"
+                                  >
+                                    +
+                                  </button>
+                                  <span className="text-slate-500 font-medium">người</span>
+                                </div>
+                              </div>
+
+                              <div className="p-2.5 rounded-xl bg-sky-50/70 border border-sky-100 flex items-center justify-between">
+                                <div>
+                                  <div className="text-[13px] text-slate-600 font-semibold">Mỗi cầu thủ đóng:</div>
+                                  <div className="text-lg font-black text-[#0369a1] font-mono">
+                                    {splitPerPerson.toLocaleString("vi-VN")}đ
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-[13px] text-slate-500">Tổng còn phải thu:</div>
+                                  <div className="text-base font-black text-slate-900 font-mono">
+                                    {totalDue.toLocaleString("vi-VN")}đ
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                  {/* HỘP THOẠI XÁC NHẬN HỦY CA ĐẶT SÂN (INLINE TẠI CHỖ) */}
             {/* MODAL HỦY CA ĐẶT SÂN KÈM LÝ DO THÔNG BÁO TỚI KHÁCH HÀNG */}
  {showCancelModal && (
  <div 
@@ -4217,6 +4576,408 @@ const handleConfirmCheckin = async (slot: any) => {
         </div>
       )}
 
+
+      {/* --- SUB-TAB CONTENT 6: QUẢN LÝ ĐỘI BÓNG RUỘT & THẺ VIP --- */}
+      {activeSubTab === "vip" && (
+        <div className="glass-panel p-3.5 sm:p-6 rounded-2xl border border-slate-200 space-y-4 sm:space-y-6">
+          {/* HEADER VÀ NÚT THÊM */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#0369a1]/10 flex items-center justify-center text-[#0369a1] shrink-0">
+                <Crown className="w-5 h-5 text-[#0369a1]" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
+                  Đội Bóng Ruột & Hội Viên Thân Thiết
+                </h2>
+                <p className="text-[13px] text-slate-500 font-medium">
+                  Quản lý khách quen cố định, ưu đãi chiết khấu ca đá và tích lũy số trận
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddVipForm(!showAddVipForm);
+                  if (editingVipId) {
+                    setEditingVipId(null);
+                    setVipForm({
+                      teamName: "",
+                      captainName: "",
+                      phone: "",
+                      tier: "SILVER",
+                      discountPercent: "5",
+                      regularSchedule: "",
+                      notes: "",
+                    });
+                  }
+                }}
+                className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{showAddVipForm || editingVipId ? "Đóng Form" : "+ Thêm Đội Ruột Mới"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 4 THẺ KPI ĐỘI RUỘT */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
+                <span>Tổng Đội Ruột</span>
+                <Users className="w-4 h-4 text-slate-400" />
+              </div>
+              <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+                {vipTeams.length}
+              </p>
+              <p className="text-[13px] text-slate-500">Đội thân quen của sân</p>
+            </div>
+
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
+                <span>Hội Viên Kim Cương</span>
+                <Crown className="w-4 h-4 text-amber-500" />
+              </div>
+              <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+                {vipTeams.filter((t) => t.tier === "DIAMOND").length}
+              </p>
+              <p className="text-[13px] text-slate-500">Ưu đãi tối đa 15%</p>
+            </div>
+
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
+                <span>Tổng Số Trận Đã Đá</span>
+                <Award className="w-4 h-4 text-slate-400" />
+              </div>
+              <p className="text-xl sm:text-2xl font-black text-[#0369a1] font-mono">
+                {vipTeams.reduce((acc, t) => acc + (t.matchesPlayed || 0), 0)}
+              </p>
+              <p className="text-[13px] text-slate-500">Lượt trận khách quen</p>
+            </div>
+
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
+                <span>Tỉ Lệ Lấp Đầy Giờ Vàng</span>
+                <CheckCircle2 className="w-4 h-4 text-slate-400" />
+              </div>
+              <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+                85%
+              </p>
+              <p className="text-[13px] text-slate-500">Nhờ ca cố định định kỳ</p>
+            </div>
+          </div>
+
+          {/* FORM INLINE THÊM / SỬA ĐỘI RUỘT */}
+          {(showAddVipForm || editingVipId) && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5 animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <span className="text-[14px] font-extrabold text-slate-900">
+                  {editingVipId ? "✏️ Sửa Thông Tin Đội Bóng Ruột" : "➕ Đăng Ký Đội Bóng Ruột / Hội Viên Thân Thiết Mới"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Tên đội bóng</label>
+                  <input
+                    value={vipForm.teamName}
+                    onChange={(e) => setVipForm({ ...vipForm, teamName: e.target.value })}
+                    placeholder="VD: FC Lão Tướng Hải Châu"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Tên đội trưởng / đại diện</label>
+                  <input
+                    value={vipForm.captainName}
+                    onChange={(e) => setVipForm({ ...vipForm, captainName: e.target.value })}
+                    placeholder="VD: Anh Tuấn"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Số điện thoại</label>
+                  <input
+                    value={vipForm.phone}
+                    onChange={(e) => setVipForm({ ...vipForm, phone: e.target.value })}
+                    placeholder="VD: 0905123456"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Hạng thành viên & Chiết khấu</label>
+                  <select
+                    value={vipForm.tier}
+                    onChange={(e) => {
+                      const t = e.target.value as "SILVER" | "GOLD" | "DIAMOND";
+                      const disc = t === "DIAMOND" ? "15" : t === "GOLD" ? "10" : "5";
+                      setVipForm({ ...vipForm, tier: t, discountPercent: disc });
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  >
+                    <option value="SILVER">🥈 Hạng Bạc (Giảm 5%)</option>
+                    <option value="GOLD">🥇 Hạng Vàng (Giảm 10%)</option>
+                    <option value="DIAMOND">💎 Hạng Kim Cương (Giảm 15%)</option>
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Lịch đá cố định (nếu có)</label>
+                  <input
+                    value={vipForm.regularSchedule}
+                    onChange={(e) => setVipForm({ ...vipForm, regularSchedule: e.target.value })}
+                    placeholder="VD: Thứ 3 - Thứ 5 ca 17:30 - 19:30"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Ghi chú ưu đãi / Thói quen</label>
+                  <input
+                    value={vipForm.notes}
+                    onChange={(e) => setVipForm({ ...vipForm, notes: e.target.value })}
+                    placeholder="VD: Luôn lấy 10 chai Revive ướp lạnh, đá sân 7A..."
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  />
+                </div>
+
+                <div className="sm:col-span-4 flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleSaveVipTeam}
+                    className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-xs transition-all active:scale-95 cursor-pointer"
+                  >
+                    {editingVipId ? "Lưu Thay Đổi" : "Lưu Đội Ruột"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingVipId(null);
+                      setVipForm({
+                        teamName: "",
+                        captainName: "",
+                        phone: "",
+                        tier: "SILVER",
+                        discountPercent: "5",
+                        regularSchedule: "",
+                        notes: "",
+                      });
+                      setShowAddVipForm(false);
+                    }}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 text-[14px] font-bold hover:bg-slate-100 transition-all cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* BỘ LỌC HẠNG THẺ & TÌM KIẾM */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { id: "ALL", label: "Tất cả", count: vipTeams.length },
+                { id: "DIAMOND", label: "💎 Kim Cương", count: vipTeams.filter((t) => t.tier === "DIAMOND").length },
+                { id: "GOLD", label: "🥇 Hạng Vàng", count: vipTeams.filter((t) => t.tier === "GOLD").length },
+                { id: "SILVER", label: "🥈 Hạng Bạc", count: vipTeams.filter((t) => t.tier === "SILVER").length },
+              ].map((chip) => {
+                const isActive = vipTierFilter === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => setVipTierFilter(chip.id)}
+                    className={`px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                      isActive
+                        ? "bg-[#0369a1] text-white shadow-xs"
+                        : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                  >
+                    <span>{chip.label}</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[13px] font-mono font-bold ${
+                        isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {chip.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="w-full sm:w-64">
+              <input
+                value={searchVipQuery}
+                onChange={(e) => setSearchVipQuery(e.target.value)}
+                placeholder="🔍 Tìm theo tên đội hoặc SĐT..."
+                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+              />
+            </div>
+          </div>
+
+          {/* DANH SÁCH THẺ ĐỘI BÓNG RUỘT */}
+          {(() => {
+            const filteredVips = vipTeams.filter((t) => {
+              if (vipTierFilter !== "ALL" && t.tier !== vipTierFilter) return false;
+              if (searchVipQuery.trim()) {
+                const q = searchVipQuery.trim().toLowerCase();
+                const team = (t.teamName || "").toLowerCase();
+                const capt = (t.captainName || "").toLowerCase();
+                const phone = (t.phone || "").toLowerCase();
+                if (!team.includes(q) && !capt.includes(q) && !phone.includes(q)) return false;
+              }
+              return true;
+            });
+
+            if (filteredVips.length === 0) {
+              return (
+                <div className="py-12 text-center text-slate-500 text-[14px]">
+                  Không tìm thấy đội bóng ruột nào phù hợp với điều kiện tìm kiếm.
+                </div>
+              );
+            }
+
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {filteredVips.map((team) => {
+                  return (
+                    <div
+                      key={team.id}
+                      className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 shadow-xs transition-all space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-1 flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className={`px-2 py-0.5 rounded-md text-[13px] font-bold ${
+                                team.tier === "DIAMOND"
+                                  ? "bg-sky-50 text-[#0369a1] border border-sky-200"
+                                  : team.tier === "GOLD"
+                                  ? "bg-amber-50 text-amber-800 border border-amber-200"
+                                  : "bg-slate-100 text-slate-700 border border-slate-200"
+                              }`}
+                            >
+                              {team.tier === "DIAMOND"
+                                ? "💎 Kim Cương"
+                                : team.tier === "GOLD"
+                                ? "🥇 Hạng Vàng"
+                                : "🥈 Hạng Bạc"}
+                            </span>
+                            <span className="text-[13px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                              Giảm {team.discountPercent}%
+                            </span>
+                          </div>
+
+                          <h3 className="font-extrabold text-[15px] text-slate-900 leading-snug line-clamp-1 pt-0.5">
+                            {team.teamName}
+                          </h3>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <span className="font-mono font-black text-slate-900 text-base block">
+                            {team.matchesPlayed}
+                          </span>
+                          <span className="text-[13px] text-slate-400 font-medium">trận đã đá</span>
+                        </div>
+                      </div>
+
+                      {/* Chi tiết liên hệ & lịch cố định */}
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[13px] space-y-1">
+                        <div className="flex justify-between text-slate-600">
+                          <span>Đại diện:</span>
+                          <strong className="text-slate-900 font-bold">{team.captainName}</strong>
+                        </div>
+                        <div className="flex justify-between text-slate-600 font-mono">
+                          <span>Điện thoại:</span>
+                          <strong className="text-[#0369a1] font-bold">{team.phone}</strong>
+                        </div>
+                        {team.regularSchedule && (
+                          <div className="flex justify-between text-slate-600 pt-0.5 border-t border-slate-200/60">
+                            <span>Lịch cố định:</span>
+                            <span className="text-slate-800 font-medium">{team.regularSchedule}</span>
+                          </div>
+                        )}
+                        {team.notes && (
+                          <p className="text-[13px] text-slate-500 italic pt-0.5 line-clamp-2">
+                            📝 {team.notes}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Hàng nút thao tác */}
+                      <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100">
+                        <div className="flex items-center gap-1.5">
+                          <a
+                            href={`tel:${team.phone}`}
+                            className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-100 text-[13px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <PhoneCall className="w-3.5 h-3.5 text-[#0369a1]" />
+                            <span>Gọi Đội</span>
+                          </a>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (typeof navigator !== "undefined" && navigator.clipboard) {
+                                navigator.clipboard.writeText(team.phone);
+                                showToast(`📋 Đã chép SĐT ${team.phone} của ${team.captainName}!`);
+                              }
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-[13px] font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>Chép SĐT</span>
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingVipId(team.id);
+                              setVipForm({
+                                teamName: team.teamName,
+                                captainName: team.captainName,
+                                phone: team.phone,
+                                tier: team.tier,
+                                discountPercent: String(team.discountPercent),
+                                regularSchedule: team.regularSchedule || "",
+                                notes: team.notes || "",
+                              });
+                              setShowAddVipForm(true);
+                            }}
+                            className="w-8 h-8 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                            title="Sửa thông tin đội ruột"
+                          >
+                            <Edit3 className="w-4 h-4 text-slate-600" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVipTeam(team.id)}
+                            className="w-8 h-8 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer"
+                            title="Xóa đội ruột"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
+      )}
  
  </div>
  );
