@@ -3670,8 +3670,8 @@ const handleConfirmCheckin = async (slot: any) => {
           {/* HEADER TO RÕ + NÚT CHỨC NĂNG */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-700 shrink-0">
-                <Package className="w-5 h-5 text-amber-700" />
+              <div className="w-10 h-10 rounded-2xl bg-[#0369a1]/10 flex items-center justify-center text-[#0369a1] shrink-0">
+                <Package className="w-5 h-5 text-[#0369a1]" />
               </div>
               <div>
                 <h2 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
@@ -3687,10 +3687,10 @@ const handleConfirmCheckin = async (slot: any) => {
               <button
                 type="button"
                 onClick={exportWarehouseReportCsv}
-                className="px-3 py-2 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 text-[13px] font-bold hover:bg-emerald-100 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-100 text-[13px] font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
                 title="Xuất bảng kiểm kê kho ra file Excel CSV tiếng Việt"
               >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
+                <FileSpreadsheet className="w-4 h-4 text-slate-600" />
                 <span>Xuất Excel Báo Cáo</span>
               </button>
 
@@ -3719,12 +3719,12 @@ const handleConfirmCheckin = async (slot: any) => {
             </div>
           </div>
 
-          {/* 4 THẺ KPI KHO VẬT TƯ */}
+          {/* 4 THẺ KPI KHO VẬT TƯ (TỐI GIẢN - ĐỒNG BỘ SLATE & TURF BLUE) */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
             <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
               <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
                 <span>Tổng Mặt Hàng</span>
-                <Package className="w-4 h-4 text-[#0369a1]" />
+                <Package className="w-4 h-4 text-slate-400" />
               </div>
               <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
                 {canteenItems.length}
@@ -3735,9 +3735,9 @@ const handleConfirmCheckin = async (slot: any) => {
             <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
               <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
                 <span>Tổng Số Lượng Tồn</span>
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <CheckCircle2 className="w-4 h-4 text-slate-400" />
               </div>
-              <p className="text-xl sm:text-2xl font-black text-emerald-600 font-mono">
+              <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
                 {canteenItems.reduce((acc, it) => acc + (Number(it.stock) || 0), 0)}
               </p>
               <p className="text-[13px] text-slate-500">Tổng hiện vật trong kho</p>
@@ -3746,7 +3746,7 @@ const handleConfirmCheckin = async (slot: any) => {
             <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
               <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
                 <span>Giá Trị Tồn Kho</span>
-                <span className="text-[13px] font-black text-[#0369a1]">VNĐ</span>
+                <span className="text-[13px] font-bold text-slate-400">VNĐ</span>
               </div>
               <p className="text-xl sm:text-2xl font-black text-[#0369a1] font-mono">
                 {(
@@ -3763,49 +3763,49 @@ const handleConfirmCheckin = async (slot: any) => {
             <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
               <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
                 <span>Cần Nhập Thêm</span>
-                <AlertCircle className="w-4 h-4 text-rose-500" />
+                <AlertCircle className="w-4 h-4 text-slate-400" />
               </div>
-              <p className="text-xl sm:text-2xl font-black text-rose-600 font-mono">
+              <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
                 {canteenItems.filter((it) => (Number(it.stock) || 0) <= 5).length}
               </p>
-              <p className="text-[13px] text-rose-600 font-semibold">Vật tư tồn kho &lt;= 5</p>
+              <p className="text-[13px] text-slate-500">Mặt hàng có tồn kho &le; 5</p>
             </div>
           </div>
 
           {/* FORM INLINE THÊM / SỬA MÓN & NHẬP KHO */}
           {(showAddWarehouseForm || canteenEditingId) && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-sky-50/50 border-2 border-sky-200 space-y-3.5 animate-fadeIn">
-              <div className="flex items-center justify-between">
-                <span className="text-[14px] font-extrabold text-[#0369a1]">
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5 animate-fadeIn">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <span className="text-[14px] font-extrabold text-slate-900">
                   {canteenEditingId ? "✏️ Cập Nhật Thông Tin Mặt Hàng" : "➕ Thêm Mặt Hàng / Vật Tư Mới Vào Kho"}
                 </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[13px] text-slate-500">Mẫu gợi ý nhanh:</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[13px] text-slate-500">Gợi ý nhanh:</span>
                   <button
                     type="button"
                     onClick={() => applyWarehousePreset("Nước khoáng đóng chai", "Chai", "10000", "48")}
-                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-medium text-slate-700 hover:bg-slate-100"
                   >
                     🥤 Nước khoáng
                   </button>
                   <button
                     type="button"
                     onClick={() => applyWarehousePreset("Quả bóng đá số 5 FIFA", "Quả", "350000", "8")}
-                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-medium text-slate-700 hover:bg-slate-100"
                   >
                     ⚽ Bóng số 5
                   </button>
                   <button
                     type="button"
                     onClick={() => applyWarehousePreset("Áo bib phân đội (bộ 10 áo)", "Bộ", "150000", "5")}
-                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-medium text-slate-700 hover:bg-slate-100"
                   >
                     🎽 Bộ Áo Bib
                   </button>
                   <button
                     type="button"
                     onClick={() => applyWarehousePreset("Bao hạt cao su bảo trì sân (25kg)", "Bao", "220000", "15")}
-                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-medium text-slate-700 hover:bg-slate-100"
                   >
                     🛠️ Hạt cao su
                   </button>
@@ -3885,7 +3885,7 @@ const handleConfirmCheckin = async (slot: any) => {
             </div>
           )}
 
-          {/* BỘ LỌC DANH MỤC & TÌM KIẾM THEO TÊN */}
+          {/* BỘ LỌC DANH MỤC & TÌM KIẾM THEO TÊN (ĐỒNG BỘ TOÀN BỘ VỀ TONE SLATE VÀ TURF BLUE) */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
             {/* 5 Chips phân loại */}
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -3898,7 +3898,7 @@ const handleConfirmCheckin = async (slot: any) => {
                 },
                 {
                   id: "EQUIPMENT" as const,
-                  label: "⚽ Đồ Cho Mượn / Thuê",
+                  label: "⚽ Đồ Cho Mượn",
                   count: canteenItems.filter((i) => detectCategory(i) === "EQUIPMENT").length,
                 },
                 {
@@ -3908,7 +3908,7 @@ const handleConfirmCheckin = async (slot: any) => {
                 },
                 {
                   id: "LOW_STOCK" as const,
-                  label: "⚠️ Cần Nhập",
+                  label: "Cần Nhập Thêm",
                   count: canteenItems.filter((i) => (Number(i.stock) || 0) <= 5).length,
                 },
               ].map((chip) => {
@@ -3929,9 +3929,7 @@ const handleConfirmCheckin = async (slot: any) => {
                       className={`px-1.5 py-0.2 rounded-full text-[13px] font-mono font-bold ${
                         isActive
                           ? "bg-white/20 text-white"
-                          : chip.id === "LOW_STOCK" && chip.count > 0
-                          ? "bg-rose-100 text-rose-700"
-                          : "bg-slate-100 text-slate-700"
+                          : "bg-slate-100 text-slate-600"
                       }`}
                     >
                       {chip.count}
@@ -3952,18 +3950,18 @@ const handleConfirmCheckin = async (slot: any) => {
             </div>
           </div>
 
-          {/* DANH SÁCH THẺ VẬT TƯ & KHO HÀNG */}
+          {/* DANH SÁCH THẺ VẬT TƯ & KHO HÀNG (CLEAN MINIMALIST SAAS) */}
           {canteenLoading ? (
             <div className="py-12 flex flex-col items-center justify-center text-slate-400 space-y-2">
-              <Package className="w-8 h-8 animate-bounce opacity-40" />
-              <p className="text-[14px] font-bold text-slate-500">Đang tải kho vật tư sân...</p>
+              <Package className="w-8 h-8 opacity-30 text-slate-400" />
+              <p className="text-[14px] font-medium text-slate-500">Đang tải kho vật tư sân...</p>
             </div>
           ) : canteenItems.length === 0 ? (
             <div className="py-12 flex flex-col items-center justify-center text-center p-6 rounded-2xl bg-slate-50 border border-dashed border-slate-200 space-y-3">
               <Package className="w-10 h-10 text-slate-300" />
               <p className="text-[14px] font-bold text-slate-700">Kho vật tư hiện chưa có mặt hàng nào.</p>
               <p className="text-[13px] text-slate-500 max-w-md">
-                Bấm nút <strong>"+ Thêm Vật Tư Mới"</strong> hoặc chọn nhanh các mẫu gợi ý (Nước khoáng, Bóng thi đấu, Áo bib, Hạt cao su) để bắt đầu quản lý.
+                Bấm nút <strong>"+ Thêm Vật Tư Mới"</strong> hoặc chọn nhanh các mẫu gợi ý để bắt đầu quản lý.
               </p>
               <button
                 type="button"
@@ -4002,70 +4000,63 @@ const handleConfirmCheckin = async (slot: any) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {filteredList.map((item: any) => {
                     const cat = detectCategory(item);
-                    const isLow = (Number(item.stock) || 0) <= 5;
-                    const isOut = (Number(item.stock) || 0) <= 0;
+                    const stockNum = Number(item.stock) || 0;
+                    const isLow = stockNum <= 5 && stockNum > 0;
+                    const isOut = stockNum <= 0;
                     const isRestocking = restockInlineId === item.id;
 
                     return (
                       <div
                         key={item.id}
-                        className={`p-4 rounded-2xl bg-white border transition-all space-y-3 ${
-                          isOut
-                            ? "border-rose-300 shadow-rose-50"
-                            : isLow
-                            ? "border-amber-300 shadow-amber-50"
-                            : "border-slate-200/90 hover:border-slate-300 shadow-xs"
-                        }`}
+                        className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 shadow-xs transition-all space-y-3"
                       >
-                        {/* Header của thẻ: Phân loại & Badge tình trạng */}
+                        {/* Header của thẻ: Phân loại & Chỉ thị tình trạng tinh tế */}
                         <div className="flex items-start justify-between gap-2">
-                          <div className="space-y-0.5 flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span
-                                className={`px-2 py-0.5 rounded-md text-[13px] font-bold ${
-                                  cat === "EQUIPMENT"
-                                    ? "bg-purple-50 text-purple-700 border border-purple-200"
-                                    : cat === "MAINTENANCE"
-                                    ? "bg-amber-50 text-amber-800 border border-amber-200"
-                                    : "bg-sky-50 text-sky-700 border border-sky-200"
-                                }`}
-                              >
+                          <div className="space-y-1 flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {/* Badge phân loại đồng bộ tone Slate */}
+                              <span className="px-2 py-0.5 rounded-md text-[13px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                                 {cat === "EQUIPMENT"
-                                  ? "⚽ Đồ Cho Mượn"
+                                  ? "⚽ Cho Mượn"
                                   : cat === "MAINTENANCE"
                                   ? "🛠️ Vật Tư Sân"
                                   : "🥤 Canteen"}
                               </span>
 
+                              {/* Tình trạng hàng dạng Dot tinh tế */}
                               {isOut ? (
-                                <span className="px-2 py-0.5 rounded-md text-[13px] font-black bg-rose-100 text-rose-700">
-                                  Hết hàng
+                                <span className="inline-flex items-center gap-1 text-[13px] font-bold text-rose-600">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                                  <span>Hết hàng</span>
                                 </span>
                               ) : isLow ? (
-                                <span className="px-2 py-0.5 rounded-md text-[13px] font-bold bg-amber-100 text-amber-800">
-                                  Sắp hết
+                                <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-amber-700">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                  <span>Sắp hết</span>
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded-md text-[13px] font-semibold bg-emerald-50 text-emerald-700">
-                                  Đủ hàng
+                                <span className="inline-flex items-center gap-1 text-[13px] font-medium text-slate-500">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                  <span>Đủ hàng</span>
                                 </span>
                               )}
                             </div>
+
                             <h3 className="font-extrabold text-[15px] text-slate-900 leading-snug line-clamp-2 pt-0.5">
                               {item.name}
                             </h3>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <span className="font-mono font-black text-emerald-700 text-[15px] block">
+                            <span className="font-mono font-black text-slate-900 text-[15px] block">
                               {Number(item.price ?? 0).toLocaleString("vi-VN")}đ
                             </span>
                             <span className="text-[13px] text-slate-400 font-medium">/{item.unit || "Cái"}</span>
                           </div>
                         </div>
 
-                        {/* Chỉ số Tồn kho & Đã xuất hôm nay */}
-                        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-[13px] font-mono">
+                        {/* Chỉ số Tồn kho & Đã xuất hôm nay (Slate Neutral) */}
+                        <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between text-[13px] font-mono">
                           <div className="flex flex-col">
                             <span className="text-slate-500 text-[13px] font-sans">Tồn kho hiện tại:</span>
                             <span
@@ -4090,15 +4081,15 @@ const handleConfirmCheckin = async (slot: any) => {
                           </div>
                         </div>
 
-                        {/* PANEL NHẬP KHO NHANH INLINE (+6, +12, +24 hoặc tùy chọn) */}
+                        {/* PANEL NHẬP KHO NHANH INLINE (ĐỒNG BỘ TONE SLATE) */}
                         {isRestocking ? (
-                          <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 space-y-2 animate-fadeIn">
-                            <div className="flex items-center justify-between text-[13px] font-bold text-amber-800">
+                          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2 animate-fadeIn">
+                            <div className="flex items-center justify-between text-[13px] font-bold text-slate-800">
                               <span>📦 Nhập thêm vào kho:</span>
                               <button
                                 type="button"
                                 onClick={() => setRestockInlineId(null)}
-                                className="text-slate-400 hover:text-slate-600 text-[13px]"
+                                className="text-slate-400 hover:text-slate-600 text-[13px] cursor-pointer"
                               >
                                 Đóng
                               </button>
@@ -4107,21 +4098,21 @@ const handleConfirmCheckin = async (slot: any) => {
                               <button
                                 type="button"
                                 onClick={() => restockCanteenItem(item, 6)}
-                                className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-900 text-[13px] font-bold hover:bg-amber-100"
+                                className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 text-[13px] font-bold hover:bg-slate-100"
                               >
                                 +6
                               </button>
                               <button
                                 type="button"
                                 onClick={() => restockCanteenItem(item, 12)}
-                                className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-900 text-[13px] font-bold hover:bg-amber-100"
+                                className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 text-[13px] font-bold hover:bg-slate-100"
                               >
                                 +12 (1 lốc)
                               </button>
                               <button
                                 type="button"
                                 onClick={() => restockCanteenItem(item, 24)}
-                                className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-900 text-[13px] font-bold hover:bg-amber-100"
+                                className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 text-[13px] font-bold hover:bg-slate-100"
                               >
                                 +24 (1 thùng)
                               </button>
@@ -4138,7 +4129,7 @@ const handleConfirmCheckin = async (slot: any) => {
                               <button
                                 type="button"
                                 onClick={() => restockCanteenItem(item, Number(customRestockQty) || 0)}
-                                className="px-3 py-1 rounded-lg bg-[#0369a1] text-white text-[13px] font-bold hover:bg-[#075985]"
+                                className="px-3 py-1 rounded-lg bg-[#0369a1] text-white text-[13px] font-bold hover:bg-[#075985] cursor-pointer"
                               >
                                 Nhập
                               </button>
@@ -4146,14 +4137,14 @@ const handleConfirmCheckin = async (slot: any) => {
                           </div>
                         ) : null}
 
-                        {/* HÀNG NÚT THAO TÁC NGHIỆP VỤ */}
+                        {/* HÀNG NÚT THAO TÁC NGHIỆP VỤ (ĐỒNG BỘ NỀN TRẮNG VIỀN SLATE NHẸ) */}
                         <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             {/* Nút Xuất/Bán 1 */}
                             <button
                               type="button"
                               onClick={() => sellOneCanteenItem(item.id)}
-                              className="px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-[13px] font-bold hover:bg-emerald-100 transition-colors flex items-center gap-1 cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-100 text-[13px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
                               title="Bán hoặc xuất kho 1 sản phẩm"
                             >
                               <span>Xuất/Bán 1</span>
@@ -4164,7 +4155,7 @@ const handleConfirmCheckin = async (slot: any) => {
                               <button
                                 type="button"
                                 onClick={() => restockCanteenItem(item, 1)}
-                                className="px-2.5 py-1.5 rounded-xl bg-purple-50 text-purple-700 text-[13px] font-bold hover:bg-purple-100 transition-colors flex items-center gap-1 cursor-pointer"
+                                className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-100 text-[13px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
                                 title="Khách trả bóng/áo: cộng lại 1 vào kho"
                               >
                                 <span>↩️ Trả (+1)</span>
@@ -4177,7 +4168,7 @@ const handleConfirmCheckin = async (slot: any) => {
                               onClick={() => {
                                 setRestockInlineId(isRestocking ? null : item.id);
                               }}
-                              className="px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-800 text-[13px] font-bold hover:bg-amber-100 transition-colors flex items-center gap-1 cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-[#0369a1] hover:bg-sky-50 text-[13px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
                               title="Nhập thêm hàng hóa vào kho"
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -4199,7 +4190,7 @@ const handleConfirmCheckin = async (slot: any) => {
                                 });
                                 setShowAddWarehouseForm(true);
                               }}
-                              className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+                              className="w-8 h-8 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
                               title="Sửa thông tin mặt hàng"
                             >
                               <Edit3 className="w-4 h-4 text-slate-600" />
@@ -4209,10 +4200,10 @@ const handleConfirmCheckin = async (slot: any) => {
                             <button
                               type="button"
                               onClick={() => removeCanteenItem(item.id)}
-                              className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 flex items-center justify-center transition-colors cursor-pointer"
+                              className="w-8 h-8 rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer"
                               title="Xóa mặt hàng khỏi kho"
                             >
-                              <Trash2 className="w-4 h-4 text-rose-600" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         </div>
