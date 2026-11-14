@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useCallback, useState } from "react";
+import React, { Suspense, useCallback, useState, useEffect } from "react";
 import Link from "next/link";
 import {
  LayoutDashboard,
@@ -66,6 +66,15 @@ function AdminConsole() {
  const { user, isLoading, logout } = useAuth();
  const [section, setSection] = useState<Section>("overview");
  const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const sec = params.get("sec") as Section | null;
+    if (sec && ["overview", "users", "tournaments", "pitches", "bookings", "moderation", "chat", "notifications", "audit"].includes(sec)) {
+      setSection(sec);
+    }
+  }, []);
 
  const notify = useCallback((type: "ok" | "err", text: string) => {
  setToast({ type, text });

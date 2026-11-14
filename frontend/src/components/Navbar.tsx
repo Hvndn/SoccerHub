@@ -247,7 +247,7 @@ const mobileNav: MobileNavItem[] =
   /** 5 mục trên màn hẹp -> chữ nhỏ lại cho vừa, tránh bị cắt chữ. */
   const bottomNavDense = mobileNav.length >= 5;
 
- const showBottomNav = user?.role !== "OWNER" && user?.role !== "ADMIN";
+ const showBottomNav = user?.role !== "OWNER";
 
  return (
  <>
@@ -256,10 +256,6 @@ const mobileNav: MobileNavItem[] =
  {/* BRAND LOGO */}
  <div
  onClick={() => {
- if (user?.role === "ADMIN") {
- window.location.assign("/admin");
- return;
- }
  handleSelectSubTab(user?.role === "OWNER" ? "admin" : user?.role === "ORGANIZER" ? "organizer" : "home");
  }}
  className="flex items-center space-x-2 cursor-pointer select-none shrink-0 group"
@@ -343,15 +339,6 @@ const mobileNav: MobileNavItem[] =
   )}
   </button>
  </>
- ) : user?.role === "ADMIN" ? (
- /* ADMIN NAVBAR ITEM — về trang quản trị riêng /admin */
- <a
- href="/admin"
- className="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all bg-rose-600 hover:bg-rose-700 text-white shadow-md active:scale-95"
- >
- <ShieldCheck className="w-4 h-4 shrink-0" />
- <span>Quản Trị Hệ Thống</span>
- </a>
  ) : user?.role === "ORGANIZER" ? (
  /* ORGANIZER NAVBAR ITEMS — tập trung điều hành giải */
  <>
@@ -582,6 +569,16 @@ const mobileNav: MobileNavItem[] =
 
  {/* RIGHT SIDE WIDGETS */}
  <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
+  {user?.role === "ADMIN" && (
+    <a
+      href="/admin"
+      className="hidden sm:inline-flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[13px] sm:text-[14px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white shadow-xs active:scale-95 transition-all"
+      title="Truy cập Bảng Quản Trị Hệ Thống Turfzone"
+    >
+      <ShieldCheck className="w-4 h-4 shrink-0" />
+      <span>Quản Trị</span>
+    </a>
+  )}
  
 
 
@@ -1013,6 +1010,53 @@ const mobileNav: MobileNavItem[] =
  <span>Hồ Sơ Ban Tổ Chức</span>
  </button>
  </>
+ ) : user.role === "ADMIN" ? (
+ <>
+ <a
+ href="/admin"
+ onClick={() => setShowUserDropdown(false)}
+ className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 flex items-center space-x-2 transition-colors"
+ >
+ <ShieldCheck className="w-4 h-4 text-rose-600 shrink-0" />
+ <span>Bảng Quản Trị Hệ Thống</span>
+ </a>
+
+ <a
+ href="/admin?sec=users"
+ onClick={() => setShowUserDropdown(false)}
+ className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ >
+ <Users className="w-4 h-4 text-[#0369a1] shrink-0" />
+ <span>Quản Lý Người Dùng</span>
+ </a>
+
+ <a
+ href="/admin?sec=pitches"
+ onClick={() => setShowUserDropdown(false)}
+ className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ >
+ <Building2 className="w-4 h-4 text-emerald-600 shrink-0" />
+ <span>Quản Lý Cụm Sân Bóng</span>
+ </a>
+
+ <a
+ href="/admin?sec=tournaments"
+ onClick={() => setShowUserDropdown(false)}
+ className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ >
+ <Trophy className="w-4 h-4 text-amber-600 shrink-0" />
+ <span>Quản Lý Giải Đấu</span>
+ </a>
+
+ <a
+ href="/admin?sec=moderation"
+ onClick={() => setShowUserDropdown(false)}
+ className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ >
+ <Shield className="w-4 h-4 text-purple-600 shrink-0" />
+ <span>Kiểm Duyệt Chợ Kèo & Chat</span>
+ </a>
+ </>
  ) : user.role === "PLAYER" ? (
  <>
  <button
@@ -1216,6 +1260,25 @@ const mobileNav: MobileNavItem[] =
           Danh Mục Nền Tảng
         </span>
 
+        {user?.role === "ADMIN" && (
+          <a
+            href="/admin"
+            onClick={() => setShowMobileDrawer(false)}
+            className="w-full text-left p-3.5 rounded-xl flex items-center justify-between transition-colors bg-gradient-to-r from-rose-600 to-rose-700 text-white font-bold shadow-md mb-2"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-white/20 text-white flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-extrabold text-[14px] block leading-tight truncate">Quản Trị Hệ Thống</span>
+                <span className="text-[12px] text-rose-100 font-normal block truncate">Quản lý người dùng, cụm sân, giải đấu</span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-white/70 shrink-0" />
+          </a>
+        )}
+
         {user?.role === "OWNER" ? (
           <div className="space-y-1.5">
             <button
@@ -1308,22 +1371,6 @@ const mobileNav: MobileNavItem[] =
               </div>
               <ChevronRight className={`w-4 h-4 shrink-0 ${activeTab === "profile" ? "text-white/70" : "text-slate-400"}`} />
             </button>
-          </div>
-        ) : user?.role === "ADMIN" ? (
-          <div className="space-y-1.5">
-            <a
-              href="/admin"
-              onClick={() => setShowMobileDrawer(false)}
-              className="w-full text-left p-3 rounded-xl flex items-center justify-between transition-colors bg-rose-600 text-white font-bold shadow-xs"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-white/20 text-white flex items-center justify-center shrink-0">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                <span className="font-bold text-[14px] truncate">Quản Trị Hệ Thống</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-white/70 shrink-0" />
-            </a>
           </div>
         ) : user?.role === "ORGANIZER" ? (
           <div className="space-y-1.5">
