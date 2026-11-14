@@ -45,7 +45,7 @@ const inputCls =
   "w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm outline-none focus:ring-2 focus:ring-[#0369a1] focus:border-[#0369a1]";
 const labelCls = "block text-[13px] font-bold text-slate-700 mb-1.5";
 const errCls = "mt-1 text-[13px] font-semibold text-rose-600";
-const PHONE_RE = /^0\d{9}$/;
+const PHONE_RE = /^(0[3|5|7|8|9])[0-9]{8}$/;
 
 export default function RegisterTeamPage() {
   return (
@@ -152,11 +152,20 @@ function RegisterTeamWizard() {
         e.teamName = "Vui lòng chọn giải đấu trước khi điền thông tin đội.";
       } else if (isSelectedFull) {
         e.teamName = "Giải đấu này đã đủ số lượng đội đăng ký, không thể tiếp tục.";
+      } else if (selected.status === "ONGOING" || selected.status === "COMPLETED") {
+        e.teamName = "Giải đấu đã chính thức khởi tranh hoặc đã kết thúc, không thể nộp đơn đăng ký mới.";
       } else if (isInviteOnly && !amInvited) {
         e.teamName = "Giải đấu này giới hạn qua email mời. Bạn chưa nằm trong danh sách email được mời.";
       }
       if (teamName.trim().length < 3) {
         e.teamName = "Tên đội bóng phải có ít nhất 3 ký tự.";
+      } else if (selected?.teams && Array.isArray(selected.teams)) {
+        const isDuplicate = selected.teams.some(
+          (t: any) => (t?.name || t?.teamName || "").trim().toLowerCase() === teamName.trim().toLowerCase()
+        );
+        if (isDuplicate) {
+          e.teamName = `Tên đội "${teamName.trim()}" đã được đăng ký trong giải đấu này. Vui lòng chọn tên khác.`;
+        }
       }
       if (!Number.isInteger(memberCount) || memberCount < 5 || memberCount > 25) {
         e.memberCount = "Quân số phải từ 5 đến 25 cầu thủ.";
@@ -170,8 +179,12 @@ function RegisterTeamWizard() {
       if (!PHONE_RE.test(captainPhone.trim())) {
         e.captainPhone = "Số điện thoại phải gồm 10 số, bắt đầu bằng 0 (VD: 0909…).";
       }
-      if (subCaptainPhone.trim() && !PHONE_RE.test(subCaptainPhone.trim())) {
-        e.subCaptainPhone = "Số điện thoại dự phòng chưa đúng định dạng 10 số.";
+      if (subCaptainPhone.trim()) {
+        if (!PHONE_RE.test(subCaptainPhone.trim())) {
+          e.subCaptainPhone = "Số điện thoại dự phòng chưa đúng định dạng 10 số (VD: 0909…).";
+        } else if (subCaptainPhone.trim() === captainPhone.trim()) {
+          e.subCaptainPhone = "Số điện thoại dự phòng không được trùng với số của đội trưởng.";
+        }
       }
     }
 
@@ -224,6 +237,10 @@ function RegisterTeamWizard() {
     if (!validateStage(1) || !validateStage(2) || !selected) {
       return;
     }
+    if (!user) {
+      setSubmitError("Vui lòng đăng nhập tài khoản Đội Trưởng để nộp hồ sơ thi đấu.");
+      return;
+    }
     try {
       setSubmitting(true);
       setSubmitError(null);
@@ -274,6 +291,24 @@ function RegisterTeamWizard() {
           }
         }}
       />
+
+      {!user && (
+        <div className="px-3.5 py-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+            <span className="text-[13px] font-semibold text-amber-900">
+              Đăng nhập tài khoản Đội Trưởng để nộp hồ sơ tham gia giải
+            </span>
+          </div>
+          <a
+            href="/login"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-600 hover:bg-amber-700 text-white font-bold text-[13px] shrink-0 transition-colors"
+          >
+            <Lock className="w-3.5 h-3.5" />
+            <span>Đăng Nhập</span>
+          </a>
+        </div>
+      )}
 
       {done && selected ? (
         <PaymentSuccess

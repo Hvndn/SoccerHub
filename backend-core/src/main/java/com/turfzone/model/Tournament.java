@@ -63,6 +63,16 @@ public class Tournament {
     @Builder.Default
     private String joinMode = "PUBLIC"; // PUBLIC | INVITE_ONLY
 
+    /**
+     * Chính sách duyệt đội do chủ giải / chủ sân cấu hình.
+     * AUTO_APPROVE: Tự động duyệt ngay khi đăng ký
+     * MANUAL_REVIEW: Duyệt thủ công (BTC duyệt hồ sơ & lệ phí)
+     * LEVEL_BASED: Duyệt theo cấp độ / phong độ (ưu tiên tỷ lệ thắng & số trận)
+     * INVITE_ONLY: Chỉ nhận đội được mời qua email
+     */
+    @Builder.Default
+    private String approvalPolicy = "MANUAL_REVIEW"; // AUTO_APPROVE, MANUAL_REVIEW, LEVEL_BASED, INVITE_ONLY
+
     /** Danh sách email được mời tham gia (chỉ dùng khi joinMode = INVITE_ONLY). */
     @ElementCollection(fetch = FetchType.EAGER)
     @BatchSize(size = 100)

@@ -11,6 +11,7 @@ export function ConfirmModal({
  confirmLabel = "Xác nhận",
  danger = true,
  busy = false,
+ disabled = false,
  inline = false,
  onCancel,
  onConfirm,
@@ -21,6 +22,7 @@ export function ConfirmModal({
  confirmLabel?: string;
  danger?: boolean;
  busy?: boolean;
+ disabled?: boolean;
  /** true = hien inline trong trang (khong che popup) — theo quy tac UI cua Turfzone. */
  inline?: boolean;
  onCancel: () => void;
@@ -82,8 +84,8 @@ export function ConfirmModal({
  <button
  type="button"
  onClick={onConfirm}
- disabled={busy}
- className={`px-4 py-2 rounded-xl text-white text-[14px] font-black transition-all active:scale-95 disabled:opacity-50 ${
+ disabled={busy || disabled}
+ className={`px-4 py-2 rounded-xl text-white text-[14px] font-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
  danger ? "bg-rose-600 hover:bg-rose-700" : "bg-[#0369a1] hover:bg-[#075985]"
  }`}
  >

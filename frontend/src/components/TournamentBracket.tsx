@@ -2,6 +2,7 @@
 
 import TournamentInviteModal from "./TournamentInviteModal";
 import { Mail } from "lucide-react";
+import SafeImage from "@/components/SafeImage";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -28,10 +29,10 @@ import {
  ChevronRight,
  Shuffle,
  UserPlus,
- Calendar
+ Calendar,
+ Filter
 } from "lucide-react";
 import DrawLotteryOverlay from "./DrawLotteryOverlay";
-import FormDots from "./FormDots";
 import { ConfirmModal } from "./admin/AdminUI";
 import {
  Tournament,
@@ -88,6 +89,35 @@ const [addCount, setAddCount] = useState("4");
  startHour: "17",
  matchMinutes: "120",
  });
+
+ const scheduleErrors = useMemo(() => {
+   const errs: Record<string, string> = {};
+   if (scheduleForm.startDate) {
+     const todayStr = new Date().toISOString().split("T")[0];
+     if (scheduleForm.startDate < todayStr) {
+       errs.startDate = "Ngày thi đấu không được nằm trong quá khứ.";
+     }
+   }
+   const mpd = parseInt(scheduleForm.matchesPerDay, 10);
+   if (!Number.isFinite(mpd) || mpd < 1 || mpd > 12) {
+     errs.matchesPerDay = "Số trận/ngày phải từ 1 đến 12 trận.";
+   }
+   const dbr = parseInt(scheduleForm.daysBetweenRounds, 10);
+   if (!Number.isFinite(dbr) || dbr < 0 || dbr > 14) {
+     errs.daysBetweenRounds = "Khoảng cách giữa các vòng phải từ 0 đến 14 ngày.";
+   }
+   const sh = parseInt(scheduleForm.startHour, 10);
+   if (!Number.isFinite(sh) || sh < 0 || sh > 23) {
+     errs.startHour = "Giờ bắt đầu phải từ 0h đến 23h.";
+   }
+   const mm = parseInt(scheduleForm.matchMinutes, 10);
+   if (!Number.isFinite(mm) || mm < 30 || mm > 240) {
+     errs.matchMinutes = "Độ dài mỗi trận phải từ 30 đến 240 phút.";
+   }
+   return errs;
+ }, [scheduleForm]);
+
+ const isScheduleValid = Object.keys(scheduleErrors).length === 0;
  const [confirmingTeam, setConfirmingTeam] = useState<string | null>(null);
  const [savingMatch, setSavingMatch] = useState<string | null>(null);
  const [scores, setScores] = useState<Record<string, { a: string; b: string }>>({});
@@ -110,7 +140,18 @@ const [addCount, setAddCount] = useState("4");
  }, [confirmDraw, confirmSimulate, confirmStageSimulate, confirmUndo]);
  const [simulateBusy, setSimulateBusy] = useState(false);
  const [lottery, setLottery] = useState<{ pairs: { matchId: string; teamA: string; teamB: string }[]; byes: string[] } | null>(null);
+
+ // Tự cuộn mượt tới sân khấu bốc thăm khi lễ bốc thăm bắt đầu
+ useEffect(() => {
+   if (lottery !== null) {
+     const raf = requestAnimationFrame(() => {
+       document.getElementById("draw-lottery-stage")?.scrollIntoView({ behavior: "smooth", block: "start" });
+     });
+     return () => cancelAnimationFrame(raf);
+   }
+ }, [lottery]);
  const [activeTab, setActiveTab] = useState<"bracket" | "var_referee" | "standings" | "esheet" | "schedule">("bracket");
+ const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>("ALL");
 
  // --- Tòa VAR: chọn trận thật trong nhánh đấu để điều khiển tỷ số ---
  const [varMatchId, setVarMatchId] = useState<string>("");
@@ -223,6 +264,10 @@ const [addCount, setAddCount] = useState("4");
   setSelectedId(String(initialTournamentId));
   }, [initialTournamentId, tournaments]);
 
+  useEffect(() => {
+    setSelectedRoundFilter("ALL");
+  }, [selectedId]);
+
  // Nhánh đấu đọc thẳng từ bracketJson trong cache (không request thừa, không 404 console).
  // Sau fill/draw, cache được refresh nên canvas tự đồng bộ.
  const bracket = useMemo<TournamentBracketData | null>(() => {
@@ -263,6 +308,34 @@ const [addCount, setAddCount] = useState("4");
  () => (selected?.teams ?? []).filter((t) => t.registrationStatus === "PENDING_PAYMENT"),
  [selected]
  );
+
+ // Ràng buộc kiểm duyệt điều kiện thi đấu (Validation Gates)
+ const isTeamCountValid = teamCount >= 2 && (!teamCap || teamCount >= teamCap);
+ const isPaymentValid = pendingTeams.length === 0;
+ const isBracketValid = !!bracket && (bracket.rounds?.length ?? 0) > 0;
+
+ const stageValidation = useMemo(() => {
+ if (!bracket?.rounds || !nextPlayableStage) {
+ return { isValid: false, uncompletedStage: null as string | null };
+ }
+ const currentRoundIdx = bracket.rounds.findIndex((r) => r.name === nextPlayableStage);
+ if (currentRoundIdx <= 0) {
+ return { isValid: true, uncompletedStage: null as string | null };
+ }
+ for (let i = 0; i < currentRoundIdx; i++) {
+ const prevRound = bracket.rounds[i];
+ const hasUnfinished = (prevRound.matches ?? []).some(
+ (m) => m.status !== "DONE" && m.status !== "BYE"
+ );
+ if (hasUnfinished) {
+ return { isValid: false, uncompletedStage: prevRound.name };
+ }
+ }
+ return { isValid: true, uncompletedStage: null as string | null };
+ }, [bracket, nextPlayableStage]);
+
+ const canSimulateNextStage = isTeamCountValid && isPaymentValid && isBracketValid && stageValidation.isValid;
+ const canSimulateAll = isTeamCountValid && isPaymentValid && isBracketValid;
 
  /** Số trận đã có lịch (BTC đã bấm "Xếp lịch thi đấu"). */
  const scheduledCount = useMemo(
@@ -369,6 +442,41 @@ const [addCount, setAddCount] = useState("4");
     });
   }, [bracket]);
 
+  // Tự động chuyển tab thông minh theo thể thức giải đấu
+  useEffect(() => {
+    if (!selected) return;
+    if (selected.format === "ROUND_ROBIN") {
+      setActiveTab("standings");
+    } else {
+      setActiveTab("bracket");
+    }
+  }, [selected?.id, selected?.format]);
+
+  // Trận cầu nổi bật dành cho khán giả vãng lai
+  const guestSpotlightMatch = useMemo(() => {
+    if (!allScheduledMatches.length) return null;
+    const live = allScheduledMatches.find((m) => m.match.status === "IN_PROGRESS");
+    if (live) return live;
+    const upcoming = allScheduledMatches.find(
+      (m) =>
+        m.match.status === "SCHEDULED" &&
+        m.match.teamA &&
+        !m.match.teamA.tbd &&
+        m.match.teamB &&
+        !m.match.teamB.tbd
+    );
+    if (upcoming) return upcoming;
+    return allScheduledMatches[0] || null;
+  }, [allScheduledMatches]);
+
+  // Đội quán quân của giải đấu (nếu đã xong trận chung kết)
+  const tournamentChampion = useMemo(() => {
+    if (!bracket?.rounds?.length) return null;
+    const finalRound = bracket.rounds[bracket.rounds.length - 1];
+    const finalMatch = finalRound?.matches?.[0];
+    return finalMatch?.status === "DONE" && finalMatch?.winner ? finalMatch.winner : null;
+  }, [bracket]);
+
   const varMatch = useMemo(
  () => playableMatches.find((p) => p.match.matchId === varMatchId)?.match ?? null,
  [playableMatches, varMatchId]
@@ -398,7 +506,18 @@ const [addCount, setAddCount] = useState("4");
  // eslint-disable-next-line react-hooks/exhaustive-deps
  }, [varMatchId]);
 
- const pushVarLog = (text: string, tone: "ok" | "warn" | "bad") =>
+   const syncTournamentUpdate = (updated: Tournament | null) => {
+    if (!updated) return;
+    setTournaments((prev) => {
+      const idx = prev.findIndex((t) => t.id === updated.id);
+      if (idx >= 0) {
+        return [...prev.slice(0, idx), updated, ...prev.slice(idx + 1)];
+      }
+      return [updated, ...prev];
+    });
+  };
+
+  const pushVarLog = (text: string, tone: "ok" | "warn" | "bad") =>
  setVarLog((prev) => [
  {
  time: new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
@@ -417,7 +536,8 @@ const [addCount, setAddCount] = useState("4");
     try {
       setConfirmingTeam(teamName);
       const res = await confirmTeamPayment(selected.id, teamName);
-      await refreshTournamentInCache(selected.id);
+      const updated = await refreshTournamentInCache(selected.id);
+      syncTournamentUpdate(updated);
       triggerToast(res.message);
     } catch (err: any) {
       triggerToast(err?.message || "Xác nhận thất bại.");
@@ -432,7 +552,8 @@ const [addCount, setAddCount] = useState("4");
  setFillBusy(true);
  const res = await fillSimulatedTeams(selected.id, count);
  // Lam moi giai vua thay doi (so doi, danh sach doi, reset nhanh dau) trong cache
- await refreshTournamentInCache(selected.id);
+ const updated = await refreshTournamentInCache(selected.id);
+   syncTournamentUpdate(updated);
  triggerToast(res.message);
  } catch (err: any) {
  triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để giả lập.");
@@ -446,7 +567,8 @@ const [addCount, setAddCount] = useState("4");
  try {
  setClearBusy(true);
  const res = await clearSimulatedTeams(selected.id);
- await refreshTournamentInCache(selected.id);
+ const updated = await refreshTournamentInCache(selected.id);
+   syncTournamentUpdate(updated);
  triggerToast(res.message);
  } catch (err: any) {
  triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để dọn đội Test.");
@@ -461,7 +583,8 @@ const [addCount, setAddCount] = useState("4");
   setSimulateBusy(true);
   const res = await simulateTournamentResults(selected.id, nextStageOnly);
   // Tai lai giai de ket qua gia lap hien ngay tren cay nhanh dau
-  await refreshTournamentInCache(selected.id);
+  const updated = await refreshTournamentInCache(selected.id);
+  syncTournamentUpdate(updated);
   triggerToast(res.message);
   setConfirmSimulate(false);
   setConfirmStageSimulate(false);
@@ -485,7 +608,8 @@ const [addCount, setAddCount] = useState("4");
  setLottery({ pairs, byes });
  setConfirmDraw(false);
  // Tai lai giai de cay nhanh dau (bracketJson moi) hien ngay, khong can F5
- await refreshTournamentInCache(selected.id);
+ const updated = await refreshTournamentInCache(selected.id);
+   syncTournamentUpdate(updated);
  } catch (err: any) {
  triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để bốc thăm.");
  } finally {
@@ -495,7 +619,7 @@ const [addCount, setAddCount] = useState("4");
 
  /** BTC sinh lịch thật cho toàn bộ trận (ngày + khung giờ + sân) rồi lưu vào hệ thống. */
  const handleSchedule = async () => {
- if (!selected) return;
+ if (!selected || !isScheduleValid) return;
  try {
  setScheduleBusy(true);
  const num = (v: string, fb: number) => {
@@ -513,7 +637,8 @@ const [addCount, setAddCount] = useState("4");
  setShowScheduleForm(false);
  setActiveTab("bracket");
  // Tai lai giai de lich da sinh hien ngay tren cay nhanh dau
- await refreshTournamentInCache(selected.id);
+ const updated = await refreshTournamentInCache(selected.id);
+   syncTournamentUpdate(updated);
  } catch (err: any) {
  triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để xếp lịch.");
  } finally {
@@ -521,16 +646,15 @@ const [addCount, setAddCount] = useState("4");
  }
  };
 
- // BXH thật: thắng/hòa/thua/điểm/hiệu số tính từ các trận DONE trong nhánh đấu.
- // Thắng = 3đ, Hòa = 1đ. Xếp: điểm → hiệu số → tỷ lệ thắng.
+ // BXH thật: thắng/hòa/thua/điểm/hiệu số/bàn thắng/bàn thua tính từ các trận DONE trong nhánh đấu.
+ // Thắng = 3đ, Hòa = 1đ. Xếp: điểm → hiệu số → bàn thắng → tỷ lệ thắng.
  const tableRows = useMemo(() => {
- const base = new Map<string, { team: string; captain: string; winRate: number; form: string; simulated: boolean; played: number; won: number; drawn: number; lost: number; gf: number; ga: number }>();
+ const base = new Map<string, { team: string; captain: string; winRate: number; simulated: boolean; played: number; won: number; drawn: number; lost: number; gf: number; ga: number }>();
  (selected?.teams ?? []).forEach((t) =>
  base.set(t.teamName, {
  team: t.teamName,
  captain: t.captainName ?? "—",
  winRate: t.winRate ?? 0,
- form: t.form ?? "",
  simulated: !!t.simulated,
  played: 0,
  won: 0,
@@ -569,9 +693,57 @@ const [addCount, setAddCount] = useState("4");
  }
  })
  );
+
+ const getStageStatus = (teamName: string) => {
+ if (!bracket?.rounds || bracket.rounds.length === 0) {
+ return { label: "Đã ghi danh", tone: "bg-slate-100 text-slate-700 border-slate-200" };
+ }
+ const totalRounds = bracket.rounds.length;
+ const finalRound = bracket.rounds[totalRounds - 1];
+ const finalMatch = finalRound?.matches?.[0];
+
+ if (finalMatch?.status === "DONE" && finalMatch.winner) {
+ if (finalMatch.winner === teamName) {
+ return { label: "Vô Địch 🏆", tone: "bg-amber-100 text-amber-900 border-amber-300 font-black shadow-xs" };
+ }
+ if ((finalMatch.teamA?.name === teamName || finalMatch.teamB?.name === teamName) && finalMatch.winner !== teamName) {
+ return { label: "Á Quân 🥈", tone: "bg-slate-100 text-slate-800 border-slate-300 font-bold" };
+ }
+ }
+
+ for (let ri = totalRounds - 1; ri >= 0; ri--) {
+ const round = bracket.rounds[ri];
+ for (const m of (round.matches ?? [])) {
+ const isInMatch = m.teamA?.name === teamName || m.teamB?.name === teamName;
+ if (!isInMatch) continue;
+
+ if (m.status === "DONE") {
+ if (m.winner === teamName) {
+ return { label: `Thắng ${round.name}`, tone: "bg-emerald-50 text-emerald-800 border-emerald-200 font-bold" };
+ } else if (m.winner && m.winner !== teamName) {
+ return { label: `Dừng bước (${round.name})`, tone: "bg-slate-50 text-slate-500 border-slate-200" };
+ }
+ } else {
+ const isFinal = ri === totalRounds - 1;
+ return {
+ label: isFinal ? "Tranh Chung Kết 🔥" : `Đang đấu ${round.name}`,
+ tone: isFinal ? "bg-amber-50 text-amber-800 border-amber-200 font-bold" : "bg-sky-50 text-sky-800 border-sky-200 font-bold"
+ };
+ }
+ }
+ }
+
+ return { label: "Đang thi đấu", tone: "bg-sky-50 text-sky-700 border-sky-200" };
+ };
+
  return Array.from(base.values())
- .map((r) => ({ ...r, points: r.won * 3 + r.drawn, diff: r.gf - r.ga }))
- .sort((x, y) => y.points - x.points || y.diff - x.diff || (y.winRate ?? 0) - (x.winRate ?? 0));
+ .map((r) => ({
+ ...r,
+ points: r.won * 3 + r.drawn,
+ diff: r.gf - r.ga,
+ stageStatus: getStageStatus(r.team),
+ }))
+ .sort((x, y) => y.points - x.points || y.diff - x.diff || y.gf - x.gf || (y.winRate ?? 0) - (x.winRate ?? 0));
  }, [selected, bracket]);
 
  /** Huỷ kết quả để nhập lại — backend xóa bản ghi và cầu thủ ghi bàn, phong độ tự tính lại. */
@@ -808,7 +980,7 @@ const [addCount, setAddCount] = useState("4");
  <div key={i}>
  {i === 1 && <div className="border-t border-slate-200 " />}
  <div className={`p-3 flex justify-between items-center gap-2 ${t?.tbd ? "text-slate-500 italic" : isWinner ? "text-sky-900 font-black" : "text-slate-700 font-bold"}`}>
- <span className="truncate flex items-center gap-1">{t?.name ?? "?"}{isWinner ? " 👑" : ""}{myTeam && t?.name === myTeam.teamName && <span className="px-1.5 py-0.2 rounded bg-sky-200 text-sky-900 font-black text-[12px]">Đội bạn</span>}</span>
+ <span className="truncate flex items-center gap-1">{t?.name ?? "?"}{isWinner ? " 👑" : ""}{myTeam && t?.name === myTeam.teamName && <span className="px-1.5 py-0.2 rounded bg-sky-200 text-sky-900 font-black text-[13px]">Đội bạn</span>}</span>
  {t && !t.tbd && (t.record || t.form) && (
  <span className="font-mono text-[14px] text-slate-500 shrink-0">{t.record ?? t.form}</span>
  )}
@@ -956,6 +1128,45 @@ const [addCount, setAddCount] = useState("4");
  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
  <span className="font-semibold text-[14px] sm:text-sm">{toastMessage}</span>
  </div>
+ )}
+
+ {/* Banner Ảnh Bìa Giải Đấu Trực Quan */}
+ {selected && (
+   <div className="relative h-44 sm:h-56 w-full rounded-2xl bg-slate-900 overflow-hidden border border-slate-200 shadow-xs">
+     <SafeImage
+       src={selected.bannerUrl || (selected as any).imageUrl || "/images/copa-action.png"}
+       alt={selected.title}
+       className="w-full h-full object-cover brightness-75"
+     />
+     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
+     <div className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2.5 text-white">
+       <div>
+         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+           <span className="px-2.5 py-0.5 rounded-md bg-white/20 backdrop-blur-md text-white font-bold text-[13px] border border-white/20">
+             {sportLabel(selected.sportType)}
+           </span>
+           <span className="px-2.5 py-0.5 rounded-md bg-white/20 backdrop-blur-md text-white font-bold text-[13px] border border-white/20">
+             {formatLabel(selected.format)}
+           </span>
+           <span className="px-2.5 py-0.5 rounded-md bg-emerald-600/90 text-white font-bold text-[13px]">
+             {selected.status === "ONGOING" ? "Đang diễn ra" : selected.status === "COMPLETED" ? "Đã kết thúc" : "Đang mở"}
+           </span>
+         </div>
+         <h2 className="text-xl sm:text-2xl font-black text-white leading-tight drop-shadow-sm">
+           {selected.title}
+         </h2>
+         <p className="text-[13px] text-slate-300 font-medium mt-1">
+           📍 {selected.pitchName || selected.location || "Đà Nẵng"} • 🏆 Thưởng: {formatMoney(selected.prizePool)}
+         </p>
+       </div>
+
+       <div className="text-right shrink-0">
+         <span className="px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md text-amber-300 font-bold text-[13px] border border-amber-300/30">
+           👥 {teamCount}/{teamCap || "—"} Đội Thi Đấu
+         </span>
+       </div>
+     </div>
+   </div>
  )}
 
  {/* Main Header Banner */}
@@ -1189,15 +1400,103 @@ const [addCount, setAddCount] = useState("4");
  <ConfirmModal
  open={confirmStageSimulate}
  inline
- title={`Giả lập kết quả: ${nextPlayableStage || "giai đoạn tiếp theo"}?`}
+ title={`Kiểm tra điều kiện & giả lập: ${nextPlayableStage || "giai đoạn tiếp theo"}`}
+ disabled={!canSimulateNextStage}
  message={
- <>
- Hệ thống sẽ <strong>tự random tỷ số cho các trận thuộc “{nextPlayableStage}”</strong> của giải{" "}
- <strong>“{selected?.title}”</strong>. Đội chiến thắng sẽ <strong>tự động tiến vào vòng kế tiếp</strong>{" "}
- để bạn theo dõi trước khi tiến hành vòng sau.
- </>
+ <div className="space-y-3">
+ <p className="text-[14px] text-slate-700">
+ Hệ thống sẽ tự động phân định kết quả các trận thuộc <strong>“{nextPlayableStage}”</strong> của giải{" "}
+ <strong>“{selected?.title}”</strong> sau khi kiểm tra đạt các tiêu chuẩn thi đấu:
+ </p>
+
+ <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-[13px] space-y-2">
+ <div className="font-extrabold text-slate-900 flex items-center justify-between pb-1.5 border-b border-slate-200">
+ <span>Tiêu chuẩn thi đấu ({nextPlayableStage})</span>
+ <span
+ className={`px-2.5 py-0.5 rounded-lg text-[13px] font-bold ${
+ canSimulateNextStage
+ ? "bg-emerald-100 text-emerald-800"
+ : "bg-rose-100 text-rose-800"
+ }`}
+ >
+ {canSimulateNextStage ? "Đủ điều kiện" : "Chưa đủ điều kiện"}
+ </span>
+ </div>
+
+ <div className="flex items-center justify-between">
+ <span className="flex items-center gap-1.5 text-slate-600">
+ {isTeamCountValid ? (
+ <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+ ) : (
+ <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+ )}
+ <span>Quân số đăng ký theo điều lệ</span>
+ </span>
+ <span className={`font-bold ${isTeamCountValid ? "text-emerald-700" : "text-rose-600"}`}>
+ {teamCount}/{teamCap || "—"} Đội {isTeamCountValid ? "(Đạt)" : "(Chưa đủ)"}
+ </span>
+ </div>
+
+ <div className="flex items-center justify-between">
+ <span className="flex items-center gap-1.5 text-slate-600">
+ {isPaymentValid ? (
+ <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+ ) : (
+ <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+ )}
+ <span>Xác nhận lệ phí tham gia</span>
+ </span>
+ <span className={`font-bold ${isPaymentValid ? "text-emerald-700" : "text-rose-600"}`}>
+ {isPaymentValid ? "100% Đã thu phí" : `Còn ${pendingTeams.length} đội chờ thu phí`}
+ </span>
+ </div>
+
+ <div className="flex items-center justify-between">
+ <span className="flex items-center gap-1.5 text-slate-600">
+ {isBracketValid ? (
+ <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+ ) : (
+ <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+ )}
+ <span>Sơ đồ phân nhánh thi đấu</span>
+ </span>
+ <span className={`font-bold ${isBracketValid ? "text-emerald-700" : "text-rose-600"}`}>
+ {isBracketValid ? "Đã bốc thăm" : "Chưa bốc thăm"}
+ </span>
+ </div>
+
+ <div className="flex items-center justify-between">
+ <span className="flex items-center gap-1.5 text-slate-600">
+ {stageValidation.isValid ? (
+ <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+ ) : (
+ <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+ )}
+ <span>Tiến độ các vòng trước</span>
+ </span>
+ <span className={`font-bold ${stageValidation.isValid ? "text-emerald-700" : "text-rose-600"}`}>
+ {stageValidation.isValid ? "Đã hoàn tất 100%" : `Chưa xong ${stageValidation.uncompletedStage}`}
+ </span>
+ </div>
+ </div>
+
+ {!canSimulateNextStage && (
+ <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-[13px] flex items-start gap-2">
+ <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+ <span>
+ {!isPaymentValid
+ ? `Vui lòng bấm nút "Đã thu phí" cho ${pendingTeams.length} đội ở danh sách phía trên trước khi tiến hành thi đấu.`
+ : !isTeamCountValid
+ ? `Giải đấu chưa đủ ${teamCap} đội theo điều lệ. Hãy điền hoặc thêm đủ đội trước khi giả lập.`
+ : !stageValidation.isValid
+ ? `Cần hoàn tất các trận của vòng "${stageValidation.uncompletedStage}" trước khi tiến hành vòng này.`
+ : "Chưa đủ điều kiện khởi tranh."}
+ </span>
+ </div>
+ )}
+ </div>
  }
- confirmLabel={`Giả lập ${nextPlayableStage || "giai đoạn này"}`}
+ confirmLabel={canSimulateNextStage ? `Giả lập ${nextPlayableStage || "giai đoạn này"}` : "Chưa đủ điều kiện"}
  danger={false}
  busy={simulateBusy}
  onCancel={() => setConfirmStageSimulate(false)}
@@ -1208,15 +1507,87 @@ const [addCount, setAddCount] = useState("4");
  <ConfirmModal
  open={confirmSimulate}
  inline
- title="Giả lập kết quả cả giải?"
+ title="Kiểm tra điều kiện & giả lập kết quả cả giải"
+ disabled={!canSimulateAll}
  message={
- <>
- Hệ thống sẽ <strong>tự random tỷ số</strong> cho mọi trận chưa đá của giải{" "}
- <strong>“{selected?.title}”</strong> (kèm cầu thủ ghi bàn ngẫu nhiên), đội thắng đi
- tiếp, giải có nhà vô địch. Trận đã có kết quả được giữ nguyên.
- </>
+ <div className="space-y-3">
+ <p className="text-[14px] text-slate-700">
+ Hệ thống sẽ tự động phân định kết quả cho mọi trận chưa đấu của giải{" "}
+ <strong>“{selected?.title}”</strong> để tìm ra nhà vô địch sau khi kiểm tra các điều kiện:
+ </p>
+
+ <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-[13px] space-y-2">
+ <div className="font-extrabold text-slate-900 flex items-center justify-between pb-1.5 border-b border-slate-200">
+ <span>Tiêu chuẩn thi đấu toàn giải</span>
+ <span
+ className={`px-2.5 py-0.5 rounded-lg text-[13px] font-bold ${
+ canSimulateAll
+ ? "bg-emerald-100 text-emerald-800"
+ : "bg-rose-100 text-rose-800"
+ }`}
+ >
+ {canSimulateAll ? "Đủ điều kiện" : "Chưa đủ điều kiện"}
+ </span>
+ </div>
+
+ <div className="flex items-center justify-between">
+ <span className="flex items-center gap-1.5 text-slate-600">
+ {isTeamCountValid ? (
+ <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+ ) : (
+ <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+ )}
+ <span>Quân số đăng ký</span>
+ </span>
+ <span className={`font-bold ${isTeamCountValid ? "text-emerald-700" : "text-rose-600"}`}>
+ {teamCount}/{teamCap || "—"} Đội {isTeamCountValid ? "(Đạt)" : "(Chưa đủ)"}
+ </span>
+ </div>
+
+ <div className="flex items-center justify-between">
+ <span className="flex items-center gap-1.5 text-slate-600">
+ {isPaymentValid ? (
+ <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+ ) : (
+ <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+ )}
+ <span>Lệ phí tham gia</span>
+ </span>
+ <span className={`font-bold ${isPaymentValid ? "text-emerald-700" : "text-rose-600"}`}>
+ {isPaymentValid ? "100% Đã thu phí" : `Còn ${pendingTeams.length} đội chờ thu phí`}
+ </span>
+ </div>
+
+ <div className="flex items-center justify-between">
+ <span className="flex items-center gap-1.5 text-slate-600">
+ {isBracketValid ? (
+ <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+ ) : (
+ <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+ )}
+ <span>Sơ đồ phân nhánh</span>
+ </span>
+ <span className={`font-bold ${isBracketValid ? "text-emerald-700" : "text-rose-600"}`}>
+ {isBracketValid ? "Đã bốc thăm" : "Chưa bốc thăm"}
+ </span>
+ </div>
+ </div>
+
+ {!canSimulateAll && (
+ <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-[13px] flex items-start gap-2">
+ <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+ <span>
+ {!isPaymentValid
+ ? `Vui lòng bấm nút "Đã thu phí" cho ${pendingTeams.length} đội ở danh sách phía trên trước khi tiến hành thi đấu.`
+ : !isTeamCountValid
+ ? `Giải đấu chưa đủ ${teamCap} đội theo điều lệ. Hãy điền hoặc thêm đủ đội trước khi giả lập.`
+ : "Chưa đủ điều kiện khởi tranh."}
+ </span>
+ </div>
+ )}
+ </div>
  }
- confirmLabel="Giả lập toàn bộ"
+ confirmLabel={canSimulateAll ? "Giả lập toàn bộ" : "Chưa đủ điều kiện"}
  danger={false}
  busy={simulateBusy}
  onCancel={() => setConfirmSimulate(false)}
@@ -1268,13 +1639,17 @@ const [addCount, setAddCount] = useState("4");
  type="date"
  value={scheduleForm.startDate}
  onChange={(e) => setScheduleForm((f) => ({ ...f, startDate: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className={`w-full px-2.5 py-1.5 rounded-lg border bg-white text-slate-900 text-[14px] focus:outline-none focus:ring-2 ${
+   scheduleErrors.startDate ? "border-rose-400 focus:ring-rose-500" : "border-slate-300 focus:ring-[#0369a1]"
+ }`}
  />
- {!scheduleForm.startDate && (
- <span className="text-[14px] text-slate-600">
- Để trống = dùng ngày khai giải ({prettyDate(selected?.startDate) || "—"}).
- </span>
- )}
+ {scheduleErrors.startDate ? (
+   <p className="mt-1 text-[13px] font-semibold text-rose-600">{scheduleErrors.startDate}</p>
+ ) : !scheduleForm.startDate ? (
+   <span className="text-[14px] text-slate-600">
+   Để trống = dùng ngày khai giải ({prettyDate(selected?.startDate) || "—"}).
+   </span>
+ ) : null}
  </label>
  <label className="block">
  <span className="text-[14px] font-bold text-slate-700 block mb-1">Trận / ngày</span>
@@ -1284,8 +1659,13 @@ const [addCount, setAddCount] = useState("4");
  max={12}
  value={scheduleForm.matchesPerDay}
  onChange={(e) => setScheduleForm((f) => ({ ...f, matchesPerDay: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[14px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className={`w-full px-2.5 py-1.5 rounded-lg border bg-white text-slate-900 text-[14px] font-mono focus:outline-none focus:ring-2 ${
+   scheduleErrors.matchesPerDay ? "border-rose-400 focus:ring-rose-500" : "border-slate-300 focus:ring-[#0369a1]"
+ }`}
  />
+ {scheduleErrors.matchesPerDay && (
+   <p className="mt-1 text-[13px] font-semibold text-rose-600">{scheduleErrors.matchesPerDay}</p>
+ )}
  </label>
  <label className="block">
  <span className="text-[14px] font-bold text-slate-700 block mb-1">Cách giữa vòng (ngày)</span>
@@ -1295,8 +1675,13 @@ const [addCount, setAddCount] = useState("4");
  max={14}
  value={scheduleForm.daysBetweenRounds}
  onChange={(e) => setScheduleForm((f) => ({ ...f, daysBetweenRounds: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[14px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className={`w-full px-2.5 py-1.5 rounded-lg border bg-white text-slate-900 text-[14px] font-mono focus:outline-none focus:ring-2 ${
+   scheduleErrors.daysBetweenRounds ? "border-rose-400 focus:ring-rose-500" : "border-slate-300 focus:ring-[#0369a1]"
+ }`}
  />
+ {scheduleErrors.daysBetweenRounds && (
+   <p className="mt-1 text-[13px] font-semibold text-rose-600">{scheduleErrors.daysBetweenRounds}</p>
+ )}
  </label>
  <label className="block">
  <span className="text-[14px] font-bold text-slate-700 block mb-1">Giờ bắt đầu</span>
@@ -1306,8 +1691,13 @@ const [addCount, setAddCount] = useState("4");
  max={23}
  value={scheduleForm.startHour}
  onChange={(e) => setScheduleForm((f) => ({ ...f, startHour: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[14px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className={`w-full px-2.5 py-1.5 rounded-lg border bg-white text-slate-900 text-[14px] font-mono focus:outline-none focus:ring-2 ${
+   scheduleErrors.startHour ? "border-rose-400 focus:ring-rose-500" : "border-slate-300 focus:ring-[#0369a1]"
+ }`}
  />
+ {scheduleErrors.startHour && (
+   <p className="mt-1 text-[13px] font-semibold text-rose-600">{scheduleErrors.startHour}</p>
+ )}
  </label>
  <label className="block">
  <span className="text-[14px] font-bold text-slate-700 block mb-1">Độ dài trận (phút)</span>
@@ -1318,15 +1708,20 @@ const [addCount, setAddCount] = useState("4");
  step={15}
  value={scheduleForm.matchMinutes}
  onChange={(e) => setScheduleForm((f) => ({ ...f, matchMinutes: e.target.value }))}
- className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[14px] font-mono focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+ className={`w-full px-2.5 py-1.5 rounded-lg border bg-white text-slate-900 text-[14px] font-mono focus:outline-none focus:ring-2 ${
+   scheduleErrors.matchMinutes ? "border-rose-400 focus:ring-rose-500" : "border-slate-300 focus:ring-[#0369a1]"
+ }`}
  />
+ {scheduleErrors.matchMinutes && (
+   <p className="mt-1 text-[13px] font-semibold text-rose-600">{scheduleErrors.matchMinutes}</p>
+ )}
  </label>
  </div>
  <button
  type="button"
  onClick={handleSchedule}
- disabled={scheduleBusy}
- className="w-full px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[14px] transition-all flex items-center justify-center space-x-1.5 shadow-md active:scale-95 disabled:opacity-50"
+ disabled={scheduleBusy || !isScheduleValid}
+ className="w-full px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[14px] transition-all flex items-center justify-center space-x-1.5 shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
  >
  {scheduleBusy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
  <span>{scheduleBusy ? "Đang xếp lịch…" : "Sinh lịch & lưu vào hệ thống"}</span>
@@ -1536,79 +1931,239 @@ const [addCount, setAddCount] = useState("4");
          </span>
        </div>
      )}
+
+     {/* 5. DÀNH CHO KHÁN GIẢ / CẦU THỦ VÃNG LAI CHƯA THAM GIA GIẢI CÔNG KHAI */}
+     {!isInvited && !myTeam && selected.joinMode !== "INVITE_ONLY" && (
+       <div className="space-y-3">
+         {/* A. Giải đang mở đăng ký công khai -> Hiển thị Thẻ Kêu Gọi Nộp Đơn */}
+         {!isClosed && teamCount < (selected.totalTeams || teamCap || 16) && (
+           <div className="rounded-2xl border border-sky-300 bg-gradient-to-r from-sky-50 via-white to-sky-50/70 p-4 sm:p-5 shadow-xs space-y-3">
+             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+               <div className="flex items-start gap-3.5">
+                 <div className="w-11 h-11 rounded-xl bg-[#0369a1] text-white flex items-center justify-center shrink-0 shadow-xs">
+                   <Trophy className="w-5 h-5" />
+                 </div>
+                 <div className="space-y-1">
+                   <div className="flex items-center gap-2 flex-wrap">
+                     <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[13px] border border-emerald-200">
+                       Đang Mở Đăng Ký Công Khai
+                     </span>
+                     <span className="text-[13px] text-slate-600 font-semibold">
+                       Thể thức: <strong className="text-slate-900">{selected.format === "ROUND_ROBIN" ? "Vòng Tròn Tính Điểm" : selected.format === "GROUP_STAGE" ? "Chia Bảng & Loại Trực Tiếp" : "Cúp Loại Trực Tiếp (Knockout)"}</strong>
+                     </span>
+                   </div>
+                   <h3 className="text-base sm:text-lg font-black text-slate-900">
+                     Giải Đấu “{selected.title}” Đang Mở Đăng Ký Đội Thi Đấu!
+                   </h3>
+                   <p className="text-[14px] text-slate-600 leading-relaxed">
+                     Quy mô giải: <strong className="text-slate-900">{selected.totalTeams || teamCap || "—"} đội</strong> • Quỹ giải thưởng: <strong className="text-amber-800 font-bold">{formatMoney(selected.prizePool || 0)}</strong> • Lệ phí tham gia: <strong className="text-slate-900 font-bold">{formatMoney(selected.entryFee || 0)}</strong>
+                   </p>
+                 </div>
+               </div>
+
+               <a
+                 href={`/tournaments/register?tournamentId=${selected.id}`}
+                 className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[14px] shadow-sm flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer"
+               >
+                 <UserPlus className="w-4 h-4" />
+                 <span>Nộp Hồ Sơ Đăng Ký Đội</span>
+               </a>
+             </div>
+
+             {/* Thanh tiến độ lấp đầy suất giải */}
+             <div className="pt-2 border-t border-sky-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[13px]">
+               <div className="flex items-center gap-2 flex-1 max-w-md">
+                 <span className="text-slate-600 font-semibold shrink-0">
+                   Tiến độ: <strong className="text-sky-900">{teamCount}/{selected.totalTeams || teamCap || "—"} đội</strong>
+                 </span>
+                 <div className="flex-1 h-2 rounded-full bg-slate-200 overflow-hidden">
+                   <div
+                     className="h-full bg-[#0369a1] rounded-full transition-all"
+                     style={{ width: `${Math.min(100, (teamCount / (selected.totalTeams || teamCap || 1)) * 100)}%` }}
+                   />
+                 </div>
+               </div>
+               <span className="text-slate-500 font-medium">
+                 Hạn chót nộp đơn: <strong>{prettyDate(selected.registrationDeadline) || "Trước ngày khai mạc"}</strong>
+               </span>
+             </div>
+           </div>
+         )}
+
+         {/* B. Giải đã bế mạc và có đội Quán Quân -> Vinh Danh Nhà Vô Địch */}
+         {isClosed && tournamentChampion && (
+           <div className="rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 via-amber-100/40 to-amber-50 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+             <div className="flex items-center gap-3.5">
+               <div className="w-12 h-12 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md">
+                 <Trophy className="w-6 h-6 text-amber-100" />
+               </div>
+               <div>
+                 <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 font-extrabold text-[13px] border border-amber-300">
+                   Giải Đấu Đã Bế Mạc
+                 </span>
+                 <h3 className="text-lg font-black text-amber-950 mt-0.5">
+                   🏆 Đội Vô Địch: {tournamentChampion}
+                 </h3>
+                 <p className="text-[13px] text-amber-900 font-medium">
+                   Chúc mừng tân vương của giải đấu “{selected.title}”!
+                 </p>
+               </div>
+             </div>
+             <div className="text-right sm:text-left">
+               <span className="text-[13px] text-slate-600 block">Tổng quỹ thưởng giải</span>
+               <span className="text-lg font-mono font-black text-amber-800">{formatMoney(selected.prizePool || 0)}</span>
+             </div>
+           </div>
+         )}
+
+         {/* C. Trận Cầu Tâm Điểm nếu giải đang thi đấu */}
+         {guestSpotlightMatch && (!tournamentChampion || !isClosed) && (
+           <div className="rounded-2xl border border-sky-200 bg-sky-50/70 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+             <div className="flex items-center gap-2.5 flex-wrap">
+               <span className="px-2.5 py-1 rounded-lg bg-[#0369a1] text-white font-extrabold text-[13px] shrink-0">
+                 ⚽ Trận Cầu Đáng Chú Ý
+               </span>
+               <div className="text-sm font-bold text-slate-900">
+                 {guestSpotlightMatch.match.teamA?.name || "Chờ bốc"} <span className="text-slate-400">vs</span> {guestSpotlightMatch.match.teamB?.name || "Chờ bốc"}
+               </div>
+             </div>
+             <div className="flex items-center gap-3 text-[13px] text-slate-600 flex-wrap">
+               {guestSpotlightMatch.match.matchDate && (
+                 <span className="flex items-center gap-1 font-semibold text-slate-700">
+                   <Calendar className="w-3.5 h-3.5 text-sky-700" />
+                   {prettyDate(guestSpotlightMatch.match.matchDate)} {guestSpotlightMatch.match.timeSlot ? `(${guestSpotlightMatch.match.timeSlot})` : ""}
+                 </span>
+               )}
+               <button
+                 type="button"
+                 onClick={() => setActiveTab("schedule")}
+                 className="px-3 py-1 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 font-bold text-slate-800 text-[13px] cursor-pointer"
+               >
+                 Xem Toàn Bộ Lịch Đấu ({allScheduledMatches.length} trận)
+               </button>
+             </div>
+           </div>
+         )}
+       </div>
+     )}
    </div>
  )}
 
- {/* Console Nav Tabs */}
+ {/* Console Nav Tabs: Thích ứng động theo Role, Format & Số Lượng Đội */}
  <div className="flex items-center gap-2 mt-6 pt-6 border-t border-slate-200 flex-wrap">
- <button
- onClick={() => setActiveTab("bracket")}
- className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 ${
- activeTab === "bracket"
- ? "bg-[#0369a1] text-white shadow-md"
- : "bg-slate-100 text-slate-700 hover:bg-slate-200"
- }`}
- >
- <Trophy className="w-4 h-4" />
- <span>Cây Nhánh Đấu</span>
- </button>
+   {/* TAB CÂY NHÁNH ĐẤU (Đối với Vòng Tròn thì ẩn nếu không phải quản lý) */}
+   {(canManage || selected.format !== "ROUND_ROBIN") && (
+     <button
+       type="button"
+       onClick={() => setActiveTab("bracket")}
+       className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
+         activeTab === "bracket"
+           ? "bg-[#0369a1] text-white shadow-md"
+           : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+       }`}
+     >
+       <Trophy className="w-4 h-4" />
+       <span>
+         {selected.format === "GROUP_STAGE"
+           ? "Nhánh Knock-out & Bảng Đấu"
+           : selected.format === "ROUND_ROBIN"
+           ? "Sơ Đồ Đấu Vòng Tròn"
+           : `Cây Nhánh Đấu (${bracket?.rounds?.length || 0} vòng)`}
+       </span>
+     </button>
+   )}
 
- {!canManage && (
- <button
- onClick={() => setActiveTab("schedule")}
- className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 ${
- activeTab === "schedule"
- ? "bg-[#0369a1] text-white shadow-md"
- : "bg-slate-100 text-slate-700 hover:bg-slate-200"
- }`}
- >
- <Calendar className="w-4 h-4 text-sky-700" />
- <span>Lịch Thi Đấu & Kết Quả ({allScheduledMatches.length})</span>
- </button>
- )}
+   {/* TAB LỊCH THI ĐẤU (Khán giả luôn cần xem lịch) */}
+   <button
+     type="button"
+     onClick={() => setActiveTab("schedule")}
+     className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
+       activeTab === "schedule"
+         ? "bg-[#0369a1] text-white shadow-md"
+         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+     }`}
+   >
+     <Calendar className="w-4 h-4 text-sky-700" />
+     <span>Lịch Thi Đấu & Kết Quả ({allScheduledMatches.length})</span>
+   </button>
 
- {canManage && (
- <button
- onClick={() => setActiveTab("var_referee")}
- className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 ${
- activeTab === "var_referee"
- ? "bg-[#0369a1] text-white shadow-md"
- : "bg-slate-100 text-slate-700 hover:bg-slate-200"
- }`}
- >
- <Video className="w-4 h-4 text-red-400" />
- <span>Bàn VAR Live</span>
- <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[14px] font-mono">Trực tiếp</span>
- </button>
- )}
+   {/* TAB BẢNG XẾP HẠNG (Vòng tròn & Chia bảng đưa lên vị trí trọng tâm) */}
+   <button
+     type="button"
+     onClick={() => setActiveTab("standings")}
+     className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
+       activeTab === "standings"
+         ? "bg-[#0369a1] text-white shadow-md"
+         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+     }`}
+   >
+     <ListOrdered className="w-4 h-4" />
+     <span>
+       {selected.format === "ROUND_ROBIN"
+         ? "Bảng Xếp Hạng League"
+         : selected.format === "GROUP_STAGE"
+         ? "Bảng Điểm Các Bảng"
+         : "Bảng Xếp Hạng & Vua Phá Lưới"}
+     </span>
+   </button>
 
- <button
- onClick={() => setActiveTab("standings")}
- className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 ${
- activeTab === "standings"
- ? "bg-[#0369a1] text-white shadow-md"
- : "bg-slate-100 text-slate-700 hover:bg-slate-200"
- }`}
- >
- <ListOrdered className="w-4 h-4" />
- <span>Bảng Xếp Hạng</span>
- </button>
+   {/* TAB DÀNH RIÊNG CHO BAN TỔ CHỨC / QUẢN LÝ */}
+   {canManage && (
+     <>
+       <button
+         type="button"
+         onClick={() => setActiveTab("var_referee")}
+         className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
+           activeTab === "var_referee"
+             ? "bg-[#0369a1] text-white shadow-md"
+             : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+         }`}
+       >
+         <Video className="w-4 h-4 text-red-400" />
+         <span>Bàn VAR Live</span>
+         <span className="bg-red-950 text-red-300 px-1.5 py-0.5 rounded text-[13px] font-mono">Trực tiếp</span>
+       </button>
 
- {canManage && (
- <button
- onClick={() => setActiveTab("esheet")}
- className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 ${
- activeTab === "esheet"
- ? "bg-[#0369a1] text-white shadow-md"
- : "bg-slate-100 text-slate-700 hover:bg-slate-200"
- }`}
- >
- <FileText className="w-4 h-4" />
- <span>Biên Bản & QR</span>
- </button>
- )}
+       <button
+         type="button"
+         onClick={() => setActiveTab("esheet")}
+         className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
+           activeTab === "esheet"
+             ? "bg-[#0369a1] text-white shadow-md"
+             : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+         }`}
+       >
+         <FileText className="w-4 h-4" />
+         <span>Biên Bản & QR</span>
+       </button>
+     </>
+   )}
  </div>
  </div>
+
+      {/* Sân khấu Lễ Bốc Thăm (Hiển thị ngay trên đầu khi bấm Bốc Thăm) */}
+      {selected && lottery !== null && (
+        <DrawLotteryOverlay
+          inline
+          open={true}
+          tournamentTitle={selected.title}
+          pairs={lottery.pairs}
+          byes={lottery.byes}
+          format={selected.format}
+          teams={selected.teams}
+          onDone={async () => {
+            setLottery(null);
+            const updated = await refreshTournamentInCache(selected.id);
+            if (updated) {
+              syncTournamentUpdate(updated);
+            } else {
+              const fullList = await fetchTournaments(true);
+              setTournaments(fullList);
+            }
+            triggerToast("Nhánh đấu chính thức đã được lưu vào hệ thống!");
+          }}
+        />
+      )}
 
  {/* TAB 1: BRACKET CANVAS (render ) */}
  {activeTab === "bracket" && (
@@ -1623,12 +2178,14 @@ const [addCount, setAddCount] = useState("4");
  </span>
  </div>
 
- {/* Nhắc BTC khi chưa xếp lịch */}
+ {/* Nhắc nhở lịch thi đấu (Thân thiện theo Role) */}
  {bracket && scheduledCount === 0 && (
  <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-dashed border-sky-400/50 bg-[#0369a1]/5 px-3 py-2.5">
  <p className="text-[14px] font-bold text-sky-700 ">
- <Calendar className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
- Chưa có lịch thi đấu — bấm “Xếp lịch thi đấu” ở bảng điều hành để sinh ngày, giờ và sân cho từng trận.
+ <Calendar className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+ {canManage
+   ? "Chưa có lịch thi đấu — bấm “Xếp lịch thi đấu” ở bảng điều hành để sinh ngày, giờ và sân cho từng trận."
+   : "Ban Tổ Chức đang hoàn thiện lịch thi đấu chính thức cho giải. Các trận đấu sẽ sớm được cập nhật tại đây."}
  </p>
  </div>
  )}
@@ -1637,6 +2194,70 @@ const [addCount, setAddCount] = useState("4");
  <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
  Đã xếp lịch {scheduledCount} trận — ngày, khung giờ và sân lấy trực tiếp .
  </p>
+ )}
+
+ {/* Thanh Bộ Lọc Vòng Đấu (Stage Filter) */}
+ {bracket && bracket.rounds && bracket.rounds.length > 0 && (
+ <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-gradient-to-r from-sky-50/80 via-white to-slate-50 rounded-2xl border border-sky-100 shadow-xs">
+ <div className="flex flex-wrap items-center gap-2">
+ <div className="flex items-center gap-1.5 px-2.5 py-1 text-[13px] font-bold text-slate-600">
+ <Filter className="w-4 h-4 text-sky-700" />
+ <span>Lọc vòng đấu:</span>
+ </div>
+
+ {/* Nút Tất Cả */}
+ <button
+ type="button"
+ onClick={() => setSelectedRoundFilter("ALL")}
+ className={`px-3.5 py-1.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+ selectedRoundFilter === "ALL"
+ ? "bg-[#0369a1] text-white shadow-sm ring-2 ring-sky-300"
+ : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+ }`}
+ >
+ <span>Tất Cả (Toàn Bộ Cây Nhánh)</span>
+ <span className={`px-2 py-0.5 rounded-full text-[13px] font-mono font-bold ${
+ selectedRoundFilter === "ALL" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+ }`}>
+ {bracket.rounds.reduce((acc, r) => acc + (r.matches?.length ?? 0), 0)}
+ </span>
+ </button>
+
+ {/* Các nút từng vòng */}
+ {bracket.rounds.map((round, rIndex) => {
+ const isSelected = selectedRoundFilter === String(rIndex);
+ const isFinal = rIndex === bracket.rounds.length - 1;
+ return (
+ <button
+ key={rIndex}
+ type="button"
+ onClick={() => setSelectedRoundFilter(String(rIndex))}
+ className={`px-3.5 py-1.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+ isSelected
+ ? isFinal
+ ? "bg-amber-600 text-white shadow-sm ring-2 ring-amber-300"
+ : "bg-[#0369a1] text-white shadow-sm ring-2 ring-sky-300"
+ : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+ }`}
+ >
+ {isFinal && <Trophy className="w-3.5 h-3.5 text-amber-300" />}
+ <span>{round.name}</span>
+ <span className={`px-2 py-0.5 rounded-full text-[13px] font-mono font-bold ${
+ isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+ }`}>
+ {round.matches?.length ?? 0}
+ </span>
+ </button>
+ );
+ })}
+ </div>
+
+ {selectedRoundFilter === "ALL" && (
+ <div className="hidden md:flex items-center gap-1.5 text-[13px] font-medium text-slate-400">
+ <span>← Cuộn ngang để theo dõi đường nhánh đấu tiến vào chung kết →</span>
+ </div>
+ )}
+ </div>
  )}
 
  {!selected ? (
@@ -1834,22 +2455,320 @@ const [addCount, setAddCount] = useState("4");
       </div>
     )}
   </div>
+  ) : selectedRoundFilter !== "ALL" ? (
+    /* CHẾ ĐỘ XEM THEO TỪNG VÒNG ĐẤU ĐƯỢC CHỌN (Tứ Kết, Bán Kết, Chung Kết...) */
+    (() => {
+      const roundIdx = Number(selectedRoundFilter);
+      const curRound = bracket.rounds[roundIdx];
+      if (!curRound) return null;
+      const isFinalRound = roundIdx === bracket.rounds.length - 1;
+
+      return (
+        <div key={`filtered-${roundIdx}`} className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-sky-50/70 via-white to-slate-50 border border-sky-200">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className={`px-2.5 py-0.5 rounded-full text-white text-[13px] font-bold ${
+                  isFinalRound ? "bg-amber-600" : "bg-[#0369a1]"
+                }`}>
+                  {isFinalRound ? "Trận Chung Kết" : `Vòng Đấu #${roundIdx + 1}`}
+                </span>
+                <h3 className="text-base sm:text-lg font-black text-slate-900">
+                  {curRound.name}
+                </h3>
+              </div>
+              <p className="text-[13px] text-slate-600">
+                Hiển thị danh sách {curRound.matches.length} trận đấu thuộc vòng này.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {roundIdx > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedRoundFilter(String(roundIdx - 1))}
+                  className="px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-[13px] font-bold transition-all cursor-pointer"
+                >
+                  ← {bracket.rounds[roundIdx - 1].name}
+                </button>
+              )}
+              {!isFinalRound && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedRoundFilter(String(roundIdx + 1))}
+                  className="px-3 py-1.5 rounded-xl bg-[#0369a1] text-white hover:bg-[#075985] text-[13px] font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  {bracket.rounds[roundIdx + 1].name} →
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setSelectedRoundFilter("ALL")}
+                className="px-3 py-1.5 rounded-xl bg-white border border-sky-300 text-sky-800 hover:bg-sky-50 text-[13px] font-bold transition-all cursor-pointer"
+              >
+                Xem Cây Nhánh Đầy Đủ
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+            {curRound.matches.map((m, mi) => (
+              <div key={m.matchId || mi} className="space-y-2">
+                {renderMatch(m, mi)}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    })()
   ) : (
- <div key={bracket.drawnAt} className="flex gap-3 sm:gap-6 pb-2 items-start overflow-x-auto">
- {bracket.rounds.map((round, ri) => (
- <div key={ri} className="min-w-[250px] flex-1 space-y-3 sm:space-y-4">
- <div className={`text-center text-[14px] font-extrabold py-2 rounded-xl border ${
- ri === bracket.rounds.length - 1
- ? "text-amber-600 bg-amber-500/10 border-amber-500/30"
- : "text-sky-700 bg-slate-100 border-slate-200 "
- }`}>
- {round.name} ({round.matches.length} trận)
- </div>
- {(round.matches ?? []).map((m, mi) => renderMatch(m, mi))}
- </div>
- ))}
- </div>
- )}
+    /* CHẾ ĐỘ XEM TOÀN BỘ CÂY NHÁNH ĐẤU KÈM ĐƯỜNG NỐI LIÊN KẾT (FULL CONNECTED TREE) */
+    (() => {
+      const finalRound = bracket.rounds[bracket.rounds.length - 1];
+      const finalMatch = finalRound?.matches?.[0];
+      const championName =
+        finalMatch?.status === "DONE" && finalMatch?.winner ? finalMatch.winner : null;
+      const baseMatchesCount = bracket.rounds[0]?.matches?.length || 1;
+      const canvasMinHeight = Math.max(baseMatchesCount * 135, 500);
+
+      return (
+        <div
+          key={bracket.drawnAt}
+          className="pb-3 pt-1 overflow-x-auto select-none"
+        >
+          <div className="flex items-stretch min-w-max gap-0">
+            {bracket.rounds.map((round, ri) => {
+              const isFinal = ri === bracket.rounds.length - 1;
+              const nextRound = !isFinal ? bracket.rounds[ri + 1] : null;
+
+              return (
+                <React.Fragment key={`round-group-${ri}`}>
+                  {/* CỘT VÒNG ĐẤU */}
+                  <div
+                    className="min-w-[270px] sm:min-w-[300px] max-w-[330px] flex-1 flex flex-col"
+                    style={{ minHeight: `${canvasMinHeight}px` }}
+                  >
+                    {/* Tiêu đề vòng đấu */}
+                    <div
+                      className={`text-center py-2.5 px-3 rounded-xl border mb-3 shrink-0 shadow-xs ${
+                        isFinal
+                          ? "text-amber-800 bg-amber-500/15 border-amber-300"
+                          : "text-sky-800 bg-sky-50/70 border-sky-200"
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-1.5 text-[13px] font-extrabold">
+                        {isFinal && <Trophy className="w-4 h-4 text-amber-600" />}
+                        <span>{round.name}</span>
+                      </div>
+                      <span className="text-[13px] font-medium text-slate-500 block mt-0.5">
+                        {round.matches.length} trận
+                      </span>
+                    </div>
+
+                    {/* Danh sách các trận trong vòng (căn giữa theo chiều dọc) */}
+                    <div className="flex-1 flex flex-col justify-around py-1 gap-4">
+                      {(round.matches ?? []).map((m, mi) => (
+                        <div key={m.matchId || mi} className="w-full relative">
+                          {renderMatch(m, mi)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* CỘT ĐƯỜNG NỐI LIÊN KẾT VÀO VÒNG TIẾP THEO (CONNECTORS) */}
+                  {nextRound && (
+                    <div
+                      className="w-10 sm:w-14 shrink-0 flex flex-col justify-around py-1"
+                      style={{ minHeight: `${canvasMinHeight}px` }}
+                    >
+                      {/* Khoảng trống trên cùng tương ứng với chiều cao header */}
+                      <div className="h-[52px] mb-3 shrink-0" />
+
+                      {/* Các nhánh nối tương ứng từng trận ở vòng sau */}
+                      <div className="flex-1 flex flex-col justify-around">
+                        {nextRound.matches.map((childMatch, pIndex) => {
+                          const parentA = round.matches[2 * pIndex];
+                          const parentB = round.matches[2 * pIndex + 1];
+
+                          const topWinner = parentA?.status === "DONE" ? parentA.winner : null;
+                          const bottomWinner = parentB?.status === "DONE" ? parentB.winner : null;
+
+                          const topHighlighted = Boolean(
+                            topWinner &&
+                              (childMatch.teamA?.name === topWinner ||
+                                childMatch.teamB?.name === topWinner)
+                          );
+                          const bottomHighlighted = Boolean(
+                            bottomWinner &&
+                              (childMatch.teamA?.name === bottomWinner ||
+                                childMatch.teamB?.name === bottomWinner)
+                          );
+                          const hasBottom = Boolean(parentB);
+
+                          return (
+                            <div
+                              key={`fork-${ri}-${pIndex}`}
+                              className="flex-1 relative flex items-center justify-center my-0.5"
+                            >
+                              {hasBottom ? (
+                                <svg
+                                  className="w-full h-full overflow-visible"
+                                  viewBox="0 0 40 100"
+                                  preserveAspectRatio="none"
+                                >
+                                  {/* Nhánh từ trận trên rẽ xuống giữa */}
+                                  <path
+                                    d="M 0 25 L 20 25 Q 26 25 26 31 L 26 50"
+                                    fill="none"
+                                    stroke={topHighlighted ? "#0369a1" : "#cbd5e1"}
+                                    strokeWidth={topHighlighted ? "3" : "2"}
+                                  />
+                                  {/* Nhánh từ trận dưới rẽ lên giữa */}
+                                  <path
+                                    d="M 0 75 L 20 75 Q 26 75 26 69 L 26 50"
+                                    fill="none"
+                                    stroke={bottomHighlighted ? "#0369a1" : "#cbd5e1"}
+                                    strokeWidth={bottomHighlighted ? "3" : "2"}
+                                  />
+                                  {/* Nhánh gộp chung đi thẳng vào trận vòng sau */}
+                                  <path
+                                    d="M 26 50 L 40 50"
+                                    fill="none"
+                                    stroke={
+                                      topHighlighted || bottomHighlighted
+                                        ? "#0369a1"
+                                        : "#cbd5e1"
+                                    }
+                                    strokeWidth={
+                                      topHighlighted || bottomHighlighted ? "3" : "2"
+                                    }
+                                  />
+                                  {/* Điểm giao nút (Junction Dot) */}
+                                  <circle
+                                    cx="26"
+                                    cy="50"
+                                    r={topHighlighted || bottomHighlighted ? "3.5" : "2.5"}
+                                    fill={
+                                      topHighlighted || bottomHighlighted
+                                        ? "#0369a1"
+                                        : "#94a3b8"
+                                    }
+                                  />
+                                </svg>
+                              ) : (
+                                <svg
+                                  className="w-full h-full overflow-visible"
+                                  viewBox="0 0 40 100"
+                                  preserveAspectRatio="none"
+                                >
+                                  <path
+                                    d="M 0 50 L 40 50"
+                                    fill="none"
+                                    stroke={topHighlighted ? "#0369a1" : "#cbd5e1"}
+                                    strokeWidth={topHighlighted ? "3" : "2"}
+                                  />
+                                  <circle
+                                    cx="20"
+                                    cy="50"
+                                    r={topHighlighted ? "3.5" : "2.5"}
+                                    fill={topHighlighted ? "#0369a1" : "#94a3b8"}
+                                  />
+                                </svg>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ĐƯỜNG NỐI TỪ CHUNG KẾT VÀO CÚP VÔ ĐỊCH */}
+                  {isFinal && (
+                    <div
+                      className="w-10 sm:w-14 shrink-0 flex flex-col justify-around py-1"
+                      style={{ minHeight: `${canvasMinHeight}px` }}
+                    >
+                      <div className="h-[52px] mb-3 shrink-0" />
+                      <div className="flex-1 flex items-center justify-center">
+                        <svg
+                          className="w-full h-12 overflow-visible"
+                          viewBox="0 0 40 40"
+                          preserveAspectRatio="none"
+                        >
+                          <path
+                            d="M 0 20 L 40 20"
+                            fill="none"
+                            stroke={championName ? "#d97706" : "#cbd5e1"}
+                            strokeWidth={championName ? "3" : "2"}
+                            strokeDasharray={championName ? undefined : "4 2"}
+                          />
+                          <circle
+                            cx="20"
+                            cy="20"
+                            r={championName ? "4" : "2.5"}
+                            fill={championName ? "#d97706" : "#94a3b8"}
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+
+            {/* CỘT CÚP VÔ ĐỊCH (NGÔI VƯƠNG) */}
+            <div
+              className="w-52 sm:w-60 shrink-0 flex flex-col justify-center py-1"
+              style={{ minHeight: `${canvasMinHeight}px` }}
+            >
+              <div className="h-[52px] mb-3 shrink-0" />
+              <div className="flex-1 flex items-center justify-center">
+                <div
+                  className={`w-full p-4 sm:p-5 rounded-2xl border-2 text-center space-y-3 transition-all ${
+                    championName
+                      ? "bg-gradient-to-b from-amber-50 via-white to-amber-100/50 border-amber-400 shadow-md ring-4 ring-amber-100"
+                      : "bg-gradient-to-b from-slate-50 to-white border-slate-200 shadow-xs"
+                  }`}
+                >
+                  <div
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-md ${
+                      championName
+                        ? "bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 ring-4 ring-amber-200"
+                        : "bg-slate-200 text-slate-500"
+                    }`}
+                  >
+                    <Trophy className="w-7 h-7" />
+                  </div>
+
+                  <div>
+                    <span className="text-[13px] font-black text-amber-800 tracking-wider">
+                      NGÔI VƯƠNG
+                    </span>
+                    <h4 className="text-base sm:text-lg font-black text-slate-900 mt-0.5 truncate">
+                      {championName ? championName : "Cúp Vô Địch"}
+                    </h4>
+
+                    {championName ? (
+                      <span className="inline-flex items-center gap-1 mt-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[13px] font-black">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Nhà Vô Địch
+                      </span>
+                    ) : (
+                      <p className="text-[13px] font-bold text-slate-500 mt-1 font-mono">
+                        {selected.prizePool
+                          ? `Thưởng ${(selected.prizePool).toLocaleString("vi-VN")}đ`
+                          : "Huy Chương Vàng"}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    })()
+  )}
  </div>
  )}
 
@@ -2265,7 +3184,7 @@ const [addCount, setAddCount] = useState("4");
  }`}
  >
  <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
- <span className="px-2 py-0.5 rounded bg-white text-slate-600 font-mono text-[12px] font-bold border border-slate-200 shrink-0">
+ <span className="px-2 py-0.5 rounded bg-white text-slate-600 font-mono text-[13px] font-bold border border-slate-200 shrink-0">
  {m.matchId} • {roundName}
  </span>
  <div className="flex items-center gap-2 truncate">
@@ -2284,7 +3203,7 @@ const [addCount, setAddCount] = useState("4");
  </span>
  </div>
  {isThisMyMatch && (
- <span className="px-2 py-0.5 rounded bg-[#0369a1] text-white text-[12px] font-bold shrink-0">
+ <span className="px-2 py-0.5 rounded bg-[#0369a1] text-white text-[13px] font-bold shrink-0">
  Trận của bạn
  </span>
  )}
@@ -2324,7 +3243,7 @@ const [addCount, setAddCount] = useState("4");
  <span>Bảng Xếp Hạng {selected ? `— ${selected.title}` : ""}</span>
  </h2>
  <span className="text-[14px] text-slate-600">
- Thắng = 3 điểm • Phong độ & bàn thắng cập nhật tự động sau mỗi trận
+ Thắng = 3 điểm, Hòa = 1 điểm • Cập nhật tự động theo kết quả từng trận đấu
  </span>
  </div>
 
@@ -2366,7 +3285,7 @@ const [addCount, setAddCount] = useState("4");
  </div>
  ) : (
  <div className="overflow-x-auto -mx-1 px-1">
- <table className="w-full text-left border-collapse text-[14px] min-w-[640px]">
+ <table className="w-full text-left border-collapse text-[14px] min-w-[720px]">
  <thead>
  <tr className="border-b border-slate-200 text-slate-500 font-bold text-[14px] tracking-wider">
  <th className="py-3 px-2 sm:px-4 sticky left-0 bg-white z-10">Hạng</th>
@@ -2375,10 +3294,10 @@ const [addCount, setAddCount] = useState("4");
  <th className="py-3 px-2 sm:px-4 text-center">Thắng</th>
  <th className="py-3 px-2 sm:px-4 text-center">Hòa</th>
  <th className="py-3 px-2 sm:px-4 text-center">Thua</th>
+ <th className="py-3 px-2 sm:px-4 text-center">BT - BB</th>
  <th className="py-3 px-2 sm:px-4 text-center">HS</th>
  <th className="py-3 px-2 sm:px-4 text-center">Điểm</th>
- <th className="py-3 px-2 sm:px-4 text-center">Phong Độ 5 Trận</th>
- <th className="py-3 px-2 sm:px-4 text-right">Nguồn</th>
+ <th className="py-3 px-2 sm:px-4 text-right">Trạng Thái Tại Giải</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-200 font-medium">
@@ -2392,17 +3311,13 @@ const [addCount, setAddCount] = useState("4");
  <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-bold text-sky-700 ">{row.won}</td>
  <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-amber-600 ">{row.drawn}</td>
  <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-rose-600">{row.lost}</td>
- <td className="py-3.5 px-2 sm:px-4 text-center font-mono">{row.diff > 0 ? `+${row.diff}` : row.diff}</td>
- <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-black">{row.points}</td>
- <td className="py-3.5 px-2 sm:px-4 text-center">
- <FormDots form={row.form} size="sm" />
- </td>
+ <td className="py-3.5 px-2 sm:px-4 text-center font-mono text-slate-600">{row.gf} - {row.ga}</td>
+ <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-semibold">{row.diff > 0 ? `+${row.diff}` : row.diff}</td>
+ <td className="py-3.5 px-2 sm:px-4 text-center font-mono font-black text-[#0369a1] text-base">{row.points}</td>
  <td className="py-3.5 px-2 sm:px-4 text-right">
- {row.simulated ? (
- <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-800 text-[14px] font-black">Thử nghiệm</span>
- ) : (
- <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-900 text-[14px] font-black">Chính thức</span>
- )}
+ <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[13px] ${row.stageStatus.tone}`}>
+ {row.stageStatus.label}
+ </span>
  </td>
  </tr>
  ))}
@@ -2638,15 +3553,15 @@ const [addCount, setAddCount] = useState("4");
  <div className="grid grid-cols-3 gap-4 pt-6 text-center text-[13px] text-slate-700">
   <div className="space-y-8">
    <div className="font-bold">ĐẠI DIỆN ĐỘI A</div>
-   <div className="italic text-slate-400 font-mono text-[12px]">(Ký & ghi rõ họ tên)</div>
+   <div className="italic text-slate-400 font-mono text-[13px]">(Ký & ghi rõ họ tên)</div>
   </div>
   <div className="space-y-8">
    <div className="font-bold">ĐẠI DIỆN ĐỘI B</div>
-   <div className="italic text-slate-400 font-mono text-[12px]">(Ký & ghi rõ họ tên)</div>
+   <div className="italic text-slate-400 font-mono text-[13px]">(Ký & ghi rõ họ tên)</div>
   </div>
   <div className="space-y-8">
    <div className="font-bold">TRỌNG TÀI CHÍNH</div>
-   <div className="italic text-slate-400 font-mono text-[12px]">(Ký & ghi rõ họ tên)</div>
+   <div className="italic text-slate-400 font-mono text-[13px]">(Ký & ghi rõ họ tên)</div>
   </div>
  </div>
 
@@ -2671,22 +3586,6 @@ const [addCount, setAddCount] = useState("4");
  </div>
  )}
 
- {/* Overlay hiệu ứng bốc thăm */}
- {selected && (
- <DrawLotteryOverlay
- inline
- open={lottery !== null}
- tournamentTitle={selected.title}
- pairs={lottery?.pairs ?? []}
- byes={lottery?.byes ?? []}
- onDone={() => {
- setLottery(null);
- triggerToast("Nhánh đấu chính thức đã được lưu vào hệ thống!");
- }}
- />
- )}
-
- 
       {/* POPUP MODAL MỜI CẦU THỦ QUA EMAIL */}
       <TournamentInviteModal
         isOpen={showInviteModal}

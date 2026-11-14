@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   listCanteenItems, createCanteenItem, updateCanteenItem, sellCanteenItem, deleteCanteenItem,
 } from "@/lib/canteenService";
 import { apiRequest } from "@/lib/api";
 import { pitchTypeLabel, isPeakSlot } from "@/lib/pitchLabels";
-import { getMyPitchesApi } from "@/lib/pitchService";
+import PitchHoverPreview from "@/components/PitchHoverPreview";
+import { getMyPitchesApi, updatePitchGalleryApi, updateCourtImagesApi } from "@/lib/pitchService";
+import { uploadChatFile } from "@/lib/groupChat";
+import { SAMPLE_PITCH_PHOTOS } from "@/lib/pitchVisuals";
 import { formatMoney } from "@/lib/tournamentService";
 import { simulateBookings } from "@/lib/adminService";
 import BusinessContacts from "@/components/BusinessContacts";
@@ -55,7 +58,12 @@ import {
  Tag,
  Activity,
  Volume2,
- Pencil
+ Pencil,
+ Camera,
+ Loader2,
+ Upload,
+ Images,
+ ImagePlus
 } from "lucide-react";
 import {
  playNotificationChime,
@@ -151,6 +159,26 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
   const [canteenLoading, setCanteenLoading] = useState(false);
   const [canteenBusy, setCanteenBusy] = useState(false);
   const [canteenForm, setCanteenForm] = useState({ name: "", price: "", stock: "", unit: "" });
+
+  const canteenErrors = useMemo(() => {
+    const errs: Record<string, string> = {};
+    const name = canteenForm.name.trim();
+    if (!name) {
+      errs.name = "Vui lòng nhập tên món.";
+    } else if (name.length < 2) {
+      errs.name = "Tên món tối thiểu 2 ký tự.";
+    }
+    const price = Number(canteenForm.price);
+    if (!price || price <= 0) {
+      errs.price = "Giá bán phải lớn hơn 0đ.";
+    }
+    const stock = Number(canteenForm.stock);
+    if (canteenForm.stock !== "" && (!Number.isInteger(stock) || stock < 0)) {
+      errs.stock = "Tồn kho phải là số nguyên >= 0.";
+    }
+    return errs;
+  }, [canteenForm]);
+  const isCanteenValid = Object.keys(canteenErrors).length === 0;
   const [canteenEditingId, setCanteenEditingId] = useState<number | null>(null);
 
   const loadCanteen = async (pid?: number | null) => {
@@ -223,6 +251,7 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
 
  // Modals state
  const [showOfflineModal, setShowOfflineModal] = useState(false);
+  const [inlineOfflinePitch, setInlineOfflinePitch] = useState<string | null>(null);
  const [showAddPitchModal, setShowAddPitchModal] = useState(false);
  const [showHoursModal, setShowHoursModal] = useState(false);
  const [showConfigModal, setShowConfigModal] = useState(false);
@@ -247,20 +276,36 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
  const [newPitchBasePrice, setNewPitchBasePrice] = useState("450000");
  const [newPitchPeakPrice, setNewPitchPeakPrice] = useState("600000");
 
+ const newPitchErrors = useMemo(() => {
+   const errs: Record<string, string> = {};
+   const name = newPitchName.trim();
+   if (!name) {
+     errs.name = "Vui lòng nhập tên sân con.";
+   } else if (name.length < 3) {
+     errs.name = "Tên sân con tối thiểu 3 ký tự (VD: Sân 7A).";
+   } else if (pitchMatrix?.some((p: any) => (p?.pitchName || "").trim().toLowerCase() === name.toLowerCase())) {
+     errs.name = `Sân "${name}" đã tồn tại trong cụm sân này.`;
+   }
+
+   const base = Number(newPitchBasePrice);
+   if (!base || base < 50000) {
+     errs.basePrice = "Giá thường từ 50.000đ trở lên.";
+   } else if (base > 50000000) {
+     errs.basePrice = "Giá thường tối đa 50.000.000đ.";
+   }
+
+   const peak = Number(newPitchPeakPrice);
+   if (!peak || peak < (base || 0)) {
+     errs.peakPrice = "Giá giờ vàng phải >= giá thường.";
+   }
+   return errs;
+ }, [newPitchName, newPitchBasePrice, newPitchPeakPrice, pitchMatrix]);
+ const isNewPitchValid = Object.keys(newPitchErrors).length === 0;
+
 // Sửa hồ sơ cụm sân (trước đây chỉ sửa được giá + giờ mở cửa)
 const [showEditInfoModal, setShowEditInfoModal] = useState(false);
 
- // Cac form quan tri (Sua ho so / Them san / Dat ca / Gio mo cua) hien INLINE o cuoi trang
- // -> tu cuon toi khi mo de chu san khong phai tim.
- useEffect(() => {
-  const open = showEditInfoModal || showAddPitchModal || showOfflineModal || selectedSlotForAction || showHoursModal || showCancelModal;
-  if (!open) return;
-  const raf = requestAnimationFrame(() => {
-   const el = document.querySelector('[id^="admin-inline-"]');
-   el?.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
-  return () => cancelAnimationFrame(raf);
- }, [showEditInfoModal, showAddPitchModal, showOfflineModal, selectedSlotForAction, showHoursModal, showCancelModal]);
+ // Đã chuyển toàn bộ các form quản trị hiển thị INLINE trực tiếp tại chỗ người dùng bấm nút, không cuộn ép màn hình.
 const [isSavingInfo, setIsSavingInfo] = useState(false);
 const [infoName, setInfoName] = useState("");
   const [infoBankCode, setInfoBankCode] = useState("");
@@ -273,6 +318,11 @@ const [infoImageUrl, setInfoImageUrl] = useState("");
 const [infoDescription, setInfoDescription] = useState("");
 const [infoPitchTypes, setInfoPitchTypes] = useState<string[]>([]);
 const [infoAmenities, setInfoAmenities] = useState<string[]>([]);
+const [infoGallery, setInfoGallery] = useState<string[]>([]);
+const [newGalleryInput, setNewGalleryInput] = useState("");
+const [activeEditingCourt, setActiveEditingCourt] = useState<string | null>(null);
+const [courtImagesMap, setCourtImagesMap] = useState<Record<string, string[]>>({});
+const [newCourtImgInput, setNewCourtImgInput] = useState("");
 
 // Danh sách gợi ý GỘP thêm các giá trị đang lưu trong DB. Nếu chỉ dùng danh sách
 // cố định thì các tiện ích cũ (ví dụ "Giữ xe", "Áo bib", "Đèn LED") không khớp
@@ -301,6 +351,8 @@ setInfoImageUrl(p?.imageUrl ?? "");
 setInfoDescription(p?.description ?? "");
 setInfoPitchTypes(Array.isArray(p?.pitchTypes) ? [...p.pitchTypes] : []);
 setInfoAmenities(Array.isArray(p?.amenities) ? [...p.amenities] : []);
+const existingGallery = Array.isArray(p?.gallery) && p.gallery.length > 0 ? p.gallery : (p?.imageUrl ? [p.imageUrl] : []);
+setInfoGallery(existingGallery);
 setShowEditInfoModal(true);
 };
 
@@ -317,17 +369,164 @@ current.includes(value)
 );
 };
 
+const toggleCourtImageEditor = (courtName: string, initialImages: string[]) => {
+  if (activeEditingCourt === courtName) {
+    setActiveEditingCourt(null);
+  } else {
+    setActiveEditingCourt(courtName);
+    setNewCourtImgInput("");
+    if (!courtImagesMap[courtName]) {
+      setCourtImagesMap((prev) => ({
+        ...prev,
+        [courtName]: Array.isArray(initialImages) && initialImages.length > 0 ? [...initialImages] : []
+      }));
+    }
+  }
+};
+
+const handleAddCourtImage = (courtName: string, url: string) => {
+  if (!url || !url.trim()) return;
+  const clean = url.trim();
+  setCourtImagesMap((prev) => {
+    const list = prev[courtName] || [];
+    if (list.includes(clean)) return prev;
+    return { ...prev, [courtName]: [...list, clean] };
+  });
+  setNewCourtImgInput("");
+};
+
+const handleRemoveCourtImage = (courtName: string, idxToRemove: number) => {
+  setCourtImagesMap((prev) => {
+    const list = prev[courtName] || [];
+    return { ...prev, [courtName]: list.filter((_, idx) => idx !== idxToRemove) };
+  });
+};
+
+const handleSaveCourtImages = async (courtName: string) => {
+  const currentId = activePitch?.id || 1;
+  const imgs = courtImagesMap[courtName] || [];
+  try {
+    await updateCourtImagesApi(currentId, courtName, imgs);
+    showToast(`🎉 Đã lưu album ${imgs.length} ảnh cho sân [${courtName}]!`);
+    setActiveEditingCourt(null);
+    await loadMatrixAndStats(currentId);
+  } catch (err: any) {
+    showToast(`❌ Lỗi lưu ảnh sân: ${err.message || 'Không thể lưu'}`);
+  }
+};
+
+const handleAddGalleryImage = (url: string) => {
+  if (!url || !url.trim()) return;
+  const clean = url.trim();
+  if (infoGallery.includes(clean)) return;
+  const next = [...infoGallery, clean];
+  setInfoGallery(next);
+  if (!infoImageUrl) setInfoImageUrl(clean);
+  setNewGalleryInput("");
+};
+
+const handleRemoveGalleryImage = (idxToRemove: number) => {
+  const next = infoGallery.filter((_, idx) => idx !== idxToRemove);
+  setInfoGallery(next);
+  if (infoImageUrl === infoGallery[idxToRemove] && next.length > 0) {
+    setInfoImageUrl(next[0]);
+  }
+};
+
+const handleSetMainGalleryImage = (url: string) => {
+  setInfoImageUrl(url);
+  showToast("⭐ Đã chọn ảnh này làm ảnh đại diện chính của cụm sân.");
+};
+
+const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+const galleryFileInputRef = useRef<HTMLInputElement | null>(null);
+const courtFileInputRef = useRef<HTMLInputElement | null>(null);
+
+const handleFileUpload = async (file: File): Promise<string> => {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Chỉ chấp nhận file hình ảnh (JPG, PNG, WebP)!");
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error("Ảnh quá lớn, tối đa 10MB!");
+  }
+  try {
+    const res = await uploadChatFile(file);
+    if (res && res.fileUrl) return res.fileUrl;
+  } catch (err) {
+    console.warn("Upload API failed, fallback to local FileReader:", err);
+  }
+  // Fallback sang Data URL nếu máy chủ offline
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+const handlePickGalleryFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file) return;
+  setIsUploadingPhoto(true);
+  try {
+    const url = await handleFileUpload(file);
+    handleAddGalleryImage(url);
+    showToast("🎉 Đã tải ảnh từ máy tính/điện thoại vào album cụm sân!");
+  } catch (err: any) {
+    showToast(`❌ ${err.message || 'Lỗi tải ảnh'}`);
+  } finally {
+    setIsUploadingPhoto(false);
+  }
+};
+
+const handlePickCourtFile = async (e: React.ChangeEvent<HTMLInputElement>, courtName: string) => {
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file || !courtName) return;
+  setIsUploadingPhoto(true);
+  try {
+    const url = await handleFileUpload(file);
+    handleAddCourtImage(courtName, url);
+    showToast(`🎉 Đã tải ảnh từ máy tính/điện thoại vào sân [${courtName}]!`);
+  } catch (err: any) {
+    showToast(`❌ ${err.message || 'Lỗi tải ảnh'}`);
+  } finally {
+    setIsUploadingPhoto(false);
+  }
+};
+
 const handleSavePitchInfo = async (e: React.FormEvent) => {
-e.preventDefault();
-const currentId = activePitch?.id;
-if (!currentId) {
-showToast("Chưa chọn cụm sân cần cập nhật.");
-return;
-}
-if (!infoName.trim() || !infoAddress.trim()) {
-showToast("Tên và địa chỉ cụm sân là bắt buộc.");
-return;
-}
+    e.preventDefault();
+    const currentId = activePitch?.id;
+    if (!currentId) {
+      showToast("❌ Chưa chọn cụm sân cần cập nhật.");
+      return;
+    }
+    if (!infoName.trim() || infoName.trim().length < 5) {
+      showToast("❌ Tên cụm sân phải có ít nhất 5 ký tự (VD: Cụm Sân Đại Nắng)!");
+      return;
+    }
+    if (!infoAddress.trim() || infoAddress.trim().length < 6) {
+      showToast("❌ Địa chỉ cụm sân phải rõ ràng, tối thiểu 6 ký tự!");
+      return;
+    }
+    const phoneClean = infoPhone.trim();
+    if (phoneClean && !/^(0[3|5|7|8|9])[0-9]{8}$/.test(phoneClean)) {
+      showToast("❌ Số điện thoại đường dây nóng phải gồm 10 chữ số hợp lệ (VD: 0908123456)!");
+      return;
+    }
+    const bankAccClean = infoBankAccount.replace(/\s/g, "");
+    if (bankAccClean) {
+      if (!/^[0-9]{6,20}$/.test(bankAccClean)) {
+        showToast("❌ Số tài khoản ngân hàng chỉ được gồm 6 đến 20 chữ số!");
+        return;
+      }
+      if (!infoAccountName.trim()) {
+        showToast("❌ Vui lòng nhập tên chủ tài khoản ngân hàng!");
+        return;
+      }
+    }
 setIsSavingInfo(true);
 try {
 await apiRequest(`/api/v1/pitches/${currentId}`, {
@@ -344,6 +543,7 @@ imageUrl: infoImageUrl.trim(),
 description: infoDescription.trim(),
 pitchTypes: infoPitchTypes,
 amenities: infoAmenities,
+gallery: infoGallery,
 }),
 });
 await fetchRealData();
@@ -411,6 +611,33 @@ setIsSavingInfo(false);
  const [offlineCustomer, setOfflineCustomer] = useState("");
  const [offlinePhone, setOfflinePhone] = useState("");
  const [offlineDepositType, setOfflineDepositType] = useState<"PAID_CASH" | "TRUST">("PAID_CASH");
+
+ const offlineErrors = useMemo(() => {
+   const errs: Record<string, string> = {};
+   const name = offlineCustomer.trim();
+   if (!name) {
+     errs.customer = "Vui lòng nhập tên khách.";
+   } else if (name.length < 2) {
+     errs.customer = "Tên khách tối thiểu 2 ký tự.";
+   }
+   const phone = offlinePhone.trim();
+   if (!phone) {
+     errs.phone = "Vui lòng nhập số điện thoại.";
+   } else if (!/^(0[3|5|7|8|9])[0-9]{8}$/.test(phone)) {
+     errs.phone = "Số điện thoại phải gồm 10 số (VD: 0909…).";
+   }
+   if (offlineDate) {
+     const today = new Date().toISOString().split("T")[0];
+     if (offlineDate < today) {
+       errs.date = "Ngày đặt không thể ở quá khứ.";
+     }
+   }
+   if (!offlineTime) {
+     errs.time = "Vui lòng chọn khung giờ.";
+   }
+   return errs;
+ }, [offlineCustomer, offlinePhone, offlineDate, offlineTime]);
+ const isOfflineValid = Object.keys(offlineErrors).length === 0;
 
  // Realtime Live Booking Alerts State
  const [realtimeAlert, setRealtimeAlert] = useState<RealtimeBookingEvent | null>(null);
@@ -528,8 +755,20 @@ setIsSavingInfo(false);
  }, [activePitch?.id]);
 
  const handleUpdateOperatingHours = async (e: React.FormEvent) => {
- e.preventDefault();
- const currentId = activePitch?.id || 1;
+    e.preventDefault();
+    const [openH, openM] = operatingOpenTime.split(":").map(Number);
+    const [closeH, closeM] = operatingCloseTime.split(":").map(Number);
+    const openTotal = (openH || 0) * 60 + (openM || 0);
+    const closeTotal = (closeH || 0) * 60 + (closeM || 0);
+    if (closeTotal <= openTotal) {
+      showToast("❌ Giờ kết thúc đóng cửa phải sau giờ bắt đầu mở cửa!");
+      return;
+    }
+    if (closeTotal - openTotal < operatingSlotDuration) {
+      showToast(`❌ Khung giờ mở cửa phải lớn hơn hoặc bằng thời lượng 1 ca (${operatingSlotDuration} phút)!`);
+      return;
+    }
+    const currentId = activePitch?.id || 1;
  setIsUpdatingHours(true);
  try {
  await apiRequest(`/api/v1/pitches/${currentId}/operating-hours`, {
@@ -676,11 +915,26 @@ setIsSavingInfo(false);
 
  // Add new pitch handler (Lưu thật vào MySQL)
  const handleCreateNewPitch = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!newPitchName.trim()) {
- showToast("❌ Vui lòng nhập tên sân con mới!");
- return;
- }
+    e.preventDefault();
+    const courtName = newPitchName.trim();
+    if (courtName.length < 3) {
+      showToast("❌ Tên sân con phải từ 3 ký tự trở lên (VD: Sân 7A, Sân 5B)!");
+      return;
+    }
+    const baseP = Number(newPitchBasePrice);
+    if (!baseP || baseP < 50000) {
+      showToast("❌ Giá giờ thường phải từ 50.000đ trở lên!");
+      return;
+    }
+    if (baseP > 50000000) {
+      showToast("❌ Giá giờ thường vượt quá giới hạn tối đa (50.000.000đ)!");
+      return;
+    }
+    const peakP = Number(newPitchPeakPrice);
+    if (!peakP || peakP < baseP) {
+      showToast("❌ Giá giờ vàng phải lớn hơn hoặc bằng giá giờ thường!");
+      return;
+    }
 
  const currentId = activePitch?.id || 1;
  try {
@@ -704,11 +958,20 @@ setIsSavingInfo(false);
 
  // Offline Booking submit (Lưu thật vào MySQL)
  const handleOfflineBookingSubmit = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!offlineCustomer.trim() || !offlinePhone.trim()) {
- showToast("❌ Vui lòng nhập đầy đủ tên và số điện thoại khách!");
- return;
- }
+    e.preventDefault();
+    if (!offlineCustomer.trim() || offlineCustomer.trim().length < 2) {
+      showToast("❌ Vui lòng nhập tên khách hàng hợp lệ (tối thiểu 2 ký tự)!");
+      return;
+    }
+    const cleanPhone = offlinePhone.trim();
+    if (!/^(0[3|5|7|8|9])[0-9]{8}$/.test(cleanPhone)) {
+      showToast("❌ Số điện thoại khách phải gồm 10 chữ số hợp lệ (VD: 0912345678)!");
+      return;
+    }
+    if (!offlineTime) {
+      showToast("❌ Vui lòng chọn khung giờ thi đấu cho ca đặt!");
+      return;
+    }
 
  const currentId = activePitch?.id || 1;
  try {
@@ -741,6 +1004,7 @@ setIsSavingInfo(false);
  matrixDateRef.current = offlineDate;
  await loadMatrixAndStats(currentId, MATRIX_DURATION, offlineDate);
  setShowOfflineModal(false);
+    setInlineOfflinePitch(null);
  setOfflineCustomer("");
  setOfflinePhone("");
  showToast(`✅ Đã đặt ca thành công ngày [${offlineDate}] cho khách [${offlineCustomer}] và lưu vào database!`);
@@ -762,6 +1026,194 @@ setIsSavingInfo(false);
  showToast(`❌ Lỗi đặt ca: ${err.message || 'Khung giờ này đã có người đặt trước!'}`);
  }
  };
+
+  // Render Form Đặt Ca Tại Quầy (Dùng chung cho cả vị trí Top và vị trí Inline trong từng sân con)
+  const renderOfflineBookingForm = (currentContext?: string) => {
+    const isInsideCourt = Boolean(currentContext && currentContext !== "TOP");
+    const matchedCourt = pitchMatrix.find(p => p.pitchName === (currentContext || offlinePitchId)) || pitchMatrix[0];
+    return (
+      <div 
+        className={`bg-white p-4 sm:p-6 rounded-2xl border-2 border-[#0369a1] space-y-3 sm:space-y-4 shadow-md animate-modal-pop w-full ${isInsideCourt ? "max-w-2xl my-2" : "max-w-xl"}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-black">
+              <Plus className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-black text-base sm:text-lg text-slate-900">
+                {isInsideCourt 
+                  ? `Tạo Đơn Tại Quầy: ${pitchTypeLabel(matchedCourt?.pitchName) || matchedCourt?.pitchName || "Sân"}` 
+                  : "Tạo Đơn Đặt Ca Tại Quầy"}
+              </h3>
+              <p className="text-[13px] text-slate-500">
+                Lưu trực tiếp vào hệ thống và tự động cập nhật sơ đồ ca tức thời
+              </p>
+            </div>
+          </div>
+          <button 
+            type="button"
+            onClick={() => { setShowOfflineModal(false); setInlineOfflinePitch(null); }} 
+            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Đóng form"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleOfflineBookingSubmit} className="space-y-3 sm:space-y-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="font-extrabold text-slate-800 flex items-center justify-between">
+                <span>Ngày Thi Đấu:</span>
+              </label>
+              <div className="flex items-center space-x-2">
+                <select
+                  value={offlineDate}
+                  onChange={(e) => setOfflineDate(e.target.value)}
+                  className="flex-1 p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
+                >
+                  {upcomingDays.map(d => (
+                    <option key={d.iso} value={d.iso}>
+                      {d.label} ({d.dateFormatted})
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="date"
+                  value={offlineDate}
+                  onChange={(e) => {
+                    if (e.target.value) setOfflineDate(e.target.value);
+                  }}
+                  className="p-2 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 text-[13px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-extrabold text-slate-800">Chọn Sân Con:</label>
+              <select
+                value={offlinePitchId}
+                onChange={(e) => setOfflinePitchId(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
+              >
+                {pitchMatrix.map(p => (
+                  <option key={p.pitchId} value={p.pitchName}>{pitchTypeLabel(p.pitchName) || p.pitchName}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="font-extrabold text-slate-800">Khung Giờ Đặt:</label>
+              <select
+                value={offlineTime}
+                onChange={(e) => setOfflineTime(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
+              >
+                {offlineAvailableSlots.map((slot) => (
+                  <option key={slot} value={slot}>
+                    {slot}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5 flex flex-col justify-end">
+              <div className="rounded-xl bg-sky-50 border border-sky-200 px-3 py-2 text-[13px] font-bold text-sky-900 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-sky-700 shrink-0" />
+                <span>Thời lượng ca: <strong>2 tiếng (120 phút)</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="font-extrabold text-slate-800">Tên Khách Đặt *</label>
+              <input
+                type="text"
+                required
+                value={offlineCustomer}
+                onChange={(e) => setOfflineCustomer(e.target.value)}
+                placeholder="VD: Anh Cường FC Hải Châu"
+                className={`w-full p-2.5 rounded-xl border bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 text-sm ${
+                  offlineErrors.customer && offlineCustomer ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+                }`}
+              />
+              {offlineErrors.customer && offlineCustomer && (
+                <p className="mt-1 text-[13px] font-semibold text-rose-600">{offlineErrors.customer}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-extrabold text-slate-800">Số Điện Thoại Khách *</label>
+              <input
+                type="text"
+                required
+                value={offlinePhone}
+                onChange={(e) => setOfflinePhone(e.target.value)}
+                placeholder="0914 555 789"
+                className={`w-full p-2.5 rounded-xl border bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 text-sm ${
+                  offlineErrors.phone && offlinePhone ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+                }`}
+              />
+              {offlineErrors.phone && offlinePhone && (
+                <p className="mt-1 text-[13px] font-semibold text-rose-600">{offlineErrors.phone}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1.5 pt-1">
+            <label className="font-extrabold text-slate-800">Hình Thức Đặt Cọc:</label>
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setOfflineDepositType("PAID_CASH")}
+                className={`p-3 rounded-xl font-bold border transition-all text-[13px] cursor-pointer ${
+                  offlineDepositType === "PAID_CASH"
+                    ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                Đã Thu Cọc Mặt Quầy (50%)
+              </button>
+              <button
+                type="button"
+                onClick={() => setOfflineDepositType("TRUST")}
+                className={`p-3 rounded-xl font-bold border transition-all text-[13px] cursor-pointer ${
+                  offlineDepositType === "TRUST"
+                    ? "bg-amber-500 text-white border-amber-500 shadow-xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                Chưa Cọc (Khách Quen Tin Tưởng)
+              </button>
+            </div>
+          </div>
+
+          <div className="flex space-x-2.5 pt-2">
+            <button
+              type="button"
+              onClick={() => { setShowOfflineModal(false); setInlineOfflinePitch(null); }}
+              className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={!isOfflineValid}
+              className="flex-1 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Xác Nhận Giữ Ca
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  };
+
 
  // Confirm Check-in (Cập nhật thật vào MySQL)
    // Xac nhan khach da thu coc online (PENDING_PAYMENT -> BOOKED) truoc khi check-in.
@@ -808,6 +1260,32 @@ const handleConfirmCheckin = async (slot: any) => {
  showToast("⚽ Đã ghi nhận khách vào sân!");
  }
  };
+
+  // Hoàn tất ca & tất toán tiền còn lại khi trận đấu kết thúc (PLAYING -> COMPLETED)
+  const handleCompleteBooking = async (slot: any) => {
+    if (!slot) return;
+    if (slot.bookingId) {
+      try {
+        await apiRequest(`/api/v1/pitches/bookings/${slot.bookingId}/complete`, { method: "PUT" });
+        await loadMatrixAndStats(activePitch?.id || 1);
+        setSelectedSlotForAction(null);
+        showToast("🏁 Tất toán & hoàn tất ca thành công! Ca sân đã sẵn sàng cho lượt tiếp theo.");
+
+        broadcastBookingEvent({
+          type: "BOOKING_COMPLETED",
+          pitchId: activePitch?.id || 1,
+          bookingId: slot.bookingId,
+          customerName: slot.customer
+        });
+        return;
+      } catch (err: any) {
+        showToast(`❌ Lỗi hoàn tất ca: ${err.message}`);
+      }
+    } else {
+      setSelectedSlotForAction(null);
+      showToast("🏁 Đã hoàn tất và trả ca sân!");
+    }
+  };
 
  // Cancel Booking - Step 1: Show modal to collect reason
  const handleCancelBooking = async (slot: any) => {
@@ -1190,7 +1668,7 @@ const handleConfirmCheckin = async (slot: any) => {
 
  <button
  type="button"
-  onClick={() => { setOfflineTime(offlineAvailableSlots[0] ?? ""); setShowOfflineModal(true); }}
+  onClick={() => { setOfflinePitchId(pitchMatrix[0]?.pitchName || ""); setOfflineTime(offlineAvailableSlots[0] ?? ""); setOfflineDate(matrixDate); setInlineOfflinePitch("TOP"); setShowOfflineModal(true); }}
  className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] sm:text-sm shadow-md transition-all active:scale-95 flex items-center space-x-1.5 whitespace-nowrap shrink-0"
  >
  <PhoneCall className="w-4 h-4 shrink-0" />
@@ -1268,7 +1746,232 @@ const handleConfirmCheckin = async (slot: any) => {
  </div>
  </div>
 
- {/* Kênh liên lạc với Ban Tổ Chức (B2B) */}
+ {/* FORM THÊM SÂN CON MỚI VÀO CỤM (HIỂN THỊ INLINE NGAY TẠI CHỖ) */}
+      {showAddPitchModal && (
+        <div id="admin-inline-add-pitch" className="w-full animate-fade-in">
+          <div 
+            className="bg-white p-4 sm:p-6 rounded-2xl max-w-xl w-full border-2 border-sky-300 space-y-4 shadow-md animate-modal-pop"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-sky-100 text-[#0369a1] flex items-center justify-center">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-base text-slate-900">Thêm Sân Con Mới Vào Cụm</h3>
+                  <p className="text-[13px] text-slate-500">Khởi tạo sân bóng con và thiết lập biểu giá ca sân</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowAddPitchModal(false)} 
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateNewPitch} className="space-y-4 text-sm">
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-800 text-[13px]">Tên Sân Con Mới *</label>
+                <input
+                  type="text"
+                  required
+                  value={newPitchName}
+                  onChange={(e) => setNewPitchName(e.target.value)}
+                  placeholder="VD: Sân 7C Cỏ Nhân Tạo Mới"
+                  className={`w-full p-3 rounded-xl border bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 text-sm ${
+                    newPitchErrors.name && newPitchName ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+                  }`}
+                />
+                {newPitchErrors.name && newPitchName && (
+                  <p className="mt-1 text-[13px] font-semibold text-rose-600">{newPitchErrors.name}</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-800 text-[13px]">Loại Sân Thể Thao:</label>
+                <select
+                  value={newPitchType}
+                  onChange={(e) => setNewPitchType(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:border-sky-500 text-sm cursor-pointer"
+                >
+                  <option value="Sân 7 Người">Sân 7 Người (Cỏ Nhân Tạo Chuẩn VFF)</option>
+                  <option value="Sân 5 Người">Sân 5 Người (Mini Cỏ / Futsal)</option>
+                  <option value="Sân 11 Người">Sân 11 Người (Tiêu Chuẩn FIFA)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-800 text-[13px]">Giá Giờ Thường (VNĐ) *</label>
+                  <input
+                    type="number"
+                    value={newPitchBasePrice}
+                    onChange={(e) => setNewPitchBasePrice(e.target.value)}
+                    className={`w-full p-3 rounded-xl border bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 text-sm ${
+                      newPitchErrors.basePrice ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+                    }`}
+                  />
+                  {newPitchErrors.basePrice && (
+                    <p className="mt-1 text-[13px] font-semibold text-rose-600">{newPitchErrors.basePrice}</p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-800 text-[13px]">Giá Giờ Vàng (VNĐ) *</label>
+                  <input
+                    type="number"
+                    value={newPitchPeakPrice}
+                    onChange={(e) => setNewPitchPeakPrice(e.target.value)}
+                    className={`w-full p-3 rounded-xl border bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 text-sm ${
+                      newPitchErrors.peakPrice ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+                    }`}
+                  />
+                  {newPitchErrors.peakPrice && (
+                    <p className="mt-1 text-[13px] font-semibold text-rose-600">{newPitchErrors.peakPrice}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-sky-50/70 border border-sky-200 flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <span className="text-[13px] font-bold text-sky-900 block">
+                    Giờ hoạt động cụm: {operatingOpenTime} - {operatingCloseTime}
+                  </span>
+                  <span className="text-[13px] text-slate-500">
+                    Độ dài ca: {operatingSlotDuration} phút/ca (Áp dụng {availableTimeSlots.length} ca tự động)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddPitchModal(false);
+                    setShowHoursModal(true);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] transition-colors shrink-0 shadow-xs cursor-pointer"
+                >
+                  Đổi Giờ
+                </button>
+              </div>
+
+              <div className="flex space-x-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddPitchModal(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[13px] transition-colors cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={!isNewPitchValid}
+                  className="flex-1 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Tạo Sân Mới
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* FORM CẤU HÌNH GIỜ HOẠT ĐỘNG CỤM SÂN (INLINE NGAY DƯỚI HEADER) */}
+      {/* MODAL 4: CÀI ĐẶT THỜI GIAN HOẠT ĐỘNG & THỜI LƯỢNG CA SÂN */}
+ {showHoursModal && (
+  <div id="admin-inline-hours" className="w-full animate-fade-in">
+ <div 
+ className="bg-white p-4 sm:p-7 rounded-lg max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
+ onClick={(e) => e.stopPropagation()}
+ >
+ <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
+ <div className="flex items-center space-x-2.5">
+ <Clock className="w-5.5 h-5.5 text-indigo-500" />
+ <h3 className="font-black text-lg text-slate-900 ">Cấu Hình Giờ Hoạt Động Cụm Sân</h3>
+ </div>
+ <button 
+ type="button"
+ onClick={() => setShowHoursModal(false)} 
+ className="text-slate-500 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+ >
+ <X className="w-5 h-5" />
+ </button>
+ </div>
+
+ <p className="text-sm text-slate-600 leading-relaxed">
+  Chủ sân thiết lập thời gian bắt đầu mở cửa và đóng cửa cụm sân. Mọi ca thi đấu đều dùng chung thời lượng <strong className="text-sky-700 font-bold">2 tiếng (120 phút)</strong>.
+ </p>
+
+ <form onSubmit={handleUpdateOperatingHours} className="space-y-3 sm:space-y-4 text-sm">
+ <div className="grid grid-cols-2 gap-3">
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 ">Giờ Bắt Đầu Mở Cửa:</label>
+ <select
+ value={operatingOpenTime}
+ onChange={(e) => setOperatingOpenTime(e.target.value)}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm cursor-pointer"
+ >
+ {["06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00"].map((t) => (
+ <option key={t} value={t}>{t}</option>
+ ))}
+ </select>
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="font-extrabold text-slate-800 ">Giờ Kết Thúc Đóng Cửa:</label>
+ <select
+ value={operatingCloseTime}
+ onChange={(e) => setOperatingCloseTime(e.target.value)}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm cursor-pointer"
+ >
+ {["20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30", "24:00"].map((t) => (
+ <option key={t} value={t}>{t}</option>
+ ))}
+ </select>
+ </div>
+ </div>
+
+ {/* Thông báo cơ chế đặt linh hoạt theo yêu cầu người dùng */}
+ <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-200 space-y-1.5">
+ <div className="flex items-center space-x-2 text-sky-800 font-extrabold text-[14px]">
+ <Sparkles className="w-4 h-4 text-emerald-500" />
+ <span>Cơ Chế Đặt Sân Linh Hoạt</span>
+ </div>
+ <p className="text-[14px] text-slate-600 leading-relaxed">
+  Mọi ca thi đấu dùng chung thời lượng <strong className="text-slate-900 font-bold">2 tiếng (120 phút)</strong>. Hệ thống tự động tính tiền và phân ca theo thời gian thực tế.
+ </p>
+ </div>
+
+ <div className="flex space-x-2.5 pt-2">
+ <button
+ type="button"
+ onClick={() => setShowHoursModal(false)}
+ className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
+ >
+ Đóng
+ </button>
+ <button
+ type="submit"
+ disabled={isUpdatingHours}
+ className="flex-1 py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer"
+ >
+ {isUpdatingHours && <RefreshCw className="w-4 h-4 animate-spin mr-1" />}
+ <span>Lưu Giờ Hoạt Động Sân</span>
+ </button>
+ </div>
+ </form>
+ </div>
+  </div>
+  )}
+
+      {/* FORM ĐẶT CA TRỰC TIẾP TẠI QUẦY (INLINE KHI BẤM NÚT ĐẶT CA QUẦY Ở HEADER) */}
+      {showOfflineModal && inlineOfflinePitch === "TOP" && (
+        <div id="admin-inline-offline" className="w-full animate-fade-in flex justify-start">
+          {renderOfflineBookingForm("TOP")}
+        </div>
+      )}
+
+      {/* Kênh liên lạc với Ban Tổ Chức (B2B) */}
  <BusinessContacts viewerRole="OWNER" onStartDm={onStartDm} />
 
  {/* --- SUB-TAB CONTENT 5: DOANH THU & XUAT BAO CAO (rieng biet, khong gop voi cac tab khac) --- */}
@@ -1367,87 +2070,361 @@ const handleConfirmCheckin = async (slot: any) => {
  )}
 
  {/* QUICK SEARCH & CHECK-IN TOOLBAR */}
- {activeSubTab === "matrix" && (
- <div className="glass-panel p-3 sm:p-5 rounded-lg border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white ">
- <div className="flex items-center space-x-3 w-full sm:w-auto">
- <div className="w-10 h-10 rounded-xl bg-[#0369a1]/10 text-[#0b4f6c] flex items-center justify-center shrink-0">
- <QrCode className="w-5 h-5" />
+        {activeSubTab === "matrix" && (
+          <div className="space-y-3">
+            <div className="glass-panel p-3.5 sm:p-5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white shadow-xs">
+              <div className="flex items-center space-x-3 w-full sm:w-auto">
+                <div className="w-10 h-10 rounded-xl bg-[#0369a1]/10 text-[#0b4f6c] flex items-center justify-center shrink-0">
+                  <QrCode className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-sm font-black text-slate-900 block">Tra Cứu Mã Vé & Check-in</span>
+                  <span className="text-[13px] text-slate-500">Nhập mã vé hoặc số điện thoại khách để check-in tức thì</span>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2.5 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-80">
+                  <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
+                  <input
+                    type="text"
+                    value={searchCodeInput}
+                    onChange={(e) => setSearchCodeInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleSearchBooking(); }}
+                    placeholder="VD: VS-1-7102 hoặc SĐT khách..."
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-mono font-bold text-slate-900 focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSearchBooking}
+                  className="px-6 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-sm font-bold shadow-xs shrink-0 active:scale-95 transition-all cursor-pointer"
+                >
+                  Tra Cứu
+                </button>
+              </div>
+            </div>
+
+            {/* KẾT QUẢ TRA CỨU & CHECK-IN HIỂN THỊ NGAY TẠI CHỖ */}
+            {selectedSlotForAction && (
+              <div id="admin-inline-slot-action" className="w-full animate-fade-in">
+                <div className="bg-white p-4 sm:p-6 rounded-2xl border-2 border-sky-300 shadow-md space-y-4 max-w-2xl">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-sky-100 text-[#0369a1] flex items-center justify-center">
+                        <QrCode className="w-4.5 h-4.5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-black text-base text-slate-900">Chi Tiết & Check-in Ca Đặt</h3>
+                          {selectedSlotForAction.status === "playing" && (
+                            <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[13px] font-bold flex items-center gap-1 border border-rose-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
+                              Đang Đá
+                            </span>
+                          )}
+                          {selectedSlotForAction.status === "booked" && (
+                            <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[13px] font-bold border border-sky-200">
+                              Đã Khóa Ca
+                            </span>
+                          )}
+                          {selectedSlotForAction.status === "pending_payment" && (
+                            <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[13px] font-bold border border-amber-200">
+                              Chờ Thu Cọc
+                            </span>
+                          )}
+                          {selectedSlotForAction.status === "completed" && (
+                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[13px] font-bold border border-emerald-200">
+                              Đã Hoàn Thành
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[13px] text-slate-500">Xác nhận check-in nhận sân hoặc thanh toán cọc trực tiếp tại quầy</p>
+                      </div>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => setSelectedSlotForAction(null)} 
+                      className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <div className="p-3.5 rounded-xl bg-slate-50 space-y-2 border border-slate-200/80">
+                      <div className="flex justify-between items-center text-[13px]">
+                        <span className="text-slate-500">Khách đặt:</span>
+                        <strong className="text-slate-900 font-bold">{selectedSlotForAction.customer}</strong>
+                      </div>
+                      <div className="flex justify-between items-center text-[13px]">
+                        <span className="text-slate-500">Số điện thoại:</span>
+                        <strong className="font-mono text-slate-900 font-bold">{selectedSlotForAction.phone}</strong>
+                      </div>
+                      <div className="flex justify-between items-center text-[13px]">
+                        <span className="text-slate-500">Khung giờ:</span>
+                        <strong className="font-mono text-emerald-600 font-bold">{selectedSlotForAction.time}</strong>
+                      </div>
+                      <div className="flex justify-between items-center text-[13px]">
+                        <span className="text-slate-500">Mã vé check-in:</span>
+                        <strong className="font-mono text-[#0369a1] font-black">{selectedSlotForAction.code}</strong>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-sky-50/70 border border-sky-200 flex flex-col justify-center space-y-2.5">
+                      <div className="flex justify-between items-center text-[13px] font-bold text-slate-900">
+                        <span>Tiền cọc đã thu:</span>
+                        <span className="font-mono text-sky-800 font-black text-base">{selectedSlotForAction.depositPaid}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[13px] font-bold text-slate-900">
+                        <span>Tiền còn lại thu tại quầy:</span>
+                        <span className="font-mono text-rose-600 text-base font-black">{selectedSlotForAction.cashDue}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-100">
+                    {selectedSlotForAction.status === "pending_payment" && (
+                      <button
+                        type="button"
+                        onClick={() => handleConfirmBookingPayment(selectedSlotForAction)}
+                        className="py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-[13px] shadow-xs transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Xác Nhận Đã Thu Cọc & Giữ Ca</span>
+                      </button>
+                    )}
+
+                    {selectedSlotForAction.status === "booked" && (
+                      <button
+                        type="button"
+                        onClick={() => handleConfirmCheckin(selectedSlotForAction)}
+                        className="py-2.5 px-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-xs transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                      >
+                        <UserCheck className="w-4 h-4" />
+                        <span>Xác Nhận Check-in Vào Sân & Mở Đèn</span>
+                      </button>
+                    )}
+
+                    {selectedSlotForAction.status === "playing" && (
+                      <button
+                        type="button"
+                        onClick={() => handleCompleteBooking(selectedSlotForAction)}
+                        className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[13px] shadow-xs transition-all flex items-center justify-center space-x-2 active:scale-95 cursor-pointer"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Tất Toán Ca & Trả Sân ({selectedSlotForAction.cashDue && selectedSlotForAction.cashDue !== "0k" ? `Thu ${selectedSlotForAction.cashDue}` : "Hoàn Tất"})</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleCancelBooking(selectedSlotForAction)}
+                      className="py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-[13px] border border-rose-200 transition-all flex items-center justify-center space-x-1.5 active:scale-95 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hủy Đơn Đặt (Trả Về Ca Trống)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSlotForAction(null)}
+                      className="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[13px] transition-colors ml-auto cursor-pointer"
+                    >
+                      Đóng
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* HỘP THOẠI XÁC NHẬN HỦY CA ĐẶT SÂN (INLINE TẠI CHỖ) */}
+            {/* MODAL HỦY CA ĐẶT SÂN KÈM LÝ DO THÔNG BÁO TỚI KHÁCH HÀNG */}
+ {showCancelModal && (
+ <div 
+  id="admin-inline-cancel" className="w-full animate-fade-in"
+  >
+ <div 
+ className="relative w-full max-w-md bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden animate-modal-pop my-auto"
+ onClick={(e) => e.stopPropagation()}
+ >
+ {/* Header */}
+ <div className="px-6 py-4 bg-rose-50 border-b border-rose-200 flex items-center justify-between">
+ <div className="flex items-center space-x-3">
+ <div className="w-10 h-10 rounded-2xl bg-rose-100 flex items-center justify-center shrink-0">
+ <Trash2 className="w-5 h-5 text-rose-600 " />
  </div>
  <div>
- <span className="text-sm font-black text-slate-900 block">Tra Cứu Mã Vé & Check-in</span>
- <span className="hidden sm:inline text-[14px] text-slate-500"></span>
+ <h3 className="font-extrabold text-base text-rose-700 ">Xác Nhận Hủy Ca Đặt Sân</h3>
+ <p className="text-[14px] text-rose-600 font-medium mt-0.5">
+ Ca: <strong>{slotToCancel?.time || slotToCancel?.timeSlot || "Không rõ"}</strong> &bull; Khách: <strong>{slotToCancel?.customer || "Không rõ"}</strong>
+ </p>
+ </div>
+ </div>
+ <button
+ type="button"
+ onClick={() => {
+ setShowCancelModal(false);
+ setSlotToCancel(null);
+ setCancelReasonInput("");
+ }}
+ className="text-slate-500 hover:text-slate-600 p-1.5 rounded-lg hover:bg-rose-100/50 transition-colors"
+ >
+ <X className="w-5 h-5" />
+ </button>
+ </div>
+
+ {/* Body */}
+ <div className="px-6 py-5 space-y-3 sm:space-y-4">
+ <div>
+ <label className="block text-[14px] font-extrabold text-slate-800 mb-2">
+ Lý Do Hủy Ca <span className="text-rose-600">*</span>
+ </label>
+
+ {/* Preset reasons */}
+ <div className="flex flex-wrap gap-1.5 mb-3">
+ {[
+ "Sân bị hư hỏng cần sửa chữa",
+ "Sự kiện đặc biệt tại cụm sân",
+ "Lỗi hệ thống đặt trùng giờ",
+ "Điều kiện thời tiết xấu"
+ ].map(reason => (
+ <button
+ key={reason}
+ type="button"
+ onClick={() => setCancelReasonInput(reason)}
+ className={`px-2.5 py-1 rounded-lg text-[14px] font-bold transition-all border ${
+ cancelReasonInput === reason
+ ? "bg-rose-600 text-white border-rose-600 shadow-sm"
+ : "bg-slate-100 text-slate-600 border-slate-200 hover:border-rose-300 hover:text-rose-600"
+ }`}
+ >
+ {reason}
+ </button>
+ ))}
+ </div>
+
+ <textarea
+ value={cancelReasonInput}
+ onChange={(e) => setCancelReasonInput(e.target.value)}
+ placeholder="Hoặc nhập lý do cụ thể... (tuỳ chọn)"
+ rows={3}
+ className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 font-medium placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none"
+ />
+ </div>
+
+ <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start space-x-2">
+ <span className="text-sm shrink-0">⚠️</span>
+ <p className="text-[14px] text-amber-700 font-medium leading-relaxed">
+ Lý do hủy sẽ được gửi ngay tới thông báo của khách hàng. Khung giờ này sẽ mở lại cho người đặt mới.
+ </p>
  </div>
  </div>
 
- <div className="flex items-center space-x-2.5 w-full sm:w-auto">
- <div className="relative flex-1 sm:w-80">
- <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
- <input
- type="text"
- value={searchCodeInput}
- onChange={(e) => setSearchCodeInput(e.target.value)}
- onKeyDown={(e) => { if (e.key === "Enter") handleSearchBooking(); }}
- placeholder="VD: VS-1-7102 hoặc SĐT khách..."
- className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-mono font-bold text-slate-900 focus:outline-none focus:border-emerald-500"
- />
- </div>
+ {/* Footer */}
+ <div className="px-6 py-4 border-t border-slate-100 flex space-x-3">
  <button
- onClick={handleSearchBooking}
- className="px-6 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-sm sm:text-base font-black shadow-sm shrink-0 active:scale-95 transition-all"
+ type="button"
+ onClick={() => {
+ setShowCancelModal(false);
+ if (slotToCancel) {
+ setSelectedSlotForAction(slotToCancel);
+ }
+ setSlotToCancel(null);
+ setCancelReasonInput("");
+ }}
+ className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
  >
- Tra Cứu
+ Quay Lại
+ </button>
+ <button
+ type="button"
+ onClick={handleConfirmCancel}
+ disabled={!cancelReasonInput.trim()}
+ className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center space-x-1.5"
+ >
+ <Trash2 className="w-4 h-4" />
+ <span>Xác Nhận Hủy Ca</span>
  </button>
  </div>
  </div>
+ </div>
  )}
+          </div>
+        )}
 
- {/* --- SUB-TAB CONTENT 1: LIVE MATRIX VIEW --- */}
+        {/* --- SUB-TAB CONTENT 1: LIVE MATRIX VIEW --- */}
  {activeSubTab === "matrix" && (
  <div className="space-y-3 sm:space-y-6">
  <div className="glass-panel p-4 sm:p-6 rounded-lg border border-slate-200 space-y-3 sm:space-y-5">
- <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-3 sm:gap-4 border-b border-slate-100 pb-4">
- <div className="flex items-center space-x-2.5 shrink-0">
- <BarChart2 className="w-5.5 h-5.5 text-[#0b4f6c] " />
+ <div className="space-y-4 pb-4 border-b border-slate-200">
+ {/* HÀNG TIÊU ĐỀ & NÚT XÓA BỘ LỌC */}
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+ <div className="flex items-center space-x-3">
+ <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0369a1] flex items-center justify-center shrink-0 border border-sky-100">
+ <BarChart2 className="w-5 h-5" />
+ </div>
  <div>
- <h2 className="text-xl font-black text-slate-900 ">
+ <h2 className="text-xl font-black text-slate-900">
  Sơ Đồ Ca Sân Thời Gian Thực
  </h2>
- <span className="hidden sm:block text-[14px] text-slate-500 mt-0.5">
- Giờ mở: <strong className="font-mono text-indigo-700 text-sm font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca 2 tiếng (120 phút)
- </span>
+ <p className="text-[13px] text-slate-500 mt-0.5">
+ Giờ mở cửa: <strong className="font-mono text-sky-800 font-bold">{operatingOpenTime} - {operatingCloseTime}</strong> • Ca cố định 2 tiếng (120 phút)
+ </p>
  </div>
  </div>
 
- {/* BỘ LỌC DẠNG DROPDOWN VÀ CHỌN THỜI LƯỢNG TIỆN LỢI */}
- <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
-  {/* Thời lượng ca cố định 2 tiếng (120 phút) — không còn bộ chọn 1h/1.5h/2h */}
+ {(matrixFilterStatus !== "ALL" || matrixFilterType !== "ALL" || matrixFilterTime !== "ALL" || matrixFilterMethod !== "ALL") && (
+ <button
+ type="button"
+ onClick={() => {
+ setMatrixFilterStatus("ALL");
+ setMatrixFilterType("ALL");
+ setMatrixFilterTime("ALL");
+ setMatrixFilterMethod("ALL");
+ }}
+ className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-[13px] font-bold border border-rose-200 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer self-start sm:self-center shadow-xs"
+ title="Đặt lại tất cả các bộ lọc về mặc định"
+ >
+ <X className="w-4 h-4" />
+ <span>Xóa Bộ Lọc</span>
+ </button>
+ )}
+ </div>
 
- {/* 1. DROPDOWN TRẠNG THÁI CA */}
- <div className="flex items-center space-x-2 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 text-sm">
- <span className="text-slate-600 pl-2.5 text-sm font-bold">Trạng thái:</span>
+ {/* THANH BỘ LỌC ĐỀU ĐẶN 4 CỘT CHUẨN MỰC */}
+ <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+ {/* Cột 1: Trạng thái ca */}
+ <div className="bg-white border border-slate-300 hover:border-slate-400 rounded-xl px-3.5 py-2.5 transition-colors flex items-center gap-3 shadow-xs">
+ <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+ <div className="min-w-0 flex-1">
+ <label className="block text-[13px] font-bold text-slate-500 leading-none mb-1.5">Trạng thái ca</label>
  <select
  value={matrixFilterStatus}
-  aria-label="Lọc ca theo trạng thái"
+ aria-label="Lọc ca theo trạng thái"
  onChange={(e) => setMatrixFilterStatus(e.target.value)}
- className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer shadow-xs"
+ className="w-full bg-transparent text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate"
  >
  <option value="ALL">Tất cả trạng thái</option>
  <option value="BOOKED">🟢 Đã Cọc</option>
  <option value="PLAYING">🔴 Đang Đá</option>
-  <option value="PENDING">🟡 Chờ Xác Nhận Cọc</option>
+ <option value="PENDING">🟡 Chờ Xác Nhận Cọc</option>
  <option value="EMPTY">⚪ Ca Trống</option>
- <option value="RESALE">🟡 Sàn Nhượng Gấp</option>
+ <option value="RESALE">🟠 Sàn Nhượng Gấp</option>
  </select>
  </div>
+ </div>
 
- {/* 2. DROPDOWN LOẠI SÂN */}
- <div className="flex items-center space-x-2 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 text-sm">
- <span className="text-slate-600 pl-2.5 text-sm font-bold">Loại sân:</span>
+ {/* Cột 2: Loại sân */}
+ <div className="bg-white border border-slate-300 hover:border-slate-400 rounded-xl px-3.5 py-2.5 transition-colors flex items-center gap-3 shadow-xs">
+ <div className="w-2.5 h-2.5 rounded-full bg-sky-500 shrink-0" />
+ <div className="min-w-0 flex-1">
+ <label className="block text-[13px] font-bold text-slate-500 leading-none mb-1.5">Loại sân bóng</label>
  <select
  value={matrixFilterType}
-  aria-label="Lọc ca theo loại sân"
+ aria-label="Lọc ca theo loại sân"
  onChange={(e) => setMatrixFilterType(e.target.value)}
- className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer shadow-xs"
+ className="w-full bg-transparent text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate"
  >
  <option value="ALL">Tất cả loại sân</option>
  <option value="Sân 5">Sân 5 Người</option>
@@ -1455,18 +2432,18 @@ const handleConfirmCheckin = async (slot: any) => {
  <option value="Sân 11">Sân 11 Tiêu Chuẩn</option>
  </select>
  </div>
+ </div>
 
- {/* 3. DROPDOWN KHUNG GIỜ / CA SÂN */}
- <div className="flex items-center space-x-2 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 text-sm">
- <span className="text-slate-600 pl-2.5 text-sm font-bold flex items-center gap-1.5">
- <Clock className="w-4 h-4 text-[#0369a1] shrink-0" />
- <span>Khung giờ:</span>
- </span>
+ {/* Cột 3: Khung giờ ca */}
+ <div className="bg-white border border-slate-300 hover:border-slate-400 rounded-xl px-3.5 py-2.5 transition-colors flex items-center gap-3 shadow-xs">
+ <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+ <div className="min-w-0 flex-1">
+ <label className="block text-[13px] font-bold text-slate-500 leading-none mb-1.5">Khung giờ thi đấu</label>
  <select
  value={matrixFilterTime}
-  aria-label="Lọc ca theo khung giờ"
+ aria-label="Lọc ca theo khung giờ"
  onChange={(e) => setMatrixFilterTime(e.target.value)}
- className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] font-mono cursor-pointer shadow-xs"
+ className="w-full bg-transparent text-sm font-bold text-slate-900 font-mono focus:outline-none cursor-pointer truncate"
  >
  <option value="ALL">Tất cả ca ({availableTimeSlots.length} ca)</option>
  <option value="PEAK">⭐ Khung Giờ Vàng (Cao Điểm)</option>
@@ -1477,43 +2454,27 @@ const handleConfirmCheckin = async (slot: any) => {
  ))}
  </select>
  </div>
+ </div>
 
- {/* 4. DROPDOWN HÌNH THỨC ĐẶT SÂN */}
- <div className="flex items-center space-x-2 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 text-sm">
- <span className="text-slate-600 pl-2.5 text-sm font-bold flex items-center gap-1.5">
- <Tag className="w-4 h-4 text-emerald-500 shrink-0" />
- <span>Hình thức:</span>
- </span>
+ {/* Cột 4: Hình thức đặt */}
+ <div className="bg-white border border-slate-300 hover:border-slate-400 rounded-xl px-3.5 py-2.5 transition-colors flex items-center gap-3 shadow-xs">
+ <Tag className="w-4 h-4 text-emerald-600 shrink-0" />
+ <div className="min-w-0 flex-1">
+ <label className="block text-[13px] font-bold text-slate-500 leading-none mb-1.5">Hình thức đặt sân</label>
  <select
  value={matrixFilterMethod}
-  aria-label="Lọc ca theo hình thức đặt sân"
+ aria-label="Lọc ca theo hình thức đặt sân"
  onChange={(e) => setMatrixFilterMethod(e.target.value)}
- className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer shadow-xs"
+ className="w-full bg-transparent text-sm font-bold text-slate-900 focus:outline-none cursor-pointer truncate"
  >
  <option value="ALL">Tất cả hình thức</option>
- <option value="ONLINE">📱 Đặt qua Website Turfzone</option>
+ <option value="ONLINE">📱 Đặt qua Website TurfZone</option>
  <option value="OFFLINE">☎️ Tạo Tại Quầy</option>
  <option value="RESALE">🔄 Sàn Nhượng Ca Gấp</option>
  <option value="EMPTY">⚪ Ca Trống Chưa Đặt</option>
  </select>
  </div>
-
- {/* NÚT RESET BỘ LỌC */}
- {(matrixFilterStatus !== "ALL" || matrixFilterType !== "ALL" || matrixFilterTime !== "ALL" || matrixFilterMethod !== "ALL") && (
- <button
- onClick={() => {
- setMatrixFilterStatus("ALL");
- setMatrixFilterType("ALL");
- setMatrixFilterTime("ALL");
- setMatrixFilterMethod("ALL");
- }}
- className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 text-sm font-bold flex items-center space-x-1.5 transition-all active:scale-95"
- title="Đặt lại tất cả các bộ lọc về mặc định"
- >
- <X className="w-4 h-4" />
- <span>Đặt Lại</span>
- </button>
- )}
+ </div>
  </div>
  </div>
 
@@ -1573,26 +2534,24 @@ const handleConfirmCheckin = async (slot: any) => {
  </div>
  </div>
 
- {/* Quick Pick Date Pills */}
- <div className="flex flex-wrap items-center gap-1.5 pb-1">
- {upcomingDays.slice(0, 10).map((day) => {
+ {/* Quick Pick Date Pills - 7 ngày tuần gọn gàng 1 hàng */}
+ <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-1.5 pb-1">
+ {upcomingDays.slice(0, 7).map((day) => {
  const isSelected = matrixDate === day.iso;
  return (
  <button
  key={day.iso}
  type="button"
  onClick={() => handleSelectDate(day.iso)}
- className={`px-3 py-1.5 rounded-xl text-[14px] font-black whitespace-nowrap transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer ${
+ className={`px-2.5 py-2 rounded-xl text-[13px] font-bold transition-all flex flex-col items-center justify-center cursor-pointer border text-center ${
  isSelected
- ? "bg-[#0369a1] text-white shadow-md scale-102 ring-2 ring-[#0369a1]/50"
- : "bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:bg-sky-50/50 "
+ ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
+ : "bg-white text-slate-700 border-slate-200 hover:border-[#0369a1] hover:bg-sky-50/30"
  }`}
  >
- <span>{day.label}</span>
- <span className={`text-[14px] font-mono px-1.5 py-0.2 rounded-md ${
- isSelected 
- ? "bg-slate-900/40 text-white font-bold" 
- : "bg-slate-100 text-slate-600"
+ <span className="font-bold leading-tight">{day.label}</span>
+ <span className={`text-[13px] font-mono mt-0.5 ${
+ isSelected ? "text-sky-100 font-bold" : "text-slate-500"
  }`}>
  {day.dateFormatted}
  </span>
@@ -1698,17 +2657,152 @@ const handleConfirmCheckin = async (slot: any) => {
  <div key={pitch.pitchId} className="p-3 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5">
  <div className="flex justify-between items-center text-sm">
  <div className="flex items-center space-x-2.5">
-  <span className="font-black text-slate-900 text-base">{pitchTypeLabel(pitch.pitchName) || pitch.pitchName}</span>
+  <PitchHoverPreview pitchType={pitch.type} customTitle={pitch.pitchName}>
+    <span className="font-black text-slate-900 text-base cursor-pointer hover:text-[#0369a1] flex items-center gap-1.5 transition-colors">
+      <span>{pitchTypeLabel(pitch.pitchName) || pitch.pitchName}</span>
+      <Camera className="w-3.5 h-3.5 text-slate-400 hover:text-[#0369a1]" />
+    </span>
+  </PitchHoverPreview>
  <span className="px-2.5 py-0.5 rounded-lg bg-slate-200 text-[14px] font-mono text-slate-700 font-bold">
  {pitchTypeLabel(pitch.type)}
  </span>
  </div>
- <div className="text-[14px] font-mono text-slate-500">
- Giá cơ bản: <strong className="text-slate-900 font-bold text-sm">{(pitch.basePrice/1000).toFixed(0)}k/ca</strong>
- </div>
+ <div className="flex items-center gap-3">
+  <div className="text-[14px] font-mono text-slate-500">
+    Giá: <strong className="text-slate-900 font-bold text-sm">{(pitch.basePrice/1000).toFixed(0)}k/ca</strong>
+  </div>
+  <button
+    type="button"
+    onClick={() => toggleCourtImageEditor(pitch.pitchName, pitch.images || [])}
+    className="px-2.5 py-1 rounded-lg bg-white hover:bg-sky-50 text-[#0369a1] border border-sky-300 text-[13px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+    title="Quản lý thư viện hình ảnh cụ thể cho sân này"
+  >
+    <Images className="w-3.5 h-3.5 text-sky-600" />
+    <span>Ảnh sân ({((courtImagesMap[pitch.pitchName] || pitch.images || []).length)})</span>
+  </button>
+</div>
  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+ {/* PANEL INLINE QUẢN LÝ ALBUM ẢNH CHO SÂN CON NÀY */}
+{activeEditingCourt === pitch.pitchName && (
+  <div className="bg-sky-50/70 border-2 border-sky-300 rounded-xl p-3.5 sm:p-4 space-y-3 animate-fade-in shadow-xs">
+    <div className="flex items-center justify-between pb-2 border-b border-sky-200">
+      <div className="flex items-center gap-2">
+        <Camera className="w-4 h-4 text-[#0369a1]" />
+        <h4 className="font-bold text-slate-900 text-sm">
+          Album Hình Ảnh Sân Con: <span className="text-[#0369a1]">{pitch.pitchName}</span> ({(courtImagesMap[pitch.pitchName] || pitch.images || []).length} ảnh)
+        </h4>
+      </div>
+      <button
+        type="button"
+        onClick={() => setActiveEditingCourt(null)}
+        className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-sky-100 transition-colors"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+
+    {/* Lưới ảnh hiện có của sân con */}
+    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+      {((courtImagesMap[pitch.pitchName] || pitch.images || []).length === 0) ? (
+        <p className="col-span-full text-[13px] text-slate-500 italic bg-white p-2.5 rounded-lg border border-slate-200">
+          Sân này chưa có ảnh riêng. Đang hiển thị ảnh mặc định theo loại sân. Hãy thêm ảnh bên dưới!
+        </p>
+      ) : (
+        (courtImagesMap[pitch.pitchName] || pitch.images || []).map((imgUrl, iIdx) => (
+          <div key={iIdx} className="relative group rounded-lg overflow-hidden border border-slate-300 bg-slate-900 h-20 shadow-2xs">
+            <img src={imgUrl} alt={pitch.pitchName} className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={() => handleRemoveCourtImage(pitch.pitchName, iIdx)}
+              className="absolute top-1 right-1 p-1 rounded bg-rose-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-700"
+              title="Xóa ảnh này"
+            >
+              <X className="w-3 h-3" />
+            </button>
+            <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-black/70 text-white text-[13px] font-mono font-bold">
+              #{iIdx + 1}
+            </span>
+          </div>
+        ))
+      )}
+    </div>
+
+    {/* Form thêm ảnh mới inline */}
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+      <input
+        ref={courtFileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => handlePickCourtFile(e, pitch.pitchName)}
+      />
+      <button
+        type="button"
+        disabled={isUploadingPhoto}
+        onClick={() => courtFileInputRef.current?.click()}
+        className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold flex items-center justify-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50 shadow-xs"
+        title="Tải ảnh từ máy tính hoặc điện thoại lên cho sân này"
+      >
+        {isUploadingPhoto ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+        <span>📁 Tải từ máy</span>
+      </button>
+      <input
+        type="text"
+        inputMode="url"
+        value={newCourtImgInput}
+        onChange={(e) => setNewCourtImgInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddCourtImage(pitch.pitchName, newCourtImgInput);
+          }
+        }}
+        placeholder="Hoặc dán link ảnh mặt cỏ / khung thành (https://...)"
+        className="flex-1 p-2 rounded-lg border border-slate-300 bg-white text-slate-900 text-[13px] focus:outline-none focus:border-[#0369a1]"
+      />
+      <button
+        type="button"
+        onClick={() => handleAddCourtImage(pitch.pitchName, newCourtImgInput)}
+        className="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-[13px] font-bold flex items-center justify-center gap-1 cursor-pointer shrink-0"
+      >
+        <Plus className="w-3.5 h-3.5" />
+        <span>Thêm</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => handleSaveCourtImages(pitch.pitchName)}
+        className="px-3.5 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold shadow-xs cursor-pointer shrink-0"
+      >
+        💾 Lưu album sân
+      </button>
+    </div>
+
+    {/* Chọn nhanh ảnh thực tế mẫu */}
+    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+      <span className="text-[13px] font-bold text-slate-600">Chọn nhanh ảnh mẫu:</span>
+      {SAMPLE_PITCH_PHOTOS.slice(2, 7).map((sp, spIdx) => (
+        <button
+          key={spIdx}
+          type="button"
+          onClick={() => handleAddCourtImage(pitch.pitchName, sp.url)}
+          className="px-2 py-0.5 rounded bg-white hover:bg-sky-100 text-slate-700 text-[13px] font-medium border border-slate-300 transition-colors cursor-pointer"
+        >
+          + {sp.label}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* FORM ĐẶT CA TRỰC TIẾP TẠI QUẦY (INLINE NGAY TRONG SÂN CON ĐƯỢC CHỌN) */}
+        {showOfflineModal && inlineOfflinePitch === pitch.pitchName && (
+          <div id={`admin-inline-offline-${pitch.pitchId}`} className="w-full animate-fade-in">
+            {renderOfflineBookingForm(pitch.pitchName)}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
  {pitch.slots.length === 0 ? (
  <div className="col-span-full py-6 sm:py-8 text-center text-sm text-slate-500 bg-white/40 rounded-xl border border-dashed border-slate-200 flex items-center justify-center space-x-2">
  <AlertCircle className="w-5 h-5 text-slate-500" />
@@ -1722,12 +2816,14 @@ const handleConfirmCheckin = async (slot: any) => {
  if (slot.status === "empty") {
  setOfflinePitchId(pitch.pitchName);
  setOfflineTime(slot.time);
+ setOfflineDate(matrixDate);
+ setInlineOfflinePitch(pitch.pitchName);
  setShowOfflineModal(true);
  } else {
  setSelectedSlotForAction(slot);
  }
  }}
- className={`p-3 sm:p-4 rounded-2xl border space-y-2 transition-all cursor-pointer hover:scale-[1.02] shadow-xs ${
+ className={`p-3 rounded-xl border space-y-1.5 transition-all cursor-pointer hover:scale-[1.01] shadow-xs ${
  slot.isContinuation
  ? "bg-indigo-500/10 border-indigo-400 text-indigo-700 font-bold"
  : slot.isGapSlot
@@ -1743,14 +2839,27 @@ const handleConfirmCheckin = async (slot: any) => {
  : "bg-white border-slate-200 text-slate-500 hover:border-sky-400 hover:bg-sky-50/20"
  }`}
  >
- <div className="flex justify-between items-center text-[14px] font-mono">
+ <div className="flex justify-between items-center text-[13px] font-mono">
  <span className="font-extrabold text-sm">{slot.time}</span>
- <span className="font-black text-sm">{slot.price}</span>
+ <div className="flex items-center gap-1.5">
+   <span
+     className={`w-2 h-2 rounded-full shrink-0 ${
+       slot.status === "empty"
+         ? "bg-slate-300"
+         : slot.status === "playing"
+         ? "bg-rose-500 animate-pulse"
+         : slot.status === "pending_payment"
+         ? "bg-amber-500"
+         : "bg-[#0369a1]"
+     }`}
+   />
+   <span className="font-black text-sm">{slot.price}</span>
+ </div>
  </div>
  
  <div className="flex items-center gap-1.5 flex-wrap">
  <p className={`font-black truncate text-sm ${slot.status === "empty" ? "text-slate-500" : "text-slate-900 "}`}>
- {slot.customer}
+ {slot.status === "empty" ? "+ Đặt tại quầy" : slot.customer}
  </p>
  {slot.isContinuation && (
  <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-700 text-[14px] font-black tracking-wider">
@@ -1851,6 +2960,222 @@ const handleConfirmCheckin = async (slot: any) => {
  <span>Giờ Mở Cửa</span>
  </button>
  </div>
+
+ {/* FORM SỬA HỒ SƠ CỤM SÂN (INLINE TẠI CHỖ TAB SÂN CON) */}
+ {/* MODAL 0: SỬA HỒ SƠ CỤM SÂN (tên, địa chỉ, SĐT, bộ môn, tiện ích, ảnh, mô tả) */}
+  {showEditInfoModal && (
+  <div id="admin-inline-edit-info" className="w-full animate-fade-in">
+  <div className="bg-white rounded-lg shadow-sm w-full max-w-2xl my-8 border border-slate-200 overflow-hidden">
+  <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
+  <div className="flex items-center gap-2.5">
+  <Pencil className="w-5 h-5 text-[#0369a1]" />
+  <h3 className="font-black text-lg text-slate-900">Sửa Hồ Sơ Cụm Sân</h3>
+  </div>
+  <button
+  type="button"
+  onClick={() => setShowEditInfoModal(false)}
+  className="text-slate-500 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+  aria-label="Đóng"
+  >
+  <X className="w-5 h-5" />
+  </button>
+  </div>
+
+  <p className="px-5 sm:px-6 pt-4 text-[14px] text-slate-500 leading-relaxed">
+  Thông tin này hiển thị công khai cho cầu thủ khi tìm sân. Giá thuê và giờ mở cửa được sửa ở tab riêng.
+  </p>
+
+  <form onSubmit={handleSavePitchInfo} className="px-5 sm:px-6 py-4 space-y-3.5">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <div className="space-y-3 sm:col-span-2 bg-slate-100/80 p-4 rounded-xl border border-slate-200">
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <Images className="w-4 h-4 text-[#0369a1]" />
+      <label className="font-black text-slate-900 text-sm">Thư Viện Album Ảnh Cụm Sân ({infoGallery.length} ảnh)</label>
+    </div>
+    <span className="text-[13px] text-slate-500">Ảnh đầu tiên hoặc có ngôi sao là ảnh đại diện</span>
+  </div>
+
+  {/* Lưới ảnh hiện có */}
+  {infoGallery.length > 0 ? (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+      {infoGallery.map((img, idx) => {
+        const isMain = infoImageUrl === img || (idx === 0 && !infoImageUrl);
+        return (
+          <div key={idx} className="relative group rounded-lg overflow-hidden border border-slate-300 bg-slate-900 h-24 shadow-2xs">
+            <img src={img} alt="Ảnh cụm sân" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+              {!isMain && (
+                <button
+                  type="button"
+                  onClick={() => handleSetMainGalleryImage(img)}
+                  className="px-2 py-1 rounded bg-[#0369a1] text-white text-[13px] font-bold shadow-xs hover:bg-[#075985]"
+                  title="Đặt làm ảnh đại diện chính"
+                >
+                  Chọn chính
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleRemoveGalleryImage(idx)}
+                className="p-1 rounded bg-rose-600 text-white hover:bg-rose-700"
+                title="Xóa ảnh này khỏi album"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            {isMain && (
+              <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[13px] shadow-xs">
+                ⭐ Ảnh chính
+              </span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  ) : (
+    <p className="text-[13px] text-slate-500 italic bg-white p-2.5 rounded-lg border border-slate-200">
+      Chưa có ảnh nào trong album cụm sân. Hãy dán link hoặc chọn từ các ảnh mẫu bên dưới.
+    </p>
+  )}
+
+  {/* Thêm link ảnh mới */}
+  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+    <input
+      ref={galleryFileInputRef}
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={handlePickGalleryFile}
+    />
+    <button
+      type="button"
+      disabled={isUploadingPhoto}
+      onClick={() => galleryFileInputRef.current?.click()}
+      className="px-3.5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold shrink-0 cursor-pointer flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50"
+      title="Chọn ảnh JPG/PNG từ máy tính hoặc chụp ảnh từ điện thoại"
+    >
+      {isUploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+      <span>📁 Tải ảnh từ máy</span>
+    </button>
+    <div className="flex items-center gap-2 flex-1">
+      <input
+        type="text"
+        inputMode="url"
+        value={newGalleryInput}
+        onChange={(e) => setNewGalleryInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddGalleryImage(newGalleryInput);
+          }
+        }}
+        placeholder="Hoặc dán đường dẫn ảnh mới (https://...)"
+        className="flex-1 p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[13px] focus:outline-none focus:border-[#0369a1]"
+      />
+      <button
+        type="button"
+        onClick={() => handleAddGalleryImage(newGalleryInput)}
+        className="px-3.5 py-2.5 rounded-lg bg-[#0369a1] text-white text-[13px] font-bold hover:bg-[#075985] shrink-0 cursor-pointer flex items-center gap-1"
+      >
+        <Plus className="w-4 h-4" />
+        <span>Thêm</span>
+      </button>
+    </div>
+  </div>
+
+  {/* Gợi ý ảnh mẫu chất lượng cao */}
+  <div className="pt-1 space-y-1">
+    <span className="text-[13px] font-bold text-slate-600 block">Chọn nhanh ảnh mẫu chất lượng cao cho cụm sân:</span>
+    <div className="flex flex-wrap gap-1.5">
+      {SAMPLE_PITCH_PHOTOS.map((sp, sIdx) => (
+        <button
+          key={sIdx}
+          type="button"
+          onClick={() => handleAddGalleryImage(sp.url)}
+          className="px-2.5 py-1 rounded bg-white hover:bg-sky-50 text-slate-700 hover:text-[#0369a1] border border-slate-300 text-[13px] font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+        >
+          <span>+ {sp.label}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+</div>
+
+  {/* Bộ môn — chủ sân tự khai báo, không bịa sẵn */}
+  <div className="space-y-2">
+  <label className="font-extrabold text-slate-800 text-sm">Bộ môn thể thao</label>
+  <div className="flex flex-wrap gap-2">
+  {pitchTypeOptions.map((t) => (
+  <button
+  key={t}
+  type="button"
+  onClick={() => toggleInfoList(t, infoPitchTypes, setInfoPitchTypes)}
+  className={`px-3 py-1.5 rounded-xl text-[14px] font-bold border transition-colors ${
+  infoPitchTypes.includes(t)
+  ? "bg-[#0369a1] text-white border-[#0369a1]"
+  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+  }`}
+  >
+  {pitchTypeLabel(t) || t}
+  </button>
+  ))}
+  </div>
+  </div>
+
+  {/* Tiện ích */}
+  <div className="space-y-2">
+  <label className="font-extrabold text-slate-800 text-sm">Tiện ích đi kèm</label>
+  <div className="flex flex-wrap gap-2">
+  {amenityOptions.map((a) => (
+  <button
+  key={a}
+  type="button"
+  onClick={() => toggleInfoList(a, infoAmenities, setInfoAmenities)}
+  className={`px-3 py-1.5 rounded-xl text-[14px] font-bold border transition-colors ${
+  infoAmenities.includes(a)
+  ? "bg-[#0369a1] text-white border-[#0369a1]"
+  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+  }`}
+  >
+  {a}
+  </button>
+  ))}
+  </div>
+  </div>
+
+  <div className="space-y-1.5">
+  <label className="font-extrabold text-slate-800 text-sm">Mô tả cụm sân</label>
+  <textarea
+  value={infoDescription}
+  onChange={(e) => setInfoDescription(e.target.value)}
+  rows={3}
+  placeholder="Mô tả chất lượng mặt cỏ, vị trí, chỗ để xe..."
+  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm resize-y"
+  />
+  </div>
+
+  <div className="flex gap-3 pt-2">
+  <button
+  type="button"
+  onClick={() => setShowEditInfoModal(false)}
+  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
+  >
+  Huỷ Bỏ
+  </button>
+  <button
+  type="submit"
+  disabled={isSavingInfo || !infoName.trim() || !infoAddress.trim()}
+  className="flex-1 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+  >
+  {isSavingInfo ? "Đang lưu…" : "Lưu Hồ Sơ"}
+  </button>
+  </div>
+  </form>
+  </div>
+  </div>
+  )}
 
  <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
    <div className="flex flex-wrap items-center gap-1.5">
@@ -2089,32 +3414,46 @@ const handleConfirmCheckin = async (slot: any) => {
   </div>
 
   {/* FORM THÊM / SỬA MÓN — ghi xuống CSDL (trước đây nút Lưu chỉ hiện toast) */}
-  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-  <input
-  value={canteenForm.name}
-  onChange={(e) => setCanteenForm((f) => ({ ...f, name: e.target.value }))}
-  placeholder="Tên món (VD: Nước Revive 500ml)"
-  className="col-span-2 sm:col-span-1 px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
-  />
-  <input
-  value={canteenForm.price}
-  onChange={(e) => setCanteenForm((f) => ({ ...f, price: e.target.value }))}
-  placeholder="Giá bán"
-  className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
-  />
-  <input
-  value={canteenForm.stock}
-  onChange={(e) => setCanteenForm((f) => ({ ...f, stock: e.target.value }))}
-  placeholder="Tồn kho"
-  className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
-  />
-  <button
-  onClick={saveCanteenItem}
-  disabled={canteenBusy}
-  className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-xs transition-all active:scale-95 disabled:opacity-50"
-  >
-  {canteenBusy ? "Đang lưu..." : canteenEditingId ? "Cập Nhật" : "Thêm Món"}
-  </button>
+  <div className="space-y-1.5">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <input
+        value={canteenForm.name}
+        onChange={(e) => setCanteenForm((f) => ({ ...f, name: e.target.value }))}
+        placeholder="Tên món (VD: Nước Revive)"
+        className={`col-span-2 sm:col-span-1 px-3 py-2 rounded-xl border bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 ${
+          canteenErrors.name && canteenForm.name ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+        }`}
+      />
+      <input
+        value={canteenForm.price}
+        onChange={(e) => setCanteenForm((f) => ({ ...f, price: e.target.value }))}
+        placeholder="Giá bán (VNĐ)"
+        className={`px-3 py-2 rounded-xl border bg-white text-[14px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 ${
+          canteenErrors.price && canteenForm.price ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+        }`}
+      />
+      <input
+        value={canteenForm.stock}
+        onChange={(e) => setCanteenForm((f) => ({ ...f, stock: e.target.value }))}
+        placeholder="Tồn kho"
+        className={`px-3 py-2 rounded-xl border bg-white text-[14px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 ${
+          canteenErrors.stock ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+        }`}
+      />
+      <button
+        onClick={saveCanteenItem}
+        disabled={canteenBusy || !isCanteenValid}
+        className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-xs transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      >
+        {canteenBusy ? "Đang lưu..." : canteenEditingId ? "Cập Nhật" : "Thêm Món"}
+      </button>
+    </div>
+    {canteenErrors.name && canteenForm.name && (
+      <p className="text-[13px] font-semibold text-rose-600">{canteenErrors.name}</p>
+    )}
+    {canteenErrors.price && canteenForm.price && (
+      <p className="text-[13px] font-semibold text-rose-600">{canteenErrors.price}</p>
+    )}
   </div>
   {canteenEditingId ? (
   <button
@@ -2172,760 +3511,7 @@ const handleConfirmCheckin = async (slot: any) => {
   </div>
   )}
 
- {/* MODAL 0: SỬA HỒ SƠ CỤM SÂN (tên, địa chỉ, SĐT, bộ môn, tiện ích, ảnh, mô tả) */}
-  {showEditInfoModal && (
-  <div id="admin-inline-edit-info" className="w-full animate-fade-in">
-  <div className="bg-white rounded-lg shadow-sm w-full max-w-2xl my-8 border border-slate-200 overflow-hidden">
-  <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
-  <div className="flex items-center gap-2.5">
-  <Pencil className="w-5 h-5 text-[#0369a1]" />
-  <h3 className="font-black text-lg text-slate-900">Sửa Hồ Sơ Cụm Sân</h3>
-  </div>
-  <button
-  type="button"
-  onClick={() => setShowEditInfoModal(false)}
-  className="text-slate-500 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
-  aria-label="Đóng"
-  >
-  <X className="w-5 h-5" />
-  </button>
-  </div>
-
-  <p className="px-5 sm:px-6 pt-4 text-[14px] text-slate-500 leading-relaxed">
-  Thông tin này hiển thị công khai cho cầu thủ khi tìm sân. Giá thuê và giờ mở cửa được sửa ở tab riêng.
-  </p>
-
-  <form onSubmit={handleSavePitchInfo} className="px-5 sm:px-6 py-4 space-y-3.5">
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-  <div className="space-y-1.5 sm:col-span-2">
-  <label className="font-extrabold text-slate-800 text-sm">Tên cụm sân <span className="text-rose-500">*</span></label>
-  <input
-  type="text"
-  value={infoName}
-  onChange={(e) => setInfoName(e.target.value)}
-  required
-  placeholder="VD: Turfzone Đà Nẵng"
-  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
-  />
-  </div>
-
-  <div className="space-y-1.5 sm:col-span-2">
-  <label className="font-extrabold text-slate-800 text-sm">Địa chỉ <span className="text-rose-500">*</span></label>
-  <input
-  type="text"
-  value={infoAddress}
-  onChange={(e) => setInfoAddress(e.target.value)}
-  required
-  placeholder="VD: 123 Trần Phú, Hải Châu, Đà Nẵng"
-  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
-  />
-  </div>
-
-  <div className="space-y-1.5">
-  <label className="font-extrabold text-slate-800 text-sm">Khu vực</label>
-  <input
-  type="text"
-  value={infoArea}
-  onChange={(e) => setInfoArea(e.target.value)}
-  placeholder="VD: Quận Hải Châu, Đà Nẵng"
-  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
-  />
-  </div>
-
-  <div className="space-y-1.5">
-  <label className="font-extrabold text-slate-800 text-sm">Số điện thoại</label>
-  <input
-  type="tel"
-  value={infoPhone}
-  onChange={(e) => setInfoPhone(e.target.value)}
-  placeholder="VD: 0901234567"
-  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
-  />
-  </div>
-
-  {/* Thong tin nhan tien — dung de sinh QR VietQR cho keo giao luu 50/50 */}
-  <div className="sm:col-span-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
-  <div className="flex items-center gap-2">
-  <QrCode className="w-4 h-4 text-[#0b4f6c]" />
-  <label className="font-extrabold text-slate-800 text-sm">Tài khoản nhận tiền (VietQR)</label>
-  <span className="text-[14px] text-slate-500">Dùng để đội giao lưu chuyển tiền sân</span>
-  </div>
-  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-  <div className="space-y-1.5">
-  <label className="font-bold text-slate-600 text-[14px]">Mã ngân hàng</label>
-  <input
-  type="text"
-  value={infoBankCode}
-  onChange={(e) => setInfoBankCode(e.target.value)}
-  placeholder="VD: 970436 (MBBank)"
-  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
-  />
-  </div>
-  <div className="space-y-1.5">
-  <label className="font-bold text-slate-600 text-[14px]">Số tài khoản</label>
-  <input
-  type="text"
-  value={infoBankAccount}
-  onChange={(e) => setInfoBankAccount(e.target.value)}
-  placeholder="VD: 1900 2026 2026"
-  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
-  />
-  </div>
-  <div className="space-y-1.5">
-  <label className="font-bold text-slate-600 text-[14px]">Tên chủ tài khoản</label>
-  <input
-  type="text"
-  value={infoAccountName}
-  onChange={(e) => setInfoAccountName(e.target.value)}
-  placeholder="VD: Cụm Sân Bóng Đá Đại Nam"
-  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-[14px]"
-  />
-  </div>
-  </div>
-  <p className="text-[14px] text-slate-500">Bỏ trống nếu chưa muốn hiện QR — hệ thống sẽ chỉ hiện số tiền và hotline để liên hệ trực tiếp.</p>
-  </div>
-
-  <div className="space-y-1.5 sm:col-span-2">
-  <label className="font-extrabold text-slate-800 text-sm">Ảnh cụm sân (URL)</label>
-  <input
-  type="text"
-  inputMode="url"
-  value={infoImageUrl}
-  onChange={(e) => setInfoImageUrl(e.target.value)}
-  placeholder="https://images.unsplash.com/..."
-  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
-  />
-  </div>
-  </div>
-
-  {/* Bộ môn — chủ sân tự khai báo, không bịa sẵn */}
-  <div className="space-y-2">
-  <label className="font-extrabold text-slate-800 text-sm">Bộ môn thể thao</label>
-  <div className="flex flex-wrap gap-2">
-  {pitchTypeOptions.map((t) => (
-  <button
-  key={t}
-  type="button"
-  onClick={() => toggleInfoList(t, infoPitchTypes, setInfoPitchTypes)}
-  className={`px-3 py-1.5 rounded-xl text-[14px] font-bold border transition-colors ${
-  infoPitchTypes.includes(t)
-  ? "bg-[#0369a1] text-white border-[#0369a1]"
-  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-  }`}
-  >
-  {pitchTypeLabel(t) || t}
-  </button>
-  ))}
-  </div>
-  </div>
-
-  {/* Tiện ích */}
-  <div className="space-y-2">
-  <label className="font-extrabold text-slate-800 text-sm">Tiện ích đi kèm</label>
-  <div className="flex flex-wrap gap-2">
-  {amenityOptions.map((a) => (
-  <button
-  key={a}
-  type="button"
-  onClick={() => toggleInfoList(a, infoAmenities, setInfoAmenities)}
-  className={`px-3 py-1.5 rounded-xl text-[14px] font-bold border transition-colors ${
-  infoAmenities.includes(a)
-  ? "bg-[#0369a1] text-white border-[#0369a1]"
-  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-  }`}
-  >
-  {a}
-  </button>
-  ))}
-  </div>
-  </div>
-
-  <div className="space-y-1.5">
-  <label className="font-extrabold text-slate-800 text-sm">Mô tả cụm sân</label>
-  <textarea
-  value={infoDescription}
-  onChange={(e) => setInfoDescription(e.target.value)}
-  rows={3}
-  placeholder="Mô tả chất lượng mặt cỏ, vị trí, chỗ để xe..."
-  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm resize-y"
-  />
-  </div>
-
-  <div className="flex gap-3 pt-2">
-  <button
-  type="button"
-  onClick={() => setShowEditInfoModal(false)}
-  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
-  >
-  Huỷ Bỏ
-  </button>
-  <button
-  type="submit"
-  disabled={isSavingInfo || !infoName.trim() || !infoAddress.trim()}
-  className="flex-1 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-  >
-  {isSavingInfo ? "Đang lưu…" : "Lưu Hồ Sơ"}
-  </button>
-  </div>
-  </form>
-  </div>
-  </div>
-  )}
-
-  {/* MODAL 1: ADD NEW PITCH (Thêm Sân Con Mới) */}
- {showAddPitchModal && (
-  <div id="admin-inline-add-pitch" className="w-full animate-fade-in">
- <div 
- className="bg-white p-4 sm:p-7 rounded-lg max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
- onClick={(e) => e.stopPropagation()}
- >
- <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
- <div className="flex items-center space-x-2.5">
- <Plus className="w-5.5 h-5.5 text-[#0b4f6c] " />
- <h3 className="font-black text-lg text-slate-900 ">Thêm Sân Con Mới Vào Cụm</h3>
- </div>
- <button 
- type="button"
- onClick={() => setShowAddPitchModal(false)} 
- className="text-slate-500 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
- >
- <X className="w-5 h-5" />
- </button>
- </div>
-
- <form onSubmit={handleCreateNewPitch} className="space-y-3 sm:space-y-4 text-sm">
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Tên Sân Con Mới:</label>
- <input
- type="text"
- required
- value={newPitchName}
- onChange={(e) => setNewPitchName(e.target.value)}
- placeholder="VD: Sân 7C Cỏ Nhân Tạo Mới"
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Loại Sân Thể Thao:</label>
- <select
- value={newPitchType}
- onChange={(e) => setNewPitchType(e.target.value)}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
- >
- <option value="Sân 7 Người">Sân 7 Người (Cỏ Nhân Tạo Chuẩn VFF)</option>
- <option value="Sân 5 Người">Sân 5 Người (Mini Cỏ / Futsal)</option>
- <option value="Sân 11 Người">Sân 11 Người (Tiêu Chuẩn FIFA)</option>
- </select>
- </div>
-
- <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Giá Giờ Thường (VNĐ):</label>
- <input
- type="number"
- value={newPitchBasePrice}
- onChange={(e) => setNewPitchBasePrice(e.target.value)}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Giá Giờ Vàng (VNĐ):</label>
- <input
- type="number"
- value={newPitchPeakPrice}
- onChange={(e) => setNewPitchPeakPrice(e.target.value)}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
- </div>
-
- <div className="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-between">
- <div className="space-y-0.5">
- <span className="text-[14px] font-bold text-indigo-700 block">
- Giờ hoạt động cụm: {operatingOpenTime} - {operatingCloseTime}
- </span>
- <span className="text-[14px] text-slate-500">
- Độ dài ca: {operatingSlotDuration} phút/ca (Áp dụng {availableTimeSlots.length} ca tự động)
- </span>
- </div>
- <button
- type="button"
- onClick={() => {
- setShowAddPitchModal(false);
- setShowHoursModal(true);
- }}
- className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-sm transition-colors shrink-0 shadow-xs"
- >
- Đổi Giờ
- </button>
- </div>
-
- <div className="flex space-x-2 pt-2">
- <button
- type="button"
- onClick={() => setShowAddPitchModal(false)}
- className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
- >
- Hủy
- </button>
- <button
- type="submit"
- className="flex-1 py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-sm shadow-md transition-colors"
- >
- Tạo Sân Mới
- </button>
- </div>
- </form>
- </div>
-  </div>
-  )}
-
- {/* MODAL 2: CREATE OFFLINE BOOKING FOR WALK-IN CUSTOMERS */}
- {showOfflineModal && (
-  <div id="admin-inline-offline" className="w-full animate-fade-in">
- <div 
- className="bg-white p-4 sm:p-7 rounded-lg max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
- onClick={(e) => e.stopPropagation()}
- >
- <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
- <div className="flex items-center space-x-2.5">
- <Plus className="w-5.5 h-5.5 text-emerald-500" />
- <h3 className="font-black text-lg text-slate-900 ">Tạo Đơn Tại Quầy</h3>
- </div>
- <button 
- type="button"
- onClick={() => setShowOfflineModal(false)} 
- className="text-slate-500 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
- >
- <X className="w-5 h-5" />
- </button>
- </div>
-
- <form onSubmit={handleOfflineBookingSubmit} className="space-y-3 sm:space-y-4 text-sm">
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 flex items-center justify-between">
- <span>Ngày Thi Đấu:</span>
- <span className="text-[14px] text-sky-700 font-bold">
- {upcomingDays.find(d => d.iso === offlineDate)?.label || offlineDate}
- </span>
- </label>
- <div className="flex items-center space-x-2">
- <select
- value={offlineDate}
- onChange={(e) => setOfflineDate(e.target.value)}
- className="flex-1 p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
- >
- {upcomingDays.map(d => (
- <option key={d.iso} value={d.iso}>
- {d.label} ({d.dateFormatted}) - {d.dayOfWeek}
- </option>
- ))}
- </select>
- <input
- type="date"
- value={offlineDate}
- onChange={(e) => {
- if (e.target.value) setOfflineDate(e.target.value);
- }}
- className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 text-[14px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
- />
- </div>
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Chọn Sân Con:</label>
- <select
- value={offlinePitchId}
- onChange={(e) => setOfflinePitchId(e.target.value)}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
- >
- {pitchMatrix.map(p => (
- <option key={p.pitchId} value={p.pitchId}>{pitchTypeLabel(p.pitchName) || p.pitchName}</option>
- ))}
- </select>
- </div>
-
-  <div className="rounded-xl bg-sky-50 border border-sky-200 px-3 py-2.5">
-  <span className="text-[14px] font-extrabold text-sky-900 flex items-center gap-1.5">
-  <Clock className="w-3.5 h-3.5 text-sky-700" />
-  Thời lượng ca: <strong className="font-black">2 tiếng (120 phút)</strong> — cố định
-  </span>
-  </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Khung Giờ Đặt:</label>
- <select
- value={offlineTime}
- onChange={(e) => setOfflineTime(e.target.value)}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm cursor-pointer"
- >
- {offlineAvailableSlots.map((slot) => (
- <option key={slot} value={slot}>
- {slot}
- </option>
- ))}
- </select>
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Tên Khách Đặt:</label>
- <input
- type="text"
- required
- value={offlineCustomer}
- onChange={(e) => setOfflineCustomer(e.target.value)}
- placeholder="VD: Anh Cường FC Hải Châu"
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Số Điện Thoại Khách:</label>
- <input
- type="text"
- required
- value={offlinePhone}
- onChange={(e) => setOfflinePhone(e.target.value)}
- placeholder="VD: 0914 555 789"
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
- />
- </div>
-
- <div className="space-y-1.5 pt-1">
- <label className="font-extrabold text-slate-800 ">Hình Thức Đặt Cọc:</label>
- <div className="grid grid-cols-2 gap-2.5">
- <button
- type="button"
- onClick={() => setOfflineDepositType("PAID_CASH")}
- className={`p-3.5 rounded-xl font-bold border transition-all text-sm ${
- offlineDepositType === "PAID_CASH"
- ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
- : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
- }`}
- >
- Đã Thu Cọc Mặt Quầy (50%)
- </button>
- <button
- type="button"
- onClick={() => setOfflineDepositType("TRUST")}
- className={`p-3.5 rounded-xl font-bold border transition-all text-sm ${
- offlineDepositType === "TRUST"
- ? "bg-amber-500 text-white border-amber-500 shadow-xs"
- : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
- }`}
- >
- Chưa Cọc (Khách Quen Tin Tưởng)
- </button>
- </div>
- </div>
-
- <div className="flex space-x-2 pt-2">
- <button
- type="button"
- onClick={() => setShowOfflineModal(false)}
- className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
- >
- Hủy
- </button>
- <button
- type="submit"
- className="flex-1 py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-colors"
- >
- Xác Nhận Giữ Ca
- </button>
- </div>
- </form>
- </div>
-  </div>
-  )}
-
- {/* MODAL 3: CHECK-IN & NO-SHOW MANAGEMENT ACTION */}
- {selectedSlotForAction && (
-  <div id="admin-inline-slot-action" className="w-full animate-fade-in">
- <div 
- className="bg-white p-4 sm:p-7 rounded-lg max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
- onClick={(e) => e.stopPropagation()}
- >
- <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
- <div className="flex items-center space-x-2.5">
- <QrCode className="w-5.5 h-5.5 text-[#0369a1]" />
- <h3 className="font-black text-lg text-slate-900 ">Chi Tiết & Check-in Ca Đặt</h3>
- </div>
- <button 
- type="button"
- onClick={() => setSelectedSlotForAction(null)} 
- className="text-slate-500 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
- >
- <X className="w-5 h-5" />
- </button>
- </div>
-
- <div className="space-y-3.5 text-sm">
- <div className="p-4 rounded-2xl bg-slate-50 space-y-2.5 border border-slate-200/60 ">
- <div className="flex justify-between items-center">
- <span className="text-slate-500">Khách đặt:</span>
- <strong className="text-slate-900 font-black text-sm">{selectedSlotForAction.customer}</strong>
- </div>
- <div className="flex justify-between items-center">
- <span className="text-slate-500">Số điện thoại:</span>
- <strong className="font-mono text-slate-900 font-bold">{selectedSlotForAction.phone}</strong>
- </div>
- <div className="flex justify-between items-center">
- <span className="text-slate-500">Khung giờ:</span>
- <strong className="font-mono text-emerald-500 font-black text-sm">{selectedSlotForAction.time}</strong>
- </div>
- <div className="flex justify-between items-center">
- <span className="text-slate-500">Mã vé check-in:</span>
- <strong className="font-mono text-[#0369a1] font-extrabold text-sm">{selectedSlotForAction.code}</strong>
- </div>
- </div>
-
- <div className="p-4 rounded-2xl bg-[#0369a1]/10 border border-[#0369a1]/20 space-y-2">
- <div className="flex justify-between items-center text-sm font-bold text-slate-900 ">
- <span>Tiền cọc đã thu:</span>
- <span className="font-mono text-sky-700 font-black text-base">{selectedSlotForAction.depositPaid}</span>
- </div>
- <div className="flex justify-between items-center text-sm font-bold text-slate-900 ">
- <span>Tiền còn lại thu tại quầy:</span>
- <span className="font-mono text-rose-600 text-base font-black">{selectedSlotForAction.cashDue}</span>
- </div>
- </div>
- </div>
-
- <div className="space-y-2.5 pt-2">
- {selectedSlotForAction.status === "pending_payment" && (
-  <button
-  type="button"
-  onClick={() => handleConfirmBookingPayment(selectedSlotForAction)}
-  className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95"
-  >
-  <ShieldCheck className="w-5 h-5" />
-  <span>Xác Nhận Đã Thu Cọc & Giữ Ca</span>
-  </button>
-  )}
-
-{selectedSlotForAction.status === "booked" && (
- <button
- type="button"
- onClick={() => handleConfirmCheckin(selectedSlotForAction)}
- className="w-full py-3.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-sm shadow-md transition-all flex items-center justify-center space-x-2 active:scale-95"
- >
- <UserCheck className="w-5 h-5" />
- <span>Xác Nhận Check-in Vào Sân & Mở Đèn</span>
- </button>
- )}
-
- <button
- type="button"
- onClick={() => handleCancelBooking(selectedSlotForAction)}
- className="w-full py-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 font-bold text-sm border border-rose-500/20 transition-all flex items-center justify-center space-x-2 active:scale-95"
- >
- <Trash2 className="w-4 h-4" />
- <span>Hủy Đơn Đặt Này (Trả Về Ca Trống)</span>
- </button>
- </div>
- </div>
-  </div>
-  )}
-
- {/* MODAL 4: CÀI ĐẶT THỜI GIAN HOẠT ĐỘNG & THỜI LƯỢNG CA SÂN */}
- {showHoursModal && (
-  <div id="admin-inline-hours" className="w-full animate-fade-in">
- <div 
- className="bg-white p-4 sm:p-7 rounded-lg max-w-md w-full border border-slate-200 space-y-3 sm:space-y-4 shadow-sm animate-modal-pop my-auto max-h-[90vh] overflow-y-auto"
- onClick={(e) => e.stopPropagation()}
- >
- <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
- <div className="flex items-center space-x-2.5">
- <Clock className="w-5.5 h-5.5 text-indigo-500" />
- <h3 className="font-black text-lg text-slate-900 ">Cấu Hình Giờ Hoạt Động Cụm Sân</h3>
- </div>
- <button 
- type="button"
- onClick={() => setShowHoursModal(false)} 
- className="text-slate-500 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
- >
- <X className="w-5 h-5" />
- </button>
- </div>
-
- <p className="text-sm text-slate-600 leading-relaxed">
-  Chủ sân thiết lập thời gian bắt đầu mở cửa và đóng cửa cụm sân. Mọi ca thi đấu đều dùng chung thời lượng <strong className="text-sky-700 font-bold">2 tiếng (120 phút)</strong>.
- </p>
-
- <form onSubmit={handleUpdateOperatingHours} className="space-y-3 sm:space-y-4 text-sm">
- <div className="grid grid-cols-2 gap-3">
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Giờ Bắt Đầu Mở Cửa:</label>
- <select
- value={operatingOpenTime}
- onChange={(e) => setOperatingOpenTime(e.target.value)}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm cursor-pointer"
- >
- {["06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00"].map((t) => (
- <option key={t} value={t}>{t}</option>
- ))}
- </select>
- </div>
-
- <div className="space-y-1.5">
- <label className="font-extrabold text-slate-800 ">Giờ Kết Thúc Đóng Cửa:</label>
- <select
- value={operatingCloseTime}
- onChange={(e) => setOperatingCloseTime(e.target.value)}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm cursor-pointer"
- >
- {["20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30", "24:00"].map((t) => (
- <option key={t} value={t}>{t}</option>
- ))}
- </select>
- </div>
- </div>
-
- {/* Thông báo cơ chế đặt linh hoạt theo yêu cầu người dùng */}
- <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-200 space-y-1.5">
- <div className="flex items-center space-x-2 text-sky-800 font-extrabold text-[14px]">
- <Sparkles className="w-4 h-4 text-emerald-500" />
- <span>Cơ Chế Đặt Sân Linh Hoạt</span>
- </div>
- <p className="text-[14px] text-slate-600 leading-relaxed">
-  Mọi ca thi đấu dùng chung thời lượng <strong className="text-slate-900 font-bold">2 tiếng (120 phút)</strong>. Hệ thống tự động tính tiền và phân ca theo thời gian thực tế.
- </p>
- </div>
-
- <div className="flex space-x-2.5 pt-2">
- <button
- type="button"
- onClick={() => setShowHoursModal(false)}
- className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
- >
- Đóng
- </button>
- <button
- type="submit"
- disabled={isUpdatingHours}
- className="flex-1 py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-sm shadow-md transition-colors flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer"
- >
- {isUpdatingHours && <RefreshCw className="w-4 h-4 animate-spin mr-1" />}
- <span>Lưu Giờ Hoạt Động Sân</span>
- </button>
- </div>
- </form>
- </div>
-  </div>
-  )}
- {/* MODAL HỦY CA ĐẶT SÂN KÈM LÝ DO THÔNG BÁO TỚI KHÁCH HÀNG */}
- {showCancelModal && (
- <div 
-  id="admin-inline-cancel" className="w-full animate-fade-in"
-  >
- <div 
- className="relative w-full max-w-md bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden animate-modal-pop my-auto"
- onClick={(e) => e.stopPropagation()}
- >
- {/* Header */}
- <div className="px-6 py-4 bg-rose-50 border-b border-rose-200 flex items-center justify-between">
- <div className="flex items-center space-x-3">
- <div className="w-10 h-10 rounded-2xl bg-rose-100 flex items-center justify-center shrink-0">
- <Trash2 className="w-5 h-5 text-rose-600 " />
- </div>
- <div>
- <h3 className="font-extrabold text-base text-rose-700 ">Xác Nhận Hủy Ca Đặt Sân</h3>
- <p className="text-[14px] text-rose-600 font-medium mt-0.5">
- Ca: <strong>{slotToCancel?.time || slotToCancel?.timeSlot || "Không rõ"}</strong> &bull; Khách: <strong>{slotToCancel?.customer || "Không rõ"}</strong>
- </p>
- </div>
- </div>
- <button
- type="button"
- onClick={() => {
- setShowCancelModal(false);
- setSlotToCancel(null);
- setCancelReasonInput("");
- }}
- className="text-slate-500 hover:text-slate-600 p-1.5 rounded-lg hover:bg-rose-100/50 transition-colors"
- >
- <X className="w-5 h-5" />
- </button>
- </div>
-
- {/* Body */}
- <div className="px-6 py-5 space-y-3 sm:space-y-4">
- <div>
- <label className="block text-[14px] font-extrabold text-slate-800 mb-2">
- Lý Do Hủy Ca <span className="text-rose-600">*</span>
- </label>
-
- {/* Preset reasons */}
- <div className="flex flex-wrap gap-1.5 mb-3">
- {[
- "Sân bị hư hỏng cần sửa chữa",
- "Sự kiện đặc biệt tại cụm sân",
- "Lỗi hệ thống đặt trùng giờ",
- "Điều kiện thời tiết xấu"
- ].map(reason => (
- <button
- key={reason}
- type="button"
- onClick={() => setCancelReasonInput(reason)}
- className={`px-2.5 py-1 rounded-lg text-[14px] font-bold transition-all border ${
- cancelReasonInput === reason
- ? "bg-rose-600 text-white border-rose-600 shadow-sm"
- : "bg-slate-100 text-slate-600 border-slate-200 hover:border-rose-300 hover:text-rose-600"
- }`}
- >
- {reason}
- </button>
- ))}
- </div>
-
- <textarea
- value={cancelReasonInput}
- onChange={(e) => setCancelReasonInput(e.target.value)}
- placeholder="Hoặc nhập lý do cụ thể... (tuỳ chọn)"
- rows={3}
- className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 font-medium placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none"
- />
- </div>
-
- <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start space-x-2">
- <span className="text-sm shrink-0">⚠️</span>
- <p className="text-[14px] text-amber-700 font-medium leading-relaxed">
- Lý do hủy sẽ được gửi ngay tới thông báo của khách hàng. Khung giờ này sẽ mở lại cho người đặt mới.
- </p>
- </div>
- </div>
-
- {/* Footer */}
- <div className="px-6 py-4 border-t border-slate-100 flex space-x-3">
- <button
- type="button"
- onClick={() => {
- setShowCancelModal(false);
- if (slotToCancel) {
- setSelectedSlotForAction(slotToCancel);
- }
- setSlotToCancel(null);
- setCancelReasonInput("");
- }}
- className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors"
- >
- Quay Lại
- </button>
- <button
- type="button"
- onClick={handleConfirmCancel}
- disabled={!cancelReasonInput.trim()}
- className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center space-x-1.5"
- >
- <Trash2 className="w-4 h-4" />
- <span>Xác Nhận Hủy Ca</span>
- </button>
- </div>
- </div>
- </div>
- )}
+ 
  </div>
  );
 }

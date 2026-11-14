@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Users,
   Plus,
@@ -79,10 +79,35 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
 
   const activeClub = clubs.find((c) => c.id === activeClubId) ?? null;
 
+  const formErrors = useMemo(() => {
+    const errs: Record<string, string> = {};
+    const name = form.name.trim();
+    if (!name) {
+      errs.name = "Vui lòng nhập tên CLB.";
+    } else if (name.length < 3) {
+      errs.name = "Tên CLB phải có ít nhất 3 ký tự.";
+    } else if (clubs.some((c) => c.name.trim().toLowerCase() === name.toLowerCase())) {
+      errs.name = `Bạn đã có CLB mang tên "${name}".`;
+    }
+
+    if (form.phone.trim() && !/^0[0-9]{9}$/.test(form.phone.trim())) {
+      errs.phone = "Số điện thoại CLB phải gồm 10 chữ số (bắt đầu bằng 0).";
+    }
+
+    const maxM = Number(form.maxMembers);
+    if (!Number.isInteger(maxM) || maxM < 0 || maxM > 500) {
+      errs.maxMembers = "Số lượng thành viên tối đa từ 0 đến 500.";
+    }
+
+    return errs;
+  }, [form, clubs]);
+  const isFormValid = Object.keys(formErrors).length === 0;
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.name.trim().length < 3) {
-      toastErr("Tên CLB phải có ít nhất 3 ký tự.");
+    if (!isFormValid) {
+      const firstErr: string = formErrors.name || formErrors.phone || formErrors.maxMembers || "Thông tin CLB chưa hợp lệ.";
+      toastErr(firstErr);
       return;
     }
     setCreating(true);
@@ -217,8 +242,13 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="VD: FC Đại Việt Đà Nẵng"
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+                className={`w-full px-3 py-2.5 rounded-xl border bg-white font-bold text-slate-900 focus:outline-none focus:ring-2 text-sm ${
+                  formErrors.name && form.name ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+                }`}
               />
+              {formErrors.name && form.name && (
+                <p className="mt-1 text-[13px] font-semibold text-rose-600">{formErrors.name}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-[14px] font-bold text-slate-600">Khu vực</label>
@@ -249,8 +279,13 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                 value={form.phone}
                 onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                 placeholder="0909…"
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+                className={`w-full px-3 py-2.5 rounded-xl border bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 text-sm ${
+                  formErrors.phone && form.phone ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+                }`}
               />
+              {formErrors.phone && form.phone && (
+                <p className="mt-1 text-[13px] font-semibold text-rose-600">{formErrors.phone}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-[14px] font-bold text-slate-600">
@@ -262,14 +297,19 @@ export default function ClubManagement({ user, onBack }: ClubManagementProps) {
                 max={500}
                 value={form.maxMembers}
                 onChange={(e) => setForm((f) => ({ ...f, maxMembers: Number(e.target.value) }))}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] text-sm"
+                className={`w-full px-3 py-2.5 rounded-xl border bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 text-sm ${
+                  formErrors.maxMembers ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
+                }`}
               />
+              {formErrors.maxMembers && (
+                <p className="mt-1 text-[13px] font-semibold text-rose-600">{formErrors.maxMembers}</p>
+              )}
             </div>
           </div>
           <button
             type="submit"
-            disabled={creating}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-extrabold transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5"
+            disabled={creating || !isFormValid}
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-extrabold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 cursor-pointer"
           >
             {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
             {creating ? "Đang tạo…" : "Tạo CLB"}

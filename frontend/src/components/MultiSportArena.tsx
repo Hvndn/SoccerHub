@@ -23,6 +23,10 @@ import {
 
 import { API_BASE_URL, apiRequest, ensureLoggedIn, fetchWithTimeout } from '@/lib/api';
 import { pitchTypeLabel } from "@/lib/pitchLabels";
+import { broadcastBookingEvent } from "@/lib/realtimeService";
+import SafeImage from "@/components/SafeImage";
+import { getPitchVisual } from "@/lib/pitchVisuals";
+import { Camera } from "lucide-react";
 
 interface Court {
  id: string;
@@ -64,6 +68,13 @@ export default function MultiSportArena({
 } = {}) {
  const [activeFilter, setActiveFilter] = useState<'all' | 'san5' | 'san7' | 'san11' | 'futsal'>('all');
  const [bookingCourt, setBookingCourt] = useState<Court | null>(null);
+ const [directCustomer, setDirectCustomer] = useState("");
+ const [directPhone, setDirectPhone] = useState("");
+ const [directTimeSlot, setDirectTimeSlot] = useState("18:00 - 20:00");
+ const [directDeposit, setDirectDeposit] = useState("");
+ const [directPaymentMethod, setDirectPaymentMethod] = useState("TIEN_MAT");
+ const [directNote, setDirectNote] = useState("");
+ const [isSubmittingDirect, setIsSubmittingDirect] = useState(false);
  const [joiningMatch, setJoiningMatch] = useState<MatchQueue | null>(null);
 
  // Form hien INLINE (khong popup) -> tu cuon toi khi mo.
@@ -172,6 +183,61 @@ export default function MultiSportArena({
  }, []);
 
  const [accepting, setAccepting] = useState(false);
+
+  const handleDirectBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bookingCourt) return;
+    if (!directCustomer.trim() || !directPhone.trim()) {
+      handleActionToast("❌ Vui lòng nhập tên khách và số điện thoại!");
+      return;
+    }
+    setIsSubmittingDirect(true);
+    try {
+      const defaultPrice = bookingCourt.pricePerHour * 2;
+      const depositAmount = Number(directDeposit) || 0;
+      await apiRequest("/api/v1/pitches/1/offline-booking", {
+        method: "POST",
+        body: JSON.stringify({
+          courtName: bookingCourt.name,
+          timeSlot: directTimeSlot,
+          customerName: directCustomer.trim(),
+          customerPhone: directPhone.trim(),
+          price: defaultPrice,
+          depositPaid: depositAmount,
+          paymentMethod: directPaymentMethod,
+          note: directNote.trim() || "Chủ sân đăng ký trực tiếp tại quầy",
+          bookingDate: new Date().toISOString().split("T")[0],
+        }),
+      });
+      setCourts((prev) =>
+        prev.map((c) =>
+          c.id === bookingCourt.id ? { ...c, status: "booked" } : c
+        )
+      );
+      try {
+        broadcastBookingEvent({
+          type: "BOOKING_CREATED",
+          pitchId: 1,
+          courtName: bookingCourt.name,
+          timeSlot: directTimeSlot,
+          customerName: directCustomer.trim(),
+          customerPhone: directPhone.trim(),
+          totalPrice: defaultPrice,
+          via: "Chủ sân đăng ký trực tiếp",
+        });
+      } catch {}
+      handleActionToast(`🎉 Đã đăng ký thành công ca [${directTimeSlot}] cho ${directCustomer.trim()} tại ${bookingCourt.name}!`);
+      setBookingCourt(null);
+      setDirectCustomer("");
+      setDirectPhone("");
+      setDirectDeposit("");
+      setDirectNote("");
+    } catch (err: any) {
+      handleActionToast(`❌ Lỗi đăng ký ca: ${err.message || "Không thể lưu"}`);
+    } finally {
+      setIsSubmittingDirect(false);
+    }
+  };
 
  const handleActionToast = (msg: string) => {
  setSuccessToast(msg);
@@ -381,8 +447,27 @@ export default function MultiSportArena({
  )}
  </div>
 
- <h3 className="font-bold text-sm text-slate-800 line-clamp-1 mb-1">
- {court.name}
+ {/* Ảnh sân con trực quan (Không có nhãn Rê xem ảnh) */}
+ <div className="w-full h-32 rounded-lg overflow-hidden relative bg-slate-900 mb-2.5 group">
+   <SafeImage
+     src={getPitchVisual(court.fieldType).imageUrl}
+     alt={court.name}
+     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+   />
+   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/20" />
+   <div className="absolute top-2 left-2">
+     <span className={`px-2 py-0.5 rounded text-[12px] font-bold border shadow-xs ${getPitchVisual(court.fieldType).badgeBg} ${getPitchVisual(court.fieldType).badgeText} ${getPitchVisual(court.fieldType).badgeBorder}`}>
+       {getPitchVisual(court.fieldType).shortLabel}
+     </span>
+   </div>
+   <div className="absolute bottom-2 left-2 right-2 text-white flex items-center justify-between text-[12px]">
+     <span className="font-mono text-slate-200 font-bold bg-slate-950/70 px-2 py-0.5 rounded">{getPitchVisual(court.fieldType).dimensions}</span>
+   </div>
+ </div>
+
+ <h3 className="font-bold text-sm text-slate-900 line-clamp-1 mb-1 flex items-center gap-1.5">
+   <span>{court.name}</span>
+   <Camera className="w-3.5 h-3.5 text-slate-400 shrink-0" />
  </h3>
 
  <div className="text-[14px] text-slate-500 space-y-1 mb-3">
@@ -427,10 +512,18 @@ export default function MultiSportArena({
 
  {court.status === 'available' && (
  <button
- onClick={() => setBookingCourt(court)}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold px-3 py-2 rounded-lg shadow transition"
+ onClick={() => {
+   setBookingCourt(court);
+   setDirectCustomer("");
+   setDirectPhone("");
+   setDirectDeposit("");
+   setDirectNote("");
+ }}
+ className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold px-3.5 py-2 rounded-lg shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+ title="Đăng ký ca sân trực tiếp cho khách vãng lai hoặc chủ sân giữ ca"
  >
- Đặt Sân Ngay
+ <Plus className="w-3.5 h-3.5" />
+ <span>+ Đăng Ký Ca</span>
  </button>
  )}
 
@@ -596,67 +689,170 @@ export default function MultiSportArena({
 
  </div>
 
- {/* Court Booking Modal */}
- {bookingCourt && (
- <div id="inline-bookingcourt" className="w-full animate-fade-in">
- <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-5">
- <div className="flex items-center justify-between border-b border-slate-200 pb-3">
- <h3 className="font-extrabold text-lg text-slate-900 ">
- Xác Nhận Đặt Ca Sân {bookingCourt.id}
- </h3>
- <button
- onClick={() => setBookingCourt(null)}
- className="text-slate-500 hover:text-slate-700 text-xl font-bold"
- >
- ✕
- </button>
- </div>
+ {/* Form Đăng Ký Ca Sân Trực Tiếp Cho Chủ Sân (Inline 100%, Không modal che màn hình) */}
+  {bookingCourt && (
+  <div id="inline-bookingcourt" className="w-full animate-fade-in my-6">
+    <div className="bg-white border-2 border-sky-400 rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-md space-y-4">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-sky-100 text-[#0369a1] flex items-center justify-center font-bold">
+            <Plus className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-black text-base sm:text-lg text-slate-900">
+              Đăng Ký Ca Trực Tiếp Tại Quầy: {bookingCourt.name} ({bookingCourt.id})
+            </h3>
+            <p className="text-[13px] text-slate-500">
+              Dành cho khách vãng lai đến sân đá trực tiếp hoặc Chủ Sân đăng ký giữ ca
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setBookingCourt(null)}
+          className="text-slate-400 hover:text-slate-700 text-lg font-bold p-1 rounded-md hover:bg-slate-100 cursor-pointer"
+        >
+          ✕
+        </button>
+      </div>
 
- <div className="space-y-3 text-sm text-slate-600 ">
- <div className="flex justify-between">
- <span>Tên sân:</span>
- <span className="font-bold text-slate-900 ">{bookingCourt.name}</span>
- </div>
- <div className="flex justify-between">
- <span>Loại sân:</span>
- <span className="font-medium text-emerald-500 font-bold">{bookingCourt.fieldLabel}</span>
- </div>
- <div className="flex justify-between">
- <span>Mặt sân:</span>
- <span className="font-medium">{bookingCourt.surface}</span>
- </div>
- <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-extrabold text-slate-900 ">
- <span>Giá thuê mỗi giờ:</span>
- <span className="text-emerald-500">{bookingCourt.pricePerHour.toLocaleString()}đ</span>
- </div>
- </div>
+      <form onSubmit={handleDirectBookingSubmit} className="space-y-4">
+        {/* Thông tin tóm tắt sân */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[13px]">
+          <div>
+            <span className="text-slate-500 block">Loại sân:</span>
+            <strong className="text-slate-800">{bookingCourt.fieldLabel}</strong>
+          </div>
+          <div>
+            <span className="text-slate-500 block">Mặt sân:</span>
+            <strong className="text-slate-800">{bookingCourt.surface}</strong>
+          </div>
+          <div>
+            <span className="text-slate-500 block">Đơn giá:</span>
+            <strong className="text-[#0369a1] font-mono">{bookingCourt.pricePerHour.toLocaleString()}đ/h</strong>
+          </div>
+          <div>
+            <span className="text-slate-500 block">Giá ca 2 tiếng:</span>
+            <strong className="text-emerald-700 font-mono font-bold">{(bookingCourt.pricePerHour * 2).toLocaleString()}đ</strong>
+          </div>
+        </div>
 
- <div className="bg-slate-50 p-3 rounded-xl text-[14px] text-slate-500 space-y-1">
- <div className="font-semibold text-slate-700 ">ℹ️ Quy trình đặt ca:</div>
- <div>• Chọn ngày & khung giờ ở tab Đặt Sân.</div>
- <div>• Cọc 50% giá ca qua VietQR; hoàn cọc theo từng sân.</div>
- </div>
+        {/* Khung giờ thi đấu */}
+        <div className="space-y-1.5">
+          <label className="font-bold text-slate-800 text-[13px] block">Khung Giờ Thi Đấu:</label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {["14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00", "20:00 - 22:00"].map((slot) => (
+              <button
+                key={slot}
+                type="button"
+                onClick={() => setDirectTimeSlot(slot)}
+                className={`py-2 px-2.5 rounded-lg text-[13px] font-bold border transition-colors cursor-pointer text-center ${
+                  directTimeSlot === slot
+                    ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
+                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                {slot}
+              </button>
+            ))}
+          </div>
+        </div>
 
- <div className="flex space-x-3 pt-2">
- <button
- onClick={() => setBookingCourt(null)}
- className="w-1/2 py-2.5 rounded-xl border border-slate-300 font-bold text-[14px] text-slate-700 hover:bg-slate-100 "
- >
- Hủy Bỏ
- </button>
- <button
- onClick={() => {
- setBookingCourt(null);
- onNavigateToBooking?.();
- }}
- className="w-1/2 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] shadow-lg transition"
- >
- Chọn Khung Giờ
- </button>
- </div>
- </div>
- </div>
- )}
+        {/* Tên khách & SĐT */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="font-bold text-slate-800 text-[13px] block">
+              Tên Khách Hàng / Đội Bóng: <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={directCustomer}
+              onChange={(e) => setDirectCustomer(e.target.value)}
+              placeholder="VD: FC Anh Ba (hoặc Tên Khách)"
+              className="w-full p-2.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-900 text-[13px] focus:outline-none focus:border-[#0369a1]"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="font-bold text-slate-800 text-[13px] block">
+              Số Điện Thoại Liên Hệ: <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="tel"
+              required
+              value={directPhone}
+              onChange={(e) => setDirectPhone(e.target.value)}
+              placeholder="VD: 0912 345 678"
+              className="w-full p-2.5 rounded-lg border border-slate-300 bg-white font-mono text-slate-900 text-[13px] focus:outline-none focus:border-[#0369a1]"
+            />
+          </div>
+        </div>
+
+        {/* Tiền cọc & Phương thức thanh toán */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="font-bold text-slate-800 text-[13px] block">
+              Tiền Đã Nhận / Cọc Trước (VNĐ):
+            </label>
+            <input
+              type="number"
+              value={directDeposit}
+              onChange={(e) => setDirectDeposit(e.target.value)}
+              placeholder="VD: 200000 (hoặc 0 nếu thanh toán sau)"
+              className="w-full p-2.5 rounded-lg border border-slate-300 bg-white font-mono text-slate-900 text-[13px] focus:outline-none focus:border-[#0369a1]"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="font-bold text-slate-800 text-[13px] block">
+              Hình Thức Thanh Toán:
+            </label>
+            <select
+              value={directPaymentMethod}
+              onChange={(e) => setDirectPaymentMethod(e.target.value)}
+              className="w-full p-2.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-900 text-[13px] focus:outline-none focus:border-[#0369a1] cursor-pointer"
+            >
+              <option value="TIEN_MAT">Tiền mặt tại quầy</option>
+              <option value="VIETQR">Chuyển khoản VietQR</option>
+              <option value="CHUA_THANH_TOAN">Chưa thanh toán (Thu sau trận)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Ghi chú */}
+        <div className="space-y-1.5">
+          <label className="font-bold text-slate-800 text-[13px] block">Ghi Chú Ca Sân (Tùy chọn):</label>
+          <input
+            type="text"
+            value={directNote}
+            onChange={(e) => setDirectNote(e.target.value)}
+            placeholder="VD: Khách lấy thêm 1 lốc nước suối, mượn 2 áo bib..."
+            className="w-full p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-[13px] focus:outline-none focus:border-[#0369a1]"
+          />
+        </div>
+
+        {/* Nút bấm hành động */}
+        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200">
+          <button
+            type="button"
+            onClick={() => setBookingCourt(null)}
+            className="px-4 py-2.5 rounded-lg border border-slate-300 font-bold text-[13px] text-slate-700 hover:bg-slate-100 cursor-pointer"
+          >
+            Hủy Bỏ
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmittingDirect}
+            className="px-5 py-2.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-sm transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            <span>{isSubmittingDirect ? "Đang lưu ca..." : "💾 Xác Nhận Khóa Ca Sân"}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  )}
 
  {/* Match Joining Modal */}
  {joiningMatch && (

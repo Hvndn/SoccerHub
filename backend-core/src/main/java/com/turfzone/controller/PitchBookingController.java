@@ -494,11 +494,44 @@ public class PitchBookingController {
         return end - start;
     }
 
+    private String normalizeCourtName(String name) {
+        if (name == null) return "";
+        return name.trim().toUpperCase()
+                .replace("SÂN", "SAN")
+                .replace("NGƯỜI", "")
+                .replace(" ", "")
+                .replace("_", "")
+                .replace("-", "");
+    }
+
+    private String resolveCourtName(Pitch pitch, String courtName) {
+        List<String> courts = pitch.getPitchTypes();
+        if (courts == null || courts.isEmpty() || courtName == null) return courtName;
+        String want = courtName.trim();
+        for (String c : courts) {
+            if (c != null && c.trim().equalsIgnoreCase(want)) return c;
+        }
+        if (want.startsWith("court-")) {
+            try {
+                String[] parts = want.split("-");
+                if (parts.length >= 3) {
+                    int idx = Integer.parseInt(parts[2]);
+                    if (idx >= 0 && idx < courts.size()) return courts.get(idx);
+                }
+            } catch (Exception ignored) {}
+        }
+        String normWant = normalizeCourtName(want);
+        for (String c : courts) {
+            if (c != null && normalizeCourtName(c).equalsIgnoreCase(normWant)) return c;
+        }
+        return courtName;
+    }
+
     private boolean isCourtOfPitch(Pitch pitch, String courtName) {
         List<String> courts = pitch.getPitchTypes();
         if (courts == null || courts.isEmpty() || courtName == null) return false;
-        String want = courtName.trim();
-        return courts.stream().anyMatch(c -> c != null && c.trim().equalsIgnoreCase(want));
+        String resolved = resolveCourtName(pitch, courtName);
+        return courts.stream().anyMatch(c -> c != null && c.trim().equalsIgnoreCase(resolved));
     }
 
     /** Ngay dat phai la hom nay hoac tuong lai (khong nhan dat cho ngay da qua). */
@@ -796,6 +829,7 @@ public class PitchBookingController {
             return ResponseEntity.badRequest().body(Map.of("message",
                     "Sân con không thuộc cụm sân này. Vui lòng chọn ca của sân trong cụm."));
         }
+        final String effectiveCourtName = resolveCourtName(pitch, courtName);
         // Ngay dat phai chua qua.
         if (!isBookableDate(bookingDate)) {
             return ResponseEntity.badRequest().body(Map.of("message",
@@ -828,14 +862,14 @@ public class PitchBookingController {
                     slotDuration);
             totalPrice = 0;
             for (String daySlot : daySlots) {
-                totalPrice += computeSlotPrice(pitch, courtName, daySlot);
+                totalPrice += computeSlotPrice(pitch, effectiveCourtName, daySlot);
             }
             if (totalPrice <= 0) {
                 return ResponseEntity.badRequest().body(Map.of("message",
                         "Không tính được giá bao sân cả ngày. Vui lòng kiểm tra giờ mở cửa của cụm sân."));
             }
         } else {
-            totalPrice = computeSlotPrice(pitch, courtName, timeSlot);
+            totalPrice = computeSlotPrice(pitch, effectiveCourtName, timeSlot);
         }
         int depositPaid = computeDeposit(totalPrice, req.get("depositPercent"));
         int cashDue = totalPrice - depositPaid;
@@ -849,7 +883,7 @@ public class PitchBookingController {
                 .collect(java.util.stream.Collectors.toList());
         final String effectiveTimeSlot = timeSlot; // fullDay co the da doi timeSlot -> lambda can bien final
         boolean isConflict = courtBookings.stream()
-                .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(effectiveTimeSlot, b.getTimeSlot()));
+                .anyMatch(b -> b.getCourtName().equalsIgnoreCase(effectiveCourtName) && isTimeOverlapping(effectiveTimeSlot, b.getTimeSlot()));
         if (isConflict) {
             return ResponseEntity.badRequest().body(Map.of("message",
                     "Khung giờ này đã có đội đặt hoặc bị trùng giờ với một ca thi đấu khác! Vui lòng chọn giờ khác."));
@@ -871,7 +905,7 @@ public class PitchBookingController {
 
         Booking booking = Booking.builder()
                 .pitchId(id)
-                .courtName(courtName)
+                .courtName(effectiveCourtName)
                 .courtType((String) req.getOrDefault("courtType", "Sân 7"))
                 .bookingDate(bookingDate)
                 .timeSlot(timeSlot)
@@ -924,6 +958,7 @@ public class PitchBookingController {
             return ResponseEntity.badRequest().body(Map.of("message",
                     "Sân con không thuộc cụm sân này. Vui lòng chọn ca của sân trong cụm."));
         }
+        final String effectiveCourtName = resolveCourtName(ownerPitch, courtName);
         // Ngay dat phai chua qua.
         if (!isBookableDate(bookingDate)) {
             return ResponseEntity.badRequest().body(Map.of("message",
@@ -945,7 +980,7 @@ public class PitchBookingController {
         // (client có thể tự khai giá 1đ làm sai số liệu doanh thu của chủ sân).
         // Dung CHUNG cong thuc voi ma tran (gia hien thi = gia thu phi) + ho tro
         // gia rieng cua chu san cho tung san con.
-        Integer totalPrice = computeSlotPrice(ownerPitch, courtName, timeSlot);
+        Integer totalPrice = computeSlotPrice(ownerPitch, effectiveCourtName, timeSlot);
         // Cọc tối đa 50% giá ca (đúng chính sách hiển thị ở giao diện).
         // Muc coc: 50% (mac dinh) hoac 100% — server kiem tra, khong tin client.
         Integer depositPaid = computeDeposit(totalPrice, req.get("depositPercent"));
@@ -962,7 +997,7 @@ public class PitchBookingController {
                 .filter(b -> b.getStatus() == null || !"CANCELLED".equals(b.getStatus()))
                 .collect(java.util.stream.Collectors.toList());
         boolean isConflict = courtBookings.stream()
-                .anyMatch(b -> b.getCourtName().equalsIgnoreCase(courtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()));
+                .anyMatch(b -> b.getCourtName().equalsIgnoreCase(effectiveCourtName) && isTimeOverlapping(timeSlot, b.getTimeSlot()));
         if (isConflict) {
             return ResponseEntity.badRequest().body(Map.of("message", "Khung giờ này đã có đội đặt hoặc bị trùng giờ với một ca thi đấu khác! Vui lòng chọn giờ khác."));
         }
@@ -981,7 +1016,7 @@ public class PitchBookingController {
 
         Booking booking = Booking.builder()
                 .pitchId(id)
-                .courtName(courtName)
+                .courtName(effectiveCourtName)
                 .courtType((String) req.getOrDefault("courtType", "Sân 7"))
                 .bookingDate(bookingDate)
                 .timeSlot(timeSlot)
@@ -1238,6 +1273,33 @@ Booking saved = bookingRepository.save(booking);
             b.setCashDue(0); // Đã thu đủ tại quầy
             bookingRepository.save(b);
             return ResponseEntity.ok(Map.of("message", "Check-in thành công! Khách đã vào sân.", "booking", b));
+        }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy đơn đặt này.")));
+    }
+
+    /**
+     * API Tất Toán & Hoàn Tất Trả Ca Sân (PLAYING -> COMPLETED)
+     */
+    @PutMapping("/bookings/{bookingId}/complete")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+    public ResponseEntity<?> completeBooking(
+            @PathVariable Long bookingId,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
+        return bookingRepository.findById(bookingId).map(b -> {
+            try {
+                assertOwnsBooking(b, me);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            }
+            if ("CANCELLED".equalsIgnoreCase(b.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Đơn này đã hủy, không thể tất toán."));
+            }
+            b.setStatus("COMPLETED");
+            if (b.getCashCollected() == null || b.getCashCollected() == 0) {
+                b.setCashCollected(b.getCashDue() != null ? b.getCashDue() : 0);
+            }
+            b.setCashDue(0);
+            bookingRepository.save(b);
+            return ResponseEntity.ok(Map.of("message", "Tất toán và hoàn thành ca đặt sân thành công!", "booking", b));
         }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy đơn đặt này.")));
     }
 

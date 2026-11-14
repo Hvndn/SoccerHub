@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { toastOk, toastInfo } from "@/lib/toast";
+import { toastOk, toastInfo, toastErr } from "@/lib/toast";
 import AvatarUploader from "@/components/AvatarUploader";
 import { resolveAvatarUrl } from "@/lib/avatar";
 import SafeImage from "@/components/SafeImage";
@@ -21,10 +21,21 @@ import {
   Target,
   Save,
   Crown,
+  Camera,
+  Heart,
+  Building2,
+  ArrowRight,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { UserProfile } from "@/lib/authService";
 import { fetchTournaments, sportLabel } from "@/lib/tournamentService";
+import { getAllPitchesApi } from "@/lib/pitchService";
+import {
+  getFavoritePitchIds,
+  toggleFavoritePitch,
+  subscribeFavorites,
+} from "@/lib/favoritePitchService";
 import FormDots from "./FormDots";
 
 interface PlayerProfileConsoleProps {
@@ -58,6 +69,35 @@ export default function PlayerProfileConsole({
   }, []);
 
   const [historyFilter, setHistoryFilter] = useState<"all" | "win" | "loss">("all");
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+  const [favPitches, setFavPitches] = useState<any[]>([]);
+
+  useEffect(() => {
+    setFavoriteIds(getFavoritePitchIds(activeUser?.id));
+    const unsub = subscribeFavorites((ids) => {
+      setFavoriteIds(ids);
+    }, activeUser?.id);
+    return unsub;
+  }, [activeUser?.id]);
+
+  useEffect(() => {
+    let alive = true;
+    getAllPitchesApi()
+      .then((data) => {
+        if (alive && Array.isArray(data)) {
+          setFavPitches(data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const myFavoriteList = useMemo(() => {
+    return favPitches.filter((p) => favoriteIds.includes(Number(p.id)));
+  }, [favPitches, favoriteIds]);
+
   const [isEditingInline, setIsEditingInline] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState("");
@@ -79,6 +119,29 @@ export default function PlayerProfileConsole({
     preferredTime: "",
     currentClub: "",
   });
+
+  const profileErrors = useMemo(() => {
+    const errs: Record<string, string> = {};
+    if (!editForm.fullName.trim()) {
+      errs.fullName = "Vui lòng nhập họ và tên.";
+    } else if (editForm.fullName.trim().length < 2) {
+      errs.fullName = "Họ và tên tối thiểu 2 ký tự.";
+    }
+    if (editForm.phone.trim() && !/^0[0-9]{9}$/.test(editForm.phone.trim())) {
+      errs.phone = "Số điện thoại phải gồm 10 chữ số (bắt đầu bằng 0).";
+    }
+    if (editForm.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email.trim())) {
+      errs.email = "Email không hợp lệ (VD: cauthu@gmail.com).";
+    }
+    if (editForm.jerseyNumber.trim()) {
+      const num = parseInt(editForm.jerseyNumber, 10);
+      if (!Number.isFinite(num) || num < 0 || num > 99) {
+        errs.jerseyNumber = "Số áo hợp lệ từ 0 đến 99.";
+      }
+    }
+    return errs;
+  }, [editForm]);
+  const isProfileValid = Object.keys(profileErrors).length === 0;
 
   useEffect(() => {
     if (activeUser) {
@@ -118,6 +181,7 @@ export default function PlayerProfileConsole({
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isProfileValid) return;
     setIsSaving(true);
     setSaveSuccessMsg("");
     setSaveErrorMsg("");
@@ -133,6 +197,16 @@ export default function PlayerProfileConsole({
       setSaveErrorMsg(err?.message || "Cập nhật thất bại. Vui lòng thử lại.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleQuickAvatarUploaded = async (url: string) => {
+    try {
+      await updateProfile({ avatar: url });
+      setEditForm((prev) => ({ ...prev, avatar: url }));
+      toastOk("Đã đổi ảnh đại diện thành công!");
+    } catch (err: any) {
+      toastErr(err?.message || "Không thể cập nhật ảnh đại diện.");
     }
   };
 
@@ -295,25 +369,34 @@ export default function PlayerProfileConsole({
       <section className="bg-white rounded-lg border border-slate-300 p-5 space-y-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4">
-            <div className="relative shrink-0">
-              <div className="w-20 h-20 rounded-lg bg-[#0369a1] text-white font-bold text-2xl flex items-center justify-center border border-slate-300 overflow-hidden">
-                {isAvatarUrl ? (
-                  <SafeImage
-                    src={avatarImgUrl}
-                    alt={displayFullName}
-                    className="w-full h-full object-cover"
-                    fallbackLabel="Ảnh đại diện"
-                  />
-                ) : (
-                  <span>{displayAvatar || initials}</span>
-                )}
+            <div className="flex flex-col items-center sm:items-start gap-1.5 shrink-0">
+              <div className="relative group">
+                <div className="w-20 h-20 rounded-2xl bg-[#0369a1] text-white font-bold text-2xl flex items-center justify-center border-2 border-slate-200 overflow-hidden shadow-xs">
+                  {isAvatarUrl ? (
+                    <SafeImage
+                      src={avatarImgUrl}
+                      alt={displayFullName}
+                      className="w-full h-full object-cover"
+                      fallbackLabel="Ảnh đại diện"
+                    />
+                  ) : (
+                    <span>{displayAvatar || initials}</span>
+                  )}
+                </div>
+                <div
+                  className="absolute -bottom-1 -right-1 bg-emerald-600 text-white p-1 rounded-md border-2 border-white shadow-xs"
+                  title="Đã xác thực tài khoản"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </div>
               </div>
-              <div
-                className="absolute -bottom-1 -right-1 bg-emerald-600 text-white p-1 rounded-md border border-white"
-                title="Đã xác thực tài khoản"
-              >
-                <ShieldCheck className="w-3.5 h-3.5" />
-              </div>
+
+              {/* Nút Đổi Avatar Nhanh */}
+              <AvatarUploader
+                compact
+                onUploaded={handleQuickAvatarUploaded}
+                label="Đổi Avatar"
+              />
             </div>
 
             <div className="space-y-1.5 min-w-0">
@@ -371,38 +454,38 @@ export default function PlayerProfileConsole({
           </div>
         </div>
 
-        {/* 6 Ô THÔNG SỐ CÁ NHÂN GỌN GÀNG */}
+        {/* 6 Ô THÔNG SỐ CÁ NHÂN GỌN GÀNG & TRỰC QUAN */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-[13px]">
-          <div className="p-3 rounded-md bg-slate-50 border border-slate-200">
-            <p className="text-slate-500 font-semibold">Vị trí sở trường</p>
-            <p className="font-bold text-slate-900 mt-0.5 truncate">{displayPosition}</p>
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-slate-500 font-semibold block text-[13px]">🧤 Vị trí sở trường</span>
+            <p className="font-extrabold text-slate-900 mt-1 truncate">{displayPosition}</p>
           </div>
-          <div className="p-3 rounded-md bg-slate-50 border border-slate-200">
-            <p className="text-slate-500 font-semibold">Trình độ</p>
-            <p className="font-bold text-slate-900 mt-0.5 truncate">{displayLevel}</p>
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-slate-500 font-semibold block text-[13px]">⭐ Trình độ thi đấu</span>
+            <p className="font-extrabold text-slate-900 mt-1 truncate">{displayLevel}</p>
           </div>
-          <div className="p-3 rounded-md bg-slate-50 border border-slate-200">
-            <p className="text-slate-500 font-semibold">Chân thuận & Số áo</p>
-            <p className="font-bold text-slate-900 mt-0.5 truncate">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-slate-500 font-semibold block text-[13px]">👟 Chân & Số áo</span>
+            <p className="font-extrabold text-slate-900 mt-1 truncate">
               {editForm.dominantFoot || "Chưa khai báo"}
               {editForm.jerseyNumber ? ` • #${editForm.jerseyNumber}` : ""}
             </p>
           </div>
-          <div className="p-3 rounded-md bg-slate-50 border border-slate-200">
-            <p className="text-slate-500 font-semibold">Chiều cao & Cân nặng</p>
-            <p className="font-bold text-slate-900 mt-0.5 truncate">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-slate-500 font-semibold block text-[13px]">📏 Chiều cao / Cân nặng</span>
+            <p className="font-extrabold text-slate-900 mt-1 truncate">
               {editForm.height || "—"} / {editForm.weight || "—"}
             </p>
           </div>
-          <div className="p-3 rounded-md bg-slate-50 border border-slate-200">
-            <p className="text-slate-500 font-semibold">Khung giờ thường đá</p>
-            <p className="font-bold text-slate-900 mt-0.5 truncate">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-slate-500 font-semibold block text-[13px]">⏰ Giờ thường đá</span>
+            <p className="font-extrabold text-slate-900 mt-1 truncate">
               {editForm.preferredTime || "Chưa khai báo"}
             </p>
           </div>
-          <div className="p-3 rounded-md bg-slate-50 border border-slate-200">
-            <p className="text-slate-500 font-semibold">Đội bóng / CLB</p>
-            <p className="font-bold text-slate-900 mt-0.5 truncate">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-slate-500 font-semibold block text-[13px]">🛡️ Câu lạc bộ</span>
+            <p className="font-extrabold text-slate-900 mt-1 truncate">
               {editForm.currentClub || perf.myTeamName || "Chưa khai báo"}
             </p>
           </div>
@@ -445,8 +528,13 @@ export default function PlayerProfileConsole({
                   required
                   value={editForm.fullName}
                   onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white focus:border-[#0369a1] outline-none"
+                  className={`w-full px-3 py-2 rounded-md border bg-white focus:outline-none focus:ring-2 ${
+                    profileErrors.fullName && editForm.fullName ? "border-rose-400 focus:ring-rose-500" : "border-slate-300 focus:ring-[#0369a1]"
+                  }`}
                 />
+                {profileErrors.fullName && editForm.fullName && (
+                  <p className="mt-1 text-[13px] font-semibold text-rose-600">{profileErrors.fullName}</p>
+                )}
               </div>
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 mb-1">Email</label>
@@ -454,8 +542,14 @@ export default function PlayerProfileConsole({
                   type="email"
                   value={editForm.email}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white focus:border-[#0369a1] outline-none"
+                  placeholder="cauthu@gmail.com"
+                  className={`w-full px-3 py-2 rounded-md border bg-white focus:outline-none focus:ring-2 ${
+                    profileErrors.email && editForm.email ? "border-rose-400 focus:ring-rose-500" : "border-slate-300 focus:ring-[#0369a1]"
+                  }`}
                 />
+                {profileErrors.email && editForm.email && (
+                  <p className="mt-1 text-[13px] font-semibold text-rose-600">{profileErrors.email}</p>
+                )}
               </div>
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 mb-1">Số điện thoại</label>
@@ -463,8 +557,14 @@ export default function PlayerProfileConsole({
                   type="tel"
                   value={editForm.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                  className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white focus:border-[#0369a1] outline-none"
+                  placeholder="0909…"
+                  className={`w-full px-3 py-2 rounded-md border bg-white focus:outline-none focus:ring-2 ${
+                    profileErrors.phone && editForm.phone ? "border-rose-400 focus:ring-rose-500" : "border-slate-300 focus:ring-[#0369a1]"
+                  }`}
                 />
+                {profileErrors.phone && editForm.phone && (
+                  <p className="mt-1 text-[13px] font-semibold text-rose-600">{profileErrors.phone}</p>
+                )}
               </div>
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 mb-1">Khu vực hoạt động</label>
@@ -513,14 +613,19 @@ export default function PlayerProfileConsole({
                 </select>
               </div>
               <div>
-                <label className="block text-[13px] font-bold text-slate-700 mb-1">Số áo ưa thích</label>
+                <label className="block text-[13px] font-bold text-slate-700 mb-1">Số áo ưa thích (0-99)</label>
                 <input
                   type="text"
                   value={editForm.jerseyNumber}
-                  onChange={(e) => setEditForm({ ...editForm, jerseyNumber: e.target.value })}
+                  onChange={(e) => setEditForm({ ...editForm, jerseyNumber: e.target.value.replace(/[^0-9]/g, "") })}
                   placeholder="10"
-                  className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white focus:border-[#0369a1] outline-none"
+                  className={`w-full px-3 py-2 rounded-md border bg-white focus:outline-none focus:ring-2 ${
+                    profileErrors.jerseyNumber && editForm.jerseyNumber ? "border-rose-400 focus:ring-rose-500" : "border-slate-300 focus:ring-[#0369a1]"
+                  }`}
                 />
+                {profileErrors.jerseyNumber && editForm.jerseyNumber && (
+                  <p className="mt-1 text-[13px] font-semibold text-rose-600">{profileErrors.jerseyNumber}</p>
+                )}
               </div>
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 mb-1">Chiều cao</label>
@@ -581,8 +686,8 @@ export default function PlayerProfileConsole({
               </button>
               <button
                 type="submit"
-                disabled={isSaving}
-                className="px-5 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold flex items-center gap-1.5"
+                disabled={isSaving || !isProfileValid}
+                className="px-5 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Save className="w-4 h-4" />
                 <span>{isSaving ? "Đang lưu..." : "Lưu Hồ Sơ"}</span>
@@ -716,6 +821,132 @@ export default function PlayerProfileConsole({
                       {m.tournamentTitle} • {m.pitch} {m.date ? `• ${m.date}` : ""}
                     </p>
                   </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 4. CỤM SÂN RUỘT / YÊU THÍCH CỦA BẠN */}
+      <section className="bg-white rounded-lg border border-slate-300 p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
+              <span>Cụm Sân Yêu Thích Của Tôi ({myFavoriteList.length})</span>
+            </h2>
+            <p className="text-[13px] text-slate-500 mt-0.5">
+              Các cụm sân bóng đá phong trào bạn đã thả tim để theo dõi ca trống và cọc sân nhanh
+            </p>
+          </div>
+
+          {onNavigateTab && (
+            <button
+              type="button"
+              onClick={() => onNavigateTab("booking")}
+              className="px-3.5 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Khám Phá Thêm Cụm Sân</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {myFavoriteList.length === 0 ? (
+          <div className="py-8 px-4 text-center space-y-3 bg-slate-50/70 rounded-xl border border-dashed border-slate-300">
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto border border-rose-200">
+              <Heart className="w-6 h-6 fill-rose-400 text-rose-400" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-[15px] font-bold text-slate-900">Bạn chưa lưu cụm sân yêu thích nào</h3>
+              <p className="text-[13px] text-slate-500 max-w-md mx-auto">
+                Bấm vào biểu tượng trái tim ❤️ ở trang Danh Sách Sân hoặc Trang Chủ để đánh dấu cụm sân ruột, hệ thống sẽ ưu tiên hiển thị giờ trống cho bạn.
+              </p>
+            </div>
+            {onNavigateTab && (
+              <button
+                type="button"
+                onClick={() => onNavigateTab("booking")}
+                className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-[#0369a1] border border-slate-300 font-bold text-[13px] inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <span>Tìm Sân Bóng Đà Nẵng Ngay</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {myFavoriteList.map((pitch) => (
+              <div
+                key={pitch.id}
+                className="group bg-white rounded-xl border border-slate-200 hover:border-rose-300 hover:ring-1 hover:ring-rose-200 overflow-hidden flex flex-col justify-between shadow-xs transition-all"
+              >
+                <div>
+                  <div className="relative h-36 bg-slate-100 overflow-hidden">
+                    <SafeImage
+                      src={pitch.imageUrl || "/images/copa-action.png"}
+                      alt={pitch.name || "Sân bóng"}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded bg-rose-600 text-white font-bold text-[13px] flex items-center gap-1 shadow-xs">
+                        <Heart className="w-3 h-3 fill-white text-white" />
+                        <span>Sân ruột</span>
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const res = toggleFavoritePitch(pitch.id, activeUser?.id);
+                        if (!res.isFavorite) {
+                          toastInfo(`Đã bỏ "${pitch.name}" khỏi danh sách yêu thích.`);
+                        }
+                      }}
+                      className="absolute top-2.5 right-2.5 p-1.5 rounded-lg bg-white/90 hover:bg-white text-rose-600 border border-rose-200 shadow-xs cursor-pointer transition-transform hover:scale-110"
+                      title="Bỏ yêu thích sân này"
+                    >
+                      <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
+                    </button>
+                  </div>
+
+                  <div className="p-3.5 space-y-2">
+                    <h3 className="text-[15px] font-bold text-slate-900 group-hover:text-[#0369a1] transition-colors truncate">
+                      {pitch.name}
+                    </h3>
+                    <p className="text-[13px] text-slate-500 flex items-center gap-1 truncate">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">{pitch.address || pitch.location || "Đà Nẵng"}</span>
+                    </p>
+                    <div className="flex items-center gap-3 text-[13px] text-slate-600 font-medium">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-[#0369a1]" />
+                        <span>{pitch.openTime || "06:00"} - {pitch.closeTime || "23:00"}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-3.5 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[13px] text-slate-500 block">Giá từ</span>
+                    <span className="text-[14px] font-mono font-bold text-[#0369a1]">
+                      {Number(pitch.pricePerHour || pitch.priceDiscounted || 300000).toLocaleString("vi-VN")}đ
+                    </span>
+                  </div>
+                  {onNavigateTab && (
+                    <button
+                      type="button"
+                      onClick={() => onNavigateTab("booking")}
+                      className="px-3 py-1.5 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                    >
+                      <span>Đặt Ca Ngay</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

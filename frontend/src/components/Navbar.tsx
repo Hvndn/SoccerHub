@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import SafeImage from "@/components/SafeImage";
 import NavbarAvatar from "@/components/NavbarAvatar";
@@ -91,6 +91,39 @@ export default function Navbar({
  removeNotification,
  clearAllNotifications,
  } = useNotifications(user);
+
+  type NotifFilterKey = "all" | "unread" | "booking" | "tournament" | "system";
+  const [notifFilter, setNotifFilter] = useState<NotifFilterKey>("all");
+
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((n) => {
+      const t = (n.type || "").toUpperCase();
+      if (notifFilter === "all") return true;
+      if (notifFilter === "unread") return !n.read;
+      if (notifFilter === "booking") return t.startsWith("BOOKING");
+      if (notifFilter === "tournament")
+        return ["TOURNAMENT", "MATCH", "BRACKET", "GOAL", "SCHEDULE"].some((k) => t.startsWith(k));
+      return (
+        !t.startsWith("BOOKING") &&
+        !["TOURNAMENT", "MATCH", "BRACKET", "GOAL", "SCHEDULE"].some((k) => t.startsWith(k))
+      );
+    });
+  }, [notifications, notifFilter]);
+
+  const notifCounts = useMemo(() => {
+    const all = notifications.length;
+    const unread = notifications.filter((n) => !n.read).length;
+    const booking = notifications.filter((n) => (n.type || "").toUpperCase().startsWith("BOOKING")).length;
+    const tournament = notifications.filter((n) =>
+      ["TOURNAMENT", "MATCH", "BRACKET", "GOAL", "SCHEDULE"].some((k) => (n.type || "").toUpperCase().startsWith(k))
+    ).length;
+    const system = notifications.filter(
+      (n) =>
+        !(n.type || "").toUpperCase().startsWith("BOOKING") &&
+        !["TOURNAMENT", "MATCH", "BRACKET", "GOAL", "SCHEDULE"].some((k) => (n.type || "").toUpperCase().startsWith(k))
+    ).length;
+    return { all, unread, booking, tournament, system };
+  }, [notifications]);
 
  const handleNotificationClick = (notif: any) => {
    if (!notif.read) {
@@ -208,7 +241,7 @@ const mobileNav: MobileNavItem[] =
 
  return (
  <>
- <header className="fixed top-0 left-0 right-0 z-50 bg-white/95  border-b border-slate-200 shadow-sm transition-colors duration-300 w-full">
+ <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200 shadow-xs transition-colors duration-300 w-full">
  <div className="max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] h-[52px] sm:h-16 flex items-center justify-between gap-2 lg:gap-3 xl:gap-4">
  {/* BRAND LOGO */}
  <div
@@ -362,68 +395,65 @@ const mobileNav: MobileNavItem[] =
   <button
   type="button"
   onClick={() => handleSelectSubTab("home")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] font-bold transition-all ${
   activeTab === "home" || activeTab === "landing"
-  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  ? "bg-[#0369a1] text-white shadow-xs font-black"
   : "text-slate-700 hover:bg-slate-100"
   }`}
   >
-  <Home className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
+  <Home className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "home" || activeTab === "landing" ? "text-white" : "text-slate-500"}`} />
   <span>Trang Chủ</span>
   </button>
 
  <button
  type="button"
  onClick={() => handleSelectSubTab("booking")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] font-bold transition-all ${
  activeTab === "booking"
- ? "bg-[#0369a1] text-white shadow-sm font-black"
+ ? "bg-[#0369a1] text-white shadow-xs font-black"
  : "text-slate-700 hover:bg-slate-100"
  }`}
  >
- <Calendar className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-sky-700 shrink-0" />
+ <Calendar className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "booking" ? "text-white" : "text-slate-500"}`} />
  <span>Đặt Sân</span>
  </button>
 
 <button
   type="button"
   onClick={() => handleSelectSubTab("matchmaking")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] font-bold transition-all ${
   activeTab === "matchmaking"
-  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  ? "bg-[#0369a1] text-white shadow-xs font-black"
   : "text-slate-700 hover:bg-slate-100"
   }`}
   >
-  <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
+  <Flame className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "matchmaking" ? "text-white" : "text-slate-500"}`} />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[14px] font-black bg-rose-500 text-white leading-none shadow-xs">
-  HOT
-  </span>
   </button>
 
   <button
   type="button"
   onClick={() => handleSelectSubTab("community")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] font-bold transition-all ${
   activeTab === "community"
-  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  ? "bg-[#0369a1] text-white shadow-xs font-black"
   : "text-slate-700 hover:bg-slate-100"
   }`}
   >
-  <MessageCircle className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-[#0369a1] shrink-0" />
+  <MessageCircle className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "community" ? "text-white" : "text-slate-500"}`} />
   <span>Cộng Đồng</span>
   </button>
 
  <button
  type="button"
  onClick={() => handleSelectSubTab("tournaments")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] font-bold transition-all ${
  activeTab === "tournaments"
- ? "bg-[#0369a1] text-white shadow-sm font-black"
+ ? "bg-[#0369a1] text-white shadow-xs font-black"
  : "text-slate-700 hover:bg-slate-100"
  }`}
  >
- <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-700 shrink-0" />
+ <Trophy className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "tournaments" ? "text-white" : "text-slate-500"}`} />
  <span>Giải Đấu</span>
  </button>
 
@@ -434,115 +464,76 @@ const mobileNav: MobileNavItem[] =
   <button
   type="button"
   onClick={() => handleSelectSubTab("home")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3.5 py-2 rounded-xl text-[14px] font-bold transition-all ${
   activeTab === "home" || activeTab === "landing"
-  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  ? "bg-[#0369a1] text-white shadow-xs font-black"
   : "text-slate-700 hover:bg-slate-100"
   }`}
   >
-  <Home className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-500 shrink-0" />
+  <Home className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "home" || activeTab === "landing" ? "text-white" : "text-slate-500"}`} />
   <span>Trang Chủ</span>
   </button>
 
  <button
  type="button"
  onClick={() => handleSelectSubTab("booking")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3.5 py-2 rounded-xl text-[14px] font-bold transition-all ${
  activeTab === "booking"
- ? "bg-[#0369a1] text-white shadow-sm font-black"
+ ? "bg-[#0369a1] text-white shadow-xs font-black"
  : "text-slate-700 hover:bg-slate-100"
  }`}
  >
- <Calendar className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-sky-700 shrink-0" />
+ <Calendar className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "booking" ? "text-white" : "text-slate-500"}`} />
  <span>Đặt Sân</span>
  </button>
 
 <button
   type="button"
   onClick={() => handleSelectSubTab("matchmaking")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3.5 py-2 rounded-xl text-[14px] font-bold transition-all ${
   activeTab === "matchmaking"
-  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  ? "bg-[#0369a1] text-white shadow-xs font-black"
   : "text-slate-700 hover:bg-slate-100"
   }`}
   >
-  <Flame className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-rose-600 fill-rose-500 shrink-0" />
+  <Flame className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "matchmaking" ? "text-white" : "text-slate-500"}`} />
   <span>Chợ Kèo</span>
-  <span className="px-1.5 py-0.5 rounded text-[14px] font-black bg-rose-500 text-white leading-none shadow-xs">
-  HOT
-  </span>
   </button>
 
   <button
   type="button"
   onClick={() => handleSelectSubTab("community")}
-  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3.5 py-2 rounded-xl text-[14px] font-bold transition-all ${
   activeTab === "community"
-  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  ? "bg-[#0369a1] text-white shadow-xs font-black"
   : "text-slate-700 hover:bg-slate-100"
   }`}
   >
-  <MessageCircle className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-[#0369a1] shrink-0" />
+  <MessageCircle className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "community" ? "text-white" : "text-slate-500"}`} />
   <span>Cộng Đồng</span>
   </button>
 
  <button
  type="button"
  onClick={() => handleSelectSubTab("tournaments")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3.5 py-2 rounded-xl text-[14px] font-bold transition-all ${
  activeTab === "tournaments"
- ? "bg-[#0369a1] text-white shadow-sm font-black"
+ ? "bg-[#0369a1] text-white shadow-xs font-black"
  : "text-slate-700 hover:bg-slate-100"
  }`}
  >
- <Trophy className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-700 shrink-0" />
+ <Trophy className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "tournaments" ? "text-white" : "text-slate-500"}`} />
  <span>Giải Đấu</span>
  </button>
 
- <button
- type="button"
- onClick={() => handleSelectSubTab("team-management")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
- activeTab === "team-management"
- ? "bg-[#0369a1] text-white shadow-sm font-black"
- : "text-slate-700 hover:bg-slate-100"
- }`}
- >
- <Users className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-[#0369a1] shrink-0" />
- <span>Đội Bóng</span>
- </button>
 
- <button
- type="button"
- onClick={() => handleSelectSubTab("membership")}
- className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
- activeTab === "membership"
- ? "bg-[#0369a1] text-white shadow-sm font-black"
- : "text-slate-700 hover:bg-slate-100"
- }`}
- >
- <Award className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-amber-700 shrink-0" />
- <span>Thẻ Hội Viên</span>
- </button>
  </>
  )}
  </nav>
 
  {/* RIGHT SIDE WIDGETS */}
  <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
- {user?.role === "PLAYER" && (
- <div className="hidden 2xl:flex items-center space-x-3 bg-slate-100 px-3 py-1.5 rounded-2xl border border-slate-200 text-[14px] font-bold font-mono">
- <div className="flex items-center space-x-1.5 text-slate-800 ">
- <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
- <span>{user?.level || "Phong trào"}</span>
- </div>
- <div className="w-px h-4 bg-slate-300 " />
- <div className="flex items-center space-x-1.5 text-slate-800 ">
- <Award className="w-4 h-4 text-[#0b4f6c] " />
- <span>{user?.area || "Toàn quốc"}</span>
- </div>
- </div>
- )}
+ 
 
 
  {user && (
@@ -598,84 +589,143 @@ const mobileNav: MobileNavItem[] =
  </div>
  </div>
 
- {/* Notification List Rộng Rãi */}
- <div className="max-h-[480px] overflow-y-auto divide-y divide-slate-100 ">
- {notifications.length === 0 ? (
- <div className="py-16 flex flex-col items-center space-y-3 text-slate-500">
- <Bell className="w-12 h-12 opacity-30 text-slate-500" />
- <p className="text-sm font-semibold">Chưa có thông báo nào từ hệ thống</p>
- </div>
- ) : (
- notifications.map(notif => (
- <div
- key={notif.id}
- onClick={() => handleNotificationClick(notif)}
- className={`relative p-4 sm:p-5 transition-colors cursor-pointer hover:bg-slate-100/90 ${
- !notif.read ? "bg-sky-50/60 " : ""
- }`}
- title={notif.link ? "Nhấp để mở chi tiết giải đấu" : undefined}
- >
- <div className="flex items-start space-x-3.5">
- {/* Icon theo loại to hơn */}
- <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
- notif.type === "BOOKING_CREATED" ? "bg-sky-100 text-sky-700" :
- notif.type === "BOOKING_CANCELLED" ? "bg-rose-100 text-rose-600" :
- notif.type === "BOOKING_CHECKED_IN" ? "bg-sky-100 text-[#0369a1]" :
- (notif.type === "TOURNAMENT_INVITE" || notif.type?.startsWith("TOURNAMENT")) ? "bg-amber-100 text-amber-800" :
- "bg-amber-100 text-amber-600"
- }`}>
- {notif.type === "BOOKING_CREATED" && <CheckCircle className="w-5 h-5 text-emerald-500" />}
- {notif.type === "BOOKING_CANCELLED" && <XCircle className="w-5 h-5 text-rose-600" />}
- {notif.type === "BOOKING_CHECKED_IN" && <CheckCircle className="w-5 h-5 text-[#0369a1]" />}
- {notif.type === "BOOKING_REMINDER" && <Bell className="w-5 h-5 text-amber-700" />}
- {notif.type === "BOOKING_RESCHEDULED" && <Bell className="w-5 h-5 text-amber-700" />}
- {(notif.type === "TOURNAMENT_INVITE" || notif.type?.startsWith("TOURNAMENT")) && <Trophy className="w-5 h-5 text-amber-700" />}
- {(notif.type === "PROMO" || notif.type === "OPERATING_HOURS_UPDATED") && <AlertCircle className="w-5 h-5 text-amber-700" />}
- </div>
+ {/* DẢI CHIP LỌC PHÂN LOẠI THÔNG BÁO */}
+          <div className="px-4 sm:px-6 py-2.5 bg-slate-50/60 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {[
+              { id: "all" as const, label: "Tất cả", count: notifCounts.all },
+              { id: "unread" as const, label: "Chưa đọc", count: notifCounts.unread, isUnread: true },
+              { id: "booking" as const, label: "Đặt sân & Ca", count: notifCounts.booking },
+              { id: "tournament" as const, label: "Giải đấu", count: notifCounts.tournament },
+              { id: "system" as const, label: "Hệ thống", count: notifCounts.system },
+            ].map((chip) => {
+              const isActive = notifFilter === chip.id;
+              return (
+                <button
+                  key={chip.id}
+                  type="button"
+                  onClick={() => setNotifFilter(chip.id)}
+                  className={`px-3 py-1 rounded-xl text-[13px] font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                    isActive
+                      ? "bg-[#0369a1] text-white shadow-xs"
+                      : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80"
+                  }`}
+                >
+                  <span>{chip.label}</span>
+                  {chip.count > 0 && (
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[11px] font-mono font-black ${
+                        isActive
+                          ? "bg-white/20 text-white"
+                          : chip.isUnread
+                          ? "bg-rose-500 text-white"
+                          : "bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      {chip.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
- <div className="flex-1 min-w-0 space-y-1">
- <div className="flex items-start justify-between gap-2">
- <p className="text-sm font-extrabold text-slate-900 leading-snug">{notif.title}</p>
- {!notif.read && (
- <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] mt-1 shrink-0" />
- )}
- </div>
- <p className="text-[14px] sm:text-[14px] text-slate-600 leading-relaxed font-medium">{notif.message}</p>
+          {/* Notification List Rộng Rãi */}
+          <div className="max-h-[460px] overflow-y-auto divide-y divide-slate-100 ">
+            {filteredNotifications.length === 0 ? (
+              <div className="py-14 flex flex-col items-center space-y-2 text-slate-500 text-center px-4">
+                <Bell className="w-10 h-10 opacity-30 text-slate-400" />
+                <p className="text-sm font-semibold text-slate-700">
+                  {notifFilter === "unread"
+                    ? "Tuyệt vời! Bạn không có thông báo chưa đọc nào."
+                    : notifFilter === "booking"
+                    ? "Không có thông báo đặt sân nào."
+                    : notifFilter === "tournament"
+                    ? "Không có thông báo giải đấu nào."
+                    : notifFilter === "system"
+                    ? "Không có thông báo hệ thống nào."
+                    : "Chưa có thông báo nào từ hệ thống."}
+                </p>
+                {notifFilter !== "all" && (
+                  <button
+                    type="button"
+                    onClick={() => setNotifFilter("all")}
+                    className="text-[13px] text-[#0369a1] font-bold hover:underline cursor-pointer pt-1"
+                  >
+                    Xem tất cả ({notifCounts.all} thông báo)
+                  </button>
+                )}
+              </div>
+            ) : (
+              filteredNotifications.map(notif => (
+                <div
+                  key={notif.id}
+                  onClick={() => handleNotificationClick(notif)}
+                  className={`relative p-4 sm:p-5 transition-colors cursor-pointer hover:bg-slate-100/90 ${
+                    !notif.read ? "bg-sky-50/60 " : ""
+                  }`}
+                  title={notif.link ? "Nhấp để mở chi tiết giải đấu" : undefined}
+                >
+                  <div className="flex items-start space-x-3.5">
+                    {/* Icon theo loại to hơn */}
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
+                      notif.type === "BOOKING_CREATED" ? "bg-sky-100 text-sky-700" :
+                      notif.type === "BOOKING_CANCELLED" ? "bg-rose-100 text-rose-600" :
+                      notif.type === "BOOKING_CHECKED_IN" ? "bg-sky-100 text-[#0369a1]" :
+                      (notif.type === "TOURNAMENT_INVITE" || notif.type?.startsWith("TOURNAMENT")) ? "bg-amber-100 text-amber-800" :
+                      "bg-amber-100 text-amber-600"
+                    }`}>
+                      {notif.type === "BOOKING_CREATED" && <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                      {notif.type === "BOOKING_CANCELLED" && <XCircle className="w-5 h-5 text-rose-600" />}
+                      {notif.type === "BOOKING_CHECKED_IN" && <CheckCircle className="w-5 h-5 text-[#0369a1]" />}
+                      {notif.type === "BOOKING_REMINDER" && <Bell className="w-5 h-5 text-amber-700" />}
+                      {notif.type === "BOOKING_RESCHEDULED" && <Bell className="w-5 h-5 text-amber-700" />}
+                      {(notif.type === "TOURNAMENT_INVITE" || notif.type?.startsWith("TOURNAMENT")) && <Trophy className="w-5 h-5 text-amber-700" />}
+                      {(notif.type === "PROMO" || notif.type === "OPERATING_HOURS_UPDATED") && <AlertCircle className="w-5 h-5 text-amber-700" />}
+                    </div>
 
- {/* Lý do hủy - hiển thị nổi bật */}
- {notif.type === "BOOKING_CANCELLED" && notif.cancelReason && (
- <div className="mt-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200 ">
- <p className="text-[14px] font-bold text-rose-700 ">
- 📋 Lý do: <span className="font-normal">{notif.cancelReason}</span>
- </p>
- </div>
- )}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-extrabold text-slate-900 leading-snug">{notif.title}</p>
+                        {!notif.read && (
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] mt-1 shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-[14px] sm:text-[14px] text-slate-600 leading-relaxed font-medium">{notif.message}</p>
 
- {notif.link && (
- <p className="text-[13px] font-bold text-[#0369a1] hover:underline inline-flex items-center gap-1 pt-0.5">
-   <span>Xem giải đấu ngay →</span>
- </p>
- )}
+                      {/* Lý do hủy - hiển thị nổi bật */}
+                      {notif.type === "BOOKING_CANCELLED" && notif.cancelReason && (
+                        <div className="mt-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200 ">
+                          <p className="text-[14px] font-bold text-rose-700 ">
+                            📋 Lý do: <span className="font-normal">{notif.cancelReason}</span>
+                          </p>
+                        </div>
+                      )}
 
- <p className="text-[14px] text-slate-500 font-mono mt-1.5">{formatNotifTime(notif.time)}</p>
- </div>
+                      {notif.link && (
+                        <p className="text-[13px] font-bold text-[#0369a1] hover:underline inline-flex items-center gap-1 pt-0.5">
+                          <span>Xem giải đấu ngay →</span>
+                        </p>
+                      )}
 
- {/* Nút xóa */}
- <button
- type="button"
- onClick={(e) => { e.stopPropagation(); removeNotification(notif.id); }}
- className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
- title="Xóa thông báo"
- >
- <X className="w-4 h-4" />
- </button>
- </div>
- </div>
- ))
- )}
- </div>
+                      <p className="text-[14px] text-slate-500 font-mono mt-1.5">{formatNotifTime(notif.time)}</p>
+                    </div>
 
- {/* Footer To Rõ */}
+                    {/* Nút xóa */}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); removeNotification(notif.id); }}
+                      className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
+                      title="Xóa thông báo"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Footer To Rõ */}
  {notifications.length > 0 && (
  <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/90 flex items-center justify-between gap-2">
  <button
@@ -704,37 +754,37 @@ const mobileNav: MobileNavItem[] =
  )}
 
  {user ? (
- <div className="relative" ref={userMenuRef}>
- <div
+ <div className="relative shrink-0" ref={userMenuRef}>
+ <button
+ type="button"
  onClick={() => {
  setShowUserDropdown(!showUserDropdown);
  setShowPitchMenu(false);
  setShowTournamentMenu(false);
  setShowNotifications(false);
  }}
- className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer pl-1 py-1 rounded-2xl hover:bg-slate-100 transition-colors"
+ className="flex items-center space-x-2 cursor-pointer p-1 sm:px-2.5 sm:py-1 rounded-xl hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200 shrink-0"
  >
- <div className="text-right hidden sm:block max-w-[170px] md:max-w-[220px] overflow-hidden">
- <div className="text-[14px] font-extrabold text-slate-900 leading-tight truncate">
+ <div className="w-8 h-8 rounded-full bg-[#0369a1] border-2 border-sky-400 text-white font-extrabold text-[13px] flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+ <NavbarAvatar user={user} />
+ </div>
+
+ <div className="text-left hidden sm:block max-w-[110px] md:max-w-[140px] xl:max-w-[160px] overflow-hidden">
+ <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">
  {user.fullName || user.name || "Người Dùng"}
  </div>
- <div className="text-[14px] font-bold text-slate-500 font-mono flex items-center justify-end space-x-1 whitespace-nowrap">
- <span className="text-[#0b4f6c] font-extrabold shrink-0">
+ <div className="text-[13px] font-semibold text-slate-500 flex items-center space-x-1 whitespace-nowrap">
+ <span className="text-[#0369a1] font-bold shrink-0">
  {user.role === 'OWNER' ? 'Chủ Sân' : user.role === 'ORGANIZER' ? 'BTC' : user.role === 'ADMIN' ? 'Quản Trị' : 'Cầu Thủ'}
  </span>
- {user.role === 'OWNER' ? (
- <span className="truncate text-emerald-700 font-bold">• {user.area || "Chưa cập nhật khu vực"}</span>
- ) : (
- <span className="truncate">• {user.level || "Phong trào"}</span>
- )}
- <ChevronDown className={`w-3 h-3 text-slate-500 shrink-0 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`} />
+ <span className="truncate">
+ • {user.role === 'OWNER' ? (user.area || "Đà Nẵng") : (user.level || "Phong trào")}
+ </span>
  </div>
  </div>
 
- <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0369a1] border-2 border-sky-400 text-white font-extrabold text-[14px] sm:text-[14px] flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
- <NavbarAvatar user={user} />
- </div>
- </div>
+ <ChevronDown className={`w-3.5 h-3.5 text-slate-500 shrink-0 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`} />
+ </button>
 
  {showUserDropdown && (
  <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 space-y-1.5 z-50 animate-modal-pop">
@@ -750,6 +800,21 @@ const mobileNav: MobileNavItem[] =
  <p className="text-[14px] font-mono text-slate-500 truncate mt-0.5">
  {user.email || user.phone || ""}
  </p>
+ 
+ {user.role === "PLAYER" && (
+ <div className="flex items-center gap-1.5 pt-2 text-[13px] flex-wrap">
+   <span className="flex items-center gap-1 text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md font-bold border border-amber-200">
+     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+     {user.level || "Phong trào"}
+   </span>
+   {user.area && (
+     <span className="flex items-center gap-1 text-sky-800 bg-sky-50 px-2 py-0.5 rounded-md font-bold truncate max-w-[140px] border border-sky-200">
+       <Award className="w-3.5 h-3.5 text-[#0369a1]" />
+       {user.area}
+     </span>
+   )}
+ </div>
+ )}
  </div>
 
  {user.role === "ADMIN" && (
@@ -872,10 +937,34 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab("profile");
  setShowUserDropdown(false);
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors cursor-pointer"
  >
  <User className="w-4 h-4 text-[#0369a1]" />
- <span>Hồ Sơ VĐV & Rating</span>
+ <span>Hồ Sơ Cầu Thủ & Rating</span>
+ </button>
+
+ <button
+ type="button"
+ onClick={() => {
+ handleSelectSubTab("team-management");
+ setShowUserDropdown(false);
+ }}
+ className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors cursor-pointer"
+ >
+ <Users className="w-4 h-4 text-[#0369a1]" />
+ <span>Đội Bóng Của Tôi</span>
+ </button>
+
+ <button
+ type="button"
+ onClick={() => {
+ handleSelectSubTab("membership");
+ setShowUserDropdown(false);
+ }}
+ className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors cursor-pointer"
+ >
+ <Award className="w-4 h-4 text-amber-600" />
+ <span>Thẻ Hội Viên TurfZone</span>
  </button>
 
  <button
@@ -884,9 +973,9 @@ const mobileNav: MobileNavItem[] =
  handleSelectSubTab("my-activities");
  setShowUserDropdown(false);
  }}
- className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors"
+ className="w-full text-left px-3 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 transition-colors cursor-pointer"
  >
- <Calendar className="w-4 h-4 text-emerald-500" />
+ <Calendar className="w-4 h-4 text-emerald-600" />
  <span>Lịch Trình & Vé Đã Đặt</span>
  </button>
  </>

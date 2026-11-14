@@ -16,9 +16,17 @@ import {
   Sparkles,
   Star,
   Clock,
+  Heart,
 } from "lucide-react";
 import { API_BASE_URL, fetchWithTimeout } from "@/lib/api";
 import { pitchTypeLabel } from "@/lib/pitchLabels";
+import { useAuth } from "@/context/AuthContext";
+import {
+  getFavoritePitchIds,
+  toggleFavoritePitch,
+  subscribeFavorites,
+} from "@/lib/favoritePitchService";
+import { toastOk, toastInfo } from "@/lib/toast";
 
 interface LandingFeaturesProps {
   onExplore: (role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
@@ -26,11 +34,21 @@ interface LandingFeaturesProps {
 }
 
 export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFeaturesProps) {
+  const { user } = useAuth();
   const [allPitches, setAllPitches] = useState<any[]>([]);
   const [loadingPitches, setLoadingPitches] = useState(true);
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [districtFilter, setDistrictFilter] = useState<string>("all");
   const [activeStep, setActiveStep] = useState<number>(0);
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    setFavoriteIds(getFavoritePitchIds(user?.id));
+    const unsub = subscribeFavorites((ids) => {
+      setFavoriteIds(ids);
+    }, user?.id);
+    return unsub;
+  }, [user?.id]);
 
   useEffect(() => {
     let alive = true;
@@ -51,12 +69,11 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
     };
   }, []);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % 3);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
+  // Sân yêu thích của người dùng hiện tại
+  const myFavoritePitches = useMemo(() => {
+    if (!favoriteIds.length || !allPitches.length) return [];
+    return allPitches.filter((p) => favoriteIds.includes(Number(p.id)));
+  }, [allPitches, favoriteIds]);
 
   const filteredPitches = useMemo(() => {
     const list = allPitches.filter((p) => {
@@ -72,8 +89,17 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       }
       return true;
     });
-    return (list.length > 0 ? list : allPitches).slice(0, 3);
-  }, [allPitches, typeFilter, districtFilter]);
+    const source = list.length > 0 ? list : allPitches;
+    // Sắp xếp ưu tiên: Sân yêu thích (thả tim) được đưa lên đầu danh sách
+    const sorted = [...source].sort((a, b) => {
+      const isFavA = favoriteIds.includes(Number(a.id)) ? 1 : 0;
+      const isFavB = favoriteIds.includes(Number(b.id)) ? 1 : 0;
+      return isFavB - isFavA;
+    });
+    return sorted.slice(0, 3);
+  }, [allPitches, typeFilter, districtFilter, favoriteIds]);
+
+  const [selectedServiceId, setSelectedServiceId] = useState<string>("booking");
 
   const services = [
     {
@@ -84,12 +110,14 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       badgeTone: "bg-sky-50 text-[#0369a1] border-sky-200",
       iconTone: "bg-sky-50 text-[#0369a1] border-sky-200",
       icon: Calendar,
-      ctaLabel: "Đặt sân ngay",
+      ctaLabel: "Đặt Sân Ngay",
+      image: "/images/copa-action.png",
+      visualTag: "⚡ Giữ ca & cọc tức thì",
       onAction: () => (onNavigateTab ? onNavigateTab("booking") : onExplore("PLAYER")),
       points: [
-        "Xem bảng giờ trống thực tế của từng sân",
-        "Giữ ca và thanh toán tiền cọc qua VietQR",
-        "Đổi lịch hoặc hủy ca theo quy định chủ sân",
+        "Xem bảng giờ trống thực tế của từng cụm sân",
+        "Giữ ca và thanh toán tiền cọc qua VietQR tự động",
+        "Đổi lịch hoặc hủy ca minh bạch theo quy định chủ sân",
       ],
     },
     {
@@ -100,12 +128,14 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       badgeTone: "bg-emerald-50 text-emerald-700 border-emerald-200",
       iconTone: "bg-emerald-50 text-emerald-700 border-emerald-200",
       icon: ShieldCheck,
-      ctaLabel: "Quản lý cụm sân",
+      ctaLabel: "Quản Lý Cụm Sân",
+      image: "https://images.unsplash.com/photo-1529900241452-f47268d87ec9?auto=format&fit=crop&w=1200&q=80",
+      visualTag: "📊 Tự động hóa lịch sân",
       onAction: () => onExplore("OWNER"),
       points: [
-        "Cài đặt khung giờ hoạt động và bảng giá",
-        "Theo dõi lịch đặt sân, duyệt cọc và khóa ca",
-        "Báo cáo doanh thu theo ngày và tháng",
+        "Cài đặt khung giờ hoạt động và bảng giá linh hoạt",
+        "Theo dõi lịch đặt sân, duyệt cọc và khóa ca nhanh",
+        "Báo cáo doanh thu trực quan theo ngày và tháng",
       ],
     },
     {
@@ -116,12 +146,14 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       badgeTone: "bg-amber-50 text-amber-800 border-amber-200",
       iconTone: "bg-amber-50 text-amber-700 border-amber-200",
       icon: Trophy,
-      ctaLabel: "Khám phá giải đấu",
+      ctaLabel: "Khám Phá Giải Đấu",
+      image: "/images/epic-goal-player.png",
+      visualTag: "🏆 Bốc thăm & BXH trực tiếp",
       onAction: () => (onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER")),
       points: [
-        "Tạo giải đấu mở tự do hoặc mời qua email",
-        "Bốc thăm chia bảng và tạo lịch thi đấu",
-        "Cập nhật tỷ số, bảng xếp hạng và thẻ phạt",
+        "Tạo giải đấu mở tự do hoặc mời đội qua email",
+        "Bốc thăm chia bảng và sinh lịch thi đấu tự động",
+        "Cập nhật tỷ số, bảng xếp hạng và vua phá lưới",
       ],
     },
     {
@@ -132,35 +164,37 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
       badgeTone: "bg-rose-50 text-rose-700 border-rose-200",
       iconTone: "bg-rose-50 text-rose-600 border-rose-200",
       icon: Users,
-      ctaLabel: "Tìm đối giao hữu",
+      ctaLabel: "Tìm Đối Giao Hữu",
+      image: "/images/copa-players-art.png",
+      visualTag: "🤝 Kèo cáp & SOS mượn chân",
       onAction: () => (onNavigateTab ? onNavigateTab("matchmaking") : onExplore("PLAYER")),
       points: [
-        "Đăng tin tìm đối thủ giao lưu theo khung giờ",
-        "Quản lý danh sách thành viên câu lạc bộ",
-        "Trao đổi trực tiếp với chủ sân và đội bạn",
+        "Đăng tin tìm đối thủ giao lưu theo trình độ và giờ đá",
+        "Giao lưu SOS tìm chân đá khẩn cấp theo vị trí",
+        "Thỏa thuận màu áo, trọng tài và chi phí minh bạch",
       ],
     },
   ];
 
   const steps = [
     {
-      step: "Bước 1",
-      title: "Chọn sân & khung giờ trống",
-      desc: "Tra cứu mặt sân 5, 7 hoặc 11 người theo quận và khung giờ thực tế.",
+      step: "01",
+      title: "Chọn Sân & Giờ",
+      desc: "Xem lịch trống thực tế theo từng quận",
       icon: Calendar,
       tone: "bg-sky-50 text-[#0369a1] border-sky-200",
     },
     {
-      step: "Bước 2",
-      title: "Quét mã VietQR giữ sân",
-      desc: "Đặt cọc 50% hoặc thanh toán đủ qua mã QR ngân hàng tự động xác nhận.",
+      step: "02",
+      title: "Cọc VietQR Tức Thì",
+      desc: "Thanh toán tự động, giữ chỗ ngay 0s",
       icon: QrCode,
       tone: "bg-emerald-50 text-emerald-700 border-emerald-200",
     },
     {
-      step: "Bước 3",
-      title: "Nhận vé QR & ra sân thi đấu",
-      desc: "Check-in nhanh tại sân bằng mã đặt chỗ và tích điểm thẻ hội viên.",
+      step: "03",
+      title: "Check-in & Ra Sân",
+      desc: "Quét mã vé điện tử tại sân thi đấu",
       icon: Sparkles,
       tone: "bg-amber-50 text-amber-700 border-amber-200",
     },
@@ -239,10 +273,38 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             ))}
           </div>
 
+          {/* Biểu ngữ Cá Nhân Hóa Cụm Sân Thân Quen khi đã thả tim */}
+          {user && myFavoritePitches.length > 0 && (
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-rose-50 to-sky-50 border border-rose-200/80 flex flex-wrap items-center justify-between gap-3 shadow-2xs animate-fade-in">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-xs">
+                  <Heart className="w-4 h-4 fill-white text-white" />
+                </div>
+                <div>
+                  <p className="text-[14px] font-bold text-slate-900">
+                    Cụm Sân Thân Quen Của Bạn ({myFavoritePitches.length} sân đã lưu)
+                  </p>
+                  <p className="text-[13px] text-slate-500">
+                    Hệ thống ưu tiên hiển thị sân ruột để bạn kiểm tra ca trống và cọc sân nhanh nhất.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => (onNavigateTab ? onNavigateTab("booking") : onExplore("PLAYER"))}
+                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-rose-600 border border-rose-200 text-[13px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <span>Xem Bảng Giờ Đặt Sân</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           <motion.div layout className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <AnimatePresence mode="popLayout">
               {filteredPitches.map((pitch, idx) => {
                 const price = Number(pitch.pricePerHour || 300000);
+                const isFav = favoriteIds.includes(Number(pitch.id));
                 return (
                   <motion.div
                     layout
@@ -252,7 +314,9 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                     exit={{ opacity: 0, scale: 0.96 }}
                     transition={{ duration: 0.3, delay: idx * 0.06 }}
                     onClick={() => onExplore("PLAYER")}
-                    className="group bg-white landing-card-interactive border border-slate-200 overflow-hidden flex flex-col justify-between cursor-pointer"
+                    className={`group bg-white landing-card-interactive overflow-hidden flex flex-col justify-between cursor-pointer border ${
+                      isFav ? "border-rose-300 ring-1 ring-rose-200" : "border-slate-200"
+                    }`}
                   >
                     <div>
                       <div className="relative h-44 bg-sky-50 overflow-hidden border-b border-slate-100">
@@ -269,7 +333,35 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                           <span className="px-2.5 py-1 rounded-lg bg-white/95 backdrop-blur-xs text-[#0369a1] border border-sky-200 font-bold text-[13px] shadow-2xs">
                             {pitchTypeLabel(pitch.type)}
                           </span>
+                          {isFav && (
+                            <span className="px-2.5 py-1 rounded-lg bg-rose-50/95 backdrop-blur-xs text-rose-700 border border-rose-200 font-bold text-[13px] flex items-center gap-1 shadow-2xs">
+                              <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
+                              <span>Sân ruột</span>
+                            </span>
+                          )}
                         </div>
+
+                        {/* Nút Thả Tim / Yêu Thích Sân */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const res = toggleFavoritePitch(pitch.id, user?.id);
+                            if (res.isFavorite) {
+                              toastOk(`Đã thêm "${pitch.name}" vào sân yêu thích!`);
+                            } else {
+                              toastInfo(`Đã bỏ "${pitch.name}" khỏi sân yêu thích.`);
+                            }
+                          }}
+                          className={`absolute top-3 right-3 z-10 p-2 rounded-xl backdrop-blur-md shadow-xs transition-transform active:scale-90 hover:scale-110 cursor-pointer ${
+                            isFav
+                              ? "bg-rose-50 text-rose-600 border border-rose-200"
+                              : "bg-white/90 text-slate-400 hover:text-rose-500 border border-slate-200"
+                          }`}
+                          title={isFav ? "Bỏ yêu thích sân này" : "Thêm vào sân yêu thích"}
+                        >
+                          <Heart className={`w-4 h-4 ${isFav ? "fill-rose-500 text-rose-500" : ""}`} />
+                        </button>
                       </div>
 
                       <div className="p-5 space-y-2.5">
@@ -317,9 +409,9 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
         </section>
       )}
 
-      {/* PHẦN 2: BENTO GRID HỆ SINH THÁI DỊCH VỤ */}
-      <section className="space-y-5">
-        <div className="border-b border-slate-200 pb-3.5 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+      {/* PHẦN 2: SHOWCASE HỆ SINH THÁI DỊCH VỤ DỰA TRÊN HÌNH ẢNH & VAI TRÒ */}
+      <section className="space-y-4">
+        <div className="border-b border-slate-200 pb-3 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
             <span className="text-[13px] font-bold text-[#0369a1] block mb-0.5">
               Giải pháp toàn diện cho bóng đá phong trào
@@ -328,50 +420,62 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               Hệ Sinh Thái Dịch Vụ Trên Turfzone
             </h2>
             <p className="text-[14px] text-slate-600 font-medium">
-              Kết nối cầu thủ, đội bóng, chủ sân và ban tổ chức giải đấu trên một nền tảng duy nhất
+              Chọn vai trò của bạn để khám phá tính năng và công cụ chuyên biệt
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {services.map((item, idx) => {
+        {/* Thanh chọn vai trò */}
+        <div className="flex flex-wrap gap-2">
+          {services.map((item) => {
             const Icon = item.icon;
+            const isSelected = selectedServiceId === item.id;
             return (
-              <motion.div
+              <button
                 key={item.id}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.35, delay: idx * 0.07 }}
-                className="relative bg-white landing-card-interactive p-5 sm:p-6 border border-slate-200 flex flex-col justify-between space-y-5 overflow-hidden group"
+                type="button"
+                onClick={() => setSelectedServiceId(item.id)}
+                className={`px-3.5 py-2 sm:py-2.5 rounded-xl font-bold text-[14px] flex items-center gap-2 border transition-all cursor-pointer ${
+                  isSelected
+                    ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
+                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                }`}
               >
-                <div
-                  className={`absolute top-0 left-0 right-0 h-1.5 ${item.accent}`}
-                />
+                <Icon className={`w-4 h-4 ${isSelected ? "text-white" : "text-slate-500"}`} />
+                <span>{item.title}</span>
+              </button>
+            );
+          })}
+        </div>
 
-                <div className="space-y-3.5 pt-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <div
-                      className={`w-11 h-11 rounded-xl border flex items-center justify-center ${item.iconTone}`}
-                    >
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span
-                      className={`text-[13px] font-bold px-2.5 py-1 rounded-lg border ${item.badgeTone}`}
-                    >
-                      {item.badge}
+        {/* Khối Showcase Trực Quan Hình Ảnh & Nội Dung */}
+        {(() => {
+          const current = services.find((s) => s.id === selectedServiceId) || services[0];
+          const CurrentIcon = current.icon;
+          return (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+              {/* Cột Trái (5 cột): Điểm mạnh cốt lõi & CTA */}
+              <div className="lg:col-span-5 p-6 sm:p-7 flex flex-col justify-between space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[13px] font-bold px-2.5 py-1 rounded-lg border ${current.badgeTone}`}>
+                      Dành cho {current.badge}
+                    </span>
+                    <span className="text-[13px] font-semibold text-slate-500 flex items-center gap-1">
+                      <CurrentIcon className="w-3.5 h-3.5" />
+                      Turfzone Platform
                     </span>
                   </div>
 
-                  <h3 className="text-base sm:text-lg font-extrabold text-slate-900">
-                    {item.title}
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
+                    {current.title}
                   </h3>
 
-                  <div className="space-y-2.5 pt-0.5">
-                    {item.points.map((pt, i) => (
-                      <div key={i} className="flex items-start gap-2">
+                  <div className="space-y-3 pt-1">
+                    {current.points.map((pt, i) => (
+                      <div key={i} className="flex items-start gap-2.5">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                        <span className="text-[14px] text-slate-600 font-medium leading-snug">
+                        <span className="text-[14px] text-slate-700 font-medium leading-relaxed">
                           {pt}
                         </span>
                       </div>
@@ -379,70 +483,79 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={item.onAction}
-                  className="w-full py-2.5 px-3.5 rounded-xl bg-slate-50 group-hover:bg-[#0369a1] text-slate-800 group-hover:text-white border border-slate-200 group-hover:border-[#0369a1] font-bold text-[14px] transition-all active:scale-95 flex items-center justify-between cursor-pointer"
-                >
-                  <span>{item.ctaLabel}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </motion.div>
-            );
-          })}
-        </div>
+                <div className="pt-2 border-t border-slate-100 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={current.onAction}
+                    className="flex-1 py-3 px-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98"
+                  >
+                    <span>{current.ctaLabel}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Cột Phải (7 cột): Hình ảnh bóng đá chất lượng cao */}
+              <div className="lg:col-span-7 relative min-h-[260px] sm:min-h-[320px] bg-slate-900 overflow-hidden">
+                <SafeImage
+                  src={current.image}
+                  alt={current.title}
+                  className="w-full h-full object-cover object-center brightness-95"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+
+                {/* Huy hiệu trực quan trên hình */}
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
+                  <span className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white font-bold text-[13px] border border-white/15">
+                    {current.visualTag}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md text-slate-900 font-bold text-[13px]">
+                    Turfzone 2026
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </section>
 
-      {/* PHẦN 3: QUY TRÌNH ĐẶT SÂN TƯƠNG TÁC TRONG 3 BƯỚC */}
-      <section className="bg-white landing-shell-radius p-6 sm:p-8 border border-slate-200 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-100 pb-4">
-          <div>
-            <span className="text-[13px] font-bold text-emerald-700 block mb-0.5">
-              Nhanh chóng · Minh bạch · Tự động
-            </span>
+      {/* PHẦN 3: QUY TRÌNH ĐẶT SÂN TƯƠNG TÁC TRONG 3 BƯỚC (INFOGRAPHIC GỌN GÀNG) */}
+      <section className="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200 space-y-5">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
             <h3 className="text-lg sm:text-xl font-black text-slate-900">
-              Quy Trình Đặt Sân Chỉ Trong 3 Bước
+              Quy Trình Đặt Sân Tự Động
             </h3>
           </div>
-          <span className="text-[13px] font-semibold text-slate-500">
-            Nhấp vào từng bước để xem chi tiết
+          <span className="text-[13px] font-bold text-[#0369a1] bg-sky-50 px-2.5 py-1 rounded-md border border-sky-200">
+            3 Bước • 30 Giây
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {steps.map((s, idx) => {
             const StepIcon = s.icon;
-            const isSelected = activeStep === idx;
             return (
               <div
                 key={idx}
-                onClick={() => setActiveStep(idx)}
-                className={`landing-card-radius p-5 flex items-start gap-4 border transition-all cursor-pointer ${
-                  isSelected
-                    ? "bg-sky-50/70 border-[#0369a1]"
-                    : "bg-slate-50/80 border-slate-200 hover:border-slate-300"
-                }`}
+                className="relative p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-[#0369a1] transition-all flex items-center gap-3.5 group"
               >
                 <div
-                  className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 font-black ${s.tone}`}
+                  className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 font-black ${s.tone} group-hover:scale-105 transition-transform`}
                 >
-                  <StepIcon className="w-6 h-6" />
+                  <StepIcon className="w-5 h-5" />
                 </div>
-                <div className="space-y-1">
+                <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-extrabold text-[#0369a1]">
+                    <span className="text-[13px] font-black font-mono text-[#0369a1]">
                       {s.step}
                     </span>
-                    {isSelected && (
-                      <span className="px-2 py-0.5 rounded bg-[#0369a1] text-white text-[13px] font-bold">
-                        Đang xem
-                      </span>
-                    )}
+                    <h4 className="text-base font-extrabold text-slate-900 truncate">
+                      {s.title}
+                    </h4>
                   </div>
-                  <h4 className="text-base font-extrabold text-slate-900">
-                    {s.title}
-                  </h4>
-                  <p className="text-[14px] text-slate-600 font-medium leading-relaxed">
+                  <p className="text-[13px] text-slate-600 font-medium truncate mt-0.5">
                     {s.desc}
                   </p>
                 </div>
@@ -452,60 +565,39 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
         </div>
       </section>
 
-      {/* PHẦN 4: BANNER KÊU GỌI HÀNH ĐỘNG GIAO DIỆN SÁNG (DAYLIGHT CTA) */}
-      <section className="relative overflow-hidden landing-shell-radius bg-white text-slate-900 p-6 sm:p-8 lg:p-10 border border-slate-200">
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
-            <span className="inline-block px-3 py-1 rounded-full bg-sky-50 text-[#0369a1] border border-sky-200 text-[13px] font-bold">
-              Bắt đầu cùng Turfzone ngay hôm nay
+      {/* PHẦN 4: BANNER KÊU GỌI HÀNH ĐỘNG GIAO DIỆN SÁNG (TINH GIẢN CHỮ, TẬP TRUNG HÀNH ĐỘNG) */}
+      <section className="relative overflow-hidden rounded-2xl bg-white text-slate-900 p-6 sm:p-8 border border-slate-200">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-1.5 max-w-xl">
+            <span className="inline-block px-2.5 py-0.5 rounded-md bg-sky-50 text-[#0369a1] border border-sky-200 text-[13px] font-bold">
+              ⚡ Sân bóng phủi • Kèo đấu • Giải đấu
             </span>
-            <h3 className="text-xl sm:text-3xl font-black text-slate-900 leading-tight">
-              Bạn muốn đặt sân thi đấu hay đăng ký quản lý cụm sân?
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
+              Sẵn sàng cho trận bóng tiếp theo của bạn?
             </h3>
-            <p className="text-[14px] sm:text-base text-slate-600 font-medium max-w-2xl">
-              Chọn đúng vai trò của bạn để trải nghiệm trọn vẹn hệ thống đặt sân, ghép kèo và điều hành giải đấu tự động.
+            <p className="text-[14px] text-slate-600 font-medium">
+              Tìm sân trống gần nhất hoặc hợp tác đăng ký quản lý sân cùng Turfzone.
             </p>
-
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-1">
-              <button
-                type="button"
-                onClick={() => onExplore("PLAYER")}
-                className="px-5 py-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
-              >
-                <Users className="w-4 h-4" />
-                <span>Tài Khoản Cầu Thủ</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onExplore("OWNER")}
-                className="px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 font-extrabold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
-              >
-                <Store className="w-4 h-4 text-[#0369a1]" />
-                <span>Tài Khoản Chủ Sân</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  onNavigateTab ? onNavigateTab("tournaments") : onExplore("ORGANIZER")
-                }
-                className="px-5 py-3 rounded-xl bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-200 font-bold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
-              >
-                <Trophy className="w-4 h-4 text-amber-600" />
-                <span>Xem Giải Đấu</span>
-              </button>
-            </div>
           </div>
 
-          <div className="hidden lg:flex lg:col-span-4 items-center justify-center">
-            <div className="w-56 h-56 relative animate-float-slow">
-              <SafeImage
-                src="/images/epic-goal-player.png"
-                alt="Cầu thủ Turfzone"
-                className="w-full h-full object-contain drop-shadow-xl"
-              />
-            </div>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => onExplore("PLAYER")}
+              className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2 shadow-xs"
+            >
+              <Users className="w-4 h-4" />
+              <span>Đặt Sân Ngay</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onExplore("OWNER")}
+              className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-[14px] transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+            >
+              <Store className="w-4 h-4 text-[#0369a1]" />
+              <span>Dành Cho Chủ Sân</span>
+            </button>
           </div>
         </div>
       </section>

@@ -42,6 +42,14 @@ export interface Tournament {
   bracketJson?: string | null;
   /** Quyền tham gia: PUBLIC (ai cũng được) | INVITE_ONLY (chỉ email được mời). */
   joinMode?: "PUBLIC" | "INVITE_ONLY" | null;
+  /**
+   * Chính sách duyệt đội tham gia:
+   * AUTO_APPROVE: Tự động duyệt ngay khi nộp đơn
+   * MANUAL_REVIEW: Duyệt thủ công từng đội
+   * LEVEL_BASED: Duyệt theo cấp độ / phong độ
+   * INVITE_ONLY: Chỉ nhận lời mời
+   */
+  approvalPolicy?: "AUTO_APPROVE" | "MANUAL_REVIEW" | "LEVEL_BASED" | "INVITE_ONLY" | null;
   /** Danh sách email được BTC mời (chỉ có ý nghĩa khi joinMode = INVITE_ONLY). */
   invitedEmails?: string[] | null;
   bankCode?: string | null;
@@ -69,6 +77,49 @@ export const sportLabel = (sportType?: string | null): string => {
 
 export const formatLabel = (format?: string | null): string =>
   format === 'KNOCKOUT' ? 'Loại Trực Tiếp' : 'Vòng Tròn Tính Điểm';
+
+export const APPROVAL_POLICIES = [
+  {
+    value: 'AUTO_APPROVE',
+    label: 'Tự Động Duyệt',
+    hint: 'Đội nộp đơn được xác nhận vào giải ngay lập tức.',
+    badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+  },
+  {
+    value: 'MANUAL_REVIEW',
+    label: 'Duyệt Thủ Công',
+    hint: 'Chủ giải / chủ sân thẩm định hồ sơ & xác nhận từng đội.',
+    badgeColor: 'bg-sky-100 text-sky-800 border-sky-300',
+  },
+  {
+    value: 'LEVEL_BASED',
+    label: 'Duyệt Theo Cấp Độ',
+    hint: 'Ưu tiên / duyệt theo tỷ lệ thắng và kinh nghiệm thi đấu.',
+    badgeColor: 'bg-amber-100 text-amber-800 border-amber-300',
+  },
+  {
+    value: 'INVITE_ONLY',
+    label: 'Chỉ Được Mời',
+    hint: 'Giải kín, chỉ những đội có email trong danh sách mời.',
+    badgeColor: 'bg-purple-100 text-purple-800 border-purple-300',
+  },
+] as const;
+
+export type ApprovalPolicy = (typeof APPROVAL_POLICIES)[number]['value'];
+
+export const approvalPolicyLabel = (p?: string | null): string => {
+  switch (p) {
+    case 'AUTO_APPROVE':
+      return 'Tự Động Duyệt';
+    case 'LEVEL_BASED':
+      return 'Duyệt Theo Cấp Độ';
+    case 'INVITE_ONLY':
+      return 'Chỉ Đội Được Mời';
+    case 'MANUAL_REVIEW':
+    default:
+      return 'Duyệt Thủ Công';
+  }
+};
 
 /**
  * Rút gọn tên giải cho mã biên bản.
@@ -194,16 +245,24 @@ export const subscribeTournaments = (fn: (t: Tournament[]) => void): (() => void
  */
 export async function refreshTournamentInCache(tournamentId: number): Promise<Tournament | null> {
   try {
+    const token = getAuthToken();
     const res = await fetchWithStatus(`${API_BASE_URL}/api/v1/tournaments/${tournamentId}`, {
       cache: 'no-store',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     if (!res.ok) return null;
     const one = (await res.json()) as Tournament;
     if (!one || !one.id) return null;
     if (cache) {
       const idx = cache.findIndex((t) => t.id === one.id);
-      if (idx >= 0) cache[idx] = one;
-      else cache = [one, ...cache];
+      if (idx >= 0) {
+        cache = [...cache.slice(0, idx), one, ...cache.slice(idx + 1)];
+      } else {
+        cache = [one, ...cache];
+      }
+      notify(cache);
+    } else {
+      cache = [one];
       notify(cache);
     }
     return one;
@@ -395,6 +454,40 @@ export async function simulateTournamentResults(
     return body;
   } catch (err) {
     throw new Error(friendlyAdminError(err, 'Giả lập kết quả thất bại.'));
+  }
+}
+
+/** Cập nhật chính sách duyệt đội của chủ giải / chủ sân (AUTO_APPROVE, MANUAL_REVIEW, LEVEL_BASED, INVITE_ONLY). */
+export async function updateTournamentApprovalPolicy(
+  tournamentId: number,
+  approvalPolicy: string
+): Promise<{ message: string; approvalPolicy: string }> {
+  try {
+    const res = await apiRequest<{ message: string; approvalPolicy: string }>(
+      `/api/v1/tournaments/${tournamentId}/approval-policy`,
+      { method: 'PATCH', body: JSON.stringify({ approvalPolicy }) }
+    );
+    await refreshTournamentInCache(tournamentId);
+    return res;
+  } catch (err) {
+    throw new Error(friendlyAdminError(err, 'Cập nhật chính sách duyệt đội thất bại.'));
+  }
+}
+
+/** BTC duyệt nhanh hàng loạt đội đạt chuẩn cấp độ. */
+export async function batchApproveTeamsByLevel(
+  tournamentId: number,
+  minWinRate = 0
+): Promise<{ message: string; approvedCount: number }> {
+  try {
+    const res = await apiRequest<{ message: string; approvedCount: number }>(
+      `/api/v1/tournaments/${tournamentId}/teams/batch-approve-level`,
+      { method: 'POST', body: JSON.stringify({ minWinRate }) }
+    );
+    await refreshTournamentInCache(tournamentId);
+    return res;
+  } catch (err) {
+    throw new Error(friendlyAdminError(err, 'Duyệt đội theo cấp độ thất bại.'));
   }
 }
 

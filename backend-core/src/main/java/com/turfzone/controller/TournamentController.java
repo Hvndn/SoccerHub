@@ -170,6 +170,18 @@ public class TournamentController {
             joinMode = "PUBLIC";
         }
         tournament.setJoinMode(joinMode);
+
+        // Chính sách duyệt đội: AUTO_APPROVE, MANUAL_REVIEW, LEVEL_BASED, INVITE_ONLY
+        String policy = tournament.getApprovalPolicy() != null
+                ? tournament.getApprovalPolicy().trim().toUpperCase()
+                : null;
+        if (policy == null || !Set.of("AUTO_APPROVE", "MANUAL_REVIEW", "LEVEL_BASED", "INVITE_ONLY").contains(policy)) {
+            policy = "INVITE_ONLY".equalsIgnoreCase(joinMode) ? "INVITE_ONLY" : "MANUAL_REVIEW";
+        }
+        tournament.setApprovalPolicy(policy);
+        if ("INVITE_ONLY".equals(policy)) {
+            tournament.setJoinMode("INVITE_ONLY");
+        }
         if (tournament.getInvitedEmails() == null) {
             tournament.setInvitedEmails(new ArrayList<>());
         }
@@ -291,9 +303,87 @@ public class TournamentController {
             t.setEntryFee(entryFee);
         }
 
+        String approvalPolicy = str(body.get("approvalPolicy"));
+        if (approvalPolicy != null && Set.of("AUTO_APPROVE", "MANUAL_REVIEW", "LEVEL_BASED", "INVITE_ONLY").contains(approvalPolicy.toUpperCase())) {
+            t.setApprovalPolicy(approvalPolicy.toUpperCase());
+            if ("INVITE_ONLY".equalsIgnoreCase(approvalPolicy)) {
+                t.setJoinMode("INVITE_ONLY");
+            }
+        }
+
         Tournament saved = tournamentRepository.save(t);
         attachForm(saved);
         return ResponseEntity.ok(saved);
+    }
+
+    /** Cập nhật chính sách duyệt đội (AUTO_APPROVE, MANUAL_REVIEW, LEVEL_BASED, INVITE_ONLY). */
+    @PatchMapping("/{id}/approval-policy")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'OWNER')")
+    public ResponseEntity<?> updateApprovalPolicy(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc, không thể chỉnh sửa."));
+
+        String policy = str(body.get("approvalPolicy"));
+        if (policy == null || !Set.of("AUTO_APPROVE", "MANUAL_REVIEW", "LEVEL_BASED", "INVITE_ONLY").contains(policy.toUpperCase())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Chính sách duyệt không hợp lệ."));
+        }
+        policy = policy.toUpperCase();
+        t.setApprovalPolicy(policy);
+        if ("INVITE_ONLY".equals(policy)) {
+            t.setJoinMode("INVITE_ONLY");
+        } else {
+            t.setJoinMode("PUBLIC");
+        }
+        tournamentRepository.save(t);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã cập nhật chính sách duyệt đội thành công.",
+                "id", t.getId(),
+                "approvalPolicy", t.getApprovalPolicy()
+        ));
+    }
+
+    /** BTC duyệt nhanh hàng loạt đội đạt chuẩn cấp độ (hoặc tất cả các đội chờ duyệt). */
+    @PostMapping("/{id}/teams/batch-approve-level")
+    @org.springframework.transaction.annotation.Transactional
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
+    public ResponseEntity<?> batchApproveByLevel(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc, không thể chỉnh sửa."));
+
+        int minWinRate = 0;
+        if (body != null && body.get("minWinRate") != null) {
+            try {
+                minWinRate = Integer.parseInt(body.get("minWinRate").toString());
+            } catch (Exception ignored) {}
+        }
+        int approvedCount = 0;
+        int cap = t.getTotalTeams() != null ? t.getTotalTeams() : 0;
+        long currentConfirmed = t.getTeams().stream()
+                .filter(x -> "CONFIRMED".equalsIgnoreCase(x.getRegistrationStatus()) || "SIMULATED".equalsIgnoreCase(x.getRegistrationStatus()) || Boolean.TRUE.equals(x.getSimulated()))
+                .count();
+
+        for (TournamentTeamEntry team : t.getTeams()) {
+            if ("PENDING_PAYMENT".equalsIgnoreCase(team.getRegistrationStatus())) {
+                if (cap > 0 && currentConfirmed >= cap) break;
+                var form = teamFormService.formOf(team.getTeamName());
+                int wr = form != null ? form.winRate() : 0;
+                int played = form != null ? form.played() : 0;
+                if (minWinRate == 0 || wr >= minWinRate || played >= 3) {
+                    team.setRegistrationStatus("CONFIRMED");
+                    currentConfirmed++;
+                    approvedCount++;
+                }
+            }
+        }
+        t.setRegisteredTeams((int) currentConfirmed);
+        tournamentRepository.save(t);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã duyệt nhanh " + approvedCount + " đội vào giải đấu theo tiêu chuẩn cấp độ.",
+                "approvedCount", approvedCount,
+                "registeredTeams", t.getRegisteredTeams()
+        ));
     }
 
     /**
@@ -1243,9 +1333,31 @@ public class TournamentController {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
         if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
-        if (false) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+
+        // 1. Kiểm tra quân số & danh sách đội
+        if (tournament.getTeams() == null || tournament.getTeams().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu chưa có đội bóng nào tham gia để giả lập kết quả."));
         }
+
+        // 2. Kiểm tra lệ phí thi đấu: không được còn đội nợ lệ phí
+        long pendingPaymentCount = tournament.getTeams().stream()
+                .filter(t -> "PENDING_PAYMENT".equalsIgnoreCase(t.getRegistrationStatus()))
+                .count();
+        if (pendingPaymentCount > 0) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Giải đấu còn " + pendingPaymentCount + " đội chưa xác nhận hoàn tất lệ phí. Vui lòng xác nhận lệ phí trước khi thi đấu."
+            ));
+        }
+
+        // 3. Kiểm tra số lượng đội theo điều lệ
+        int confirmedCount = countConfirmedTeams(tournament);
+        int requiredTeams = tournament.getTotalTeams() != null && tournament.getTotalTeams() > 0 ? tournament.getTotalTeams() : 2;
+        if (confirmedCount < requiredTeams && confirmedCount < 2) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Giải đấu chưa đủ số lượng đội theo điều lệ (" + confirmedCount + "/" + requiredTeams + " đội)."
+            ));
+        }
+
         if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải chưa bốc thăm nên chưa có trận nào để giả lập."));
         }
@@ -1262,6 +1374,51 @@ public class TournamentController {
         List<Map<String, Object>> rounds = (List<Map<String, Object>>) bracket.get("rounds");
         if (rounds == null || rounds.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Nhánh đấu chưa có vòng nào."));
+        }
+
+        // 4. Kiểm tra tính tuần tự: vòng trước phải hoàn tất 100% trước khi giả lập vòng kế tiếp
+        if (nextStageOnly) {
+            int targetRoundIdx = -1;
+            for (int rIdx = 0; rIdx < rounds.size(); rIdx++) {
+                Map<String, Object> r = rounds.get(rIdx);
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> ms = (List<Map<String, Object>>) r.get("matches");
+                if (ms == null) continue;
+                boolean hasPlayable = false;
+                for (Map<String, Object> checkM : ms) {
+                    if (!"SCHEDULED".equals(checkM.get("status")) && !"TBD".equals(checkM.get("status"))) continue;
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> ta = (Map<String, Object>) checkM.get("teamA");
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tb = (Map<String, Object>) checkM.get("teamB");
+                    if (ta != null && tb != null && !Boolean.TRUE.equals(ta.get("tbd")) && !Boolean.TRUE.equals(tb.get("tbd"))) {
+                        hasPlayable = true;
+                        break;
+                    }
+                }
+                if (hasPlayable) {
+                    targetRoundIdx = rIdx;
+                    break;
+                }
+            }
+
+            if (targetRoundIdx > 0) {
+                for (int prevIdx = 0; prevIdx < targetRoundIdx; prevIdx++) {
+                    Map<String, Object> prevRound = rounds.get(prevIdx);
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> prevMatches = (List<Map<String, Object>>) prevRound.get("matches");
+                    if (prevMatches == null) continue;
+                    for (Map<String, Object> pm : prevMatches) {
+                        String st = String.valueOf(pm.get("status"));
+                        if (!"DONE".equals(st) && !"BYE".equals(st)) {
+                            String prevName = String.valueOf(prevRound.getOrDefault("name", "Vòng " + (prevIdx + 1)));
+                            return ResponseEntity.badRequest().body(Map.of(
+                                    "message", "Không thể giả lập vòng tiếp theo vì " + prevName + " vẫn còn trận đấu chưa hoàn thành kết quả."
+                            ));
+                        }
+                    }
+                }
+            }
         }
         boolean isLeague = "ROUND_ROBIN".equals(tournament.getFormat());
 
@@ -1424,6 +1581,9 @@ public class TournamentController {
                 champion = String.valueOf(finalMatch.get("winner"));
                 tournament.setStatus("COMPLETED");
             }
+        }
+        if (champion == null && simulated > 0 && "OPEN".equalsIgnoreCase(tournament.getStatus())) {
+            tournament.setStatus("ONGOING");
         }
         tournamentRepository.save(tournament);
 
@@ -1742,6 +1902,32 @@ public class TournamentController {
             }
         }
         memberCount = Math.max(1, Math.min(30, memberCount));
+
+        // Xử lý trạng thái theo Chính sách duyệt đội của chủ giải / chủ sân
+        String policy = tournament.getApprovalPolicy() != null
+                ? tournament.getApprovalPolicy().toUpperCase()
+                : "MANUAL_REVIEW";
+
+        String initStatus = "PENDING_PAYMENT";
+        String statusNote = "Vui lòng thanh toán lệ phí và chờ BTC duyệt.";
+
+        if ("AUTO_APPROVE".equals(policy)) {
+            initStatus = "CONFIRMED";
+            statusNote = "Chủ giải áp dụng chính sách Tự Động Duyệt. Đội của bạn đã được xác nhận vào giải chính thức!";
+        } else if ("LEVEL_BASED".equals(policy)) {
+            // Xét duyệt theo cấp độ / phong độ (Win rate >= 50% hoặc đã thi đấu >= 3 trận)
+            var form = teamFormService.formOf(teamName);
+            int wr = form != null ? form.winRate() : 0;
+            int played = form != null ? form.played() : 0;
+            if (wr >= 50 || played >= 3) {
+                initStatus = "CONFIRMED";
+                statusNote = "Đội đạt chuẩn cấp độ thi đấu và đã được hệ thống tự động xác nhận vào giải!";
+            } else {
+                initStatus = "PENDING_PAYMENT";
+                statusNote = "Đội đang chờ BTC xem xét thẩm định cấp độ phong độ trước khi xác nhận.";
+            }
+        }
+
         TournamentTeamEntry entry = TournamentTeamEntry.builder()
                 .teamName(teamName)
                 .captainName(captainName)
@@ -1749,28 +1935,31 @@ public class TournamentController {
                 .captainPhone(captainPhone)
                 .subCaptainPhone(subCaptainPhone)
                 .memberCount(memberCount)
-                .registrationStatus("PENDING_PAYMENT")
+                .registrationStatus(initStatus)
                 .registeredAt(LocalDateTime.now())
                 .build();
 
         tournament.getTeams().add(entry);
-        tournament.setRegisteredTeams(tournament.getTeams().size());
+        tournament.setRegisteredTeams(countConfirmedTeams(tournament));
         tournamentRepository.save(tournament);
 
+        String notifyTitle = "CONFIRMED".equals(initStatus)
+                ? "Đội mới được duyệt: " + teamName
+                : "Đội mới đăng ký: " + teamName;
         notificationService.notify("ORGANIZER",
-                "Đội mới đăng ký: " + teamName,
-                teamName + " vừa nộp đơn vào giải “" + tournament.getTitle() + "”. Trạng thái: chờ xác nhận lệ phí.",
+                notifyTitle,
+                teamName + " tham gia giải “" + tournament.getTitle() + "”. Trạng thái: " + ("CONFIRMED".equals(initStatus) ? "Đã duyệt chính thức." : "Chờ duyệt."),
                 "TOURNAMENT", "/?tab=tournaments");
         notificationService.notify("ADMIN",
-                "Đội mới đăng ký: " + teamName,
-                teamName + " vừa nộp đơn vào giải “" + tournament.getTitle() + "”. Trạng thái: chờ xác nhận lệ phí.",
+                notifyTitle,
+                teamName + " tham gia giải “" + tournament.getTitle() + "”. Trạng thái: " + ("CONFIRMED".equals(initStatus) ? "Đã duyệt chính thức." : "Chờ duyệt."),
                 "TOURNAMENT", "/admin");
 
         return ResponseEntity.ok(Map.of(
-                "message", "Nộp đơn thành công! Vui lòng thanh toán lệ phí và chờ BTC xác nhận.",
+                "message", statusNote,
                 "tournamentId", tournament.getId(),
                 "registeredTeams", tournament.getRegisteredTeams(),
-                "paymentStatus", "PENDING_PAYMENT",
+                "paymentStatus", initStatus,
                 "team", entry
         ));
     }

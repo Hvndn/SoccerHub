@@ -11,20 +11,35 @@ import {
   ShieldCheck,
   ShieldAlert,
   Search,
+  Camera,
   Loader2,
   PhoneCall,
   RefreshCw,
   SlidersHorizontal,
   ChevronDown,
+  Map,
+  LayoutGrid,
+  Columns,
+  Navigation,
+  Heart,
 } from "lucide-react";
 
 import PitchDetail from "./PitchDetail";
+import PitchInteractiveMap from "./PitchInteractiveMap";
 import { getAllPitchesApi } from "@/lib/pitchService";
 import { pitchTypeLabel, isPeakSlot } from "@/lib/pitchLabels";
+import PitchHoverPreview from "@/components/PitchHoverPreview";
 import { subscribeToBookingEvents } from "@/lib/realtimeService";
+import {
+  getFavoritePitchIds,
+  toggleFavoritePitch,
+  subscribeFavorites,
+} from "@/lib/favoritePitchService";
+import { toastOk, toastInfo } from "@/lib/toast";
 
 interface PitchSearchProps {
   user?: any;
+  onOpenAuth?: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
 }
 
 const SPORT_CODE_TO_TAB: Record<string, string> = {
@@ -39,14 +54,32 @@ const toSportTabs = (types?: string[] | null): string[] =>
     (t) => SPORT_CODE_TO_TAB[String(t).trim().toUpperCase()] ?? String(t).trim().toUpperCase()
   );
 
-export default function PitchSearch({ user }: PitchSearchProps) {
+export default function PitchSearch({ user, onOpenAuth }: PitchSearchProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSport, setSelectedSport] = useState("ALL");
   const [selectedDistrict, setSelectedDistrict] = useState("ALL");
   const [selectedTimeSlotFilter, setSelectedTimeSlotFilter] = useState("ALL");
   const [maxBudget, setMaxBudget] = useState(800000);
   const [onlyAvailableTonight, setOnlyAvailableTonight] = useState(false);
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "map" | "split">("list");
+
+  useEffect(() => {
+    setFavoriteIds(getFavoritePitchIds(user?.id));
+    const unsub = subscribeFavorites((ids) => {
+      setFavoriteIds(ids);
+    }, user?.id);
+    return unsub;
+  }, [user?.id]);
+
+  const hasAdvancedFilters =
+    selectedDistrict !== "ALL" ||
+    selectedTimeSlotFilter !== "ALL" ||
+    maxBudget < 800000 ||
+    onlyAvailableTonight;
 
   const [selectedPitchForSlot, setSelectedPitchForSlot] = useState<any>(null);
   const [realPitches, setRealPitches] = useState<any[]>([]);
@@ -190,13 +223,25 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             ? "Q. Cẩm Lệ"
             : "Đà Nẵng";
 
+          // Phân bổ tọa độ tự nhiên theo khu vực Đà Nẵng nếu cơ sở dữ liệu chưa có tọa độ GPS
+          const districtCoords: Record<string, { lat: number; lng: number }> = {
+            LIEN_CHIEU: { lat: 16.0688, lng: 108.1500 },
+            HAI_CHAU: { lat: 16.0475, lng: 108.2195 },
+            THANH_KHE: { lat: 16.0612, lng: 108.1908 },
+            SON_TRA: { lat: 16.0715, lng: 108.2435 },
+            CAM_LE: { lat: 16.0185, lng: 108.2050 },
+          };
+          const baseCoord = districtCoords[districtCode] || { lat: 16.0544, lng: 108.2022 };
+          const computedLat = item.latitude ?? (baseCoord.lat + ((idx % 5) * 0.003 - 0.006));
+          const computedLng = item.longitude ?? (baseCoord.lng + ((idx % 4) * 0.004 - 0.006));
+
           return {
             id: item.id || `pitch-db-${rawId}`,
             numericId: Number(rawId) || 1,
             name: pitchName,
             address: address,
-            latitude: item.latitude ?? 16.0544,
-            longitude: item.longitude ?? 108.2022,
+            latitude: computedLat,
+            longitude: computedLng,
             district: districtCode,
             districtName: districtName,
             phone: item.phone || "",
@@ -267,7 +312,10 @@ export default function PitchSearch({ user }: PitchSearchProps) {
 
   const filteredPitches = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return realPitches.filter((p) => {
+    const list = realPitches.filter((p) => {
+      if (onlyFavorites && !favoriteIds.includes(Number(p.id))) {
+        return false;
+      }
       if (q) {
         const matchName = String(p.name || "").toLowerCase().includes(q);
         const matchAddr = String(p.address || "").toLowerCase().includes(q);
@@ -294,11 +342,18 @@ export default function PitchSearch({ user }: PitchSearchProps) {
       }
       return true;
     });
-  }, [realPitches, searchQuery, selectedSport, selectedDistrict, maxBudget, selectedTimeSlotFilter, onlyAvailableTonight]);
+
+    // Ưu tiên sân yêu thích (thả tim) được đưa lên đầu danh sách
+    return [...list].sort((a, b) => {
+      const isFavA = favoriteIds.includes(Number(a.id)) ? 1 : 0;
+      const isFavB = favoriteIds.includes(Number(b.id)) ? 1 : 0;
+      return isFavB - isFavA;
+    });
+  }, [realPitches, searchQuery, selectedSport, selectedDistrict, maxBudget, selectedTimeSlotFilter, onlyAvailableTonight, onlyFavorites, favoriteIds]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedSport, selectedDistrict, maxBudget, selectedTimeSlotFilter, onlyAvailableTonight]);
+  }, [searchQuery, selectedSport, selectedDistrict, maxBudget, selectedTimeSlotFilter, onlyAvailableTonight, onlyFavorites]);
 
   const totalPages = Math.ceil(filteredPitches.length / PITCHES_PER_PAGE) || 1;
   const paginatedPitches = useMemo(() => {
@@ -313,6 +368,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
     setSelectedTimeSlotFilter("ALL");
     setMaxBudget(800000);
     setOnlyAvailableTonight(false);
+    setOnlyFavorites(false);
   };
 
   if (selectedPitchForSlot) {
@@ -321,6 +377,7 @@ export default function PitchSearch({ user }: PitchSearchProps) {
         pitch={selectedPitchForSlot}
         user={user}
         onBack={handleBackFromPitch}
+        onOpenAuth={onOpenAuth}
       />
     );
   }
@@ -345,114 +402,212 @@ export default function PitchSearch({ user }: PitchSearchProps) {
               Chọn cụm sân, xem bảng giờ trống thực tế và đặt giữ ca trực tiếp với chủ sân
             </p>
           </div>
-          <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-600">
-            <span>Hiển thị <strong className="text-slate-900">{filteredPitches.length}</strong> cụm sân</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="text-[14px] font-semibold text-slate-600">
+              <span>Hiển thị <strong className="text-slate-900">{filteredPitches.length}</strong> cụm sân</span>
+            </div>
+
+            {/* Chuyển đổi chế độ: Danh Sách / Bản Đồ / Chia Đôi */}
+            <div className="flex items-center rounded-xl border border-slate-300 bg-slate-100 p-1 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-bold transition-all cursor-pointer ${
+                  viewMode === "list"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>Danh Sách</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setViewMode("map")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-bold transition-all cursor-pointer ${
+                  viewMode === "map"
+                    ? "bg-[#0369a1] text-white shadow-sm font-extrabold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Map className="w-3.5 h-3.5" />
+                <span>Bản Đồ</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setViewMode("split")}
+                className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-bold transition-all cursor-pointer ${
+                  viewMode === "split"
+                    ? "bg-[#0369a1] text-white shadow-sm font-extrabold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Columns className="w-3.5 h-3.5" />
+                <span>Chia Đôi</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Hàng lọc 1: Tìm theo tên/địa chỉ + Khu vực + Khung giờ + Mức giá */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
-          <div className="lg:col-span-4 relative">
+        {/* HÀNG LỌC CỐT LÕI (GỌN GÀNG, THẤY NGAY SÂN BÓNG) */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-full lg:max-w-md">
             <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm tên sân hoặc tên đường, quận..."
-              className="w-full pl-9 pr-3 py-2.5 rounded-md border border-slate-300 bg-white text-[14px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0369a1]"
+              className="w-full pl-9 pr-3 py-2 rounded-md border border-slate-300 bg-white text-[14px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0369a1]"
             />
           </div>
 
-          <div className="lg:col-span-3">
-            <select
-              aria-label="Khu vực"
-              value={selectedDistrict}
-              onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-md border border-slate-300 bg-white text-[14px] font-semibold text-slate-900 focus:outline-none focus:border-[#0369a1] cursor-pointer"
-            >
-              {districtList.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth">
+              {sportsTabs.map((tab) => (
+                tab.id === "ALL" ? (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setSelectedSport(tab.id)}
+                    className={`px-3 py-1.5 rounded-md text-[13px] font-bold transition-colors cursor-pointer border shrink-0 whitespace-nowrap ${
+                      selectedSport === tab.id
+                        ? "bg-[#0369a1] text-white border-[#0369a1]"
+                        : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+                    }`}
+                  >
+                    {tab.name}
+                  </button>
+                ) : (
+                  <PitchHoverPreview key={tab.id} pitchType={tab.id} customTitle={tab.name}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSport(tab.id)}
+                      className={`px-3 py-1.5 rounded-md text-[13px] font-bold transition-colors cursor-pointer border shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+                        selectedSport === tab.id
+                          ? "bg-[#0369a1] text-white border-[#0369a1]"
+                          : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+                      }`}
+                    >
+                      <span>{tab.name}</span>
+                      <Camera className="w-3.5 h-3.5 text-slate-400 group-hover:text-sky-500" />
+                    </button>
+                  </PitchHoverPreview>
+                )
               ))}
-            </select>
-          </div>
+            </div>
 
-          <div className="lg:col-span-3">
-            <select
-              aria-label="Khung giờ"
-              value={selectedTimeSlotFilter}
-              onChange={(e) => setSelectedTimeSlotFilter(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-md border border-slate-300 bg-white text-[14px] font-semibold text-slate-900 focus:outline-none focus:border-[#0369a1] cursor-pointer"
+            <button
+              type="button"
+              onClick={() => setOnlyFavorites((prev) => !prev)}
+              className={`px-3 py-1.5 rounded-md text-[13px] font-bold border transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                onlyFavorites
+                  ? "bg-rose-50 text-rose-700 border-rose-300 ring-1 ring-rose-200"
+                  : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+              }`}
+              title="Lọc chỉ các cụm sân đã thả tim yêu thích"
             >
-              <option value="ALL">Tất cả khung giờ</option>
-              <option value="PEAK">Giờ cao điểm (17:00 - 20:00)</option>
-              <option value="AFTERNOON">Ca chiều (14:00 - 17:00)</option>
-              <option value="NIGHT">Ca tối (20:00 - 22:30)</option>
-            </select>
-          </div>
+              <Heart className={`w-3.5 h-3.5 ${onlyFavorites ? "fill-rose-500 text-rose-500" : "text-rose-400"}`} />
+              <span>Sân yêu thích {favoriteIds.length > 0 ? `(${favoriteIds.length})` : ""}</span>
+            </button>
 
-          <div className="lg:col-span-2">
-            <select
-              aria-label="Mức giá tối đa"
-              value={maxBudget}
-              onChange={(e) => setMaxBudget(Number(e.target.value))}
-              className="w-full px-3 py-2.5 rounded-md border border-slate-300 bg-white text-[14px] font-semibold text-slate-900 focus:outline-none focus:border-[#0369a1] cursor-pointer"
+            <button
+              type="button"
+              onClick={() => setShowAdvancedFilters((v) => !v)}
+              className={`px-3 py-1.5 rounded-md text-[13px] font-bold border transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                hasAdvancedFilters
+                  ? "bg-sky-50 text-[#0369a1] border-sky-300"
+                  : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+              }`}
             >
-              <option value={800000}>Mọi mức giá</option>
-              <option value={300000}>Dưới 300k/giờ</option>
-              <option value={400000}>Dưới 400k/giờ</option>
-              <option value={500000}>Dưới 500k/giờ</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Hàng lọc 2: Các tab loại sân + Checkbox ca trống tối nay */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth">
-            {sportsTabs.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setSelectedSport(tab.id)}
-                className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold transition-colors cursor-pointer border shrink-0 whitespace-nowrap ${
-                  selectedSport === tab.id
-                    ? "bg-[#0369a1] text-white border-[#0369a1]"
-                    : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Bộ lọc</span>
+              {hasAdvancedFilters && (
+                <span className="w-2 h-2 rounded-full bg-[#0369a1]" />
+              )}
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform ${
+                  showAdvancedFilters ? "rotate-180" : ""
                 }`}
-              >
-                {tab.name}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <label className="inline-flex items-center gap-2 text-[14px] font-semibold text-slate-700 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={onlyAvailableTonight}
-                onChange={(e) => setOnlyAvailableTonight(e.target.checked)}
-                className="w-4 h-4 accent-[#0369a1] rounded cursor-pointer"
               />
-              <span>Còn ca trống tối nay</span>
-            </label>
+            </button>
 
-            {(searchQuery ||
-              selectedSport !== "ALL" ||
-              selectedDistrict !== "ALL" ||
-              selectedTimeSlotFilter !== "ALL" ||
-              maxBudget < 800000 ||
-              onlyAvailableTonight) && (
+            {(searchQuery || selectedSport !== "ALL" || hasAdvancedFilters) && (
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-[14px] font-bold text-rose-600 hover:underline cursor-pointer"
+                className="text-[13px] font-bold text-rose-600 hover:underline cursor-pointer shrink-0 px-2"
               >
-                Xóa bộ lọc
+                Đặt lại
               </button>
             )}
           </div>
         </div>
+
+        {/* BỘ LỌC NÂNG CAO (CHỈ HIỆN KHI BẤM XEM THÊM - PROGRESSIVE DISCLOSURE) */}
+        {showAdvancedFilters && (
+          <div className="pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[13px] animate-fade-in">
+            <div>
+              <label className="block text-[13px] font-bold text-slate-600 mb-1">Khu Vực (Quận)</label>
+              <select
+                aria-label="Khu vực"
+                value={selectedDistrict}
+                onChange={(e) => setSelectedDistrict(e.target.value)}
+                className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-semibold text-slate-900 focus:outline-none focus:border-[#0369a1] cursor-pointer"
+              >
+                {districtList.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-bold text-slate-600 mb-1">Khung Giờ Thi Đấu</label>
+              <select
+                aria-label="Khung giờ"
+                value={selectedTimeSlotFilter}
+                onChange={(e) => setSelectedTimeSlotFilter(e.target.value)}
+                className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-semibold text-slate-900 focus:outline-none focus:border-[#0369a1] cursor-pointer"
+              >
+                <option value="ALL">Tất cả khung giờ</option>
+                <option value="PEAK">Giờ cao điểm (17:00 - 20:00)</option>
+                <option value="AFTERNOON">Ca chiều (14:00 - 17:00)</option>
+                <option value="NIGHT">Ca tối (20:00 - 22:30)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-bold text-slate-600 mb-1">Mức Giá Tối Đa</label>
+              <select
+                aria-label="Mức giá tối đa"
+                value={maxBudget}
+                onChange={(e) => setMaxBudget(Number(e.target.value))}
+                className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-semibold text-slate-900 focus:outline-none focus:border-[#0369a1] cursor-pointer"
+              >
+                <option value={800000}>Mọi mức giá</option>
+                <option value={300000}>Dưới 300.000đ/giờ</option>
+                <option value={400000}>Dưới 400.000đ/giờ</option>
+                <option value={500000}>Dưới 500.000đ/giờ</option>
+              </select>
+            </div>
+
+            <div className="flex items-end pb-2">
+              <label className="inline-flex items-center gap-2 text-[13px] font-semibold text-slate-700 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={onlyAvailableTonight}
+                  onChange={(e) => setOnlyAvailableTonight(e.target.checked)}
+                  className="w-4 h-4 accent-[#0369a1] rounded cursor-pointer"
+                />
+                <span>Chỉ ca trống tối nay</span>
+              </label>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 2. THÔNG BÁO LỖI KẾT NỐI (NẾU CÓ) */}
@@ -497,46 +652,197 @@ export default function PitchSearch({ user }: PitchSearchProps) {
             Xem tất cả sân
           </button>
         </div>
+      ) : viewMode === "map" ? (
+        <div className="space-y-4">
+          <PitchInteractiveMap
+            pitches={filteredPitches}
+            onSelectPitch={(p) => {
+              const matched = realPitches.find((rp) => String(rp.id) === String(p.id));
+              if (matched) handleOpenPitch(matched);
+            }}
+            selectedPitchId={selectedPitchForSlot?.id}
+            height="620px"
+          />
+        </div>
+      ) : viewMode === "split" ? (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+          <div className="xl:col-span-5 space-y-3">
+            {paginatedPitches.map((pitch) => {
+              const isFav = favoriteIds.includes(Number(pitch.id));
+              return (
+              <article
+                key={pitch.id}
+                className={`bg-white rounded-xl overflow-hidden border transition-all p-3.5 space-y-2.5 shadow-xs ${
+                  isFav ? "border-rose-300 ring-1 ring-rose-200" : "border-slate-300 hover:border-[#0369a1]"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="px-2 py-0.5 rounded bg-sky-50 text-[#0369a1] font-bold text-[13px] border border-sky-200">
+                        {pitch.districtName}
+                      </span>
+                      {isFav && (
+                        <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-bold text-[13px] border border-rose-200 flex items-center gap-1">
+                          <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
+                          <span>Sân ruột</span>
+                        </span>
+                      )}
+                    </div>
+                    <PitchHoverPreview pitchType={pitch.pitchTypes?.[0] || pitch.sportBadge} customTitle={pitch.name} customImageUrl={pitch.imageUrl}>
+                      <h3
+                        onClick={() => handleOpenPitch(pitch)}
+                        className="text-[15px] font-bold text-slate-900 hover:text-[#0369a1] cursor-pointer mt-1 truncate flex items-center gap-1.5"
+                      >
+                        <span>{pitch.name}</span>
+                        <Camera className="w-3.5 h-3.5 text-slate-400 hover:text-[#0369a1] shrink-0" />
+                      </h3>
+                    </PitchHoverPreview>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const res = toggleFavoritePitch(pitch.id, user?.id);
+                        if (res.isFavorite) {
+                          toastOk(`Đã thêm "${pitch.name}" vào sân yêu thích!`);
+                        } else {
+                          toastInfo(`Đã bỏ "${pitch.name}" khỏi sân yêu thích.`);
+                        }
+                      }}
+                      className={`p-1.5 rounded-md border transition-colors cursor-pointer ${
+                        isFav
+                          ? "bg-rose-50 text-rose-600 border-rose-200"
+                          : "bg-white text-slate-400 hover:text-rose-500 border-slate-200"
+                      }`}
+                      title={isFav ? "Bỏ yêu thích sân này" : "Thêm vào sân yêu thích"}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-rose-500 text-rose-500" : ""}`} />
+                    </button>
+                    {pitch.rating && (
+                      <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-[13px] font-bold text-slate-900 shrink-0">
+                        <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                        {pitch.rating}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-[13px] text-slate-600 truncate flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span className="truncate">{pitch.address}</span>
+                </p>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <span className="text-[14px] font-mono font-bold text-[#0369a1]">
+                    {pitch.priceDiscounted.toLocaleString("vi-VN")}đ/h
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPitch(pitch)}
+                    className="px-3 py-1.5 rounded-lg bg-[#0369a1] text-white font-bold text-[13px] hover:bg-[#075985] flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Chọn Ca</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </article>
+              );
+            })}
+          </div>
+
+          <div className="xl:col-span-7 sticky top-24">
+            <PitchInteractiveMap
+              pitches={filteredPitches}
+              onSelectPitch={(p) => {
+                const matched = realPitches.find((rp) => String(rp.id) === String(p.id));
+                if (matched) handleOpenPitch(matched);
+              }}
+              selectedPitchId={selectedPitchForSlot?.id}
+              height="620px"
+            />
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {paginatedPitches.map((pitch) => (
+          {paginatedPitches.map((pitch) => {
+            const isFav = favoriteIds.includes(Number(pitch.id));
+            return (
             <article
               key={pitch.id}
-              className="bg-white rounded-lg overflow-hidden border border-slate-300 hover:border-[#0369a1] transition-colors flex flex-col sm:flex-row"
+              className={`bg-white rounded-lg overflow-hidden border transition-colors flex flex-col sm:flex-row ${
+                isFav ? "border-rose-300 ring-1 ring-rose-200" : "border-slate-300 hover:border-[#0369a1]"
+              }`}
             >
-              {/* Cột Ảnh Sân */}
-              <div
-                onClick={() => handleOpenPitch(pitch)}
-                className="sm:w-2/5 relative min-h-[180px] sm:min-h-[210px] bg-slate-900 cursor-pointer shrink-0 overflow-hidden"
-              >
-                <SafeImage
-                  src={pitch.imageUrl}
-                  alt={pitch.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1">
-                  <span className="px-2.5 py-0.5 rounded bg-slate-900/90 text-white font-bold text-[14px]">
-                    {pitch.pitchTypes?.[0] ? pitchTypeLabel(pitch.pitchTypes[0]) : pitch.sportBadge}
-                  </span>
+              {/* Cột Ảnh Sân - Hover toàn bộ ảnh để xem phóng to */}
+              <PitchHoverPreview pitchType={pitch.pitchTypes?.[0] || pitch.sportBadge} customTitle={pitch.name} customImageUrl={pitch.imageUrl} className="sm:w-2/5 shrink-0 block">
+                <div
+                  onClick={() => handleOpenPitch(pitch)}
+                  className="w-full relative min-h-[180px] sm:min-h-[210px] h-full bg-slate-900 cursor-pointer overflow-hidden group"
+                >
+                  <SafeImage
+                    src={pitch.imageUrl}
+                    alt={pitch.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1">
+                    <span className="px-2.5 py-0.5 rounded bg-slate-900/90 text-white font-bold text-[13px] flex items-center gap-1.5 shadow-xs">
+                      <Camera className="w-3.5 h-3.5 text-sky-400" />
+                      <span>{pitch.pitchTypes?.[0] ? pitchTypeLabel(pitch.pitchTypes[0]) : pitch.sportBadge}</span>
+                    </span>
+                    {isFav && (
+                      <span className="px-2 py-0.5 rounded bg-rose-600 text-white font-bold text-[13px] flex items-center gap-1 shadow-xs">
+                        <Heart className="w-3 h-3 fill-white text-white" />
+                        <span>Sân ruột</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Nút thả tim sân yêu thích */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const res = toggleFavoritePitch(pitch.id, user?.id);
+                      if (res.isFavorite) {
+                        toastOk(`Đã thêm "${pitch.name}" vào sân yêu thích!`);
+                      } else {
+                        toastInfo(`Đã bỏ "${pitch.name}" khỏi sân yêu thích.`);
+                      }
+                    }}
+                    className={`absolute top-2.5 right-2.5 z-10 p-1.5 rounded-lg backdrop-blur-md shadow-xs transition-transform active:scale-90 hover:scale-110 cursor-pointer ${
+                      isFav
+                        ? "bg-rose-50 text-rose-600 border border-rose-200"
+                        : "bg-slate-900/80 text-white/80 hover:text-rose-400 border border-white/20"
+                    }`}
+                    title={isFav ? "Bỏ yêu thích sân này" : "Thêm vào sân yêu thích"}
+                  >
+                    <Heart className={`w-4 h-4 ${isFav ? "fill-rose-500 text-rose-500" : ""}`} />
+                  </button>
+
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-white text-[14px] font-semibold bg-slate-900/80 px-2.5 py-1 rounded">
+                    <span className="truncate">{pitch.districtName}</span>
+                    <span className="font-mono shrink-0">
+                      {pitch.openTime} - {pitch.closeTime}
+                    </span>
+                  </div>
                 </div>
-                <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-white text-[14px] font-semibold bg-slate-900/80 px-2.5 py-1 rounded">
-                  <span className="truncate">{pitch.districtName}</span>
-                  <span className="font-mono shrink-0">
-                    {pitch.openTime} - {pitch.closeTime}
-                  </span>
-                </div>
-              </div>
+              </PitchHoverPreview>
 
               {/* Cột Thông Tin & Chọn Giờ Nhanh */}
               <div className="sm:w-3/5 p-4 flex flex-col justify-between space-y-3 min-w-0">
                 <div className="space-y-1.5">
                   <div className="flex items-start justify-between gap-2">
-                    <h2
-                      onClick={() => handleOpenPitch(pitch)}
-                      className="text-base sm:text-lg font-bold text-slate-900 hover:text-[#0369a1] cursor-pointer leading-snug line-clamp-1"
-                    >
-                      {pitch.name}
-                    </h2>
+                    <PitchHoverPreview pitchType={pitch.pitchTypes?.[0] || pitch.sportBadge} customTitle={pitch.name} customImageUrl={pitch.imageUrl}>
+                      <h2
+                        onClick={() => handleOpenPitch(pitch)}
+                        className="text-base sm:text-lg font-bold text-slate-900 hover:text-[#0369a1] cursor-pointer leading-snug line-clamp-1 flex items-center gap-1.5"
+                      >
+                        <span>{pitch.name}</span>
+                        <Camera className="w-3.5 h-3.5 text-slate-400 hover:text-[#0369a1] shrink-0" />
+                      </h2>
+                    </PitchHoverPreview>
                     {pitch.rating ? (
                       <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-[14px] font-bold text-slate-900 shrink-0">
                         <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
@@ -545,10 +851,24 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                     ) : null}
                   </div>
 
-                  <p className="text-[14px] text-slate-600 flex items-start gap-1.5 line-clamp-1">
-                    <MapPin className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
-                    <span className="truncate">{pitch.address}</span>
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[14px] text-slate-600 flex items-start gap-1.5 line-clamp-1 flex-1">
+                      <MapPin className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                      <span className="truncate">{pitch.address}</span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setViewMode("map");
+                      }}
+                      className="text-[13px] text-[#0369a1] font-bold hover:underline shrink-0 flex items-center gap-0.5 cursor-pointer"
+                      title="Xem vị trí sân trên bản đồ"
+                    >
+                      <Map className="w-3.5 h-3.5" />
+                      <span>Bản đồ</span>
+                    </button>
+                  </div>
 
                   {pitch.phone && (
                     <p className="text-[14px] text-slate-600 flex items-center gap-1.5">
@@ -613,7 +933,8 @@ export default function PitchSearch({ user }: PitchSearchProps) {
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       )}
 

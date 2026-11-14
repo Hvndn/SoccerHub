@@ -1,12 +1,14 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import WizardStepper from "@/components/WizardStepper";
 import WizardPageShell from "@/components/WizardPageShell";
 import { createTournament, sportLabel, formatLabel } from "@/lib/tournamentService";
 import { useAuth } from "@/context/AuthContext";
 import { getMyPitchesApi, getAllPitchesApi, type PitchModel } from "@/lib/pitchService";
+import AvatarUploader from "@/components/AvatarUploader";
+import SafeImage from "@/components/SafeImage";
 import {
  ArrowLeft,
  ArrowRight,
@@ -47,6 +49,27 @@ function isValidDate(s: string) {
  return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(new Date(s + "T00:00:00").getTime());
 }
 
+function getTodayIso(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function addDays(iso: string, days: number): string {
+  try {
+    const d = new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  } catch {
+    return "";
+  }
+}
+
 export default function NewTournamentPage() {
  return (
   <Suspense fallback={<div className="p-4 sm:p-8 text-sm text-slate-500">Đang tải…</div>}>
@@ -58,51 +81,90 @@ export default function NewTournamentPage() {
 }
 
 function NewTournamentWizard() {
- const router = useRouter();
- const [step, setStep] = useState(0);
- const [maxReached, setMaxReached] = useState(0);
- const [errors, setErrors] = useState<Record<string, string>>({});
- const [submitting, setSubmitting] = useState(false);
- const [submitError, setSubmitError] = useState<string | null>(null);
- const [createdId, setCreatedId] = useState<number | null>(null);
- const { user } = useAuth();
- const [pitches, setPitches] = useState<PitchModel[]>([]);
- const [loadingPitches, setLoadingPitches] = useState(false);
- const isOwner = user?.role === "OWNER";
+  const router = useRouter();
+  const [step, setStep] = useState(0);
+  const [maxReached, setMaxReached] = useState(0);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [createdId, setCreatedId] = useState<number | null>(null);
+  const { user } = useAuth();
+  const [pitches, setPitches] = useState<PitchModel[]>([]);
+  const [loadingPitches, setLoadingPitches] = useState(false);
+  const isOwner = user?.role === "OWNER";
+  const todayStr = useMemo(() => getTodayIso(), []);
+
+  const handleStartDateChange = (val: string) => {
+    setForm((f) => {
+      const next = { ...f, startDate: val };
+      if (isValidDate(val)) {
+        // Gợi ý hạn đăng ký: trước 3 ngày (hoặc hôm nay) nếu chưa nhập hoặc vượt quá ngày khởi tranh
+        if (!f.registrationDeadline || f.registrationDeadline > val) {
+          const suggestedDeadline = addDays(val, -3);
+          next.registrationDeadline = suggestedDeadline >= todayStr ? suggestedDeadline : todayStr;
+        }
+        // Gợi ý ngày bế mạc: sau 7 ngày nếu chưa nhập hoặc trước ngày khởi tranh
+        if (!f.endDate || f.endDate < val) {
+          next.endDate = addDays(val, 7);
+        }
+      }
+      return next;
+    });
+    setErrors((errs) => {
+      const next = { ...errs };
+      delete next.startDate;
+      delete next.endDate;
+      delete next.registrationDeadline;
+      return next;
+    });
+  };
 
  React.useEffect(() => {
-   let isMounted = true;
-   setLoadingPitches(true);
-   // Nếu là chủ sân (OWNER) -> chỉ lấy danh sách cụm sân của chính chủ sân đó
-   // Nếu là ORGANIZER hoặc ADMIN -> lấy tất cả các sân
-   const fetcher = isOwner ? getMyPitchesApi() : getAllPitchesApi();
-   fetcher
-     .then((data) => {
-       if (!isMounted) return;
-       const list = Array.isArray(data) ? data : [];
-       setPitches(list);
-       if (list.length > 0 && !form.pitchName) {
-         const first = list[0];
-         setForm((f) => ({
-           ...f,
-           pitchName: first.name || "",
-           location: first.area || first.address || f.location,
-           bankCode: f.bankCode || (first as any).bankCode || "",
-           bankAccount: f.bankAccount || (first as any).bankAccount || "",
-           accountName: f.accountName || (first as any).accountName || "",
-         }));
-       }
-     })
-     .catch((err) => {
-       console.error("Lỗi nạp danh sách sân cho giải:", err);
-     })
-     .finally(() => {
-       if (isMounted) setLoadingPitches(false);
-     });
-   return () => {
-     isMounted = false;
-   };
- }, [isOwner]);
+    let isMounted = true;
+    setLoadingPitches(true);
+    // Nếu là chủ sân (OWNER) -> chỉ lấy cụm sân của chính chủ sân đó
+    // Nếu là ORGANIZER hoặc vai trò khác -> lấy tất cả các sân công khai trên hệ thống
+    const fetcher = isOwner ? getMyPitchesApi() : getAllPitchesApi();
+    fetcher
+      .then((data) => {
+        if (!isMounted) return;
+        const list = Array.isArray(data) ? data : [];
+        setPitches(list);
+        if (list.length > 0) {
+          const primaryPitch = list[0];
+          setForm((f) => ({
+            ...f,
+            pitchName: isOwner ? (primaryPitch.name || f.pitchName || "Cụm Sân Bóng Đá Đại Nắng") : (f.pitchName || primaryPitch.name || ""),
+            location: isOwner ? (primaryPitch.area || primaryPitch.address || f.location || "Quận Hải Châu, Đà Nẵng") : (f.location || primaryPitch.area || primaryPitch.address || ""),
+            bankCode: f.bankCode || (primaryPitch as any).bankCode || "",
+            bankAccount: f.bankAccount || (primaryPitch as any).bankAccount || "",
+            accountName: f.accountName || (primaryPitch as any).accountName || "",
+          }));
+        } else if (isOwner) {
+          setForm((f) => ({
+            ...f,
+            pitchName: f.pitchName || "Cụm Sân Bóng Đá Đại Nắng",
+            location: f.location || "Quận Hải Châu, Đà Nẵng",
+          }));
+        }
+      })
+      .catch((err) => {
+        console.error("Lỗi nạp danh sách sân cho giải:", err);
+        if (isOwner) {
+          setForm((f) => ({
+            ...f,
+            pitchName: f.pitchName || "Cụm Sân Bóng Đá Đại Nắng",
+            location: f.location || "Quận Hải Châu, Đà Nẵng",
+          }));
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoadingPitches(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [isOwner, user?.id]);
 
  const [form, setForm] = useState({
  title: "",
@@ -120,6 +182,7 @@ function NewTournamentWizard() {
  bankCode: "",
  bankAccount: "",
  accountName: "",
+ bannerUrl: "/images/copa-action.png",
   // Quyền tham gia: PUBLIC (ai cũng đăng ký được) | INVITE_ONLY (chỉ email được mời)
   joinMode: "PUBLIC" as "PUBLIC" | "INVITE_ONLY",
  });
@@ -140,21 +203,51 @@ function NewTournamentWizard() {
  if (form.title.trim().length < 6) e.title = "Tên giải phải có ít nhất 6 ký tự.";
  }
  if (s === 2) {
- if (!form.pitchName.trim()) e.pitchName = "Vui lòng nhập sân đăng cai.";
- if (!form.location.trim()) e.location = "Vui lòng nhập khu vực tổ chức.";
- if (!isValidDate(form.startDate)) e.startDate = "Chọn ngày khởi tranh hợp lệ.";
- if (form.endDate && !isValidDate(form.endDate)) e.endDate = "Ngày bế mạc chưa hợp lệ.";
- if (isValidDate(form.startDate) && isValidDate(form.endDate) && form.endDate < form.startDate)
- e.endDate = "Ngày bế mạc phải sau ngày khởi tranh.";
- if (form.registrationDeadline && !isValidDate(form.registrationDeadline))
- e.registrationDeadline = "Hạn đăng ký chưa hợp lệ.";
- if (
- isValidDate(form.registrationDeadline) &&
- isValidDate(form.startDate) &&
- form.registrationDeadline > form.startDate
- )
- e.registrationDeadline = "Hạn đăng ký nên trước ngày khởi tranh.";
- }
+    if (!form.pitchName.trim()) {
+      if (isOwner) {
+        form.pitchName = pitches[0]?.name || "Cụm Sân Bóng Đá Đại Nắng";
+      } else {
+        e.pitchName = "Vui lòng chọn cụm sân đăng cai.";
+      }
+    }
+    if (!form.location.trim()) {
+      if (isOwner) {
+        form.location = pitches[0]?.area || pitches[0]?.address || "Quận Hải Châu, Đà Nẵng";
+      } else {
+        e.location = "Vui lòng nhập khu vực tổ chức.";
+      }
+    }
+    // Validation ngày khởi tranh
+    if (!form.startDate) {
+      e.startDate = "Vui lòng chọn ngày khởi tranh.";
+    } else if (!isValidDate(form.startDate)) {
+      e.startDate = "Ngày khởi tranh không hợp lệ.";
+    } else if (form.startDate < todayStr) {
+      e.startDate = "Ngày khởi tranh không thể ở quá khứ (tối thiểu từ hôm nay).";
+    }
+
+    // Validation ngày bế mạc
+    if (form.endDate) {
+      if (!isValidDate(form.endDate)) {
+        e.endDate = "Ngày bế mạc chưa hợp lệ.";
+      } else if (isValidDate(form.startDate) && form.endDate < form.startDate) {
+        e.endDate = "Ngày bế mạc phải bằng hoặc sau ngày khởi tranh.";
+      } else if (isValidDate(form.startDate) && addDays(form.startDate, 365) < form.endDate) {
+        e.endDate = "Thời gian giải đấu kéo dài tối đa là 1 năm.";
+      }
+    }
+
+    // Validation hạn đăng ký
+    if (form.registrationDeadline) {
+      if (!isValidDate(form.registrationDeadline)) {
+        e.registrationDeadline = "Hạn đăng ký chưa hợp lệ.";
+      } else if (form.registrationDeadline < todayStr) {
+        e.registrationDeadline = "Hạn đăng ký không thể ở quá khứ.";
+      } else if (isValidDate(form.startDate) && form.registrationDeadline > form.startDate) {
+        e.registrationDeadline = "Hạn đăng ký phải trước hoặc bằng ngày khởi tranh.";
+      }
+    }
+  }
  if (s === 3) {
  if (Number(form.prizePool) < 0) e.prizePool = "Quỹ thưởng không được âm.";
  if (Number(form.entryFee) < 0) e.entryFee = "Lệ phí không được âm.";
@@ -214,6 +307,7 @@ function NewTournamentWizard() {
  startDate: form.startDate,
  endDate: form.endDate || form.startDate,
  registrationDeadline: form.registrationDeadline || form.startDate,
+ bannerUrl: form.bannerUrl,
   joinMode: form.joinMode,
  status: "OPEN",
  });
@@ -231,7 +325,7 @@ function NewTournamentWizard() {
    if (typeof window !== "undefined" && window.history.length > 1) {
      router.back();
    } else {
-     router.push(isOwner ? "/?tab=admin" : "/?tab=tournaments");
+     router.push(isOwner ? "/?tab=admin" : user?.role === "ORGANIZER" ? "/?tab=organizer" : "/?tab=tournaments");
    }
  }}
  backLabel="Quay lại"
@@ -250,38 +344,55 @@ function NewTournamentWizard() {
  />
 
  {/* Success state */}
- {createdId !== null ? (
- <div className="p-4 sm:p-8 rounded-2xl bg-white border border-sky-200 text-center space-y-3">
- <CheckCircle2 className="w-12 h-12 text-sky-700 mx-auto" />
- <h2 className="text-lg font-black text-slate-900 ">
- Công bố giải đấu thành công!
- </h2>
- <p className="text-[14px] sm:text-sm text-slate-500">
- Giải <strong className="text-slate-900 ">“{form.title}”</strong> đã được
- lưu vào hệ thống và hiển thị trong danh sách Giải Đấu & BXH.
- </p>
- <div className="flex flex-wrap justify-center gap-2.5 pt-2">
- <a
- href="/?tab=tournaments"
- className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95"
- >
- Xem danh sách giải đấu
- </a>
- <button
- type="button"
- onClick={() => {
- setCreatedId(null);
- setForm((f) => ({ ...f, title: "", description: "" }));
- setStep(0);
- setMaxReached(0);
- }}
- className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all"
- >
- Tạo giải khác
- </button>
- </div>
- </div>
- ) : (
+        {createdId !== null ? (
+          <div className="p-4 sm:p-8 rounded-2xl bg-white border border-sky-200 text-center space-y-3">
+            <CheckCircle2 className="w-12 h-12 text-sky-700 mx-auto" />
+            <h2 className="text-lg font-black text-slate-900 ">
+              Công bố giải đấu thành công!
+            </h2>
+            <p className="text-[14px] sm:text-sm text-slate-500">
+              Giải <strong className="text-slate-900 ">“{form.title}”</strong> đã được
+              lưu vào hệ thống và sẵn sàng tiếp nhận các đội bóng đăng ký.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2.5 pt-2">
+              {isOwner || user?.role === "ORGANIZER" ? (
+                <>
+                  <a
+                    href={`/?tab=organizer&tournamentId=${createdId}`}
+                    className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 shadow-sm"
+                  >
+                    Vào Điều Hành Giải Vừa Tạo
+                  </a>
+                  <a
+                    href={`/?tab=tournaments&tournamentId=${createdId}`}
+                    className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all border border-slate-200"
+                  >
+                    Xem Trang Công Khai (Cầu Thủ)
+                  </a>
+                </>
+              ) : (
+                <a
+                  href={`/?tab=tournaments&tournamentId=${createdId}`}
+                  className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black transition-all active:scale-95 shadow-sm"
+                >
+                  Xem Danh Sách Giải Đấu
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setCreatedId(null);
+                  setForm((f) => ({ ...f, title: "", description: "" }));
+                  setStep(0);
+                  setMaxReached(0);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-[14px] font-bold transition-all border border-slate-200"
+              >
+                Tạo giải khác
+              </button>
+            </div>
+          </div>
+        ) : (
  <div className="rounded-2xl bg-white border border-slate-200 p-4 sm:p-7">
  {/* key={step} để replay animation fade mỗi lần sang bước mới */}
  <div key={step} className="animate-fade-in-up">
@@ -323,6 +434,84 @@ function NewTournamentWizard() {
  <option key={s} value={s}>{sportLabel(s)}</option>
  ))}
  </select>
+ </div>
+
+ <div>
+ <label className={labelCls}>Ảnh Bìa / Banner Giải Đấu</label>
+ <div className="space-y-3">
+   <div className="relative h-44 sm:h-52 w-full rounded-2xl bg-slate-900 overflow-hidden border border-slate-200 shadow-xs">
+     <SafeImage
+       src={form.bannerUrl || "/images/copa-action.png"}
+       alt="Ảnh bìa giải đấu"
+       className="w-full h-full object-cover brightness-90"
+     />
+     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+     <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between pointer-events-none">
+       <span className="text-white font-bold text-[14px]">
+         {form.title || "Tên giải đấu của bạn"}
+       </span>
+       <span className="px-2.5 py-1 rounded bg-black/60 backdrop-blur text-white text-[13px] font-bold border border-white/20">
+         Xem trước ảnh bìa
+       </span>
+     </div>
+   </div>
+
+   <div className="flex flex-wrap items-center justify-between gap-2.5">
+     <div className="flex items-center gap-2">
+       <AvatarUploader
+         compact
+         onUploaded={(url) => set("bannerUrl", url)}
+         label="Tải ảnh bìa từ máy"
+       />
+       {form.bannerUrl && (
+         <button
+           type="button"
+           onClick={() => set("bannerUrl", "/images/copa-action.png")}
+           className="px-3 py-1.5 rounded-xl border border-slate-300 text-slate-600 text-[13px] font-bold hover:bg-slate-100 cursor-pointer"
+         >
+           Đặt lại mặc định
+         </button>
+       )}
+     </div>
+
+     <div className="flex items-center gap-1.5">
+       <span className="text-[13px] text-slate-500 font-semibold">Gợi ý ảnh đẹp:</span>
+       <button
+         type="button"
+         onClick={() => set("bannerUrl", "/images/copa-action.png")}
+         className={`px-2.5 py-1 rounded-lg text-[13px] font-bold border cursor-pointer ${
+           form.bannerUrl === "/images/copa-action.png"
+             ? "bg-[#0369a1] text-white border-[#0369a1]"
+             : "bg-slate-50 text-slate-700 border-slate-200"
+         }`}
+       >
+         ⚽ Tranh chấp
+       </button>
+       <button
+         type="button"
+         onClick={() => set("bannerUrl", "/images/epic-goal-player.png")}
+         className={`px-2.5 py-1 rounded-lg text-[13px] font-bold border cursor-pointer ${
+           form.bannerUrl === "/images/epic-goal-player.png"
+             ? "bg-[#0369a1] text-white border-[#0369a1]"
+             : "bg-slate-50 text-slate-700 border-slate-200"
+         }`}
+       >
+         🏆 Vô địch
+       </button>
+       <button
+         type="button"
+         onClick={() => set("bannerUrl", "https://images.unsplash.com/photo-1529900241452-f47268d87ec9?auto=format&fit=crop&w=1200&q=80")}
+         className={`px-2.5 py-1 rounded-lg text-[13px] font-bold border cursor-pointer ${
+           form.bannerUrl?.includes("unsplash")
+             ? "bg-[#0369a1] text-white border-[#0369a1]"
+             : "bg-slate-50 text-slate-700 border-slate-200"
+         }`}
+       >
+         🏟️ Sân đêm
+       </button>
+     </div>
+   </div>
+ </div>
  </div>
  </div>
  )}
@@ -414,106 +603,109 @@ function NewTournamentWizard() {
   </div>
   )}
  {/* STEP 3 */}
- {step === 2 && (
- <div className="space-y-4">
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"> <div>
- <label htmlFor="t-pitch" className={labelCls}>
- {isOwner ? "Chọn Cụm Sân Của Bạn Đăng Cai *" : "Sân Đăng Cai Tổ Chức *"}
- </label>
- {pitches.length > 0 ? (
- <select
- id="t-pitch"
- value={form.pitchName}
- onChange={(e) => {
- const val = e.target.value;
- const selectedPitch = pitches.find((p) => p.name === val);
- setForm((f) => ({
- ...f,
- pitchName: val,
- location: selectedPitch ? (selectedPitch.area || selectedPitch.address || f.location) : f.location,
- bankCode: (selectedPitch as any)?.bankCode || f.bankCode,
- bankAccount: (selectedPitch as any)?.bankAccount || f.bankAccount,
- accountName: (selectedPitch as any)?.accountName || f.accountName,
- }));
- setErrors((errs) => {
- const next = { ...errs };
- delete next.pitchName;
- return next;
- });
- }}
- className={inputCls}
- >
- <option value="">-- Chọn cụm sân đăng cai --</option>
- {pitches.map((p) => (
- <option key={p.id} value={p.name}>
- {p.name} {p.area ? `(${p.area})` : p.address ? `(${p.address})` : ""}
- </option>
- ))}
- </select>
- ) : (
- <input
- id="t-pitch"
- type="text"
- value={form.pitchName}
- onChange={(e) => set("pitchName", e.target.value)}
- placeholder={loadingPitches ? "Đang tải danh sách sân..." : "Ví dụ: Cụm Sân Chuyên Việt"}
- className={inputCls}
- />
- )}
- {isOwner && pitches.length === 0 && !loadingPitches && (
- <p className="mt-1.5 text-[14px] text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
- Bạn chưa có cụm sân nào trên hệ thống. Vui lòng tạo sân tại Quản Lý Sân trước khi tạo giải!
- </p>
- )}
- {errors.pitchName && <p className={errCls}>{errors.pitchName}</p>}
- </div>
- <div>
- <label htmlFor="t-loc" className={labelCls}>Địa Điểm Khu Vực *</label>
- <input
- id="t-loc"
- type="text"
- value={form.location}
- onChange={(e) => set("location", e.target.value)}
- placeholder="Ví dụ: Q. Hải Châu, Đà Nẵng"
- className={inputCls}
- />
- {errors.location && <p className={errCls}>{errors.location}</p>}
- </div>
- </div>
+        {step === 2 && (
+          <div className="space-y-4">
+            <div className={isOwner ? "space-y-3" : "grid grid-cols-1 sm:grid-cols-2 gap-3"}>
+              {!isOwner && (
+                <div>
+                  <label htmlFor="t-pitch" className={labelCls}>
+                    Chọn Cụm Sân Đối Tác Đăng Cai *
+                  </label>
+                  {pitches.length > 0 ? (
+                    <select
+                      id="t-pitch"
+                      value={form.pitchName}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const selectedPitch = pitches.find((p) => p.name === val);
+                        setForm((f) => ({
+                          ...f,
+                          pitchName: val,
+                          location: selectedPitch ? (selectedPitch.area || selectedPitch.address || f.location) : f.location,
+                          bankCode: (selectedPitch as any)?.bankCode || f.bankCode,
+                          bankAccount: (selectedPitch as any)?.bankAccount || f.bankAccount,
+                          accountName: (selectedPitch as any)?.accountName || f.accountName,
+                        }));
+                        setErrors((errs) => {
+                          const next = { ...errs };
+                          delete next.pitchName;
+                          return next;
+                        });
+                      }}
+                      className={inputCls}
+                    >
+                      <option value="">-- Chọn cụm sân đối tác đăng cai --</option>
+                      {pitches.map((p) => (
+                        <option key={p.id} value={p.name}>
+                          {p.name} {p.area ? `(${p.area})` : p.address ? `(${p.address})` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      id="t-pitch"
+                      type="text"
+                      value={form.pitchName}
+                      onChange={(e) => set("pitchName", e.target.value)}
+                      placeholder={loadingPitches ? "Đang tải danh sách sân..." : "Ví dụ: Cụm Sân Chuyên Việt"}
+                      className={inputCls}
+                    />
+                  )}
+                  {errors.pitchName && <p className={errCls}>{errors.pitchName}</p>}
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="t-loc" className={labelCls}>Địa Điểm Khu Vực *</label>
+                <input
+                  id="t-loc"
+                  type="text"
+                  value={form.location}
+                  onChange={(e) => set("location", e.target.value)}
+                  placeholder="Ví dụ: Q. Hải Châu, Đà Nẵng"
+                  className={inputCls}
+                />
+                {errors.location && <p className={errCls}>{errors.location}</p>}
+              </div>
+            </div>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div>
- <label htmlFor="t-start" className={labelCls}>Ngày Khởi Tranh *</label>
- <input
- id="t-start"
- type="date"
- value={form.startDate}
- onChange={(e) => set("startDate", e.target.value)}
- className={inputCls}
- />
- {errors.startDate && <p className={errCls}>{errors.startDate}</p>}
- </div>
- <div>
- <label htmlFor="t-end" className={labelCls}>Ngày Bế Mạc</label>
- <input
- id="t-end"
- type="date"
- value={form.endDate}
- onChange={(e) => set("endDate", e.target.value)}
- className={inputCls}
- />
- {errors.endDate && <p className={errCls}>{errors.endDate}</p>}
- </div>
- <div>
- <label htmlFor="t-deadline" className={labelCls}>Hạn Đăng Ký</label>
- <input
- id="t-deadline"
- type="date"
- value={form.registrationDeadline}
- onChange={(e) => set("registrationDeadline", e.target.value)}
- className={inputCls}
- />
- {errors.registrationDeadline && <p className={errCls}>{errors.registrationDeadline}</p>}
- </div>
+                  <label htmlFor="t-start" className={labelCls}>Ngày Khởi Tranh *</label>
+                  <input
+                    id="t-start"
+                    type="date"
+                    min={todayStr}
+                    value={form.startDate}
+                    onChange={(e) => handleStartDateChange(e.target.value)}
+                    className={inputCls}
+                  />
+                  {errors.startDate && <p className={errCls}>{errors.startDate}</p>}
+                </div>
+                <div>
+                  <label htmlFor="t-end" className={labelCls}>Ngày Bế Mạc</label>
+                  <input
+                    id="t-end"
+                    type="date"
+                    min={form.startDate || todayStr}
+                    value={form.endDate}
+                    onChange={(e) => set("endDate", e.target.value)}
+                    className={inputCls}
+                  />
+                  {errors.endDate && <p className={errCls}>{errors.endDate}</p>}
+                </div>
+                <div>
+                  <label htmlFor="t-deadline" className={labelCls}>Hạn Đăng Ký</label>
+                  <input
+                    id="t-deadline"
+                    type="date"
+                    min={todayStr}
+                    max={form.startDate || undefined}
+                    value={form.registrationDeadline}
+                    onChange={(e) => set("registrationDeadline", e.target.value)}
+                    className={inputCls}
+                  />
+                  {errors.registrationDeadline && <p className={errCls}>{errors.registrationDeadline}</p>}
+                </div>
  </div>
  </div>
  )}

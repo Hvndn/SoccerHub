@@ -100,6 +100,8 @@ export default function Home() {
        const tidParam = params.get("tournamentId");
        if (tidParam && !isNaN(Number(tidParam))) {
          setTargetTournamentId(Number(tidParam));
+       } else {
+         setTargetTournamentId(null);
        }
        const currentRole = currentUser?.role;
 
@@ -146,6 +148,8 @@ export default function Home() {
        const tidParam = params.get("tournamentId");
        if (tidParam && !isNaN(Number(tidParam))) {
          setTargetTournamentId(Number(tidParam));
+       } else {
+         setTargetTournamentId(null);
        }
        if (e.state && e.state.tab) {
          const targetTab = sanitizeTabForRole(e.state.tab, currentUser?.role);
@@ -291,7 +295,7 @@ const handleBackToHome = () => {
   handleTabChange(getDefaultHomeTab(currentUser?.role));
 };
 
-const handleTabChange = (newTab: string) => {
+const handleTabChange = (newTab: string, tournamentId?: number | null) => {
   // SUPER ADMIN: được duyệt các khu vực của trang chủ như mọi tài khoản khác.
   // (Trước đây bị chặn cứng + đẩy về /admin khiến admin không về tới trang chủ được.)
 
@@ -384,26 +388,68 @@ const handleTabChange = (newTab: string) => {
  }
  }
 
-if (newTab === activeTab) return;
- // Bật vòng xoay loading, giữ tối thiểu 1s để không thấy màn hình nhảy loè
- setIsTabChanging(true);
- const startedAt = Date.now();
- setTimeout(() => {
- setActiveTab(newTab);
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("turfzone_active_tab", newTab);
-        const url = new URL(window.location.href);
-        url.searchParams.set("tab", newTab);
-        window.history.pushState({ tab: newTab }, "", url.toString());
+  // Xử lý khi người dùng bấm lại tab hiện tại
+  if (newTab === activeTab) {
+    if (newTab === "tournaments") {
+      if (tournamentId !== undefined) {
+        setTargetTournamentId(tournamentId);
+        if (typeof window !== "undefined") {
+          const url = new URL(window.location.href);
+          if (tournamentId) url.searchParams.set("tournamentId", String(tournamentId));
+          else url.searchParams.delete("tournamentId");
+          window.history.replaceState({ tab: "tournaments" }, "", url.toString());
+        }
+      } else {
+        // Bấm lại chữ "Giải Đấu" từ thanh điều hướng khi đang xem nhánh đấu:
+        // Đưa ngay về danh sách tổng quan các giải đấu
+        setTargetTournamentId(null);
+        if (typeof window !== "undefined") {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("tournamentId");
+          window.history.replaceState({ tab: "tournaments" }, "", url.toString());
+        }
       }
- window.scrollTo({ top: 0, behavior: "smooth" });
- const elapsed = Date.now() - startedAt;
- const remaining = Math.max(0, MIN_TAB_LOADING_MS - elapsed);
- setTimeout(() => {
- setIsTabChanging(false);
- }, remaining);
- }, 120);
- };
+    }
+    return;
+  }
+
+  // Khi chuyển sang tab mới:
+  // Nếu chuyển sang "tournaments" mà không có tournamentId chỉ định cụ thể,
+  // luôn xóa targetTournamentId về null để hiển thị Danh Sách Giải Đấu thay vì mở nhánh đấu cũ.
+  if (newTab === "tournaments") {
+    if (tournamentId !== undefined) {
+      setTargetTournamentId(tournamentId);
+    } else {
+      setTargetTournamentId(null);
+    }
+  } else {
+    setTargetTournamentId(null);
+  }
+
+  // Bật vòng xoay loading, giữ tối thiểu 1s để không thấy màn hình nhảy loè
+  setIsTabChanging(true);
+  const startedAt = Date.now();
+  setTimeout(() => {
+    setActiveTab(newTab);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("turfzone_active_tab", newTab);
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", newTab);
+      if ((newTab === "tournaments" || newTab === "organizer") && tournamentId) {
+        url.searchParams.set("tournamentId", String(tournamentId));
+      } else {
+        url.searchParams.delete("tournamentId");
+      }
+      window.history.pushState({ tab: newTab }, "", url.toString());
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    const elapsed = Date.now() - startedAt;
+    const remaining = Math.max(0, MIN_TAB_LOADING_MS - elapsed);
+    setTimeout(() => {
+      setIsTabChanging(false);
+    }, remaining);
+  }, 120);
+  };
 
  const handleOpenAuth = (
  mode: "login" | "register",
@@ -483,14 +529,7 @@ if (newTab === activeTab) return;
  }
  };
   const handleOpenTournament = React.useCallback((id: number) => {
-    setTargetTournamentId(id);
-    handleTabChange("tournaments");
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.set("tab", "tournaments");
-      url.searchParams.set("tournamentId", String(id));
-      window.history.pushState({ tab: "tournaments" }, "", url.toString());
-    }
+    handleTabChange("tournaments", id);
   }, [handleTabChange]);
 
   const handleLogout = () => {
@@ -568,6 +607,14 @@ if (newTab === activeTab) return;
  exit={{ y: -8 }}
  transition={{ duration: 0.38, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
  >
+  {/* Biểu ngữ Chế Độ Khách Khám Phá khi chưa đăng nhập ở các tab khác Landing Page */}
+  {!currentUser && activeTab !== "home" && activeTab !== "landing" && (
+    <GuestFeatureBanner
+      currentTab={activeTab}
+      onOpenAuth={handleOpenAuth}
+    />
+  )}
+
  {(activeTab === "home" || activeTab === "landing") && (
  <div className="space-y-8 sm:space-y-12">
  <LandingHero 
@@ -610,13 +657,13 @@ if (newTab === activeTab) return;
    onStartDm={handleStartDm}
    onOpenTournamentChat={handleOpenTournamentChat}
    onOpenBracket={(id) => {
-     if (id) setTargetTournamentId(Number(id));
-     handleTabChange("tournaments");
+     handleTabChange("tournaments", id ? Number(id) : null);
    }}
  />
  ) : (
  <PitchSearch
  user={currentUser}
+ onOpenAuth={handleOpenAuth}
  />
  )
  )}
@@ -653,7 +700,7 @@ if (newTab === activeTab) return;
           )}
 
  {activeTab === "matchmaking" && (
-  <MatchmakingMarketplace user={currentUser} />
+  <MatchmakingMarketplace user={currentUser} onOpenAuth={handleOpenAuth} />
   )}
 
 {activeTab === "community" && (
@@ -738,8 +785,7 @@ if (newTab === activeTab) return;
                 onBackToHome={handleBackToHome}
                 onNavigateTab={handleTabChange}
                 onOpenBracket={(id) => {
-                  if (id) setTargetTournamentId(Number(id));
-                  handleTabChange("tournaments");
+                  handleTabChange("tournaments", id ? Number(id) : null);
                 }}
               />
  ) : (
@@ -811,9 +857,8 @@ if (newTab === activeTab) return;
                 onStartDm={handleStartDm}
                 onOpenTournamentChat={handleOpenTournamentChat}
                 onOpenBracket={(id) => {
-                if (id) setTargetTournamentId(Number(id));
-                handleTabChange("tournaments");
-              }}
+                  handleTabChange("tournaments", id ? Number(id) : null);
+                }}
               />
             ) : currentUser ? (
  <div className="py-10 sm:py-24 max-w-xl mx-auto text-center space-y-5 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl animate-fade-in">

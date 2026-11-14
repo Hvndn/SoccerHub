@@ -6,6 +6,7 @@ import FormDots from "./FormDots";
 import { useAuth } from "@/context/AuthContext";
 import TournamentBracket from "./TournamentBracket";
 import DrawLotteryOverlay from "./DrawLotteryOverlay";
+import SafeImage from "@/components/SafeImage";
 import {
   Trophy,
   Award,
@@ -13,6 +14,7 @@ import {
   Calendar,
   MapPin,
   Users,
+  ChevronLeft,
   ChevronRight,
   ShieldCheck,
   PlusCircle,
@@ -74,7 +76,7 @@ const SPORT_TABS: { key: SportType | "all"; label: string }[] = [
   { key: "FUTSAL", label: "Sân Futsal" },
 ];
 
-type TabKey = "open" | "live" | "bracket" | "rankings";
+type TabKey = "open" | "live" | "bracket";
 type StatusFilter = "ALL" | "OPEN" | "ONGOING" | "COMPLETED";
 
 export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
@@ -105,6 +107,16 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   const [bracketTargetId, setBracketTargetId] = useState<number | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
 
+  // Tự cuộn mượt tới sân khấu bốc thăm khi bắt đầu bốc thăm
+  useEffect(() => {
+    if (lottery !== null) {
+      const raf = requestAnimationFrame(() => {
+        document.getElementById("draw-lottery-stage")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [lottery]);
+
   // Phân trang 8 giải / trang
   const [currentPage, setCurrentPage] = useState(1);
   const TOURNAMENTS_PER_PAGE = 8;
@@ -113,6 +125,9 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
     if (initialTournamentId) {
       setBracketTargetId(initialTournamentId);
       setActiveTab("bracket");
+    } else {
+      setBracketTargetId(null);
+      setActiveTab("open");
     }
   }, [initialTournamentId]);
 
@@ -357,21 +372,6 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             <Calendar className="w-4 h-4" />
             <span>Lịch Thi Đấu &amp; Kết Quả ({allMatches.length})</span>
           </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "rankings"}
-            onClick={() => setActiveTab("rankings")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
-              activeTab === "rankings"
-                ? "bg-[#0369a1] text-white border-[#0369a1]"
-                : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <span>BXH Đội Bóng &amp; Vua Phá Lưới</span>
-          </button>
         </div>
       </section>
 
@@ -412,6 +412,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
         tournamentTitle={drawnTournament?.title ?? ""}
         pairs={lottery?.pairs ?? []}
         byes={lottery?.byes ?? []}
+        format={drawnTournament?.format}
+        teams={drawnTournament?.teams}
         onDone={() => {
           setLottery(null);
           setDrawnTournament(null);
@@ -424,171 +426,21 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
           NỘI DUNG THEO TỪNG TAB
          ========================================================= */}
       {activeTab === "bracket" ? (
-        <TournamentBracket initialTournamentId={bracketTargetId} />
-      ) : activeTab === "rankings" ? (
-        /* TAB 4: BẢNG XẾP HẠNG ĐỘI BÓNG & VUA PHÁ LƯỚI */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* Cột Trái (8 cột): BXH Phong Độ Đội Bóng */}
-          <div className="lg:col-span-8 bg-white rounded-lg border border-slate-300 shadow-sm p-4 sm:p-5 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-              <div className="flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-amber-600" />
-                <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                  Bảng Xếp Hạng Các Đội Tham Gia Giải
-                </h2>
-              </div>
-              <span className="text-[14px] text-slate-500 font-semibold">
-                Tổng hợp từ {tournaments.length} giải đấu
-              </span>
-            </div>
-
-            {(() => {
-              const ranked = tournaments
-                .flatMap((t) => (t.teams ?? []).map((tm) => ({ ...tm, tournament: t })))
-                .sort(
-                  (a, b) =>
-                    (b.winRate ?? 0) - (a.winRate ?? 0) || (b.played ?? 0) - (a.played ?? 0)
-                )
-                .slice(0, 20);
-
-              if (!ranked.length) {
-                return (
-                  <div className="p-8 text-center text-slate-500 text-[14px]">
-                    Chưa có đội bóng nào ghi danh trên hệ thống.
-                  </div>
-                );
-              }
-
-              return (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-[14px] border-collapse min-w-[600px]">
-                    <thead>
-                      <tr className="text-left text-slate-600 border-b border-slate-300 bg-slate-50">
-                        <th className="py-2.5 px-3 font-bold">Hạng</th>
-                        <th className="py-2.5 px-3 font-bold">Đội bóng</th>
-                        <th className="py-2.5 px-3 font-bold">Đội trưởng</th>
-                        <th className="py-2.5 px-3 font-bold">Giải đấu</th>
-                        <th className="py-2.5 px-3 font-bold text-right">Thành viên</th>
-                        <th className="py-2.5 px-3 font-bold text-right">Phong độ</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ranked.map((row, idx) => {
-                        const rowKey = `${row.tournament.id}-${row.teamName}`;
-                        const roster: string[] = String(row.memberNames ?? "")
-                          .split(",")
-                          .map((s: string) => s.trim())
-                          .filter(Boolean);
-                        const isOpen = expandedTeam === rowKey;
-                        return (
-                          <React.Fragment key={rowKey}>
-                            <tr className="border-b border-slate-200 hover:bg-slate-50">
-                              <td className="py-2.5 px-3 font-mono font-bold text-slate-800">
-                                #{idx + 1}
-                              </td>
-                              <td className="py-2.5 px-3 font-bold text-slate-900">
-                                <button
-                                  type="button"
-                                  onClick={() => setExpandedTeam(isOpen ? null : rowKey)}
-                                  className="inline-flex items-center gap-1.5 hover:text-[#0369a1] text-left cursor-pointer"
-                                >
-                                  <span>{row.teamName}</span>
-                                  {roster.length > 0 && (
-                                    <ChevronDown
-                                      className={`w-3.5 h-3.5 text-slate-500 transition-transform ${
-                                        isOpen ? "rotate-180" : ""
-                                      }`}
-                                    />
-                                  )}
-                                </button>
-                              </td>
-                              <td className="py-2.5 px-3 text-slate-700">
-                                {row.captainName || "—"}
-                              </td>
-                              <td className="py-2.5 px-3 text-slate-600 max-w-[14rem] truncate">
-                                {row.tournament.title}
-                              </td>
-                              <td className="py-2.5 px-3 text-right font-mono text-slate-700">
-                                {row.memberCount || roster.length || "—"}
-                              </td>
-                              <td className="py-2.5 px-3 text-right">
-                                <FormDots form={row.form} size="sm" />
-                              </td>
-                            </tr>
-                            {isOpen && roster.length > 0 && (
-                              <tr className="border-b border-slate-200 bg-slate-50">
-                                <td colSpan={6} className="px-3 py-2.5">
-                                  <p className="text-[14px] font-bold text-slate-600 mb-1.5">
-                                    Danh sách cầu thủ ({roster.length} người):
-                                  </p>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {roster.map((m, mi) => (
-                                      <span
-                                        key={mi}
-                                        className="px-2 py-0.5 rounded bg-white text-slate-800 text-[14px] font-semibold border border-slate-300"
-                                      >
-                                        {mi + 1}. {m}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              );
-            })()}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => {
+                setBracketTargetId(null);
+                setActiveTab("open");
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-bold text-[13px] shadow-xs cursor-pointer transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4 text-slate-600" />
+              <span>Quay Lại Danh Sách Giải Đấu</span>
+            </button>
           </div>
-
-          {/* Cột Phải (4 cột): Vua Phá Lưới */}
-          <div className="lg:col-span-4 bg-white rounded-lg border border-slate-300 shadow-sm p-4 sm:p-5 space-y-3">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-              <div className="flex items-center gap-2">
-                <Award className="w-5 h-5 text-[#0369a1]" />
-                <h3 className="font-bold text-base text-slate-900">Vua Phá Lưới &amp; Kiến Tạo</h3>
-              </div>
-            </div>
-
-            {topScorers.length === 0 ? (
-              <p className="py-6 text-center text-[14px] text-slate-500">
-                Chưa có cầu thủ ghi bàn.
-              </p>
-            ) : (
-              <div className="divide-y divide-slate-200">
-                {topScorers.map((p) => (
-                  <div
-                    key={`${p.playerName}-${p.teamName}`}
-                    className="py-2.5 flex items-center justify-between gap-2"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span
-                        className={`w-6 h-6 rounded font-mono text-[14px] font-bold flex items-center justify-center shrink-0 ${
-                          p.rank === 1
-                            ? "bg-amber-500 text-white"
-                            : "bg-slate-100 text-slate-700 border border-slate-300"
-                        }`}
-                      >
-                        {p.rank}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[14px] font-bold text-slate-900 truncate">
-                          {p.playerName}
-                        </p>
-                        <p className="text-[14px] text-slate-600 truncate">{p.teamName}</p>
-                      </div>
-                    </div>
-                    <span className="font-mono font-bold text-[#0369a1] text-[14px] shrink-0">
-                      {p.goals} bàn • {p.assists} KT
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <TournamentBracket initialTournamentId={bracketTargetId} />
         </div>
       ) : activeTab === "live" ? (
         /* TAB 3: LỊCH THI ĐẤU & KẾT QUẢ CÁC GIẢI */
@@ -825,90 +677,109 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                       setBracketTargetId(t.id);
                       setActiveTab("bracket");
                     }}
-                    className="bg-white rounded-lg p-5 border border-slate-300 hover:border-[#0369a1] hover:shadow-xs transition-all flex flex-col justify-between space-y-4 cursor-pointer text-left group"
+                    className="bg-white rounded-xl border border-slate-200 hover:border-[#0369a1] hover:shadow-md transition-all flex flex-col justify-between overflow-hidden cursor-pointer text-left group"
                   >
-                    <div className="space-y-3">
-                      {/* Hàng nhãn trạng thái & thể thức */}
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="px-2.5 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-bold text-[14px]">
+                    {/* Ảnh Bìa Giải Đấu Trực Quan */}
+                    <div className="relative h-36 sm:h-40 w-full bg-slate-900 overflow-hidden">
+                      <SafeImage
+                        src={(t as any).imageUrl || (t as any).bannerUrl || "/images/copa-action.png"}
+                        alt={t.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-90"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
+
+                      {/* Huy hiệu trên ảnh */}
+                      <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-white font-bold text-[13px] border border-white/15">
                             {sportLabel(t.sportType)}
                           </span>
-                          <span className="px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-300 font-semibold text-[14px]">
+                          <span className="px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-white font-medium text-[13px] border border-white/15">
                             {formatLabel(t.format)}
                           </span>
-                          {t.joinMode === "INVITE_ONLY" ? (
-                            <span className="px-2.5 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-300 font-bold text-[14px] inline-flex items-center gap-1">
-                              <Lock className="w-3.5 h-3.5" />
-                              Mời qua email
-                            </span>
-                          ) : (
-                            <span className="px-2.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[14px] inline-flex items-center gap-1">
-                              <Unlock className="w-3.5 h-3.5" />
-                              Đăng ký tự do
-                            </span>
-                          )}
                         </div>
 
                         <span
-                          className={`px-2.5 py-0.5 rounded font-bold text-[14px] border ${
+                          className={`px-2.5 py-1 rounded-md font-bold text-[13px] backdrop-blur-md shadow-xs ${
                             ended
-                              ? "bg-slate-100 text-slate-600 border-slate-300"
+                              ? "bg-slate-700/80 text-slate-200"
                               : t.status === "ONGOING"
-                              ? "bg-sky-50 text-[#0369a1] border-sky-200"
+                              ? "bg-sky-600/90 text-white"
                               : full
-                              ? "bg-rose-50 text-rose-700 border-rose-200"
-                              : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                              ? "bg-rose-600/90 text-white"
+                              : "bg-emerald-600/90 text-white"
                           }`}
                         >
                           {statusLabel}
                         </span>
                       </div>
 
-                      {/* Tên giải & Địa điểm */}
-                      <div>
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-[#0369a1] transition-colors">
-                            {t.title}
-                          </h3>
-                          <span className="text-slate-400 group-hover:text-[#0369a1] shrink-0 mt-0.5 flex items-center gap-1 text-[13px] font-semibold">
+                      {/* Tiền thưởng nổi bật ở góc dưới ảnh */}
+                      <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white">
+                        <span className="text-[13px] font-semibold text-amber-300 flex items-center gap-1">
+                          <Trophy className="w-3.5 h-3.5" />
+                          <span>Thưởng: {formatMoney(t.prizePool)}</span>
+                        </span>
+                        <span className="text-[13px] text-slate-200 font-medium">
+                          {reg}/{cap || "—"} đội
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
+                      <div className="space-y-3">
+                        {/* Hình thức đăng ký & Đơn vị tổ chức */}
+                        <div className="flex items-center justify-between gap-2">
+                          {t.joinMode === "INVITE_ONLY" ? (
+                            <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-300 font-bold text-[13px] inline-flex items-center gap-1">
+                              <Lock className="w-3 h-3" />
+                              Mời qua email
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[13px] inline-flex items-center gap-1">
+                              <Unlock className="w-3 h-3" />
+                              Đăng ký tự do
+                            </span>
+                          )}
+
+                          <span className="text-slate-400 group-hover:text-[#0369a1] shrink-0 flex items-center gap-1 text-[13px] font-semibold">
                             <span>Vào xem</span>
                             <ChevronRight className="w-4 h-4" />
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3 text-[14px] text-slate-600 mt-1">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                            <span>{t.pitchName || t.location || "Đà Nẵng"}</span>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                            <span>Khởi tranh: {formatDate(t.startDate)}</span>
-                          </span>
-                        </div>
-                      </div>
 
-                      {/* 3 Ô thông số chính */}
-                      <div className="grid grid-cols-3 gap-2 p-3 rounded-md bg-slate-50 border border-slate-200 text-[14px]">
+                        {/* Tên giải & Địa điểm */}
                         <div>
-                          <span className="text-slate-500 block">Giải thưởng</span>
-                          <strong className="text-[#0369a1] font-mono text-[15px]">
-                            {formatMoney(t.prizePool)}
-                          </strong>
+                          <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-[#0369a1] transition-colors line-clamp-2">
+                            {t.title}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-3 text-[14px] text-slate-600 mt-1">
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                              <span className="line-clamp-1">{t.pitchName || t.location || "Đà Nẵng"}</span>
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                              <span>{formatDate(t.startDate)}</span>
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-slate-500 block">Lệ phí</span>
-                          <strong className="text-slate-900 font-mono">
-                            {formatMoney(t.entryFee)}/đội
-                          </strong>
+
+                        {/* Thông số chi phí & giải thưởng */}
+                        <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-[13px]">
+                          <div>
+                            <span className="text-slate-500 block">Lệ phí giải</span>
+                            <strong className="text-slate-900 font-mono text-[14px]">
+                              {formatMoney(t.entryFee)}
+                            </strong>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 block">Tiến độ ghi danh</span>
+                            <strong className="text-[#0369a1] font-mono text-[14px]">
+                              {reg}/{cap || "—"} đội
+                            </strong>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-slate-500 block">Số đội</span>
-                          <strong className="text-slate-900 font-mono">
-                            {reg}/{cap || "—"} đội
-                          </strong>
-                        </div>
-                      </div>
 
                       {/* Danh sách đội đã đăng ký */}
                       {t.teams && t.teams.length > 0 && (
@@ -983,8 +854,10 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                         )}
                       </div>
                     </div>
-                  </article>    );
-              })}
+                  </div>
+                </article>
+              );
+            })}
             </div>
           )}
 

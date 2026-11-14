@@ -36,8 +36,19 @@ const ROLES: { id: Role; label: string; desc: string; icon: React.ReactNode }[] 
 ];
 
 const POSITIONS = ["Thủ Môn (GK)", "Hậu Vệ (CB)", "Hậu Vệ Cánh (RB/LB)", "Tiền Vệ (CM)", "Tiền Vệ Cánh (LM/RM)", "Tiền Đạo (ST)"];
+const POSITION_CHIPS = [
+  { id: "Thủ Môn (GK)", label: "Thủ Môn", icon: "🧤" },
+  { id: "Hậu Vệ (CB)", label: "Hậu Vệ", icon: "🛡️" },
+  { id: "Tiền Vệ (CM)", label: "Tiền Vệ", icon: "⚡" },
+  { id: "Tiền Đạo (ST)", label: "Tiền Đạo", icon: "🎯" },
+];
 const AREAS = ["Q. Hải Châu, Đà Nẵng", "Q. Cẩm Lệ, Đà Nẵng", "Q. Thanh Khê, Đà Nẵng", "Q. Sơn Trà, Đà Nẵng", "Q. Liên Chiểu, Đà Nẵng", "Q. Ngũ Hành Sơn, Đà Nẵng", "Khu vực khác"];
 const LEVELS = ["Mới chơi", "Phong trào", "Bán chuyên", "Chuyên nghiệp"];
+const LEVEL_CHIPS = [
+  { id: "Mới chơi", label: "Mới chơi", icon: "🌱" },
+  { id: "Phong trào", label: "Phong trào", icon: "⭐" },
+  { id: "Bán chuyên", label: "Bán chuyên", icon: "🔥" },
+];
 const SPORTS = ["Bóng Đá Sân 5", "Bóng Đá Sân 7", "Bóng Đá Sân 11", "Futsal"];
 
 const inputCls =
@@ -563,22 +574,60 @@ export default function AuthModal({
  </>
  ) : (
  <>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="space-y-3">
  {role === "PLAYER" && (
  <div>
- <label htmlFor="reg-position" className={labelCls}>Vị trí sở trường</label>
- <select
- id="reg-position"
- value={position}
- onChange={(e) => setPosition(e.target.value)}
- className={inputCls}
- >
- {POSITIONS.map((p) => (
- <option key={p} value={p}>{p}</option>
- ))}
- </select>
+ <label className={labelCls}>Vị trí sở trường</label>
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+ {POSITION_CHIPS.map((p) => {
+   const isSel = position === p.id;
+   return (
+     <button
+       key={p.id}
+       type="button"
+       onClick={() => setPosition(p.id)}
+       className={`px-2.5 py-2 rounded-xl text-[13px] font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+         isSel
+           ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
+           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+       }`}
+     >
+       <span>{p.icon}</span>
+       <span>{p.label}</span>
+     </button>
+   );
+ })}
+ </div>
  </div>
  )}
+
+ {role === "PLAYER" && (
+ <div>
+ <label className={labelCls}>Trình độ thi đấu</label>
+ <div className="grid grid-cols-3 gap-2">
+ {LEVEL_CHIPS.map((l) => {
+   const isSel = level === l.id;
+   return (
+     <button
+       key={l.id}
+       type="button"
+       onClick={() => setLevel(l.id)}
+       className={`px-2.5 py-2 rounded-xl text-[13px] font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+         isSel
+           ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+       }`}
+     >
+       <span>{l.icon}</span>
+       <span>{l.label}</span>
+     </button>
+   );
+ })}
+ </div>
+ </div>
+ )}
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
  <div>
  <label htmlFor="reg-area" className={labelCls}>Khu vực thi đấu</label>
  <select
@@ -592,21 +641,7 @@ export default function AuthModal({
  ))}
  </select>
  </div>
- {role === "PLAYER" && (
- <div>
- <label htmlFor="reg-level" className={labelCls}>Trình độ</label>
- <select
- id="reg-level"
- value={level}
- onChange={(e) => setLevel(e.target.value)}
- className={inputCls}
- >
- {LEVELS.map((l) => (
- <option key={l} value={l}>{l}</option>
- ))}
- </select>
- </div>
- )}
+
  <div>
  <label htmlFor="reg-sport" className={labelCls}>Môn yêu thích</label>
  <select
@@ -619,6 +654,7 @@ export default function AuthModal({
  <option key={s} value={s}>{s}</option>
  ))}
  </select>
+ </div>
  </div>
  </div>
  </>

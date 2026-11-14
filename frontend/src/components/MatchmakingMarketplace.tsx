@@ -21,16 +21,25 @@ import {
   UserCheck,
   MessageCircle,
   LifeBuoy,
+  Lock,
+  SlidersHorizontal,
+  ChevronDown,
+  Heart,
+  Share2,
+  Copy,
+  Flame,
 } from "lucide-react";
 import { API_BASE_URL, apiRequest, ensureLoggedIn, fetchWithTimeout } from "@/lib/api";
 import { toastOk, toastErr } from "@/lib/toast";
 import { submitTeamReview } from "@/lib/adminService";
+import { getFavoritePitchIds, subscribeFavorites } from "@/lib/favoritePitchService";
 import FormDots from "./FormDots";
 
 interface MatchmakingMarketplaceProps {
   user?: any;
   onSelectMatch?: (match: any) => void;
   onCreateMatch?: () => void;
+  onOpenAuth?: (mode: "login" | "register", role?: "PLAYER" | "OWNER" | "ORGANIZER") => void;
 }
 
 function KeoPaymentInfo({ post, pitch }: { post: any; pitch: any }) {
@@ -85,8 +94,23 @@ function KeoPaymentInfo({ post, pitch }: { post: any; pitch: any }) {
   );
 }
 
-export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceProps) {
-  const [activeTab, setActiveTab] = useState<"open" | "matched">("open");
+export default function MatchmakingMarketplace({
+  user,
+  onSelectMatch,
+  onCreateMatch,
+  onOpenAuth,
+}: MatchmakingMarketplaceProps) {
+  const [activeTab, setActiveTab] = useState<"open" | "matched" | "my_posts">("open");
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+  const [onlyFavoritePitches, setOnlyFavoritePitches] = useState(false);
+
+  useEffect(() => {
+    setFavoriteIds(getFavoritePitchIds(user?.id));
+    const unsub = subscribeFavorites((ids) => {
+      setFavoriteIds(ids);
+    }, user?.id);
+    return unsub;
+  }, [user?.id]);
   const [postTypeFilter, setPostTypeFilter] = useState<"ALL" | "MATCH" | "SOS_GUEST">("ALL");
   const [selectedSport, setSelectedSport] = useState("ALL");
   const [selectedPosition, setSelectedPosition] = useState("ALL");
@@ -94,6 +118,14 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("ALL");
   const [paymentModel, setPaymentModel] = useState("ALL");
   const [pitches, setPitches] = useState<any[]>([]);
+  const [showDetailedFilters, setShowDetailedFilters] = useState(false);
+  const [showAgreementDetails, setShowAgreementDetails] = useState(false);
+
+  const hasDetailedFiltersActive =
+    selectedSport !== "ALL" ||
+    selectedTimeSlot !== "ALL" ||
+    paymentModel !== "ALL" ||
+    (postTypeFilter === "SOS_GUEST" && selectedPosition !== "ALL");
 
   // Fair-play rating inline state
   const [reviewPost, setReviewPost] = useState<any>(null);
@@ -122,7 +154,41 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
   const [createPaymentModel, setCreatePaymentModel] = useState("SPLIT_EQUAL");
   const [createFee, setCreateFee] = useState(50000);
   const [createNote, setCreateNote] = useState("");
+  const [createCaptainPhone, setCreateCaptainPhone] = useState(user?.phone || "");
   const [creating, setCreating] = useState(false);
+
+  const PHONE_REGEX = /^0[1-9][0-9]{8}$/;
+
+  useEffect(() => {
+    if (user?.phone) {
+      setCreateCaptainPhone((prev) => prev || user.phone || "");
+      setAcceptOpponentPhone((prev) => prev || user.phone || "");
+    }
+  }, [user]);
+
+  // Real-time validation cho Form Đăng Kèo
+  const createErrors = useMemo(() => {
+    const errs: Record<string, string> = {};
+    if (showCreateForm) {
+      if (createTeamName.trim().length > 0 && createTeamName.trim().length < 3) {
+        errs.teamName = "Tên đội bóng phải có ít nhất 3 ký tự.";
+      }
+      if (createCaptainPhone.trim().length > 0 && !PHONE_REGEX.test(createCaptainPhone.trim())) {
+        errs.captainPhone = "Số điện thoại phải gồm 10 số, bắt đầu bằng 0 (VD: 0905...).";
+      }
+      if (createFee < 0) {
+        errs.fee = "Mức phí dự kiến không được âm.";
+      }
+    }
+    return errs;
+  }, [showCreateForm, createTeamName, createCaptainPhone, createFee]);
+
+  const isCreateValid =
+    createTeamName.trim().length >= 3 &&
+    PHONE_REGEX.test(createCaptainPhone.trim()) &&
+    createMatchTime.trim().length > 0 &&
+    createPitchName.trim().length > 0 &&
+    createFee >= 0;
 
   // Thỏa thuận kèo giao hữu state
   const [createMatchStyle, setCreateMatchStyle] = useState<"DUONG_SINH" | "NHIET_HUYET">("DUONG_SINH");
@@ -152,6 +218,28 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
   const [acceptOpponentPhone, setAcceptOpponentPhone] = useState(user?.phone || "");
   const [accepting, setAccepting] = useState(false);
   const [lastAcceptedPost, setLastAcceptedPost] = useState<any | null>(null);
+
+  // Real-time validation cho Form Bắt Kèo
+  const acceptErrors = useMemo(() => {
+    const errs: Record<string, string> = {};
+    if (acceptingPost) {
+      if (acceptOpponentTeam.trim().length > 0 && acceptOpponentTeam.trim().length < 3) {
+        errs.opponentTeam = "Tên đội nhận kèo phải có ít nhất 3 ký tự.";
+      }
+      if (acceptOpponentPhone.trim().length > 0 && !PHONE_REGEX.test(acceptOpponentPhone.trim())) {
+        errs.opponentPhone = "Số điện thoại phải gồm 10 số (VD: 0905...).";
+      }
+      if (acceptingPost.postType !== "SOS_GUEST" && isKitClashing(acceptingPost.homeKitColor, acceptAwayKitColor)) {
+        errs.kitColor = "Trùng tông màu áo với đội nhà. Vui lòng chọn màu áo khác để phân biệt.";
+      }
+    }
+    return errs;
+  }, [acceptingPost, acceptOpponentTeam, acceptOpponentPhone, acceptAwayKitColor]);
+
+  const isAcceptValid =
+    acceptOpponentTeam.trim().length >= 3 &&
+    PHONE_REGEX.test(acceptOpponentPhone.trim()) &&
+    (acceptingPost?.postType === "SOS_GUEST" || !isKitClashing(acceptingPost?.homeKitColor, acceptAwayKitColor));
 
   const userName = user?.fullName || user?.name || "Khách";
 
@@ -244,8 +332,66 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
     if (selectedLevel === "Có lịch sử") return form !== "";
     if (selectedLevel === "Phong độ cao") return winRate >= 60;
     if (selectedLevel === "Tân binh") return form === "";
+
+    if (onlyFavoritePitches) {
+      const matchFav = favoriteIds.some((fId) => {
+        if (p.pitchId && Number(p.pitchId) === fId) return true;
+        const favPitch = pitches.find((pitch) => Number(pitch.id) === fId);
+        if (
+          favPitch?.name &&
+          p.pitchName &&
+          (p.pitchName.toLowerCase().includes(favPitch.name.toLowerCase()) ||
+            favPitch.name.toLowerCase().includes(p.pitchName.toLowerCase()))
+        ) {
+          return true;
+        }
+        return false;
+      });
+      if (!matchFav) return false;
+    }
+
     return true;
   };
+
+  const isUrgent = (post: any) => {
+    const t = `${post.matchTime || ""} ${post.note || ""}`.toLowerCase();
+    return (
+      post.postType === "SOS_GUEST" ||
+      t.includes("tối nay") ||
+      t.includes("gấp") ||
+      t.includes("ngay") ||
+      t.includes("chiều nay")
+    );
+  };
+
+  const handleShareZalo = (post: any) => {
+    const isSos = post.postType === "SOS_GUEST";
+    const typeText = isSos ? "🚨 TÌM CẦU THỦ ĐÁ KÉ / SOS VIỆN BINH" : "⚽ KÈO BÓNG ĐÁ PHONG TRÀO";
+    const ruleText =
+      post.paymentModel === "SPLIT_EQUAL"
+        ? "Chia đôi tiền sân 50/50"
+        : post.paymentModel === "LOSER_PAYS"
+        ? "Đội thua chịu 100% tiền sân"
+        : "Chủ kèo bao trọn tiền sân";
+    const text = `${typeText}\n- Đội: ${post.teamName}\n- Sân: ${post.pitchName}${post.address ? ` (${post.address})` : ""}\n- Giờ: ${post.matchTime}\n- Tiền sân: ${ruleText}\n- Liên hệ: ${post.captainName} (${post.captainPhone})\n👉 Vào TurfZone để chốt kèo: ${typeof window !== "undefined" ? window.location.origin : ""}/?tab=matchmaking`;
+    navigator.clipboard?.writeText(text);
+    toastOk("Đã sao chép nội dung rủ kèo để dán vào Zalo / Facebook!");
+  };
+
+  const myPhoneClean = (user?.phone || "").toString().replace(/\D/g, "");
+  const myPosts = useMemo(() => {
+    if (!user) return [];
+    const allList = [...posts, ...matchedPosts];
+    return allList.filter((p: any) => {
+      const creatorMatch =
+        (p.creatorId && user.id && String(p.creatorId) === String(user.id)) ||
+        (myPhoneClean && String(p.captainPhone || "").replace(/\D/g, "") === myPhoneClean);
+      const acceptedMatch =
+        (p.acceptedBy && user.id && String(p.acceptedBy) === String(user.id)) ||
+        (myPhoneClean && String(p.opponentPhone || "").replace(/\D/g, "") === myPhoneClean);
+      return creatorMatch || acceptedMatch;
+    });
+  }, [posts, matchedPosts, user, myPhoneClean]);
 
   const visiblePosts = useMemo(() => {
     const filtered = posts.filter(postPassesFilter);
@@ -255,7 +401,7 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
       const rb = aiOrder.indexOf(String(b.id));
       return (ra === -1 ? Number.MAX_SAFE_INTEGER : ra) - (rb === -1 ? Number.MAX_SAFE_INTEGER : rb);
     });
-  }, [posts, postTypeFilter, selectedPosition, selectedSport, paymentModel, selectedTimeSlot, selectedLevel, aiOrder]);
+  }, [posts, postTypeFilter, selectedPosition, selectedSport, paymentModel, selectedTimeSlot, selectedLevel, onlyFavoritePitches, favoriteIds, pitches, aiOrder]);
 
   const fetchPosts = async () => {
     try {
@@ -312,20 +458,24 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      setCreating(true);
       if (!ensureLoggedIn("đăng kèo giao lưu hoặc báo SOS")) return;
+      if (!isCreateValid) {
+        toastErr("Vui lòng kiểm tra lại: Tên đội ≥ 3 ký tự, SĐT gồm 10 số và đầy đủ thông tin bắt buộc.");
+        return;
+      }
+      setCreating(true);
       await apiRequest<any>("/api/v1/community/matchmaking-posts", {
         method: "POST",
         body: JSON.stringify({
-          teamName: createTeamName.trim() || `FC ${userName}`,
+          teamName: createTeamName.trim(),
           captainName: userName,
-          captainPhone: user?.phone || "",
-          pitchName: createPitchName.trim() || "Chưa chọn sân",
+          captainPhone: createCaptainPhone.trim(),
+          pitchName: createPitchName.trim(),
           address: createAddress.trim(),
-          matchTime: createMatchTime,
+          matchTime: createMatchTime.trim(),
           pitchType: createPitchType,
           paymentModel: createPaymentModel,
-          estimatedFee: createFee,
+          estimatedFee: Math.max(0, createFee),
           note: createNote.trim() || (createPostType === "SOS_GUEST" ? "Cần người đá ké vui vẻ, văn minh." : "Tìm đối giao lưu vui vẻ, đúng giờ."),
           postType: createPostType,
           neededPosition: createNeededPosition,
@@ -354,6 +504,10 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
     e.preventDefault();
     if (!acceptingPost) return;
     if (!ensureLoggedIn("nhận kèo")) return;
+    if (!isAcceptValid) {
+      toastErr("Vui lòng kiểm tra lại: Tên đội ≥ 3 ký tự, SĐT 10 số và màu áo không trùng lặp.");
+      return;
+    }
     try {
       setAccepting(true);
       const data = await apiRequest<any>(
@@ -361,9 +515,9 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
         {
           method: "POST",
           body: JSON.stringify({
-            opponentTeamName: acceptOpponentTeam.trim() || (acceptingPost.postType === "SOS_GUEST" ? "Viện Binh" : `FC ${userName}`),
+            opponentTeamName: acceptOpponentTeam.trim(),
             opponentCaptainName: userName,
-            opponentCaptainPhone: acceptOpponentPhone.trim() || user?.phone || "",
+            opponentCaptainPhone: acceptOpponentPhone.trim(),
             awayKitColor: acceptAwayKitColor,
           }),
         }
@@ -475,23 +629,33 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
             <button
               type="button"
               onClick={() => {
+                if (!user) {
+                  toastErr("Vui lòng đăng nhập để phát tin SOS mượn chân.");
+                  onOpenAuth?.("login", "PLAYER");
+                  return;
+                }
                 setCreatePostType("SOS_GUEST");
                 setShowCreateForm(true);
               }}
               className="px-3.5 py-2 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-bold text-[14px] flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
             >
-              <AlertTriangle className="w-4 h-4" />
+              {user ? <AlertTriangle className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
               <span>🚨 Báo SOS Thiếu Chân</span>
             </button>
             <button
               type="button"
               onClick={() => {
+                if (!user) {
+                  toastErr("Vui lòng đăng nhập để đăng kèo giao lưu trên sàn.");
+                  onOpenAuth?.("login", "PLAYER");
+                  return;
+                }
                 setCreatePostType("MATCH");
                 setShowCreateForm((v) => !v);
               }}
               className="px-4 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <PlusCircle className="w-4 h-4" />
+              {user ? <PlusCircle className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
               <span>{showCreateForm && createPostType === "MATCH" ? "Đóng Form" : "+ Đăng Kèo Giao Lưu"}</span>
             </button>
           </div>
@@ -555,8 +719,30 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                   value={createTeamName}
                   onChange={(e) => setCreateTeamName(e.target.value)}
                   placeholder={`Ví dụ: FC ${userName}`}
-                  className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 focus:outline-none focus:border-[#0369a1]"
+                  className={`w-full bg-white px-3 py-2 rounded-md border text-[13px] focus:outline-none ${
+                    createErrors.teamName ? "border-rose-400 focus:border-rose-500" : "border-slate-300 focus:border-[#0369a1]"
+                  }`}
                 />
+                {createErrors.teamName && (
+                  <p className="text-[13px] text-rose-600 font-medium mt-1">{createErrors.teamName}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-slate-700 mb-1">Số điện thoại liên hệ *</label>
+                <input
+                  type="tel"
+                  required
+                  value={createCaptainPhone}
+                  onChange={(e) => setCreateCaptainPhone(e.target.value)}
+                  placeholder="Ví dụ: 0905123456"
+                  className={`w-full bg-white px-3 py-2 rounded-md border text-[13px] font-mono focus:outline-none ${
+                    createErrors.captainPhone ? "border-rose-400 focus:border-rose-500" : "border-slate-300 focus:border-[#0369a1]"
+                  }`}
+                />
+                {createErrors.captainPhone && (
+                  <p className="text-[13px] text-rose-600 font-medium mt-1">{createErrors.captainPhone}</p>
+                )}
               </div>
 
               {createPostType === "SOS_GUEST" ? (
@@ -566,7 +752,7 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                     <select
                       value={createNeededPosition}
                       onChange={(e) => setCreateNeededPosition(e.target.value)}
-                      className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
+                      className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 font-semibold text-[13px] focus:outline-none focus:border-[#0369a1]"
                     >
                       <option value="BAT_KY">⭐ Bất kỳ vị trí</option>
                       <option value="THU_MON">🧤 Thủ Môn (Gôn)</option>
@@ -580,7 +766,7 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                     <select
                       value={createNeededCount}
                       onChange={(e) => setCreateNeededCount(Number(e.target.value))}
-                      className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
+                      className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 font-semibold text-[13px] focus:outline-none focus:border-[#0369a1]"
                     >
                       <option value={1}>Cần 1 người</option>
                       <option value={2}>Cần 2 người</option>
@@ -595,7 +781,7 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                   <select
                     value={createPitchType}
                     onChange={(e) => setCreatePitchType(e.target.value)}
-                    className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
+                    className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 font-semibold text-[13px] focus:outline-none focus:border-[#0369a1]"
                   >
                     <option value="SAN_7">Sân 7 người</option>
                     <option value="SAN_5">Sân 5 người</option>
@@ -613,7 +799,7 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                   value={createMatchTime}
                   onChange={(e) => setCreateMatchTime(e.target.value)}
                   placeholder="Ví dụ: 19:30 Tối nay"
-                  className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 focus:outline-none focus:border-[#0369a1]"
+                  className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 text-[13px] focus:outline-none focus:border-[#0369a1]"
                 />
               </div>
 
@@ -625,7 +811,7 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                   value={createPitchName}
                   onChange={(e) => setCreatePitchName(e.target.value)}
                   placeholder="Ví dụ: Sân Tuyên Sơn (Sân 7A)"
-                  className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 focus:outline-none focus:border-[#0369a1]"
+                  className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 text-[13px] focus:outline-none focus:border-[#0369a1]"
                 />
               </div>
 
@@ -667,62 +853,76 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
               </div>
 
               {createPostType === "MATCH" && (
-                <div className="sm:col-span-2 lg:col-span-4 p-3 rounded-md bg-white border border-slate-200 space-y-3">
-                  <span className="font-bold text-slate-900 text-[14px] block border-b border-slate-100 pb-1.5">
-                    📑 Phiếu Thỏa Thuận Kèo Giao Hữu (Tránh Va Chạm & Trùng Màu Áo)
-                  </span>
+                <div className="sm:col-span-2 lg:col-span-4 border border-slate-200 rounded-md bg-white overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowAgreementDetails((v) => !v)}
+                    className="w-full px-3 py-2 text-left text-[13px] font-bold text-slate-700 hover:text-[#0369a1] bg-slate-50 flex items-center justify-between cursor-pointer transition-colors"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span>📑 Thỏa thuận giao hữu chi tiết (Màu áo, Trọng tài, Độ tuổi)</span>
+                      <span className="text-slate-400 font-normal">(Tùy chọn)</span>
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        showAgreementDetails ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[13px]">
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Tính chất thi đấu</label>
-                      <select
-                        value={createMatchStyle}
-                        onChange={(e) => setCreateMatchStyle(e.target.value as any)}
-                        className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
-                      >
-                        <option value="DUONG_SINH">🧘 Văn phòng dưỡng sinh</option>
-                        <option value="NHIET_HUYET">🔥 Cọ xát nhiệt huyết</option>
-                      </select>
-                    </div>
+                  {showAgreementDetails && (
+                    <div className="p-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[13px] animate-fade-in">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Tính chất thi đấu</label>
+                        <select
+                          value={createMatchStyle}
+                          onChange={(e) => setCreateMatchStyle(e.target.value as any)}
+                          className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
+                        >
+                          <option value="DUONG_SINH">🧘 Văn phòng dưỡng sinh</option>
+                          <option value="NHIET_HUYET">🔥 Cọ xát nhiệt huyết</option>
+                        </select>
+                      </div>
 
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Độ tuổi đội hình</label>
-                      <select
-                        value={createAgeGroup}
-                        onChange={(e) => setCreateAgeGroup(e.target.value as any)}
-                        className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
-                      >
-                        <option value="U25_U35">U25 - U35 (Đi làm/Công sở)</option>
-                        <option value="U20_U25">U20 - U25 (Sinh viên/Trẻ)</option>
-                        <option value="U35_PLUS">U35+ (Lão tướng U35+)</option>
-                      </select>
-                    </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Độ tuổi đội hình</label>
+                        <select
+                          value={createAgeGroup}
+                          onChange={(e) => setCreateAgeGroup(e.target.value as any)}
+                          className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
+                        >
+                          <option value="U25_U35">U25 - U35 (Đi làm/Công sở)</option>
+                          <option value="U20_U25">U20 - U25 (Sinh viên/Trẻ)</option>
+                          <option value="U35_PLUS">U35+ (Lão tướng U35+)</option>
+                        </select>
+                      </div>
 
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Màu áo đội nhà</label>
-                      <select
-                        value={createHomeKitColor}
-                        onChange={(e) => setCreateHomeKitColor(e.target.value)}
-                        className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-bold focus:outline-none focus:border-[#0369a1]"
-                      >
-                        {KIT_COLORS.map((c) => (
-                          <option key={c} value={c}>Áo màu {c}</option>
-                        ))}
-                      </select>
-                    </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Màu áo đội nhà</label>
+                        <select
+                          value={createHomeKitColor}
+                          onChange={(e) => setCreateHomeKitColor(e.target.value)}
+                          className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-bold focus:outline-none focus:border-[#0369a1]"
+                        >
+                          {KIT_COLORS.map((c) => (
+                            <option key={c} value={c}>Áo màu {c}</option>
+                          ))}
+                        </select>
+                      </div>
 
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">Trọng tài điều khiển</label>
-                      <select
-                        value={createRefereeOption}
-                        onChange={(e) => setCreateRefereeOption(e.target.value as any)}
-                        className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
-                      >
-                        <option value="TU_BAT">🤝 Hai bên tự bắt Fairplay</option>
-                        <option value="THUE_TRONG_TAI">⚖️ Thuê trọng tài (Cưa đôi)</option>
-                      </select>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Trọng tài điều khiển</label>
+                        <select
+                          value={createRefereeOption}
+                          onChange={(e) => setCreateRefereeOption(e.target.value as any)}
+                          className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 font-semibold focus:outline-none focus:border-[#0369a1]"
+                        >
+                          <option value="TU_BAT">🤝 Hai bên tự bắt Fairplay</option>
+                          <option value="THUE_TRONG_TAI">⚖️ Thuê trọng tài (Cưa đôi)</option>
+                        </select>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
@@ -752,8 +952,8 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
               </button>
               <button
                 type="submit"
-                disabled={creating}
-                className={`px-5 py-2 rounded-md text-white font-bold flex items-center gap-1.5 cursor-pointer ${
+                disabled={creating || !isCreateValid}
+                className={`px-5 py-2 rounded-md text-white font-bold text-[14px] flex items-center gap-1.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                   createPostType === "SOS_GUEST"
                     ? "bg-rose-600 hover:bg-rose-700"
                     : "bg-[#0369a1] hover:bg-[#075985]"
@@ -828,73 +1028,125 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
             >
               Kèo Đã Chốt ({matchedPosts.length})
             </button>
+            {user && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("my_posts")}
+                className={`px-3.5 py-1.5 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
+                  activeTab === "my_posts"
+                    ? "bg-[#0369a1] text-white border-[#0369a1]"
+                    : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+                }`}
+              >
+                Kèo Của Tôi ({myPosts.length})
+              </button>
+            )}
           </div>
 
           {activeTab === "open" && (
-            <div className="flex flex-wrap items-center gap-2 text-[14px]">
-              {postTypeFilter === "SOS_GUEST" && (
-                <select
-                  aria-label="Lọc theo vị trí viện binh"
-                  value={selectedPosition}
-                  onChange={(e) => setSelectedPosition(e.target.value)}
-                  className="px-3 py-1.5 rounded-md border border-rose-300 bg-white font-semibold text-rose-900 focus:outline-none focus:border-rose-500"
-                >
-                  <option value="ALL">Mọi vị trí cần</option>
-                  <option value="THU_MON">🧤 Thủ Môn</option>
-                  <option value="HAU_VE">🛡️ Hậu Vệ</option>
-                  <option value="TIEN_VE">⚡ Tiền Vệ</option>
-                  <option value="TIEN_DAO">🎯 Tiền Đạo</option>
-                </select>
-              )}
-
-              <select
-                aria-label="Lọc theo loại sân"
-                value={selectedSport}
-                onChange={(e) => setSelectedSport(e.target.value)}
-                className="px-3 py-1.5 rounded-md border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-[#0369a1]"
-              >
-                <option value="ALL">Mọi loại sân</option>
-                <option value="SAN_7">Sân 7 người</option>
-                <option value="SAN_5">Sân 5 người</option>
-                <option value="SAN_11">Sân 11 người</option>
-                <option value="FUTSAL">Futsal</option>
-              </select>
-
-              <select
-                aria-label="Lọc theo khung giờ"
-                value={selectedTimeSlot}
-                onChange={(e) => setSelectedTimeSlot(e.target.value)}
-                className="px-3 py-1.5 rounded-md border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-[#0369a1]"
-              >
-                <option value="ALL">Mọi khung giờ</option>
-                <option value="TONIGHT">Tối nay (từ 17h)</option>
-                <option value="TOMORROW">Ngày mai</option>
-              </select>
-
-              <select
-                aria-label="Lọc theo tiền sân"
-                value={paymentModel}
-                onChange={(e) => setPaymentModel(e.target.value)}
-                className="px-3 py-1.5 rounded-md border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-[#0369a1]"
-              >
-                <option value="ALL">Mọi hình thức chia tiền</option>
-                <option value="HOST_COVER">Chủ kèo bao sân (0đ)</option>
-                <option value="SPLIT_EQUAL">Chia đôi 50/50</option>
-                <option value="LOSER_PAYS">Đội thua trả 100%</option>
-              </select>
-
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 type="button"
-                onClick={sortBySkill}
-                disabled={aiSorting || posts.length === 0}
-                className="px-3 py-1.5 rounded-md border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                onClick={() => setOnlyFavoritePitches((prev) => !prev)}
+                className={`px-3 py-1.5 rounded-md text-[13px] font-bold border transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                  onlyFavoritePitches
+                    ? "bg-rose-50 text-rose-700 border-rose-300 ring-1 ring-rose-200"
+                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                }`}
+                title="Lọc chỉ các kèo tại cụm sân ruột của bạn"
               >
-                <ArrowUpDown className="w-3.5 h-3.5 text-[#0369a1]" />
-                <span>{aiSorting ? "Đang xếp..." : aiOrder ? "Đã xếp theo trình độ" : "Xếp theo trình độ"}</span>
+                <Heart className={`w-3.5 h-3.5 ${onlyFavoritePitches ? "fill-rose-500 text-rose-500" : "text-rose-400"}`} />
+                <span>Sân yêu thích {favoriteIds.length > 0 ? `(${favoriteIds.length})` : ""}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDetailedFilters((v) => !v)}
+                className={`px-3 py-1.5 rounded-md text-[13px] font-bold border transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                  hasDetailedFiltersActive
+                    ? "bg-sky-50 text-[#0369a1] border-sky-300"
+                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                <span>Bộ lọc</span>
+                {hasDetailedFiltersActive && (
+                  <span className="w-2 h-2 rounded-full bg-[#0369a1]" />
+                )}
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform ${
+                    showDetailedFilters ? "rotate-180" : ""
+                  }`}
+                />
               </button>
             </div>
           )}
         </div>
+
+        {/* BỘ LỌC CHI TIẾT (PROGRESSIVE DISCLOSURE: BẤM MỞ KHI CẦN) */}
+        {activeTab === "open" && showDetailedFilters && (
+          <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center gap-2 text-[13px] animate-fade-in">
+            {postTypeFilter === "SOS_GUEST" && (
+              <select
+                aria-label="Lọc theo vị trí viện binh"
+                value={selectedPosition}
+                onChange={(e) => setSelectedPosition(e.target.value)}
+                className="px-3 py-1.5 rounded-md border border-rose-300 bg-white font-semibold text-rose-900 focus:outline-none focus:border-rose-500"
+              >
+                <option value="ALL">Mọi vị trí cần</option>
+                <option value="THU_MON">🧤 Thủ Môn</option>
+                <option value="HAU_VE">🛡️ Hậu Vệ</option>
+                <option value="TIEN_VE">⚡ Tiền Vệ</option>
+                <option value="TIEN_DAO">🎯 Tiền Đạo</option>
+              </select>
+            )}
+
+            <select
+              aria-label="Lọc theo loại sân"
+              value={selectedSport}
+              onChange={(e) => setSelectedSport(e.target.value)}
+              className="px-3 py-1.5 rounded-md border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-[#0369a1]"
+            >
+              <option value="ALL">Mọi loại sân</option>
+              <option value="SAN_7">Sân 7 người</option>
+              <option value="SAN_5">Sân 5 người</option>
+              <option value="SAN_11">Sân 11 người</option>
+              <option value="FUTSAL">Futsal</option>
+            </select>
+
+            <select
+              aria-label="Lọc theo khung giờ"
+              value={selectedTimeSlot}
+              onChange={(e) => setSelectedTimeSlot(e.target.value)}
+              className="px-3 py-1.5 rounded-md border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-[#0369a1]"
+            >
+              <option value="ALL">Mọi khung giờ</option>
+              <option value="TONIGHT">Tối nay (từ 17h)</option>
+              <option value="TOMORROW">Ngày mai</option>
+            </select>
+
+            <select
+              aria-label="Lọc theo tiền sân"
+              value={paymentModel}
+              onChange={(e) => setPaymentModel(e.target.value)}
+              className="px-3 py-1.5 rounded-md border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-[#0369a1]"
+            >
+              <option value="ALL">Mọi hình thức chia tiền</option>
+              <option value="HOST_COVER">Chủ kèo bao sân (0đ)</option>
+              <option value="SPLIT_EQUAL">Chia đôi 50/50</option>
+              <option value="LOSER_PAYS">Đội thua trả 100%</option>
+            </select>
+
+            <button
+              type="button"
+              onClick={sortBySkill}
+              disabled={aiSorting || posts.length === 0}
+              className="px-3 py-1.5 rounded-md border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+            >
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#0369a1]" />
+              <span>{aiSorting ? "Đang xếp..." : aiOrder ? "Đã xếp theo trình độ" : "Xếp theo trình độ"}</span>
+            </button>
+          </div>
+        )}
       </section>
 
       {/* 2. OPEN MATCHES GRID (2 COLUMNS) */}
@@ -912,10 +1164,18 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
               </p>
               <button
                 type="button"
-                onClick={() => setShowCreateForm(true)}
-                className="px-4 py-2 rounded-md bg-[#0369a1] text-white text-[14px] font-bold"
+                onClick={() => {
+                  if (!user) {
+                    toastErr("Vui lòng đăng nhập để đăng kèo giao lưu trên sàn.");
+                    onOpenAuth?.("login", "PLAYER");
+                    return;
+                  }
+                  setShowCreateForm(true);
+                }}
+                className="px-4 py-2 rounded-md bg-[#0369a1] text-white text-[14px] font-bold flex items-center gap-1.5 mx-auto"
               >
-                + Đăng Kèo Giao Lưu Đầu Tiên
+                {!user && <Lock className="w-4 h-4" />}
+                <span>+ Đăng Kèo Giao Lưu Đầu Tiên</span>
               </button>
             </div>
           ) : (
@@ -938,6 +1198,12 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                       {/* Top row: badges & form */}
                       <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
                         <div className="flex items-center gap-2 flex-wrap">
+                          {isUrgent(post) && (
+                            <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-300 font-bold text-[13px] flex items-center gap-1 shadow-2xs">
+                              <Flame className="w-3.5 h-3.5 text-amber-600 fill-amber-500 animate-pulse" />
+                              <span>Kèo gấp</span>
+                            </span>
+                          )}
                           {isSos ? (
                             <>
                               <span className="px-2.5 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-300 font-bold text-[13px] flex items-center gap-1">
@@ -1088,29 +1354,43 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                           </button>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <input
-                            type="text"
-                            required
-                            value={acceptOpponentTeam}
-                            onChange={(e) => setAcceptOpponentTeam(e.target.value)}
-                            placeholder={isSos ? "Tên của bạn / Biệt danh *" : "Tên FC của bạn *"}
-                            className="bg-white px-2.5 py-1.5 rounded border border-slate-300 focus:outline-none focus:border-[#0369a1]"
-                          />
-                          <input
-                            type="tel"
-                            required
-                            value={acceptOpponentPhone}
-                            onChange={(e) => setAcceptOpponentPhone(e.target.value)}
-                            placeholder="Số điện thoại Zalo liên hệ *"
-                            className="bg-white px-2.5 py-1.5 rounded border border-slate-300 focus:outline-none focus:border-[#0369a1]"
-                          />
+                          <div>
+                            <input
+                              type="text"
+                              required
+                              value={acceptOpponentTeam}
+                              onChange={(e) => setAcceptOpponentTeam(e.target.value)}
+                              placeholder={isSos ? "Tên của bạn / Biệt danh *" : "Tên FC của bạn *"}
+                              className={`w-full bg-white px-2.5 py-1.5 rounded border text-[13px] focus:outline-none ${
+                                acceptErrors.opponentTeam ? "border-rose-400 focus:border-rose-500" : "border-slate-300 focus:border-[#0369a1]"
+                              }`}
+                            />
+                            {acceptErrors.opponentTeam && (
+                              <p className="text-[13px] text-rose-600 font-medium mt-1">{acceptErrors.opponentTeam}</p>
+                            )}
+                          </div>
+                          <div>
+                            <input
+                              type="tel"
+                              required
+                              value={acceptOpponentPhone}
+                              onChange={(e) => setAcceptOpponentPhone(e.target.value)}
+                              placeholder="Số điện thoại Zalo liên hệ *"
+                              className={`w-full bg-white px-2.5 py-1.5 rounded border text-[13px] font-mono focus:outline-none ${
+                                acceptErrors.opponentPhone ? "border-rose-400 focus:border-rose-500" : "border-slate-300 focus:border-[#0369a1]"
+                              }`}
+                            />
+                            {acceptErrors.opponentPhone && (
+                              <p className="text-[13px] text-rose-600 font-medium mt-1">{acceptErrors.opponentPhone}</p>
+                            )}
+                          </div>
                         </div>
 
                         {!isSos && (
                           <div className="space-y-2 p-2.5 rounded bg-white border border-sky-100">
                             <div>
                               <label className="block font-bold text-slate-700 text-[13px] mb-1">
-                                Màu áo thi đấu đội bạn (Kiểm tra tránh trùng màu):
+                                Màu áo thi đấu đội bạn (Bắt buộc khác màu đội nhà):
                               </label>
                               <div className="flex flex-wrap items-center gap-1.5">
                                 {KIT_COLORS.map((c) => (
@@ -1131,10 +1411,10 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                             </div>
 
                             {isKitClashing(post.homeKitColor, acceptAwayKitColor) && (
-                              <div className="p-2 rounded bg-amber-50 border border-amber-300 text-amber-900 text-[13px] font-bold flex items-center gap-1.5 animate-fade-in">
-                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                              <div className="p-2.5 rounded bg-rose-50 border border-rose-300 text-rose-900 text-[13px] font-bold flex items-center gap-1.5 animate-fade-in">
+                                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
                                 <span>
-                                  ⚠️ Trùng tông màu áo với chủ nhà ({post.homeKitColor || "Đỏ"})! Đội khách nên mang áo phụ hoặc mượn áo bib tại quầy lễ tân sân.
+                                  ⚠️ Trùng tông màu áo với chủ nhà ({post.homeKitColor || "Đỏ"})! Vui lòng chọn màu áo khác để phân biệt khi ra sân.
                                 </span>
                               </div>
                             )}
@@ -1156,8 +1436,8 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                           </button>
                           <button
                             type="submit"
-                            disabled={accepting}
-                            className={`px-4 py-1.5 rounded text-white font-bold flex items-center gap-1 cursor-pointer ${
+                            disabled={accepting || !isAcceptValid}
+                            className={`px-4 py-1.5 rounded text-white font-bold flex items-center gap-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                               isSos ? "bg-rose-600 hover:bg-rose-700" : "bg-[#0369a1] hover:bg-[#075985]"
                             }`}
                           >
@@ -1173,25 +1453,168 @@ export default function MatchmakingMarketplace({ user }: MatchmakingMarketplaceP
                         </div>
                       </form>
                     ) : (
-                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-[13px] text-slate-500">
-                          {isSos ? `Đang thiếu ${neededSlots} người` : "Sẵn sàng ghép đội ngay"}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAcceptingPost(post);
-                            setAcceptOpponentTeam(isSos ? userName : `FC ${userName}`);
-                          }}
-                          className={`px-4 py-2 rounded-md text-white font-bold text-[14px] flex items-center gap-1.5 transition-colors cursor-pointer ${
-                            isSos ? "bg-rose-600 hover:bg-rose-700" : "bg-[#0369a1] hover:bg-[#075985]"
-                          }`}
-                        >
-                          {isSos ? <UserCheck className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
-                          <span>{isSos ? "Nhận Chân Ngay" : "Nhận Kèo"}</span>
-                        </button>
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] text-slate-500">
+                            {isSos ? `Đang thiếu ${neededSlots} người` : "Sẵn sàng ghép đội ngay"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleShareZalo(post)}
+                            className="px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-[13px] flex items-center gap-1 cursor-pointer transition-colors"
+                            title="Sao chép tin rủ kèo để gửi vào nhóm Zalo / Facebook"
+                          >
+                            <Copy className="w-3.5 h-3.5 text-[#0369a1]" />
+                            <span>Rủ Zalo</span>
+                          </button>
+                        </div>
+                        {Boolean(user?.phone && post.captainPhone && user.phone.trim() === post.captainPhone.trim()) ? (
+                          <span className="px-3.5 py-1.5 rounded-md bg-slate-100 text-slate-600 font-bold text-[13px] border border-slate-200">
+                            Kèo do bạn tạo
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!user) {
+                                toastErr("Vui lòng đăng nhập để nhận kèo giao lưu hoặc báo đi viện binh.");
+                                onOpenAuth?.("login", "PLAYER");
+                                return;
+                              }
+                              setAcceptingPost(post);
+                              setAcceptOpponentTeam(isSos ? userName : `FC ${userName}`);
+                            }}
+                            className={`px-4 py-2 rounded-md text-white font-bold text-[14px] flex items-center gap-1.5 transition-colors cursor-pointer ${
+                              isSos ? "bg-rose-600 hover:bg-rose-700" : "bg-[#0369a1] hover:bg-[#075985]"
+                            }`}
+                          >
+                            {!user ? <Lock className="w-4 h-4" /> : isSos ? <UserCheck className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                            <span>{isSos ? "Nhận Chân Ngay" : "Nhận Kèo"}</span>
+                          </button>
+                        )}
                       </div>
                     )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 4. MY POSTS TAB (KÈO CỦA TÔI) */}
+      {activeTab === "my_posts" && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Users className="w-4.5 h-4.5 text-[#0369a1]" />
+              <span>Kèo Do Bạn Đăng &amp; Kèo Đã Nhận Bắt ({myPosts.length})</span>
+            </h2>
+            <span className="text-[13px] text-slate-500">Quản lý các trận giao lưu của bạn</span>
+          </div>
+
+          {myPosts.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-lg border border-slate-300 space-y-3">
+              <p className="text-[15px] text-slate-700 font-semibold">
+                Bạn chưa đăng hoặc nhận bắt kèo nào trên hệ thống.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setCreatePostType("MATCH");
+                  setShowCreateForm(true);
+                }}
+                className="px-4 py-2 rounded-md bg-[#0369a1] text-white text-[14px] font-bold inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>+ Đăng Kèo Giao Lưu Ngay</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {myPosts.map((post: any) => {
+                const isCreator =
+                  (post.creatorId && user?.id && String(post.creatorId) === String(user.id)) ||
+                  (myPhoneClean && String(post.captainPhone || "").replace(/\D/g, "") === myPhoneClean);
+                const isMatched = post.status === "MATCHED";
+
+                return (
+                  <article
+                    key={post.id}
+                    className="rounded-lg p-4 sm:p-5 border border-slate-300 bg-white flex flex-col justify-between gap-3 shadow-2xs"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span
+                            className={`px-2.5 py-0.5 rounded text-[13px] font-bold border ${
+                              isCreator
+                                ? "bg-sky-50 text-[#0369a1] border-sky-200"
+                                : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                            }`}
+                          >
+                            {isCreator ? "Kèo do bạn đăng" : "Kèo bạn đã nhận bắt"}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[13px] font-bold border ${
+                              isMatched
+                                ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                                : "bg-amber-50 text-amber-900 border-amber-300"
+                            }`}
+                          >
+                            {isMatched ? "Đã chốt kèo" : "Đang chờ đối"}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleShareZalo(post)}
+                          className="px-2.5 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-50 text-[13px] font-semibold flex items-center gap-1 cursor-pointer"
+                          title="Sao chép tin rủ kèo để gửi vào Zalo"
+                        >
+                          <Copy className="w-3.5 h-3.5 text-[#0369a1]" />
+                          <span>Rủ Zalo</span>
+                        </button>
+                      </div>
+
+                      <div>
+                        <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                          {post.teamName} {isMatched ? `vs ${post.opponentTeamName || "Đối thủ"}` : ""}
+                        </h3>
+                        <p className="text-[13px] text-slate-600 flex items-center gap-1 mt-1">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span>{post.pitchName} {post.address ? `• ${post.address}` : ""}</span>
+                        </p>
+                        <p className="text-[13px] text-slate-600 flex items-center gap-1 mt-0.5">
+                          <Clock className="w-3.5 h-3.5 text-[#0369a1] shrink-0" />
+                          <span>Thời gian: <strong>{post.matchTime}</strong></span>
+                        </p>
+                      </div>
+
+                      <div className="p-2.5 rounded bg-slate-50 border border-slate-200 text-[13px] text-slate-700 space-y-1">
+                        <div>
+                          Hình thức tiền sân: <strong>{post.paymentModel === "SPLIT_EQUAL" ? "Chia đôi 50/50" : post.paymentModel === "LOSER_PAYS" ? "Đội thua trả 100%" : "Chủ kèo bao sân"}</strong>
+                        </div>
+                        {post.opponentPhone && (
+                          <div className="flex items-center gap-2 pt-1 border-t border-slate-200">
+                            <span>SĐT đối thủ: <strong className="font-mono text-slate-900">{post.opponentPhone}</strong></span>
+                            <a
+                              href={`tel:${post.opponentPhone}`}
+                              className="text-[#0369a1] hover:underline font-bold"
+                            >
+                              Gọi
+                            </a>
+                            <a
+                              href={`https://zalo.me/${String(post.opponentPhone).replace(/\D/g, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#0369a1] hover:underline font-bold"
+                            >
+                              Zalo
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </article>
                 );
               })}

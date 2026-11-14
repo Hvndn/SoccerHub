@@ -176,16 +176,8 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
     };
   }, []);
 
-  useEffect(() => {
-    const modes: ShowcaseMode[] = ["pitch", "tournament", "matchmaking"];
-    const timer = setInterval(() => {
-      setActiveMode((prev) => {
-        const nextIdx = (modes.indexOf(prev) + 1) % modes.length;
-        return modes[nextIdx];
-      });
-    }, 7500);
-    return () => clearInterval(timer);
-  }, []);
+  // Auto-switch đã được tắt theo yêu cầu để giao diện tĩnh lặng, không giật mắt.
+  // Người dùng bấm vào tab nào thì hiển thị tab đó.
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -209,42 +201,28 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
 
   return (
     <div className="w-full space-y-6">
-      {/* 1. DẢI BĂNG CHUYỀN SỰ KIỆN TRỰC TIẾP (MÀU ĐƠN SẮC PHẲNG SÁNG) */}
+      {/* 1. THANH THÔNG TIN TĨNH TRANG NHÃ (KHÔNG CHẠY CHỮ GÂY RỐI MẮT) */}
       {liveItems.length > 0 && (
-        <div className="bg-white text-slate-800 landing-card-radius px-4 py-2.5 border border-slate-200 flex items-center gap-3 overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13px] font-bold shrink-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 live-radar-dot" />
-            <Radio className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Trực tiếp sân cỏ</span>
+        <div className="bg-slate-50/90 text-slate-800 rounded-xl px-4 py-2 border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[13px]">
+          <div className="flex items-center gap-2 font-semibold text-slate-700 min-w-0">
+            <Radio className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="truncate">
+              {liveItems[0]?.text || "Hệ thống đặt sân & điều hành giải đấu bóng đá phủi Đà Nẵng"}
+            </span>
           </div>
-
-          <div className="overflow-hidden flex-1 relative">
-            <div className="animate-marquee-ticker items-center gap-8">
-              {[...liveItems, ...liveItems].map((item, idx) => (
-                <button
-                  key={`${item.id}-${idx}`}
-                  type="button"
-                  onClick={() =>
-                    item.tab && onNavigateTab
-                      ? onNavigateTab(item.tab)
-                      : onOpenAuth("login", "PLAYER")
-                  }
-                  className="inline-flex items-center gap-2 text-[13px] font-semibold text-slate-700 hover:text-[#0369a1] transition-colors cursor-pointer shrink-0"
-                >
-                  <span className="px-2 py-0.5 rounded bg-sky-50 text-[#0369a1] border border-sky-200 font-bold text-[13px]">
-                    {item.badge}
-                  </span>
-                  <span>{item.text}</span>
-                  <span className="text-slate-300 pl-4">•</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => onNavigateTab ? onNavigateTab("booking") : onOpenAuth("login", "PLAYER")}
+            className="text-[13px] font-bold text-[#0369a1] hover:underline shrink-0 text-left cursor-pointer"
+          >
+            Xem lịch ca trống hôm nay →
+          </button>
         </div>
       )}
 
-      {/* 2. HERO BANNER NỀN TRẮNG PHẲNG CHUẨN MỰC (KHÔNG DÙNG GRADIENT) */}
-      <div className="relative overflow-hidden landing-shell-radius bg-white text-slate-900 border border-slate-200">
+      {/* 2. HERO BANNER NỀN TRẮNG PHẲNG TỐI GIẢN */}
+      <div className="relative overflow-hidden landing-shell-radius bg-gradient-to-br from-white via-slate-50/40 to-sky-50/20 text-slate-900 border border-slate-200 shadow-xs">
+
         {/* Đường nét sân bóng trang nhã đơn sắc */}
         <svg
           aria-hidden="true"
@@ -266,84 +244,104 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-7 space-y-5"
           >
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-sky-50 border border-sky-200 text-[#0369a1] text-[13px] font-bold">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 live-radar-dot" />
-              <span>Trung tâm đặt sân &amp; giải đấu bóng đá Đà Nẵng</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-[#0369a1] text-[13px] font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>Nền tảng đặt sân &amp; tổ chức giải đấu bóng đá Đà Nẵng</span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl lg:text-[42px] font-black tracking-tight leading-[1.16] text-slate-900">
-              Chạm Để Giữ Sân Cỏ,{" "}
-              <span className="text-[#0369a1]">Bùng Nổ Mọi Trận Cầu</span> Tại Đà Nẵng
+            <h1 className="text-2xl sm:text-4xl lg:text-[40px] font-black tracking-tight leading-[1.18] text-slate-900">
+              Đặt Sân Nhanh Chóng,{" "}
+              <span className="text-[#0369a1]">Ghép Kèo Tự Động</span> Tại Đà Nẵng
             </h1>
 
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl font-medium">
-              Trải nghiệm đặt sân bóng trực quan theo khung giờ thực tế, thanh toán VietQR xác nhận ngay lập tức, ghép kèo giao hữu và vận hành giải đấu tự động.
+              Tra cứu ca trống theo thời gian thực, cọc sân an toàn qua VietQR và giao lưu cùng hàng trăm đội bóng phong trào.
             </p>
 
-            {/* Nút hành động màu phẳng chuẩn mực */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
-              <button
-                type="button"
-                onClick={() =>
-                  onNavigateTab ? onNavigateTab("booking") : onOpenAuth("login", "PLAYER")
-                }
-                className="px-6 py-3.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[15px] transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
-              >
-                <Calendar className="w-4 h-4 stroke-[2.5]" />
-                <span>Đặt Sân Ngay</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  onNavigateTab ? onNavigateTab("tournaments") : onOpenAuth("login", "PLAYER")
-                }
-                className="px-5 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-900 font-bold text-[15px] border border-slate-300 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
-              >
-                <Trophy className="w-4 h-4 text-amber-600" />
-                <span>Đấu Trường Giải Đấu</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onOpenAuth("login", "OWNER")}
-                className="px-5 py-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[14px] border border-slate-200 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
-              >
-                <Shield className="w-4 h-4 text-[#0369a1]" />
-                <span>Dành Cho Chủ Sân</span>
-              </button>
+            {/* THANH TÌM KIẾM TRUNG TÂM KIỂU AIRBNB (TIỆN LỢI, GỌN GÀNG, ÍT RỐI MẮT) */}
+            <div className="bg-slate-50/90 rounded-2xl p-2.5 sm:p-3 border border-slate-200/90 shadow-2xs grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+              <div className="sm:col-span-4 px-3 py-1 border-b sm:border-b-0 sm:border-r border-slate-200">
+                <label htmlFor="quick-city" className="block text-[11px] font-bold text-slate-500 tracking-wide">KHU VỰC</label>
+                <select
+                  id="quick-city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full bg-transparent font-bold text-[14px] text-slate-800 outline-hidden cursor-pointer"
+                >
+                  <option value="dn">Toàn Đà Nẵng</option>
+                  <option value="hai-chau">Hải Châu</option>
+                  <option value="son-tra">Sơn Trà</option>
+                  <option value="thanh-khe">Thanh Khê</option>
+                  <option value="ngu-hanh-son">Ngũ Hành Sơn</option>
+                </select>
+              </div>
+              <div className="sm:col-span-3 px-3 py-1 border-b sm:border-b-0 sm:border-r border-slate-200">
+                <label htmlFor="quick-type" className="block text-[11px] font-bold text-slate-500 tracking-wide">MẶT SÂN</label>
+                <select
+                  id="quick-type"
+                  value={pitchType}
+                  onChange={(e) => setPitchType(e.target.value)}
+                  className="w-full bg-transparent font-bold text-[14px] text-slate-800 outline-hidden cursor-pointer"
+                >
+                  <option value="7">Sân 7 người</option>
+                  <option value="5">Sân 5 người</option>
+                  <option value="11">Sân 11 người</option>
+                </select>
+              </div>
+              <div className="sm:col-span-3 px-3 py-1">
+                <label htmlFor="quick-time" className="block text-[11px] font-bold text-slate-500 tracking-wide">KHUNG GIỜ</label>
+                <select
+                  id="quick-time"
+                  value={timeSlot}
+                  onChange={(e) => setTimeSlot(e.target.value)}
+                  className="w-full bg-transparent font-bold text-[14px] text-slate-800 outline-hidden cursor-pointer"
+                >
+                  <option value="gold">Giờ vàng (17h - 20h)</option>
+                  <option value="morning">Sáng sớm</option>
+                  <option value="night">Tối muộn</option>
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab ? onNavigateTab("booking") : onOpenAuth("login", "PLAYER")}
+                  className="w-full h-11 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Tìm Sân</span>
+                </button>
+              </div>
             </div>
 
-            {/* 3 Cam kết nổi bật */}
-            <div className="pt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] font-bold text-slate-700">
-              <div className="flex items-center gap-1.5">
+            {/* Lối tắt nhanh & cam kết */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-[13px]">
+              <div className="flex items-center gap-3 font-semibold text-slate-600">
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab ? onNavigateTab("tournaments") : onOpenAuth("login", "PLAYER")}
+                  className="text-[#0369a1] hover:underline font-bold cursor-pointer"
+                >
+                  Đấu Trường Giải Đấu →
+                </button>
+                <span className="text-slate-300">•</span>
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab ? onNavigateTab("matchmaking") : onOpenAuth("login", "PLAYER")}
+                  className="text-[#0369a1] hover:underline font-bold cursor-pointer"
+                >
+                  Chợ Kèo Phủi →
+                </button>
+              </div>
+              <div className="flex items-center gap-2 text-slate-500 font-medium">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Giữ ca tự động 24/7</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <QrCode className="w-4 h-4 text-[#0369a1] shrink-0" />
-                <span>Đặt cọc VietQR an toàn</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-                <span>Lịch đấu &amp; bảng điểm thời gian thực</span>
+                <span>Giữ ca tự động VietQR</span>
               </div>
             </div>
           </motion.div>
 
-          {/* Cột Phải: Thẻ Tương Tác 3 Chế Độ Màu Đơn Sắc */}
-          <div
-            className="lg:col-span-5"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={() => setTilt({ x: 0, y: 0 })}
-          >
-            <motion.div
-              animate={{ rotateX: tilt.y, rotateY: tilt.x }}
-              transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              style={{ transformPerspective: 1000 }}
-              className="landing-card-radius bg-slate-50 border border-slate-200 p-4 sm:p-5 space-y-4"
-            >
+          {/* Cột Phải: Thẻ Tương Tác 3 Chế Độ (Tĩnh, Điều Khiển Theo Cú Bấm) */}
+          <div className="lg:col-span-5">
+            <div className="landing-card-radius bg-slate-50 border border-slate-200 p-4 sm:p-5 space-y-4">
               {/* Thanh chuyển đổi 3 chế độ */}
               <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-white border border-slate-200">
                 {modeTabs.map((tab) => {
@@ -572,215 +570,34 @@ export default function LandingHero({ onOpenAuth, onNavigateTab }: LandingHeroPr
                   )}
                 </AnimatePresence>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. THANH TRA CỨU SÂN TRỐNG NHANH */}
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="bg-white landing-shell-radius p-5 sm:p-6 border border-slate-200 space-y-4"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-200 text-[#0369a1] flex items-center justify-center">
-              <Search className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-extrabold text-slate-900">
-                Tra Cứu &amp; Giữ Khung Giờ Sân Trống
-              </h2>
-              <p className="text-[13px] text-slate-500 font-medium">
-                Lọc theo khu vực quận huyện, loại sân và ca thi đấu thực tế
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setPitchType("7");
-                setTimeSlot("gold");
-                onOpenAuth("login", "PLAYER");
-              }}
-              className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-[#0369a1] border border-slate-200 text-[13px] font-bold transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
-            >
-              <Flame className="w-3.5 h-3.5 text-amber-600" />
-              <span>Sân 7 giờ vàng</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                onNavigateTab ? onNavigateTab("matchmaking") : onOpenAuth("login", "PLAYER")
-              }
-              className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-[#0369a1] border border-slate-200 text-[13px] font-bold transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
-            >
-              <Swords className="w-3.5 h-3.5 text-[#0369a1]" />
-              <span>Kèo giao hữu tối nay</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                onNavigateTab ? onNavigateTab("tournaments") : onOpenAuth("login", "PLAYER")
-              }
-              className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-[#0369a1] border border-slate-200 text-[13px] font-bold transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
-            >
-              <Trophy className="w-3.5 h-3.5 text-amber-600" />
-              <span>Giải đang mở đăng ký</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-end">
-          <div className="space-y-1.5">
-            <label
-              htmlFor="hero-city"
-              className="text-[13px] font-bold text-slate-700 flex items-center gap-1.5"
-            >
-              <MapPin className="w-4 h-4 text-[#0369a1]" />
-              <span>Khu vực tại Đà Nẵng</span>
-            </label>
-            <select
-              id="hero-city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer"
-            >
-              <option value="dn">Toàn thành phố Đà Nẵng</option>
-              <option value="dn-hai-chau">Hải Châu · Thanh Khê · Sơn Trà</option>
-              <option value="dn-cam-le">Cẩm Lệ · Liên Chiểu · Ngũ Hành Sơn</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label
-              htmlFor="hero-pitch-type"
-              className="text-[13px] font-bold text-slate-700 flex items-center gap-1.5"
-            >
-              <Users className="w-4 h-4 text-[#0369a1]" />
-              <span>Loại mặt sân</span>
-            </label>
-            <select
-              id="hero-pitch-type"
-              value={pitchType}
-              onChange={(e) => setPitchType(e.target.value)}
-              className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer"
-            >
-              <option value="7">Sân 7 người tiêu chuẩn</option>
-              <option value="5">Sân 5 người / Futsal</option>
-              <option value="11">Sân 11 người</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label
-              htmlFor="hero-date"
-              className="text-[13px] font-bold text-slate-700 flex items-center gap-1.5"
-            >
-              <Calendar className="w-4 h-4 text-[#0369a1]" />
-              <span>Ngày thi đấu</span>
-            </label>
-            <select
-              id="hero-date"
-              value={dateChoice}
-              onChange={(e) => setDateChoice(e.target.value)}
-              className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer"
-            >
-              <option value="today">Hôm nay</option>
-              <option value="tomorrow">Ngày mai</option>
-              <option value="weekend">Cuối tuần này</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label
-              htmlFor="hero-timeslot"
-              className="text-[13px] font-bold text-slate-700 flex items-center gap-1.5"
-            >
-              <Clock className="w-4 h-4 text-[#0369a1]" />
-              <span>Khung giờ đá</span>
-            </label>
-            <select
-              id="hero-timeslot"
-              value={timeSlot}
-              onChange={(e) => setTimeSlot(e.target.value)}
-              className="w-full bg-slate-50 hover:bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer"
-            >
-              <option value="gold">16:30 - 20:30 (Giờ cao điểm)</option>
-              <option value="afternoon">14:00 - 16:30 (Buổi chiều)</option>
-              <option value="night">20:30 - 22:30 (Buổi tối)</option>
-              <option value="all">Tất cả khung giờ</option>
-            </select>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onOpenAuth("login", "PLAYER")}
-            className="w-full px-5 py-2.5 h-[44px] rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Search className="w-4 h-4" />
-            <span>Tìm Sân Trống</span>
-          </button>
-        </div>
-      </motion.div>
-
-      {/* 4. THỐNG KÊ HỆ THỐNG CÓ HIỆU ỨNG ĐẾM SỐ TĂNG DẦN */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+      {/* 3. DẢI SỐ LIỆU TINH GỌN (1 DÒNG DUY NHẤT, KHÔNG RỐI MẮT) */}
+      <div className="bg-white rounded-xl border border-slate-200/90 p-3.5 sm:p-4 grid grid-cols-2 lg:grid-cols-4 gap-3.5 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 shadow-2xs">
         {[
-          {
-            label: "Cụm sân hoạt động",
-            val: stats.pitches,
-            icon: MapPin,
-            tone: "bg-sky-50 border-sky-200 text-[#0369a1]",
-          },
-          {
-            label: "Giải đấu phong trào",
-            val: stats.tournaments,
-            icon: Trophy,
-            tone: "bg-amber-50 border-amber-200 text-amber-600",
-          },
-          {
-            label: "Trận đấu hoàn tất",
-            val: stats.matchesPlayed,
-            icon: CheckCircle2,
-            tone: "bg-emerald-50 border-emerald-200 text-emerald-600",
-          },
-          {
-            label: "Kèo giao hữu đang mở",
-            val: stats.posts,
-            icon: Swords,
-            tone: "bg-rose-50 border-rose-200 text-rose-600",
-          },
+          { label: "Cụm sân đối tác", val: stats.pitches, icon: MapPin },
+          { label: "Giải đấu toàn thành phố", val: stats.tournaments, icon: Trophy },
+          { label: "Trận đấu hoàn tất", val: stats.matchesPlayed, icon: CheckCircle2 },
+          { label: "Kèo giao lưu đang mở", val: stats.posts, icon: Swords },
         ].map((item, idx) => {
           const Icon = item.icon;
           return (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.08 * idx }}
-              className="bg-white p-4 sm:p-5 landing-card-interactive border border-slate-200 flex items-center gap-3.5"
-            >
-              <div
-                className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 ${item.tone}`}
-              >
-                <Icon className="w-6 h-6" />
+            <div key={idx} className={`flex items-center gap-3 ${idx > 0 ? "pt-2.5 sm:pt-0 sm:pl-4" : ""}`}>
+              <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 text-slate-700">
+                <Icon className="w-5 h-5 text-slate-600" />
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-black text-slate-900">
+                <div className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
                   <AnimatedCounter value={item.val} loading={stats.loading} />
                 </div>
-                <div className="text-[13px] sm:text-[14px] font-bold text-slate-600">
+                <div className="text-[13px] font-semibold text-slate-500">
                   {item.label}
                 </div>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

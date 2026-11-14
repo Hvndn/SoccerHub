@@ -1043,6 +1043,11 @@ export async function handleOfflineApi(urlStr: string, options: RequestInit = {}
     const matrix = courts.map((c) => {
       const base = pitch.avgPricePerHour || 260000;
       const peak = pitch.peakPricePerHour || 340000;
+      const courtKey = `${pid}_${c.name}`;
+      const savedImages = (store as any).courtImagesMap?.[courtKey];
+      const courtImages = savedImages && savedImages.length > 0 ? savedImages : (c.type === 'SAN_5'
+        ? ['https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=800&q=80']
+        : ['https://images.unsplash.com/photo-1529900241452-f47268d87ec9?auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80']);
       const slots = slotLabels.map((time, idx) => {
         const startHour = parseInt(time.split(':')[0] || '17', 10);
         const isPeak = startHour >= 17 && startHour <= 20;
@@ -1078,10 +1083,33 @@ export async function handleOfflineApi(urlStr: string, options: RequestInit = {}
         basePrice: base,
         peakPrice: peak,
         status: 'ACTIVE',
+        images: courtImages,
+        imageUrl: courtImages[0],
         slots,
       };
     });
     return jsonResponse(matrix);
+  }
+
+  const pitchGalleryMatch = path.match(/^\/api\/v1\/pitches\/([^/]+)\/gallery$/);
+  if (pitchGalleryMatch && method === 'PUT') {
+    const pid = Number(String(pitchGalleryMatch[1]).replace(/\D/g, '')) || 1;
+    const p = store.pitches.find((item) => Number(item.id) === pid);
+    if (p) {
+      (p as any).gallery = body.gallery || [];
+      saveStore(store);
+    }
+    return jsonResponse({ message: 'Đã cập nhật album ảnh cụm sân', gallery: body.gallery || [] });
+  }
+
+  const courtImagesMatch = path.match(/^\/api\/v1\/pitches\/([^/]+)\/courts\/images$/);
+  if (courtImagesMatch && method === 'PUT') {
+    const pid = Number(String(courtImagesMatch[1]).replace(/\D/g, '')) || 1;
+    if (!(store as any).courtImagesMap) (store as any).courtImagesMap = {};
+    const key = `${pid}_${body.courtName}`;
+    (store as any).courtImagesMap[key] = body.images || [];
+    saveStore(store);
+    return jsonResponse({ message: 'Đã cập nhật album ảnh sân con', courtName: body.courtName, images: body.images || [] });
   }
 
   const pitchStatsMatch = path.match(/^\/api\/v1\/pitches\/([^/]+)\/stats$/);
@@ -1238,7 +1266,7 @@ export async function handleOfflineApi(urlStr: string, options: RequestInit = {}
     }
   }
 
-  const bookingActionMatch = path.match(/^\/api\/v1\/pitches\/bookings\/([^/]+)\/(reschedule|customer-reschedule|cancel|cancel-by-customer|check-in|confirm-payment|remind-handover)$/);
+  const bookingActionMatch = path.match(/^\/api\/v1\/pitches\/bookings\/([^/]+)\/(reschedule|customer-reschedule|cancel|cancel-by-customer|check-in|confirm-payment|complete|remind-handover)$/);
   if (bookingActionMatch) {
     const bid = Number(bookingActionMatch[1]);
     const action = bookingActionMatch[2];
@@ -1253,6 +1281,10 @@ export async function handleOfflineApi(urlStr: string, options: RequestInit = {}
         b.status = 'PLAYING';
       } else if (action === 'confirm-payment') {
         b.status = 'BOOKED';
+      } else if (action === 'complete') {
+        b.status = 'COMPLETED';
+        b.cashCollected = (b.cashDue || 0);
+        b.cashDue = 0;
       }
       saveStore(store);
     }

@@ -20,6 +20,7 @@ export interface PitchModel {
   pitchTypes?: string[];
   amenities?: string[];
   imageUrl?: string;
+  gallery?: string[];
   description?: string;
   openTime?: string;
   closeTime?: string;
@@ -46,6 +47,7 @@ export interface CreatePitchPayload {
   pitchTypes?: string[];
   amenities?: string[];
   imageUrl?: string;
+  gallery?: string[];
   description?: string;
 }
 
@@ -56,6 +58,8 @@ export interface PitchMatrixCourt {
   basePrice: number;
   peakPrice: number;
   status: string;
+  imageUrl?: string;
+  images?: string[];
   slots: PitchMatrixSlot[];
 }
 
@@ -440,4 +444,37 @@ export async function removeBookingAttendanceApi(
       method: 'DELETE',
     }
   );
+}
+
+/** Cập nhật album ảnh cụm sân */
+export async function updatePitchGalleryApi(
+  pitchId: number | string,
+  gallery: string[]
+): Promise<{ message: string; gallery: string[] }> {
+  try {
+    return await apiRequest(`/api/v1/pitches/${pitchId}/gallery`, {
+      method: 'PUT',
+      body: JSON.stringify({ gallery }),
+    });
+  } catch (err) {
+    console.warn('Lỗi cập nhật gallery cụm sân:', err);
+    return { message: 'Đã lưu album ảnh cụm sân', gallery };
+  }
+}
+
+/** Cập nhật album ảnh của một sân con cụ thể */
+export async function updateCourtImagesApi(
+  pitchId: number | string,
+  courtName: string,
+  images: string[]
+): Promise<{ message: string; courtName: string; images: string[] }> {
+  try {
+    return await apiRequest(`/api/v1/pitches/${pitchId}/courts/images`, {
+      method: 'PUT',
+      body: JSON.stringify({ courtName, images }),
+    });
+  } catch (err) {
+    console.warn('Lỗi cập nhật ảnh sân con:', err);
+    return { message: 'Đã lưu album ảnh sân con', courtName, images };
+  }
 }

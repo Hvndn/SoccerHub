@@ -69,6 +69,7 @@ import {
 } from "lucide-react";
 
 interface TournamentOrganizerPortalProps {
+  initialTournamentId?: number | string | null;
   onBackToHome?: () => void;
   onNavigateTab?: (tab: string) => void;
   onOpenBracket?: (tournamentId: string) => void;
@@ -84,9 +85,10 @@ export default function TournamentOrganizerPortal({
   onBackToHome,
   onNavigateTab,
   onOpenBracket,
- user,
- onStartDm,
- onOpenTournamentChat
+  initialTournamentId,
+  user,
+  onStartDm,
+  onOpenTournamentChat
 }: TournamentOrganizerPortalProps) {
  // Sport Filter State
  const [selectedSport, setSelectedSport] = useState<string>("all");
@@ -145,11 +147,23 @@ export default function TournamentOrganizerPortal({
  };
 
  React.useEffect(() => {
- fetchDbTournaments();
- // Cập nhật ngay khi cache dùng chung thay đổi (sau khi tạo giải / thêm đội / bốc thăm)
- const unsubscribe = subscribeTournaments((list) => setDbTournaments(list));
- return unsubscribe;
- }, []);
+    fetchDbTournaments();
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      const tid = p.get("tournamentId");
+      if (tid && !isNaN(Number(tid))) {
+        setSelectedTournamentId(Number(tid));
+      }
+    }
+    const unsubscribe = subscribeTournaments((list) => setDbTournaments(list));
+    return unsubscribe;
+  }, []);
+
+  React.useEffect(() => {
+    if (initialTournamentId && !isNaN(Number(initialTournamentId))) {
+      setSelectedTournamentId(Number(initialTournamentId));
+    }
+  }, [initialTournamentId]);
 
  // Danh sách giải lấy  — không dùng dữ liệu giả.
  const tournaments = useMemo(
@@ -200,6 +214,19 @@ export default function TournamentOrganizerPortal({
  () => dbTournaments.find((t: any) => t.id === activeTournamentId) ?? null,
  [dbTournaments, activeTournamentId]
  );
+
+  const kpiStats = useMemo(() => {
+    const totalTournaments = dbTournaments.length;
+    const ongoing = dbTournaments.filter((t: any) => t.status === "ONGOING").length;
+    const open = dbTournaments.filter((t: any) => (t.status ?? "OPEN") === "OPEN").length;
+    const totalTeams = dbTournaments.reduce((acc, t: any) => acc + (t.teams?.length || 0), 0);
+    const totalPrize = dbTournaments.reduce((acc, t: any) => acc + Number(t.prizePool || 0), 0);
+    const pendingTeamsCount = dbTournaments.reduce((acc, t: any) => {
+      const p = (t.teams ?? []).filter((tm: any) => tm.registrationStatus === "PENDING_PAYMENT").length;
+      return acc + p;
+    }, 0);
+    return { totalTournaments, ongoing, open, totalTeams, totalPrize, pendingTeamsCount };
+  }, [dbTournaments]);
 
   // --- Duyệt đội đăng ký ---
   const [pendingTeams, setPendingTeams] = useState<PendingTeam[]>([]);
@@ -671,6 +698,40 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   memberCount: 12,
  });
 
+ const manualTeamErrors = useMemo(() => {
+   const errs: Record<string, string> = {};
+   const name = addTeamForm.teamName.trim();
+   if (!name) {
+     errs.teamName = 'Vui lòng nhập tên đội bóng.';
+   } else if (name.length < 3) {
+     errs.teamName = 'Tên đội phải có ít nhất 3 ký tự.';
+   } else if (activeTournament?.teams?.some((t: any) => (t?.name || t?.teamName || '').trim().toLowerCase() === name.toLowerCase())) {
+     errs.teamName = `Đội "${name}" đã có trong danh sách thi đấu.`;
+   } else if (pendingTeams?.some((t: any) => (t?.teamName || '').trim().toLowerCase() === name.toLowerCase())) {
+     errs.teamName = `Đội "${name}" đang chờ duyệt hồ sơ.`;
+   }
+
+   const phone = addTeamForm.captainPhone.trim();
+   if (phone && !/^0[0-9]{9}$/.test(phone)) {
+     errs.captainPhone = 'Số ĐT phải gồm 10 chữ số (VD: 0909…).';
+   }
+
+   const members = Number(addTeamForm.memberCount);
+   if (!Number.isInteger(members) || members < 5 || members > 25) {
+     errs.memberCount = 'Quân số phải từ 5 - 25 người.';
+   }
+
+   const currentCount = activeTournament?.teams?.length || 0;
+   const maxCount = activeTournament?.totalTeams || 0;
+   if (maxCount > 0 && currentCount >= maxCount) {
+     errs.quota = `Giải đã đủ ${maxCount}/${maxCount} đội, không thể thêm mới.`;
+   }
+
+   return errs;
+ }, [addTeamForm, activeTournament, pendingTeams]);
+
+ const isManualTeamValid = Object.keys(manualTeamErrors).length === 0;
+
  /** Gửi yêu cầu thêm đội thủ công vào giải đang chọn. */
  const handleCopyInviteLink = () => {
     if (!activeTournament?.id) return;
@@ -688,8 +749,9 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
    setVarNotice("❌ Hãy chọn giải đấu trước khi thêm đội.");
    return;
   }
-  if (addTeamForm.teamName.trim().length < 3) {
-   setVarNotice("❌ Tên đội phải có ít nhất 3 ký tự.");
+  if (!isManualTeamValid) {
+   const firstErr = Object.values(manualTeamErrors)[0] || "Thông tin đội bóng chưa hợp lệ.";
+   setVarNotice("❌ " + firstErr);
    return;
   }
   setAddingTeam(true);
@@ -1078,57 +1140,109 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  return (
  <div className="space-y-4 sm:space-y-8 animate-fade-in pb-16">
  {/* HEADER BAR */}
- <div className="bg-white text-slate-900 rounded-lg p-4 sm:p-8 border border-slate-200/90 shadow-sm relative overflow-hidden">
- 
- 
- <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-6">
- <div className="space-y-3">
- <div className="flex items-center space-x-3">
- <div className="flex items-center space-x-2 text-[14px] font-mono text-sky-900 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
- <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-ping" />
- <span>
- {loadingDb ? "Đang tải dữ liệu…" : `${dbTournaments.length} giải đấu`}
- </span>
- </div>
- </div>
-
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2.5">
-            <span>Quản Lý Giải Đấu</span>
-            <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[13px] font-bold">
-              {loadingDb ? "Đang tải…" : `${dbTournaments.length} giải`}
-            </span>
-          </h1>
-          <p className="text-[13px] text-slate-500 mt-1">
-            Bốc thăm chia nhánh, duyệt hồ sơ đội bóng tham gia và điều hành kết quả thi đấu.
-          </p>
+  <div className="bg-white text-slate-900 rounded-2xl p-5 sm:p-7 border border-slate-200/90 shadow-sm relative overflow-hidden">
+    {/* TẦNG 1: Tiêu đề & Cụm nút Thao tác */}
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="inline-flex items-center gap-1.5 text-[13px] font-mono font-bold text-sky-900 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
+            <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-ping" />
+            <span>{loadingDb ? "Đang tải dữ liệu…" : `${dbTournaments.length} giải đấu`}</span>
+          </span>
         </div>
+        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2.5">
+          <span>Quản Lý Giải Đấu</span>
+          <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[13px] font-bold">
+            {loadingDb ? "Đang tải…" : `${dbTournaments.length} giải`}
+          </span>
+        </h1>
+        <p className="text-[13px] text-slate-500 mt-1">
+          Bốc thăm chia nhánh, duyệt hồ sơ đội bóng tham gia và điều hành kết quả thi đấu.
+        </p>
+      </div>
 
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={fetchDbTournaments}
-            disabled={loadingDb}
-            className="px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[13px] font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loadingDb ? "animate-spin" : ""}`} />
-            <span>Tải Lại</span>
-          </button>
+      <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-center">
+        <button
+          type="button"
+          onClick={fetchDbTournaments}
+          disabled={loadingDb}
+          className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[13px] font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loadingDb ? "animate-spin" : ""}`} />
+          <span>Tải Lại</span>
+        </button>
 
-          <Link
-            href="/tournaments/new"
-            className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>+ Tạo Giải Mới</span>
-          </Link>
+        <Link
+          href="/tournaments/new"
+          className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+        >
+          <Plus className="w-4 h-4 stroke-[3]" />
+          <span>+ Tạo Giải Mới</span>
+        </Link>
+      </div>
+    </div>
+
+    {/* TẦNG 2: 4 THẺ KPI ĐIỀU HÀNH TOÀN MÀN HÌNH */}
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-5">
+      <div className="p-4 rounded-xl bg-sky-50/70 border border-sky-200 flex items-center gap-3.5 shadow-2xs">
+        <div className="w-11 h-11 rounded-xl bg-[#0369a1] text-white flex items-center justify-center shrink-0 shadow-xs">
+          <Trophy className="w-5 h-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
+            {kpiStats.totalTournaments}
+          </div>
+          <div className="text-[13px] font-semibold text-slate-600 truncate">
+            Giải đấu ({kpiStats.open} mở • {kpiStats.ongoing} live)
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center gap-3.5 shadow-2xs">
+        <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+          <Users className="w-5 h-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
+            {kpiStats.totalTeams}
+          </div>
+          <div className="text-[13px] font-semibold text-slate-600 truncate">
+            Đội bóng tham gia
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 flex items-center gap-3.5 shadow-2xs">
+        <div className="w-11 h-11 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center shrink-0 shadow-xs">
+          <Clock className="w-5 h-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
+            {kpiStats.pendingTeamsCount}
+          </div>
+          <div className="text-[13px] font-semibold text-slate-600 truncate">
+            Đội chờ duyệt phí
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200 flex items-center gap-3.5 shadow-2xs">
+        <div className="w-11 h-11 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+          <Wallet className="w-5 h-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
+            {kpiStats.totalPrize > 0 ? `${(kpiStats.totalPrize / 1_000_000).toFixed(1)}Tr` : "0đ"}
+          </div>
+          <div className="text-[13px] font-semibold text-slate-600 truncate">
+            Tổng quỹ giải thưởng
+          </div>
         </div>
       </div>
     </div>
 
     {varNotice && (
-      <div className="mt-3 flex items-start gap-2.5 rounded-lg border border-sky-200 bg-sky-50 px-3.5 py-2.5 animate-fade-in text-[13px]">
+      <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-sky-200 bg-sky-50 px-3.5 py-2.5 animate-fade-in text-[13px]">
         <AlertCircle className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
         <p className="font-bold text-sky-900 flex-1">{varNotice}</p>
         <button
@@ -1141,34 +1255,34 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       </div>
     )}
 
-    {/* SPORT CATEGORY FILTERS */}
- <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
- <div className="flex flex-wrap items-center gap-2">
- <span className="text-[14px] font-bold text-slate-500 mr-2 flex items-center gap-1.5 whitespace-nowrap">
- <Filter className="w-3.5 h-3.5 text-slate-500" /> Môn:
- </span>
- {SPORT_FILTERS.map(item => (
- <button
- key={item.id}
- onClick={() => setSelectedSport(item.id)}
- className={`px-3.5 py-1.5 rounded-xl text-[14px] font-extrabold transition-all whitespace-nowrap ${
- selectedSport === item.id
- ? "bg-[#0369a1] text-white shadow-xs"
- : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
- }`}
- >
- {item.label} ({countBySportFilter(item.id)})
- </button>
- ))}
- </div>
+    {/* TẦNG 3: BỘ LỌC THỂ THỨC MÔN THỂ THAO */}
+    <div className="mt-6 pt-5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[14px] font-bold text-slate-500 mr-2 flex items-center gap-1.5 whitespace-nowrap">
+          <Filter className="w-3.5 h-3.5 text-slate-500" /> Môn:
+        </span>
+        {SPORT_FILTERS.map(item => (
+          <button
+            key={item.id}
+            onClick={() => setSelectedSport(item.id)}
+            className={`px-3.5 py-1.5 rounded-xl text-[14px] font-extrabold transition-all whitespace-nowrap cursor-pointer ${
+              selectedSport === item.id
+                ? "bg-[#0369a1] text-white shadow-xs"
+                : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
+            }`}
+          >
+            {item.label} ({countBySportFilter(item.id)})
+          </button>
+        ))}
+      </div>
 
- <div className="text-[14px] font-mono text-slate-500 shrink-0 hidden md:block">
- Giải đang mở: <span className="text-sky-800 font-bold">{countBySportFilter("all")} giải </span>
- </div>
- </div>
- </div>
+      <div className="text-[14px] font-mono text-slate-500 shrink-0 hidden md:block">
+        Giải đang mở: <span className="text-sky-800 font-bold">{countBySportFilter("all")} giải </span>
+      </div>
+    </div>
+  </div>
 
- {/* FOOTBALL TOURNAMENT BENTO CAROUSEL CARDS */}
+  {/* FOOTBALL TOURNAMENT BENTO CAROUSEL CARDS */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
  {loadingDb && filteredTournaments.length === 0 ? (
  [0, 1, 2].map((i) => (
@@ -1996,47 +2110,82 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
-          <input
-            type="text"
-            value={addTeamForm.teamName}
-            onChange={(e) => setAddTeamForm({ ...addTeamForm, teamName: e.target.value })}
-            placeholder="Tên Đội Bóng (FC) *"
-            className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-          <input
-            type="text"
-            value={addTeamForm.captainName}
-            onChange={(e) => setAddTeamForm({ ...addTeamForm, captainName: e.target.value })}
-            placeholder="Họ tên người liên hệ / đội trưởng"
-            className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-          <input
-            type="tel"
-            value={addTeamForm.captainPhone}
-            onChange={(e) => setAddTeamForm({ ...addTeamForm, captainPhone: e.target.value })}
-            placeholder="Số ĐT / Zalo liên hệ"
-            className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-          <div className="flex items-center gap-2">
+        {manualTeamErrors.quota && (
+          <div className="p-2.5 rounded-lg bg-amber-100 border border-amber-300 text-amber-900 text-[13px] font-bold flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+            <span>{manualTeamErrors.quota}</span>
+          </div>
+        )}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div>
             <input
-              type="number"
-              min={5}
-              max={25}
-              value={addTeamForm.memberCount}
-              onChange={(e) => setAddTeamForm({ ...addTeamForm, memberCount: Number(e.target.value) })}
-              placeholder="Quân số (5-25)"
-              className="w-24 px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              type="text"
+              value={addTeamForm.teamName}
+              onChange={(e) => setAddTeamForm({ ...addTeamForm, teamName: e.target.value })}
+              placeholder="Tên Đội Bóng (FC) *"
+              className={`w-full px-3 py-2 rounded-lg border bg-white text-[13px] text-slate-900 font-bold focus:outline-none focus:ring-2 ${
+                manualTeamErrors.teamName && addTeamForm.teamName ? 'border-rose-400 focus:ring-rose-500' : 'border-slate-300 focus:ring-emerald-500'
+              }`}
             />
-            <button
-              type="button"
-              onClick={handleAddManualTeam}
-              disabled={addingTeam || addTeamForm.teamName.trim().length < 3}
-              className="flex-1 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-1 cursor-pointer"
-            >
-              {addingTeam ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-              <span>Lưu Đội</span>
-            </button>
+            {manualTeamErrors.teamName && addTeamForm.teamName && (
+              <p className="mt-1 text-[13px] font-semibold text-rose-600 leading-tight">
+                {manualTeamErrors.teamName}
+              </p>
+            )}
+          </div>
+          <div>
+            <input
+              type="text"
+              value={addTeamForm.captainName}
+              onChange={(e) => setAddTeamForm({ ...addTeamForm, captainName: e.target.value })}
+              placeholder="Họ tên người liên hệ / đội trưởng"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+          <div>
+            <input
+              type="tel"
+              value={addTeamForm.captainPhone}
+              onChange={(e) => setAddTeamForm({ ...addTeamForm, captainPhone: e.target.value })}
+              placeholder="Số ĐT / Zalo (10 số)"
+              className={`w-full px-3 py-2 rounded-lg border bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 ${
+                manualTeamErrors.captainPhone && addTeamForm.captainPhone ? 'border-rose-400 focus:ring-rose-500' : 'border-slate-300 focus:ring-emerald-500'
+              }`}
+            />
+            {manualTeamErrors.captainPhone && addTeamForm.captainPhone && (
+              <p className="mt-1 text-[13px] font-semibold text-rose-600 leading-tight">
+                {manualTeamErrors.captainPhone}
+              </p>
+            )}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={5}
+                max={25}
+                value={addTeamForm.memberCount}
+                onChange={(e) => setAddTeamForm({ ...addTeamForm, memberCount: Number(e.target.value) })}
+                placeholder="Quân số (5-25)"
+                className={`w-24 px-3 py-2 rounded-lg border bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 ${
+                  manualTeamErrors.memberCount ? 'border-rose-400 focus:ring-rose-500' : 'border-slate-300 focus:ring-emerald-500'
+                }`}
+              />
+              <button
+                type="button"
+                onClick={handleAddManualTeam}
+                disabled={addingTeam || !isManualTeamValid}
+                className="flex-1 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 cursor-pointer"
+              >
+                {addingTeam ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                <span>Lưu Đội</span>
+              </button>
+            </div>
+            {manualTeamErrors.memberCount && (
+              <p className="mt-1 text-[13px] font-semibold text-rose-600 leading-tight">
+                {manualTeamErrors.memberCount}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -3565,8 +3714,6 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
             </button>
           )}
         </div>
-      </div>
-
       </div>
 
       {/* POPUP MODAL MỜI CẦU THỦ QUA EMAIL NỔI BẬT KHÔNG BỊ TRÔI XUỐNG DƯỚI */}

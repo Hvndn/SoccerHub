@@ -5,7 +5,7 @@
  */
 
 export interface RealtimeBookingEvent {
-  type: "BOOKING_CREATED" | "BOOKING_CHECKED_IN" | "BOOKING_CANCELLED" | "OPERATING_HOURS_UPDATED" | "TOURNAMENT_INVITE" | "MATCH_RESULT_UPDATED";
+  type: "BOOKING_CREATED" | "BOOKING_CHECKED_IN" | "BOOKING_COMPLETED" | "BOOKING_CANCELLED" | "OPERATING_HOURS_UPDATED" | "TOURNAMENT_INVITE" | "MATCH_RESULT_UPDATED";
   pitchId?: number | string;
   tournamentId?: number | string;
   tournamentTitle?: string;
