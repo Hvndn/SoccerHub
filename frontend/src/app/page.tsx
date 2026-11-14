@@ -56,16 +56,16 @@ export default function Home() {
       return tab;
     }
     if (role === "ORGANIZER") {
-      // Ban tổ chức chỉ sử dụng các tab điều hành giải, giải đấu, cộng đồng, hồ sơ và trang chủ
-      const allowedOrganizerTabs = ["home", "landing", "organizer", "tournaments", "community", "profile"];
+      // Ban tổ chức chỉ sử dụng các tab điều hành giải, giải đấu, cộng đồng, hồ sơ, CLB và trang chủ
+      const allowedOrganizerTabs = ["home", "landing", "organizer", "tournaments", "community", "profile", "team-management", "club"];
       if (!allowedOrganizerTabs.includes(tab)) {
         return "organizer";
       }
       return tab;
     }
     if (!role) {
-      // Khách chưa đăng nhập: Được khám phá Trang Chủ (home/landing), Đặt Sân (booking), Chợ Kèo, Cộng Đồng, Giải Đấu
-      const guestAllowedTabs = ["home", "landing", "booking", "matchmaking", "community", "tournaments"];
+      // Khách chưa đăng nhập: Được khám phá Trang Chủ (home/landing), Đặt Sân (booking), Chợ Kèo, Cộng Đồng, Giải Đấu, Câu Lạc Bộ
+      const guestAllowedTabs = ["home", "landing", "booking", "matchmaking", "community", "tournaments", "team-management", "club"];
       if (!guestAllowedTabs.includes(tab)) {
         return "home";
       }
@@ -220,7 +220,7 @@ export default function Home() {
  // Tab chỉ dành cho ORGANIZER hoặc người có quyền điều hành giải
  const ORGANIZER_TABS = ["organizer"];
  // Tab yêu cầu đăng nhập (bất kỳ vai trò nào cũng phải có tài khoản)
- const AUTH_REQUIRED_TABS = ["my-activities", "profile", "team-management", "membership"];
+ const AUTH_REQUIRED_TABS = ["my-activities", "profile", "membership"];
 
  // Role Guard: Tự động điều hướng và bảo vệ phân quyền nhất quán khi role thay đổi
  React.useEffect(() => {
@@ -707,7 +707,7 @@ const handleTabChange = (newTab: string, tournamentId?: number | null) => {
   <CommunityHub user={currentUser} onOpenAuth={handleOpenAuth} onNavigateTab={handleTabChange} initialDmPartner={pendingDmPartner} initialChannel={pendingChannel} />
  )}
 
- {activeTab === "team-management" && (
+ {(activeTab === "team-management" || activeTab === "club") && (
  currentUser ? (
  <TeamClubManagement
  user={currentUser}

@@ -398,6 +398,19 @@ const mobileNav: MobileNavItem[] =
   <MessageCircle className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-[#0369a1] shrink-0" />
   <span>Cộng Đồng</span>
   </button>
+
+  <button
+  type="button"
+  onClick={() => handleSelectSubTab("team-management")}
+  className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] xl:text-sm font-bold transition-all ${
+  activeTab === "team-management" || activeTab === "club"
+  ? "bg-[#0369a1] text-white shadow-sm font-black"
+  : "text-slate-700 hover:bg-slate-100"
+  }`}
+  >
+  <Shield className="w-4 h-4 xl:w-[18px] xl:h-[18px] text-[#0369a1] shrink-0" />
+  <span>Câu Lạc Bộ</span>
+  </button>
  </>
  ) : !user ? (
  /* GUEST NAVBAR ITEMS — khám phá + CTA tham gia */
@@ -467,6 +480,19 @@ const mobileNav: MobileNavItem[] =
  <span>Giải Đấu</span>
  </button>
 
+ <button
+ type="button"
+ onClick={() => handleSelectSubTab("team-management")}
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3 xl:px-4 py-2 rounded-xl text-[14px] font-bold transition-all ${
+ activeTab === "team-management" || activeTab === "club"
+ ? "bg-[#0369a1] text-white shadow-xs font-black"
+ : "text-slate-700 hover:bg-slate-100"
+ }`}
+ >
+ <Shield className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "team-management" || activeTab === "club" ? "text-white" : "text-slate-500"}`} />
+ <span>Câu Lạc Bộ</span>
+ </button>
+
  </>
  ) : (
  /* PLAYER NAVBAR ITEMS */
@@ -534,6 +560,19 @@ const mobileNav: MobileNavItem[] =
  >
  <Trophy className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "tournaments" ? "text-white" : "text-slate-500"}`} />
  <span>Giải Đấu</span>
+ </button>
+
+ <button
+ type="button"
+ onClick={() => handleSelectSubTab("team-management")}
+ className={`flex items-center space-x-1.5 xl:space-x-2 px-3.5 py-2 rounded-xl text-[14px] font-bold transition-all ${
+ activeTab === "team-management" || activeTab === "club"
+ ? "bg-[#0369a1] text-white shadow-xs font-black"
+ : "text-slate-700 hover:bg-slate-100"
+ }`}
+ >
+ <Shield className={`w-4 h-4 shrink-0 transition-colors ${activeTab === "team-management" || activeTab === "club" ? "text-white" : "text-slate-500"}`} />
+ <span>Câu Lạc Bộ</span>
  </button>
 
 
@@ -1466,28 +1505,29 @@ const mobileNav: MobileNavItem[] =
               <ChevronRight className={`w-4 h-4 shrink-0 ${activeTab === "tournaments" ? "text-white/70" : "text-slate-400"}`} />
             </button>
 
+            <button
+              type="button"
+              onClick={() => {
+                handleSelectSubTab("team-management");
+                setShowMobileDrawer(false);
+              }}
+              className={`w-full text-left p-3 rounded-xl flex items-center justify-between transition-colors ${
+                activeTab === "team-management" || activeTab === "club"
+                  ? "bg-[#0369a1] text-white font-bold shadow-xs"
+                  : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/70"
+              }`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "team-management" || activeTab === "club" ? "bg-white/20 text-white" : "bg-sky-50 text-[#0369a1]"}`}>
+                  <Shield className="w-4 h-4" />
+                </div>
+                <span className="font-bold text-[14px] truncate">Câu Lạc Bộ & Đội Bóng</span>
+              </div>
+              <ChevronRight className={`w-4 h-4 shrink-0 ${activeTab === "team-management" || activeTab === "club" ? "text-white/70" : "text-slate-400"}`} />
+            </button>
+
             {user && (
               <>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSelectSubTab("team-management");
-                    setShowMobileDrawer(false);
-                  }}
-                  className={`w-full text-left p-3 rounded-xl flex items-center justify-between transition-colors ${
-                    activeTab === "team-management"
-                      ? "bg-[#0369a1] text-white font-bold shadow-xs"
-                      : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/70"
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "team-management" ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-700"}`}>
-                      <Users className="w-4 h-4" />
-                    </div>
-                    <span className="font-bold text-[14px] truncate">Đội Bóng & CLB Của Tôi</span>
-                  </div>
-                  <ChevronRight className={`w-4 h-4 shrink-0 ${activeTab === "team-management" ? "text-white/70" : "text-slate-400"}`} />
-                </button>
 
                 <button
                   type="button"

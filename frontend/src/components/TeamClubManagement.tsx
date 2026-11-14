@@ -23,6 +23,11 @@ import {
   AlertCircle,
   Info,
   Check,
+  Handshake,
+  Sparkles,
+  Share2,
+  Edit3,
+  ExternalLink,
 } from "lucide-react";
 import { fetchTournaments, sportLabel } from "@/lib/tournamentService";
 
@@ -64,6 +69,21 @@ interface ClubScheduleMatch {
   rsvps: Record<string, "ATTENDING" | "ABSENT" | "LATE">;
 }
 
+export interface ClubSponsor {
+  id: string;
+  name: string;
+  representative: string;
+  phone: string;
+  tier: "Kim Cương" | "Vàng" | "Bạc" | "Đồng Hành" | "Hiện Vật";
+  amount: number;
+  inKindNote?: string;
+  logoPlacement: "Ngực Áo Chính" | "Lưng Áo" | "Tay Áo" | "Quần Đấu" | "Banner Sân & Nước Uống";
+  contractPeriod: string;
+  rightsSummary: string;
+  disbursedToFund: boolean;
+  createdAt: string;
+}
+
 interface GrassrootsClub {
   id: string;
   name: string;
@@ -77,6 +97,7 @@ interface GrassrootsClub {
   roster: SquadPlayer[];
   expenses: ClubExpense[];
   matches: ClubScheduleMatch[];
+  sponsors?: ClubSponsor[];
 }
 
 const DEFAULT_DEMO_CLUB: GrassrootsClub = {
@@ -218,6 +239,50 @@ const DEFAULT_DEMO_CLUB: GrassrootsClub = {
       },
     },
   ],
+  sponsors: [
+    {
+      id: "sp-1",
+      name: "Phủi Sport Store Đà Nẵng",
+      representative: "Anh Tuấn (Chủ Shop)",
+      phone: "0905888999",
+      tier: "Vàng",
+      amount: 3000000,
+      inKindNote: "Tài trợ 15 bộ trang phục thi đấu mùa giải 2026 + 3 quả bóng thi đấu",
+      logoPlacement: "Ngực Áo Chính",
+      contractPeriod: "Mùa Giải 2026 (12 Tháng)",
+      rightsSummary: "In logo to trước ngực áo đấu sân nhà & sân khách; Đăng bài cảm ơn fanpage sau mỗi trận thắng",
+      disbursedToFund: true,
+      createdAt: "01/10/2026",
+    },
+    {
+      id: "sp-2",
+      name: "Nha Khoa Quốc Tế Smile Care",
+      representative: "Bác Sĩ Hoàng Hải",
+      phone: "0914222333",
+      tier: "Bạc",
+      amount: 1500000,
+      inKindNote: "Voucher giảm 30% chăm sóc răng miệng cho cầu thủ và người thân",
+      logoPlacement: "Tay Áo",
+      contractPeriod: "6 Tháng (Q4/2026 - Q1/2027)",
+      rightsSummary: "In logo tay áo thi đấu bên phải; Đặt standee/banner chụp hình đội trước các trận giao lưu",
+      disbursedToFund: false,
+      createdAt: "15/10/2026",
+    },
+    {
+      id: "sp-3",
+      name: "Cà Phê Bóng Đá 247",
+      representative: "Chị Thảo Vy",
+      phone: "0935111222",
+      tier: "Hiện Vật",
+      amount: 0,
+      inKindNote: "Tài trợ toàn bộ nước uống giải khát (Revive + Lavie) trong mọi trận đấu giao lưu cuối tuần",
+      logoPlacement: "Banner Sân & Nước Uống",
+      contractPeriod: "Cả Năm 2026",
+      rightsSummary: "Đội tổ chức liên hoan sau trận tại quán cà phê; Đặt khay nước gắn logo quán tại cabin",
+      disbursedToFund: false,
+      createdAt: "05/11/2026",
+    },
+  ],
 };
 
 const STORAGE_KEY = "turfzone_player_clubs_v1";
@@ -228,7 +293,7 @@ export default function TeamClubManagement({
 }: TeamClubManagementProps) {
   // Main Sub-tabs: Roster, Treasury, RSVP, Tournament
   const [activeSubTab, setActiveSubTab] = useState<
-    "roster" | "treasury" | "rsvp" | "tournament"
+    "roster" | "treasury" | "rsvp" | "tournament" | "sponsors"
   >("roster");
 
   // Tournament integration states
@@ -286,6 +351,20 @@ export default function TeamClubManagement({
   const [newMatchFormat, setNewMatchFormat] = useState<"Sân 5" | "Sân 7" | "Sân 11">("Sân 5");
   const [newMatchNote, setNewMatchNote] = useState("Kèo giao lưu nhẹ nhàng vui vẻ");
 
+  // Sponsor state variables
+  const [showAddSponsorForm, setShowAddSponsorForm] = useState(false);
+  const [editingSponsorId, setEditingSponsorId] = useState<string | null>(null);
+  const [sponsorName, setSponsorName] = useState("");
+  const [sponsorRep, setSponsorRep] = useState("");
+  const [sponsorPhone, setSponsorPhone] = useState("");
+  const [sponsorTier, setSponsorTier] = useState<"Kim Cương" | "Vàng" | "Bạc" | "Đồng Hành" | "Hiện Vật">("Vàng");
+  const [sponsorAmount, setSponsorAmount] = useState<number | string>(2000000);
+  const [sponsorInKind, setSponsorInKind] = useState("");
+  const [sponsorPlacement, setSponsorPlacement] = useState<"Ngực Áo Chính" | "Lưng Áo" | "Tay Áo" | "Quần Đấu" | "Banner Sân & Nước Uống">("Ngực Áo Chính");
+  const [sponsorPeriod, setSponsorPeriod] = useState("Mùa Giải 2026 (12 Tháng)");
+  const [sponsorRights, setSponsorRights] = useState("In logo áo đấu, chụp ảnh check-in banner sân trước trận và tag fanpage");
+  const [sponsorToast, setSponsorToast] = useState("");
+
   const myPhone = (user?.phone ?? "").toString().replace(/\s/g, "");
 
   // Load clubs from local storage / API
@@ -310,6 +389,11 @@ export default function TeamClubManagement({
       } catch {
         // ignore
       }
+    } else {
+      saved = saved.map((c) => ({
+        ...c,
+        sponsors: Array.isArray(c.sponsors) && c.sponsors.length > 0 ? c.sponsors : DEFAULT_DEMO_CLUB.sponsors,
+      }));
     }
 
     setClubs(saved);
@@ -807,6 +891,195 @@ export default function TeamClubManagement({
     }
   };
 
+  // =========================================================
+  // SPONSOR HANDLERS & HELPERS
+  // =========================================================
+  const handleResetSponsorForm = () => {
+    setEditingSponsorId(null);
+    setSponsorName("");
+    setSponsorRep("");
+    setSponsorPhone("");
+    setSponsorTier("Vàng");
+    setSponsorAmount(2000000);
+    setSponsorInKind("");
+    setSponsorPlacement("Ngực Áo Chính");
+    setSponsorPeriod("Mùa Giải 2026 (12 Tháng)");
+    setSponsorRights("In logo áo đấu, chụp ảnh check-in banner sân trước trận và tag fanpage");
+    setShowAddSponsorForm(false);
+  };
+
+  const handleOpenAddSponsor = () => {
+    handleResetSponsorForm();
+    setShowAddSponsorForm(true);
+  };
+
+  const handleOpenEditSponsor = (sp: ClubSponsor) => {
+    setEditingSponsorId(sp.id);
+    setSponsorName(sp.name);
+    setSponsorRep(sp.representative);
+    setSponsorPhone(sp.phone);
+    setSponsorTier(sp.tier);
+    setSponsorAmount(sp.amount);
+    setSponsorInKind(sp.inKindNote || "");
+    setSponsorPlacement(sp.logoPlacement);
+    setSponsorPeriod(sp.contractPeriod);
+    setSponsorRights(sp.rightsSummary);
+    setShowAddSponsorForm(true);
+  };
+
+  const handleSaveSponsor = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sponsorName.trim()) return;
+
+    const currentSponsors = currentClub.sponsors || [];
+    let updatedSponsors: ClubSponsor[];
+
+    if (editingSponsorId) {
+      updatedSponsors = currentSponsors.map((s) => {
+        if (s.id === editingSponsorId) {
+          return {
+            ...s,
+            name: sponsorName.trim(),
+            representative: sponsorRep.trim() || "Đại diện thương hiệu",
+            phone: sponsorPhone.trim(),
+            tier: sponsorTier,
+            amount: sponsorTier === "Hiện Vật" ? 0 : Number(sponsorAmount) || 0,
+            inKindNote: sponsorInKind.trim(),
+            logoPlacement: sponsorPlacement,
+            contractPeriod: sponsorPeriod.trim() || "Mùa Giải 2026",
+            rightsSummary: sponsorRights.trim() || "In logo áo đấu và tri ân đối tác",
+          };
+        }
+        return s;
+      });
+      setSponsorToast("Đã cập nhật thông tin nhà tài trợ thành công!");
+    } else {
+      const newSponsor: ClubSponsor = {
+        id: `sp-${Date.now()}`,
+        name: sponsorName.trim(),
+        representative: sponsorRep.trim() || "Đại diện thương hiệu",
+        phone: sponsorPhone.trim(),
+        tier: sponsorTier,
+        amount: sponsorTier === "Hiện Vật" ? 0 : Number(sponsorAmount) || 0,
+        inKindNote: sponsorInKind.trim(),
+        logoPlacement: sponsorPlacement,
+        contractPeriod: sponsorPeriod.trim() || "Mùa Giải 2026",
+        rightsSummary: sponsorRights.trim() || "In logo áo đấu và tri ân đối tác",
+        disbursedToFund: false,
+        createdAt: new Date().toLocaleDateString("vi-VN"),
+      };
+      updatedSponsors = [newSponsor, ...currentSponsors];
+      setSponsorToast("Đã thêm nhà tài trợ mới vào danh mục CLB!");
+    }
+
+    const updatedClubs = clubs.map((c) => {
+      if (c.id === currentClub.id) {
+        return {
+          ...c,
+          sponsors: updatedSponsors,
+        };
+      }
+      return c;
+    });
+
+    saveClubs(updatedClubs);
+    handleResetSponsorForm();
+    setTimeout(() => setSponsorToast(""), 3500);
+  };
+
+  const handleDeleteSponsor = (spId: string) => {
+    const currentSponsors = currentClub.sponsors || [];
+    const updatedSponsors = currentSponsors.filter((s) => s.id !== spId);
+    const updatedClubs = clubs.map((c) => {
+      if (c.id === currentClub.id) {
+        return {
+          ...c,
+          sponsors: updatedSponsors,
+        };
+      }
+      return c;
+    });
+    saveClubs(updatedClubs);
+    setSponsorToast("Đã xóa đối tác khỏi danh mục tài trợ.");
+    setTimeout(() => setSponsorToast(""), 3000);
+  };
+
+  const handleDisburseToTreasury = (sp: ClubSponsor) => {
+    if (sp.disbursedToFund || sp.amount <= 0) return;
+
+    const newExpense: ClubExpense = {
+      id: `exp-sp-${Date.now()}`,
+      date: new Date().toLocaleDateString("vi-VN"),
+      type: "INCOME",
+      category: "Khác",
+      amount: sp.amount,
+      note: `[Tài trợ] Nhận tiền tài trợ từ đối tác ${sp.name} (${sp.tier})`,
+    };
+
+    const currentSponsors = currentClub.sponsors || [];
+    const updatedSponsors = currentSponsors.map((s) =>
+      s.id === sp.id ? { ...s, disbursedToFund: true } : s
+    );
+
+    const updatedClubs = clubs.map((c) => {
+      if (c.id === currentClub.id) {
+        return {
+          ...c,
+          fundBalance: c.fundBalance + sp.amount,
+          expenses: [newExpense, ...c.expenses],
+          sponsors: updatedSponsors,
+        };
+      }
+      return c;
+    });
+
+    saveClubs(updatedClubs);
+    setSponsorToast(`Đã giải ngân ${sp.amount.toLocaleString("vi-VN")} đ từ ${sp.name} vào Quỹ Đội!`);
+    setTimeout(() => setSponsorToast(""), 4000);
+  };
+
+  const handleCopyZaloSponsorReport = () => {
+    const sponsorsList = currentClub.sponsors || [];
+    const totalVal = sponsorsList.reduce((acc, s) => acc + (s.amount || 0), 0);
+    const disbursedVal = sponsorsList.filter((s) => s.disbursedToFund).reduce((acc, s) => acc + (s.amount || 0), 0);
+
+    const lines = [
+      `🤝 BÁO CÁO NHÀ TÀI TRỢ & QUYỀN LỢI THƯƠNG HIỆU`,
+      `⚽ Câu Lạc Bộ: ${currentClub.name}`,
+      `📅 Ngày Lập Báo Cáo: ${new Date().toLocaleDateString("vi-VN")}`,
+      `🏟️ Sân Nhà Hoạt Động: ${currentClub.homePitch}`,
+      `----------------------------------------`,
+      `💎 TỔNG GIÁ TRỊ TÀI TRỢ: ${totalVal.toLocaleString("vi-VN")} đ`,
+      `🏢 Đối Tác Đang Đồng Hành: ${sponsorsList.length} thương hiệu`,
+      `💰 Đã Nhập Vào Quỹ Đội: ${disbursedVal.toLocaleString("vi-VN")} đ`,
+      ``,
+      `📋 DANH SÁCH ĐỐI TÁC & VỊ TRÍ QUẢNG BÁ:`,
+    ];
+
+    sponsorsList.forEach((s, idx) => {
+      lines.push(
+        `${idx + 1}. ${s.name} (Hạng ${s.tier})`,
+        `   • Kinh phí: ${s.amount > 0 ? s.amount.toLocaleString("vi-VN") + " đ" : "Hiện vật"}`,
+        s.inKindNote ? `   • Hiện vật: ${s.inKindNote}` : "",
+        `   • Vị trí in ấn: ${s.logoPlacement}`,
+        `   • Thời hạn cam kết: ${s.contractPeriod}`,
+        `   • Quyền lợi: ${s.rightsSummary}`,
+        `   • Tình trạng quỹ: ${s.disbursedToFund ? "Đã nhập quỹ CLB" : "Chưa giải ngân"}`,
+        ``
+      );
+    });
+
+    lines.push(
+      `----------------------------------------`,
+      `🙏 Ban Cán Sự ${currentClub.name} trân trọng cảm ơn các quý đối tác đã luôn đồng hành cùng tinh thần thể thao phong trào!`
+    );
+
+    const reportText = lines.filter((l) => l !== "").join("\n");
+    navigator.clipboard.writeText(reportText);
+    setSponsorToast("Đã sao chép báo cáo Zalo nhà tài trợ vào bộ nhớ tạm!");
+    setTimeout(() => setSponsorToast(""), 3500);
+  };
+
   // Sub-tabs list
   const subTabs = [
     {
@@ -823,6 +1096,11 @@ export default function TeamClubManagement({
       key: "rsvp",
       label: `📅 Lịch Đá & Điểm Danh (${currentClub.matches.length})`,
       shortLabel: `📅 Lịch Đá (${currentClub.matches.length})`,
+    },
+    {
+      key: "sponsors",
+      label: `🤝 Nhà Tài Trợ (${(currentClub.sponsors || []).length})`,
+      shortLabel: `🤝 Tài Trợ (${(currentClub.sponsors || []).length})`,
     },
     {
       key: "tournament",
@@ -2263,6 +2541,470 @@ export default function TeamClubManagement({
                             </div>
                           );
                         })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* SUB-TAB 5: SPONSORS & BRAND PARTNERSHIPS (Nhà Tài Trợ & Quyền Lợi Thương Hiệu) */}
+      {activeSubTab === "sponsors" && (
+        <div className="space-y-4">
+          {/* Toast Notification */}
+          {sponsorToast && (
+            <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-800 text-[14px] font-bold flex items-center justify-between animate-fade-in shadow-xs">
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                {sponsorToast}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSponsorToast("")}
+                className="text-emerald-700 hover:text-emerald-900 cursor-pointer"
+              >
+                <XCircle className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* 4 KPI CARDS */}
+          {(() => {
+            const list = currentClub.sponsors || [];
+            const totalVal = list.reduce((acc, s) => acc + (s.amount || 0), 0);
+            const cashCount = list.filter((s) => s.amount > 0).length;
+            const inKindCount = list.filter((s) => s.tier === "Hiện Vật" || s.amount === 0).length;
+            const disbursedVal = list.filter((s) => s.disbursedToFund).reduce((acc, s) => acc + (s.amount || 0), 0);
+            const matchCount = currentClub.matches.length + myMatches.length;
+
+            return (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="bg-white rounded-lg border border-slate-300 p-4 space-y-1">
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span className="text-[13px] font-semibold">Tổng Giá Trị Tài Trợ</span>
+                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                  </div>
+                  <p className="text-xl font-bold text-slate-900">
+                    {totalVal.toLocaleString("vi-VN")} đ
+                  </p>
+                  <p className="text-[13px] text-slate-500 truncate">
+                    {cashCount} tiền mặt • {inKindCount} hiện vật
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-lg border border-slate-300 p-4 space-y-1">
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span className="text-[13px] font-semibold">Đang Đồng Hành</span>
+                    <Handshake className="w-4 h-4 text-[#0369a1] shrink-0" />
+                  </div>
+                  <p className="text-xl font-bold text-slate-900">
+                    {list.length} đối tác
+                  </p>
+                  <p className="text-[13px] text-slate-500 truncate">
+                    Quảng bá trên áo & MXH
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-lg border border-slate-300 p-4 space-y-1">
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span className="text-[13px] font-semibold">Trận Thi Đấu Mang Áo</span>
+                    <Shirt className="w-4 h-4 text-emerald-600 shrink-0" />
+                  </div>
+                  <p className="text-xl font-bold text-slate-900">
+                    {matchCount} trận đấu
+                  </p>
+                  <p className="text-[13px] text-slate-500 truncate">
+                    Độ phủ truyền thông cao
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-lg border border-slate-300 p-4 space-y-1">
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span className="text-[13px] font-semibold">Đã Nhập Vào Quỹ Đội</span>
+                    <DollarSign className="w-4 h-4 text-emerald-600 shrink-0" />
+                  </div>
+                  <p className="text-xl font-bold text-emerald-700">
+                    {disbursedVal.toLocaleString("vi-VN")} đ
+                  </p>
+                  <p className="text-[13px] text-slate-500 truncate">
+                    Chi trả tiền sân & nước
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ACTION BUTTONS BAR */}
+          <div className="bg-white rounded-lg border border-slate-300 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-bold text-slate-900 text-[15px]">
+                Danh Mục Nhà Tài Trợ & Quyền Lợi Thương Hiệu
+              </h3>
+              <p className="text-[13px] text-slate-600">
+                Ghi nhận các gói tài trợ, vị trí in logo trên áo đấu và minh bạch giải ngân vào quỹ đội.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={handleCopyZaloSponsorReport}
+                className="px-3.5 py-2 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold text-[13px] inline-flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                title="Sao chép báo cáo chi tiết quyền lợi nhà tài trợ gửi vào nhóm Zalo"
+              >
+                <Share2 className="w-4 h-4 text-[#0369a1]" />
+                Xuất Báo Cáo Zalo
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (showAddSponsorForm) handleResetSponsorForm();
+                  else handleOpenAddSponsor();
+                }}
+                className="px-4 py-2 rounded-md bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] inline-flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              >
+                {showAddSponsorForm ? (
+                  <>
+                    <XCircle className="w-4 h-4" /> Đóng Biểu Mẫu
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" /> Thêm Nhà Tài Trợ
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* INLINE FORM: ADD / EDIT SPONSOR (100% INLINE - NO POPUP) */}
+          {showAddSponsorForm && (
+            <form
+              onSubmit={handleSaveSponsor}
+              className="bg-slate-50 border-2 border-sky-200 rounded-lg p-5 space-y-4 animate-fade-in"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-sky-200">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-md bg-sky-100 text-[#0369a1] flex items-center justify-center">
+                    <Handshake className="w-4 h-4" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-[15px]">
+                    {editingSponsorId
+                      ? "Chỉnh Sửa Thông Tin Đối Tác Tài Trợ"
+                      : "Thêm Mới Đối Tác / Nhà Tài Trợ Đồng Hành"}
+                  </h4>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResetSponsorForm}
+                  className="text-slate-500 hover:text-slate-800 text-[13px] font-semibold cursor-pointer"
+                >
+                  Đóng
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {/* Brand Name */}
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">
+                    Tên Thương Hiệu / Nhà Tài Trợ <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ví dụ: Phủi Sport Store, Nha Khoa Smile…"
+                    value={sponsorName}
+                    onChange={(e) => setSponsorName(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-md border border-slate-300 bg-white text-[14px] focus:outline-none focus:border-[#0369a1]"
+                  />
+                </div>
+
+                {/* Representative */}
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">
+                    Người Đại Diện / Liên Hệ
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ví dụ: Anh Tuấn (Chủ Shop)"
+                    value={sponsorRep}
+                    onChange={(e) => setSponsorRep(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-md border border-slate-300 bg-white text-[14px] focus:outline-none focus:border-[#0369a1]"
+                  />
+                </div>
+
+                {/* Phone / Zalo */}
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">
+                    Số Điện Thoại / Zalo Đối Tác
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ví dụ: 0905888999"
+                    value={sponsorPhone}
+                    onChange={(e) => setSponsorPhone(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-md border border-slate-300 bg-white text-[14px] focus:outline-none focus:border-[#0369a1]"
+                  />
+                </div>
+
+                {/* Tier */}
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">
+                    Hạng Tài Trợ
+                  </label>
+                  <select
+                    value={sponsorTier}
+                    onChange={(e: any) => setSponsorTier(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-md border border-slate-300 bg-white text-[14px] focus:outline-none focus:border-[#0369a1] cursor-pointer"
+                  >
+                    <option value="Kim Cương">💎 Kim Cương (Tài trợ chính độc quyền)</option>
+                    <option value="Vàng">🥇 Vàng (Tài trợ lớn mùa giải)</option>
+                    <option value="Bạc">🥈 Bạc (Tài trợ đồng hành)</option>
+                    <option value="Đồng Hành">🤝 Đồng Hành (Tài trợ sự kiện/trận)</option>
+                    <option value="Hiện Vật">🎁 Hiện Vật (Áo đấu, bóng, nước uống)</option>
+                  </select>
+                </div>
+
+                {/* Amount */}
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">
+                    Số Tiền Tài Trợ (VNĐ)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="100000"
+                    disabled={sponsorTier === "Hiện Vật"}
+                    placeholder="Nhập 0 nếu tài trợ 100% hiện vật"
+                    value={sponsorTier === "Hiện Vật" ? 0 : sponsorAmount}
+                    onChange={(e) => setSponsorAmount(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-md border border-slate-300 bg-white text-[14px] focus:outline-none focus:border-[#0369a1] disabled:bg-slate-100 disabled:text-slate-500"
+                  />
+                </div>
+
+                {/* Logo Placement */}
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">
+                    Vị Trí In Logo Thương Hiệu
+                  </label>
+                  <select
+                    value={sponsorPlacement}
+                    onChange={(e: any) => setSponsorPlacement(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-md border border-slate-300 bg-white text-[14px] focus:outline-none focus:border-[#0369a1] cursor-pointer"
+                  >
+                    <option value="Ngực Áo Chính">Ngực Áo Chính (Vị trí đắc địa nhất)</option>
+                    <option value="Lưng Áo">Lưng Áo (Phía trên số áo)</option>
+                    <option value="Tay Áo">Tay Áo (Bên trái / phải)</option>
+                    <option value="Quần Đấu">Ống Quần Đấu</option>
+                    <option value="Banner Sân & Nước Uống">Banner Sân & Thùng Nước</option>
+                  </select>
+                </div>
+
+                {/* In-kind Notes */}
+                <div className="md:col-span-2 lg:col-span-1">
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">
+                    Hiện Vật Đi Kèm (Nếu Có)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ví dụ: 15 bộ quần áo + 3 quả bóng Molten…"
+                    value={sponsorInKind}
+                    onChange={(e) => setSponsorInKind(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-md border border-slate-300 bg-white text-[14px] focus:outline-none focus:border-[#0369a1]"
+                  />
+                </div>
+
+                {/* Contract Duration */}
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">
+                    Thời Hạn Hợp Đồng
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ví dụ: Mùa Giải 2026, 6 Tháng…"
+                    value={sponsorPeriod}
+                    onChange={(e) => setSponsorPeriod(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-md border border-slate-300 bg-white text-[14px] focus:outline-none focus:border-[#0369a1]"
+                  />
+                </div>
+
+                {/* Rights summary */}
+                <div className="md:col-span-2 lg:col-span-1">
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1">
+                    Cam Kết Quyền Lợi & Truyền Thông
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ví dụ: In logo áo, chụp ảnh cùng banner trước trận…"
+                    value={sponsorRights}
+                    onChange={(e) => setSponsorRights(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-md border border-slate-300 bg-white text-[14px] focus:outline-none focus:border-[#0369a1]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-sky-200">
+                <button
+                  type="button"
+                  onClick={handleResetSponsorForm}
+                  className="px-3.5 py-1.5 rounded-md bg-white border border-slate-300 text-slate-700 font-medium text-[13px] cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={!sponsorName.trim()}
+                  className={`px-4 py-1.5 rounded-md font-bold text-[13px] transition-colors cursor-pointer ${
+                    sponsorName.trim()
+                      ? "bg-[#0369a1] hover:bg-[#075985] text-white"
+                      : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                  }`}
+                >
+                  {editingSponsorId ? "Lưu Cập Nhật" : "Xác Nhận Thêm Nhà Tài Trợ"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* SPONSORS DIRECTORY LIST */}
+          {(currentClub.sponsors || []).length === 0 ? (
+            <div className="bg-white rounded-lg border border-slate-300 p-8 text-center space-y-2">
+              <p className="text-[15px] font-bold text-slate-800">
+                CLB chưa có nhà tài trợ nào được ghi nhận.
+              </p>
+              <p className="text-[13px] text-slate-600">
+                Bấm nút "Thêm Nhà Tài Trợ" để bắt đầu kết nối với các cửa hàng thể thao, nha khoa, quán cà phê địa phương.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {(currentClub.sponsors || []).map((sp) => {
+                const tierClass =
+                  sp.tier === "Kim Cương"
+                    ? "bg-sky-100 text-sky-800 border-sky-300"
+                    : sp.tier === "Vàng"
+                    ? "bg-amber-100 text-amber-800 border-amber-300"
+                    : sp.tier === "Bạc"
+                    ? "bg-slate-100 text-slate-800 border-slate-300"
+                    : sp.tier === "Hiện Vật"
+                    ? "bg-purple-100 text-purple-800 border-purple-300"
+                    : "bg-emerald-100 text-emerald-800 border-emerald-300";
+
+                return (
+                  <div
+                    key={sp.id}
+                    className="bg-white rounded-lg border border-slate-300 p-4 space-y-3 flex flex-col justify-between hover:border-slate-400 transition-colors shadow-xs"
+                  >
+                    <div className="space-y-2.5">
+                      {/* Header with Badges */}
+                      <div className="flex items-start justify-between gap-2">
+                        <span className={`px-2 py-0.5 rounded text-[13px] font-bold border ${tierClass}`}>
+                          {sp.tier === "Kim Cương" ? "💎 Kim Cương" : sp.tier === "Vàng" ? "🥇 Vàng" : sp.tier === "Bạc" ? "🥈 Bạc" : sp.tier === "Hiện Vật" ? "🎁 Hiện Vật" : "🤝 Đồng Hành"}
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[13px] font-semibold bg-sky-50 text-[#0369a1] border border-sky-200">
+                          {sp.logoPlacement}
+                        </span>
+                      </div>
+
+                      {/* Brand & Representative Info */}
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-base leading-snug">
+                          {sp.name}
+                        </h4>
+                        <p className="text-[13px] text-slate-600 mt-0.5 flex items-center gap-1.5">
+                          <span>{sp.representative}</span>
+                          {sp.phone && (
+                            <>
+                              <span>•</span>
+                              <span className="font-mono text-slate-700">{sp.phone}</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
+
+                      {/* Value / In-kind info */}
+                      <div className="p-2.5 rounded-md bg-slate-50 border border-slate-200 space-y-1">
+                        <div className="flex items-center justify-between text-[13px]">
+                          <span className="text-slate-600 font-medium">Giá trị tài trợ:</span>
+                          <span className="font-bold text-slate-900 font-mono">
+                            {sp.amount > 0 ? `${sp.amount.toLocaleString("vi-VN")} đ` : "Hiện vật"}
+                          </span>
+                        </div>
+                        {sp.inKindNote && (
+                          <p className="text-[13px] text-slate-700 pt-1 border-t border-slate-200">
+                            🎁 {sp.inKindNote}
+                          </p>
+                        )}
+                        <div className="text-[13px] text-slate-500 pt-1 border-t border-slate-200">
+                          ⏱️ Thời hạn: {sp.contractPeriod}
+                        </div>
+                      </div>
+
+                      {/* Rights delivered */}
+                      <div className="text-[13px] text-slate-700">
+                        <p className="font-semibold text-slate-800">Cam kết quyền lợi:</p>
+                        <p className="text-slate-600 mt-0.5 line-clamp-2">
+                          {sp.rightsSummary}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Action buttons & Treasury status */}
+                    <div className="pt-3 border-t border-slate-200 space-y-2">
+                      {sp.amount > 0 && (
+                        <div className="flex items-center justify-between text-[13px]">
+                          <span className="text-slate-600 font-medium">Quỹ đội:</span>
+                          {sp.disbursedToFund ? (
+                            <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Đã nhập vào quỹ
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleDisburseToTreasury(sp)}
+                              className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[13px] inline-flex items-center gap-1 transition-colors cursor-pointer shadow-xs"
+                              title="Cộng số tiền tài trợ này trực tiếp vào Quỹ Đội"
+                            >
+                              <DollarSign className="w-3.5 h-3.5" /> Nhập Vào Quỹ Đội
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between gap-1 pt-1">
+                        {sp.phone ? (
+                          <a
+                            href={`https://zalo.me/${sp.phone.replace(/\s/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 rounded border border-slate-300 hover:bg-slate-100 text-slate-700 text-[13px] font-semibold inline-flex items-center gap-1 transition-colors"
+                          >
+                            <Phone className="w-3 h-3 text-[#0369a1]" /> Nhắn Zalo
+                          </a>
+                        ) : (
+                          <div />
+                        )}
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditSponsor(sp)}
+                            className="px-2 py-1 rounded border border-slate-300 hover:bg-slate-100 text-slate-700 text-[13px] font-semibold inline-flex items-center gap-1 cursor-pointer"
+                            title="Chỉnh sửa thông tin"
+                          >
+                            <Edit3 className="w-3 h-3 text-slate-600" /> Sửa
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSponsor(sp.id)}
+                            className="px-2 py-1 rounded border border-slate-300 hover:bg-rose-50 text-rose-600 text-[13px] font-semibold inline-flex items-center gap-1 cursor-pointer"
+                            title="Xóa đối tác"
+                          >
+                            <Trash2 className="w-3 h-3 text-rose-600" /> Xóa
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
