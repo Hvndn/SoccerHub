@@ -1567,55 +1567,21 @@ const handleConfirmCheckin = async (slot: any) => {
  )}
 
  {/* HEADER BANNER WITH REAL BACKEND DATA */}
-      <div className="glass-panel p-3.5 sm:p-8 rounded-2xl sm:rounded-lg border border-slate-200 space-y-3 sm:space-y-4 shadow-sm">
+      <div className="glass-panel p-2.5 sm:p-8 rounded-2xl sm:rounded-lg border border-slate-200 space-y-2 sm:space-y-4 shadow-sm">
         
-        {/* ==================== 1. MOBILE COMPACT HEADER (< sm) ==================== */}
-        <div className="sm:hidden space-y-2.5">
-          {/* Hàng 1: Badge + Nút toggle chi tiết + Nút Đồng bộ */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#0369a1]/10 border border-[#0369a1]/20 text-[#0b4f6c] text-[13px] font-bold">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span>Bảng Điều Hành Chủ Sân</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setShowMobilePitchDetails(!showMobilePitchDetails)}
-                className={`px-2.5 py-1 rounded-xl text-[13px] font-bold border transition-colors flex items-center gap-1 cursor-pointer ${
-                  showMobilePitchDetails
-                    ? "bg-[#0369a1] text-white border-[#0369a1]"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
-                }`}
-                title="Xem thông tin chi tiết cụm sân"
-              >
-                <Info className="w-3.5 h-3.5" />
-                <span>{showMobilePitchDetails ? "Đóng" : "Chi tiết"}</span>
-                {showMobilePitchDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              </button>
-              <button
-                type="button"
-                onClick={fetchRealData}
-                title="Đồng bộ dữ liệu thật"
-                className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all border border-slate-200 cursor-pointer"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoadingBackend ? 'animate-spin text-[#0369a1]' : ''}`} />
-              </button>
-            </div>
-          </div>
-
-          {/* Hàng 2: Selector chọn cụm sân full-width */}
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-sky-100 text-[#0369a1] flex items-center justify-center shrink-0">
-              <Building className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
+        {/* ==================== 1. MOBILE ULTRA-COMPACT APP BAR (< sm, cao ~80px) ==================== */}
+        <div className="sm:hidden space-y-1.5">
+          {/* Hàng 1: Dropdown Cụm Sân + Nút Chi tiết ℹ️ + Nút Đồng bộ 🔄 */}
+          <div className="flex items-center gap-1.5">
+            <div className="flex-1 min-w-0 flex items-center gap-1.5 px-2 py-1 rounded-xl border border-slate-200 bg-white shadow-xs focus-within:ring-2 focus-within:ring-[#0369a1]">
+              <Building className="w-4 h-4 text-[#0369a1] shrink-0" />
               <select
                 value={activePitch?.id || ""}
                 onChange={(e) => {
                   const p = realPitches.find(x => x.id.toString() === e.target.value);
                   if (p) handleSelectPitch(p);
                 }}
-                className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-900 cursor-pointer shadow-xs truncate focus:ring-2 focus:ring-[#0369a1]"
+                className="w-full bg-transparent text-[14px] font-extrabold text-slate-900 cursor-pointer truncate focus:outline-none"
               >
                 {filteredClusters.length > 0 ? (
                   filteredClusters.map(p => (
@@ -1626,40 +1592,66 @@ const handleConfirmCheckin = async (slot: any) => {
                 )}
               </select>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setShowMobilePitchDetails(!showMobilePitchDetails)}
+              className={`px-2.5 py-1.5 rounded-xl text-[13px] font-bold border transition-colors flex items-center gap-1 shrink-0 cursor-pointer ${
+                showMobilePitchDetails
+                  ? "bg-[#0369a1] text-white border-[#0369a1]"
+                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+              }`}
+              title="Thông tin chi tiết cụm sân"
+            >
+              <Info className="w-3.5 h-3.5" />
+              <span>{showMobilePitchDetails ? "Đóng" : "Info"}</span>
+              {showMobilePitchDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={fetchRealData}
+              title="Đồng bộ dữ liệu thật"
+              className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all border border-slate-200 shrink-0 cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoadingBackend ? 'animate-spin text-[#0369a1]' : ''}`} />
+            </button>
           </div>
 
-          {/* Hàng 3: Các nút hành động chính (Đặt Ca Quầy nổi bật nhất) */}
-          <div className="flex items-center gap-2 pt-0.5">
+          {/* Hàng 2: Hàng nút hành động nhanh (Đặt Ca Quầy ưu tiên số 1) */}
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => { setOfflinePitchId(pitchMatrix[0]?.pitchName || ""); setOfflineTime(offlineAvailableSlots[0] ?? ""); setOfflineDate(matrixDate); setInlineOfflinePitch("TOP"); setShowOfflineModal(true); }}
-              className="flex-1 py-2 px-3 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] shadow-sm transition-all active:scale-95 flex items-center justify-center space-x-1.5 cursor-pointer"
+              className="flex-1 py-1.5 px-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-xs transition-all active:scale-95 flex items-center justify-center space-x-1.5 cursor-pointer truncate"
             >
-              <PhoneCall className="w-4 h-4 shrink-0" />
+              <PhoneCall className="w-3.5 h-3.5 shrink-0" />
               <span>Đặt Ca Quầy</span>
             </button>
+
             <button
               type="button"
               onClick={() => setShowAddPitchModal(true)}
-              className="py-2 px-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-[#0369a1] font-bold text-[13px] transition-all active:scale-95 flex items-center space-x-1 shrink-0 cursor-pointer"
+              className="py-1.5 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-[#0369a1] font-bold text-[13px] transition-all active:scale-95 flex items-center space-x-1 shrink-0 cursor-pointer"
             >
-              <Plus className="w-4 h-4 shrink-0" />
+              <Plus className="w-3.5 h-3.5 shrink-0" />
               <span>Sân Con</span>
             </button>
+
             <button
               type="button"
               onClick={() => setShowHoursModal(true)}
-              className="py-2 px-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-[13px] transition-all active:scale-95 flex items-center space-x-1 shrink-0 cursor-pointer"
-              title="Đổi giờ hoạt động"
+              className="py-1.5 px-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-[13px] transition-all active:scale-95 flex items-center space-x-1 shrink-0 cursor-pointer"
+              title="Cài đặt khung giờ mở cửa và đóng cửa"
             >
               <Clock className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
               <span>{operatingOpenTime}-{operatingCloseTime}</span>
             </button>
           </div>
 
-          {/* Khối Thông Tin Mở Rộng Inline (ẩn mặc định, bấm "Chi tiết" mới hiện) */}
+          {/* Hộp Thông Tin Mở Rộng Inline (ẩn mặc định, mở khi bấm "Info") */}
           {showMobilePitchDetails && (
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[13px] space-y-1.5 animate-fade-in text-slate-600">
+            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px] space-y-1.5 animate-fade-in text-slate-600 mt-1">
               <div className="flex items-start gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-rose-500 mt-0.5 shrink-0" />
                 <span className="leading-snug">{activePitch?.address || "Chưa khai báo địa chỉ"}</span>
@@ -1677,7 +1669,7 @@ const handleConfirmCheckin = async (slot: any) => {
                     className="text-[13px] font-bold text-[#0369a1] hover:underline cursor-pointer flex items-center gap-1"
                   >
                     <Building className="w-3.5 h-3.5" />
-                    <span>+ Cụm Sân Mới</span>
+                    <span>+ Cụm Mới</span>
                   </button>
                 )}
               </div>
@@ -1796,70 +1788,70 @@ const handleConfirmCheckin = async (slot: any) => {
         </div>
 
         {/* ==================== 3. SUB TAB NAVIGATION TOOLBAR (Cuộn ngang 1 hàng) ==================== */}
-        <div className="flex items-center gap-1.5 sm:gap-2 pt-2.5 sm:pt-3 border-t border-slate-100 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1.5 sm:gap-2 pt-2 sm:pt-3 border-t border-slate-100 overflow-x-auto no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveSubTab("matrix")}
-            className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
               activeSubTab === "matrix"
                 ? "bg-[#0369a1] text-white shadow-md"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            <BarChart2 className="w-4 h-4 shrink-0" />
-            <span>Ma Trận Ca Sân</span>
+            <BarChart2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span>Ma Trận</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("pitches")}
-            className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
               activeSubTab === "pitches"
                 ? "bg-[#0369a1] text-white shadow-md"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            <Building className="w-4 h-4 shrink-0" />
+            <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span>Sân Con ({pitchMatrix.length})</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("pricing")}
-            className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
               activeSubTab === "pricing"
                 ? "bg-[#0369a1] text-white shadow-md"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            <Sliders className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>Giá &amp; Tiền Cọc</span>
+            <Sliders className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+            <span>Bảng Giá</span>
           </button>
 
           <button
             type="button"
             onClick={() => { setActiveSubTab("canteen"); loadCanteen(); }}
-            className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
               activeSubTab === "canteen"
                 ? "bg-[#0369a1] text-white shadow-md"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            <Coffee className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Canteen &amp; Vật Tư</span>
+            <Coffee className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
+            <span>Canteen</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("reports")}
-            className={`px-3.5 sm:px-4 py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[13px] sm:text-sm font-bold transition-all flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap shrink-0 cursor-pointer ${
               activeSubTab === "reports"
                 ? "bg-[#0369a1] text-white shadow-md"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
-            <PieChart className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Doanh Thu &amp; Báo Cáo</span>
+            <PieChart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
+            <span>Báo Cáo</span>
           </button>
         </div>
       </div>
