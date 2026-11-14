@@ -448,17 +448,17 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
           })}
         </div>
 
-        {/* Khối Showcase Trực Quan Hình Ảnh & Nội Dung */}
+        {/* Khối Showcase Trực Quan Hình Ảnh & Nội Dung (Thu Gọn Chuẩn Compact SaaS) */}
         {(() => {
           const current = services.find((s) => s.id === selectedServiceId) || services[0];
           const CurrentIcon = current.icon;
           return (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden grid grid-cols-1 lg:grid-cols-12">
-              {/* Cột Trái (5 cột): Điểm mạnh cốt lõi & CTA */}
-              <div className="lg:col-span-5 p-6 sm:p-7 flex flex-col justify-between space-y-6">
-                <div className="space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden grid grid-cols-1 lg:grid-cols-12 lg:max-h-[350px]">
+              {/* Cột Trái (7 cột): Điểm mạnh cốt lõi & CTA */}
+              <div className="lg:col-span-7 p-5 sm:p-6 flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[13px] font-bold px-2.5 py-1 rounded-lg border ${current.badgeTone}`}>
+                    <span className={`text-[13px] font-bold px-2.5 py-0.5 rounded-lg border ${current.badgeTone}`}>
                       Dành cho {current.badge}
                     </span>
                     <span className="text-[13px] font-semibold text-slate-500 flex items-center gap-1">
@@ -467,15 +467,15 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                     </span>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
+                  <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug">
                     {current.title}
                   </h3>
 
-                  <div className="space-y-3 pt-1">
+                  <div className="space-y-2 pt-0.5">
                     {current.points.map((pt, i) => (
-                      <div key={i} className="flex items-start gap-2.5">
+                      <div key={i} className="flex items-start gap-2">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                        <span className="text-[14px] text-slate-700 font-medium leading-relaxed">
+                        <span className="text-[13px] sm:text-[14px] text-slate-700 font-medium leading-relaxed">
                           {pt}
                         </span>
                       </div>
@@ -487,7 +487,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                   <button
                     type="button"
                     onClick={current.onAction}
-                    className="flex-1 py-3 px-4 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98"
+                    className="py-2.5 px-5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] sm:text-[14px] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98"
                   >
                     <span>{current.ctaLabel}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -495,21 +495,21 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                 </div>
               </div>
 
-              {/* Cột Phải (7 cột): Hình ảnh bóng đá chất lượng cao */}
-              <div className="lg:col-span-7 relative min-h-[260px] sm:min-h-[320px] bg-slate-900 overflow-hidden">
+              {/* Cột Phải (5 cột): Hình ảnh minh họa gọn gàng, cân đối */}
+              <div className="lg:col-span-5 relative min-h-[220px] lg:min-h-full lg:max-h-[350px] bg-slate-900 overflow-hidden">
                 <SafeImage
                   src={current.image}
                   alt={current.title}
                   className="w-full h-full object-cover object-center brightness-95"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
 
                 {/* Huy hiệu trực quan trên hình */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
-                  <span className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white font-bold text-[13px] border border-white/15">
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                  <span className="px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white font-bold text-[13px] border border-white/15">
                     {current.visualTag}
                   </span>
-                  <span className="px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md text-slate-900 font-bold text-[13px]">
+                  <span className="px-2 py-0.5 rounded-lg bg-white/90 backdrop-blur-md text-slate-900 font-bold text-[13px]">
                     Turfzone 2026
                   </span>
                 </div>
