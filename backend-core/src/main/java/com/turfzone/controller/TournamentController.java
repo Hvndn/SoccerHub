@@ -13,6 +13,7 @@ import com.turfzone.repository.TournamentRepository;
 import com.turfzone.service.TeamFormService;
 import com.turfzone.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -139,6 +140,31 @@ public class TournamentController {
         return s.substring(0, 4) + "****" + s.substring(s.length() - 3);
     }
 
+    /**
+     * Kiểm tra quyền sở hữu giải đấu (Ownership Guard):
+     * - ADMIN luôn có quyền điều hành toàn hệ thống.
+     * - Dữ liệu cũ chưa gắn organizer: cho phép tương thích ngược.
+     * - Ban Tổ Chức (ORGANIZER) / Chủ Sân (OWNER) chỉ có quyền trên giải do chính mình tạo ra.
+     */
+    private boolean canManageTournament(Tournament t, com.turfzone.model.User me) {
+        if (t == null) return false;
+        if (me == null) return false;
+        String role = me.getRole() != null ? me.getRole().name() : "";
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            return true;
+        }
+        if (t.getOrganizerId() == null && (t.getOrganizerEmail() == null || t.getOrganizerEmail().isBlank())) {
+            return true;
+        }
+        if (t.getOrganizerId() != null && t.getOrganizerId().equals(me.getId())) {
+            return true;
+        }
+        if (t.getOrganizerEmail() != null && t.getOrganizerEmail().equalsIgnoreCase(me.getEmail())) {
+            return true;
+        }
+        return false;
+    }
+
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getTournaments(@AuthenticationPrincipal com.turfzone.model.User me) {
         List<Tournament> tournaments = tournamentRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
@@ -152,7 +178,13 @@ public class TournamentController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
-    public ResponseEntity<Tournament> createTournament(@RequestBody Tournament tournament) {
+    public ResponseEntity<Tournament> createTournament(
+            @RequestBody Tournament tournament,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
+        if (me != null) {
+            tournament.setOrganizerId(me.getId());
+            tournament.setOrganizerEmail(me.getEmail());
+        }
         if (tournament.getRegisteredTeams() == null) {
             tournament.setRegisteredTeams(0);
         }
@@ -222,9 +254,16 @@ public class TournamentController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
-    public ResponseEntity<?> updateTournament(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> updateTournament(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (!canManageTournament(t, me)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "🚫 Bạn không có quyền chỉnh sửa giải đấu do Ban Tổ Chức khác quản lý."));
+        }
         if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
         if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
@@ -516,9 +555,16 @@ public class TournamentController {
     /** Ban tổ chức / Chủ sân / Admin: đóng / mở / khởi tranh / kết thúc giải đấu. */
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'OWNER')")
-    public ResponseEntity<?> setTournamentStatus(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> setTournamentStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (!canManageTournament(tournament, me)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "🚫 Bạn không có quyền thay đổi trạng thái giải đấu do Ban Tổ Chức khác quản lý."));
+        }
         String status = String.valueOf(body.getOrDefault("status", "")).trim().toUpperCase();
         if (!Set.of("OPEN", "ONGOING", "COMPLETED").contains(status)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Trạng thái không hợp lệ: " + status));
@@ -797,9 +843,15 @@ public class TournamentController {
     @PostMapping("/{id}/draw")
     @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','OWNER')")
-    public ResponseEntity<?> drawBracket(@PathVariable Long id) {
+    public ResponseEntity<?> drawBracket(
+            @PathVariable Long id,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (!canManageTournament(tournament, me)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "🚫 Bạn không có quyền bốc thăm giải đấu do Ban Tổ Chức khác quản lý."));
+        }
         if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
         if (false) {
             return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
@@ -2373,9 +2425,16 @@ public class TournamentController {
     @PostMapping("/{id}/teams/{teamName}/approve")
     @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
-    public ResponseEntity<?> approveTeam(@PathVariable Long id, @PathVariable String teamName) {
+    public ResponseEntity<?> approveTeam(
+            @PathVariable Long id,
+            @PathVariable String teamName,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (!canManageTournament(t, me)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "🚫 Bạn không có quyền duyệt đội cho giải đấu do Ban Tổ Chức khác quản lý."));
+        }
         if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
         if (false) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
 
@@ -2404,9 +2463,16 @@ public class TournamentController {
     @PostMapping("/{id}/teams/{teamName}/reject")
     @org.springframework.transaction.annotation.Transactional
     @PreAuthorize("hasAnyRole('ORGANIZER', 'OWNER', 'ADMIN')")
-    public ResponseEntity<?> rejectTeam(@PathVariable Long id, @PathVariable String teamName) {
+    public ResponseEntity<?> rejectTeam(
+            @PathVariable Long id,
+            @PathVariable String teamName,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
         Tournament t = tournamentRepository.findById(id).orElse(null);
         if (t == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        if (!canManageTournament(t, me)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "🚫 Bạn không có quyền từ chối đội của giải đấu do Ban Tổ Chức khác quản lý."));
+        }
         if (isTournamentClosed(t)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
 
         List<TournamentTeamEntry> currentList = new ArrayList<>(t.getTeams());

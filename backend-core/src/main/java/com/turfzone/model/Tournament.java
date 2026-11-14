@@ -90,6 +90,12 @@ public class Tournament {
     @Column(columnDefinition = "TEXT")
     private String bracketJson;
 
+    /** ID người tạo giải đấu (Ban Tổ Chức hoặc Chủ Sân). */
+    private Long organizerId;
+
+    /** Email tài khoản người tạo giải (dùng để kiểm tra quyền sở hữu giải đấu). */
+    private String organizerEmail;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 

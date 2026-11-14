@@ -215,6 +215,28 @@ export default function TournamentOrganizerPortal({
  [dbTournaments, activeTournamentId]
  );
 
+  /** Kiểm tra quyền sở hữu giải đấu (Ownership Guard) */
+  const isMyTournament = useMemo(() => {
+    if (!activeTournament) return true;
+    if (user?.role === "ADMIN") return true;
+    if (!activeTournament.organizerEmail && !activeTournament.organizerId) return true;
+    if (
+      activeTournament.organizerEmail &&
+      user?.email &&
+      activeTournament.organizerEmail.toLowerCase() === user.email.toLowerCase()
+    ) {
+      return true;
+    }
+    if (
+      activeTournament.organizerId &&
+      user?.id &&
+      String(activeTournament.organizerId) === String(user.id)
+    ) {
+      return true;
+    }
+    return false;
+  }, [activeTournament, user]);
+
   const kpiStats = useMemo(() => {
     const totalTournaments = dbTournaments.length;
     const ongoing = dbTournaments.filter((t: any) => t.status === "ONGOING").length;
@@ -1484,6 +1506,30 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
     })
   )}
 </div>
+
+{/* OWNERSHIP GUARD BANNER */}
+{activeTournament && (
+  <div className={`p-3 sm:p-4 rounded-xl border flex items-center justify-between gap-3 text-[13px] ${
+    isMyTournament
+      ? "bg-sky-50/70 border-sky-200 text-sky-900"
+      : "bg-slate-100 border-slate-300 text-slate-700"
+  }`}>
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className={`px-2.5 py-0.5 rounded-full text-[13px] font-bold ${
+        isMyTournament ? "bg-[#0369a1] text-white" : "bg-slate-200 text-slate-700"
+      }`}>
+        {isMyTournament ? "👑 Giải Của Bạn" : "👁️ Chế Độ Xem (BTC Khác)"}
+      </span>
+      <span className="font-bold text-slate-900">{activeTournament.title}</span>
+      <span className="text-slate-500">•</span>
+      <span className="text-slate-600">
+        {isMyTournament
+          ? "Bạn có toàn quyền điều hành, bốc thăm và duyệt đội cho giải này."
+          : `Giải đấu này do ${activeTournament.organizerEmail || "Ban Tổ Chức đối tác"} tạo. Các thao tác sửa đổi đã được bảo vệ an toàn.`}
+      </span>
+    </div>
+  </div>
+)}
 
 {/* MAIN CONTENT GRID: LIVE ELECTRONIC UMPIRE CONSOLE (LEFT 8) + AI SEEDING & ESCROW (RIGHT 4) */}
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
