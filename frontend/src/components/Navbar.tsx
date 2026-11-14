@@ -126,7 +126,16 @@ export default function Navbar({
     return { all, unread, booking, tournament, system };
   }, [notifications]);
 
- const handleNotificationClick = (notif: any) => {
+  const getNotificationActionText = (type?: string) => {
+    const t = (type || "").toUpperCase();
+    if (t.startsWith("BOOKING")) return "Xem lịch đặt sân →";
+    if (t.startsWith("MATCH") || t.includes("COMMUNITY") || t.includes("SOS")) return "Xem chi tiết kèo →";
+    if (t.startsWith("TOURNAMENT") || t.startsWith("BRACKET")) return "Xem giải đấu ngay →";
+    if (t.startsWith("TEAM") || t.startsWith("CLUB")) return "Xem câu lạc bộ →";
+    return "Xem chi tiết →";
+  };
+
+  const handleNotificationClick = (notif: any) => {
    if (!notif.read) {
      markSingleRead(notif.id);
    }
@@ -568,193 +577,228 @@ const mobileNav: MobileNavItem[] =
  </button>
 
  {showNotifications && (
- <div className="absolute right-0 mt-3 w-[calc(100vw-24px)] max-w-[360px] sm:max-w-[540px] bg-white rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-slate-200 z-50 animate-modal-pop overflow-hidden">
- {/* Header To Rõ */}
- <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/90 ">
- <div className="flex items-center space-x-3">
- <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center text-sky-700 ">
- <Bell className="w-[18px] h-[18px] text-[#0b4f6c] " />
- </div>
- <span className="font-extrabold text-base text-slate-900 ">Trung Tâm Thông Báo</span>
- {unreadCount > 0 && (
- <span className="px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[14px] font-black">
- {unreadCount} mới
- </span>
- )}
- </div>
- <div className="flex items-center space-x-2">
- <span className="px-2.5 py-1 rounded-full bg-sky-50 text-[14px] text-sky-700 font-bold flex items-center space-x-1.5 border border-sky-200 ">
- <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-pulse inline-block" />
- <span>Trực Tiếp</span>
- </span>
- </div>
- </div>
+            <>
+              {/* Backdrop mờ trên mobile để chạm ra ngoài tự đóng */}
+              <div
+                onClick={() => setShowNotifications(false)}
+                className="sm:hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 animate-fade-in"
+              />
 
- {/* DẢI CHIP LỌC PHÂN LOẠI THÔNG BÁO */}
-          <div className="px-4 sm:px-6 py-2.5 bg-slate-50/60 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {[
-              { id: "all" as const, label: "Tất cả", count: notifCounts.all },
-              { id: "unread" as const, label: "Chưa đọc", count: notifCounts.unread, isUnread: true },
-              { id: "booking" as const, label: "Đặt sân & Ca", count: notifCounts.booking },
-              { id: "tournament" as const, label: "Giải đấu", count: notifCounts.tournament },
-              { id: "system" as const, label: "Hệ thống", count: notifCounts.system },
-            ].map((chip) => {
-              const isActive = notifFilter === chip.id;
-              return (
-                <button
-                  key={chip.id}
-                  type="button"
-                  onClick={() => setNotifFilter(chip.id)}
-                  className={`px-3 py-1 rounded-xl text-[13px] font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                    isActive
-                      ? "bg-[#0369a1] text-white shadow-xs"
-                      : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80"
-                  }`}
-                >
-                  <span>{chip.label}</span>
-                  {chip.count > 0 && (
-                    <span
-                      className={`px-1.5 py-0.5 rounded-full text-[13px] font-mono font-bold ${
-                        isActive
-                          ? "bg-white/20 text-white"
-                          : chip.isUnread
-                          ? "bg-rose-500 text-white"
-                          : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {chip.count}
+              {/* Khung Thông Báo: Trên mobile căn đều 2 lề (inset-x-3), trên desktop dropdown góc phải */}
+              <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-3 w-auto sm:w-[500px] max-w-[540px] bg-white rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-slate-200 z-50 animate-modal-pop overflow-hidden flex flex-col max-h-[82vh] sm:max-h-[580px]">
+                {/* Header To Rõ */}
+                <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50/90 shrink-0">
+                  <div className="flex items-center space-x-2.5 sm:space-x-3">
+                    <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center text-sky-700">
+                      <Bell className="w-[18px] h-[18px] text-[#0b4f6c]" />
+                    </div>
+                    <span className="font-extrabold text-[15px] sm:text-base text-slate-900">Trung Tâm Thông Báo</span>
+                    {unreadCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[13px] font-black">
+                        {unreadCount} mới
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="px-2.5 py-1 rounded-full bg-sky-50 text-[13px] text-sky-700 font-bold flex items-center space-x-1.5 border border-sky-200">
+                      <span className="w-2 h-2 rounded-full bg-[#0369a1] animate-pulse inline-block" />
+                      <span>Trực Tiếp</span>
                     </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Notification List Rộng Rãi */}
-          <div className="max-h-[460px] overflow-y-auto divide-y divide-slate-100 ">
-            {filteredNotifications.length === 0 ? (
-              <div className="py-14 flex flex-col items-center space-y-2 text-slate-500 text-center px-4">
-                <Bell className="w-10 h-10 opacity-30 text-slate-400" />
-                <p className="text-sm font-semibold text-slate-700">
-                  {notifFilter === "unread"
-                    ? "Tuyệt vời! Bạn không có thông báo chưa đọc nào."
-                    : notifFilter === "booking"
-                    ? "Không có thông báo đặt sân nào."
-                    : notifFilter === "tournament"
-                    ? "Không có thông báo giải đấu nào."
-                    : notifFilter === "system"
-                    ? "Không có thông báo hệ thống nào."
-                    : "Chưa có thông báo nào từ hệ thống."}
-                </p>
-                {notifFilter !== "all" && (
-                  <button
-                    type="button"
-                    onClick={() => setNotifFilter("all")}
-                    className="text-[13px] text-[#0369a1] font-bold hover:underline cursor-pointer pt-1"
-                  >
-                    Xem tất cả ({notifCounts.all} thông báo)
-                  </button>
-                )}
-              </div>
-            ) : (
-              filteredNotifications.map(notif => (
-                <div
-                  key={notif.id}
-                  onClick={() => handleNotificationClick(notif)}
-                  className={`relative p-4 sm:p-5 transition-colors cursor-pointer hover:bg-slate-100/90 ${
-                    !notif.read ? "bg-sky-50/60 " : ""
-                  }`}
-                  title={notif.link ? "Nhấp để mở chi tiết giải đấu" : undefined}
-                >
-                  <div className="flex items-start space-x-3.5">
-                    {/* Icon theo loại to hơn */}
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
-                      notif.type === "BOOKING_CREATED" ? "bg-sky-100 text-sky-700" :
-                      notif.type === "BOOKING_CANCELLED" ? "bg-rose-100 text-rose-600" :
-                      notif.type === "BOOKING_CHECKED_IN" ? "bg-sky-100 text-[#0369a1]" :
-                      (notif.type === "TOURNAMENT_INVITE" || notif.type?.startsWith("TOURNAMENT")) ? "bg-amber-100 text-amber-800" :
-                      "bg-amber-100 text-amber-600"
-                    }`}>
-                      {notif.type === "BOOKING_CREATED" && <CheckCircle className="w-5 h-5 text-emerald-500" />}
-                      {notif.type === "BOOKING_CANCELLED" && <XCircle className="w-5 h-5 text-rose-600" />}
-                      {notif.type === "BOOKING_CHECKED_IN" && <CheckCircle className="w-5 h-5 text-[#0369a1]" />}
-                      {notif.type === "BOOKING_REMINDER" && <Bell className="w-5 h-5 text-amber-700" />}
-                      {notif.type === "BOOKING_RESCHEDULED" && <Bell className="w-5 h-5 text-amber-700" />}
-                      {(notif.type === "TOURNAMENT_INVITE" || notif.type?.startsWith("TOURNAMENT")) && <Trophy className="w-5 h-5 text-amber-700" />}
-                      {(notif.type === "PROMO" || notif.type === "OPERATING_HOURS_UPDATED") && <AlertCircle className="w-5 h-5 text-amber-700" />}
-                    </div>
-
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-extrabold text-slate-900 leading-snug">{notif.title}</p>
-                        {!notif.read && (
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] mt-1 shrink-0" />
-                        )}
-                      </div>
-                      <p className="text-[14px] sm:text-[14px] text-slate-600 leading-relaxed font-medium">{notif.message}</p>
-
-                      {/* Lý do hủy - hiển thị nổi bật */}
-                      {notif.type === "BOOKING_CANCELLED" && notif.cancelReason && (
-                        <div className="mt-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200 ">
-                          <p className="text-[14px] font-bold text-rose-700 ">
-                            📋 Lý do: <span className="font-normal">{notif.cancelReason}</span>
-                          </p>
-                        </div>
-                      )}
-
-                      {notif.link && (
-                        <p className="text-[13px] font-bold text-[#0369a1] hover:underline inline-flex items-center gap-1 pt-0.5">
-                          <span>Xem giải đấu ngay →</span>
-                        </p>
-                      )}
-
-                      <p className="text-[14px] text-slate-500 font-mono mt-1.5">{formatNotifTime(notif.time)}</p>
-                    </div>
-
-                    {/* Nút xóa */}
+                    {/* Nút đóng X trên mobile */}
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); removeNotification(notif.id); }}
-                      className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
-                      title="Xóa thông báo"
+                      onClick={() => setShowNotifications(false)}
+                      className="sm:hidden w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer ml-1 transition-colors"
+                      title="Đóng thông báo"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
 
-          {/* Footer To Rõ */}
- {notifications.length > 0 && (
- <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/90 flex items-center justify-between gap-2">
- <button
- type="button"
- onClick={() => {
- setShowNotifications(false);
- router.push("/notifications");
- }}
- className="text-[14px] font-black text-[#0b4f6c] hover:underline"
- >
- Xem tất cả →
- </button>
- <span className="text-[14px] font-semibold text-slate-500">{notifications.length} thông báo</span>
- <button
- type="button"
- onClick={() => clearAllNotifications()}
- className="text-[14px] font-bold text-slate-500 hover:text-rose-600 transition-colors"
- >
- Xóa tất cả
- </button>
- </div>
- )}
- </div>
- )}
- </div>
- )}
+                {/* DẢI CHIP LỌC PHÂN LOẠI THÔNG BÁO */}
+                <div className="px-4 sm:px-6 py-2.5 bg-slate-50/60 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+                  {[
+                    { id: "all" as const, label: "Tất cả", count: notifCounts.all },
+                    { id: "unread" as const, label: "Chưa đọc", count: notifCounts.unread, isUnread: true },
+                    { id: "booking" as const, label: "Đặt sân & Ca", count: notifCounts.booking },
+                    { id: "tournament" as const, label: "Giải đấu", count: notifCounts.tournament },
+                    { id: "system" as const, label: "Hệ thống", count: notifCounts.system },
+                  ].map((chip) => {
+                    const isActive = notifFilter === chip.id;
+                    return (
+                      <button
+                        key={chip.id}
+                        type="button"
+                        onClick={() => setNotifFilter(chip.id)}
+                        className={`px-3 py-1 rounded-xl text-[13px] font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                          isActive
+                            ? "bg-[#0369a1] text-white shadow-xs"
+                            : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80"
+                        }`}
+                      >
+                        <span>{chip.label}</span>
+                        {chip.count > 0 && (
+                          <span
+                            className={`px-1.5 py-0.5 rounded-full text-[13px] font-mono font-bold ${
+                              isActive
+                                ? "bg-white/20 text-white"
+                                : chip.isUnread
+                                ? "bg-rose-500 text-white"
+                                : "bg-slate-100 text-slate-700"
+                            }`}
+                          >
+                            {chip.count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
 
- {user ? (
+                {/* Notification List Rộng Rãi */}
+                <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+                  {filteredNotifications.length === 0 ? (
+                    <div className="py-14 flex flex-col items-center space-y-2 text-slate-500 text-center px-4">
+                      <Bell className="w-10 h-10 opacity-30 text-slate-400" />
+                      <p className="text-sm font-semibold text-slate-700">
+                        {notifFilter === "unread"
+                          ? "Tuyệt vời! Bạn không có thông báo chưa đọc nào."
+                          : notifFilter === "booking"
+                          ? "Không có thông báo đặt sân nào."
+                          : notifFilter === "tournament"
+                          ? "Không có thông báo giải đấu nào."
+                          : notifFilter === "system"
+                          ? "Không có thông báo hệ thống nào."
+                          : "Chưa có thông báo nào từ hệ thống."}
+                      </p>
+                      {notifFilter !== "all" && (
+                        <button
+                          type="button"
+                          onClick={() => setNotifFilter("all")}
+                          className="text-[13px] text-[#0369a1] font-bold hover:underline cursor-pointer pt-1"
+                        >
+                          Xem tất cả ({notifCounts.all} thông báo)
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    filteredNotifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        onClick={() => handleNotificationClick(notif)}
+                        className={`relative p-4 sm:p-5 transition-colors cursor-pointer hover:bg-slate-100/90 ${
+                          !notif.read ? "bg-sky-50/60" : ""
+                        }`}
+                        title={notif.link ? "Nhấp để mở chi tiết" : undefined}
+                      >
+                        <div className="flex items-start space-x-3.5">
+                          {/* Icon theo loại to hơn */}
+                          <div
+                            className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
+                              notif.type === "BOOKING_CREATED"
+                                ? "bg-sky-100 text-sky-700"
+                                : notif.type === "BOOKING_CANCELLED"
+                                ? "bg-rose-100 text-rose-600"
+                                : notif.type === "BOOKING_CHECKED_IN"
+                                ? "bg-sky-100 text-[#0369a1]"
+                                : notif.type === "TOURNAMENT_INVITE" || notif.type?.startsWith("TOURNAMENT")
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-amber-100 text-amber-600"
+                            }`}
+                          >
+                            {notif.type === "BOOKING_CREATED" && <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                            {notif.type === "BOOKING_CANCELLED" && <XCircle className="w-5 h-5 text-rose-600" />}
+                            {notif.type === "BOOKING_CHECKED_IN" && <CheckCircle className="w-5 h-5 text-[#0369a1]" />}
+                            {notif.type === "BOOKING_REMINDER" && <Bell className="w-5 h-5 text-amber-700" />}
+                            {notif.type === "BOOKING_RESCHEDULED" && <Bell className="w-5 h-5 text-amber-700" />}
+                            {(notif.type === "TOURNAMENT_INVITE" || notif.type?.startsWith("TOURNAMENT")) && (
+                              <Trophy className="w-5 h-5 text-amber-700" />
+                            )}
+                            {(notif.type === "PROMO" || notif.type === "OPERATING_HOURS_UPDATED") && (
+                              <AlertCircle className="w-5 h-5 text-amber-700" />
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm font-extrabold text-slate-900 leading-snug">{notif.title}</p>
+                              {!notif.read && (
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1] mt-1 shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-[14px] sm:text-[14px] text-slate-600 leading-relaxed font-medium">
+                              {notif.message}
+                            </p>
+
+                            {/* Lý do hủy - hiển thị nổi bật */}
+                            {notif.type === "BOOKING_CANCELLED" && notif.cancelReason && (
+                              <div className="mt-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200">
+                                <p className="text-[14px] font-bold text-rose-700">
+                                  📋 Lý do: <span className="font-normal">{notif.cancelReason}</span>
+                                </p>
+                              </div>
+                            )}
+
+                            {notif.link && (
+                              <p className="text-[13px] font-bold text-[#0369a1] hover:underline inline-flex items-center gap-1 pt-0.5">
+                                <span>{getNotificationActionText(notif.type)}</span>
+                              </p>
+                            )}
+
+                            <p className="text-[14px] text-slate-500 font-mono mt-1.5">{formatNotifTime(notif.time)}</p>
+                          </div>
+
+                          {/* Nút xóa */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeNotification(notif.id);
+                            }}
+                            className="w-7 h-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
+                            title="Xóa thông báo"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Footer To Rõ */}
+                {notifications.length > 0 && (
+                  <div className="px-4 sm:px-6 py-3 border-t border-slate-100 bg-slate-50/90 flex items-center justify-between gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNotifications(false);
+                        router.push("/notifications");
+                      }}
+                      className="text-[13px] sm:text-[14px] font-black text-[#0b4f6c] hover:underline cursor-pointer"
+                    >
+                      Xem tất cả →
+                    </button>
+                    <span className="text-[13px] sm:text-[14px] font-semibold text-slate-500">
+                      {notifications.length} thông báo
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => clearAllNotifications()}
+                      className="text-[13px] sm:text-[14px] font-bold text-slate-500 hover:text-rose-600 transition-colors cursor-pointer"
+                    >
+                      Xóa tất cả
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {user ? (
  <div className="relative shrink-0" ref={userMenuRef}>
  <button
  type="button"
