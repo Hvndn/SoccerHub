@@ -306,41 +306,41 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   return (
     <div className="w-full text-slate-900 space-y-5 pb-12">
       {/* 1. TIÊU ĐỀ TRANG & THANH CHUYỂN TAB CHÍNH */}
-      <section className="bg-white rounded-lg border border-slate-300 shadow-sm p-4 sm:p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+      <section className="bg-white rounded-lg border border-slate-300 shadow-sm p-3.5 sm:p-5 space-y-3 sm:space-y-4">
+        <div className="flex items-center justify-between gap-2.5 pb-2.5 sm:pb-3 border-b border-slate-200">
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-2xl font-bold text-slate-900 truncate">
               Giải Đấu Bóng Đá Phong Trào
             </h1>
-            <p className="text-[14px] text-slate-600 mt-0.5">
+            <p className="hidden sm:block text-[14px] text-slate-600 mt-0.5">
               Tra cứu giải đấu, đăng ký đội bóng, xem lịch thi đấu, nhánh đấu và bảng xếp hạng
             </p>
           </div>
 
           <Link
             href="/tournaments/register"
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-md text-[14px] font-bold bg-[#0369a1] hover:bg-[#075985] text-white shrink-0"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-md text-[13px] sm:text-[14px] font-bold bg-[#0369a1] hover:bg-[#075985] text-white shrink-0 shadow-xs"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Đăng Ký Đội Tham Gia</span>
+            <span>Đăng Ký Đội</span>
           </Link>
         </div>
 
         {/* 4 Tab chức năng chính của trang Giải Đấu - Cuộn ngang mượt mà trên mobile */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth" role="tablist">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 max-w-full no-scrollbar scroll-smooth" role="tablist">
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === "open"}
             onClick={() => setActiveTab("open")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-[13px] sm:text-[14px] font-bold border transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === "open"
                 ? "bg-[#0369a1] text-white border-[#0369a1]"
                 : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
             }`}
           >
             <Trophy className="w-4 h-4" />
-            <span>Danh Sách Giải Đấu ({tournaments.length})</span>
+            <span>Danh Sách ({tournaments.length})</span>
           </button>
 
           <button
