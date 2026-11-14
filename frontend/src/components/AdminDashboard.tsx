@@ -66,7 +66,9 @@ import {
  ImagePlus,
  Info,
  ChevronDown,
- ChevronUp
+ ChevronUp,
+ Package,
+ FileSpreadsheet
 } from "lucide-react";
 import {
  playNotificationChime,
@@ -251,6 +253,165 @@ export default function AdminDashboard({ onBackToHome, onNavigateTab, onStartDm 
   } catch (e: any) {
   showToast("❌ Lỗi: " + (e?.message || "không bán được."));
   }
+  };
+
+  // --- KHO & VẬT TƯ NÂNG CAO ---
+  type WarehouseCat = "ALL" | "CANTEEN" | "EQUIPMENT" | "MAINTENANCE" | "LOW_STOCK";
+  const [warehouseCategoryFilter, setWarehouseCategoryFilter] = useState<WarehouseCat>("ALL");
+  const [searchWarehouseQuery, setSearchWarehouseQuery] = useState<string>("");
+  const [showAddWarehouseForm, setShowAddWarehouseForm] = useState<boolean>(false);
+  const [restockInlineId, setRestockInlineId] = useState<number | null>(null);
+  const [customRestockQty, setCustomRestockQty] = useState<string>("12");
+
+  const detectCategory = (item: any): "CANTEEN" | "EQUIPMENT" | "MAINTENANCE" => {
+    const text = `${item.name || ""} ${item.unit || ""}`.toLowerCase();
+    if (
+      text.includes("bóng") ||
+      text.includes("áo bib") ||
+      text.includes("áo lưới") ||
+      text.includes("găng") ||
+      text.includes("giày") ||
+      text.includes("còi") ||
+      text.includes("thẻ phạt") ||
+      text.includes("băng đội trưởng")
+    ) {
+      return "EQUIPMENT";
+    }
+    if (
+      text.includes("lưới") ||
+      text.includes("đèn") ||
+      text.includes("cao su") ||
+      text.includes("keo") ||
+      text.includes("bạt") ||
+      text.includes("cờ biên") ||
+      text.includes("vôi")
+    ) {
+      return "MAINTENANCE";
+    }
+    return "CANTEEN";
+  };
+
+  const restockCanteenItem = async (item: any, addQty: number) => {
+    if (!addQty || addQty <= 0) return;
+    try {
+      setCanteenBusy(true);
+      const newStock = (item.stock ?? 0) + addQty;
+      await updateCanteenItem(item.id, { stock: newStock });
+      showToast(`📦 Đã nhập thêm +${addQty} ${item.unit || "sản phẩm"} cho [${item.name}]. Tồn kho: ${newStock}`);
+      setRestockInlineId(null);
+      await loadCanteen();
+    } catch (e: any) {
+      showToast("❌ Lỗi nhập hàng: " + (e?.message || "không thể cộng kho."));
+    } finally {
+      setCanteenBusy(false);
+    }
+  };
+
+  const exportWarehouseReportCsv = () => {
+    if (!canteenItems || canteenItems.length === 0) {
+      showToast("⚠️ Kho chưa có vật tư nào để xuất báo cáo.");
+      return;
+    }
+
+    const headers = [
+      "Mã SP",
+      "Tên Vật Tư / Mặt Hàng",
+      "Phân Loại",
+      "Đơn Vị Tính",
+      "Đơn Giá (VNĐ)",
+      "Tồn Kho Hiện Tại",
+      "Đã Bán/Xuất Hôm Nay",
+      "Tổng Giá Trị Tồn (VNĐ)",
+      "Tình Trạng Kho",
+    ];
+
+    const rows = canteenItems.map((item: any) => {
+      const cat = detectCategory(item);
+      const catName =
+        cat === "EQUIPMENT"
+          ? "Đồ Cho Thuê / Mượn"
+          : cat === "MAINTENANCE"
+          ? "Vật Tư Bảo Trì Sân"
+          : "Hàng Tiêu Hao Canteen";
+      const totalVal = (item.price ?? 0) * (item.stock ?? 0);
+      const status =
+        (item.stock ?? 0) <= 0
+          ? "HẾT HÀNG"
+          : (item.stock ?? 0) <= 5
+          ? "SẮP HẾT"
+          : "ĐỦ HÀNG";
+      return [
+        item.id,
+        `"${(item.name || "").replace(/"/g, '""')}"`,
+        `"${catName}"`,
+        `"${item.unit || "Cái"}"`,
+        item.price ?? 0,
+        item.stock ?? 0,
+        item.soldToday ?? 0,
+        totalVal,
+        `"${status}"`,
+      ].join(",");
+    });
+
+    const totalInventoryValue = canteenItems.reduce(
+      (sum, item: any) => sum + (item.price ?? 0) * (item.stock ?? 0),
+      0
+    );
+    const totalStockQty = canteenItems.reduce(
+      (sum, item: any) => sum + (item.stock ?? 0),
+      0
+    );
+    const totalSoldToday = canteenItems.reduce(
+      (sum, item: any) => sum + (item.soldToday ?? 0),
+      0
+    );
+
+    rows.push("");
+    rows.push(
+      [
+        "TỔNG KHO",
+        `""`,
+        `""`,
+        `""`,
+        `""`,
+        totalStockQty,
+        totalSoldToday,
+        totalInventoryValue,
+        `""`,
+      ].join(",")
+    );
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const pitchNameClean = activePitch?.name
+      ? activePitch.name.replace(/\s+/g, "_")
+      : "Cum_San";
+    a.download = `Bao_Cao_Ton_Kho_${pitchNameClean}_${dateStr}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("📥 Đã xuất báo cáo kiểm kê kho ra file Excel/CSV thành công!");
+  };
+
+  const applyWarehousePreset = (
+    name: string,
+    unit: string,
+    price: string | number,
+    stock: string | number
+  ) => {
+    setCanteenForm({
+      name,
+      price: String(price),
+      stock: String(stock),
+      unit,
+    });
+    setShowAddWarehouseForm(true);
+    showToast(`📝 Đã chọn mẫu [${name}]! Kiểm tra và bấm Thêm Vật Tư.`);
   };
 
  // Modals state
@@ -3503,121 +3664,567 @@ const handleConfirmCheckin = async (slot: any) => {
  </div>
  )}
 
- {/* --- SUB-TAB CONTENT 4: CANTEEN POS --- */}
-  {activeSubTab === "canteen" && (
-  <div className="glass-panel p-4 sm:p-6 rounded-lg border border-slate-200 space-y-3 sm:space-y-5">
-  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-  <div className="flex items-center space-x-2">
-  <Coffee className="w-5 h-5 text-amber-700" />
-  <h2 className="text-lg font-extrabold text-slate-900 ">
-  Canteen & Cho Thuê Vật Tư Tại Quầy
-  </h2>
-  </div>
-  <button
-  onClick={() => loadCanteen()}
-  className="px-3 py-2 rounded-xl border border-slate-200 text-slate-700 text-[14px] font-bold hover:bg-slate-100 transition-all"
-  >
-  Tải lại
-  </button>
-  </div>
+ {/* --- SUB-TAB CONTENT 4: QUẢN LÝ KHO VẬT TƯ & CANTEEN SÂN BÓNG --- */}
+      {activeSubTab === "canteen" && (
+        <div className="glass-panel p-3.5 sm:p-6 rounded-2xl border border-slate-200 space-y-4 sm:space-y-6">
+          {/* HEADER TO RÕ + NÚT CHỨC NĂNG */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-700 shrink-0">
+                <Package className="w-5 h-5 text-amber-700" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
+                  Quản Lý Kho Vật Tư & Canteen Sân Bóng
+                </h2>
+                <p className="text-[13px] text-slate-500 font-medium">
+                  Kiểm soát xuất - nhập - tồn nước uống, đồ thể thao cho mượn và vật tư bảo trì sân
+                </p>
+              </div>
+            </div>
 
-  {/* FORM THÊM / SỬA MÓN — ghi xuống CSDL (trước đây nút Lưu chỉ hiện toast) */}
-  <div className="space-y-1.5">
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-      <input
-        value={canteenForm.name}
-        onChange={(e) => setCanteenForm((f) => ({ ...f, name: e.target.value }))}
-        placeholder="Tên món (VD: Nước Revive)"
-        className={`col-span-2 sm:col-span-1 px-3 py-2 rounded-xl border bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 ${
-          canteenErrors.name && canteenForm.name ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
-        }`}
-      />
-      <input
-        value={canteenForm.price}
-        onChange={(e) => setCanteenForm((f) => ({ ...f, price: e.target.value }))}
-        placeholder="Giá bán (VNĐ)"
-        className={`px-3 py-2 rounded-xl border bg-white text-[14px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 ${
-          canteenErrors.price && canteenForm.price ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
-        }`}
-      />
-      <input
-        value={canteenForm.stock}
-        onChange={(e) => setCanteenForm((f) => ({ ...f, stock: e.target.value }))}
-        placeholder="Tồn kho"
-        className={`px-3 py-2 rounded-xl border bg-white text-[14px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 ${
-          canteenErrors.stock ? "border-rose-400 focus:ring-rose-500" : "border-slate-200 focus:ring-[#0369a1]"
-        }`}
-      />
-      <button
-        onClick={saveCanteenItem}
-        disabled={canteenBusy || !isCanteenValid}
-        className="px-4 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-xs transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-      >
-        {canteenBusy ? "Đang lưu..." : canteenEditingId ? "Cập Nhật" : "Thêm Món"}
-      </button>
-    </div>
-    {canteenErrors.name && canteenForm.name && (
-      <p className="text-[13px] font-semibold text-rose-600">{canteenErrors.name}</p>
-    )}
-    {canteenErrors.price && canteenForm.price && (
-      <p className="text-[13px] font-semibold text-rose-600">{canteenErrors.price}</p>
-    )}
-  </div>
-  {canteenEditingId ? (
-  <button
-  onClick={() => { setCanteenEditingId(null); setCanteenForm({ name: "", price: "", stock: "", unit: "" }); }}
-  className="text-[14px] font-bold text-slate-500 hover:text-slate-700 mt-1"
-  >
-  Hủy sửa
-  </button>
-  ) : null}
+            <div className="flex items-center flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={exportWarehouseReportCsv}
+                className="px-3 py-2 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 text-[13px] font-bold hover:bg-emerald-100 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                title="Xuất bảng kiểm kê kho ra file Excel CSV tiếng Việt"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
+                <span>Xuất Excel Báo Cáo</span>
+              </button>
 
-  {canteenLoading ? (
-  <p className="text-[14px] text-slate-500">Đang tải kho canteen...</p>
-  ) : canteenItems.length === 0 ? (
-  <p className="text-[14px] text-slate-500">
-  Chưa khai món nào. Thêm món ở ô bên trên để quản lý kho và doanh thu quầy.
-  </p>
-  ) : (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-  {canteenItems.map((item: any) => (
-  <div key={item.id} className="p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-  <div className="flex justify-between items-start gap-2">
-  <span className="font-extrabold text-[14px] text-slate-900 flex-1">{item.name}</span>
-  <span className="font-mono font-black text-emerald-600 text-[14px] shrink-0">
-  {Number(item.price ?? 0).toLocaleString("vi-VN")}đ
-  </span>
-  </div>
-  <div className="flex justify-between text-[14px] text-slate-500 font-mono">
-  <span>Đã bán hôm nay: <strong className="text-slate-900 ">{item.soldToday ?? 0}</strong></span>
-  <span>Tồn kho: <strong className="text-[#0369a1]">{item.stock ?? 0}</strong></span>
-  </div>
-  <div className="flex items-center gap-2 pt-1">
-  <button
-  onClick={() => sellOneCanteenItem(item.id)}
-  className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[14px] font-bold hover:bg-emerald-100 transition-colors"
-  >
-  Bán 1
-  </button>
-  <button
-  onClick={() => { setCanteenEditingId(item.id); setCanteenForm({ name: item.name ?? "", price: String(item.price ?? ""), stock: String(item.stock ?? 0), unit: item.unit ?? "" }); }}
-  className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[14px] font-bold hover:bg-slate-200 transition-colors"
-  >
-  Sửa
-  </button>
-  <button
-  onClick={() => removeCanteenItem(item.id)}
-  className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 text-[14px] font-bold hover:bg-rose-100 transition-colors"
-  >
-  Xoá
-  </button>
-  </div>
-  </div>
-  ))}
-  </div>
-  )}
-  </div>
-  )}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddWarehouseForm(!showAddWarehouseForm);
+                  if (canteenEditingId) {
+                    setCanteenEditingId(null);
+                    setCanteenForm({ name: "", price: "", stock: "", unit: "" });
+                  }
+                }}
+                className="px-3.5 py-2 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{showAddWarehouseForm || canteenEditingId ? "Đóng Form Nhập" : "+ Thêm Vật Tư Mới"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => loadCanteen()}
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-[13px] font-bold hover:bg-slate-100 transition-all cursor-pointer"
+              >
+                Tải lại
+              </button>
+            </div>
+          </div>
+
+          {/* 4 THẺ KPI KHO VẬT TƯ */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
+                <span>Tổng Mặt Hàng</span>
+                <Package className="w-4 h-4 text-[#0369a1]" />
+              </div>
+              <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+                {canteenItems.length}
+              </p>
+              <p className="text-[13px] text-slate-500">Mặt hàng đang quản lý</p>
+            </div>
+
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
+                <span>Tổng Số Lượng Tồn</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              </div>
+              <p className="text-xl sm:text-2xl font-black text-emerald-600 font-mono">
+                {canteenItems.reduce((acc, it) => acc + (Number(it.stock) || 0), 0)}
+              </p>
+              <p className="text-[13px] text-slate-500">Tổng hiện vật trong kho</p>
+            </div>
+
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
+                <span>Giá Trị Tồn Kho</span>
+                <span className="text-[13px] font-black text-[#0369a1]">VNĐ</span>
+              </div>
+              <p className="text-xl sm:text-2xl font-black text-[#0369a1] font-mono">
+                {(
+                  canteenItems.reduce(
+                    (acc, it) => acc + (Number(it.price) || 0) * (Number(it.stock) || 0),
+                    0
+                  ) / 1000000
+                ).toFixed(1)}{" "}
+                <span className="text-[13px] font-bold">Tr</span>
+              </p>
+              <p className="text-[13px] text-slate-500">Quy đổi theo đơn giá</p>
+            </div>
+
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-slate-500 text-[13px] font-semibold">
+                <span>Cần Nhập Thêm</span>
+                <AlertCircle className="w-4 h-4 text-rose-500" />
+              </div>
+              <p className="text-xl sm:text-2xl font-black text-rose-600 font-mono">
+                {canteenItems.filter((it) => (Number(it.stock) || 0) <= 5).length}
+              </p>
+              <p className="text-[13px] text-rose-600 font-semibold">Vật tư tồn kho &lt;= 5</p>
+            </div>
+          </div>
+
+          {/* FORM INLINE THÊM / SỬA MÓN & NHẬP KHO */}
+          {(showAddWarehouseForm || canteenEditingId) && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-sky-50/50 border-2 border-sky-200 space-y-3.5 animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <span className="text-[14px] font-extrabold text-[#0369a1]">
+                  {canteenEditingId ? "✏️ Cập Nhật Thông Tin Mặt Hàng" : "➕ Thêm Mặt Hàng / Vật Tư Mới Vào Kho"}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] text-slate-500">Mẫu gợi ý nhanh:</span>
+                  <button
+                    type="button"
+                    onClick={() => applyWarehousePreset("Nước khoáng đóng chai", "Chai", "10000", "48")}
+                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+                  >
+                    🥤 Nước khoáng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyWarehousePreset("Quả bóng đá số 5 FIFA", "Quả", "350000", "8")}
+                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+                  >
+                    ⚽ Bóng số 5
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyWarehousePreset("Áo bib phân đội (bộ 10 áo)", "Bộ", "150000", "5")}
+                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+                  >
+                    🎽 Bộ Áo Bib
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyWarehousePreset("Bao hạt cao su bảo trì sân (25kg)", "Bao", "220000", "15")}
+                    className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+                  >
+                    🛠️ Hạt cao su
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                <div className="sm:col-span-2">
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Tên vật tư / món hàng</label>
+                  <input
+                    value={canteenForm.name}
+                    onChange={(e) => setCanteenForm((f) => ({ ...f, name: e.target.value }))}
+                    placeholder="VD: Nước Revive chanh muối / Bóng số 5 / Lưới 7 người"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  />
+                  {canteenErrors.name && canteenForm.name && (
+                    <p className="text-[13px] font-semibold text-rose-600 mt-0.5">{canteenErrors.name}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Đơn vị tính</label>
+                  <input
+                    value={canteenForm.unit}
+                    onChange={(e) => setCanteenForm((f) => ({ ...f, unit: e.target.value }))}
+                    placeholder="Chai, Quả, Bộ, Bao, Cái..."
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Đơn giá (VNĐ)</label>
+                  <input
+                    value={canteenForm.price}
+                    onChange={(e) => setCanteenForm((f) => ({ ...f, price: e.target.value }))}
+                    placeholder="VD: 15000"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  />
+                  {canteenErrors.price && canteenForm.price && (
+                    <p className="text-[13px] font-semibold text-rose-600 mt-0.5">{canteenErrors.price}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Số lượng tồn kho ban đầu</label>
+                  <input
+                    value={canteenForm.stock}
+                    onChange={(e) => setCanteenForm((f) => ({ ...f, stock: e.target.value }))}
+                    placeholder="VD: 24"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[14px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                  />
+                </div>
+
+                <div className="sm:col-span-3 flex items-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={saveCanteenItem}
+                    disabled={canteenBusy || !isCanteenValid}
+                    className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-black shadow-xs transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {canteenBusy ? "Đang lưu..." : canteenEditingId ? "Cập Nhật Thông Tin" : "Lưu Vào Kho Hàng"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCanteenEditingId(null);
+                      setCanteenForm({ name: "", price: "", stock: "", unit: "" });
+                      setShowAddWarehouseForm(false);
+                    }}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 text-[14px] font-bold hover:bg-slate-100 transition-all cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* BỘ LỌC DANH MỤC & TÌM KIẾM THEO TÊN */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+            {/* 5 Chips phân loại */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { id: "ALL" as const, label: "Tất cả", count: canteenItems.length },
+                {
+                  id: "CANTEEN" as const,
+                  label: "🥤 Nước & Canteen",
+                  count: canteenItems.filter((i) => detectCategory(i) === "CANTEEN").length,
+                },
+                {
+                  id: "EQUIPMENT" as const,
+                  label: "⚽ Đồ Cho Mượn / Thuê",
+                  count: canteenItems.filter((i) => detectCategory(i) === "EQUIPMENT").length,
+                },
+                {
+                  id: "MAINTENANCE" as const,
+                  label: "🛠️ Vật Tư Sân",
+                  count: canteenItems.filter((i) => detectCategory(i) === "MAINTENANCE").length,
+                },
+                {
+                  id: "LOW_STOCK" as const,
+                  label: "⚠️ Cần Nhập",
+                  count: canteenItems.filter((i) => (Number(i.stock) || 0) <= 5).length,
+                },
+              ].map((chip) => {
+                const isActive = warehouseCategoryFilter === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => setWarehouseCategoryFilter(chip.id)}
+                    className={`px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                      isActive
+                        ? "bg-[#0369a1] text-white shadow-xs"
+                        : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                  >
+                    <span>{chip.label}</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[13px] font-mono font-bold ${
+                        isActive
+                          ? "bg-white/20 text-white"
+                          : chip.id === "LOW_STOCK" && chip.count > 0
+                          ? "bg-rose-100 text-rose-700"
+                          : "bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      {chip.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Ô tìm kiếm nhanh */}
+            <div className="w-full sm:w-64">
+              <input
+                value={searchWarehouseQuery}
+                onChange={(e) => setSearchWarehouseQuery(e.target.value)}
+                placeholder="🔍 Tìm vật tư theo tên..."
+                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[13px] font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+              />
+            </div>
+          </div>
+
+          {/* DANH SÁCH THẺ VẬT TƯ & KHO HÀNG */}
+          {canteenLoading ? (
+            <div className="py-12 flex flex-col items-center justify-center text-slate-400 space-y-2">
+              <Package className="w-8 h-8 animate-bounce opacity-40" />
+              <p className="text-[14px] font-bold text-slate-500">Đang tải kho vật tư sân...</p>
+            </div>
+          ) : canteenItems.length === 0 ? (
+            <div className="py-12 flex flex-col items-center justify-center text-center p-6 rounded-2xl bg-slate-50 border border-dashed border-slate-200 space-y-3">
+              <Package className="w-10 h-10 text-slate-300" />
+              <p className="text-[14px] font-bold text-slate-700">Kho vật tư hiện chưa có mặt hàng nào.</p>
+              <p className="text-[13px] text-slate-500 max-w-md">
+                Bấm nút <strong>"+ Thêm Vật Tư Mới"</strong> hoặc chọn nhanh các mẫu gợi ý (Nước khoáng, Bóng thi đấu, Áo bib, Hạt cao su) để bắt đầu quản lý.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowAddWarehouseForm(true)}
+                className="px-4 py-2 rounded-xl bg-[#0369a1] text-white text-[13px] font-bold shadow-xs hover:bg-[#075985]"
+              >
+                + Khởi Tạo Mặt Hàng Đầu Tiên
+              </button>
+            </div>
+          ) : (
+            (() => {
+              const filteredList = canteenItems.filter((item: any) => {
+                const cat = detectCategory(item);
+                if (warehouseCategoryFilter === "CANTEEN" && cat !== "CANTEEN") return false;
+                if (warehouseCategoryFilter === "EQUIPMENT" && cat !== "EQUIPMENT") return false;
+                if (warehouseCategoryFilter === "MAINTENANCE" && cat !== "MAINTENANCE") return false;
+                if (warehouseCategoryFilter === "LOW_STOCK" && (Number(item.stock) || 0) > 5) return false;
+                if (searchWarehouseQuery.trim()) {
+                  const q = searchWarehouseQuery.trim().toLowerCase();
+                  const name = (item.name || "").toLowerCase();
+                  const unit = (item.unit || "").toLowerCase();
+                  if (!name.includes(q) && !unit.includes(q)) return false;
+                }
+                return true;
+              });
+
+              if (filteredList.length === 0) {
+                return (
+                  <div className="py-8 text-center text-slate-500 text-[14px]">
+                    Không tìm thấy vật tư nào phù hợp với bộ lọc hiện tại.
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                  {filteredList.map((item: any) => {
+                    const cat = detectCategory(item);
+                    const isLow = (Number(item.stock) || 0) <= 5;
+                    const isOut = (Number(item.stock) || 0) <= 0;
+                    const isRestocking = restockInlineId === item.id;
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`p-4 rounded-2xl bg-white border transition-all space-y-3 ${
+                          isOut
+                            ? "border-rose-300 shadow-rose-50"
+                            : isLow
+                            ? "border-amber-300 shadow-amber-50"
+                            : "border-slate-200/90 hover:border-slate-300 shadow-xs"
+                        }`}
+                      >
+                        {/* Header của thẻ: Phân loại & Badge tình trạng */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="space-y-0.5 flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span
+                                className={`px-2 py-0.5 rounded-md text-[13px] font-bold ${
+                                  cat === "EQUIPMENT"
+                                    ? "bg-purple-50 text-purple-700 border border-purple-200"
+                                    : cat === "MAINTENANCE"
+                                    ? "bg-amber-50 text-amber-800 border border-amber-200"
+                                    : "bg-sky-50 text-sky-700 border border-sky-200"
+                                }`}
+                              >
+                                {cat === "EQUIPMENT"
+                                  ? "⚽ Đồ Cho Mượn"
+                                  : cat === "MAINTENANCE"
+                                  ? "🛠️ Vật Tư Sân"
+                                  : "🥤 Canteen"}
+                              </span>
+
+                              {isOut ? (
+                                <span className="px-2 py-0.5 rounded-md text-[13px] font-black bg-rose-100 text-rose-700">
+                                  Hết hàng
+                                </span>
+                              ) : isLow ? (
+                                <span className="px-2 py-0.5 rounded-md text-[13px] font-bold bg-amber-100 text-amber-800">
+                                  Sắp hết
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-md text-[13px] font-semibold bg-emerald-50 text-emerald-700">
+                                  Đủ hàng
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="font-extrabold text-[15px] text-slate-900 leading-snug line-clamp-2 pt-0.5">
+                              {item.name}
+                            </h3>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className="font-mono font-black text-emerald-700 text-[15px] block">
+                              {Number(item.price ?? 0).toLocaleString("vi-VN")}đ
+                            </span>
+                            <span className="text-[13px] text-slate-400 font-medium">/{item.unit || "Cái"}</span>
+                          </div>
+                        </div>
+
+                        {/* Chỉ số Tồn kho & Đã xuất hôm nay */}
+                        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-[13px] font-mono">
+                          <div className="flex flex-col">
+                            <span className="text-slate-500 text-[13px] font-sans">Tồn kho hiện tại:</span>
+                            <span
+                              className={`text-base font-black ${
+                                isOut ? "text-rose-600" : isLow ? "text-amber-700" : "text-[#0369a1]"
+                              }`}
+                            >
+                              {item.stock ?? 0}{" "}
+                              <span className="text-[13px] font-normal text-slate-500 font-sans">
+                                {item.unit || "cái"}
+                              </span>
+                            </span>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-slate-500 text-[13px] font-sans">Đã xuất hôm nay:</span>
+                            <span className="text-base font-black text-slate-900">
+                              {item.soldToday ?? 0}{" "}
+                              <span className="text-[13px] font-normal text-slate-500 font-sans">
+                                {item.unit || "cái"}
+                              </span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* PANEL NHẬP KHO NHANH INLINE (+6, +12, +24 hoặc tùy chọn) */}
+                        {isRestocking ? (
+                          <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 space-y-2 animate-fadeIn">
+                            <div className="flex items-center justify-between text-[13px] font-bold text-amber-800">
+                              <span>📦 Nhập thêm vào kho:</span>
+                              <button
+                                type="button"
+                                onClick={() => setRestockInlineId(null)}
+                                className="text-slate-400 hover:text-slate-600 text-[13px]"
+                              >
+                                Đóng
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <button
+                                type="button"
+                                onClick={() => restockCanteenItem(item, 6)}
+                                className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-900 text-[13px] font-bold hover:bg-amber-100"
+                              >
+                                +6
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => restockCanteenItem(item, 12)}
+                                className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-900 text-[13px] font-bold hover:bg-amber-100"
+                              >
+                                +12 (1 lốc)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => restockCanteenItem(item, 24)}
+                                className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-900 text-[13px] font-bold hover:bg-amber-100"
+                              >
+                                +24 (1 thùng)
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-1.5 pt-0.5">
+                              <input
+                                type="number"
+                                min="1"
+                                value={customRestockQty}
+                                onChange={(e) => setCustomRestockQty(e.target.value)}
+                                placeholder="Số khác..."
+                                className="w-24 px-2 py-1 rounded-lg border border-slate-300 bg-white text-[13px] font-mono font-bold text-slate-800"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => restockCanteenItem(item, Number(customRestockQty) || 0)}
+                                className="px-3 py-1 rounded-lg bg-[#0369a1] text-white text-[13px] font-bold hover:bg-[#075985]"
+                              >
+                                Nhập
+                              </button>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {/* HÀNG NÚT THAO TÁC NGHIỆP VỤ */}
+                        <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100">
+                          <div className="flex items-center gap-1.5">
+                            {/* Nút Xuất/Bán 1 */}
+                            <button
+                              type="button"
+                              onClick={() => sellOneCanteenItem(item.id)}
+                              className="px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-[13px] font-bold hover:bg-emerald-100 transition-colors flex items-center gap-1 cursor-pointer"
+                              title="Bán hoặc xuất kho 1 sản phẩm"
+                            >
+                              <span>Xuất/Bán 1</span>
+                            </button>
+
+                            {/* Với đồ cho mượn: Nút Trả lại (+1 vào tồn) */}
+                            {cat === "EQUIPMENT" && (
+                              <button
+                                type="button"
+                                onClick={() => restockCanteenItem(item, 1)}
+                                className="px-2.5 py-1.5 rounded-xl bg-purple-50 text-purple-700 text-[13px] font-bold hover:bg-purple-100 transition-colors flex items-center gap-1 cursor-pointer"
+                                title="Khách trả bóng/áo: cộng lại 1 vào kho"
+                              >
+                                <span>↩️ Trả (+1)</span>
+                              </button>
+                            )}
+
+                            {/* Nút Nhập Thêm Hàng */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRestockInlineId(isRestocking ? null : item.id);
+                              }}
+                              className="px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-800 text-[13px] font-bold hover:bg-amber-100 transition-colors flex items-center gap-1 cursor-pointer"
+                              title="Nhập thêm hàng hóa vào kho"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Nhập Kho</span>
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            {/* Nút Sửa */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCanteenEditingId(item.id);
+                                setCanteenForm({
+                                  name: item.name ?? "",
+                                  price: String(item.price ?? ""),
+                                  stock: String(item.stock ?? 0),
+                                  unit: item.unit ?? "",
+                                });
+                                setShowAddWarehouseForm(true);
+                              }}
+                              className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+                              title="Sửa thông tin mặt hàng"
+                            >
+                              <Edit3 className="w-4 h-4 text-slate-600" />
+                            </button>
+
+                            {/* Nút Xoá */}
+                            <button
+                              type="button"
+                              onClick={() => removeCanteenItem(item.id)}
+                              className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 flex items-center justify-center transition-colors cursor-pointer"
+                              title="Xóa mặt hàng khỏi kho"
+                            >
+                              <Trash2 className="w-4 h-4 text-rose-600" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()
+          )}
+        </div>
+      )}
 
  
  </div>

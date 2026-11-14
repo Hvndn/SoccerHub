@@ -584,8 +584,8 @@ const mobileNav: MobileNavItem[] =
                 className="sm:hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 animate-fade-in"
               />
 
-              {/* Khung Thông Báo: Trên mobile căn đều 2 lề (inset-x-3), trên desktop dropdown góc phải */}
-              <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-3 w-auto sm:w-[500px] max-w-[540px] bg-white rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-slate-200 z-50 animate-modal-pop overflow-hidden flex flex-col max-h-[82vh] sm:max-h-[580px]">
+              {/* Khung Thông Báo: Trên mobile căn đều 2 lề (left-2 right-2 top-14), trên desktop dropdown góc phải */}
+              <div className="fixed left-2 right-2 top-14 sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:absolute w-auto sm:w-[500px] max-w-[540px] bg-white rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-slate-200 z-50 animate-modal-pop overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[580px]">
                 {/* Header To Rõ */}
                 <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50/90 shrink-0">
                   <div className="flex items-center space-x-2.5 sm:space-x-3">
