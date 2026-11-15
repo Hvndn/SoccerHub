@@ -29,6 +29,7 @@ import {
   AlertTriangle,
   Lock,
   Unlock,
+  CheckCircle2,
 } from "lucide-react";
 import {
   Tournament,
@@ -850,6 +851,17 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                         {ended ? (
                           <span className="px-3.5 py-2 rounded-md text-[14px] font-bold bg-slate-100 text-slate-500 border border-slate-300">
                             Đã kết thúc
+                          </span>
+                        ) : Boolean(authUser && t.teams && t.teams.some((tm: any) => {
+                            const e = (authUser.email || "").toLowerCase().trim();
+                            const p = (authUser.phone || "").trim();
+                            const tmE = (tm.captainEmail || "").toLowerCase().trim();
+                            const tmP = (tm.captainPhone || "").trim();
+                            return (e && tmE === e) || (p && tmP === p);
+                          })) ? (
+                          <span className="px-3.5 py-2 rounded-md text-[13px] font-bold bg-sky-100 text-sky-900 border border-sky-300 flex items-center gap-1 shadow-2xs">
+                            <CheckCircle2 className="w-4 h-4 text-sky-700" />
+                            <span>Đã Đăng Ký</span>
                           </span>
                         ) : full ? (
                           <span className="px-3.5 py-2 rounded-md text-[14px] font-bold bg-slate-100 text-slate-500 border border-slate-300">

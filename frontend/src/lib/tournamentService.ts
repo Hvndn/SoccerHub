@@ -377,6 +377,23 @@ export async function registerTeam(
   return body;
 }
 
+export async function cancelRegistration(
+  tournamentId: number,
+  teamName?: string
+): Promise<{ message: string; cancelledTeam?: string }> {
+  const url = teamName
+    ? `/api/v1/tournaments/${tournamentId}/teams/${encodeURIComponent(teamName)}/cancel`
+    : `/api/v1/tournaments/${tournamentId}/cancel-registration`;
+  const body = await apiRequest<{ message: string; cancelledTeam?: string }>(
+    url,
+    {
+      method: 'POST',
+    }
+  );
+  await refreshTournamentInCache(tournamentId);
+  return body;
+}
+
 export interface BracketTeam {
   name: string;
   elo?: number;

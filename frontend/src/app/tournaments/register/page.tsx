@@ -8,6 +8,7 @@ import WizardPageShell from "@/components/WizardPageShell";
 import {
   fetchTournaments,
   registerTeam,
+  cancelRegistration,
   formatMoney,
   formatDate,
   sportLabel,
@@ -25,7 +26,9 @@ import {
   ShieldCheck,
   Trophy,
   AlertCircle,
+  AlertTriangle,
   Lock,
+  Trash2,
 } from "lucide-react";
 
 const STEPS_ALL = [
@@ -74,6 +77,9 @@ function RegisterTeamWizard() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [paidAck, setPaidAck] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState(false);
+  const [cancelNotice, setCancelNotice] = useState<string | null>(null);
 
   const [tournamentId, setTournamentId] = useState<string>(presetId ?? "");
   const [teamName, setTeamName] = useState("");
@@ -129,6 +135,39 @@ function RegisterTeamWizard() {
   const amInvited = !isInviteOnly || (selected?.invitedEmails ?? []).some((e) => (e ?? "").toLowerCase() === myEmail);
   const isSelectedFull = selected ? isTournamentFull(selected) : false;
 
+  // Kiểm tra xem Đội Trưởng hiện tại đã đăng ký đội cho giải này chưa
+  const myRegisteredTeam = React.useMemo(() => {
+    if (!selected || !selected.teams || !user) return null;
+    const email = (user.email || "").toLowerCase().trim();
+    const phone = (user.phone || "").trim();
+    return (
+      selected.teams.find((tm: any) => {
+        const cEmail = (tm?.captainEmail || "").toLowerCase().trim();
+        const cPhone = (tm?.captainPhone || "").trim();
+        return (email && cEmail === email) || (phone && cPhone === phone);
+      }) ?? null
+    );
+  }, [selected, user]);
+
+  const handleCancelRegistration = async () => {
+    if (!selected || !myRegisteredTeam) return;
+    try {
+      setCancelling(true);
+      setCancelNotice(null);
+      await cancelRegistration(selected.id, myRegisteredTeam.teamName);
+      const list = await fetchTournaments();
+      const open = list.filter((t) => (t.status ?? "OPEN") === "OPEN");
+      setTournaments(open);
+      setCancelConfirm(false);
+      setCancelNotice("✅ Đã hủy đăng ký thành công! Bạn có thể nhập thông tin để nộp đơn mới.");
+      setTeamName("");
+    } catch (err: any) {
+      setCancelNotice("❌ " + (err?.message || "Không thể hủy đăng ký."));
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   // Giai đoạn thực tế:
   // 0: Chọn giải
   // 1: Thông tin đội (Tên FC, quân số)
@@ -148,7 +187,9 @@ function RegisterTeamWizard() {
     }
 
     if (st === 1) {
-      if (!selected) {
+      if (myRegisteredTeam) {
+        e.teamName = `Bạn đã có đội "${myRegisteredTeam.teamName}" đăng ký giải đấu này rồi. Không thể đăng ký thêm trừ khi bạn hủy đăng ký trước.`;
+      } else if (!selected) {
         e.teamName = "Vui lòng chọn giải đấu trước khi điền thông tin đội.";
       } else if (isSelectedFull) {
         e.teamName = "Giải đấu này đã đủ số lượng đội đăng ký, không thể tiếp tục.";
@@ -226,6 +267,10 @@ function RegisterTeamWizard() {
   };
 
   const handleSubmit = async () => {
+    if (myRegisteredTeam) {
+      setSubmitError(`Bạn đã có đội "${myRegisteredTeam.teamName}" đăng ký giải này rồi. Vui lòng hủy đăng ký trước nếu muốn nộp lại.`);
+      return;
+    }
     if (isSelectedFull) {
       setSubmitError("Giải đấu này đã đủ số lượng đội đăng ký, không thể nộp đơn.");
       return;
@@ -351,7 +396,88 @@ function RegisterTeamWizard() {
                 </div>
               </div>
 
-              {isSelectedFull ? (
+              {myRegisteredTeam ? (
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 space-y-3 shadow-2xs">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center shrink-0 shadow-xs font-bold">
+                      <AlertCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold text-[13px]">
+                          {myRegisteredTeam.registrationStatus === "CONFIRMED" ? "✅ Đã Được Xác Nhận" : "⏳ Đang Chờ Duyệt"}
+                        </span>
+                        <span className="text-[13px] text-slate-600">
+                          Đội bóng: <strong className="text-slate-900">{myRegisteredTeam.teamName}</strong>
+                        </span>
+                      </div>
+                      <h4 className="text-base font-bold text-slate-900">
+                        Bạn đã đăng ký đội tham gia giải đấu này rồi
+                      </h4>
+                      <p className="text-[13px] text-slate-600 leading-relaxed">
+                        Theo điều lệ giải, mỗi đội trưởng chỉ được đăng ký 01 đội bóng trong cùng một giải. Bạn không thể bấm đăng ký lại trừ khi thực hiện hủy đăng ký đội hiện tại.
+                      </p>
+                    </div>
+                  </div>
+
+                  {cancelNotice && (
+                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[13px] font-bold">
+                      {cancelNotice}
+                    </div>
+                  )}
+
+                  {/* KHỐI XÁC NHẬN HỦY INLINE (Không dùng Popup Modal) */}
+                  {cancelConfirm ? (
+                    <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-300 text-rose-950 space-y-2.5 animate-fade-in">
+                      <div className="flex items-center gap-2 text-[13px] font-bold text-rose-800">
+                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                        <span>Xác nhận rút đơn và hủy đăng ký cho đội "{myRegisteredTeam.teamName}"?</span>
+                      </div>
+                      <p className="text-[13px] text-slate-600">
+                        Sau khi hủy, suất thi đấu sẽ được giải phóng và bạn có thể nhập thông tin để đăng ký lại đội mới.
+                      </p>
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          disabled={cancelling}
+                          onClick={handleCancelRegistration}
+                          className="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[13px] shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                        >
+                          {cancelling ? "Đang Hủy Đăng Ký..." : "Đồng Ý Hủy Đăng Ký"}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={cancelling}
+                          onClick={() => setCancelConfirm(false)}
+                          className="px-3.5 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-[13px] cursor-pointer"
+                        >
+                          Giữ Lại Đội
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/?tab=tournaments&tournamentId=${selected.id}`)}
+                        className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[13px] shadow-xs cursor-pointer transition-colors"
+                      >
+                        Xem Chi Tiết Giải Đấu
+                      </button>
+                      {(!selected.bracketJson || selected.bracketJson.trim() === "") && selected.status === "OPEN" && (
+                        <button
+                          type="button"
+                          onClick={() => setCancelConfirm(true)}
+                          className="px-4 py-2 rounded-lg bg-white hover:bg-rose-50 text-rose-600 border border-rose-300 font-bold text-[13px] inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>Hủy Đăng Ký Giải Này</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : isSelectedFull ? (
                 <div className="p-2.5 rounded-md bg-rose-100 border border-rose-300 text-rose-800 font-bold text-[13px] flex items-center gap-1.5">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>Giải đấu đã đủ số lượng đội đăng ký (Hết suất). Bạn không thể nộp đơn tham gia giải này.</span>
@@ -619,11 +745,20 @@ function RegisterTeamWizard() {
               Bước {step + 1}/{steps.length}
             </span>
 
-            {step < steps.length - 1 ? (
+            {Boolean(myRegisteredTeam) ? (
+              <button
+                type="button"
+                onClick={() => router.push(`/?tab=tournaments&tournamentId=${selected?.id}`)}
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors cursor-pointer shadow-xs"
+              >
+                <span>Xem Giải Đấu</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : step < steps.length - 1 ? (
               <button
                 type="button"
                 onClick={goNext}
-                disabled={isBlockedByInvite || isSelectedFull}
+                disabled={isBlockedByInvite || isSelectedFull || Boolean(myRegisteredTeam)}
                 className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-xs"
               >
                 <span>Tiếp tục</span>
@@ -633,7 +768,7 @@ function RegisterTeamWizard() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={submitting || isBlockedByInvite || isSelectedFull}
+                disabled={submitting || isBlockedByInvite || isSelectedFull || Boolean(myRegisteredTeam)}
                 className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-xs"
               >
                 {submitting && <RefreshCw className="w-4 h-4 animate-spin" />}

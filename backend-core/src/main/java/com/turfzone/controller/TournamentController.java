@@ -2640,6 +2640,61 @@ public class TournamentController {
         return ResponseEntity.ok(Map.of("message", "Đã gỡ đội " + teamName + " khỏi giải."));
     }
 
+    /** Đội trưởng tự rút đơn / hủy đăng ký đội của mình khỏi giải trước khi bốc thăm. */
+    @PostMapping(value = {"/{id}/cancel-registration", "/{id}/teams/{teamName}/cancel"})
+    @org.springframework.transaction.annotation.Transactional
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> cancelMyRegistration(
+            @PathVariable Long id,
+            @PathVariable(required = false) String teamName,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
+        if (me == null || me.getEmail() == null || me.getEmail().isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Vui lòng đăng nhập để thực hiện hủy đăng ký."));
+        }
+        Tournament t = tournamentRepository.findById(id).orElse(null);
+        if (t == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+        if (isTournamentClosed(t)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc đóng, không thể hủy đăng ký."));
+        }
+        if (t.getBracketJson() != null && !t.getBracketJson().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu đã tiến hành bốc thăm chia nhánh. Vui lòng liên hệ trực tiếp Ban Tổ Chức để được hỗ trợ điều chỉnh."));
+        }
+        String myEmail = me.getEmail().trim().toLowerCase();
+        String myPhone = me.getPhone() != null ? me.getPhone().trim() : "";
+
+        List<TournamentTeamEntry> currentList = new ArrayList<>(t.getTeams());
+        TournamentTeamEntry target = null;
+        for (TournamentTeamEntry entry : currentList) {
+            boolean matchesName = (teamName == null || teamName.isBlank() || 
+                    (entry.getTeamName() != null && entry.getTeamName().trim().equalsIgnoreCase(teamName.trim())));
+            boolean sameEmail = entry.getCaptainEmail() != null && entry.getCaptainEmail().trim().toLowerCase().equals(myEmail);
+            boolean samePhone = !myPhone.isEmpty() && entry.getCaptainPhone() != null && entry.getCaptainPhone().trim().equalsIgnoreCase(myPhone);
+
+            if (matchesName && (sameEmail || samePhone)) {
+                target = entry;
+                break;
+            }
+        }
+        if (target == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy hồ sơ đăng ký đội bóng của bạn trong giải này."));
+        }
+
+        final String removedName = target.getTeamName();
+        currentList.remove(target);
+        t.setTeams(currentList);
+        t.setRegisteredTeams((int) currentList.stream()
+                .filter(x -> "CONFIRMED".equalsIgnoreCase(x.getRegistrationStatus()) || "SIMULATED".equalsIgnoreCase(x.getRegistrationStatus()) || Boolean.TRUE.equals(x.getSimulated()))
+                .count());
+        tournamentRepository.save(t);
+        return ResponseEntity.ok(Map.of(
+                "message", "Đã hủy đăng ký thành công cho đội " + removedName + ".",
+                "cancelledTeam", removedName
+        ));
+    }
+
     /** BTC cập nhật danh sách cầu thủ (Roster) và thông tin đội trưởng của một đội trong giải. */
     @PutMapping("/{id}/teams/{teamName}/roster")
     @org.springframework.transaction.annotation.Transactional

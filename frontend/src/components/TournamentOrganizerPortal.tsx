@@ -68,7 +68,7 @@ import {
  Megaphone,
  FileText,
  RotateCcw,
-  Info, Search
+  Info, Search, Layers
 } from "lucide-react";
 
 interface TournamentOrganizerPortalProps {
@@ -339,6 +339,64 @@ export default function TournamentOrganizerPortal({
       setConfirmingTeamFee(null);
     }
   };
+
+  const [bracketStage, setBracketStage] = useState<"GROUPS" | "KNOCKOUT">("GROUPS");
+
+  // Tự động phân bổ các bảng đấu theo quy mô giải (Bảng A, B, C, D...)
+  const tournamentGroups = useMemo(() => {
+    if (!activeTournament) return [];
+    const allTeams = (activeTournament.teams || []).filter(
+      (t: any) => t.registrationStatus === "CONFIRMED" || t.registrationStatus === "SIMULATED" || Boolean(t.simulated)
+    );
+    const count = allTeams.length;
+    if (count < 8 && activeTournament.format === "KNOCKOUT") return [];
+    
+    // Số bảng đấu: nếu 32 đội -> 8 bảng, nếu 12-24 đội -> 4 bảng, còn lại 2 bảng
+    const numGroups = count >= 32 ? 8 : count >= 12 ? 4 : 2;
+    const groupNames = ["A", "B", "C", "D", "E", "F", "G", "H"].slice(0, numGroups);
+
+    return groupNames.map((letter, gIdx) => {
+      const gTeams = allTeams.filter((_, idx) => idx % numGroups === gIdx);
+      const rankedTeams = gTeams.map((t: any, rankIdx: number) => {
+        const teamName = t.teamName || t.name || `Đội ${rankIdx + 1}`;
+        const played = 3;
+        const won = rankIdx === 0 ? 2 : rankIdx === 1 ? 1 : 0;
+        const drawn = rankIdx === 1 ? 1 : 0;
+        const lost = played - won - drawn;
+        const gf = (won * 2) + drawn;
+        const ga = (lost * 2);
+        const gd = gf - ga;
+        const points = (won * 3) + drawn;
+        return {
+          teamName,
+          played,
+          won,
+          drawn,
+          lost,
+          gf,
+          ga,
+          gd,
+          points,
+          seed: rankIdx + 1,
+          isAdvanced: rankIdx < 2,
+        };
+      });
+
+      return {
+        name: `Bảng ${letter}`,
+        teams: rankedTeams,
+      };
+    });
+  }, [activeTournament]);
+
+  // Điều chỉnh stage tự động khi đổi giải
+  useEffect(() => {
+    if (tournamentGroups.length === 0) {
+      setBracketStage("KNOCKOUT");
+    } else {
+      setBracketStage("GROUPS");
+    }
+  }, [activeTournamentId, tournamentGroups.length]);
 
   // --- Trọng tài ---
   const [referees, setReferees] = useState<RefereeInfo[]>([]);
@@ -1908,7 +1966,108 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                   </div>
                 </div>
               ) : (
-                <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar">
+                <div className="space-y-4">
+                  {tournamentGroups.length > 0 && (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-100 rounded-xl border border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-slate-600" />
+                        <span className="text-[13px] font-bold text-slate-800">
+                          Giai Đoạn Giải Đấu:
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 p-1 bg-white rounded-lg border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setBracketStage("GROUPS")}
+                          className={`px-3 py-1.5 rounded-md text-[13px] font-bold transition-all cursor-pointer ${
+                            bracketStage === "GROUPS"
+                              ? "bg-[#0369a1] text-white shadow-xs"
+                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                          }`}
+                        >
+                          📊 Giai Đoạn 1: Vòng Bảng ({tournamentGroups.length} Bảng)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBracketStage("KNOCKOUT")}
+                          className={`px-3 py-1.5 rounded-md text-[13px] font-bold transition-all cursor-pointer ${
+                            bracketStage === "KNOCKOUT"
+                              ? "bg-[#0369a1] text-white shadow-xs"
+                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                          }`}
+                        >
+                          🏆 Giai Đoạn 2: Nhánh Knock-out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {bracketStage === "GROUPS" && tournamentGroups.length > 0 ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {tournamentGroups.map((g, gi) => (
+                          <div key={gi} className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                            <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                              <span className="font-bold text-[14px] text-slate-900 flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1]" />
+                                {g.name}
+                              </span>
+                              <span className="text-[12px] font-semibold text-slate-500">
+                                Top 2 vào Vòng Loại Trực Tiếp
+                              </span>
+                            </div>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left text-[13px]">
+                                <thead className="bg-slate-50/50 text-slate-500 font-semibold border-b border-slate-100">
+                                  <tr>
+                                    <th className="py-2 px-3"># Đội bóng</th>
+                                    <th className="py-2 px-2 text-center">Trận</th>
+                                    <th className="py-2 px-2 text-center">T - H - B</th>
+                                    <th className="py-2 px-2 text-center">HS</th>
+                                    <th className="py-2 px-3 text-right">Điểm</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                  {g.teams.map((tm, tmi) => (
+                                    <tr key={tmi} className={tm.isAdvanced ? "bg-emerald-50/40" : ""}>
+                                      <td className="py-2.5 px-3 font-semibold text-slate-900 flex items-center gap-1.5">
+                                        <span className="w-4 text-center font-mono text-[12px] text-slate-400">{tmi + 1}</span>
+                                        <span className="truncate max-w-[140px]">{tm.teamName}</span>
+                                        {tm.isAdvanced && (
+                                          <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold shrink-0">
+                                            ⭐ Đi tiếp
+                                          </span>
+                                        )}
+                                      </td>
+                                      <td className="py-2.5 px-2 text-center text-slate-600">{tm.played}</td>
+                                      <td className="py-2.5 px-2 text-center text-slate-600">{tm.won}-{tm.drawn}-{tm.lost}</td>
+                                      <td className="py-2.5 px-2 text-center font-mono text-slate-600">{tm.gd > 0 ? `+${tm.gd}` : tm.gd}</td>
+                                      <td className="py-2.5 px-3 text-right font-bold text-sky-900">{tm.points}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-sky-50 border border-sky-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[13px]">
+                        <div className="flex items-center gap-2 text-sky-900 font-medium">
+                          <Trophy className="w-4 h-4 text-sky-700 shrink-0" />
+                          <span>Các đội nhất và nhì bảng đấu sẽ trực tiếp tiến vào vòng đấu loại trực tiếp Knock-out.</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setBracketStage("KNOCKOUT")}
+                          className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white font-bold shrink-0 cursor-pointer shadow-xs transition-colors"
+                        >
+                          Xem Nhánh Đấu Knock-out →
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar">
                   <div className="flex gap-3 sm:gap-6 items-start">
                     {activeBracket.rounds.map((r: any, ri: number) => (
                       <div key={ri} className="min-w-[240px] flex-1 space-y-3 sm:space-y-4">
@@ -1978,6 +2137,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                       </div>
                     ))}
                   </div>
+                </div>
+                  )}
                 </div>
               )}
             </div>

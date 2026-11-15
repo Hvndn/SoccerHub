@@ -33,7 +33,8 @@ import {
  Filter,
   Sparkles,
   Info,
-  Share2
+  Share2,
+  Trash2
 } from "lucide-react";
 import DrawLotteryOverlay from "./DrawLotteryOverlay";
 import TournamentMatchDetail from "./TournamentMatchDetail";
@@ -51,6 +52,7 @@ import {
  undoMatchResult,
  confirmTeamPayment,
  saveMatchResult,
+ cancelRegistration,
  registeredCount,
  confirmedCount,
  refreshTournamentInCache,
@@ -144,6 +146,24 @@ const [addCount, setAddCount] = useState("4");
 
  const [confirmSimulate, setConfirmSimulate] = useState(false);
  const [confirmStageSimulate, setConfirmStageSimulate] = useState(false);
+ const [cancellingMyTeam, setCancellingMyTeam] = useState(false);
+ const [confirmCancelMyTeam, setConfirmCancelMyTeam] = useState(false);
+
+ const handleCancelMyRegistration = async () => {
+   if (!selected || !myTeam) return;
+   try {
+     setCancellingMyTeam(true);
+     await cancelRegistration(Number(selected.id), myTeam.teamName);
+     triggerToast(`Đã hủy đăng ký thành công cho đội "${myTeam.teamName}".`);
+     setConfirmCancelMyTeam(false);
+     const fullList = await fetchTournaments(true);
+     if (fullList.length) setTournaments(fullList);
+   } catch (err: any) {
+     triggerToast("❌ " + (err?.message || "Không thể hủy đăng ký giải."));
+   } finally {
+     setCancellingMyTeam(false);
+   }
+ };
  // Tu cuon toi hop xac nhan inline de BTC khong phai tim (xac nhan hien ngay duoi hang nut).
  useEffect(() => {
  if (!confirmDraw && !confirmSimulate && !confirmStageSimulate && confirmUndo === null) return;
@@ -1381,6 +1401,12 @@ const [addCount, setAddCount] = useState("4");
          <span>Đăng Ký Đội</span>
        </a>
      )}
+     {myTeam && (
+       <span className="px-3.5 py-2.5 rounded-xl bg-sky-100 border border-sky-300 text-sky-900 font-bold text-[13px] flex items-center justify-center gap-1.5 shadow-2xs shrink-0 sm:mt-5">
+         <CheckCircle2 className="w-4 h-4 text-sky-700" />
+         <span>Đã Đăng Ký ({myTeam.teamName})</span>
+       </span>
+     )}
    </div>
  )}
 
@@ -1855,8 +1881,20 @@ const [addCount, setAddCount] = useState("4");
              </p>
            </div>
          </div>
-         <div className="px-4 py-2 rounded-xl bg-amber-100 text-amber-900 border border-amber-200 text-[13px] font-bold shrink-0 text-center">
-           Chờ BTC Xác Nhận
+         <div className="flex flex-col sm:flex-row items-center gap-2 shrink-0">
+           <div className="px-4 py-2 rounded-xl bg-amber-100 text-amber-900 border border-amber-200 text-[13px] font-bold shrink-0 text-center">
+             Chờ BTC Xác Nhận
+           </div>
+           {(!selected.bracketJson || selected.bracketJson.trim() === "") && selected.status === "OPEN" && (
+             <button
+               type="button"
+               onClick={() => setConfirmCancelMyTeam(true)}
+               className="px-3.5 py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-rose-300 text-[13px] font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+             >
+               <Trash2 className="w-4 h-4" />
+               <span>Rút Đơn / Hủy</span>
+             </button>
+           )}
          </div>
        </div>
      )}
@@ -1884,7 +1922,7 @@ const [addCount, setAddCount] = useState("4");
              </div>
            </div>
 
-           <div className="flex items-center gap-2 shrink-0">
+           <div className="flex items-center gap-2 shrink-0 flex-wrap">
              <button
                type="button"
                onClick={() => { setSelectedMatchDetail(null); setActiveTab("schedule"); }}
@@ -1892,6 +1930,16 @@ const [addCount, setAddCount] = useState("4");
              >
                Xem Lịch Trận Của Đội
              </button>
+             {(!selected.bracketJson || selected.bracketJson.trim() === "") && selected.status === "OPEN" && (
+               <button
+                 type="button"
+                 onClick={() => setConfirmCancelMyTeam(true)}
+                 className="px-3.5 py-2 rounded-lg bg-white hover:bg-rose-50 text-rose-600 border border-rose-300 text-[13px] font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+               >
+                 <Trash2 className="w-4 h-4" />
+                 <span>Hủy Đăng Ký</span>
+               </button>
+             )}
            </div>
          </div>
 
@@ -1924,6 +1972,37 @@ const [addCount, setAddCount] = useState("4");
              </div>
            </div>
          )}
+       </div>
+     )}
+
+     {/* Khối xác nhận Hủy Đăng Ký Inline cho Đội Trưởng */}
+     {myTeam && confirmCancelMyTeam && (
+       <div className="rounded-xl border border-rose-300 bg-rose-50 p-4 sm:p-5 space-y-2.5 animate-fade-in text-rose-950 shadow-xs">
+         <div className="flex items-center gap-2 text-[13px] font-bold text-rose-800">
+           <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+           <span>Xác nhận rút đơn và hủy đăng ký cho đội "{myTeam.teamName}"?</span>
+         </div>
+         <p className="text-[13px] text-slate-600">
+           Suất tham gia của đội sẽ được hoàn trả cho giải đấu và bạn có thể đăng ký lại đội mới bất cứ lúc nào.
+         </p>
+         <div className="flex items-center gap-2 pt-1">
+           <button
+             type="button"
+             disabled={cancellingMyTeam}
+             onClick={handleCancelMyRegistration}
+             className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[13px] shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+           >
+             {cancellingMyTeam ? "Đang Hủy..." : "Xác Nhận Hủy Đăng Ký"}
+           </button>
+           <button
+             type="button"
+             disabled={cancellingMyTeam}
+             onClick={() => setConfirmCancelMyTeam(false)}
+             className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-[13px] cursor-pointer"
+           >
+             Không, Giữ Lại Đội
+           </button>
+         </div>
        </div>
      )}
 
@@ -2542,7 +2621,7 @@ const [addCount, setAddCount] = useState("4");
             <span>Bốc Thăm</span>
           </button>
         )}
-        {!full && (
+        {!full && !myTeam && !isClosed && (
           <a
             href={`/tournaments/register?tournamentId=${selected?.id}`}
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
@@ -2550,6 +2629,12 @@ const [addCount, setAddCount] = useState("4");
             <UserPlus className="w-4 h-4" />
             <span>+ Đăng Ký</span>
           </a>
+        )}
+        {myTeam && (
+          <span className="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-sky-100 border border-sky-300 text-sky-900 font-bold text-[13px] flex items-center justify-center gap-1.5 shadow-2xs">
+            <CheckCircle2 className="w-4 h-4 text-sky-700" />
+            <span>Đã Đăng Ký ({myTeam.teamName})</span>
+          </span>
         )}
       </div>
     </div>
