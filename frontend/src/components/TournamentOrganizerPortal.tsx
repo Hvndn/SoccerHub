@@ -1153,9 +1153,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  }
  };
 
- const filteredTournaments = selectedSport === "all"
- ? tournaments
- : tournaments.filter((t: any) => t.sport === selectedSport);
+ const filteredTournaments = tournaments;
 
 
  return (
@@ -1344,31 +1342,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       </div>
     )}
 
-    {/* TẦNG 3: BỘ LỌC THỂ THỨC MÔN THỂ THAO */}
-    <div className="mt-6 pt-5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[14px] font-bold text-slate-500 mr-2 flex items-center gap-1.5 whitespace-nowrap">
-          <Filter className="w-3.5 h-3.5 text-slate-500" /> Môn:
-        </span>
-        {SPORT_FILTERS.map(item => (
-          <button
-            key={item.id}
-            onClick={() => setSelectedSport(item.id)}
-            className={`px-3.5 py-1.5 rounded-xl text-[14px] font-extrabold transition-all whitespace-nowrap cursor-pointer ${
-              selectedSport === item.id
-                ? "bg-[#0369a1] text-white shadow-xs"
-                : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
-            }`}
-          >
-            {item.label} ({countBySportFilter(item.id)})
-          </button>
-        ))}
-      </div>
-
-      <div className="text-[14px] font-mono text-slate-500 shrink-0 hidden md:block">
-        Giải đang mở: <span className="text-sky-800 font-bold">{countBySportFilter("all")} giải </span>
-      </div>
-    </div>
+    
   </div>
 
   {/* FOOTBALL TOURNAMENT BENTO CAROUSEL CARDS */}
