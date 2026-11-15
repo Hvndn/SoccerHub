@@ -1503,23 +1503,30 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       return (
         <div
           key={t.id}
-          className={`rounded-lg p-4 sm:p-5 border transition-all duration-200 relative overflow-hidden flex flex-col justify-between shadow-xs cursor-pointer group hover:border-[#0369a1] hover:shadow-sm ${
+          className={`rounded-lg p-4 sm:p-5 border transition-all duration-200 relative overflow-hidden flex flex-col justify-between shadow-xs cursor-pointer group hover:border-[#0369a1] hover:shadow-md ${
             isSelected
-              ? "border-[#0369a1] ring-2 ring-[#0369a1]/25 bg-sky-50/20"
-              : t.status === "live"
-              ? "bg-sky-50/40 border-sky-300 text-slate-900 hover:border-sky-400"
+              ? "border-[#0369a1] ring-2 ring-[#0369a1]/30 bg-sky-50/30 shadow-sm"
               : "bg-white border-slate-200/90 text-slate-900 hover:border-slate-300"
           }`}
           onClick={() => {
-            // Click vào ô giải là chuyển thẳng vào trang giải đấu luôn!
-            onOpenBracket?.(String(t.id));
+            const tid = Number(t.id);
+            setSelectedTournamentId(tid);
+            setBottomTab("info");
+            setTimeout(() => {
+              document.getElementById("organizer-workspace")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 80);
           }}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              onOpenBracket?.(String(t.id));
+              const tid = Number(t.id);
+              setSelectedTournamentId(tid);
+              setBottomTab("info");
+              setTimeout(() => {
+                document.getElementById("organizer-workspace")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 80);
             }
           }}
         >
@@ -1588,16 +1595,21 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (onOpenBracket) {
-                    onOpenBracket(String(t.id));
-                  } else {
-                    setSelectedTournamentId(Number(t.id));
-                  }
+                  const tid = Number(t.id);
+                  setSelectedTournamentId(tid);
+                  setBottomTab("info");
+                  setTimeout(() => {
+                    document.getElementById("organizer-workspace")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 80);
                 }}
-                className="px-3 py-1.5 rounded-lg text-[13px] font-bold bg-[#0369a1] hover:bg-[#075985] text-white transition-colors cursor-pointer shadow-xs flex items-center gap-1"
+                className={`px-3 py-1.5 rounded-lg text-[13px] font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-1 ${
+                  isSelected
+                    ? "bg-[#0369a1] text-white ring-2 ring-[#0369a1]/30"
+                    : "bg-[#0369a1] hover:bg-[#075985] text-white"
+                }`}
                 title="Vào xem và điều hành giải này"
               >
-                <span>Vào Điều Hành</span>
+                <span>{isSelected ? "Đang Thao Tác" : "Vào Điều Hành"}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -1610,7 +1622,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
 {/* CHI TIẾT ĐIỀU HÀNH GIẢI ĐẤU (CHỈ HIỂN THỊ KHI CHỌN MỘT GIẢI CỤ THỂ) */}
       {activeTournament && (
-        <div className="space-y-4 sm:space-y-6 pt-4 border-t border-slate-200 animate-fade-in">
+        <div id="organizer-workspace" className="space-y-4 sm:space-y-6 pt-4 border-t border-slate-200 animate-fade-in scroll-mt-6">
           <div className="flex items-center justify-between">
             <button
               type="button"
