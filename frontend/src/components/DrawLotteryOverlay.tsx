@@ -71,6 +71,7 @@ export default function DrawLotteryOverlay({
   const [isSwirling, setIsSwirling] = useState(false);
   const [isBallRising, setIsBallRising] = useState(false);
   const [isBallOpened, setIsBallOpened] = useState(false);
+  const [isSlipRevealed, setIsSlipRevealed] = useState(false);
   const [autoPlay, setAutoPlay] = useState(false);
 
   // Âm thanh
@@ -337,6 +338,7 @@ export default function DrawLotteryOverlay({
     setIsSwirling(false);
     setIsBallRising(false);
     setIsBallOpened(false);
+    setIsSlipRevealed(false);
     setAutoPlay(false);
 
     const timer = setTimeout(() => {
@@ -365,36 +367,42 @@ export default function DrawLotteryOverlay({
 
   // Bốc một cặp đấu tiếp theo
   const drawNextPair = useCallback(() => {
-    if (lockedPairs >= totalPairs || isSwirling) return;
+    if (lockedPairs >= totalPairs || isSwirling || isBallRising) return;
 
     setIsSwirling(true);
     setIsBallRising(false);
     setIsBallOpened(false);
+    setIsSlipRevealed(false);
     playSwirlSound();
 
     setTimeout(() => {
       setIsSwirling(false);
       setIsBallRising(true);
-      playPopOpenSound();
 
       setTimeout(() => {
         setIsBallOpened(true);
+        playPopOpenSound();
 
         setTimeout(() => {
-          setLockedPairs((prev) => {
-            const next = prev + 1;
-            if (next >= totalPairs) {
-              playFanfareSound();
-              setAutoPlay(false);
-            }
-            return next;
-          });
-          setIsBallRising(false);
-          setIsBallOpened(false);
-        }, 1800);
-      }, 500);
-    }, 1000);
-  }, [lockedPairs, totalPairs, isSwirling, playSwirlSound, playPopOpenSound, playFanfareSound]);
+          setIsSlipRevealed(true);
+
+          setTimeout(() => {
+            setLockedPairs((prev) => {
+              const next = prev + 1;
+              if (next >= totalPairs) {
+                playFanfareSound();
+                setAutoPlay(false);
+              }
+              return next;
+            });
+            setIsBallRising(false);
+            setIsBallOpened(false);
+            setIsSlipRevealed(false);
+          }, 2200);
+        }, 300);
+      }, 700);
+    }, 750);
+  }, [lockedPairs, totalPairs, isSwirling, isBallRising, playSwirlSound, playPopOpenSound, playFanfareSound]);
 
   // Bốc thăm nhanh tất cả
   const handleFastDraw = useCallback(() => {
@@ -403,6 +411,7 @@ export default function DrawLotteryOverlay({
     setIsSwirling(false);
     setIsBallRising(false);
     setIsBallOpened(false);
+    setIsSlipRevealed(false);
     playFanfareSound();
   }, [totalPairs, playFanfareSound]);
 
@@ -586,40 +595,128 @@ export default function DrawLotteryOverlay({
               </div>
 
               {/* RỔ BÓNG THỦY TINH PHA LÊ (CRYSTAL DRAW BOWL) */}
-              <div className="relative my-4 flex flex-col items-center">
-                {/* Quả bóng đang bốc nhấc lên (Levitating & Opened Draw Ball) */}
+              <div className="relative my-6 flex flex-col items-center">
+                <style>{`
+                  @keyframes ballFloatUp {
+                    0% {
+                      transform: translateY(110px) scale(0.55);
+                      opacity: 0;
+                    }
+                    35% {
+                      opacity: 1;
+                    }
+                    100% {
+                      transform: translateY(0) scale(1);
+                      opacity: 1;
+                    }
+                  }
+                `}</style>
+
+                {/* Vệt hào quang khi bóng nổi lên */}
+                {isBallRising && (
+                  <div className="absolute -top-36 w-72 h-72 bg-sky-400/25 rounded-full blur-3xl pointer-events-none animate-pulse" />
+                )}
+
+                {/* QUẢ BÓNG NỔI LÊN TỪ TRONG RỔ & TỰ MỞ RA HIỆN LÁ THĂM */}
                 {isBallRising && currentPair && (
                   <div
-                    className={`absolute -top-16 z-30 transition-all duration-500 transform ${
-                      isBallOpened ? "scale-105" : "scale-100"
-                    }`}
+                    className="absolute z-30 -top-28 sm:-top-32 flex flex-col items-center select-none"
+                    style={{
+                      animation: "ballFloatUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+                    }}
                   >
-                    <div className="flex flex-col items-center animate-pulse">
-                      {/* Nửa trên quả bóng tách đôi */}
+                    <div className="relative flex flex-col items-center">
+                      {/* Nửa trên quả bóng tách đôi nâng lên */}
                       <div
-                        className={`w-14 h-7 rounded-t-full bg-gradient-to-b from-white via-slate-50 to-sky-100 border-2 border-[#0369a1] shadow-md transition-transform duration-500 ${
-                          isBallOpened ? "-translate-y-3" : "translate-y-0"
-                        } flex items-center justify-center text-[10px] text-[#0369a1] font-black`}
+                        className={`w-20 h-10 sm:w-24 sm:h-12 rounded-t-full bg-gradient-to-b from-white via-slate-100 to-sky-100 border-2 border-sky-400 shadow-xl transition-all duration-500 ease-out flex items-center justify-center text-xs font-black text-sky-700 z-10 ${
+                          isBallOpened
+                            ? "-translate-y-14 sm:-translate-y-16 -rotate-6 shadow-sky-400/60"
+                            : "translate-y-0 rotate-0"
+                        }`}
+                        style={{
+                          boxShadow:
+                            "inset 0 4px 10px rgba(255,255,255,0.9), 0 8px 25px rgba(3,105,161,0.3)",
+                        }}
                       >
-                        ⭐
+                        <span className="opacity-80">⭐</span>
                       </div>
 
-                      {/* Dải Băng Bốc Thăm bung mở ở giữa hiển thị CẢ 2 ĐỘI */}
+                      {/* LÁ THĂM GIẤY CHÍNH THỨC (BUNG MỞ Ở GIỮA HAI NỬA QUẢ BÓNG) */}
                       {isBallOpened && (
-                        <div className="py-2.5 px-6 rounded-2xl bg-white border-2 border-amber-400 text-slate-900 font-black text-[14px] sm:text-[15px] shadow-2xl ring-4 ring-amber-400/25 animate-fade-in flex items-center gap-2.5 max-w-lg">
-                          <Trophy className="w-4 h-4 text-amber-600 shrink-0" />
-                          <span className="text-[#0369a1] font-black">{currentPair.teamA}</span>
-                          <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-200 text-[13px] font-black">VS</span>
-                          <span className="text-amber-800 font-black">{currentPair.teamB}</span>
+                        <div
+                          className={`my-1 transition-all duration-500 ease-out origin-center transform z-20 ${
+                            isSlipRevealed
+                              ? "scale-100 opacity-100"
+                              : "scale-x-0 scale-y-75 opacity-0"
+                          }`}
+                        >
+                          {/* Thẻ lá thăm phong cách thể thao hoàng gia Turfzone */}
+                          <div className="py-3 px-5 sm:px-7 rounded-2xl bg-gradient-to-r from-amber-50 via-white to-amber-50 border-2 border-amber-400 text-slate-900 shadow-[0_20px_50px_rgba(245,158,11,0.35)] ring-4 ring-amber-300/30 max-w-xl mx-auto space-y-2">
+                            {/* Tiêu đề lá thăm */}
+                            <div className="flex items-center justify-between gap-3 border-b border-amber-200/80 pb-1.5 text-[13px] text-amber-900 font-bold">
+                              <span className="flex items-center gap-1">
+                                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                <span>LÁ THĂM CHÍNH THỨC • TRẬN #{currentPairIdx + 1}</span>
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-950 font-black text-[13px]">
+                                Xác Nhận
+                              </span>
+                            </div>
+
+                            {/* Cặp đấu hiển thị nổi bật */}
+                            <div className="flex items-center justify-center gap-3 sm:gap-4 py-1">
+                              {/* Đội A */}
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg bg-[#0369a1] text-white flex items-center justify-center font-black text-sm shadow-xs">
+                                  {currentPair.teamA.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="text-[#0369a1] font-black text-base sm:text-lg">
+                                  {currentPair.teamA}
+                                </span>
+                              </div>
+
+                              {/* VS badge */}
+                              <div className="px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-300 text-[13px] font-black shadow-xs">
+                                VS
+                              </div>
+
+                              {/* Đội B */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-amber-800 font-black text-base sm:text-lg">
+                                  {currentPair.teamB}
+                                </span>
+                                <div className="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black text-sm shadow-xs">
+                                  {currentPair.teamB.charAt(0).toUpperCase()}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Dòng ghi chú chân lá thăm */}
+                            <div className="pt-1 border-t border-amber-200/60 flex items-center justify-between text-[13px] text-slate-500">
+                              <span>Ban Tổ Chức Giải Đấu Turfzone</span>
+                              <span className="text-emerald-700 font-bold flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Vào Nhánh Đấu</span>
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       )}
 
-                      {/* Nửa dưới quả bóng tách đôi */}
+                      {/* Nửa dưới quả bóng tách đôi hạ xuống */}
                       <div
-                        className={`w-14 h-7 rounded-b-full bg-gradient-to-t from-[#0b4f6c] via-[#0369a1] to-sky-500 border-2 border-[#0369a1] shadow-md transition-transform duration-500 ${
-                          isBallOpened ? "translate-y-3" : "translate-y-0"
+                        className={`w-20 h-10 sm:w-24 sm:h-12 rounded-b-full bg-gradient-to-t from-[#0b4f6c] via-[#0369a1] to-sky-500 border-2 border-[#0369a1] shadow-xl transition-all duration-500 ease-out flex items-center justify-center z-10 ${
+                          isBallOpened
+                            ? "translate-y-14 sm:translate-y-16 rotate-6 shadow-sky-500/60"
+                            : "translate-y-0 rotate-0"
                         }`}
-                      />
+                        style={{
+                          boxShadow:
+                            "inset 0 -4px 10px rgba(0,0,0,0.4), 0 8px 25px rgba(3,105,161,0.3)",
+                        }}
+                      >
+                        <div className="w-10 h-1 rounded-full bg-sky-300/40" />
+                      </div>
                     </div>
                   </div>
                 )}
