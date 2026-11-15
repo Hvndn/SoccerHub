@@ -145,7 +145,7 @@ export default function TournamentOrganizerPortal({
  const [selectedTournamentId, setSelectedTournamentId] = useState<number | null>(null);
 
  // Active Tab for Tables/Logs
- const [bottomTab, setBottomTab] = useState<"teams" | "schedule" | "var_logs" | "info" | "referees" | "invites" | "broadcast" | "finance" | "edit">("teams");
+ const [bottomTab, setBottomTab] = useState<"teams" | "bracket" | "schedule" | "var_logs" | "info" | "referees" | "invites" | "broadcast" | "finance" | "edit">("teams");
   const [copiedInviteLink, setCopiedInviteLink] = useState(false);
   const [inviteCustomNote, setInviteCustomNote] = useState("Ban Tổ Chức trân trọng kính mời bạn và đội bóng tham gia tranh tài tại giải đấu. Nhấp vào liên kết để nộp hồ sơ đăng ký!");
 
@@ -1672,158 +1672,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   </div>
 )}
 
- {/* MAIN WORKSPACE: FULL-WIDTH UMPIRE CONSOLE, BRACKET ENGINE & TOURNAMENT MANAGEMENT CONSOLE */}
+ {/* MAIN WORKSPACE: TOURNAMENT MANAGEMENT CONSOLE WITH TABS NAVBAR */}
  <div className="w-full space-y-4 sm:space-y-8">
-
- {/* 2. NHÁNH ĐẤU THẬT — parse từ bracketJson của giải đang chọn */}
- <div className="bg-white border border-slate-200 rounded-lg p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
- <div className="min-w-0">
- <span className="text-[14px] font-black text-[#0b4f6c]">
- Nhánh Đấu Hiện Tại
- </span>
- <h3 className="text-xl font-black text-slate-900 tracking-tight truncate">
- {activeTournament ? activeTournament.title : "Chưa chọn giải nào"}
- </h3>
- </div>
-
- {activeTournament && (
- <span className="px-3 py-1 rounded-full bg-slate-100 text-[14px] font-bold text-slate-600 border border-slate-200 shrink-0">
- Thể thức: {formatLabel(activeTournament.format)}
- </span>
- )}
- </div>
-
- {!activeBracket ? (
-    <div className="p-6 sm:p-10 text-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 space-y-3">
-      <div className="w-12 h-12 rounded-xl bg-sky-100 text-[#0369a1] mx-auto flex items-center justify-center">
-        <Trophy className="w-6 h-6" />
-      </div>
-      <div className="space-y-1">
-        <h4 className="text-base font-bold text-slate-800">
-          Giải đấu này chưa tiến hành bốc thăm chia nhánh
-        </h4>
-        <p className="text-[13px] text-slate-500 max-w-lg mx-auto">
-          Vui lòng duyệt đủ số lượng đội bóng tham gia tại mục “Duyệt Đội &amp; Đăng Ký” để tiến hành bốc thăm tạo nhánh đấu tự động.
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
-        <button
-          type="button"
-          disabled={isDrawingBracket}
-          onClick={async () => {
-            setIsDrawingBracket(true);
-            try {
-              const res = await drawTournamentBracket(Number(activeTournament.id));
-              await fetchDbTournaments();
-              setVarNotice("✅ " + (res.message || "Đã bốc thăm chia nhánh thành công!"));
-            } catch (err: any) {
-              setVarNotice("❌ " + (err?.message || "Chưa đủ đội xác nhận để bốc thăm. Hãy duyệt thêm đội ở tab Duyệt Đội."));
-            } finally {
-              setIsDrawingBracket(false);
-            }
-          }}
-          className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isDrawingBracket ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Đang Bốc Thăm...</span>
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-4 h-4" />
-              <span>Bốc Thăm Chia Nhánh Ngay</span>
-            </>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setBottomTab("teams")}
-          className="px-4 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-[13px] font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
-        >
-          <Users2 className="w-4 h-4 text-slate-600" />
-          <span>Quản Lý &amp; Duyệt Đội ({confirmedCount(activeTournament)}/{activeTournament.totalTeams ?? "—"} Đội)</span>
-        </button>
-      </div>
-    </div>
- ) : (
- <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar">
- <div className="flex gap-3 sm:gap-6 items-start">
- {activeBracket.rounds.map((r: any, ri: number) => (
- <div key={ri} className="min-w-[240px] flex-1 space-y-3 sm:space-y-4">
- <div
- className={`text-[14px] font-black text-center border-b pb-2 ${
- ri === activeBracket.rounds.length - 1
- ? "text-amber-600 border-amber-300 "
- : "text-slate-500 border-slate-200 "
- }`}
- >
- {r.name} ({r.matches.length})
- </div>
-
- {r.matches.map((m: any) => {
- if (m.status === "BYE" && m.bye) {
- return (
- <div
- key={m.matchId}
- className="bg-amber-50 p-3 rounded-xl border border-amber-300 text-[14px] flex items-center justify-between"
- >
- <span className="font-bold text-amber-900 truncate">{m.bye.name}</span>
- <span className="text-[14px] font-black text-amber-600 shrink-0">Miễn vòng</span>
- </div>
- );
- }
- const winner = m.winner;
- return (
- <div
- key={m.matchId}
- className={`bg-white p-3 rounded-xl border text-[14px] space-y-1.5 shadow-xs ${
- m.status === "DONE"
- ? "border-sky-300 "
- : "border-slate-200 "
- }`}
- >
- <div className="flex items-center justify-between gap-2">
- <span className="font-mono text-[14px] text-slate-500">{m.matchId}</span>
- {m.matchDate && (
- <span className="font-mono text-[14px] text-[#0369a1] ">
- {m.matchDate.split("-").reverse().join("/")} {m.timeSlot ?? ""}
- </span>
- )}
- </div>
- {[m.teamA, m.teamB].map((t: any, i: number) => (
- <div
- key={i}
- className={`flex items-center justify-between gap-2 ${
- winner === t?.name
- ? "font-black text-sky-800 "
- : winner && winner !== t?.name
- ? "text-slate-500"
- : t?.tbd
- ? "italic text-slate-500"
- : "text-slate-700 font-bold"
- }`}
- >
- <span className="truncate">{t?.tbd ? t?.name : t?.name ?? "?"}</span>
- <span className="font-mono shrink-0">{m.status === "DONE" ? (i === 0 ? m.scoreA : m.scoreB) : t?.record ?? t?.form ?? "-"}</span>
- </div>
- ))}
- {m.status !== "DONE" && m.pitchName && (
- <div className="text-[14px] text-slate-500 truncate">{m.pitchName}</div>
- )}
- </div>
- );
- })}
- </div>
- ))}
- </div>
- </div>
- )}
- </div>
-
- {/* 3. DATA TABLES & INCIDENT LOGS */}
  <div id="organizer-console">
  <div className="bg-white border border-slate-200 rounded-lg p-4 sm:p-8 shadow-sm space-y-3 sm:space-y-6">
  {/* TABS HEADER */}
@@ -1831,6 +1681,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="flex items-center gap-2 flex-wrap">
  {[
   { id: "teams", label: "Duyệt Đội & Đăng Ký", badge: pendingTeams.length > 0 ? pendingTeams.length : null },
+  { id: "bracket", label: "Sơ Đồ Nhánh Đấu", badge: activeTournament?.hasBracket ? null : "Chưa bốc" },
   { id: "schedule", label: "Lịch Thi Đấu", badge: null },
   { id: "var_logs", label: "Kết Quả & Ghi Bàn", badge: null },
   { id: "info", label: "Thông Tin Giải Đấu", badge: null },
@@ -1915,6 +1766,157 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
 
  {/* Bảng Xếp Hạng & Vua Phá Lưới công khai đã chuyển sang trang Giải Đấu & BXH (tournaments) để tránh lặp chức năng */}
+
+          {/* ================= TAB 1: SƠ ĐỒ NHÁNH ĐẤU (BRACKET) ================= */}
+          {bottomTab === "bracket" && activeTournament && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-2 border-b border-slate-100">
+                <div className="min-w-0">
+                  <span className="text-[14px] font-black text-[#0b4f6c]">
+                    Nhánh Đấu Hiện Tại
+                  </span>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight truncate">
+                    {activeTournament ? activeTournament.title : "Chưa chọn giải nào"}
+                  </h3>
+                </div>
+
+                {activeTournament && (
+                  <span className="px-3 py-1 rounded-full bg-slate-100 text-[14px] font-bold text-slate-600 border border-slate-200 shrink-0">
+                    Thể thức: {formatLabel(activeTournament.format)}
+                  </span>
+                )}
+              </div>
+
+              {!activeBracket ? (
+                <div className="p-6 sm:p-10 text-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 space-y-3">
+                  <div className="w-12 h-12 rounded-xl bg-sky-100 text-[#0369a1] mx-auto flex items-center justify-center">
+                    <Trophy className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-base font-bold text-slate-800">
+                      Giải đấu này chưa tiến hành bốc thăm chia nhánh
+                    </h4>
+                    <p className="text-[13px] text-slate-500 max-w-lg mx-auto">
+                      Vui lòng duyệt đủ số lượng đội bóng tham gia tại mục “Duyệt Đội & Đăng Ký” để tiến hành bốc thăm tạo nhánh đấu tự động.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+                    <button
+                      type="button"
+                      disabled={isDrawingBracket}
+                      onClick={async () => {
+                        setIsDrawingBracket(true);
+                        try {
+                          const res = await drawTournamentBracket(Number(activeTournament.id));
+                          await fetchDbTournaments();
+                          setVarNotice("✅ " + (res.message || "Đã bốc thăm chia nhánh thành công!"));
+                        } catch (err: any) {
+                          setVarNotice("❌ " + (err?.message || "Chưa đủ đội xác nhận để bốc thăm. Hãy duyệt thêm đội ở tab Duyệt Đội."));
+                        } finally {
+                          setIsDrawingBracket(false);
+                        }
+                      }}
+                      className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {isDrawingBracket ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <span>Đang Bốc Thăm...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          <span>Bốc Thăm Chia Nhánh Ngay</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setBottomTab("teams")}
+                      className="px-4 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-[13px] font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <Users2 className="w-4 h-4 text-slate-600" />
+                      <span>Quản Lý & Duyệt Đội ({confirmedCount(activeTournament)}/{activeTournament.totalTeams ?? "—"} Đội)</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar">
+                  <div className="flex gap-3 sm:gap-6 items-start">
+                    {activeBracket.rounds.map((r: any, ri: number) => (
+                      <div key={ri} className="min-w-[240px] flex-1 space-y-3 sm:space-y-4">
+                        <div
+                          className={`text-[14px] font-black text-center border-b pb-2 ${
+                            ri === activeBracket.rounds.length - 1
+                              ? "text-amber-600 border-amber-300 "
+                              : "text-slate-500 border-slate-200 "
+                          }`}
+                        >
+                          {r.name} ({r.matches.length})
+                        </div>
+
+                        {r.matches.map((m: any) => {
+                          if (m.status === "BYE" && m.bye) {
+                            return (
+                              <div
+                                key={m.matchId}
+                                className="bg-amber-50 p-3 rounded-xl border border-amber-300 text-[14px] flex items-center justify-between"
+                              >
+                                <span className="font-bold text-amber-900 truncate">{m.bye.name}</span>
+                                <span className="text-[14px] font-black text-amber-600 shrink-0">Miễn vòng</span>
+                              </div>
+                            );
+                          }
+                          const winner = m.winner;
+                          return (
+                            <div
+                              key={m.matchId}
+                              className={`bg-white p-3 rounded-xl border text-[14px] space-y-1.5 shadow-xs ${
+                                m.status === "DONE"
+                                  ? "border-sky-300 "
+                                  : "border-slate-200 "
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-mono text-[14px] text-slate-500">{m.matchId}</span>
+                                {m.matchDate && (
+                                  <span className="font-mono text-[14px] text-[#0369a1] ">
+                                    {m.matchDate.split("-").reverse().join("/")} {m.timeSlot ?? ""}
+                                  </span>
+                                )}
+                              </div>
+                              {[m.teamA, m.teamB].map((t: any, i: number) => (
+                                <div
+                                  key={i}
+                                  className={`flex items-center justify-between gap-2 ${
+                                    winner === t?.name
+                                      ? "font-black text-sky-800 "
+                                      : winner && winner !== t?.name
+                                      ? "text-slate-500"
+                                      : t?.tbd
+                                      ? "italic text-slate-500"
+                                      : "text-slate-700 font-bold"
+                                  }`}
+                                >
+                                  <span className="truncate">{t?.tbd ? t?.name : t?.name ?? "?"}</span>
+                                  <span className="font-mono shrink-0">{m.status === "DONE" ? (i === 0 ? m.scoreA : m.scoreB) : t?.record ?? t?.form ?? "-"}</span>
+                                </div>
+                              ))}
+                              {m.status !== "DONE" && m.pitchName && (
+                                <div className="text-[14px] text-slate-500 truncate">{m.pitchName}</div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* ================= TAB 0: TỔNG QUAN & THÔNG TIN GIẢI ĐẤU ================= */}
           {bottomTab === "info" && activeTournament && (
             <div className="space-y-6 animate-fade-in">
