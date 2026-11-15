@@ -1690,9 +1690,14 @@ public class TournamentController {
         Map<String, Integer> out = new LinkedHashMap<>();
         int[] shirts = {7, 9, 10, 11, 8, 19, 20, 4};
         for (int i = 0; i < goals; i++) {
-            String scorer = roster.isEmpty()
-                    ? teamName + " số " + shirts[rnd.nextInt(shirts.length)]
-                    : roster.get(rnd.nextInt(roster.size()));
+            String scorer;
+            if (roster != null && !roster.isEmpty()) {
+                scorer = roster.get(rnd.nextInt(roster.size()));
+            } else {
+                scorer = SIM_FAMILY.get(rnd.nextInt(SIM_FAMILY.size())) + " "
+                        + SIM_MIDDLE.get(rnd.nextInt(SIM_MIDDLE.size())) + " "
+                        + SIM_GIVEN.get(rnd.nextInt(SIM_GIVEN.size()));
+            }
             out.put(scorer, out.getOrDefault(scorer, 0) + 1);
         }
         return out;
@@ -2445,7 +2450,10 @@ public class TournamentController {
         if (memberNames.isEmpty()) {
             List<String> names = new ArrayList<>();
             for (int i = 1; i <= memberCount; i++) {
-                names.add("Cầu thủ " + i);
+                ThreadLocalRandom mRnd = ThreadLocalRandom.current();
+                names.add(SIM_FAMILY.get(mRnd.nextInt(SIM_FAMILY.size())) + " "
+                        + SIM_MIDDLE.get(mRnd.nextInt(SIM_MIDDLE.size())) + " "
+                        + SIM_GIVEN.get(mRnd.nextInt(SIM_GIVEN.size())));
             }
             memberNames = String.join(",", names);
         }

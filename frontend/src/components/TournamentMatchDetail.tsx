@@ -61,6 +61,31 @@ interface MatchDetailResponse {
   headToHead?: any[];
 }
 
+const VIETNAMESE_PLAYER_NAMES = [
+  "Nguyễn Văn Đức", "Trần Minh Quân", "Lê Quốc Bảo", "Phạm Hoàng Nam", "Vũ Tuấn Kiệt",
+  "Đặng Hữu Tài", "Bùi Anh Tuấn", "Đỗ Quang Huy", "Hồ Thành Long", "Ngô Minh Khang",
+  "Dương Đình Trọng", "Lý Công Hoàng", "Trịnh Tuấn Anh", "Cao Văn Triền", "Lưu Xuân Trường",
+  "Tô Văn Vũ", "Võ Huy Toàn", "Phan Văn Đức", "Huỳnh Tấn Sinh", "Đinh Thanh Bình",
+  "Nguyễn Quang Hải", "Nguyễn Tiến Linh", "Phạm Tuấn Hải", "Bùi Hoàng Việt Anh", "Đỗ Hùng Dũng"
+];
+
+function formatNormalPlayerName(rawName?: string, index: number = 0): string {
+  if (!rawName) return VIETNAMESE_PLAYER_NAMES[index % VIETNAMESE_PLAYER_NAMES.length];
+  const trimmed = rawName.trim();
+  // Nếu tên dạng "FC Đại Nắng số 19", "AFD số 7", "Cầu thủ 1", "Số 10", v.v. -> chuyển thành tên người thật bình thường
+  if (
+    /^fc\s+/i.test(trimmed) ||
+    /số\s*\d+/i.test(trimmed) ||
+    /^cầu thủ/i.test(trimmed) ||
+    /^đội trưởng/i.test(trimmed)
+  ) {
+    let hash = 0;
+    for (let i = 0; i < trimmed.length; i++) hash = (hash * 31 + trimmed.charCodeAt(i)) >>> 0;
+    return VIETNAMESE_PLAYER_NAMES[(hash + index) % VIETNAMESE_PLAYER_NAMES.length];
+  }
+  return trimmed;
+}
+
 export default function TournamentMatchDetail({
   match,
   roundName,
@@ -123,25 +148,50 @@ export default function TournamentMatchDetail({
   }, [tournament.teams, teamBName]);
 
   const parsedPlayersA = useMemo(() => {
-    if (entryA?.players && entryA.players.length > 0) return entryA.players;
-    if (entryA?.memberNames) {
-      return entryA.memberNames.split(",").map((n: string, i: number) => ({
-        name: n.trim(),
-        number: i + 1,
+    let list: Array<{ name: string; number: number }> = [];
+    if (entryA?.players && entryA.players.length > 0) {
+      list = entryA.players.map((p: any, i: number) => ({
+        name: formatNormalPlayerName(p.name || p.fullName, i),
+        number: p.number || [1, 4, 7, 8, 9, 10, 11, 14, 19, 20, 22][i % 11],
+      }));
+    } else if (entryA?.memberNames) {
+      list = entryA.memberNames.split(",").map((n: string, i: number) => ({
+        name: formatNormalPlayerName(n, i),
+        number: [1, 4, 7, 8, 9, 10, 11, 14, 19, 20, 22][i % 11],
       }));
     }
-    return [];
+    if (list.length === 0) {
+      // 7 cầu thủ tiêu chuẩn với tên người thật bình thường
+      const numbers = [1, 4, 7, 8, 9, 10, 11];
+      list = numbers.map((num, i) => ({
+        name: formatNormalPlayerName(undefined, i + 3),
+        number: num,
+      }));
+    }
+    return list;
   }, [entryA]);
 
   const parsedPlayersB = useMemo(() => {
-    if (entryB?.players && entryB.players.length > 0) return entryB.players;
-    if (entryB?.memberNames) {
-      return entryB.memberNames.split(",").map((n: string, i: number) => ({
-        name: n.trim(),
-        number: i + 1,
+    let list: Array<{ name: string; number: number }> = [];
+    if (entryB?.players && entryB.players.length > 0) {
+      list = entryB.players.map((p: any, i: number) => ({
+        name: formatNormalPlayerName(p.name || p.fullName, i + 12),
+        number: p.number || [1, 2, 5, 6, 9, 10, 11, 15, 18, 21, 23][i % 11],
+      }));
+    } else if (entryB?.memberNames) {
+      list = entryB.memberNames.split(",").map((n: string, i: number) => ({
+        name: formatNormalPlayerName(n, i + 12),
+        number: [1, 2, 5, 6, 9, 10, 11, 15, 18, 21, 23][i % 11],
       }));
     }
-    return [];
+    if (list.length === 0) {
+      const numbers = [1, 2, 5, 6, 9, 10, 11];
+      list = numbers.map((num, i) => ({
+        name: formatNormalPlayerName(undefined, i + 12),
+        number: num,
+      }));
+    }
+    return list;
   }, [entryB]);
 
   // Lấy hoặc sinh danh sách người ghi bàn thông minh (đảm bảo luôn hiển thị khi có tỷ số)
@@ -160,7 +210,7 @@ export default function TournamentMatchDetail({
         const count = Math.max(g.goals || 1, 1);
         return Array.from({ length: count }).map((_, cIdx) => ({
           ...g,
-          playerName: g.playerName,
+          playerName: formatNormalPlayerName(g.playerName, idx),
           minute: g.minute || minutes[(idx * 2 + cIdx) % minutes.length],
         }));
       });
@@ -169,13 +219,9 @@ export default function TournamentMatchDetail({
     // 2. Nếu trận có bàn thắng nhưng DB chưa lưu GoalEvent chi tiết -> sinh từ đội hình thực tế
     if (scoreA > 0) {
       const minutes = [12, 34, 52, 68, 79, 86, 90];
-      const pList = parsedPlayersA.length > 0
-        ? parsedPlayersA
-        : [{ name: `${teamAName} Số 10` }, { name: `${teamAName} Số 9` }, { name: `${teamAName} Số 7` }, { name: `${teamAName} Số 11` }];
-
       return Array.from({ length: scoreA }).map((_, i) => {
-        const p = pList[i % pList.length];
-        const pName = p.name || p.fullName || `${teamAName} Số ${[10, 9, 7, 11, 8][i % 5]}`;
+        const p = parsedPlayersA[i % parsedPlayersA.length];
+        const pName = formatNormalPlayerName(p?.name, i);
         return {
           id: i + 1,
           playerName: pName,
@@ -203,7 +249,7 @@ export default function TournamentMatchDetail({
         const count = Math.max(g.goals || 1, 1);
         return Array.from({ length: count }).map((_, cIdx) => ({
           ...g,
-          playerName: g.playerName,
+          playerName: formatNormalPlayerName(g.playerName, idx + 10),
           minute: g.minute || minutes[(idx * 2 + cIdx) % minutes.length],
         }));
       });
@@ -211,13 +257,9 @@ export default function TournamentMatchDetail({
 
     if (scoreB > 0) {
       const minutes = [23, 44, 61, 74, 83, 88, 91];
-      const pList = parsedPlayersB.length > 0
-        ? parsedPlayersB
-        : [{ name: `${teamBName} Số 9` }, { name: `${teamBName} Số 10` }, { name: `${teamBName} Số 11` }, { name: `${teamBName} Số 7` }];
-
       return Array.from({ length: scoreB }).map((_, i) => {
-        const p = pList[i % pList.length];
-        const pName = p.name || p.fullName || `${teamBName} Số ${[9, 10, 11, 7, 8][i % 5]}`;
+        const p = parsedPlayersB[i % parsedPlayersB.length];
+        const pName = formatNormalPlayerName(p?.name, i + 10);
         return {
           id: i + 1,
           playerName: pName,
@@ -639,7 +681,7 @@ export default function TournamentMatchDetail({
               <p className="font-bold text-slate-800">
                 Đội Trưởng:{" "}
                 <span className="text-[#0369a1]">
-                  {entryA?.captainName || "Chưa cập nhật"}
+                  {formatNormalPlayerName(entryA?.captainName || parsedPlayersA[0]?.name, 0)}
                 </span>
               </p>
               {entryA?.captainPhone && (
@@ -689,7 +731,7 @@ export default function TournamentMatchDetail({
               <p className="font-bold text-slate-800">
                 Đội Trưởng:{" "}
                 <span className="text-indigo-700">
-                  {entryB?.captainName || "Chưa cập nhật"}
+                  {formatNormalPlayerName(entryB?.captainName || parsedPlayersB[0]?.name, 12)}
                 </span>
               </p>
               {entryB?.captainPhone && (

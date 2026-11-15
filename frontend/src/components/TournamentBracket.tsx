@@ -30,10 +30,12 @@ import {
  Shuffle,
  UserPlus,
  Calendar,
- Filter
+ Filter,
+ Sparkles
 } from "lucide-react";
 import DrawLotteryOverlay from "./DrawLotteryOverlay";
 import TournamentMatchDetail from "./TournamentMatchDetail";
+import UefaChampionsBracket from "./UefaChampionsBracket";
 import { ConfirmModal } from "./admin/AdminUI";
 import {
  Tournament,
@@ -156,6 +158,7 @@ const [addCount, setAddCount] = useState("4");
  const [activeTab, setActiveTab] = useState<"bracket" | "standings" | "esheet" | "schedule">("bracket");
  const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>("ALL");
  const [selectedMatchDetail, setSelectedMatchDetail] = useState<{ match: BracketMatch; roundName?: string } | null>(null);
+ const [bracketViewMode, setBracketViewMode] = useState<"uefa" | "tree">("uefa");
  useEffect(() => { setSelectedMatchDetail(null); }, [selectedId]);
 
  // --- Trận đấu được chọn để lập / in Biên Bản Điện Tử ---
@@ -819,6 +822,16 @@ const [addCount, setAddCount] = useState("4");
  ...prev,
  [matchId]: (prev[matchId] ?? []).filter((_, i) => i !== idx),
  }));
+ };
+
+ const handleSetMatchScore = (matchId: string, side: "a" | "b", val: string) => {
+   setScores((s) => ({
+     ...s,
+     [matchId]: {
+       a: side === "a" ? val : (s[matchId]?.a ?? "0"),
+       b: side === "b" ? val : (s[matchId]?.b ?? "0"),
+     },
+   }));
  };
 
 
@@ -2206,9 +2219,34 @@ const [addCount, setAddCount] = useState("4");
  </div>
 
  {selectedRoundFilter === "ALL" && (
- <div className="hidden md:flex items-center gap-1.5 text-[13px] font-medium text-slate-400">
- <span>← Cuộn ngang để theo dõi đường nhánh đấu tiến vào chung kết →</span>
- </div>
+   <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl border border-slate-200 shrink-0">
+     <button
+       type="button"
+       onClick={() => setBracketViewMode("uefa")}
+       className={`px-3 py-1.5 rounded-lg text-[13px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+         bracketViewMode === "uefa"
+           ? "bg-[#070e1f] text-sky-300 shadow-sm"
+           : "text-slate-600 hover:text-slate-900"
+       }`}
+       title="Sơ đồ cây nhánh đối xứng trung tâm chuẩn UEFA Champions League"
+     >
+       <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+       <span>Nhánh Cúp C1 (Đối Xứng)</span>
+     </button>
+     <button
+       type="button"
+       onClick={() => setBracketViewMode("tree")}
+       className={`px-3 py-1.5 rounded-lg text-[13px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+         bracketViewMode === "tree"
+           ? "bg-white text-slate-900 shadow-sm border border-slate-200"
+           : "text-slate-600 hover:text-slate-900"
+       }`}
+       title="Sơ đồ trải ngang từ trái qua phải truyền thống"
+     >
+       <ListOrdered className="w-3.5 h-3.5 text-slate-500" />
+       <span>Dàn Ngang</span>
+     </button>
+   </div>
  )}
  </div>
  )}
@@ -2511,6 +2549,20 @@ const [addCount, setAddCount] = useState("4");
         </div>
       );
     })()
+  ) : bracketViewMode === "uefa" && selected ? (
+    <UefaChampionsBracket
+      bracket={bracket}
+      tournament={selected}
+      onSelectMatch={(m, roundName) => setSelectedMatchDetail({ match: m, roundName })}
+      canManage={canManage}
+      isClosed={isClosed}
+      myTeam={myTeam}
+      savingMatch={savingMatch}
+      handleSaveScore={handleSaveScore}
+      scores={scores}
+      setScore={handleSetMatchScore}
+      setConfirmUndo={(m) => setConfirmUndo(m)}
+    />
   ) : (
     /* CHẾ ĐỘ XEM TOÀN BỘ CÂY NHÁNH ĐẤU KÈM ĐƯỜNG NỐI LIÊN KẾT (FULL CONNECTED TREE) */
     (() => {
