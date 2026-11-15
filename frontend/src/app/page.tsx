@@ -602,10 +602,10 @@ const handleTabChange = (newTab: string, tournamentId?: number | null) => {
   <>
  <motion.div
  key={activeTab}
- initial={{ y: 12 }}
- animate={{ y: 0 }}
- exit={{ y: -8 }}
- transition={{ duration: 0.38, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
+ initial={{ opacity: 0, y: 16 }}
+ animate={{ opacity: 1, y: 0 }}
+ exit={{ opacity: 0, y: -8 }}
+ transition={{ duration: 0.32, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
  >
   {/* Biểu ngữ Chế Độ Khách Khám Phá khi chưa đăng nhập ở các tab khác Landing Page */}
   {!currentUser && activeTab !== "home" && activeTab !== "landing" && (

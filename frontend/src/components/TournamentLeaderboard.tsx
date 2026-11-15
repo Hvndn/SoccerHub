@@ -435,7 +435,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
           NỘI DUNG THEO TỪNG TAB
          ========================================================= */}
       {activeTab === "bracket" ? (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-tab-switch">
           <div className="flex items-center justify-between">
             <button
               type="button"
@@ -453,7 +453,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
         </div>
       ) : activeTab === "live" ? (
         /* TAB 3: LỊCH THI ĐẤU & KẾT QUẢ CÁC GIẢI */
-        <div className="bg-white rounded-lg border border-slate-300 shadow-sm p-4 sm:p-5 space-y-4">
+        <div className="bg-white rounded-lg border border-slate-300 shadow-sm p-4 sm:p-5 space-y-4 animate-tab-switch">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <Radio className="w-4 h-4 text-[#0369a1]" />
@@ -544,7 +544,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
         </div>
       ) : (
         /* TAB 1 (MẶC ĐỊNH): DANH SÁCH GIẢI ĐẤU + BỘ LỌC TRUYỀN THỐNG */
-        <div className="space-y-4">
+        <div className="space-y-4 animate-tab-switch">
           {/* Thanh bộ lọc giải đấu */}
           <div className="bg-white rounded-lg border border-slate-300 shadow-sm p-4 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
@@ -664,7 +664,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {paginatedTournaments.map((t) => {
+              {paginatedTournaments.map((t, idx) => {
                 const percentage = fillPercent(t);
                 const full = isTournamentFull(t);
                 const ended = isTournamentEnded(t);
@@ -686,7 +686,8 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                       setBracketTargetId(t.id);
                       setActiveTab("bracket");
                     }}
-                    className="bg-white rounded-xl border border-slate-200 hover:border-[#0369a1] hover:shadow-md transition-all flex flex-col justify-between overflow-hidden cursor-pointer text-left group"
+                    style={{ animationDelay: `${Math.min(idx * 55, 440)}ms` }}
+                    className="animate-cascade-in card-interactive-lift bg-white rounded-xl border border-slate-200 hover:border-[#0369a1] flex flex-col justify-between overflow-hidden cursor-pointer text-left group"
                   >
                     {/* Ảnh Bìa Giải Đấu Trực Quan */}
                     <div className="relative h-36 sm:h-40 w-full bg-slate-900 overflow-hidden">
