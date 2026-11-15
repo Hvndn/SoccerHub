@@ -235,10 +235,14 @@ export default function TournamentOrganizerPortal({
    return selectedTournamentId ? Number(selectedTournamentId) : null;
  }, [selectedTournamentId]);
 
- const activeTournament = useMemo(
- () => dbTournaments.find((t: any) => t.id === activeTournamentId) ?? null,
- [dbTournaments, activeTournamentId]
- );
+ const activeTournament = useMemo(() => {
+   const found = dbTournaments.find((t: any) => t.id === activeTournamentId) ?? null;
+   if (!found) return null;
+   return {
+     ...found,
+     hasBracket: Boolean(found.bracketJson),
+   };
+ }, [dbTournaments, activeTournamentId]);
 
   /** Kiểm tra quyền sở hữu giải đấu (Ownership Guard) */
   const isMyTournament = useMemo(() => {
@@ -1744,7 +1748,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="flex items-center gap-2 flex-wrap">
  {[
   { id: "teams", label: "Duyệt Đội & Đăng Ký", badge: pendingTeams.length > 0 ? pendingTeams.length : null },
-  { id: "bracket", label: "Sơ Đồ Nhánh Đấu", badge: activeTournament?.hasBracket ? null : "Chưa bốc" },
+  { id: "bracket", label: "Sơ Đồ Nhánh Đấu", badge: (activeBracket || activeTournament?.hasBracket) ? null : "Chưa bốc" },
   { id: "schedule", label: "Lịch Thi Đấu", badge: null },
   { id: "var_logs", label: "Kết Quả & Ghi Bàn", badge: null },
   { id: "info", label: "Thông Tin Giải Đấu", badge: null },

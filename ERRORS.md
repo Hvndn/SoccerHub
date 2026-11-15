@@ -220,3 +220,22 @@
 - **Status**: Fixed
 
 ---
+
+## [2026-11-16 06:05] - Badge "Chưa bốc" hiển thị vĩnh viễn trên tab Sơ Đồ Nhánh Đấu dù giải đã bốc thăm
+
+- **Type**: Logic
+- **Severity**: Medium
+- **File**: `frontend/src/components/TournamentOrganizerPortal.tsx:1747`
+- **Agent**: Thần (Fullstack Specialist)
+- **Root Cause**: `activeTournament` được lấy trực tiếp từ `dbTournaments.find(...)` (dữ liệu thô từ API backend với trường `bracketJson`), không có thuộc tính `hasBracket` (chỉ mảng `tournaments` cấp cao mới map thêm trường này). Biểu thức kiểm tra `badge: activeTournament?.hasBracket ? null : "Chưa bốc"` do đó luôn trả về `"Chưa bốc"` bất kể giải đã có bảng đấu và cây nhánh đấu hoàn chỉnh.
+- **Error Message**: 
+  ```
+  Tab Sơ Đồ Nhánh Đấu luôn mang badge "(Chưa bốc)" dù màn hình bên dưới đã hiển thị bảng đấu và danh sách cặp đấu Knock-out
+  ```
+- **Fix Applied**: 
+  1. Bổ sung `hasBracket: Boolean(found.bracketJson)` trực tiếp vào `activeTournament` memoization.
+  2. Cập nhật điều kiện badge trên tab thành `(activeBracket || activeTournament?.hasBracket) ? null : "Chưa bốc"`.
+- **Prevention**: Đảm bảo các thuộc tính dẫn xuất từ dữ liệu entity (computed fields) được map đầy đủ vào đối tượng active/selected trước khi sử dụng trong JSX.
+- **Status**: Fixed
+
+---
