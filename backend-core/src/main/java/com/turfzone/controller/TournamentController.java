@@ -1665,6 +1665,25 @@ public class TournamentController {
         return ResponseEntity.ok(resp);
     }
 
+    /** Lấy danh sách thành viên đăng ký của từng đội trong giải. */
+    private Map<String, List<String>> extractRosters(Tournament tournament) {
+        Map<String, List<String>> rosters = new HashMap<>();
+        if (tournament != null && tournament.getTeams() != null) {
+            for (TournamentTeamEntry t : tournament.getTeams()) {
+                if (t.getTeamName() == null) continue;
+                List<String> members = new ArrayList<>();
+                if (t.getMemberNames() != null) {
+                    for (String m : t.getMemberNames().split(",")) {
+                        String n = m.trim();
+                        if (!n.isEmpty()) members.add(n);
+                    }
+                }
+                rosters.put(t.getTeamName(), members);
+            }
+        }
+        return rosters;
+    }
+
     /** Chia ngẫu nhiên số bàn cho các thành viên (không đội hình thì dùng số áo). */
     private static Map<String, Integer> randomScorers(
             String teamName, List<String> roster, int goals, ThreadLocalRandom rnd) {
@@ -1905,6 +1924,37 @@ public class TournamentController {
             Map<String, Object> tB = (Map<String, Object>) bracketMatch.get("teamB");
             if (tA != null) teamAName = (String) tA.get("name");
             if (tB != null) teamBName = (String) tB.get("name");
+        }
+
+        // Tự động sinh danh sách bàn thắng nếu trận đã có tỷ số nhưng chưa có GoalEvent
+        if (goals.isEmpty() && teamAName != null && teamBName != null) {
+            int scA = result != null && result.getScoreA() != null ? result.getScoreA() : 0;
+            int scB = result != null && result.getScoreB() != null ? result.getScoreB() : 0;
+            if (scA == 0 && scB == 0 && bracketMatch != null) {
+                if (bracketMatch.get("scoreA") instanceof Number) scA = ((Number) bracketMatch.get("scoreA")).intValue();
+                if (bracketMatch.get("scoreB") instanceof Number) scB = ((Number) bracketMatch.get("scoreB")).intValue();
+            }
+            if (scA > 0 || scB > 0) {
+                ThreadLocalRandom rnd = ThreadLocalRandom.current();
+                Map<String, List<String>> rosters = extractRosters(tournament);
+                List<String> rA = rosters.getOrDefault(teamAName, List.of());
+                List<String> rB = rosters.getOrDefault(teamBName, List.of());
+                Map<String, Integer> sa = randomScorers(teamAName, rA, scA, rnd);
+                Map<String, Integer> sb = randomScorers(teamBName, rB, scB, rnd);
+                List<GoalEvent> autoList = new ArrayList<>();
+                for (Map.Entry<String, Integer> e : sa.entrySet()) {
+                    autoList.add(GoalEvent.builder().tournamentId(id).matchId(matchId).teamName(teamAName).playerName(e.getKey()).goals(e.getValue()).assists(0).build());
+                }
+                for (Map.Entry<String, Integer> e : sb.entrySet()) {
+                    autoList.add(GoalEvent.builder().tournamentId(id).matchId(matchId).teamName(teamBName).playerName(e.getKey()).goals(e.getValue()).assists(0).build());
+                }
+                if (!autoList.isEmpty()) {
+                    try {
+                        goalEventRepository.saveAll(autoList);
+                    } catch (Exception ignored) {}
+                    goals = autoList;
+                }
+            }
         }
 
         List<MatchResult> headToHead = new ArrayList<>();
