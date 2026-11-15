@@ -73,7 +73,14 @@ export default function TournamentBracket({
   initialTournaments?: Tournament[];
 }) {
   const [tournaments, setTournaments] = useState<Tournament[]>(() => initialTournaments ?? []);
-  const [selectedId, setSelectedId] = useState<string>(() => (initialTournamentId ? String(initialTournamentId) : ""));
+  const [selectedId, setSelectedId] = useState<string>(() => {
+    if (initialTournamentId) return String(initialTournamentId);
+    if (initialTournaments && initialTournaments.length > 0) {
+      const open = initialTournaments.find((t) => (t.status ?? "OPEN") === "OPEN");
+      return String(open ? open.id : initialTournaments[0].id);
+    }
+    return "";
+  });
  const [showInviteModal, setShowInviteModal] = useState(false);
 
  // Quyền quản trị giải đấu — backend chỉ cho ADMIN / ORGANIZER / OWNER.
@@ -224,10 +231,17 @@ const [addCount, setAddCount] = useState("4");
   };
   }, []);
 
- const selected = useMemo(
-  () => tournaments.find((t) => String(t.id) === selectedId) ?? null,
-  [tournaments, selectedId]
- );
+ const selected = useMemo(() => {
+  if (selectedId) {
+    const match = tournaments.find((t) => String(t.id) === selectedId);
+    if (match) return match;
+  }
+  if (tournaments.length > 0) {
+    const open = tournaments.find((t) => (t.status ?? "OPEN") === "OPEN");
+    return open ?? tournaments[0];
+  }
+  return null;
+ }, [tournaments, selectedId]);
 
  useEffect(() => {
   if (selected?.id) {
@@ -245,12 +259,15 @@ const [addCount, setAddCount] = useState("4");
   // Chỉ cho phép tác động (bốc thăm, giả lập, xếp lịch...) khi có quyền VÀ giải chưa kết thúc
   const canAct = canManage && !isClosed;
 
- // Mở sẵn giải được chỉ định (giải vừa bốc thăm) — không thì tab "Nhánh Đấu" mở ra
- // sẽ không chọn giải nào và BTC phải tự chọn lại.
+ // Mở sẵn giải được chỉ định hoặc tự động chọn giải đang mở / đầu tiên nếu chưa chọn
  useEffect(() => {
-  if (initialTournamentId === null || initialTournamentId === undefined || initialTournamentId === "") return;
-  setSelectedId(String(initialTournamentId));
-  }, [initialTournamentId, tournaments]);
+   if (initialTournamentId) {
+     setSelectedId(String(initialTournamentId));
+   } else if (tournaments.length > 0 && (!selectedId || !tournaments.some((t) => String(t.id) === selectedId))) {
+     const open = tournaments.find((t) => (t.status ?? "OPEN") === "OPEN");
+     setSelectedId(String(open ? open.id : tournaments[0].id));
+   }
+ }, [initialTournamentId, tournaments, selectedId]);
 
   useEffect(() => {
     setSelectedRoundFilter("ALL");
