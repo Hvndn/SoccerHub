@@ -1417,6 +1417,64 @@ export async function handleOfflineApi(urlStr: string, options: RequestInit = {}
     if (sub === 'access') {
       return jsonResponse({ joinMode: tournament.joinMode || 'PUBLIC', invitedEmails: tournament.invitedEmails || [] });
     }
+
+    if (sub === 'fill-teams' && method === 'POST') {
+      const cap = Number(tournament.totalTeams) || 8;
+      const currentTeams: any[] = [...(tournament.teams || [])];
+      const wantCount = body?.count ? Number(body.count) : (cap - currentTeams.length);
+      const target = Math.min(cap, currentTeams.length + Math.max(1, wantCount));
+      const pool = [
+        "FC Sông Hàn", "FC Hải Châu", "FC Cẩm Lệ", "FC Ngũ Hành Sơn",
+        "FC Liên Chiểu", "FC Thanh Khê", "FC Sơn Trà", "FC Hòa Vang",
+        "FC Mỹ Khê", "FC Điện Bàn", "FC Đà Nẵng Warriors", "FC Đại Nắng"
+      ];
+      let added = 0;
+      let idx = 1;
+      const existing = new Set(currentTeams.map((t: any) => (t.teamName || '').toLowerCase()));
+      while (currentTeams.length < target) {
+        let name = pool.find(p => !existing.has(p.toLowerCase()));
+        if (!name) name = `FC Sân Phủi ${String(idx++).padStart(2, '0')}`;
+        existing.add(name.toLowerCase());
+        currentTeams.push({
+          teamName: name,
+          captainName: 'Nguyễn Văn ' + name.replace('FC ', ''),
+          captainPhone: '0905' + Math.floor(100000 + Math.random() * 900000),
+          memberCount: 14,
+          registrationStatus: 'SIMULATED',
+          simulated: true,
+          registeredAt: new Date().toISOString(),
+          form: 'WWD',
+          record: '3W-1D-0L',
+          winRate: 80,
+        });
+        added++;
+      }
+      tournament.teams = currentTeams;
+      tournament.registeredTeams = currentTeams.length;
+      tournament.bracketJson = null;
+      saveStore(store);
+      return jsonResponse({
+        message: `Đã giả lập thêm ${added} đội ngẫu nhiên (giải có ${currentTeams.length}/${cap} đội). Các đội bạn đã nhập thủ công được giữ nguyên.`,
+        added,
+        registeredTeams: tournament.registeredTeams,
+      });
+    }
+
+    if (sub === 'simulated-teams' && method === 'DELETE') {
+      const before = (tournament.teams || []).length;
+      tournament.teams = (tournament.teams || []).filter(
+        (t: any) => !t.simulated && t.registrationStatus !== 'SIMULATED'
+      );
+      const removed = before - tournament.teams.length;
+      tournament.registeredTeams = tournament.teams.length;
+      tournament.bracketJson = null;
+      saveStore(store);
+      return jsonResponse({
+        message: `Đã xóa ${removed} đội Test, giữ lại ${tournament.teams.length} đội thật.`,
+        removed,
+        registeredTeams: tournament.registeredTeams,
+      });
+    }
   }
 
   // 5. Matchmaking & Community

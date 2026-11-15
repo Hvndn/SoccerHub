@@ -259,6 +259,13 @@ const [addCount, setAddCount] = useState("4");
   // Chỉ cho phép tác động (bốc thăm, giả lập, xếp lịch...) khi có quyền VÀ giải chưa kết thúc
   const canAct = canManage && !isClosed;
 
+  // Tự động đồng bộ danh sách giải đấu từ component cha (TournamentLeaderboard) ngay khi có cập nhật
+  useEffect(() => {
+    if (initialTournaments && initialTournaments.length > 0) {
+      setTournaments(initialTournaments);
+    }
+  }, [initialTournaments]);
+
  // Mở sẵn giải được chỉ định hoặc tự động chọn giải đang mở / đầu tiên nếu chưa chọn
  useEffect(() => {
    if (initialTournamentId) {
@@ -308,7 +315,7 @@ const [addCount, setAddCount] = useState("4");
  const teamCount = selected ? confirmedCount(selected) : 0;
  const teamCap = selected?.totalTeams ?? 0;
  const full = selected ? isTournamentFull(selected) : false;
- const simulatedCount = selected?.teams?.filter((t) => t.simulated).length ?? 0;
+ const simulatedCount = selected?.teams?.filter((t) => Boolean(t.simulated) || t.registrationStatus === "SIMULATED").length ?? 0;
  const pendingTeams = useMemo(
  () => (selected?.teams ?? []).filter((t) => t.registrationStatus === "PENDING_PAYMENT"),
  [selected]
@@ -533,35 +540,46 @@ const [addCount, setAddCount] = useState("4");
   };
 
  const handleFill = async (count?: number) => {
- if (!selected) return;
- try {
- setFillBusy(true);
- const res = await fillSimulatedTeams(selected.id, count);
- // Lam moi giai vua thay doi (so doi, danh sach doi, reset nhanh dau) trong cache
- const updated = await refreshTournamentInCache(selected.id);
-   syncTournamentUpdate(updated);
- triggerToast(res.message);
- } catch (err: any) {
- triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để giả lập.");
- } finally {
- setFillBusy(false);
- }
- };
+    if (!selected) return;
+    try {
+      setFillBusy(true);
+      const res = await fillSimulatedTeams(selected.id, count);
+      // Cập nhật ngay lập tức giải đấu vừa thay đổi trong cache & local state (0ms độ trễ)
+      const updated = await refreshTournamentInCache(selected.id);
+      if (updated) {
+        syncTournamentUpdate(updated);
+      } else {
+        const fullList = await fetchTournaments(true);
+        if (fullList.length) setTournaments(fullList);
+      }
+      triggerToast(res.message);
+    } catch (err: any) {
+      triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để giả lập.");
+    } finally {
+      setFillBusy(false);
+    }
+  };
 
- const handleClearSimulated = async () => {
- if (!selected) return;
- try {
- setClearBusy(true);
- const res = await clearSimulatedTeams(selected.id);
- const updated = await refreshTournamentInCache(selected.id);
-   syncTournamentUpdate(updated);
- triggerToast(res.message);
- } catch (err: any) {
- triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để dọn đội Test.");
- } finally {
- setClearBusy(false);
- }
- };
+  const handleClearSimulated = async () => {
+    if (!selected) return;
+    try {
+      setClearBusy(true);
+      const res = await clearSimulatedTeams(selected.id);
+      // Xoá sạch đội Test và đồng bộ ngay lập tức không cần tải lại trang
+      const updated = await refreshTournamentInCache(selected.id);
+      if (updated) {
+        syncTournamentUpdate(updated);
+      } else {
+        const fullList = await fetchTournaments(true);
+        if (fullList.length) setTournaments(fullList);
+      }
+      triggerToast(res.message);
+    } catch (err: any) {
+      triggerToast(err?.message || "Cần đăng nhập ORGANIZER hoặc ADMIN để dọn đội Test.");
+    } finally {
+      setClearBusy(false);
+    }
+  };
 
    const startSimulate = async (nextStageOnly: boolean = false) => {
   if (!selected) return;
