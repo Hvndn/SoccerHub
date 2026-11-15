@@ -2242,13 +2242,13 @@ const [addCount, setAddCount] = useState("4");
        onClick={() => setBracketViewMode("uefa")}
        className={`px-3 py-1.5 rounded-lg text-[13px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
          bracketViewMode === "uefa"
-           ? "bg-[#070e1f] text-sky-300 shadow-sm"
+           ? "bg-[#0369a1] text-white shadow-xs"
            : "text-slate-600 hover:text-slate-900"
        }`}
-       title="Sơ đồ cây nhánh đối xứng trung tâm chuẩn UEFA Champions League"
+       title="Sơ đồ cây nhánh đối xứng trung tâm chuẩn quốc tế"
      >
-       <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-       <span>Nhánh Cúp C1 (Đối Xứng)</span>
+       <Trophy className="w-3.5 h-3.5" />
+       <span>Nhánh Cúp Đối Xứng</span>
      </button>
      <button
        type="button"
