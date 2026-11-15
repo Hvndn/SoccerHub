@@ -1831,10 +1831,6 @@ public class TournamentController {
     public ResponseEntity<?> getBracket(@PathVariable Long id) {
         Tournament tournament = tournamentRepository.findById(id).orElse(null);
         if (tournament == null) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
-        if (isTournamentClosed(tournament)) return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu này đã kết thúc hoặc hết thời gian tổ chức, chỉ có thể xem dữ liệu và không thể chỉnh sửa thêm."));
-        if (false) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
-        }
         if (tournament.getBracketJson() == null || tournament.getBracketJson().isBlank()) {
             return ResponseEntity.status(404).body(Map.of("message", "Giải chưa bốc thăm chia cặp."));
         }
@@ -1845,6 +1841,96 @@ public class TournamentController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("message", "Dữ liệu nhánh đấu bị lỗi."));
         }
+    }
+
+    /**
+     * Chi tiết một trận đấu trong giải:
+     * - Kết quả trận đấu (MatchResult: tỷ số, thẻ phạt, MVP, ghi chú)
+     * - Danh sách bàn thắng (GoalEvent)
+     * - Thông tin 2 đội thi đấu
+     * - Lịch sử đối đầu trực tiếp giữa 2 đội (Head to Head)
+     */
+    @GetMapping("/{id}/matches/{matchId}")
+    public ResponseEntity<?> getMatchDetail(@PathVariable Long id, @PathVariable String matchId) {
+        Tournament tournament = tournamentRepository.findById(id).orElse(null);
+        if (tournament == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Giải đấu không tồn tại"));
+        }
+
+        // 1. Tìm trận trong nhánh đấu (bracketJson)
+        Map<String, Object> bracketMatch = null;
+        String roundName = null;
+        if (tournament.getBracketJson() != null && !tournament.getBracketJson().isBlank()) {
+            try {
+                Map<String, Object> bracket = objectMapper.readValue(tournament.getBracketJson(), Map.class);
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> rounds = (List<Map<String, Object>>) bracket.get("rounds");
+                if (rounds != null) {
+                    for (Map<String, Object> r : rounds) {
+                        @SuppressWarnings("unchecked")
+                        List<Map<String, Object>> matches = (List<Map<String, Object>>) r.get("matches");
+                        if (matches != null) {
+                            for (Map<String, Object> m : matches) {
+                                if (matchId.equals(m.get("matchId"))) {
+                                    bracketMatch = m;
+                                    roundName = (String) r.get("name");
+                                    break;
+                                }
+                            }
+                        }
+                        if (bracketMatch != null) break;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // 2. Tìm kết quả trận từ match_results
+        MatchResult result = matchResultRepository
+                .findFirstByTournamentIdAndMatchIdOrderByPlayedAtDesc(id, matchId)
+                .orElse(null);
+
+        // 3. Lấy danh sách bàn thắng của trận này
+        List<GoalEvent> goals = goalEventRepository.findByTournamentIdAndMatchId(id, matchId);
+
+        // 4. Lấy lịch sử đối đầu (Head-to-head) nếu xác định được 2 đội
+        String teamAName = null;
+        String teamBName = null;
+        if (result != null) {
+            teamAName = result.getTeamA();
+            teamBName = result.getTeamB();
+        } else if (bracketMatch != null) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> tA = (Map<String, Object>) bracketMatch.get("teamA");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> tB = (Map<String, Object>) bracketMatch.get("teamB");
+            if (tA != null) teamAName = (String) tA.get("name");
+            if (tB != null) teamBName = (String) tB.get("name");
+        }
+
+        List<MatchResult> headToHead = new ArrayList<>();
+        if (teamAName != null && teamBName != null) {
+            final String fA = teamAName;
+            final String fB = teamBName;
+            headToHead = matchResultRepository.findByTeamAIgnoreCaseOrTeamBIgnoreCaseOrderByPlayedAtDesc(fA, fA)
+                    .stream()
+                    .filter(m -> (m.getTeamA().equalsIgnoreCase(fA) && m.getTeamB().equalsIgnoreCase(fB))
+                              || (m.getTeamA().equalsIgnoreCase(fB) && m.getTeamB().equalsIgnoreCase(fA)))
+                    .limit(5)
+                    .toList();
+        }
+
+        Map<String, Object> res = new LinkedHashMap<>();
+        res.put("tournamentId", id);
+        res.put("tournamentTitle", tournament.getTitle());
+        res.put("sportType", tournament.getSportType());
+        res.put("matchId", matchId);
+        res.put("roundName", roundName != null ? roundName : (result != null ? result.getRoundName() : ""));
+        res.put("bracketMatch", bracketMatch);
+        res.put("result", result);
+        res.put("goals", goals);
+        res.put("headToHead", headToHead);
+
+        return ResponseEntity.ok(res);
     }
 
     /**

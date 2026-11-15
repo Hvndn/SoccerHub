@@ -18,6 +18,7 @@ export interface TournamentTeamEntry {
   drawn?: number | null;
   lost?: number | null;
   memberNames?: string | null;
+  players?: any[];
 }
 
 export interface Tournament {

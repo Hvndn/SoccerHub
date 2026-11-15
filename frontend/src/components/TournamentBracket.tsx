@@ -33,6 +33,7 @@ import {
  Filter
 } from "lucide-react";
 import DrawLotteryOverlay from "./DrawLotteryOverlay";
+import TournamentMatchDetail from "./TournamentMatchDetail";
 import { ConfirmModal } from "./admin/AdminUI";
 import {
  Tournament,
@@ -154,6 +155,8 @@ const [addCount, setAddCount] = useState("4");
  }, [lottery]);
  const [activeTab, setActiveTab] = useState<"bracket" | "standings" | "esheet" | "schedule">("bracket");
  const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>("ALL");
+ const [selectedMatchDetail, setSelectedMatchDetail] = useState<{ match: BracketMatch; roundName?: string } | null>(null);
+ useEffect(() => { setSelectedMatchDetail(null); }, [selectedId]);
 
  // --- Trận đấu được chọn để lập / in Biên Bản Điện Tử ---
  const [sheetMatchId, setSheetMatchId] = useState<string>("");
@@ -822,7 +825,7 @@ const [addCount, setAddCount] = useState("4");
 
 
 
- const renderMatch = (match: BracketMatch, idx: number) => {
+ const renderMatch = (match: BracketMatch, idx: number, roundName?: string) => {
  if (match.status === "BYE" && match.bye) {
  return (
  <div key={match.matchId} style={{ animationDelay: `${Math.min(idx, 6) * 60}ms` }} className="animate-fade-in-up bg-amber-50 rounded-2xl border border-amber-300 overflow-hidden text-[14px]">
@@ -1003,9 +1006,29 @@ const [addCount, setAddCount] = useState("4");
  {match.scoreA} – {match.scoreB}
  </div>
  )}
+ {/* Nút Xem Chi Tiết Trận Inline (Motip FotMob / Flashscore) */}
+ <div className="px-2.5 py-1.5 bg-slate-50/90 border-t border-slate-200/80 flex items-center justify-between">
+   <button
+     type="button"
+     onClick={() => setSelectedMatchDetail({ match, roundName })}
+     className="text-[13px] font-bold text-[#0369a1] hover:text-[#075985] hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors"
+   >
+     <span>Chi tiết trận</span>
+     <ChevronRight className="w-3.5 h-3.5" />
+   </button>
+   {done ? (
+     <span className="font-mono text-[13px] font-black text-sky-800 px-1.5 py-0.5 rounded bg-sky-100">
+       {match.scoreA} – {match.scoreB}
+     </span>
+   ) : (
+     <span className="text-[13px] text-slate-500 font-medium">
+       {match.timeSlot || (tbd ? "Chờ bốc" : "Sắp đá")}
+     </span>
+   )}
  </div>
- );
-  };
+  </div>
+);
+};
 
   if (tournaments.length === 0) {
     return (
@@ -1816,7 +1839,7 @@ const [addCount, setAddCount] = useState("4");
            <div className="flex items-center gap-2 shrink-0">
              <button
                type="button"
-               onClick={() => setActiveTab("schedule")}
+               onClick={() => { setSelectedMatchDetail(null); setActiveTab("schedule"); }}
                className="px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-[13px] font-bold transition-all shadow-xs cursor-pointer"
              >
                Xem Lịch Trận Của Đội
@@ -1991,7 +2014,7 @@ const [addCount, setAddCount] = useState("4");
     {(canManage || selected?.format !== "ROUND_ROBIN") && (
       <button
         type="button"
-        onClick={() => setActiveTab("bracket")}
+        onClick={() => { setSelectedMatchDetail(null); setActiveTab("bracket"); }}
         className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
           activeTab === "bracket"
             ? "bg-[#0369a1] text-white shadow-md"
@@ -2026,7 +2049,7 @@ const [addCount, setAddCount] = useState("4");
     {/* TAB BẢNG XẾP HẠNG (Vòng tròn & Chia bảng đưa lên vị trí trọng tâm) */}
     <button
       type="button"
-      onClick={() => setActiveTab("standings")}
+      onClick={() => { setSelectedMatchDetail(null); setActiveTab("standings"); }}
       className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
         activeTab === "standings"
           ? "bg-[#0369a1] text-white shadow-md"
@@ -2047,7 +2070,7 @@ const [addCount, setAddCount] = useState("4");
    {canManage && (
      <button
        type="button"
-       onClick={() => setActiveTab("esheet")}
+       onClick={() => { setSelectedMatchDetail(null); setActiveTab("esheet"); }}
        className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
          activeTab === "esheet"
            ? "bg-[#0369a1] text-white shadow-md"
@@ -2085,7 +2108,17 @@ const [addCount, setAddCount] = useState("4");
         />
       )}
 
- {/* TAB 1: BRACKET CANVAS (render ) */}
+ {/* CHI TIẾT TRẬN ĐẤU (INLINE MOTIP FOTMOB / FLASHSCORE - ZERO MODAL) */}
+      {selectedMatchDetail && selected ? (
+        <TournamentMatchDetail
+          match={selectedMatchDetail.match}
+          roundName={selectedMatchDetail.roundName}
+          tournament={selected}
+          onBack={() => setSelectedMatchDetail(null)}
+        />
+      ) : (
+        <>
+          {/* TAB 1: BRACKET CANVAS (render ) */}
  {activeTab === "bracket" && (
  <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-6 shadow-md overflow-x-auto">
  <div className="flex flex-wrap items-center justify-between gap-2">
@@ -2471,7 +2504,7 @@ const [addCount, setAddCount] = useState("4");
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
             {curRound.matches.map((m, mi) => (
               <div key={m.matchId || mi} className="space-y-2">
-                {renderMatch(m, mi)}
+                {renderMatch(m, mi, curRound.name)}
               </div>
             ))}
           </div>
@@ -2526,7 +2559,7 @@ const [addCount, setAddCount] = useState("4");
                     <div className="flex-1 flex flex-col justify-around py-1 gap-4">
                       {(round.matches ?? []).map((m, mi) => (
                         <div key={m.matchId || mi} className="w-full relative">
-                          {renderMatch(m, mi)}
+                          {renderMatch(m, mi, round.name)}
                         </div>
                       ))}
                     </div>
@@ -3148,6 +3181,9 @@ const [addCount, setAddCount] = useState("4");
  )}
  </div>
  )}
+
+      </>
+      )}
 
       {/* POPUP MODAL MỜI CẦU THỦ QUA EMAIL */}
       <TournamentInviteModal
