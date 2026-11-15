@@ -184,7 +184,7 @@ const [addCount, setAddCount] = useState("4");
      return () => cancelAnimationFrame(raf);
    }
  }, [lottery]);
-  const [activeTab, setActiveTab] = useState<"info" | "bracket" | "standings" | "esheet" | "schedule">("bracket");
+  const [activeTab, setActiveTab] = useState<"bracket" | "schedule" | "standings" | "my_team" | "info" | "esheet">("bracket");
  const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>("ALL");
  const [selectedMatchDetail, setSelectedMatchDetail] = useState<{ match: BracketMatch; roundName?: string } | null>(null);
  const [bracketViewMode, setBracketViewMode] = useState<"uefa" | "tree">("uefa");
@@ -1812,11 +1812,164 @@ const [addCount, setAddCount] = useState("4");
   )}
  </div>
  </div>
+ </div>
 
- {/* KHÔNG GIAN DÀNH RIÊNG CHO CẦU THỦ & KHÁN GIẢ (PLAYER & TEAM TOURNAMENT HUB) */}
- {!canManage && selected && (
-   <div className="mt-4 space-y-4">
-     {/* 1. Lời mời tham gia giải (nếu email của Cầu thủ có trong danh sách mời và chưa đăng ký đội) */}
+  {/* THANH ĐIỀU HƯỚNG CON (SUB-NAVBAR) DÀNH CHO CẦU THỦ & KHÁN GIẢ */}
+  {selected && (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth">
+      {/* 1. Sơ Đồ & Nhánh Đấu */}
+      <button
+        type="button"
+        onClick={() => { setSelectedMatchDetail(null); setActiveTab("bracket"); }}
+        className={`px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+          activeTab === "bracket"
+            ? "bg-[#0369a1] text-white shadow-xs"
+            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+        }`}
+      >
+        <Trophy className="w-4 h-4" />
+        <span>Sơ Đồ & Nhánh Đấu</span>
+      </button>
+
+      {/* 2. Lịch Thi Đấu & Kết Quả */}
+      <button
+        type="button"
+        onClick={() => { setSelectedMatchDetail(null); setActiveTab("schedule"); }}
+        className={`px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+          activeTab === "schedule"
+            ? "bg-[#0369a1] text-white shadow-xs"
+            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+        }`}
+      >
+        <Calendar className="w-4 h-4" />
+        <span>Lịch Thi Đấu ({allScheduledMatches.length})</span>
+      </button>
+
+      {/* 3. Bảng Xếp Hạng & Vua Phá Lưới */}
+      <button
+        type="button"
+        onClick={() => { setSelectedMatchDetail(null); setActiveTab("standings"); }}
+        className={`px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+          activeTab === "standings"
+            ? "bg-[#0369a1] text-white shadow-xs"
+            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+        }`}
+      >
+        <ListOrdered className="w-4 h-4" />
+        <span>Bảng Xếp Hạng</span>
+      </button>
+
+      {/* 4. Đội Bóng Của Tôi (Dành riêng cho Cầu thủ / Đội trưởng) */}
+      <button
+        type="button"
+        onClick={() => { setSelectedMatchDetail(null); setActiveTab("my_team"); }}
+        className={`px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+          activeTab === "my_team"
+            ? "bg-[#0369a1] text-white shadow-xs"
+            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+        }`}
+      >
+        <Users className="w-4 h-4" />
+        <span>Đội Bóng Của Tôi</span>
+        {myTeam && (
+          <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+            myTeam.registrationStatus === "CONFIRMED"
+              ? "bg-emerald-100 text-emerald-800"
+              : "bg-amber-100 text-amber-900"
+          }`}>
+            {myTeam.registrationStatus === "CONFIRMED" ? "Đã Duyệt" : "Chờ Phí"}
+          </span>
+        )}
+      </button>
+
+      {/* 5. Điều Lệ & Thông Tin */}
+      <button
+        type="button"
+        onClick={() => { setSelectedMatchDetail(null); setActiveTab("info"); }}
+        className={`px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+          activeTab === "info"
+            ? "bg-[#0369a1] text-white shadow-xs"
+            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+        }`}
+      >
+        <Info className="w-4 h-4" />
+        <span>Điều Lệ & Giải Thưởng</span>
+      </button>
+
+      {/* 6. Biên Bản & QR (Cho Ban Quản Lý / Trọng Tài) */}
+      {canManage && (
+        <button
+          type="button"
+          onClick={() => { setSelectedMatchDetail(null); setActiveTab("esheet"); }}
+          className={`px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+            activeTab === "esheet"
+              ? "bg-[#0369a1] text-white shadow-xs"
+              : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          <span>Biên Bản & QR</span>
+        </button>
+      )}
+    </div>
+  )}
+
+  {/* Nhắc nhở nộp lệ phí 1 dòng nhẹ nhàng khi đang ở tab khác */}
+  {myTeam && myTeam.registrationStatus === "PENDING_PAYMENT" && activeTab !== "my_team" && (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-[13px] text-amber-900 shadow-2xs">
+      <div className="flex items-center gap-2">
+        <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+        <span>Đội bóng <strong>{myTeam.teamName}</strong> của bạn đang chờ xác nhận lệ phí từ BTC.</span>
+      </div>
+      <button
+        type="button"
+        onClick={() => setActiveTab("my_team")}
+        className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[12px] shrink-0 cursor-pointer transition-colors shadow-2xs self-start sm:self-auto"
+      >
+        Xem Chi Tiết Nộp Phí →
+      </button>
+    </div>
+  )}
+
+{/* Sân khấu Lễ Bốc Thăm (Hiển thị ngay trên đầu khi bấm Bốc Thăm) */}
+      {selected && lottery !== null && (
+        <DrawLotteryOverlay
+          inline
+          open={true}
+          tournamentTitle={selected?.title}
+          pairs={lottery.pairs}
+          byes={lottery.byes}
+          format={selected?.format}
+          teams={selected?.teams}
+          onDone={async () => {
+            setLottery(null);
+            const updated = await refreshTournamentInCache(selected.id);
+            if (updated) {
+              syncTournamentUpdate(updated);
+            } else {
+              const fullList = await fetchTournaments(true);
+              setTournaments(fullList);
+            }
+            triggerToast("Nhánh đấu chính thức đã được lưu vào hệ thống!");
+          }}
+        />
+      )}
+
+ {/* CHI TIẾT TRẬN ĐẤU (INLINE MOTIP FOTMOB / FLASHSCORE - ZERO MODAL) */}
+      {selectedMatchDetail && selected ? (
+        <TournamentMatchDetail
+          match={selectedMatchDetail.match}
+          roundName={selectedMatchDetail.roundName}
+          tournament={selected}
+          onBack={() => setSelectedMatchDetail(null)}
+        />
+      ) : (
+        <>
+          
+          {/* TAB 4: ĐỘI BÓNG CỦA TÔI (DÀNH CHO CẦU THỦ / ĐỘI TRƯỞNG / KHÁN GIẢ) */}
+          {activeTab === "my_team" && selected && (
+            <div className="space-y-4 animate-fade-in">
+              {/* 1. Lời mời tham gia giải (nếu email của Cầu thủ có trong danh sách mời và chưa đăng ký đội) */}
      {isInvited && !myTeam && !isClosed && (
        <div className="rounded-xl border border-sky-300 bg-sky-50 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
          <div className="flex items-start gap-3.5">
@@ -2132,133 +2285,9 @@ const [addCount, setAddCount] = useState("4");
          )}
        </div>
      )}
-   </div>
- )}
+            </div>
+          )}
 
-  {/* Console Nav Tabs: Thích ứng động theo Role, Format & Số Lượng Đội */}
-  <div className="flex items-center gap-2 mt-6 pt-6 border-t border-slate-200 flex-wrap">
-    {/* TAB THÔNG TIN GIẢI ĐẤU */}
-    <button
-      type="button"
-      onClick={() => { setSelectedMatchDetail(null); setActiveTab("info"); }}
-      className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-        activeTab === "info"
-          ? "bg-[#0369a1] text-white shadow-md"
-          : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
-      }`}
-    >
-      <Info className="w-4 h-4" />
-      <span>Thông Tin Giải Đấu</span>
-    </button>
-
-    {/* TAB CÂY NHÁNH ĐẤU (Đối với Vòng Tròn thì ẩn nếu không phải quản lý) */}
-    {(canManage || selected?.format !== "ROUND_ROBIN") && (
-      <button
-        type="button"
-        onClick={() => { setSelectedMatchDetail(null); setActiveTab("bracket"); }}
-        className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-          activeTab === "bracket"
-            ? "bg-[#0369a1] text-white shadow-md"
-            : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
-        }`}
-      >
-        <Trophy className="w-4 h-4" />
-        <span>
-          {selected?.format === "GROUP_STAGE"
-            ? "Nhánh Knock-out & Bảng Đấu"
-            : selected?.format === "ROUND_ROBIN"
-            ? "Sơ Đồ Đấu Vòng Tròn"
-            : `Cây Nhánh Đấu (${bracket?.rounds?.length || 0} vòng)`}
-        </span>
-      </button>
-    )}
-
-    {/* TAB LỊCH THI ĐẤU (Khán giả luôn cần xem lịch) */}
-    <button
-      type="button"
-      onClick={() => setActiveTab("schedule")}
-      className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-        activeTab === "schedule"
-          ? "bg-[#0369a1] text-white shadow-md"
-          : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
-      }`}
-    >
-      <Calendar className="w-4 h-4 text-sky-700" />
-      <span>Lịch Thi Đấu & Kết Quả ({allScheduledMatches.length})</span>
-    </button>
-
-    {/* TAB BẢNG XẾP HẠNG (Vòng tròn & Chia bảng đưa lên vị trí trọng tâm) */}
-    <button
-      type="button"
-      onClick={() => { setSelectedMatchDetail(null); setActiveTab("standings"); }}
-      className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-        activeTab === "standings"
-          ? "bg-[#0369a1] text-white shadow-md"
-          : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
-      }`}
-    >
-      <ListOrdered className="w-4 h-4" />
-      <span>
-        {selected?.format === "ROUND_ROBIN"
-          ? "Bảng Xếp Hạng League"
-          : selected?.format === "GROUP_STAGE"
-          ? "Bảng Điểm Các Bảng"
-          : "Bảng Xếp Hạng & Vua Phá Lưới"}
-      </span>
-    </button>
-
-   {/* TAB DÀNH RIÊNG CHO BAN TỔ CHỨC / QUẢN LÝ */}
-   {canManage && (
-     <button
-       type="button"
-       onClick={() => { setSelectedMatchDetail(null); setActiveTab("esheet"); }}
-       className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-         activeTab === "esheet"
-           ? "bg-[#0369a1] text-white shadow-md"
-           : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
-        }`}
-      >
-        <FileText className="w-4 h-4" />
-       <span>Biên Bản & QR</span>
-     </button>
-   )}
- </div>
- </div>
-
-      {/* Sân khấu Lễ Bốc Thăm (Hiển thị ngay trên đầu khi bấm Bốc Thăm) */}
-      {selected && lottery !== null && (
-        <DrawLotteryOverlay
-          inline
-          open={true}
-          tournamentTitle={selected?.title}
-          pairs={lottery.pairs}
-          byes={lottery.byes}
-          format={selected?.format}
-          teams={selected?.teams}
-          onDone={async () => {
-            setLottery(null);
-            const updated = await refreshTournamentInCache(selected.id);
-            if (updated) {
-              syncTournamentUpdate(updated);
-            } else {
-              const fullList = await fetchTournaments(true);
-              setTournaments(fullList);
-            }
-            triggerToast("Nhánh đấu chính thức đã được lưu vào hệ thống!");
-          }}
-        />
-      )}
-
- {/* CHI TIẾT TRẬN ĐẤU (INLINE MOTIP FOTMOB / FLASHSCORE - ZERO MODAL) */}
-      {selectedMatchDetail && selected ? (
-        <TournamentMatchDetail
-          match={selectedMatchDetail.match}
-          roundName={selectedMatchDetail.roundName}
-          tournament={selected}
-          onBack={() => setSelectedMatchDetail(null)}
-        />
-      ) : (
-        <>
           {/* TAB 0: THÔNG TIN TỔNG QUAN GIẢI ĐẤU */}
           {activeTab === "info" && selected && (
             <div className="bg-white p-4 sm:p-8 rounded-2xl border border-slate-200 space-y-6 shadow-sm">
