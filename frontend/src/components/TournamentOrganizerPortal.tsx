@@ -66,7 +66,8 @@ import {
  Calendar,
  Megaphone,
  FileText,
- RotateCcw
+ RotateCcw,
+  Search
 } from "lucide-react";
 
 interface TournamentOrganizerPortalProps {
@@ -94,7 +95,26 @@ export default function TournamentOrganizerPortal({
  // Sport Filter State
  const [selectedSport, setSelectedSport] = useState<string>("all");
 
- // Pitch selection by role (OWNER vs ORGANIZER/ADMIN)
+ // Bộ lọc chi tiết giải đấu
+  const [filterSearch, setFilterSearch] = useState<string>("");
+  const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [filterFormat, setFilterFormat] = useState<string>("ALL");
+  const [filterSport, setFilterSport] = useState<string>("ALL");
+
+  const isFilterActive =
+    filterSearch.trim().length > 0 ||
+    filterStatus !== "ALL" ||
+    filterFormat !== "ALL" ||
+    filterSport !== "ALL";
+
+  const handleResetFilters = () => {
+    setFilterSearch("");
+    setFilterStatus("ALL");
+    setFilterFormat("ALL");
+    setFilterSport("ALL");
+  };
+
+  // Pitch selection by role (OWNER vs ORGANIZER/ADMIN)
  const [pitches, setPitches] = useState<PitchModel[]>([]);
  const [loadingPitches, setLoadingPitches] = useState(false);
  const isOwner = user?.role === "OWNER";
@@ -1153,7 +1173,32 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  }
  };
 
- const filteredTournaments = tournaments;
+  const filteredTournaments = useMemo(() => {
+    return tournaments.filter((t: any) => {
+      // 1. Từ khóa tìm kiếm
+      const q = filterSearch.trim().toLowerCase();
+      if (q) {
+        const title = (t.title || "").toLowerCase();
+        const court = (t.courts || "").toLowerCase();
+        if (!title.includes(q) && !court.includes(q)) return false;
+      }
+      // 2. Trạng thái
+      if (filterStatus !== "ALL") {
+        if (filterStatus === "OPEN" && t.originalStatus !== "OPEN") return false;
+        if (filterStatus === "ONGOING" && t.originalStatus !== "ONGOING") return false;
+        if (filterStatus === "COMPLETED" && t.originalStatus !== "COMPLETED" && t.originalStatus !== "FINISHED") return false;
+      }
+      // 3. Thể thức
+      if (filterFormat !== "ALL") {
+        if (t.format !== filterFormat) return false;
+      }
+      // 4. Môn thi đấu / Quy mô sân
+      if (filterSport !== "ALL") {
+        if (t.sport !== filterSport) return false;
+      }
+      return true;
+    });
+  }, [tournaments, filterSearch, filterStatus, filterFormat, filterSport]);
 
 
  return (
@@ -1345,7 +1390,95 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
     
   </div>
 
-  {/* FOOTBALL TOURNAMENT BENTO CAROUSEL CARDS */}
+  {/* THANH BỘ LỌC CHI TIẾT GIẢI ĐẤU (TOOLBAR NGANG ĐA NĂNG) */}
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 items-center">
+        {/* 1. Ô tìm kiếm từ khóa */}
+        <div className="lg:col-span-5 relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={filterSearch}
+            onChange={(e) => setFilterSearch(e.target.value)}
+            placeholder="Tìm theo tên giải, cụm sân..."
+            className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0369a1] focus:bg-white transition-all"
+          />
+          {filterSearch && (
+            <button
+              type="button"
+              onClick={() => setFilterSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* 2. Lọc trạng thái */}
+        <div className="lg:col-span-2">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            aria-label="Lọc theo trạng thái"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer"
+          >
+            <option value="ALL">Tất cả trạng thái</option>
+            <option value="OPEN">Đang mở đăng ký</option>
+            <option value="ONGOING">Đang diễn ra</option>
+            <option value="COMPLETED">Đã kết thúc</option>
+          </select>
+        </div>
+
+        {/* 3. Lọc thể thức */}
+        <div className="lg:col-span-2">
+          <select
+            value={filterFormat}
+            onChange={(e) => setFilterFormat(e.target.value)}
+            aria-label="Lọc theo thể thức"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer"
+          >
+            <option value="ALL">Tất cả thể thức</option>
+            <option value="KNOCKOUT">Loại trực tiếp</option>
+            <option value="ROUND_ROBIN">Vòng tròn</option>
+          </select>
+        </div>
+
+        {/* 4. Lọc môn / sân */}
+        <div className="lg:col-span-3">
+          <select
+            value={filterSport}
+            onChange={(e) => setFilterSport(e.target.value)}
+            aria-label="Lọc theo thể thức sân"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0369a1] cursor-pointer"
+          >
+            <option value="ALL">Tất cả môn / sân</option>
+            <option value="SAN_7">Bóng Đá Sân 7</option>
+            <option value="SAN_5">Bóng Đá Sân 5</option>
+            <option value="SAN_11">Bóng Đá Sân 11</option>
+            <option value="FUTSAL">Futsal Trong Nhà</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Thông số kết quả & Đặt lại */}
+      <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[13px]">
+        <span className="text-slate-500 font-medium">
+          Hiển thị <strong className="text-slate-900 font-bold">{filteredTournaments.length}</strong> / {tournaments.length} giải đấu
+        </span>
+        {isFilterActive && (
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            className="inline-flex items-center gap-1 text-[13px] font-bold text-[#0369a1] hover:text-[#075985] hover:underline cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Đặt lại bộ lọc</span>
+          </button>
+        )}
+      </div>
+    </div>
+
+    {/* FOOTBALL TOURNAMENT BENTO CAROUSEL CARDS */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
  {loadingDb && filteredTournaments.length === 0 ? (
  [0, 1, 2].map((i) => (
