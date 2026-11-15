@@ -1475,6 +1475,165 @@ export async function handleOfflineApi(urlStr: string, options: RequestInit = {}
         registeredTeams: tournament.registeredTeams,
       });
     }
+
+    if (sub === 'draw' && method === 'POST') {
+      const allTeams = tournament.teams || [];
+      const confirmedTeams = allTeams.filter(
+        (t: any) => t.registrationStatus !== 'PENDING_PAYMENT'
+      );
+      const teams = confirmedTeams.length >= 2 ? confirmedTeams : allTeams;
+
+      if (teams.length < 2) {
+        return jsonResponse(
+          { message: 'Cần ít nhất 2 đội để tiến hành bốc thăm chia nhánh.' },
+          400
+        );
+      }
+
+      const roundName = (count: number): string => {
+        switch (count) {
+          case 2: return 'Chung kết';
+          case 4: return 'Bán kết';
+          case 8: return 'Tứ kết';
+          case 16: return 'Vòng 1/16';
+          case 32: return 'Vòng 1/32';
+          default: return `Vòng loại (${count} đội)`;
+        }
+      };
+
+      const rounds: any[] = [];
+      const isRoundRobin = tournament.format === 'ROUND_ROBIN';
+
+      if (isRoundRobin) {
+        const n = teams.length;
+        const circle: any[] = [...teams];
+        if (n % 2 === 1) circle.push(null);
+        const hasBye = n % 2 === 1;
+        const roundsCount = hasBye ? n : n - 1;
+
+        for (let r = 0; r < roundsCount; r++) {
+          const matches: any[] = [];
+          for (let i = 0; i < Math.floor(circle.length / 2); i++) {
+            const a = circle[i];
+            const b = circle[circle.length - 1 - i];
+            if (!a || !b) {
+              const active = a || b;
+              matches.push({
+                matchId: `RR-V${r + 1}-BYE`,
+                bye: { name: active.teamName },
+                status: 'BYE',
+              });
+            } else {
+              matches.push({
+                matchId: `RR-V${r + 1}-M${i + 1}`,
+                teamA: { name: a.teamName, form: a.form || 'WWD', record: a.record || '2W-1D-0L', winRate: a.winRate || 75 },
+                teamB: { name: b.teamName, form: b.form || 'WWD', record: b.record || '2W-1D-0L', winRate: b.winRate || 75 },
+                scoreA: 0,
+                scoreB: 0,
+                status: 'SCHEDULED',
+                winner: null,
+              });
+            }
+          }
+          rounds.push({
+            name: `Vòng ${r + 1}`,
+            matches,
+          });
+          const last = circle.pop();
+          if (last !== undefined) circle.splice(1, 0, last);
+        }
+      } else {
+        // KNOCKOUT
+        const n = teams.length;
+        let p = 2;
+        while (p < n) p *= 2;
+        const byes = p - n;
+
+        const round1Matches: any[] = [];
+        const advancers: string[] = [];
+
+        for (let i = 0; i < byes; i++) {
+          const t = teams[i];
+          const matchId = `R1-BYE${i + 1}`;
+          round1Matches.push({
+            matchId,
+            bye: { name: t.teamName, seed: i + 1, form: t.form || 'WWD', record: t.record || '2W-1D-0L', winRate: t.winRate || 75 },
+            status: 'BYE',
+            winner: t.teamName,
+          });
+          advancers.push(t.teamName);
+        }
+
+        const rest = teams.slice(byes);
+        const pairs = Math.floor(rest.length / 2);
+        for (let i = 0; i < pairs; i++) {
+          const a = rest[i];
+          const b = rest[rest.length - 1 - i];
+          const matchId = `R1-M${i + 1}`;
+          round1Matches.push({
+            matchId,
+            teamA: { name: a.teamName, seed: byes + i + 1, form: a.form || 'WWD', record: a.record || '2W-1D-0L', winRate: a.winRate || 75 },
+            teamB: { name: b.teamName, seed: n - i, form: b.form || 'WWD', record: b.record || '2W-1D-0L', winRate: b.winRate || 75 },
+            scoreA: 0,
+            scoreB: 0,
+            status: 'SCHEDULED',
+            winner: null,
+          });
+          advancers.push(`Thắng ${matchId}`);
+        }
+
+        rounds.push({
+          name: roundName(p),
+          matches: round1Matches,
+        });
+
+        let remaining = p / 2;
+        let roundIdx = 2;
+        let slots = advancers;
+        while (remaining >= 2) {
+          const matches: any[] = [];
+          const next: string[] = [];
+          for (let i = 0; i + 1 < slots.length; i += 2) {
+            const matchId = `R${roundIdx}-M${Math.floor(i / 2) + 1}`;
+            matches.push({
+              matchId,
+              teamA: { name: slots[i], tbd: true },
+              teamB: { name: slots[i + 1], tbd: true },
+              scoreA: 0,
+              scoreB: 0,
+              status: 'TBD',
+              winner: null,
+            });
+            next.push(`Thắng ${matchId}`);
+          }
+          rounds.push({
+            name: roundName(remaining),
+            matches,
+          });
+          slots = next;
+          remaining = Math.floor(remaining / 2);
+          roundIdx++;
+        }
+      }
+
+      const bracket = {
+        tournamentId: tournament.id,
+        title: tournament.title,
+        drawnAt: new Date().toISOString(),
+        method: 'SEEDED_REGISTRATION',
+        teamCount: teams.length,
+        rounds,
+      };
+
+      tournament.bracketJson = JSON.stringify(bracket);
+      tournament.hasBracket = true;
+      saveStore(store);
+
+      return jsonResponse({
+        message: `Bốc thăm chia nhánh thành công cho ${teams.length} đội!`,
+        bracket,
+      });
+    }
   }
 
   // 5. Matchmaking & Community

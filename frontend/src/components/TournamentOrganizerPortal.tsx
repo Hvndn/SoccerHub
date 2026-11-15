@@ -138,6 +138,7 @@ export default function TournamentOrganizerPortal({
 
  // Thông báo tương tác trong trang (không dùng alert để giữ đúng nghiệp vụ)
  const [varNotice, setVarNotice] = useState<string | null>(null);
+ const [isDrawingBracket, setIsDrawingBracket] = useState(false);
 
  // Giải BTC đang thao tác. Mặc định lấy giải đầu tiên đã bốc thăm (nếu chưa chọn
  // tay) để các bảng BXH / lịch / tài chính vẫn có dữ liệu ngay khi vào trang.
@@ -1648,6 +1649,29 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   </div>
 )}
 
+{varNotice && (
+  <div className={`p-3.5 rounded-xl border flex items-start justify-between gap-3 text-[13px] animate-fade-in ${
+    varNotice.startsWith("❌")
+      ? "bg-rose-50 border-rose-200 text-rose-900"
+      : "bg-sky-50 border-sky-200 text-sky-900"
+  }`}>
+    <div className="flex items-start gap-2.5">
+      <AlertCircle className={`w-4 h-4 shrink-0 mt-0.5 ${
+        varNotice.startsWith("❌") ? "text-rose-600" : "text-[#0369a1]"
+      }`} />
+      <span className="font-bold">{varNotice}</span>
+    </div>
+    <button
+      type="button"
+      onClick={() => setVarNotice(null)}
+      className="text-slate-400 hover:text-slate-700 cursor-pointer p-0.5"
+      title="Đóng thông báo"
+    >
+      <X className="w-4 h-4" />
+    </button>
+  </div>
+)}
+
  {/* MAIN WORKSPACE: FULL-WIDTH UMPIRE CONSOLE, BRACKET ENGINE & TOURNAMENT MANAGEMENT CONSOLE */}
  <div className="w-full space-y-4 sm:space-y-8">
 
@@ -1686,19 +1710,32 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
       <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
         <button
           type="button"
+          disabled={isDrawingBracket}
           onClick={async () => {
+            setIsDrawingBracket(true);
             try {
               const res = await drawTournamentBracket(Number(activeTournament.id));
               await fetchDbTournaments();
               setVarNotice("✅ " + (res.message || "Đã bốc thăm chia nhánh thành công!"));
             } catch (err: any) {
               setVarNotice("❌ " + (err?.message || "Chưa đủ đội xác nhận để bốc thăm. Hãy duyệt thêm đội ở tab Duyệt Đội."));
+            } finally {
+              setIsDrawingBracket(false);
             }
           }}
-          className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+          className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <Sparkles className="w-4 h-4" />
-          <span>Bốc Thăm Chia Nhánh Ngay</span>
+          {isDrawingBracket ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span>Đang Bốc Thăm...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              <span>Bốc Thăm Chia Nhánh Ngay</span>
+            </>
+          )}
         </button>
 
         <button
