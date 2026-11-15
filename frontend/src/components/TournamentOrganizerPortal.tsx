@@ -1,6 +1,7 @@
 "use client";
 
 import TournamentInviteModal from "./TournamentInviteModal";
+import DrawLotteryOverlay from "./DrawLotteryOverlay";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { todayLocalPlus } from "@/lib/dateUtils";
@@ -139,6 +140,10 @@ export default function TournamentOrganizerPortal({
  // Thông báo tương tác trong trang (không dùng alert để giữ đúng nghiệp vụ)
  const [varNotice, setVarNotice] = useState<string | null>(null);
  const [isDrawingBracket, setIsDrawingBracket] = useState(false);
+ const [lotteryData, setLotteryData] = useState<{
+   pairs: { matchId: string; teamA: string; teamB: string }[];
+   byes: string[];
+ } | null>(null);
 
  // Giải BTC đang thao tác. Mặc định lấy giải đầu tiên đã bốc thăm (nếu chưa chọn
  // tay) để các bảng BXH / lịch / tài chính vẫn có dữ liệu ngay khi vào trang.
@@ -1780,14 +1785,63 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                   </h3>
                 </div>
 
-                {activeTournament && (
-                  <span className="px-3 py-1 rounded-full bg-slate-100 text-[14px] font-bold text-slate-600 border border-slate-200 shrink-0">
-                    Thể thức: {formatLabel(activeTournament.format)}
-                  </span>
-                )}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {activeTournament && (
+                    <span className="px-3 py-1 rounded-full bg-slate-100 text-[13px] font-bold text-slate-600 border border-slate-200 shrink-0">
+                      Thể thức: {formatLabel(activeTournament.format)}
+                    </span>
+                  )}
+
+                  {activeBracket && !lotteryData && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const r1 = activeBracket?.rounds?.[0]?.matches ?? [];
+                        const pairs = r1
+                          .filter((m: any) => m.status === "SCHEDULED" && m.teamA && m.teamB)
+                          .map((m: any) => ({
+                            matchId: m.matchId,
+                            teamA: typeof m.teamA === "string" ? m.teamA : m.teamA?.name ?? "Đội A",
+                            teamB: typeof m.teamB === "string" ? m.teamB : m.teamB?.name ?? "Đội B"
+                          }));
+                        const byes = r1
+                          .filter((m: any) => m.status === "BYE" && m.bye)
+                          .map((m: any) => typeof m.bye === "string" ? m.bye : m.bye?.name ?? "Đội Bye");
+                        if (pairs.length > 0 || byes.length > 0) {
+                          setLotteryData({ pairs, byes });
+                        } else {
+                          setVarNotice("⚠️ Không tìm thấy cặp đấu vòng 1 để trình chiếu lại lễ bốc thăm.");
+                        }
+                      }}
+                      className="px-3.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[13px] font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                      title="Mở lại sân khấu lễ bốc thăm với rổ bóng xoay pha lê và nhạc hiệu"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Xem Lại Lễ Bốc Thăm</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {!activeBracket ? (
+              {/* SÂN KHẤU LỄ BỐC THĂM INLINE */}
+              {lotteryData ? (
+                <div id="draw-lottery-stage" className="animate-fade-in">
+                  <DrawLotteryOverlay
+                    inline
+                    open={true}
+                    tournamentTitle={activeTournament.title}
+                    pairs={lotteryData.pairs}
+                    byes={lotteryData.byes}
+                    format={activeTournament.format}
+                    teams={activeTournament.teams}
+                    onDone={async () => {
+                      setLotteryData(null);
+                      await fetchDbTournaments();
+                      setVarNotice("✅ Lễ bốc thăm đã hoàn tất thành công và lưu vào hệ thống!");
+                    }}
+                  />
+                </div>
+              ) : !activeBracket ? (
                 <div className="p-6 sm:p-10 text-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 space-y-3">
                   <div className="w-12 h-12 rounded-xl bg-sky-100 text-[#0369a1] mx-auto flex items-center justify-center">
                     <Trophy className="w-6 h-6" />
@@ -1809,7 +1863,19 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                         try {
                           const res = await drawTournamentBracket(Number(activeTournament.id));
                           await fetchDbTournaments();
-                          setVarNotice("✅ " + (res.message || "Đã bốc thăm chia nhánh thành công!"));
+                          const r1 = res.bracket?.rounds?.[0]?.matches ?? [];
+                          const pairs = r1
+                            .filter((m: any) => m.status === "SCHEDULED" && m.teamA && m.teamB)
+                            .map((m: any) => ({
+                              matchId: m.matchId,
+                              teamA: typeof m.teamA === "string" ? m.teamA : m.teamA?.name ?? "Đội A",
+                              teamB: typeof m.teamB === "string" ? m.teamB : m.teamB?.name ?? "Đội B"
+                            }));
+                          const byes = r1
+                            .filter((m: any) => m.status === "BYE" && m.bye)
+                            .map((m: any) => typeof m.bye === "string" ? m.bye : m.bye?.name ?? "Đội Bye");
+                          setLotteryData({ pairs, byes });
+                          setVarNotice("✨ Đang diễn ra Lễ Bốc Thăm chia cặp đấu chính thức!");
                         } catch (err: any) {
                           setVarNotice("❌ " + (err?.message || "Chưa đủ đội xác nhận để bốc thăm. Hãy duyệt thêm đội ở tab Duyệt Đội."));
                         } finally {
