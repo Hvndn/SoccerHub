@@ -537,12 +537,10 @@ export default function MultiSportArena({
  )}
 
  {court.status === 'live' && (
- <button
- onClick={() => handleActionToast(`Đang kết nối camera AI VAR live stream ${court.id}...`)}
- className="bg-rose-600 hover:bg-rose-700 text-white text-[14px] font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1"
- >
- <Video className="w-3 h-3" /> Xem VAR Live
- </button>
+ <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-[13px] font-bold">
+   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+   Đang Thi Đấu
+ </span>
  )}
 
  {court.status === 'booked' && (
