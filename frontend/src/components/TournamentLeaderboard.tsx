@@ -449,7 +449,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
               <span>Quay Lại Danh Sách Giải Đấu</span>
             </button>
           </div>
-          <TournamentBracket initialTournamentId={bracketTargetId} />
+          <TournamentBracket initialTournamentId={bracketTargetId} initialTournaments={tournaments} />
         </div>
       ) : activeTab === "live" ? (
         /* TAB 3: LỊCH THI ĐẤU & KẾT QUẢ CÁC GIẢI */

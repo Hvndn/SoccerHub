@@ -198,3 +198,25 @@
 - **Status**: Fixed
 
 ---
+
+## [2026-11-15 07:25] - Uncaught TypeError: Cannot read properties of null (reading 'format') khi click vào giải đấu đã kết thúc
+
+- **Type**: Runtime
+- **Severity**: High
+- **File**: `frontend/src/components/TournamentBracket.tsx:2055`
+- **Agent**: Thần (Fullstack Specialist)
+- **Root Cause**: Khi mở tab nhánh đấu của một giải (nhất là giải đã kết thúc hoặc vừa click từ danh sách), `TournamentBracket` khởi tạo với `tournaments = []` và `selectedId = ""`, khiến `selected` là `null`. Việc truy cập trực tiếp `selected.format`, `selected.totalTeams`, `selected.title`... làm phát sinh `TypeError: Cannot read properties of null` và kích hoạt error boundary của Next.js. Ngoài ra các giải đã kết thúc không có sơ đồ nhánh đấu trực tuyến bị rơi vào giao diện bốc thăm dự kiến không hợp lệ.
+- **Error Message**: 
+  ```
+  Uncaught TypeError: Cannot read properties of null (reading 'format') at TournamentBracket
+  ```
+- **Fix Applied**: 
+  1. Truyền `initialTournaments={tournaments}` từ `TournamentLeaderboard` sang `TournamentBracket` để tận dụng cache có sẵn, không bị trễ 1 nhịp tải.
+  2. Khởi tạo `selectedId` ngay từ `initialTournamentId` truyền vào.
+  3. Thêm màn hình chờ an toàn `if (tournaments.length === 0)` và cảnh báo `if (!selected)`.
+  4. Sử dụng Optional Chaining `selected?.` trên 100% các vị trí đọc thuộc tính của `selected`.
+  5. Xử lý trạng thái giải đã kết thúc nhưng chưa/không có nhánh đấu trực tuyến (`isClosed && !bracket`) với giao diện thông báo đóng giải trang nhã và danh sách các đội tham gia.
+- **Prevention**: Luôn kiểm tra null-guard cho selected item trước khi render và khởi tạo state từ props khi dữ liệu cha đã có sẵn.
+- **Status**: Fixed
+
+---

@@ -62,13 +62,15 @@ import {
 import { apiRequest } from "@/lib/api";
 
 export default function TournamentBracket({
- initialTournamentId,
+  initialTournamentId,
+  initialTournaments,
 }: {
- /** Mã giải cần mở sẵn (VD: giải vừa bốc thăm xong từ card giải ở tab "Giải đấu"). */
- initialTournamentId?: number | string | null;
+  /** Mã giải cần mở sẵn (VD: giải vừa bốc thăm xong từ card giải ở tab "Giải đấu"). */
+  initialTournamentId?: number | string | null;
+  initialTournaments?: Tournament[];
 }) {
- const [tournaments, setTournaments] = useState<Tournament[]>([]);
- const [selectedId, setSelectedId] = useState("");
+  const [tournaments, setTournaments] = useState<Tournament[]>(() => initialTournaments ?? []);
+  const [selectedId, setSelectedId] = useState<string>(() => (initialTournamentId ? String(initialTournamentId) : ""));
  const [showInviteModal, setShowInviteModal] = useState(false);
 
  // Quyền quản trị giải đấu — backend chỉ cho ADMIN / ORGANIZER / OWNER.
@@ -251,7 +253,7 @@ const [addCount, setAddCount] = useState("4");
   const isClosed = Boolean(
     selected?.status === "COMPLETED" ||
     selected?.status === "FINISHED" ||
-    (selected?.endDate && new Date(selected.endDate) < new Date(new Date().toDateString()))
+    (selected?.endDate && new Date(selected?.endDate) < new Date(new Date().toDateString()))
   );
 
   // Chỉ cho phép tác động (bốc thăm, giả lập, xếp lịch...) khi có quyền VÀ giải chưa kết thúc
@@ -373,7 +375,7 @@ const [addCount, setAddCount] = useState("4");
     const myPhone = (authUser.phone || "").trim();
     const myName = (authUser.fullName || (authUser as any)?.name || "").toLowerCase().trim();
 
-    return (selected.teams ?? []).find((t: any) => {
+    return (selected?.teams ?? []).find((t: any) => {
       const tEmail = (t.captainEmail || "").toLowerCase().trim();
       const tPhone = (t.captainPhone || "").trim();
       const tName = (t.captainName || "").toLowerCase().trim();
@@ -393,7 +395,7 @@ const [addCount, setAddCount] = useState("4");
     if (!selected) return false;
     const myEmail = (authUser?.email || "").toLowerCase().trim();
     if (!myEmail) return false;
-    return (selected.invitedEmails ?? []).some((e) => (e ?? "").toLowerCase().trim() === myEmail);
+    return (selected?.invitedEmails ?? []).some((e) => (e ?? "").toLowerCase().trim() === myEmail);
   }, [selected, authUser?.email]);
 
   // Trận đấu tiếp theo của đội Cầu thủ (nếu giải đã bốc thăm và có lịch)
@@ -445,7 +447,7 @@ const [addCount, setAddCount] = useState("4");
   // Tự động chuyển tab thông minh theo thể thức giải đấu
   useEffect(() => {
     if (!selected) return;
-    if (selected.format === "ROUND_ROBIN") {
+    if (selected?.format === "ROUND_ROBIN") {
       setActiveTab("standings");
     } else {
       setActiveTab("bracket");
@@ -787,7 +789,7 @@ const [addCount, setAddCount] = useState("4");
  triggerToast("Tỷ số phải là số nguyên lớn hơn hoặc bằng 0.");
  return;
  }
- const isLeague = selected.format === "ROUND_ROBIN";
+ const isLeague = selected?.format === "ROUND_ROBIN";
  if (scoreA === scoreB && !isLeague) {
  triggerToast("Vòng loại trực tiếp cần phân thắng bại, không nhận tỷ số hòa.");
  return;
@@ -864,7 +866,7 @@ const [addCount, setAddCount] = useState("4");
  /** Lưu tỷ số từ Tòa VAR xuống CSDL — cùng endpoint nhập kết quả, lịch sử tự cập nhật. */
  const saveVarScore = async () => {
  if (!selected || !varMatch) return;
- const isLeague = selected.format === "ROUND_ROBIN";
+ const isLeague = selected?.format === "ROUND_ROBIN";
  if (varScoreA === varScoreB && !isLeague) {
  triggerToast("Vòng loại trực tiếp cần phân thắng bại, không nhận tỷ số hòa.");
  return;
@@ -1096,9 +1098,36 @@ const [addCount, setAddCount] = useState("4");
  )}
  </div>
  );
- };
+  };
 
- return (
+  if (tournaments.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+        <RefreshCw className="w-8 h-8 text-[#0369a1] animate-spin mx-auto" />
+        <p className="text-sm font-bold text-slate-700">Đang tải thông tin giải đấu...</p>
+      </div>
+    );
+  }
+
+  if (!selected) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-3">
+        <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto" />
+        <p className="text-sm font-bold text-slate-700">Không tìm thấy thông tin giải đấu</p>
+        {tournaments.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setSelectedId(String(tournaments[0].id))}
+            className="px-4 py-2 rounded-xl bg-[#0369a1] text-white font-bold text-[14px] cursor-pointer"
+          >
+            Xem giải: {tournaments[0].title}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
  <div className="space-y-4 sm:space-y-8 text-slate-900 transition-colors duration-200">
 
       {/* BANNER THÔNG BÁO GIẢI ĐÃ KẾT THÚC / CHẾ ĐỘ CHỈ XEM */}
@@ -1134,8 +1163,8 @@ const [addCount, setAddCount] = useState("4");
  {selected && (
    <div className="relative h-44 sm:h-56 w-full rounded-2xl bg-slate-900 overflow-hidden border border-slate-200 shadow-xs">
      <SafeImage
-       src={selected.bannerUrl || (selected as any).imageUrl || "/images/copa-action.png"}
-       alt={selected.title}
+       src={selected?.bannerUrl || (selected as any)?.imageUrl || "/images/copa-action.png"}
+       alt={selected?.title}
        className="w-full h-full object-cover brightness-75"
      />
      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
@@ -1143,20 +1172,20 @@ const [addCount, setAddCount] = useState("4");
        <div>
          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
            <span className="px-2.5 py-0.5 rounded-md bg-white/20 backdrop-blur-md text-white font-bold text-[13px] border border-white/20">
-             {sportLabel(selected.sportType)}
+             {sportLabel(selected?.sportType)}
            </span>
            <span className="px-2.5 py-0.5 rounded-md bg-white/20 backdrop-blur-md text-white font-bold text-[13px] border border-white/20">
-             {formatLabel(selected.format)}
+             {formatLabel(selected?.format)}
            </span>
            <span className="px-2.5 py-0.5 rounded-md bg-emerald-600/90 text-white font-bold text-[13px]">
-             {selected.status === "ONGOING" ? "Đang diễn ra" : selected.status === "COMPLETED" ? "Đã kết thúc" : "Đang mở"}
+             {selected?.status === "ONGOING" ? "Đang diễn ra" : selected?.status === "COMPLETED" ? "Đã kết thúc" : "Đang mở"}
            </span>
          </div>
          <h2 className="text-xl sm:text-2xl font-black text-white leading-tight drop-shadow-sm">
-           {selected.title}
+           {selected?.title}
          </h2>
          <p className="text-[13px] text-slate-300 font-medium mt-1">
-           📍 {selected.pitchName || selected.location || "Đà Nẵng"} • 🏆 Thưởng: {formatMoney(selected.prizePool)}
+           📍 {selected?.pitchName || selected?.location || "Đà Nẵng"} • 🏆 Thưởng: {formatMoney(selected?.prizePool)}
          </p>
        </div>
 
@@ -1177,8 +1206,8 @@ const [addCount, setAddCount] = useState("4");
  <Trophy className="w-4 h-4 text-sky-700 " />
  <span>
    {canManage
-     ? (selected ? `${selected.title} • Quản Trị & Bàn VAR` : "Quản trị giải đấu & Bàn trọng tài VAR")
-     : (selected ? `${selected.title} • Bảng Đấu & Lịch Thi Đấu` : "Theo dõi giải đấu & Lịch thi đấu")}
+     ? (selected ? `${selected?.title} • Quản Trị & Bàn VAR` : "Quản trị giải đấu & Bàn trọng tài VAR")
+     : (selected ? `${selected?.title} • Bảng Đấu & Lịch Thi Đấu` : "Theo dõi giải đấu & Lịch thi đấu")}
  </span>
  </div>
  <h1 className="text-lg sm:text-3xl font-extrabold tracking-tight text-slate-900 ">
@@ -1186,7 +1215,7 @@ const [addCount, setAddCount] = useState("4");
  </h1>
  <p className="text-slate-600 text-[14px] sm:text-sm mt-1 max-w-2xl">
  {selected
- ? `${sportLabel(selected.sportType)} • ${formatLabel(selected.format)} • ${teamCount}/${teamCap || "—"} đội • Khởi tranh ${formatDate(selected.startDate)}`
+ ? `${sportLabel(selected?.sportType)} • ${formatLabel(selected?.format)} • ${teamCount}/${teamCap || "—"} đội • Khởi tranh ${formatDate(selected?.startDate)}`
  : canManage
  ? "Chọn một giải đấu để quản lý nhánh đấu và xếp lịch."
  : "Chọn giải đấu để theo dõi bảng đấu, nhánh thi đấu và phong độ các đội."}
@@ -1800,7 +1829,7 @@ const [addCount, setAddCount] = useState("4");
                </span>
              </div>
              <h3 className="text-base sm:text-lg font-bold text-slate-900">
-               Bạn đã nhận được thư mời tham gia giải “{selected.title}”!
+               Bạn đã nhận được thư mời tham gia giải “{selected?.title}”!
              </h3>
              <p className="text-[14px] text-slate-600 leading-relaxed">
                Ban Tổ Chức đã gửi lời mời chính thức tới bạn. Hãy đăng ký đội bóng để giữ chỗ thi đấu trước khi đủ suất ({teamCount}/{teamCap || "—"} đội đã tham gia).
@@ -1808,7 +1837,7 @@ const [addCount, setAddCount] = useState("4");
            </div>
          </div>
          <a
-           href={`/tournaments/register?tournamentId=${selected.id}`}
+           href={`/tournaments/register?tournamentId=${selected?.id}`}
            className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] shadow-sm flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer"
          >
            <UserPlus className="w-4 h-4" />
@@ -1837,7 +1866,7 @@ const [addCount, setAddCount] = useState("4");
                Đơn đăng ký của đội “{myTeam.teamName}” đang chờ Ban Tổ Chức duyệt
              </h3>
              <p className="text-[14px] text-slate-600 leading-relaxed">
-               Lệ phí tham gia: <strong className="text-amber-800 font-mono">{formatMoney(selected.entryFee || 0)}</strong>.
+               Lệ phí tham gia: <strong className="text-amber-800 font-mono">{formatMoney(selected?.entryFee || 0)}</strong>.
                {selected.bankAccount ? (
                  <span>
                    {" "}Vui lòng chuyển khoản tới STK <strong>{selected.bankAccount}</strong> ({selected.bankCode || "Ngân hàng"} - {selected.accountName || "Ban Tổ Chức"}) với nội dung <strong>{myTeam.teamName}</strong> để được xác nhận vào nhánh đấu chính thức.
@@ -1912,7 +1941,7 @@ const [addCount, setAddCount] = useState("4");
                  </span>
                )}
                <span className="font-medium text-slate-700">
-                 📍 {myNextMatch.pitchName || selected.pitchName || selected.location || "Sân BTC"}
+                 📍 {myNextMatch.pitchName || selected?.pitchName || selected?.location || "Sân BTC"}
                </span>
              </div>
            </div>
@@ -1921,7 +1950,7 @@ const [addCount, setAddCount] = useState("4");
      )}
 
      {/* 4. Trường hợp giải INVITE_ONLY và Cầu thủ KHÔNG có trong danh sách mời và chưa đăng ký */}
-     {!isInvited && !myTeam && selected.joinMode === "INVITE_ONLY" && !isClosed && (
+     {!isInvited && !myTeam && selected?.joinMode === "INVITE_ONLY" && !isClosed && (
        <div className="rounded-xl border border-slate-300 bg-slate-50 p-4 flex items-center gap-3 text-[13px] text-slate-600">
          <span className="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 font-bold shrink-0">
            Giải Đấu Kín
@@ -1933,10 +1962,10 @@ const [addCount, setAddCount] = useState("4");
      )}
 
      {/* 5. DÀNH CHO KHÁN GIẢ / CẦU THỦ VÃNG LAI CHƯA THAM GIA GIẢI CÔNG KHAI */}
-     {!isInvited && !myTeam && selected.joinMode !== "INVITE_ONLY" && (
+     {!isInvited && !myTeam && selected?.joinMode !== "INVITE_ONLY" && (
        <div className="space-y-3">
          {/* A. Giải đang mở đăng ký công khai -> Hiển thị Thẻ Kêu Gọi Nộp Đơn */}
-         {!isClosed && teamCount < (selected.totalTeams || teamCap || 16) && (
+         {!isClosed && teamCount < (selected?.totalTeams || teamCap || 16) && (
            <div className="rounded-2xl border border-sky-300 bg-gradient-to-r from-sky-50 via-white to-sky-50/70 p-4 sm:p-5 shadow-xs space-y-3">
              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                <div className="flex items-start gap-3.5">
@@ -1949,20 +1978,20 @@ const [addCount, setAddCount] = useState("4");
                        Đang Mở Đăng Ký Công Khai
                      </span>
                      <span className="text-[13px] text-slate-600 font-semibold">
-                       Thể thức: <strong className="text-slate-900">{selected.format === "ROUND_ROBIN" ? "Vòng Tròn Tính Điểm" : selected.format === "GROUP_STAGE" ? "Chia Bảng & Loại Trực Tiếp" : "Cúp Loại Trực Tiếp (Knockout)"}</strong>
+                       Thể thức: <strong className="text-slate-900">{selected?.format === "ROUND_ROBIN" ? "Vòng Tròn Tính Điểm" : selected?.format === "GROUP_STAGE" ? "Chia Bảng & Loại Trực Tiếp" : "Cúp Loại Trực Tiếp (Knockout)"}</strong>
                      </span>
                    </div>
                    <h3 className="text-base sm:text-lg font-black text-slate-900">
-                     Giải Đấu “{selected.title}” Đang Mở Đăng Ký Đội Thi Đấu!
+                     Giải Đấu “{selected?.title}” Đang Mở Đăng Ký Đội Thi Đấu!
                    </h3>
                    <p className="text-[14px] text-slate-600 leading-relaxed">
-                     Quy mô giải: <strong className="text-slate-900">{selected.totalTeams || teamCap || "—"} đội</strong> • Quỹ giải thưởng: <strong className="text-amber-800 font-bold">{formatMoney(selected.prizePool || 0)}</strong> • Lệ phí tham gia: <strong className="text-slate-900 font-bold">{formatMoney(selected.entryFee || 0)}</strong>
+                     Quy mô giải: <strong className="text-slate-900">{selected?.totalTeams || teamCap || "—"} đội</strong> • Quỹ giải thưởng: <strong className="text-amber-800 font-bold">{formatMoney(selected?.prizePool || 0)}</strong> • Lệ phí tham gia: <strong className="text-slate-900 font-bold">{formatMoney(selected?.entryFee || 0)}</strong>
                    </p>
                  </div>
                </div>
 
                <a
-                 href={`/tournaments/register?tournamentId=${selected.id}`}
+                 href={`/tournaments/register?tournamentId=${selected?.id}`}
                  className="px-5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[14px] shadow-sm flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer"
                >
                  <UserPlus className="w-4 h-4" />
@@ -1974,12 +2003,12 @@ const [addCount, setAddCount] = useState("4");
              <div className="pt-2 border-t border-sky-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[13px]">
                <div className="flex items-center gap-2 flex-1 max-w-md">
                  <span className="text-slate-600 font-semibold shrink-0">
-                   Tiến độ: <strong className="text-sky-900">{teamCount}/{selected.totalTeams || teamCap || "—"} đội</strong>
+                   Tiến độ: <strong className="text-sky-900">{teamCount}/{selected?.totalTeams || teamCap || "—"} đội</strong>
                  </span>
                  <div className="flex-1 h-2 rounded-full bg-slate-200 overflow-hidden">
                    <div
                      className="h-full bg-[#0369a1] rounded-full transition-all"
-                     style={{ width: `${Math.min(100, (teamCount / (selected.totalTeams || teamCap || 1)) * 100)}%` }}
+                     style={{ width: `${Math.min(100, (teamCount / (selected?.totalTeams || teamCap || 1)) * 100)}%` }}
                    />
                  </div>
                </div>
@@ -2005,13 +2034,13 @@ const [addCount, setAddCount] = useState("4");
                    🏆 Đội Vô Địch: {tournamentChampion}
                  </h3>
                  <p className="text-[13px] text-amber-900 font-medium">
-                   Chúc mừng tân vương của giải đấu “{selected.title}”!
+                   Chúc mừng tân vương của giải đấu “{selected?.title}”!
                  </p>
                </div>
              </div>
              <div className="text-right sm:text-left">
                <span className="text-[13px] text-slate-600 block">Tổng quỹ thưởng giải</span>
-               <span className="text-lg font-mono font-black text-amber-800">{formatMoney(selected.prizePool || 0)}</span>
+               <span className="text-lg font-mono font-black text-amber-800">{formatMoney(selected?.prizePool || 0)}</span>
              </div>
            </div>
          )}
@@ -2049,63 +2078,63 @@ const [addCount, setAddCount] = useState("4");
    </div>
  )}
 
- {/* Console Nav Tabs: Thích ứng động theo Role, Format & Số Lượng Đội */}
- <div className="flex items-center gap-2 mt-6 pt-6 border-t border-slate-200 flex-wrap">
-   {/* TAB CÂY NHÁNH ĐẤU (Đối với Vòng Tròn thì ẩn nếu không phải quản lý) */}
-   {(canManage || selected.format !== "ROUND_ROBIN") && (
-     <button
-       type="button"
-       onClick={() => setActiveTab("bracket")}
-       className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-         activeTab === "bracket"
-           ? "bg-[#0369a1] text-white shadow-md"
-           : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-       }`}
-     >
-       <Trophy className="w-4 h-4" />
-       <span>
-         {selected.format === "GROUP_STAGE"
-           ? "Nhánh Knock-out & Bảng Đấu"
-           : selected.format === "ROUND_ROBIN"
-           ? "Sơ Đồ Đấu Vòng Tròn"
-           : `Cây Nhánh Đấu (${bracket?.rounds?.length || 0} vòng)`}
-       </span>
-     </button>
-   )}
+  {/* Console Nav Tabs: Thích ứng động theo Role, Format & Số Lượng Đội */}
+  <div className="flex items-center gap-2 mt-6 pt-6 border-t border-slate-200 flex-wrap">
+    {/* TAB CÂY NHÁNH ĐẤU (Đối với Vòng Tròn thì ẩn nếu không phải quản lý) */}
+    {(canManage || selected?.format !== "ROUND_ROBIN") && (
+      <button
+        type="button"
+        onClick={() => setActiveTab("bracket")}
+        className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
+          activeTab === "bracket"
+            ? "bg-[#0369a1] text-white shadow-md"
+            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+        }`}
+      >
+        <Trophy className="w-4 h-4" />
+        <span>
+          {selected?.format === "GROUP_STAGE"
+            ? "Nhánh Knock-out & Bảng Đấu"
+            : selected?.format === "ROUND_ROBIN"
+            ? "Sơ Đồ Đấu Vòng Tròn"
+            : `Cây Nhánh Đấu (${bracket?.rounds?.length || 0} vòng)`}
+        </span>
+      </button>
+    )}
 
-   {/* TAB LỊCH THI ĐẤU (Khán giả luôn cần xem lịch) */}
-   <button
-     type="button"
-     onClick={() => setActiveTab("schedule")}
-     className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-       activeTab === "schedule"
-         ? "bg-[#0369a1] text-white shadow-md"
-         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-     }`}
-   >
-     <Calendar className="w-4 h-4 text-sky-700" />
-     <span>Lịch Thi Đấu & Kết Quả ({allScheduledMatches.length})</span>
-   </button>
+    {/* TAB LỊCH THI ĐẤU (Khán giả luôn cần xem lịch) */}
+    <button
+      type="button"
+      onClick={() => setActiveTab("schedule")}
+      className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
+        activeTab === "schedule"
+          ? "bg-[#0369a1] text-white shadow-md"
+          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+      }`}
+    >
+      <Calendar className="w-4 h-4 text-sky-700" />
+      <span>Lịch Thi Đấu & Kết Quả ({allScheduledMatches.length})</span>
+    </button>
 
-   {/* TAB BẢNG XẾP HẠNG (Vòng tròn & Chia bảng đưa lên vị trí trọng tâm) */}
-   <button
-     type="button"
-     onClick={() => setActiveTab("standings")}
-     className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-       activeTab === "standings"
-         ? "bg-[#0369a1] text-white shadow-md"
-         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-     }`}
-   >
-     <ListOrdered className="w-4 h-4" />
-     <span>
-       {selected.format === "ROUND_ROBIN"
-         ? "Bảng Xếp Hạng League"
-         : selected.format === "GROUP_STAGE"
-         ? "Bảng Điểm Các Bảng"
-         : "Bảng Xếp Hạng & Vua Phá Lưới"}
-     </span>
-   </button>
+    {/* TAB BẢNG XẾP HẠNG (Vòng tròn & Chia bảng đưa lên vị trí trọng tâm) */}
+    <button
+      type="button"
+      onClick={() => setActiveTab("standings")}
+      className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
+        activeTab === "standings"
+          ? "bg-[#0369a1] text-white shadow-md"
+          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+      }`}
+    >
+      <ListOrdered className="w-4 h-4" />
+      <span>
+        {selected?.format === "ROUND_ROBIN"
+          ? "Bảng Xếp Hạng League"
+          : selected?.format === "GROUP_STAGE"
+          ? "Bảng Điểm Các Bảng"
+          : "Bảng Xếp Hạng & Vua Phá Lưới"}
+      </span>
+    </button>
 
    {/* TAB DÀNH RIÊNG CHO BAN TỔ CHỨC / QUẢN LÝ */}
    {canManage && (
@@ -2146,11 +2175,11 @@ const [addCount, setAddCount] = useState("4");
         <DrawLotteryOverlay
           inline
           open={true}
-          tournamentTitle={selected.title}
+          tournamentTitle={selected?.title}
           pairs={lottery.pairs}
           byes={lottery.byes}
-          format={selected.format}
-          teams={selected.teams}
+          format={selected?.format}
+          teams={selected?.teams}
           onDone={async () => {
             setLottery(null);
             const updated = await refreshTournamentInCache(selected.id);
@@ -2266,6 +2295,42 @@ const [addCount, setAddCount] = useState("4");
  <p className="mt-3 text-sm text-slate-500">Chưa có giải đấu nào .</p>
  </div>
    ) : !bracket ? (
+    isClosed ? (
+      <div className="p-6 sm:p-10 text-center bg-slate-50 rounded-2xl border border-slate-300 space-y-4">
+        <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
+          <Trophy className="w-6 h-6" />
+        </div>
+        <div className="space-y-1">
+          <span className="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[13px] font-bold">
+            Giải Đấu Đã Kết Thúc
+          </span>
+          <h3 className="text-lg font-black text-slate-900 mt-2">
+            {selected?.title}
+          </h3>
+          <p className="text-sm text-slate-500 max-w-lg mx-auto">
+            Giải đấu này đã hoàn tất và kết quả không lưu sơ đồ trực tuyến. Quý vị có thể tham khảo danh sách các đội tham gia bên dưới.
+          </p>
+        </div>
+
+        {selected?.teams && selected.teams.length > 0 && (
+          <div className="pt-4 border-t border-slate-200 max-w-xl mx-auto">
+            <p className="text-[13px] font-bold text-slate-600 mb-2.5">
+              Danh Sách Các Đội Tham Gia ({selected.teams.length} đội)
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {selected.teams.map((tm: any, idx: number) => (
+                <span
+                  key={idx}
+                  className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-700 shadow-xs"
+                >
+                  {tm.teamName || tm.name || `Đội ${idx + 1}`}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    ) : (
   <div className="space-y-6">
     {/* Banner thông báo trạng thái */}
     <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -2279,7 +2344,7 @@ const [addCount, setAddCount] = useState("4");
           </span>
         </div>
         <h3 className="text-base sm:text-lg font-black text-slate-900">
-          Cây Nhánh Đấu Giải “{selected.title}”
+          Cây Nhánh Đấu Giải “{selected?.title}”
         </h3>
 
       </div>
@@ -2309,7 +2374,7 @@ const [addCount, setAddCount] = useState("4");
         )}
         {!full && (
           <a
-            href={`/tournaments/register?tournamentId=${selected.id}`}
+            href={`/tournaments/register?tournamentId=${selected?.id}`}
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
           >
             <UserPlus className="w-4 h-4" />
@@ -2326,13 +2391,13 @@ const [addCount, setAddCount] = useState("4");
           Sơ Đồ Hạt Giống ({teamCap || Math.max(4, teamCount * 2)} Đội)
         </span>
         <span className="text-[14px] font-bold text-sky-700 bg-sky-100 px-2.5 py-1 rounded-md">
-          Thể thức: {formatLabel(selected.format)}
+          Thể thức: {formatLabel(selected?.format)}
         </span>
       </div>
 
       {(() => {
         const capacity = teamCap > 0 ? teamCap : 8;
-        const confirmedTeams = (selected.teams ?? []).filter((t) => t.registrationStatus !== "PENDING_PAYMENT");
+        const confirmedTeams = (selected?.teams ?? []).filter((t) => t.registrationStatus !== "PENDING_PAYMENT");
         const round1MatchesCount = Math.max(2, Math.floor(capacity / 2));
         const round1Matches = Array.from({ length: round1MatchesCount }, (_, idx) => {
           const teamA = confirmedTeams[idx * 2];
@@ -2410,7 +2475,7 @@ const [addCount, setAddCount] = useState("4");
                 <span className="text-[14px] font-black text-amber-900 tracking-wider">NGÔI VƯƠNG</span>
                 <p className="text-base font-black text-amber-700">Cup Vô Địch</p>
                 <p className="text-[14px] font-bold text-slate-500 mt-1 font-mono">
-                  {selected.prizePool ? `Thưởng ${(selected.prizePool).toLocaleString("vi-VN")}đ` : "Huy Chương Vàng"}
+                  {selected?.prizePool ? `Thưởng ${(selected?.prizePool).toLocaleString("vi-VN")}đ` : "Huy Chương Vàng"}
                 </p>
               </div>
             </div>
@@ -2420,19 +2485,19 @@ const [addCount, setAddCount] = useState("4");
     </div>
 
     {/* Danh sách các đội đã ghi danh tham dự */}
-    {(selected.teams ?? []).length > 0 && (
+    {(selected?.teams ?? []).length > 0 && (
       <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
             <Users className="w-4 h-4 text-sky-700" />
-            Danh Sách Đội Đã Ghi Danh ({selected.teams?.length} đội)
+            Danh Sách Đội Đã Ghi Danh ({selected?.teams?.length} đội)
           </h4>
           <span className="text-[14px] text-slate-500">
             Hạt giống xếp theo thời gian hoàn tất thủ tục
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-          {selected.teams?.map((tm, idx) => (
+          {selected?.teams?.map((tm, idx) => (
             <div key={idx} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2 text-[14px]">
               <div className="min-w-0">
                 <span className="font-extrabold text-slate-900 truncate block">
@@ -2455,6 +2520,7 @@ const [addCount, setAddCount] = useState("4");
       </div>
     )}
   </div>
+    )
   ) : selectedRoundFilter !== "ALL" ? (
     /* CHẾ ĐỘ XEM THEO TỪNG VÒNG ĐẤU ĐƯỢC CHỌN (Tứ Kết, Bán Kết, Chung Kết...) */
     (() => {
@@ -2755,8 +2821,8 @@ const [addCount, setAddCount] = useState("4");
                       </span>
                     ) : (
                       <p className="text-[13px] font-bold text-slate-500 mt-1 font-mono">
-                        {selected.prizePool
-                          ? `Thưởng ${(selected.prizePool).toLocaleString("vi-VN")}đ`
+                        {selected?.prizePool
+                          ? `Thưởng ${(selected?.prizePool).toLocaleString("vi-VN")}đ`
                           : "Huy Chương Vàng"}
                       </p>
                     )}
@@ -3240,7 +3306,7 @@ const [addCount, setAddCount] = useState("4");
  <div className="flex flex-wrap items-center justify-between gap-2">
  <h2 className="text-xl font-bold text-slate-900 flex items-center space-x-2">
  <ListOrdered className="w-5 h-5 text-emerald-500" />
- <span>Bảng Xếp Hạng {selected ? `— ${selected.title}` : ""}</span>
+ <span>Bảng Xếp Hạng {selected ? `— ${selected?.title}` : ""}</span>
  </h2>
  <span className="text-[14px] text-slate-600">
  Thắng = 3 điểm, Hòa = 1 điểm • Cập nhật tự động theo kết quả từng trận đấu
@@ -3431,7 +3497,7 @@ const [addCount, setAddCount] = useState("4");
  <p className="text-[14px] font-black tracking-widest text-slate-500">Cộng Hòa Xã Hội Chủ Nghĩa Việt Nam</p>
  <p className="text-[14px] font-bold text-slate-500">Độc lập – Tự do – Hạnh phúc</p>
  <h3 className="text-base font-black text-slate-900">
- Biên Bản Trận Đấu — {selected ? sportLabel(selected.sportType) : "Bóng Đá Sân 7 Phủi"}
+ Biên Bản Trận Đấu — {selected ? sportLabel(selected?.sportType) : "Bóng Đá Sân 7 Phủi"}
  </h3>
  <p className="text-[14px] font-mono text-slate-500">
  Mã biên bản: {shortTournamentCode(selected?.title)}-{varMatch.matchId}-
