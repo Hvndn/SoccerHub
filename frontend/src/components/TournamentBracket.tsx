@@ -1209,9 +1209,9 @@ const [addCount, setAddCount] = useState("4");
            type="button"
            onClick={() => setShowInviteModal(true)}
            title="Giải có ràng buộc mời qua email — Mở popup gửi thư mời"
-           className="px-3.5 py-2.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 font-extrabold text-[14px] transition-all flex items-center space-x-1.5 shadow-sm active:scale-95 cursor-pointer"
+           className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold text-[14px] transition-all flex items-center space-x-1.5 shadow-xs active:scale-95 cursor-pointer"
          >
-           <Mail className="w-4 h-4 text-amber-700" />
+           <Mail className="w-4 h-4 text-[#0369a1]" />
            <span>Mời Email</span>
          </button>
        )}
@@ -1219,7 +1219,7 @@ const [addCount, setAddCount] = useState("4");
          onClick={() => handleFill()}
          disabled={!canAct || !selected || full || fillBusy}
          title="Tự động thêm đúng số đội ngẫu nhiên còn thiếu cho đủ quy mô giải, giữ nguyên 100% các đội thủ công bạn đã tạo"
-         className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[14px] transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+         className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] transition-all flex items-center space-x-1.5 shadow-xs active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
        >
          {fillBusy ? (
            <RefreshCw className="w-4 h-4 animate-spin" />
@@ -1259,12 +1259,12 @@ const [addCount, setAddCount] = useState("4");
            onClick={handleClearSimulated}
            disabled={!canAct || !selected || clearBusy}
            title="Xóa đội ngẫu nhiên đã giả lập, giữ nguyên 100% các đội thủ công bạn đã tạo"
-           className="px-3.5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-extrabold text-[14px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40"
+           className="px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[14px] transition-all flex items-center space-x-1.5 shadow-xs active:scale-95 disabled:opacity-40"
          >
            {clearBusy ? (
              <RefreshCw className="w-4 h-4 animate-spin" />
            ) : (
-             <RotateCcw className="w-4 h-4" />
+             <RotateCcw className="w-4 h-4 text-rose-600" />
            )}
            <span>Xoá {simulatedCount} Đội Ngẫu Nhiên</span>
          </button>
@@ -1274,7 +1274,7 @@ const [addCount, setAddCount] = useState("4");
          onClick={() => (bracket ? setConfirmDraw(true) : startDraw())}
          disabled={!canAct || !selected || teamCount < 2 || drawBusy}
          title="Bốc thăm hạt giống theo thứ tự đăng ký, lưu nhánh đấu vào hệ thống"
-         className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-extrabold text-[14px] transition-all flex items-center space-x-1.5 shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+         className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] transition-all flex items-center space-x-1.5 shadow-xs active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
        >
          {drawBusy ? (
            <RefreshCw className="w-4 h-4 animate-spin" />
@@ -1291,7 +1291,7 @@ const [addCount, setAddCount] = useState("4");
              onClick={() => setConfirmStageSimulate(true)}
              disabled={!canAct || !selected || simulateBusy || !nextPlayableStage}
              title={nextPlayableStage ? `Giả lập kết quả vòng ${nextPlayableStage}` : "Đã hoàn thành toàn bộ các vòng đấu"}
-             className="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[14px] transition-all flex items-center space-x-1.5 shadow-md active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+             className="px-3.5 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white font-bold text-[14px] transition-all flex items-center space-x-1.5 shadow-xs active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
            >
              {simulateBusy ? (
                <RefreshCw className="w-4 h-4 animate-spin" />
@@ -1307,7 +1307,7 @@ const [addCount, setAddCount] = useState("4");
                onClick={() => setConfirmSimulate(true)}
                disabled={!canAct || !selected || simulateBusy}
                title="Tự random tỷ số tất cả các vòng còn lại một lèo"
-               className="px-3 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-[14px] transition-all flex items-center space-x-1.5 shadow-sm border border-slate-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+               className="px-3 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-[14px] transition-all flex items-center space-x-1.5 shadow-xs border border-slate-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
              >
                <Dices className="w-4 h-4 text-slate-500" />
                <span className="hidden sm:inline">Giả lập cả giải</span>
@@ -1322,9 +1322,7 @@ const [addCount, setAddCount] = useState("4");
            disabled={!canAct || !selected || scheduleBusy}
            title="Sinh ngày + khung giờ + sân cho từng trận, lưu vào hệ thống"
            className={`px-3.5 py-2.5 rounded-xl font-extrabold text-[14px] transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-40 ${
-             showScheduleForm
-               ? "bg-[#0369a1] text-white shadow-lg"
-               : "bg-white text-[#0369a1] hover:bg-[#0369a1]/10 border border-[#0369a1]/40"
+             showScheduleForm ? "bg-[#0369a1] text-white shadow-xs" : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-300"
            }`}
          >
            <Calendar className="w-4 h-4" />
@@ -2048,7 +2046,7 @@ const [addCount, setAddCount] = useState("4");
         className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
           activeTab === "bracket"
             ? "bg-[#0369a1] text-white shadow-md"
-            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
         }`}
       >
         <Trophy className="w-4 h-4" />
@@ -2069,7 +2067,7 @@ const [addCount, setAddCount] = useState("4");
       className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
         activeTab === "schedule"
           ? "bg-[#0369a1] text-white shadow-md"
-          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
       }`}
     >
       <Calendar className="w-4 h-4 text-sky-700" />
@@ -2083,7 +2081,7 @@ const [addCount, setAddCount] = useState("4");
       className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
         activeTab === "standings"
           ? "bg-[#0369a1] text-white shadow-md"
-          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
       }`}
     >
       <ListOrdered className="w-4 h-4" />
@@ -2104,10 +2102,10 @@ const [addCount, setAddCount] = useState("4");
        className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
          activeTab === "esheet"
            ? "bg-[#0369a1] text-white shadow-md"
-           : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-       }`}
-     >
-       <FileText className="w-4 h-4" />
+           : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+        }`}
+      >
+        <FileText className="w-4 h-4" />
        <span>Biên Bản & QR</span>
      </button>
    )}
@@ -2181,7 +2179,7 @@ const [addCount, setAddCount] = useState("4");
 
  {/* Thanh Bộ Lọc Vòng Đấu (Stage Filter) */}
  {bracket && bracket.rounds && bracket.rounds.length > 0 && (
- <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-gradient-to-r from-sky-50/80 via-white to-slate-50 rounded-2xl border border-sky-100 shadow-xs">
+ <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-200 shadow-xs">
  <div className="flex flex-wrap items-center gap-2">
  <div className="flex items-center gap-1.5 px-2.5 py-1 text-[13px] font-bold text-slate-600">
  <Filter className="w-4 h-4 text-sky-700" />
@@ -2194,8 +2192,7 @@ const [addCount, setAddCount] = useState("4");
  onClick={() => setSelectedRoundFilter("ALL")}
  className={`px-3.5 py-1.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
  selectedRoundFilter === "ALL"
- ? "bg-[#0369a1] text-white shadow-sm ring-2 ring-sky-300"
- : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+ ? "bg-[#0369a1] text-white shadow-xs" : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
  }`}
  >
  <span>Tất Cả (Toàn Bộ Cây Nhánh)</span>
@@ -2216,11 +2213,7 @@ const [addCount, setAddCount] = useState("4");
  type="button"
  onClick={() => setSelectedRoundFilter(String(rIndex))}
  className={`px-3.5 py-1.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
- isSelected
- ? isFinal
- ? "bg-amber-600 text-white shadow-sm ring-2 ring-amber-300"
- : "bg-[#0369a1] text-white shadow-sm ring-2 ring-sky-300"
- : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+ isSelected ? "bg-[#0369a1] text-white shadow-xs" : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
  }`}
  >
  {isFinal && <Trophy className="w-3.5 h-3.5 text-amber-300" />}
@@ -2254,9 +2247,7 @@ const [addCount, setAddCount] = useState("4");
        type="button"
        onClick={() => setBracketViewMode("tree")}
        className={`px-3 py-1.5 rounded-lg text-[13px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-         bracketViewMode === "tree"
-           ? "bg-white text-slate-900 shadow-sm border border-slate-200"
-           : "text-slate-600 hover:text-slate-900"
+         bracketViewMode === "tree" ? "bg-[#0369a1] text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
        }`}
        title="Sơ đồ trải ngang từ trái qua phải truyền thống"
      >
@@ -2427,14 +2418,14 @@ const [addCount, setAddCount] = useState("4");
 
             {/* Vòng 2 / Bán kết */}
             <div className="flex-1 space-y-3 self-center">
-              <div className="text-center text-[14px] font-extrabold py-2 rounded-xl bg-indigo-100 text-indigo-900 border border-indigo-200">
+              <div className="text-center text-[14px] font-extrabold py-2 rounded-xl bg-sky-50 text-sky-950 border border-sky-200">
                 {round2Count === 1 ? "Trận Chung Kết" : "Vòng Bán Kết"}
               </div>
               {round2Matches.map((m, mi) => (
-                <div key={mi} className="p-3 rounded-2xl bg-white border border-indigo-200 shadow-xs space-y-2 text-[14px]">
-                  <div className="flex items-center justify-between text-[14px] font-mono text-indigo-700 font-bold">
+                <div key={mi} className="p-3 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2 text-[14px]">
+                  <div className="flex items-center justify-between text-[14px] font-mono text-[#0369a1] font-bold">
                     <span>{m.matchId}</span>
-                    <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Tranh vé</span>
+                    <span className="text-[#0369a1] bg-sky-50 px-2 py-0.5 rounded border border-sky-200">Tranh vé</span>
                   </div>
                   <div className="space-y-1 text-slate-500 italic text-[14px]">
                     <div className="p-2 rounded-lg bg-slate-50 truncate">👑 {m.teamA}</div>
