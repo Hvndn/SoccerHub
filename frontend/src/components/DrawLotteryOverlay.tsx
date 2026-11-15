@@ -133,7 +133,7 @@ export default function DrawLotteryOverlay({
   const getTeamMeta = useCallback(
     (name?: string) => {
       if (!name) return null;
-      return teams?.find((t) => t.teamName.toLowerCase() === name.toLowerCase()) ?? null;
+      return teams?.find((t) => (t?.teamName || "").toLowerCase() === name.toLowerCase()) ?? null;
     },
     [teams]
   );

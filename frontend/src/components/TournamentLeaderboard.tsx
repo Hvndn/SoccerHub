@@ -134,22 +134,29 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
   const reloadTournaments = useCallback(
     async (force = false, silent = false) => {
       try {
-        if (!silent || tournaments.length === 0) setLoadingTournaments(true);
+        if (!silent) setLoadingTournaments(true);
         if (!silent) setLoadError(null);
         const data = await fetchTournaments(force);
         setTournaments(data);
       } catch {
         setLoadError("Không tải được danh sách giải đấu. Vui lòng kiểm tra kết nối máy chủ.");
       } finally {
-        if (!silent || tournaments.length === 0) setLoadingTournaments(false);
+        if (!silent) setLoadingTournaments(false);
       }
     },
-    [tournaments.length]
+    []
   );
 
   useEffect(() => {
+    let alive = true;
     reloadTournaments();
-    return subscribeTournaments(setTournaments);
+    const unsub = subscribeTournaments((data) => {
+      if (alive) setTournaments(data);
+    });
+    return () => {
+      alive = false;
+      unsub();
+    };
   }, [reloadTournaments]);
 
   useEffect(() => {
@@ -278,13 +285,15 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
       for (const r of parsed.rounds) {
         for (const m of r.matches ?? []) {
           if (!m.teamA || !m.teamB || m.status === "BYE") continue;
+          const nameA = typeof m.teamA === "string" ? m.teamA : (m.teamA?.name || "Đội A");
+          const nameB = typeof m.teamB === "string" ? m.teamB : (m.teamB?.name || "Đội B");
           list.push({
             tournamentId: t.id,
             tournamentTitle: t.title,
             matchId: m.matchId,
             roundName: r.name,
-            teamA: m.teamA.name,
-            teamB: m.teamB.name,
+            teamA: nameA,
+            teamB: nameB,
             sa: m.scoreA ?? 0,
             sb: m.scoreB ?? 0,
             status: m.status ?? "SCHEDULED",
@@ -788,14 +797,17 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                             Các đội đã ghi danh ({t.teams.length}):
                           </span>
                           <div className="flex flex-wrap gap-1.5">
-                            {t.teams.slice(0, 5).map((tm: any, idx: number) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[14px] font-medium border border-slate-200"
-                              >
-                                {tm.teamName}
-                              </span>
-                            ))}
+                            {t.teams.slice(0, 5).map((tm: any, idx: number) => {
+                              const teamTitle = typeof tm === "string" ? tm : (tm?.teamName || `Đội ${idx + 1}`);
+                              return (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[14px] font-medium border border-slate-200"
+                                >
+                                  {teamTitle}
+                                </span>
+                              );
+                            })}
                             {t.teams.length > 5 && (
                               <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[14px] font-semibold border border-slate-200">
                                 +{t.teams.length - 5} đội khác
