@@ -31,7 +31,9 @@ import {
  UserPlus,
  Calendar,
  Filter,
- Sparkles
+  Sparkles,
+  Info,
+  Share2
 } from "lucide-react";
 import DrawLotteryOverlay from "./DrawLotteryOverlay";
 import TournamentMatchDetail from "./TournamentMatchDetail";
@@ -162,7 +164,7 @@ const [addCount, setAddCount] = useState("4");
      return () => cancelAnimationFrame(raf);
    }
  }, [lottery]);
- const [activeTab, setActiveTab] = useState<"bracket" | "standings" | "esheet" | "schedule">("bracket");
+  const [activeTab, setActiveTab] = useState<"info" | "bracket" | "standings" | "esheet" | "schedule">("bracket");
  const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>("ALL");
  const [selectedMatchDetail, setSelectedMatchDetail] = useState<{ match: BracketMatch; roundName?: string } | null>(null);
  const [bracketViewMode, setBracketViewMode] = useState<"uefa" | "tree">("uefa");
@@ -2056,6 +2058,20 @@ const [addCount, setAddCount] = useState("4");
 
   {/* Console Nav Tabs: Thích ứng động theo Role, Format & Số Lượng Đội */}
   <div className="flex items-center gap-2 mt-6 pt-6 border-t border-slate-200 flex-wrap">
+    {/* TAB THÔNG TIN GIẢI ĐẤU */}
+    <button
+      type="button"
+      onClick={() => { setSelectedMatchDetail(null); setActiveTab("info"); }}
+      className={`px-4 py-2 rounded-xl text-[14px] font-bold transition-all flex items-center space-x-2 cursor-pointer ${
+        activeTab === "info"
+          ? "bg-[#0369a1] text-white shadow-md"
+          : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+      }`}
+    >
+      <Info className="w-4 h-4" />
+      <span>Thông Tin Giải Đấu</span>
+    </button>
+
     {/* TAB CÂY NHÁNH ĐẤU (Đối với Vòng Tròn thì ẩn nếu không phải quản lý) */}
     {(canManage || selected?.format !== "ROUND_ROBIN") && (
       <button
@@ -2164,6 +2180,172 @@ const [addCount, setAddCount] = useState("4");
         />
       ) : (
         <>
+          {/* TAB 0: THÔNG TIN TỔNG QUAN GIẢI ĐẤU */}
+          {activeTab === "info" && selected && (
+            <div className="bg-white p-4 sm:p-8 rounded-2xl border border-slate-200 space-y-6 shadow-sm">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center shrink-0 border border-[#0369a1]/20">
+                    <Trophy className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[13px] font-bold text-sky-800">
+                        {sportLabel(selected.sportType)}
+                      </span>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-[13px] font-bold text-slate-600">
+                        {formatLabel(selected.format)}
+                      </span>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[13px] font-bold ${
+                        ((selected?.teams ?? []).length >= (teamCap || 16))
+                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                          : "bg-sky-100 text-[#0369a1] border border-sky-300"
+                      }`}>
+                        {((selected?.teams ?? []).length >= (teamCap || 16)) ? "Đã đủ đội" : "Đang mở đăng ký"}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900">
+                      {selected.title}
+                    </h3>
+                    {selected.description && (
+                      <p className="text-[13px] text-slate-600 max-w-3xl">
+                        {selected.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        navigator.clipboard.writeText(window.location.origin + "/tournaments?id=" + selected.id);
+                        triggerToast("✅ Đã sao chép liên kết chia sẻ giải đấu!");
+                      }
+                    }}
+                    className="px-3.5 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span>Chia Sẻ Giải Đấu</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 4 KPI Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[13px] text-slate-500 font-medium">Tổng Quỹ Thưởng</span>
+                  <p className="text-lg font-bold font-mono text-sky-800">
+                    {formatMoney(selected.prizePool ?? 0)}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[13px] text-slate-500 font-medium">Lệ Phí Tham Dự</span>
+                  <p className="text-lg font-bold font-mono text-slate-900">
+                    {formatMoney(selected.entryFee ?? 0)}/đội
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[13px] text-slate-500 font-medium">Quy Mô Đội Tuyển</span>
+                  <p className="text-lg font-bold font-mono text-slate-900">
+                    {(selected?.teams ?? []).length}/{teamCap || "—"} Đội
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[13px] text-slate-500 font-medium">Cụm Sân Đăng Cai</span>
+                  <p className="text-lg font-bold text-slate-900 truncate">
+                    {selected.pitchName || selected.location || "Đà Nẵng"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Timeline Lịch Trình */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                  <span className="text-[13px] text-slate-600 font-medium">Hạn nộp hồ sơ:</span>
+                  <span className="text-[13px] font-bold text-slate-900 font-mono">
+                    {formatDate(selected.registrationDeadline)}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                  <span className="text-[13px] text-slate-600 font-medium">Ngày khởi tranh:</span>
+                  <span className="text-[13px] font-bold text-emerald-700 font-mono">
+                    {formatDate(selected.startDate)}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                  <span className="text-[13px] text-slate-600 font-medium">Ngày bế mạc (dự kiến):</span>
+                  <span className="text-[13px] font-bold text-slate-900 font-mono">
+                    {formatDate(selected.endDate)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Danh sách đội tham gia */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-[#0369a1]" />
+                    <span>Danh Sách Đội Đã Đăng Ký ({(selected?.teams ?? []).length} đội)</span>
+                  </h4>
+                  <span className="text-[13px] text-slate-500">
+                    Cập nhật thời gian thực
+                  </span>
+                </div>
+
+                {(selected?.teams ?? []).length === 0 ? (
+                  <div className="p-8 text-center rounded-xl bg-slate-50 border border-dashed border-slate-300">
+                    <p className="text-[13px] text-slate-500">Chưa có đội bóng nào ghi danh giải đấu này.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {(selected?.teams ?? []).map((team, idx) => (
+                      <div
+                        key={team.id || idx}
+                        className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="w-6 h-6 rounded-full bg-white border border-slate-300 text-slate-600 flex items-center justify-center font-bold text-[13px] shrink-0 font-mono">
+                            {idx + 1}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="font-bold text-slate-900 text-[13px] truncate">
+                              {team.teamName || (team as any).name || "Đội bóng"}
+                            </p>
+                            <p className="text-[13px] text-slate-500 truncate">
+                              {team.captainName ? `Đội trưởng: ${team.captainName}` : `Mã đội: #${team.id}`}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded-full text-[13px] font-bold shrink-0 ${
+                          team.simulated || team.registrationStatus === "SIMULATED"
+                            ? "bg-slate-200 text-slate-700"
+                            : team.registrationStatus === "APPROVED" || Boolean((team as any).paid)
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-amber-100 text-amber-800"
+                        }`}>
+                          {team.simulated || team.registrationStatus === "SIMULATED"
+                            ? "Thử nghiệm"
+                            : team.registrationStatus === "APPROVED" || Boolean((team as any).paid)
+                            ? "Đã duyệt"
+                            : "Chờ phí"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* TAB 1: BRACKET CANVAS (render ) */}
  {activeTab === "bracket" && (
  <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-3 sm:space-y-6 shadow-md overflow-x-auto">

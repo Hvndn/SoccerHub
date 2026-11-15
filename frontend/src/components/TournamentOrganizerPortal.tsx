@@ -67,7 +67,7 @@ import {
  Megaphone,
  FileText,
  RotateCcw,
-  Search
+  Info, Search
 } from "lucide-react";
 
 interface TournamentOrganizerPortalProps {
@@ -144,7 +144,7 @@ export default function TournamentOrganizerPortal({
  const [selectedTournamentId, setSelectedTournamentId] = useState<number | null>(null);
 
  // Active Tab for Tables/Logs
- const [bottomTab, setBottomTab] = useState<"teams" | "invites" | "referees" | "broadcast" | "finance" | "schedule" | "var_logs" | "edit">("teams");
+ const [bottomTab, setBottomTab] = useState<"info" | "teams" | "invites" | "referees" | "broadcast" | "finance" | "schedule" | "var_logs" | "edit">("info");
   const [copiedInviteLink, setCopiedInviteLink] = useState(false);
   const [inviteCustomNote, setInviteCustomNote] = useState("Ban Tổ Chức trân trọng kính mời bạn và đội bóng tham gia tranh tài tại giải đấu. Nhấp vào liên kết để nộp hồ sơ đăng ký!");
 
@@ -1649,11 +1649,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   </div>
 )}
 
-{/* MAIN CONTENT GRID: LIVE ELECTRONIC UMPIRE CONSOLE (LEFT 8) + AI SEEDING & ESCROW (RIGHT 4) */}
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
- 
- {/* LEFT 8 COLS: UMPIRE CONSOLE + BRACKET ENGINE + DATA TABLES */}
- <div className="lg:col-span-8 space-y-4 sm:space-y-8">
+ {/* MAIN WORKSPACE: FULL-WIDTH UMPIRE CONSOLE, BRACKET ENGINE & TOURNAMENT MANAGEMENT CONSOLE */}
+ <div className="w-full space-y-4 sm:space-y-8">
 
  {/* 1. BẢNG ĐIỀU KHIỂN TRỌNG TÀI — chạy trên trận thật trong nhánh đấu */}
  <div className="bg-white border border-slate-200/90 text-slate-900 rounded-lg p-4 sm:p-8 shadow-sm relative overflow-hidden">
@@ -2203,6 +2200,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="flex items-center justify-between border-b border-slate-200 pb-4">
  <div className="flex items-center gap-2 flex-wrap">
  {[
+  { id: "info", label: "Thông Tin Giải Đấu", badge: null },
   { id: "teams", label: "Duyệt Đội & Đăng Ký", badge: pendingTeams.length > 0 ? pendingTeams.length : null },
   { id: "invites", label: "Mời Giải Qua Email", badge: joinMode === "INVITE_ONLY" ? inviteEmails.length : null },
   { id: "referees", label: "Tổ Trọng Tài", badge: referees.length > 0 ? referees.length : null },
@@ -2295,6 +2293,197 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  )}
 
  {/* Bảng Xếp Hạng & Vua Phá Lưới công khai đã chuyển sang trang Giải Đấu & BXH (tournaments) để tránh lặp chức năng */}
+          {/* ================= TAB 0: TỔNG QUAN & THÔNG TIN GIẢI ĐẤU ================= */}
+          {bottomTab === "info" && activeTournament && (
+            <div className="space-y-6 animate-fade-in">
+              {/* Hero Banner / Header Thông Tin */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center shrink-0 border border-[#0369a1]/20">
+                    <Trophy className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[13px] font-bold text-sky-800">
+                        {sportLabel(activeTournament.sportType)}
+                      </span>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-[13px] font-bold text-slate-600">
+                        {formatLabel(activeTournament.format)}
+                      </span>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[13px] font-bold ${
+                        (confirmedCount(activeTournament) >= (activeTournament.totalTeams ?? 16))
+                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                          : "bg-sky-100 text-[#0369a1] border border-sky-300"
+                      }`}>
+                        {(confirmedCount(activeTournament) >= (activeTournament.totalTeams ?? 16)) ? "Đã đủ đội" : "Đang mở đăng ký"}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900">
+                      {activeTournament.title}
+                    </h3>
+                    {activeTournament.description && (
+                      <p className="text-[13px] text-slate-600 max-w-3xl">
+                        {activeTournament.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick Action Buttons */}
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleCopyInviteLink}
+                    className="px-3.5 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span>Sao Chép Link Đăng Ký</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(activeTournament)}
+                    className="px-3.5 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-[13px] font-bold border border-slate-300 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    <span>Sửa Thông Tin</span>
+                  </button>
+
+                  {user?.role === "ORGANIZER" && onOpenTournamentChat && (
+                    <button
+                      type="button"
+                      onClick={onOpenTournamentChat}
+                      className="px-3.5 py-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-bold text-[13px] transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <MessageCircle className="w-4 h-4 text-[#0369a1]" />
+                      <span>Phòng Chat Giải</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Section: Tiến độ đăng ký & Bộ chuyển trạng thái vận hành */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Tiến độ đăng ký */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between text-[13px]">
+                    <span className="text-slate-600 font-bold">Tiến độ tuyển quân:</span>
+                    <span className="font-bold text-slate-900 font-mono text-sm">
+                      {confirmedCount(activeTournament)}/{activeTournament.totalTeams ?? "—"} đội
+                    </span>
+                  </div>
+                  <div className="w-full h-3 rounded-full bg-slate-200 overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500 transition-all duration-300"
+                      style={{
+                        width: `${
+                          activeTournament.totalTeams
+                            ? Math.min(100, Math.round((confirmedCount(activeTournament) / activeTournament.totalTeams) * 100))
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[13px] text-slate-500">
+                    <span>Tỷ lệ lấp đầy: {activeTournament.totalTeams ? Math.round((confirmedCount(activeTournament) / activeTournament.totalTeams) * 100) : 0}%</span>
+                    <span className="font-bold text-emerald-700">
+                      {(confirmedCount(activeTournament) >= (activeTournament.totalTeams ?? 16)) ? "Chốt danh sách" : "Tiếp tục nhận đơn"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Chuyển trạng thái vận hành giải */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] font-bold text-slate-700">Trạng thái vận hành giải đấu:</span>
+                    <span className="text-[13px] font-mono text-sky-800 font-bold">
+                      {(activeTournament.status || "OPEN").toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { code: "OPEN", label: "Mở đăng ký" },
+                      { code: "ONGOING", label: "Đang diễn ra" },
+                      { code: "COMPLETED", label: "Đã kết thúc" },
+                    ].map((st) => {
+                      const isCurrent = (activeTournament.status || "OPEN").toUpperCase() === st.code;
+                      return (
+                        <button
+                          key={st.code}
+                          type="button"
+                          disabled={statusBusy || isCurrent}
+                          onClick={() => handleSwitchTournamentStatus(st.code as "OPEN" | "ONGOING" | "COMPLETED")}
+                          className={`py-2 px-2.5 rounded-lg text-[13px] font-bold transition-colors cursor-pointer border text-center ${
+                            isCurrent
+                              ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
+                              : "bg-white hover:bg-slate-100 text-slate-700 border-slate-300"
+                          }`}
+                        >
+                          {st.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Section: Thông số chi tiết giải đấu (KPI Cards Grid) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[13px] text-slate-500 font-medium">Lệ phí tham gia</span>
+                  <p className="text-base font-bold font-mono text-slate-900">
+                    {formatMoney(activeTournament.entryFee ?? 0)}/đội
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[13px] text-slate-500 font-medium">Tổng quỹ thưởng</span>
+                  <p className="text-base font-bold font-mono text-sky-800">
+                    {formatMoney(activeTournament.prizePool ?? 0)}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[13px] text-slate-500 font-medium">Cụm sân đăng cai</span>
+                  <p className="text-base font-bold text-slate-900 truncate">
+                    {activeTournament.pitchName ?? activeTournament.location ?? "Chưa xếp sân"}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[13px] text-slate-500 font-medium">Ban Tổ Chức</span>
+                  <p className="text-base font-bold text-slate-900 truncate">
+                    {activeTournament.organizerEmail || "Ban Tổ Chức đối tác"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Section: Timeline Lịch trình */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                  <span className="text-[13px] text-slate-600 font-medium">Hạn nộp hồ sơ đăng ký:</span>
+                  <span className="text-[13px] font-bold text-slate-900 font-mono">
+                    {formatDate(activeTournament.registrationDeadline)}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                  <span className="text-[13px] text-slate-600 font-medium">Ngày khai mạc (Khởi tranh):</span>
+                  <span className="text-[13px] font-bold text-emerald-700 font-mono">
+                    {formatDate(activeTournament.startDate)}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                  <span className="text-[13px] text-slate-600 font-medium">Ngày bế mạc (Dự kiến):</span>
+                  <span className="text-[13px] font-bold text-slate-900 font-mono">
+                    {formatDate(activeTournament.endDate)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
           {/* ================= TAB 1: DUYỆT ĐỘI & ĐĂNG KÝ ================= */}
   {bottomTab === "teams" && activeTournament && (
   <div className="space-y-5">
@@ -3797,158 +3986,9 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
 
  </div>
 
- </div>
- {/* RIGHT 4 COLS: TỔNG QUAN GIẢI ĐẤU ĐANG CHỌN (TOURNAMENT SNAPSHOT) */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white border border-slate-300 text-slate-900 rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
-            <div className="flex items-center space-x-2.5 border-b border-slate-100 pb-3">
-              <div className="w-8 h-8 rounded-lg bg-[#0369a1]/10 text-[#0369a1] flex items-center justify-center shrink-0">
-                <Trophy className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[13px] font-bold text-sky-800">Thông tin giải đấu</span>
-                <h4 className="text-base font-bold text-slate-900 truncate">
-                  {activeTournament ? activeTournament.title : "Chưa chọn giải"}
-                </h4>
-              </div>
-            </div>
-
-            {!activeTournament ? (
-              <p className="text-[13px] text-slate-500 py-4 text-center">
-                Vui lòng chọn một giải đấu ở danh sách phía trên để xem tổng quan.
-              </p>
-            ) : (
-              <>
-                {/* Thanh tiến độ đăng ký */}
-                <div className="space-y-1.5 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                  <div className="flex items-center justify-between text-[13px]">
-                    <span className="text-slate-600 font-medium">Đội tham gia:</span>
-                    <span className="font-bold text-slate-900">
-                      {confirmedCount(activeTournament)}/{activeTournament.totalTeams ?? "—"} đội
-                    </span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 transition-all duration-300"
-                      style={{
-                        width: `${
-                          activeTournament.totalTeams
-                            ? Math.min(100, Math.round((confirmedCount(activeTournament) / activeTournament.totalTeams) * 100))
-                            : 0
-                        }%`,
-                      }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-[13px] text-slate-500 pt-0.5">
-                    <span>Trạng thái</span>
-                    <span className="font-bold text-emerald-700">
-                      {(confirmedCount(activeTournament) >= (activeTournament.totalTeams ?? 16)) ? "Đã đủ đội" : "Đang mở đăng ký"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Chuyển trạng thái giải đấu nhanh */}
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-                  <span className="text-[13px] font-bold text-slate-700 block">Trạng thái vận hành giải:</span>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {[
-                      { code: "OPEN", label: "Mở đăng ký" },
-                      { code: "ONGOING", label: "Đang diễn ra" },
-                      { code: "COMPLETED", label: "Đã kết thúc" },
-                    ].map((st) => {
-                      const isCurrent = (activeTournament.status || "OPEN").toUpperCase() === st.code;
-                      return (
-                        <button
-                          key={st.code}
-                          type="button"
-                          disabled={statusBusy || isCurrent}
-                          onClick={() => handleSwitchTournamentStatus(st.code as "OPEN" | "ONGOING" | "COMPLETED")}
-                          className={`py-1.5 px-2 rounded-md text-[13px] font-bold transition-colors cursor-pointer border ${
-                            isCurrent
-                              ? "bg-[#0369a1] text-white border-[#0369a1]"
-                              : "bg-white hover:bg-slate-100 text-slate-700 border-slate-300"
-                          }`}
-                        >
-                          {st.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Bảng thông số chi tiết */}
-                <div className="space-y-2 text-[13px]">
-                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
-                    <span className="text-slate-500">Môn thi đấu:</span>
-                    <span className="font-bold text-slate-900">{sportLabel(activeTournament.sportType)}</span>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
-                    <span className="text-slate-500">Thể thức:</span>
-                    <span className="font-bold text-slate-900">{formatLabel(activeTournament.format)}</span>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
-                    <span className="text-slate-500">Lệ phí giải:</span>
-                    <span className="font-bold font-mono text-slate-900">{formatMoney(activeTournament.entryFee ?? 0)}/đội</span>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
-                    <span className="text-slate-500">Tổng quỹ thưởng:</span>
-                    <span className="font-bold font-mono text-sky-800">{formatMoney(activeTournament.prizePool ?? 0)}</span>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
-                    <span className="text-slate-500">Cụm sân:</span>
-                    <span className="font-bold text-slate-900 text-right truncate">
-                      {activeTournament.pitchName ?? activeTournament.location ?? "Chưa xếp sân"}
-                    </span>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
-                    <span className="text-slate-500">Khởi tranh:</span>
-                    <span className="font-bold text-slate-900">{formatDate(activeTournament.startDate)}</span>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
-                    <span className="text-slate-500">Hạn đăng ký:</span>
-                    <span className="font-bold text-slate-900">{formatDate(activeTournament.registrationDeadline)}</span>
-                  </div>
-                </div>
-
-                {/* Hàng nút thao tác nhanh */}
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={handleCopyInviteLink}
-                    className="w-full py-2.5 px-3 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    <span>Sao Chép Link Đăng Ký</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => openEditModal(activeTournament)}
-                    className="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold border border-slate-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    <span>Sửa Thông Tin Giải</span>
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Kênh liên lạc B2B với Chủ Sân (nếu có) */}
-          {user?.role === "ORGANIZER" && onOpenTournamentChat && (
-            <button
-              type="button"
-              onClick={onOpenTournamentChat}
-              className="w-full px-4 py-3 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-[13px] transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
-            >
-              <MessageCircle className="w-4 h-4 text-[#0369a1]" />
-              <span>Phòng Chat Giải Đấu</span>
-            </button>
-          )}
         </div>
       </div>
-        </div>
-      )}
+    )}
 
       {/* POPUP MODAL MỜI CẦU THỦ QUA EMAIL NỔI BẬT KHÔNG BỊ TRÔI XUỐNG DƯỚI */}
       <TournamentInviteModal
