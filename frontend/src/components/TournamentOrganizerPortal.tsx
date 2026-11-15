@@ -1671,14 +1671,46 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </div>
 
  {!activeBracket ? (
-  <div className="p-4 sm:p-8 text-center rounded-2xl border border-dashed border-slate-300 ">
- <Trophy className="w-8 h-8 text-slate-300 mx-auto" />
- <p className="mt-3 text-sm text-slate-500">
- {dbTournaments.length === 0
- ? "Chưa đọc được giải đấu từ máy chủ."
- : "Chưa giải nào bốc thăm. Vào tab “Giải Đấu & BXH › Bảng Đấu & Nhánh Bracket” để bấm Bốc thăm."}
- </p>
-  </div>
+    <div className="p-6 sm:p-10 text-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 space-y-3">
+      <div className="w-12 h-12 rounded-xl bg-sky-100 text-[#0369a1] mx-auto flex items-center justify-center">
+        <Trophy className="w-6 h-6" />
+      </div>
+      <div className="space-y-1">
+        <h4 className="text-base font-bold text-slate-800">
+          Giải đấu này chưa tiến hành bốc thăm chia nhánh
+        </h4>
+        <p className="text-[13px] text-slate-500 max-w-lg mx-auto">
+          Vui lòng duyệt đủ số lượng đội bóng tham gia tại mục “Duyệt Đội &amp; Đăng Ký” để tiến hành bốc thăm tạo nhánh đấu tự động.
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              const res = await drawTournamentBracket(Number(activeTournament.id));
+              await fetchDbTournaments();
+              setVarNotice("✅ " + (res.message || "Đã bốc thăm chia nhánh thành công!"));
+            } catch (err: any) {
+              setVarNotice("❌ " + (err?.message || "Chưa đủ đội xác nhận để bốc thăm. Hãy duyệt thêm đội ở tab Duyệt Đội."));
+            }
+          }}
+          className="px-4 py-2 rounded-lg bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>Bốc Thăm Chia Nhánh Ngay</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setBottomTab("teams")}
+          className="px-4 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-[13px] font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+        >
+          <Users2 className="w-4 h-4 text-slate-600" />
+          <span>Quản Lý &amp; Duyệt Đội ({confirmedCount(activeTournament)}/{activeTournament.totalTeams ?? "—"} Đội)</span>
+        </button>
+      </div>
+    </div>
  ) : (
  <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar">
  <div className="flex gap-3 sm:gap-6 items-start">
@@ -1844,14 +1876,6 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   </div>
  </div>
 
- {/* Chưa chọn giải có nhánh đấu */}
- {!activeBracket && (
- <p className="text-sm text-slate-500 py-4 sm:py-6 text-center">
- {dbTournaments.length === 0
- ? "Chưa đọc được danh sách giải ."
- : "Chưa giải nào  đã bốc thăm. Mở tab “Giải Đấu & BXH › Bảng Đấu & Nhánh Bracket” để bốc thăm và nhập kết quả."}
- </p>
- )}
 
  {/* Bảng Xếp Hạng & Vua Phá Lưới công khai đã chuyển sang trang Giải Đấu & BXH (tournaments) để tránh lặp chức năng */}
           {/* ================= TAB 0: TỔNG QUAN & THÔNG TIN GIẢI ĐẤU ================= */}
