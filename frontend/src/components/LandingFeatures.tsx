@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import SafeImage from "@/components/SafeImage";
 import {
   ShieldCheck,
@@ -300,7 +300,8 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
             </div>
           )}
 
-          <motion.div layout className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <MotionConfig reducedMotion="never">
+            <motion.div layout className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <AnimatePresence mode="popLayout">
               {filteredPitches.map((pitch, idx) => {
                 const price = Number(pitch.pricePerHour || 300000);
@@ -406,6 +407,7 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
               })}
             </AnimatePresence>
           </motion.div>
+          </MotionConfig>
         </section>
       )}
 

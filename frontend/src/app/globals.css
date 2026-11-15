@@ -213,14 +213,7 @@ button.bg-emerald-700,
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* Đã gỡ bỏ giới hạn prefers-reduced-motion để đảm bảo hiệu ứng mượt mà 1.0s luôn hoạt động trên mọi máy tính */
 
 @keyframes fadeIn {
   0% { opacity: 0; }

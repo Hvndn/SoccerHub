@@ -25,7 +25,7 @@ import GuestFeatureBanner from "@/components/GuestFeatureBanner";
 import PageSpinner from "@/components/PageSpinner";
 import BackendStatusBanner, { BackendRestoredToast } from "@/components/BackendStatusBanner";
 import { MapPin, Trophy, Users, ShieldCheck, ShieldAlert, X } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 
@@ -599,7 +599,7 @@ const handleTabChange = (newTab: string, tournamentId?: number | null) => {
  {/* Main Content Body */}
  <main className={`flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 xl:px-8 2xl:px-[50px] pb-12 lg:pb-14 space-y-5 sm:space-y-12 pt-3 sm:pt-5 ${showBottomNav ? "pb-28 lg:pb-14" : ""}`}>
   {/* AnimatePresence đã bỏ: exit animation treo khi đổi tab (motion.div cũ không được gỡ -> 2 nội dung chồng nhau, đọc sai trạng thái). Giữ animation khi vào tab. */}
-  <>
+  <MotionConfig reducedMotion="never">
  <motion.div
  key={activeTab}
  initial={{ opacity: 0, y: 28 }}
@@ -930,7 +930,7 @@ const handleTabChange = (newTab: string, tournamentId?: number | null) => {
  )
  )}
  </motion.div>
-  </>
+  </MotionConfig>
  </main>
 
  {/* Auth Modal (Login / Register) */}
