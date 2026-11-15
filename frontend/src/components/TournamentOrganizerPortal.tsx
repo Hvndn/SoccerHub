@@ -144,7 +144,7 @@ export default function TournamentOrganizerPortal({
  const [selectedTournamentId, setSelectedTournamentId] = useState<number | null>(null);
 
  // Active Tab for Tables/Logs
- const [bottomTab, setBottomTab] = useState<"info" | "teams" | "invites" | "referees" | "broadcast" | "finance" | "schedule" | "var_logs" | "edit">("info");
+ const [bottomTab, setBottomTab] = useState<"teams" | "schedule" | "var_logs" | "info" | "referees" | "invites" | "broadcast" | "finance" | "edit">("teams");
   const [copiedInviteLink, setCopiedInviteLink] = useState(false);
   const [inviteCustomNote, setInviteCustomNote] = useState("Ban Tổ Chức trân trọng kính mời bạn và đội bóng tham gia tranh tài tại giải đấu. Nhấp vào liên kết để nộp hồ sơ đăng ký!");
 
@@ -1512,7 +1512,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
           }`}
           onClick={() => {
             setSelectedTournamentId(Number(t.id));
-            setBottomTab("info");
+            setBottomTab("teams");
           }}
           role="button"
           tabIndex={0}
@@ -1520,7 +1520,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               setSelectedTournamentId(Number(t.id));
-              setBottomTab("info");
+            setBottomTab("teams");
             }
           }}
         >
@@ -1590,7 +1590,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedTournamentId(Number(t.id));
-                  setBottomTab("info");
+            setBottomTab("teams");
                 }}
                 className="px-3 py-1.5 rounded-lg text-[13px] font-bold bg-[#0369a1] hover:bg-[#075985] text-white transition-colors cursor-pointer shadow-xs flex items-center gap-1"
                 title="Vào xem và điều hành giải này"
@@ -1793,13 +1793,13 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  <div className="flex items-center justify-between border-b border-slate-200 pb-4">
  <div className="flex items-center gap-2 flex-wrap">
  {[
-  { id: "info", label: "Thông Tin Giải Đấu", badge: null },
   { id: "teams", label: "Duyệt Đội & Đăng Ký", badge: pendingTeams.length > 0 ? pendingTeams.length : null },
-  { id: "invites", label: "Mời Giải Qua Email", badge: joinMode === "INVITE_ONLY" ? inviteEmails.length : null },
-  { id: "referees", label: "Tổ Trọng Tài", badge: referees.length > 0 ? referees.length : null },
-  { id: "broadcast", label: "Thông Báo BTC", badge: null },
   { id: "schedule", label: "Lịch Thi Đấu", badge: null },
   { id: "var_logs", label: "Kết Quả & Ghi Bàn", badge: null },
+  { id: "info", label: "Thông Tin Giải Đấu", badge: null },
+  { id: "referees", label: "Tổ Trọng Tài", badge: referees.length > 0 ? referees.length : null },
+  { id: "invites", label: "Mời Giải Qua Email", badge: joinMode === "INVITE_ONLY" ? inviteEmails.length : null },
+  { id: "broadcast", label: "Thông Báo BTC", badge: null },
   { id: "finance", label: "Tài Chính Giải", badge: null }
 ].map(tab => (
  <button
@@ -1837,7 +1837,7 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   <p className="text-[14px] text-slate-500">
   {activeTournament
   ? `Đang thao tác trên giải: ${activeTournament.title}`
-  : "Chưa chọn giải — hãy mở tab “Giải Đấu & BXH” và chọn một giải."}
+  : "Chưa chọn giải — hãy chọn một giải đấu từ danh sách bên trên."}
   </p>
   <div className="flex flex-wrap items-center gap-2">
   {activeTournament?.joinMode === "INVITE_ONLY" && (
