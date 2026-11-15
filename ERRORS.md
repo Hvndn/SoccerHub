@@ -177,3 +177,24 @@
 ---
 
 ---
+
+
+## [2026-11-15 07:05] - Next.js Error Boundary Crash trên tab Giải Đấu (?tab=tournaments)
+
+- **Type**: Runtime / Logic
+- **Severity**: High
+- **File**: `frontend/src/components/TournamentLeaderboard.tsx:134`
+- **Agent**: Thần (Fullstack Specialist)
+- **Root Cause**: `reloadTournaments` phụ thuộc vào `[tournaments.length]` trong `useCallback`. Khi `subscribeTournaments` nạp cache giải đấu, `tournaments.length` thay đổi liên tục tạo thành vòng lặp gọi `setState` vô hạn ("Maximum update depth exceeded"). Đồng thời, thiếu kiểm tra chuỗi thuần/null cho `m.teamA.name` và `tm.teamName`.
+- **Error Message**: 
+  ```
+  Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate.
+  ```
+- **Fix Applied**: 
+  1. Tách `reloadTournaments` thành hàm độc lập với dependency rỗng `[]`, lắng nghe `subscribeTournaments` với cờ `alive` chuẩn React lifecycle.
+  2. Bọc an toàn 100% việc trích xuất tên đội bóng `m.teamA?.name` và `tm?.teamName`.
+  3. Cải tiến `error.tsx` hiển thị chi tiết lỗi kỹ thuật và nút "Xóa Cache & Tải Lại".
+- **Prevention**: Tránh đưa mảng hoặc độ dài của state vào dependency array của hàm cập nhật chính state đó. Luôn null-check trước khi truy cập thuộc tính con của đối tượng dữ liệu API/JSON.
+- **Status**: Fixed
+
+---
