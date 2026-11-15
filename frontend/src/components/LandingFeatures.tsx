@@ -309,10 +309,10 @@ export default function LandingFeatures({ onExplore, onNavigateTab }: LandingFea
                   <motion.div
                     layout
                     key={pitch.id}
-                    initial={{ opacity: 0, y: 16 }}
+                    initial={{ opacity: 0, y: 28 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.96 }}
-                    transition={{ duration: 0.3, delay: idx * 0.06 }}
+                    transition={{ duration: 0.9, delay: idx * 0.12, ease: [0.16, 1, 0.3, 1] }}
                     onClick={() => onExplore("PLAYER")}
                     className={`group bg-white landing-card-interactive overflow-hidden flex flex-col justify-between cursor-pointer border ${
                       isFav ? "border-rose-300 ring-1 ring-rose-200" : "border-slate-200"

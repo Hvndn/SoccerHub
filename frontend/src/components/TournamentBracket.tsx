@@ -2612,7 +2612,7 @@ const [addCount, setAddCount] = useState("4");
                   {/* CỘT VÒNG ĐẤU */}
                   <div
                     className="min-w-[270px] sm:min-w-[300px] max-w-[330px] flex-1 flex flex-col animate-cascade-in"
-                    style={{ minHeight: `${canvasMinHeight}px`, animationDelay: `${ri * 80}ms` }}
+                    style={{ minHeight: `${canvasMinHeight}px`, animationDelay: `${ri * 180}ms` }}
                   >
                     {/* Tiêu đề vòng đấu */}
                     <div

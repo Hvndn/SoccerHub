@@ -686,7 +686,7 @@ export const TournamentLeaderboard: React.FC<TournamentLeaderboardProps> = ({
                       setBracketTargetId(t.id);
                       setActiveTab("bracket");
                     }}
-                    style={{ animationDelay: `${Math.min(idx * 55, 440)}ms` }}
+                    style={{ animationDelay: `${Math.min(idx * 120, 840)}ms` }}
                     className="animate-cascade-in card-interactive-lift bg-white rounded-xl border border-slate-200 hover:border-[#0369a1] flex flex-col justify-between overflow-hidden cursor-pointer text-left group"
                   >
                     {/* Ảnh Bìa Giải Đấu Trực Quan */}
