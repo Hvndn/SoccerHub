@@ -1326,6 +1326,51 @@ const mobileNav: MobileNavItem[] =
             <button
               type="button"
               onClick={() => {
+                handleSelectSubTab("organizer");
+                setShowMobileDrawer(false);
+              }}
+              className={`w-full text-left p-3 rounded-xl flex items-center justify-between transition-colors ${
+                activeTab === "organizer"
+                  ? "bg-[#0369a1] text-white font-bold shadow-xs"
+                  : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/70"
+              }`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "organizer" ? "bg-white/20 text-white" : "bg-sky-50 text-sky-700"}`}>
+                  <Trophy className="w-4 h-4" />
+                </div>
+                <span className="font-bold text-[14px] truncate">Điều Hành Giải Đấu</span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="px-1.5 py-0.5 rounded text-[13px] font-bold bg-[#0369a1] text-white">Chủ Sân</span>
+                <ChevronRight className={`w-4 h-4 ${activeTab === "organizer" ? "text-white/70" : "text-slate-400"}`} />
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                handleSelectSubTab("tournaments");
+                setShowMobileDrawer(false);
+              }}
+              className={`w-full text-left p-3 rounded-xl flex items-center justify-between transition-colors ${
+                activeTab === "tournaments"
+                  ? "bg-[#0369a1] text-white font-bold shadow-xs"
+                  : "bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/70"
+              }`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "tournaments" ? "bg-white/20 text-white" : "bg-amber-50 text-amber-700"}`}>
+                  <Award className="w-4 h-4" />
+                </div>
+                <span className="font-bold text-[14px] truncate">Giải Đấu & Sơ Đồ Nhánh</span>
+              </div>
+              <ChevronRight className={`w-4 h-4 shrink-0 ${activeTab === "tournaments" ? "text-white/70" : "text-slate-400"}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
                 handleSelectSubTab("community");
                 setShowMobileDrawer(false);
               }}
