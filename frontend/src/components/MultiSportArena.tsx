@@ -2,24 +2,74 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
- Trophy, 
- Users, 
- Calendar, 
- Clock, 
- ShieldCheck, 
- Zap, 
- Plus, 
- CheckCircle2, 
- Flame, 
- SlidersHorizontal,
- ChevronRight,
- Sparkles,
- Search,
- Check,
- Video,
- Activity,
- QrCode
+  Trophy, 
+  Users, 
+  Calendar, 
+  Clock, 
+  ShieldCheck, 
+  Zap, 
+  Plus, 
+  CheckCircle2, 
+  Flame, 
+  SlidersHorizontal,
+  ChevronRight,
+  Sparkles,
+  Search,
+  Check,
+  Video,
+  Activity,
+  QrCode,
+  Wrench,
+  FileText,
+  Printer,
+  Copy,
+  RotateCcw,
+  Play,
+  Trash2,
+  AlertTriangle,
+  Coffee,
+  DollarSign,
+  UserCheck,
+  CreditCard,
+  X,
+  PlusCircle,
+  MinusCircle
 } from 'lucide-react';
+
+export interface CourtBookingData {
+  customerName: string;
+  customerPhone: string;
+  timeSlot: string;
+  deposit: number;
+  totalPrice: number;
+  startTime?: number;
+  bookingCode?: string;
+  note?: string;
+}
+
+export interface Court {
+  id: string;
+  name: string;
+  fieldType: 'san5' | 'san7' | 'san11' | 'futsal';
+  fieldLabel: string;
+  surface: string;
+  status: 'available' | 'matching' | 'live' | 'booked' | 'maintenance' | 'completed';
+  liveScore?: string;
+  pricePerHour: number;
+  features: string[];
+  currentPlayers?: number;
+  maxPlayers?: number;
+  bookingData?: CourtBookingData;
+  maintenanceReason?: string;
+}
+
+export const CANTEEN_CATALOG = [
+  { id: "water", name: "Nước suối Aquafina", price: 10000, icon: "💧" },
+  { id: "revive", name: "Revive chanh muối", price: 15000, icon: "⚡" },
+  { id: "redbull", name: "Bò húc Thái Lan", price: 20000, icon: "🐂" },
+  { id: "bib", name: "Thuê áo bib phân đội", price: 20000, icon: "🎽" },
+  { id: "ball", name: "Thuê bóng thi đấu số 5", price: 30000, icon: "⚽" },
+];
 
 import { API_BASE_URL, apiRequest, ensureLoggedIn, fetchWithTimeout } from '@/lib/api';
 import { pitchTypeLabel } from "@/lib/pitchLabels";
@@ -27,20 +77,6 @@ import { broadcastBookingEvent } from "@/lib/realtimeService";
 import SafeImage from "@/components/SafeImage";
 import { getPitchVisual } from "@/lib/pitchVisuals";
 import { Camera } from "lucide-react";
-
-interface Court {
- id: string;
- name: string;
- fieldType: 'san5' | 'san7' | 'san11' | 'futsal';
- fieldLabel: string;
- surface: string;
- status: 'available' | 'matching' | 'live' | 'booked';
- liveScore?: string;
- pricePerHour: number;
- features: string[];
- currentPlayers?: number;
- maxPlayers?: number;
-}
 
 interface MatchQueue {
  id: string;
@@ -77,11 +113,26 @@ export default function MultiSportArena({
  const [isSubmittingDirect, setIsSubmittingDirect] = useState(false);
  const [joiningMatch, setJoiningMatch] = useState<MatchQueue | null>(null);
 
+  // States cho Hóa Đơn Tất Toán POS & Tính Giờ Live
+  const [checkoutCourt, setCheckoutCourt] = useState<Court | null>(null);
+  const [invoiceCanteen, setInvoiceCanteen] = useState<Record<string, number>>({});
+  const [invoiceCustomExtra, setInvoiceCustomExtra] = useState(0);
+  const [invoiceCustomNote, setInvoiceCustomNote] = useState("");
+  const [invoiceSplitCount, setInvoiceSplitCount] = useState(10);
+  const [copiedZaloSuccess, setCopiedZaloSuccess] = useState(false);
+  const [now, setNow] = useState(Date.now());
+
+  // Live timer tick 1s/lần cho các sân đang đá
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
  // Form hien INLINE (khong popup) -> tu cuon toi khi mo.
  useEffect(() => {
   if (!bookingCourt && !joiningMatch) return;
   const raf = requestAnimationFrame(() => {
-   document.querySelector('[id^="inline-bookingcourt"], [id^="inline-joiningmatch"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+   document.querySelector('[id^="inline-bookingcourt"], [id^="inline-checkoutcourt"], [id^="inline-joiningmatch"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
   });
   return () => cancelAnimationFrame(raf);
  }, [bookingCourt, joiningMatch]);
@@ -183,6 +234,141 @@ export default function MultiSportArena({
  }, []);
 
  const [accepting, setAccepting] = useState(false);
+
+  // Định dạng thời gian đã đá (Live Timer)
+  const formatElapsedTime = (startTime?: number) => {
+    if (!startTime) return "00:00";
+    const diffSeconds = Math.max(0, Math.floor((now - startTime) / 1000));
+    const mins = Math.floor(diffSeconds / 60);
+    const secs = diffSeconds % 60;
+    const hrs = Math.floor(mins / 60);
+    if (hrs > 0) {
+      const remainMins = mins % 60;
+      return `${hrs}h ${remainMins < 10 ? "0" : ""}${remainMins}m ${secs < 10 ? "0" : ""}${secs}s`;
+    }
+    return `${mins < 10 ? "0" : ""}${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
+  // Xác nhận khách nhận sân & vào đá (chuyển sang 'live' và bắt đầu đếm giờ)
+  const handleCheckinCourt = (courtId: string) => {
+    setCourts(prev => prev.map(c => {
+      if (c.id === courtId) {
+        const prevBooking = c.bookingData || {
+          customerName: "Khách lẻ tại quầy",
+          customerPhone: "0905.123.456",
+          timeSlot: "Trực tiếp",
+          deposit: 0,
+          totalPrice: c.pricePerHour * 2,
+          bookingCode: "LIVE" + Math.floor(100000 + Math.random() * 900000)
+        };
+        return {
+          ...c,
+          status: 'live',
+          bookingData: {
+            ...prevBooking,
+            startTime: Date.now()
+          }
+        };
+      }
+      return c;
+    }));
+    handleActionToast(`⚽ Check-in thành công! Sân ${courtId} bắt đầu tính giờ thi đấu.`);
+  };
+
+  // Chuyển đổi trạng thái Bảo Trì sân
+  const handleToggleMaintenance = (courtId: string) => {
+    setCourts(prev => prev.map(c => {
+      if (c.id === courtId) {
+        const nextStatus = c.status === 'maintenance' ? 'available' : 'maintenance';
+        return {
+          ...c,
+          status: nextStatus,
+          maintenanceReason: nextStatus === 'maintenance' ? 'Bảo dưỡng hạt cao su, lu mặt cỏ & sửa đèn LED' : undefined
+        };
+      }
+      return c;
+    }));
+    handleActionToast(`🔧 Đã cập nhật trạng thái hoạt động cho sân ${courtId}!`);
+  };
+
+  // Hủy ca đặt trả về Ca Trống
+  const handleCancelCourt = (courtId: string) => {
+    setCourts(prev => prev.map(c => {
+      if (c.id === courtId) {
+        return {
+          ...c,
+          status: 'available',
+          bookingData: undefined
+        };
+      }
+      return c;
+    }));
+    if (checkoutCourt?.id === courtId) setCheckoutCourt(null);
+    handleActionToast(`Đã hủy ca đặt và trả sân ${courtId} về Ca Trống!`);
+  };
+
+  // Mở Hóa Đơn & Tất Toán POS
+  const handleOpenInvoice = (court: Court) => {
+    setCheckoutCourt(court);
+    setBookingCourt(null);
+    setInvoiceCanteen({});
+    setInvoiceCustomExtra(0);
+    setInvoiceCustomNote("");
+    setInvoiceSplitCount(10);
+    setCopiedZaloSuccess(false);
+  };
+
+  // Xác nhận Tất Toán & Trả Sân (Giải phóng sân về available)
+  const handleCompleteCheckout = (courtId: string, totalAmount: number) => {
+    setCourts(prev => prev.map(c => {
+      if (c.id === courtId) {
+        return {
+          ...c,
+          status: 'available',
+          bookingData: undefined,
+          liveScore: undefined
+        };
+      }
+      return c;
+    }));
+    setCheckoutCourt(null);
+    handleActionToast(`🏁 Tất toán thành công ${totalAmount.toLocaleString("vi-VN")}đ! Sân ${courtId} đã sẵn sàng cho lượt tiếp theo.`);
+  };
+
+  // Sao chép bill gửi Zalo chia tiền đội
+  const handleCopyZaloBill = (court: Court, totalDue: number, perPerson: number, courtFee: number, deposit: number) => {
+    const code = court.bookingData?.bookingCode || court.id;
+    const timePlayed = formatElapsedTime(court.bookingData?.startTime);
+    const canteenLines = Object.entries(invoiceCanteen)
+      .filter(([_, qty]) => (Number(qty) || 0) > 0)
+      .map(([id, qty]) => {
+        const item = CANTEEN_CATALOG.find(i => i.id === id);
+        const q = typeof qty === 'number' ? qty : Number(qty) || 0;
+        return item ? `+ ${item.name} x${q}: ${(item.price * q).toLocaleString("vi-VN")}đ` : "";
+      })
+      .filter(Boolean)
+      .join("\n");
+
+    const extraLine = invoiceCustomExtra > 0 ? `+ Phụ phí khác (${invoiceCustomNote || 'Phát sinh'}): ${invoiceCustomExtra.toLocaleString("vi-VN")}đ\n` : "";
+
+    const text = `📢 [TURFZONE] HÓA ĐƠN CA ĐÁ & CHIA TIỀN ĐỘI
+⚽ Sân: ${court.name} (${court.fieldLabel})
+👤 Khách: ${court.bookingData?.customerName || "Đội bóng"} • Khung giờ: ${court.bookingData?.timeSlot || "Trực tiếp"}
+⏱️ Thời gian thi đấu: ${timePlayed}
+─────────────────────
+💰 Tiền thuê sân: ${courtFee.toLocaleString("vi-VN")}đ
+${canteenLines ? `🍹 Canteen & Dịch vụ:\n${canteenLines}\n` : ""}${extraLine}${deposit > 0 ? `💳 Tiền cọc đã trừ: -${deposit.toLocaleString("vi-VN")}đ\n` : ""}─────────────────────
+👉 TỔNG TIỀN CÒN PHẢI THU: ${totalDue.toLocaleString("vi-VN")}đ
+👥 Chia đều cho ${invoiceSplitCount} người: ${perPerson.toLocaleString("vi-VN")}đ / người
+🏦 STK chuyển khoản: 0905123456 - MB Bank (Chủ Sân Turfzone)
+Nội dung: ${code} - ${court.bookingData?.customerName || "Tien San"}`;
+
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedZaloSuccess(true);
+      setTimeout(() => setCopiedZaloSuccess(false), 3000);
+    }
+  };
 
   const handleDirectBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -407,149 +593,243 @@ export default function MultiSportArena({
  </p>
  ) : null}
  {filteredCourts.map((court) => (
- <div
- key={court.id}
- className={`rounded-xl border p-3 sm:p-4 transition-all duration-200 flex flex-col justify-between relative ${
- court.status === 'available'
- ? 'border-sky-300 bg-sky-50/40 hover:shadow-lg hover:border-emerald-500'
- : court.status === 'matching'
- ? 'border-amber-300 bg-amber-50/40 hover:shadow-lg hover:border-amber-500'
- : court.status === 'live'
- ? 'border-red-300 bg-red-50/40 hover:shadow-lg'
- : 'border-slate-200 bg-slate-100 opacity-80'
- }`}
- >
- {/* Court Top Badge & Status */}
- <div>
- <div className="flex items-center justify-between mb-2">
- <span className="font-extrabold text-base text-slate-900 ">
- {court.id}
- </span>
- {court.status === 'available' && (
- <span className="bg-[#0369a1]/20 text-sky-800 text-[14px] font-bold px-2.5 py-0.5 rounded-full border border-[#0369a1]/30 flex items-center gap-1">
- <Check className="w-3 h-3" /> Ca Trống
- </span>
- )}
- {court.status === 'matching' && (
- <span className="bg-amber-500/20 text-amber-700 text-[14px] font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
- <Users className="w-3 h-3" /> Ghép Kèo ({court.currentPlayers}/{court.maxPlayers})
- </span>
- )}
- {court.status === 'live' && (
- <span className="bg-red-500/20 text-red-600 text-[14px] font-bold px-2.5 py-0.5 rounded-full border border-red-500/30 flex items-center gap-1 animate-pulse">
- <Flame className="w-3 h-3" /> Đang Diễn Ra
- </span>
- )}
- {court.status === 'booked' && (
- <span className="bg-slate-200 text-slate-600 text-[14px] font-bold px-2.5 py-0.5 rounded-full">
- Đã Khóa Sân
- </span>
- )}
- </div>
+            <div
+              key={court.id}
+              className={`rounded-2xl border-2 p-3.5 sm:p-4.5 transition-all duration-200 flex flex-col justify-between relative ${
+                court.status === 'available'
+                  ? 'border-sky-200 bg-white hover:border-[#0369a1] hover:shadow-md'
+                  : court.status === 'booked'
+                  ? 'border-sky-400 bg-sky-50/50 shadow-xs'
+                  : court.status === 'live'
+                  ? 'border-rose-400 bg-rose-50/40 shadow-md ring-1 ring-rose-200'
+                  : court.status === 'maintenance'
+                  ? 'border-amber-300 bg-amber-50/40 opacity-90'
+                  : 'border-slate-200 bg-slate-50'
+              }`}
+            >
+              {/* Court Top Badge & Status */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-extrabold text-base text-slate-900">
+                    {court.id}
+                  </span>
+                  
+                  {court.status === 'available' && (
+                    <span className="bg-sky-50 text-[#0369a1] text-[13px] font-bold px-2.5 py-0.5 rounded-full border border-sky-200 flex items-center gap-1">
+                      <Check className="w-3 h-3" /> Chưa Đặt
+                    </span>
+                  )}
+                  {court.status === 'booked' && (
+                    <span className="bg-[#0369a1] text-white text-[13px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                      <Calendar className="w-3 h-3" /> Đã Đặt / Chờ Đá
+                    </span>
+                  )}
+                  {court.status === 'live' && (
+                    <span className="bg-rose-600 text-white text-[13px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs animate-pulse">
+                      <Flame className="w-3 h-3" /> Đang Đá (Live)
+                    </span>
+                  )}
+                  {court.status === 'maintenance' && (
+                    <span className="bg-amber-100 text-amber-800 text-[13px] font-bold px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1">
+                      <Wrench className="w-3 h-3" /> Đang Bảo Trì
+                    </span>
+                  )}
+                  {court.status === 'matching' && (
+                    <span className="bg-amber-500/20 text-amber-700 text-[13px] font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+                      <Users className="w-3 h-3" /> Ghép Kèo
+                    </span>
+                  )}
+                </div>
 
- {/* Ảnh sân con trực quan (Không có nhãn Rê xem ảnh) */}
- <div className="w-full h-32 rounded-lg overflow-hidden relative bg-slate-900 mb-2.5 group">
-   <SafeImage
-     src={getPitchVisual(court.fieldType).imageUrl}
-     alt={court.name}
-     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-   />
-   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/20" />
-   <div className="absolute top-2 left-2">
-     <span className={`px-2 py-0.5 rounded text-[12px] font-bold border shadow-xs ${getPitchVisual(court.fieldType).badgeBg} ${getPitchVisual(court.fieldType).badgeText} ${getPitchVisual(court.fieldType).badgeBorder}`}>
-       {getPitchVisual(court.fieldType).shortLabel}
-     </span>
-   </div>
-   <div className="absolute bottom-2 left-2 right-2 text-white flex items-center justify-between text-[12px]">
-     <span className="font-mono text-slate-200 font-bold bg-slate-950/70 px-2 py-0.5 rounded">{getPitchVisual(court.fieldType).dimensions}</span>
-   </div>
- </div>
+                {/* Live Match Timer Banner if Playing */}
+                {court.status === 'live' && (
+                  <div className="mb-2.5 p-2 rounded-xl bg-rose-100/80 border border-rose-200 flex items-center justify-between text-[13px]">
+                    <div className="flex items-center gap-1.5 text-rose-800 font-bold">
+                      <Clock className="w-4 h-4 text-rose-600 animate-spin" style={{ animationDuration: '6s' }} />
+                      <span>Thời gian đá:</span>
+                    </div>
+                    <span className="font-mono font-black text-rose-700 bg-white px-2 py-0.5 rounded-md border border-rose-200 shadow-2xs">
+                      ⏱️ {formatElapsedTime(court.bookingData?.startTime)}
+                    </span>
+                  </div>
+                )}
 
- <h3 className="font-bold text-sm text-slate-900 line-clamp-1 mb-1 flex items-center gap-1.5">
-   <span>{court.name}</span>
-   <Camera className="w-3.5 h-3.5 text-slate-400 shrink-0" />
- </h3>
+                {/* Thông tin khách đã đặt */}
+                {court.status === 'booked' && court.bookingData && (
+                  <div className="mb-2.5 p-2 rounded-xl bg-sky-100/70 border border-sky-200 space-y-1 text-[13px]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 font-medium">Khách:</span>
+                      <strong className="text-slate-900 font-bold truncate max-w-[150px]">{court.bookingData.customerName}</strong>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 font-medium">Khung giờ:</span>
+                      <strong className="text-[#0369a1] font-mono font-bold">{court.bookingData.timeSlot}</strong>
+                    </div>
+                  </div>
+                )}
 
- <div className="text-[14px] text-slate-500 space-y-1 mb-3">
- <div>⚽ <span className="font-semibold text-slate-700 ">{court.fieldLabel}</span></div>
- <div>🌱 {court.surface}</div>
- </div>
+                {/* Thông tin bảo trì */}
+                {court.status === 'maintenance' && (
+                  <div className="mb-2.5 p-2 rounded-xl bg-amber-100/70 border border-amber-200 text-[12px] text-amber-900 font-medium">
+                    🛠️ {court.maintenanceReason || "Bảo dưỡng hạt cao su & dàn đèn"}
+                  </div>
+                )}
 
- {/* Live score if active */}
- {court.status === 'live' && court.liveScore && (
- <div className="bg-red-950/40 border border-red-500/30 p-2.5 rounded-lg mb-3 text-[14px] text-red-200 font-mono">
- <div className="flex items-center text-[14px] text-red-400 font-sans mb-1 tracking-wider font-bold">
- <Video className="w-3 h-3 mr-1" /> Trận Đấu Trực Tiếp
- </div>
- {court.liveScore}
- </div>
- )}
+                {/* Ảnh sân con trực quan */}
+                <div className="w-full h-32 rounded-lg overflow-hidden relative bg-slate-900 mb-2.5 group">
+                  <SafeImage
+                    src={getPitchVisual(court.fieldType).imageUrl}
+                    alt={court.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/20" />
+                  <div className="absolute top-2 left-2">
+                    <span className={`px-2 py-0.5 rounded text-[12px] font-bold border shadow-xs ${getPitchVisual(court.fieldType).badgeBg} ${getPitchVisual(court.fieldType).badgeText} ${getPitchVisual(court.fieldType).badgeBorder}`}>
+                      {getPitchVisual(court.fieldType).shortLabel}
+                    </span>
+                  </div>
+                  <div className="absolute bottom-2 left-2 right-2 text-white flex items-center justify-between text-[12px]">
+                    <span className="font-mono text-slate-200 font-bold bg-slate-950/70 px-2 py-0.5 rounded">{getPitchVisual(court.fieldType).dimensions}</span>
+                  </div>
+                </div>
 
- {/* Features tags */}
- <div className="flex flex-wrap gap-1 mb-4">
- {court.features.length === 0 ? (
- <span className="text-[14px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded">
- Chưa khai báo tiện ích
- </span>
- ) : (
- court.features.map((feat, i) => (
- <span key={i} className="text-[14px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
- {feat}
- </span>
- ))
- )}
- </div>
- </div>
+                <h3 className="font-bold text-sm text-slate-900 line-clamp-1 mb-1 flex items-center gap-1.5">
+                  <span>{court.name}</span>
+                  <Camera className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                </h3>
 
- {/* Bottom Action */}
- <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
- <div>
- <span className="text-[14px] text-slate-500">Giá ca:</span>
- <div className="text-sm font-extrabold text-sky-700 ">
- {court.pricePerHour.toLocaleString()}đ<span className="text-[14px] font-normal text-slate-500">/giờ</span>
- </div>
- </div>
+                <div className="text-[13px] text-slate-500 space-y-1 mb-3">
+                  <div>⚽ <span className="font-semibold text-slate-700">{court.fieldLabel}</span></div>
+                  <div>🌱 {court.surface}</div>
+                </div>
 
- {court.status === 'available' && (
- <button
- onClick={() => {
-   setBookingCourt(court);
-   setDirectCustomer("");
-   setDirectPhone("");
-   setDirectDeposit("");
-   setDirectNote("");
- }}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold px-3.5 py-2 rounded-lg shadow-xs transition flex items-center gap-1.5 cursor-pointer"
- title="Đăng ký ca sân trực tiếp cho khách vãng lai hoặc chủ sân giữ ca"
- >
- <Plus className="w-3.5 h-3.5" />
- <span>+ Đăng Ký Ca</span>
- </button>
- )}
+                {/* Features tags */}
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {court.features.length === 0 ? (
+                    <span className="text-[12px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded">
+                      Tiện ích tiêu chuẩn
+                    </span>
+                  ) : (
+                    court.features.slice(0, 3).map((feat, i) => (
+                      <span key={i} className="text-[12px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                        {feat}
+                      </span>
+                    ))
+                  )}
+                </div>
+              </div>
 
- {court.status === 'matching' && (
- <button
- onClick={() => handleActionToast(`Bạn đã gửi yêu cầu tham gia ghép đội tại ${court.id}!`)}
- className="bg-[#0369a1] hover:bg-[#075985] text-white text-[14px] font-bold px-3 py-2 rounded-lg shadow transition"
- >
- Vào Kèo Ngay
- </button>
- )}
+              {/* Bottom Action Area */}
+              <div className="pt-3 border-t border-slate-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] text-slate-500">Đơn giá:</span>
+                  <div className="text-sm font-extrabold text-[#0369a1]">
+                    {court.pricePerHour.toLocaleString()}đ<span className="text-[12px] font-normal text-slate-500">/giờ</span>
+                  </div>
+                </div>
 
- {court.status === 'live' && (
- <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-[13px] font-bold">
-   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-   Đang Thi Đấu
- </span>
- )}
+                {/* NÚT THAO TÁC THEO TRẠNG THÁI */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {court.status === 'available' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBookingCourt(court);
+                          setDirectCustomer("");
+                          setDirectPhone("");
+                          setDirectDeposit("");
+                          setDirectNote("");
+                        }}
+                        className="flex-1 bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold py-2 px-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-1 cursor-pointer"
+                        title="Đăng ký ca sân trực tiếp tại quầy"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>+ Đặt Ca</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleMaintenance(court.id)}
+                        className="bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-800 text-[13px] font-bold py-2 px-2.5 rounded-xl border border-slate-200 transition flex items-center gap-1 cursor-pointer"
+                        title="Tạm khóa sân để bảo dưỡng cỏ, đèn"
+                      >
+                        <Wrench className="w-3.5 h-3.5" />
+                        <span>Bảo Trì</span>
+                      </button>
+                    </>
+                  )}
 
- {court.status === 'booked' && (
- <span className="text-[14px] text-slate-500 font-medium italic">Không khả dụng</span>
- )}
- </div>
- </div>
- ))}
- </div>
+                  {court.status === 'booked' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleCheckinCourt(court.id)}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold py-2 px-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                        title="Xác nhận khách vào sân và tính thời gian"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>Vào Đá</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenInvoice(court)}
+                        className="bg-white hover:bg-slate-100 text-slate-800 text-[13px] font-bold py-2 px-2.5 rounded-xl border border-slate-200 transition flex items-center gap-1 cursor-pointer"
+                        title="Xem chi tiết hóa đơn & phụ phí"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-[#0369a1]" />
+                        <span>Hóa Đơn</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCancelCourt(court.id)}
+                        className="bg-rose-50 hover:bg-rose-100 text-rose-600 text-[13px] font-bold p-2 rounded-xl border border-rose-200 transition cursor-pointer"
+                        title="Hủy đơn đặt"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+
+                  {court.status === 'live' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenInvoice(court)}
+                        className="flex-1 bg-rose-600 hover:bg-rose-700 text-white text-[13px] font-bold py-2 px-3 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                        title="Mở hóa đơn tính tiền và tất toán trả sân"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Checkout & Tất Toán</span>
+                      </button>
+                    </>
+                  )}
+
+                  {court.status === 'maintenance' && (
+                    <button
+                      type="button"
+                      onClick={() => handleToggleMaintenance(court.id)}
+                      className="w-full bg-amber-500 hover:bg-amber-600 text-white text-[13px] font-bold py-2 px-3 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                      title="Hoàn tất bảo trì và mở lại sân"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>Hoàn Tất Bảo Trì (Mở Sân)</span>
+                    </button>
+                  )}
+
+                  {court.status === 'matching' && (
+                    <button
+                      type="button"
+                      onClick={() => handleActionToast(`Đã gửi yêu cầu ghép đội tại ${court.id}!`)}
+                      className="w-full bg-[#0369a1] hover:bg-[#075985] text-white text-[13px] font-bold py-2 px-3 rounded-xl shadow transition"
+                    >
+                      Vào Kèo Ngay
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
  </div>
 
  {/* Section 2: Football Matchmaking Queue */}
@@ -851,6 +1131,260 @@ export default function MultiSportArena({
     </div>
   </div>
   )}
+
+      {/* ========================================================================= */}
+      {/* KHỐI HÓA ĐƠN & PHIẾU THU TẤT TOÁN POS TẠI QUẦY (INLINE 100%, KHÔNG MODAL) */}
+      {/* ========================================================================= */}
+      {checkoutCourt && (() => {
+        const courtFee = checkoutCourt.bookingData?.totalPrice || checkoutCourt.pricePerHour * 2;
+        const deposit = checkoutCourt.bookingData?.deposit || 0;
+        
+        // Tính tổng tiền canteen
+        const canteenTotal = Object.entries(invoiceCanteen).reduce((acc, [id, qty]) => {
+          const item = CANTEEN_CATALOG.find(i => i.id === id);
+          const q = typeof qty === 'number' ? qty : Number(qty) || 0;
+          return acc + (item ? item.price * q : 0);
+        }, 0);
+
+        const customExtra = Number(invoiceCustomExtra) || 0;
+        const totalDue = Math.max(0, courtFee + canteenTotal + customExtra - deposit);
+        const splitPerPerson = invoiceSplitCount > 0 ? Math.ceil(totalDue / invoiceSplitCount) : totalDue;
+        const bookingCode = checkoutCourt.bookingData?.bookingCode || checkoutCourt.id;
+
+        return (
+          <div id="inline-checkoutcourt" className="w-full animate-fade-in my-6">
+            <div className="bg-white border-2 border-emerald-500 rounded-2xl max-w-3xl w-full p-4 sm:p-7 shadow-xl space-y-5">
+              {/* Header Phiếu Thu */}
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shadow-2xs">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-base sm:text-xl text-slate-900 leading-tight">
+                      Hóa Đơn Tất Toán & Phiếu Thu POS: {checkoutCourt.name}
+                    </h3>
+                    <p className="text-[13px] text-slate-500 mt-0.5">
+                      Mã ca: <strong className="font-mono text-[#0369a1]">#{bookingCode}</strong> &bull; {checkoutCourt.fieldLabel} &bull; Trạng thái: {checkoutCourt.status === 'live' ? 'Đang đá' : 'Đã đặt'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCheckoutCourt(null)}
+                  className="text-slate-400 hover:text-slate-700 text-lg font-bold p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer"
+                  title="Đóng hóa đơn"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Thông tin ca sân & thời gian */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px]">
+                <div>
+                  <span className="text-slate-500 block">Khách hàng:</span>
+                  <strong className="text-slate-900 font-bold truncate block">{checkoutCourt.bookingData?.customerName || "Khách tại quầy"}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Số điện thoại:</span>
+                  <strong className="text-slate-900 font-mono font-bold block">{checkoutCourt.bookingData?.customerPhone || "0905.xxx.xxx"}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Khung giờ:</span>
+                  <strong className="text-[#0369a1] font-mono font-bold block">{checkoutCourt.bookingData?.timeSlot || "Trực tiếp"}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Thời gian đã đá:</span>
+                  <strong className="text-rose-600 font-mono font-black block">⏱️ {formatElapsedTime(checkoutCourt.bookingData?.startTime)}</strong>
+                </div>
+              </div>
+
+              {/* BẢNG TÍNH TIỀN & THÊM DỊCH VỤ CANTEEN */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
+                {/* Cột Trái: Tiền sân + Bộ chọn nhanh Canteen */}
+                <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-200">
+                  <div className="flex justify-between items-center text-slate-700 pb-2 border-b border-slate-100">
+                    <span className="font-bold">1. Tiền thuê sân:</span>
+                    <span className="font-mono font-bold text-slate-900 text-sm">{courtFee.toLocaleString("vi-VN")}đ</span>
+                  </div>
+
+                  {/* Danh mục Canteen bấm + / - */}
+                  <div className="space-y-2">
+                    <span className="text-[12px] font-bold text-slate-500 block">2. Đồ uống & Phụ phí Canteen:</span>
+                    <div className="space-y-1.5">
+                      {CANTEEN_CATALOG.map((item) => {
+                        const qty = invoiceCanteen[item.id] || 0;
+                        return (
+                          <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200/80">
+                            <div className="flex items-center gap-2">
+                              <span>{item.icon}</span>
+                              <span className="font-bold text-slate-800">{item.name}</span>
+                              <span className="text-slate-500 font-mono text-[12px]">({item.price.toLocaleString("vi-VN")}đ)</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setInvoiceCanteen(prev => ({ ...prev, [item.id]: Math.max(0, (prev[item.id] || 0) - 1) }))}
+                                className="w-6 h-6 rounded bg-white hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold flex items-center justify-center cursor-pointer text-sm"
+                              >
+                                -
+                              </button>
+                              <span className="font-mono font-black text-slate-900 w-5 text-center">{qty}</span>
+                              <button
+                                type="button"
+                                onClick={() => setInvoiceCanteen(prev => ({ ...prev, [item.id]: (prev[item.id] || 0) + 1 }))}
+                                className="w-6 h-6 rounded bg-[#0369a1] hover:bg-[#075985] text-white font-bold flex items-center justify-center cursor-pointer text-sm"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Phụ phí tùy chỉnh khác */}
+                  <div className="pt-2 border-t border-slate-100 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-700">3. Phụ phí khác / Lố giờ:</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="5000"
+                        value={invoiceCustomExtra || ""}
+                        onChange={(e) => setInvoiceCustomExtra(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                        placeholder="0đ"
+                        className="w-28 px-2 py-1 rounded-lg border border-slate-300 font-mono font-bold text-right text-[13px] text-slate-900 bg-slate-50 focus:outline-none focus:border-[#0369a1]"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      value={invoiceCustomNote}
+                      onChange={(e) => setInvoiceCustomNote(e.target.value)}
+                      placeholder="Ghi chú phụ phí (VD: Đá lố 15p, hỏng bóng...)"
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-[12px] text-slate-700 bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Cột Phải: Tóm Tắt Thanh Toán, Chia Tiền & VietQR */}
+                <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
+                  {/* Tóm tắt tiền */}
+                  <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[13px]">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Tổng tiền sân & dịch vụ:</span>
+                      <span className="font-mono font-bold text-slate-900">{(courtFee + canteenTotal + customExtra).toLocaleString("vi-VN")}đ</span>
+                    </div>
+                    {deposit > 0 && (
+                      <div className="flex justify-between text-emerald-700 font-semibold">
+                        <span>Tiền cọc đã thanh toán trước:</span>
+                        <span className="font-mono font-bold">-{deposit.toLocaleString("vi-VN")}đ</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                      <span className="font-extrabold text-base text-slate-900">TỔNG CÒN PHẢI THU:</span>
+                      <span className="font-mono font-black text-xl text-[#0369a1]">{totalDue.toLocaleString("vi-VN")}đ</span>
+                    </div>
+                  </div>
+
+                  {/* Chia Tiền Zalo */}
+                  <div className="p-3 rounded-xl bg-sky-50/70 border border-sky-200 space-y-2">
+                    <div className="flex items-center justify-between text-[13px]">
+                      <span className="font-bold text-slate-800">Chia đều tiền đội (Campuchia):</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setInvoiceSplitCount(Math.max(2, invoiceSplitCount - 1))}
+                          className="w-6 h-6 rounded bg-white border border-slate-300 font-bold flex items-center justify-center cursor-pointer"
+                        >
+                          -
+                        </button>
+                        <span className="font-mono font-black text-[#0369a1] px-1.5">{invoiceSplitCount} người</span>
+                        <button
+                          type="button"
+                          onClick={() => setInvoiceSplitCount(invoiceSplitCount + 1)}
+                          className="w-6 h-6 rounded bg-white border border-slate-300 font-bold flex items-center justify-center cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[13px]">
+                      <span className="text-slate-600">Mỗi người đóng:</span>
+                      <strong className="font-mono font-black text-rose-600 text-sm">{splitPerPerson.toLocaleString("vi-VN")}đ</strong>
+                    </div>
+                  </div>
+
+                  {/* VietQR Chuyển Khoản Nhanh */}
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3">
+                    <div className="w-20 h-20 shrink-0 bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs overflow-hidden">
+                      <SafeImage
+                        src={`https://img.vietqr.io/image/970422-0905123456-compact2.png?amount=${totalDue}&addInfo=${encodeURIComponent(`TT ${checkoutCourt.id} ${checkoutCourt.bookingData?.customerName || "SAN"}`)}&accountName=CHU%20SAN%20TURFZONE`}
+                        alt="VietQR"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="space-y-0.5 text-[12px]">
+                      <div className="flex items-center gap-1 text-[#0369a1] font-bold">
+                        <QrCode className="w-3.5 h-3.5" />
+                        <span>VietQR Quét Trả Nhanh</span>
+                      </div>
+                      <p className="text-slate-500">Khách quét mã chuyển chính xác số tiền còn lại.</p>
+                      <span className="inline-block text-[11px] font-mono text-slate-700 bg-white px-1.5 py-0.5 rounded border border-slate-200">MB: 0905123456 (Chủ Sân)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Nút Hành Động Ở Chân Hóa Đơn */}
+              <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-slate-200">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCopyZaloBill(checkoutCourt, totalDue, splitPerPerson, courtFee, deposit)}
+                    className="px-3.5 py-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-[#0369a1] text-[13px] font-bold border border-sky-200 transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span>{copiedZaloSuccess ? "Đã Sao Chép!" : "Sao Chép Gửi Zalo"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== "undefined") window.print();
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold border border-slate-300 transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>In Bill POS</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutCourt(null)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold transition cursor-pointer"
+                  >
+                    Đóng
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCompleteCheckout(checkoutCourt.id, totalDue)}
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-extrabold shadow-md transition flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Xác Nhận Tất Toán & Trả Sân</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
 
  {/* Match Joining Modal */}
  {joiningMatch && (

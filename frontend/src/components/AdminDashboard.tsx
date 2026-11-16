@@ -2642,6 +2642,18 @@ const handleConfirmCheckin = async (slot: any) => {
                     </button>
                   </div>
 
+                  {selectedSlotForAction.status === "playing" && (
+                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-between text-[13px] animate-fade-in">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse" />
+                        <span className="font-bold text-rose-800">Trận đấu đang thi đấu trực tiếp trên sân</span>
+                      </div>
+                      <span className="font-mono font-black text-rose-700 bg-white px-2.5 py-1 rounded-lg border border-rose-200 shadow-2xs">
+                        ⏱️ Đang đá ca {selectedSlotForAction.time}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <div className="p-3.5 rounded-xl bg-slate-50 space-y-2 border border-slate-200/80">
                       <div className="flex justify-between items-center text-[13px]">
@@ -2820,6 +2832,44 @@ const handleConfirmCheckin = async (slot: any) => {
                                 placeholder="Ghi chú món (VD: 5 chai Revive, 1 áo bib...)"
                                 className="w-full px-2 py-1 rounded-lg border border-slate-200 text-[13px] text-slate-700 bg-white"
                               />
+
+                              {/* Bộ chọn nhanh Canteen Cụm Sân */}
+                              <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                                <span className="text-[12px] font-bold text-slate-500 block">Thêm nhanh đồ uống & dịch vụ Canteen:</span>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {[
+                                    { name: "+ Nước suối", price: 10000 },
+                                    { name: "+ Revive", price: 15000 },
+                                    { name: "+ Bò húc", price: 20000 },
+                                    { name: "+ Áo bib", price: 20000 },
+                                    { name: "+ Thuê bóng", price: 30000 },
+                                  ].map((item, idx) => (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      onClick={() => {
+                                        setReceiptExtraCost(prev => prev + item.price);
+                                        setReceiptExtraNote(prev => (prev ? `${prev}, ${item.name}` : item.name));
+                                      }}
+                                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-[#0369a1] text-[12px] font-bold border border-slate-200 transition-colors cursor-pointer active:scale-95"
+                                    >
+                                      {item.name} ({item.price.toLocaleString("vi-VN")}đ)
+                                    </button>
+                                  ))}
+                                  {receiptExtraCost > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setReceiptExtraCost(0);
+                                        setReceiptExtraNote("");
+                                      }}
+                                      className="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-[12px] font-bold border border-rose-200 transition-colors cursor-pointer"
+                                    >
+                                      Xóa phụ phí
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
                             </div>
 
                             {/* Cột Tính Tiền Chia Đều (Campuchia Zalo) */}
@@ -2860,6 +2910,25 @@ const handleConfirmCheckin = async (slot: any) => {
                                   </div>
                                 </div>
                               </div>
+                            </div>
+                          </div>
+
+                          {/* Mã VietQR Thanh Toán Nhanh Tại Quầy */}
+                          <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex flex-col sm:flex-row items-center gap-3">
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs overflow-hidden">
+                              <img
+                                src={`https://img.vietqr.io/image/970422-0905123456-compact2.png?amount=${totalDue}&addInfo=${encodeURIComponent(`TT CA ${selectedSlotForAction.bookingCode || selectedSlotForAction.id}`)}&accountName=CHU%20SAN%20TURFZONE`}
+                                alt="VietQR"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <div className="space-y-0.5 text-center sm:text-left text-[12px]">
+                              <div className="flex items-center gap-1 justify-center sm:justify-start text-[#0369a1] font-bold">
+                                <QrCode className="w-4 h-4" />
+                                <span className="text-[13px]">Mã VietQR Thanh Toán Trực Tiếp Tại Quầy</span>
+                              </div>
+                              <p className="text-slate-500">Khách quét mã chuyển chính xác số tiền còn lại: <strong className="text-rose-600 font-mono text-sm">{totalDue.toLocaleString("vi-VN")}đ</strong></p>
+                              <span className="inline-block text-[11px] font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">MB Bank: 0905123456 (Chủ Sân Turfzone)</span>
                             </div>
                           </div>
                         </div>
