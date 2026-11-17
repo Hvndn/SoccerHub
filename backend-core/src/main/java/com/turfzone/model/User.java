@@ -59,6 +59,24 @@ public class User {
      */
     private Boolean profileCompleted;
 
+    /**
+     * Trạng thái kiểm duyệt tài khoản chủ sân (chống spam / acc clone).
+     * APPROVED: Đã duyệt (hoặc tự động duyệt khi cụm sân + sân con có thông tin rõ ràng)
+     * PENDING_APPROVAL: Chờ duyệt (hoặc đang bổ sung thông tin sân)
+     * REJECTED: Bị từ chối do thông tin ảo / vi phạm
+     */
+    @Builder.Default
+    private String approvalStatus = "APPROVED";
+
+    private String approvalReason;
+
+    /**
+     * Điểm xếp hạng phong độ thi đấu (ELO Rating).
+     * Mặc định 1200 điểm (Hạng Bạc). Cộng/trừ theo kết quả và tương quan thực lực.
+     */
+    @Builder.Default
+    private Integer eloRating = 1200;
+
     @Builder.Default
     private Boolean enabled = true; // false = tài khoản bị admin khóa, không cho đăng nhập
 

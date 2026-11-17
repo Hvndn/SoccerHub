@@ -1152,10 +1152,13 @@ Nội dung: ${code} - ${court.bookingData?.customerName || "Tien San"}`;
         const bookingCode = checkoutCourt.bookingData?.bookingCode || checkoutCourt.id;
 
         return (
-          <div id="inline-checkoutcourt" className="w-full animate-fade-in my-6">
-            <div className="bg-white border-2 border-emerald-500 rounded-2xl max-w-3xl w-full p-4 sm:p-7 shadow-xl space-y-5">
+          <div 
+            onClick={(e) => { if (e.target === e.currentTarget) setCheckoutCourt(null); }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in overflow-y-auto"
+          >
+            <div className="bg-white border border-slate-200 rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl space-y-4 my-auto max-h-[92vh] flex flex-col">
               {/* Header Phiếu Thu */}
-              <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3 shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shadow-2xs">
                     <FileText className="w-5 h-5" />
@@ -1178,6 +1181,9 @@ Nội dung: ${code} - ${court.bookingData?.customerName || "Tien San"}`;
                   ✕
                 </button>
               </div>
+
+              {/* Nội dung cuộn linh hoạt cho màn hình nhỏ */}
+              <div className="overflow-y-auto space-y-4 pr-1 flex-1">
 
               {/* Thông tin ca sân & thời gian */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[13px]">
@@ -1336,9 +1342,10 @@ Nội dung: ${code} - ${court.bookingData?.customerName || "Tien San"}`;
                   </div>
                 </div>
               </div>
+              </div>
 
               {/* Nút Hành Động Ở Chân Hóa Đơn */}
-              <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-slate-200">
+              <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-slate-200 shrink-0">
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -1346,7 +1353,7 @@ Nội dung: ${code} - ${court.bookingData?.customerName || "Tien San"}`;
                     className="px-3.5 py-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-[#0369a1] text-[13px] font-bold border border-sky-200 transition flex items-center gap-1.5 cursor-pointer"
                   >
                     <Copy className="w-4 h-4" />
-                    <span>{copiedZaloSuccess ? "Đã Sao Chép!" : "Sao Chép Gửi Zalo"}</span>
+                    <span>{copiedZaloSuccess ? "Đã Sao Chép!" : "Sao Chép Phiếu Thu"}</span>
                   </button>
 
                   <button

@@ -22,6 +22,8 @@ import {
   Columns,
   Navigation,
   Heart,
+  Sparkles,
+  LocateFixed,
 } from "lucide-react";
 
 import PitchDetail from "./PitchDetail";
@@ -35,7 +37,8 @@ import {
   toggleFavoritePitch,
   subscribeFavorites,
 } from "@/lib/favoritePitchService";
-import { toastOk, toastInfo } from "@/lib/toast";
+import { toastOk, toastInfo, toastErr } from "@/lib/toast";
+import { recommendPitches, AiPitchCluster } from "@/lib/aiService";
 
 interface PitchSearchProps {
   user?: any;
@@ -54,6 +57,16 @@ const toSportTabs = (types?: string[] | null): string[] =>
     (t) => SPORT_CODE_TO_TAB[String(t).trim().toUpperCase()] ?? String(t).trim().toUpperCase()
   );
 
+const DISTRICT_COORDS: Record<string, { lat: number; lng: number }> = {
+  HAI_CHAU: { lat: 16.0544, lng: 108.2202 },
+  THANH_KHE: { lat: 16.0620, lng: 108.1880 },
+  SON_TRA: { lat: 16.0820, lng: 108.2430 },
+  NGU_HANH_SON: { lat: 16.0230, lng: 108.2520 },
+  CAM_LE: { lat: 16.0150, lng: 108.1950 },
+  LIEN_CHIEU: { lat: 16.0850, lng: 108.1450 },
+  HOA_VANG: { lat: 15.9850, lng: 108.1500 },
+};
+
 export default function PitchSearch({ user, onOpenAuth }: PitchSearchProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSport, setSelectedSport] = useState("ALL");
@@ -66,6 +79,16 @@ export default function PitchSearch({ user, onOpenAuth }: PitchSearchProps) {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "map" | "split">("list");
+
+  // AI Recommender states
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiResultsMap, setAiResultsMap] = useState<Record<string, { score: number; distance: number }>>({});
+  const [aiUserGps, setAiUserGps] = useState<{ lat: number; lng: number } | null>(null);
+  const [aiDistrict, setAiDistrict] = useState("HAI_CHAU");
+  const [aiTargetBudget, setAiTargetBudget] = useState(400000);
+  const [aiPitchType, setAiPitchType] = useState("SAN_7");
+  const [aiGpsStatus, setAiGpsStatus] = useState<string | null>(null);
 
   useEffect(() => {
     setFavoriteIds(getFavoritePitchIds(user?.id));
@@ -310,6 +333,83 @@ export default function PitchSearch({ user, onOpenAuth }: PitchSearchProps) {
     { id: "SON_TRA", name: "Quận Sơn Trà" },
   ];
 
+  const handleGetGpsLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      toastErr("Trình duyệt không hỗ trợ định vị GPS.");
+      return;
+    }
+    setAiGpsStatus("Đang lấy vị trí GPS...");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setAiUserGps({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setAiGpsStatus(`Đã nhận GPS: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+        toastOk("Đã xác định vị trí GPS của bạn thành công!");
+      },
+      (err) => {
+        console.warn("GPS error:", err);
+        setAiGpsStatus("Không lấy được GPS (dùng tọa độ quận đã chọn)");
+        toastInfo("Chưa cấp quyền GPS. Hệ thống sẽ dùng tâm vị trí Quận bạn chọn.");
+      },
+      { timeout: 8000 }
+    );
+  };
+
+  const handleRunAiRecommendation = async () => {
+    if (realPitches.length === 0) {
+      toastErr("Chưa có dữ liệu sân để AI phân tích.");
+      return;
+    }
+    try {
+      setIsAiLoading(true);
+      const targetCoords = aiUserGps || DISTRICT_COORDS[aiDistrict] || { lat: 16.0544, lng: 108.2202 };
+
+      // Chuyển đổi dữ liệu sân sang định dạng cho AI Service
+      const clusters: AiPitchCluster[] = realPitches.map((p: any) => ({
+        id: String(p.id),
+        name: p.name,
+        latitude: Number(p.latitude || targetCoords.lat),
+        longitude: Number(p.longitude || targetCoords.lng),
+        avg_price_per_hour: Number(p.priceDiscounted || p.priceOriginal || 300000),
+        pitch_types: p.pitchTypes || [p.sport || "SAN_7"],
+        rating: Number(p.rating || 4.5),
+        address: p.address,
+        image_url: p.imageUrl,
+      }));
+
+      const res = await recommendPitches(clusters, {
+        latitude: targetCoords.lat,
+        longitude: targetCoords.lng,
+        max_budget: aiTargetBudget,
+        pitch_type: aiPitchType,
+        top_n: 10,
+      });
+
+      if (res && res.recommendations && res.recommendations.length > 0) {
+        const map: Record<string, { score: number; distance: number }> = {};
+        res.recommendations.forEach((item: any) => {
+          map[String(item.id)] = {
+            score: Math.round(item.compatibility_score ?? 0),
+            distance: Number(item.distance_km ?? 0),
+          };
+        });
+        setAiResultsMap(map);
+        toastOk(`AI đã phân tích ${res.total_evaluated} sân và xếp hạng ${res.recommendations.length} sân tối ưu nhất!`);
+      } else {
+        toastInfo("AI Service đang bận hoặc phản hồi chậm. Vui lòng thử lại!");
+      }
+    } catch (err) {
+      console.error("AI recommend error:", err);
+      toastErr("Không thể kết nối dịch vụ AI. Vui lòng kiểm tra lại!");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const handleClearAi = () => {
+    setAiResultsMap({});
+    toastInfo("Đã tắt gợi ý AI, trở về thứ tự hiển thị thông thường.");
+  };
+
   const filteredPitches = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const list = realPitches.filter((p) => {
@@ -343,13 +443,25 @@ export default function PitchSearch({ user, onOpenAuth }: PitchSearchProps) {
       return true;
     });
 
+    // Nếu có kết quả AI xếp hạng, ưu tiên đưa sân có điểm tương thích cao lên đầu
+    if (Object.keys(aiResultsMap).length > 0) {
+      return [...list].sort((a, b) => {
+        const aiA = aiResultsMap[String(a.id)]?.score ?? 0;
+        const aiB = aiResultsMap[String(b.id)]?.score ?? 0;
+        if (aiB !== aiA) return aiB - aiA;
+        const isFavA = favoriteIds.includes(Number(a.id)) ? 1 : 0;
+        const isFavB = favoriteIds.includes(Number(b.id)) ? 1 : 0;
+        return isFavB - isFavA;
+      });
+    }
+
     // Ưu tiên sân yêu thích (thả tim) được đưa lên đầu danh sách
     return [...list].sort((a, b) => {
       const isFavA = favoriteIds.includes(Number(a.id)) ? 1 : 0;
       const isFavB = favoriteIds.includes(Number(b.id)) ? 1 : 0;
       return isFavB - isFavA;
     });
-  }, [realPitches, searchQuery, selectedSport, selectedDistrict, maxBudget, selectedTimeSlotFilter, onlyAvailableTonight, onlyFavorites, favoriteIds]);
+  }, [realPitches, searchQuery, selectedSport, selectedDistrict, maxBudget, selectedTimeSlotFilter, onlyAvailableTonight, onlyFavorites, favoriteIds, aiResultsMap]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -515,6 +627,23 @@ export default function PitchSearch({ user, onOpenAuth }: PitchSearchProps) {
 
             <button
               type="button"
+              onClick={() => setShowAiPanel((v) => !v)}
+              className={`px-3 py-1.5 rounded-md text-[13px] font-bold border transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                Object.keys(aiResultsMap).length > 0
+                  ? "bg-amber-50 text-amber-900 border-amber-300 ring-1 ring-amber-200"
+                  : showAiPanel
+                  ? "bg-sky-50 text-[#0369a1] border-sky-300"
+                  : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+              }`}
+              title="AI Gợi ý cụm sân tối ưu theo cự ly và ngân sách"
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${Object.keys(aiResultsMap).length > 0 ? "text-amber-600 fill-amber-500 animate-pulse" : "text-amber-500"}`} />
+              <span>AI Gợi ý sân {Object.keys(aiResultsMap).length > 0 ? `(${Object.keys(aiResultsMap).length})` : ""}</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAiPanel ? "rotate-180" : ""}`} />
+            </button>
+
+            <button
+              type="button"
               onClick={() => setShowAdvancedFilters((v) => !v)}
               className={`px-3 py-1.5 rounded-md text-[13px] font-bold border transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
                 hasAdvancedFilters
@@ -545,6 +674,150 @@ export default function PitchSearch({ user, onOpenAuth }: PitchSearchProps) {
             )}
           </div>
         </div>
+
+        {/* BẢNG ĐIỀU KHIỂN AI GỢI Ý CỤM SÂN TỐI ƯU (INLINE ZERO-MODAL) */}
+        {showAiPanel && (
+          <div className="pt-3 border-t border-amber-200 bg-gradient-to-br from-amber-50/50 via-white to-sky-50/50 p-3.5 rounded-lg border border-amber-300 space-y-3 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-amber-200">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-md bg-amber-100 text-amber-800">
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                </span>
+                <div>
+                  <h3 className="text-[14px] font-bold text-slate-900">
+                    Cố Vấn AI Gợi Ý Cụm Sân Tối Ưu
+                  </h3>
+                  <p className="text-[13px] text-slate-600">
+                    Tính toán khoảng cách Haversine & đa tiêu chí ngân sách để tìm sân phù hợp nhất cho bạn
+                  </p>
+                </div>
+              </div>
+
+              {Object.keys(aiResultsMap).length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearAi}
+                  className="px-2.5 py-1 rounded text-[13px] font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 transition-colors cursor-pointer self-start sm:self-center"
+                >
+                  ✕ Tắt chế độ AI
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[13px]">
+              {/* 1. Vị trí người dùng */}
+              <div>
+                <label className="block text-[13px] font-bold text-slate-700 mb-1">
+                  1. Vị trí của bạn
+                </label>
+                <div className="space-y-1.5">
+                  <button
+                    type="button"
+                    onClick={handleGetGpsLocation}
+                    className="w-full px-2.5 py-1.5 rounded-md border border-sky-300 bg-white hover:bg-sky-50 text-[#0369a1] font-bold flex items-center justify-center gap-1.5 cursor-pointer text-[13px] transition-colors"
+                  >
+                    <LocateFixed className="w-3.5 h-3.5 text-[#0369a1]" />
+                    <span>{aiUserGps ? "Cập nhật lại GPS" : "📍 Dùng GPS hiện tại"}</span>
+                  </button>
+                  {aiGpsStatus && (
+                    <p className="text-[12px] text-slate-500 truncate" title={aiGpsStatus}>
+                      {aiGpsStatus}
+                    </p>
+                  )}
+                  {!aiUserGps && (
+                    <select
+                      aria-label="Quận trung tâm"
+                      value={aiDistrict}
+                      onChange={(e) => setAiDistrict(e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded-md border border-slate-300 bg-white font-semibold text-slate-800 text-[13px]"
+                    >
+                      <option value="HAI_CHAU">Quận Hải Châu (Trung tâm)</option>
+                      <option value="THANH_KHE">Quận Thanh Khê</option>
+                      <option value="SON_TRA">Quận Sơn Trà</option>
+                      <option value="NGU_HANH_SON">Quận Ngũ Hành Sơn</option>
+                      <option value="CAM_LE">Quận Cẩm Lệ</option>
+                      <option value="LIEN_CHIEU">Quận Liên Chiểu</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              {/* 2. Loại sân */}
+              <div>
+                <label className="block text-[13px] font-bold text-slate-700 mb-1">
+                  2. Loại sân mong muốn
+                </label>
+                <select
+                  aria-label="Loại sân AI"
+                  value={aiPitchType}
+                  onChange={(e) => setAiPitchType(e.target.value)}
+                  className="w-full px-2.5 py-2 rounded-md border border-slate-300 bg-white font-semibold text-slate-800 text-[13px] cursor-pointer"
+                >
+                  <option value="SAN_5">Sân 5 người (Cỏ nhân tạo)</option>
+                  <option value="SAN_7">Sân 7 người (Phổ biến)</option>
+                  <option value="SAN_11">Sân 11 người (Tiêu chuẩn)</option>
+                  <option value="FUTSAL">Sân Futsal trong nhà</option>
+                </select>
+              </div>
+
+              {/* 3. Ngân sách tối đa */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[13px] font-bold text-slate-700">
+                    3. Ngân sách / giờ
+                  </label>
+                  <span className="font-mono font-bold text-[#0369a1] text-[13px]">
+                    {aiTargetBudget.toLocaleString("vi-VN")}đ
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={200000}
+                  max={800000}
+                  step={50000}
+                  value={aiTargetBudget}
+                  onChange={(e) => setAiTargetBudget(Number(e.target.value))}
+                  className="w-full accent-[#0369a1] cursor-pointer"
+                />
+                <div className="flex justify-between text-[11px] text-slate-600 font-mono mt-0.5">
+                  <span>200k</span>
+                  <span>500k</span>
+                  <span>800k</span>
+                </div>
+              </div>
+
+              {/* 4. Nút hành động */}
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={handleRunAiRecommendation}
+                  disabled={isAiLoading}
+                  className="w-full px-3 py-2 rounded-md bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold text-[13px] flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isAiLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Đang tính toán...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-white" />
+                      <span>⚡ Phân Tích & Gợi Ý</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {Object.keys(aiResultsMap).length > 0 && (
+              <div className="p-2.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-900 text-[13px] flex items-center justify-between gap-2">
+                <span>
+                  ✓ Đã xếp hạng theo điểm tương thích AI. Các sân phù hợp nhất đang hiển thị ở vị trí đầu tiên kèm huy hiệu điểm số.
+                </span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* BỘ LỌC NÂNG CAO (CHỈ HIỆN KHI BẤM XEM THÊM - PROGRESSIVE DISCLOSURE) */}
         {showAdvancedFilters && (
@@ -682,6 +955,12 @@ export default function PitchSearch({ user, onOpenAuth }: PitchSearchProps) {
                       <span className="px-2 py-0.5 rounded bg-sky-50 text-[#0369a1] font-bold text-[13px] border border-sky-200">
                         {pitch.districtName}
                       </span>
+                      {aiResultsMap[String(pitch.id)] && (
+                        <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-900 font-bold text-[13px] border border-amber-300 flex items-center gap-1 shadow-2xs">
+                          <Sparkles className="w-3 h-3 text-amber-600 fill-amber-500" />
+                          <span>AI: {aiResultsMap[String(pitch.id)].score}% ({aiResultsMap[String(pitch.id)].distance} km)</span>
+                        </span>
+                      )}
                       {isFav && (
                         <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-bold text-[13px] border border-rose-200 flex items-center gap-1">
                           <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
@@ -850,6 +1129,13 @@ export default function PitchSearch({ user, onOpenAuth }: PitchSearchProps) {
                       </span>
                     ) : null}
                   </div>
+
+                  {aiResultsMap[String(pitch.id)] && (
+                    <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 text-amber-900 px-2.5 py-0.5 rounded-full text-[13px] font-bold shadow-2xs self-start">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-500 animate-pulse" />
+                      <span>⭐ AI Khuyên Chọn • {aiResultsMap[String(pitch.id)].score}% phù hợp ({aiResultsMap[String(pitch.id)].distance} km)</span>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-[14px] text-slate-600 flex items-start gap-1.5 line-clamp-1 flex-1">

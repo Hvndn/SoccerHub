@@ -28,11 +28,14 @@ import {
   Share2,
   Copy,
   Flame,
+  Sparkles,
 } from "lucide-react";
 import { API_BASE_URL, apiRequest, ensureLoggedIn, fetchWithTimeout } from "@/lib/api";
 import { toastOk, toastErr } from "@/lib/toast";
 import { submitTeamReview } from "@/lib/adminService";
 import { getFavoritePitchIds, subscribeFavorites } from "@/lib/favoritePitchService";
+import { getEloRankInfo } from "@/lib/eloUtils";
+import CommunityChat from "@/components/CommunityChat";
 import FormDots from "./FormDots";
 
 interface MatchmakingMarketplaceProps {
@@ -149,13 +152,150 @@ export default function MatchmakingMarketplace({
   const [createTeamName, setCreateTeamName] = useState("");
   const [createPitchName, setCreatePitchName] = useState("");
   const [createAddress, setCreateAddress] = useState("");
-  const [createMatchTime, setCreateMatchTime] = useState("19:30 Tối nay");
+
+  // Chuẩn hóa ngày & khung ca thi đấu
+  const getTodayDateStr = () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  const STANDARD_MATCH_SLOTS = [
+    { label: "16:00 - 17:30 (Ca chiều)", value: "16:00 - 17:30" },
+    { label: "17:30 - 19:00 (Tan tầm)", value: "17:30 - 19:00" },
+    { label: "19:00 - 20:30 (Ca vàng)", value: "19:00 - 20:30" },
+    { label: "20:30 - 22:00 (Ca muộn)", value: "20:30 - 22:00" },
+    { label: "Tùy chỉnh giờ khác", value: "CUSTOM" },
+  ];
+
+  const [matchDateOption, setMatchDateOption] = useState<"TODAY" | "TOMORROW" | "CUSTOM">("TODAY");
+  const [customMatchDate, setCustomMatchDate] = useState<string>(getTodayDateStr());
+  const [matchSlotOption, setMatchSlotOption] = useState<string>("19:00 - 20:30");
+  const [customMatchSlot, setCustomMatchSlot] = useState<string>("");
+
+  const effectiveMatchTime = useMemo(() => {
+    const slot = matchSlotOption === "CUSTOM" ? customMatchSlot.trim() || "19:00 - 20:30" : matchSlotOption;
+    if (matchDateOption === "TODAY") {
+      const now = new Date();
+      const d = String(now.getDate()).padStart(2, "0");
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      return `${slot} • Tối nay (${d}/${m})`;
+    } else if (matchDateOption === "TOMORROW") {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const d = String(tomorrow.getDate()).padStart(2, "0");
+      const m = String(tomorrow.getMonth() + 1).padStart(2, "0");
+      return `${slot} • Ngày mai (${d}/${m})`;
+    } else {
+      if (!customMatchDate) return slot;
+      const parts = customMatchDate.split("-");
+      if (parts.length === 3) {
+        return `${slot} (${parts[2]}/${parts[1]}/${parts[0]})`;
+      }
+      return `${slot} (${customMatchDate})`;
+    }
+  }, [matchDateOption, customMatchDate, matchSlotOption, customMatchSlot]);
+
+  const [createMatchTime, setCreateMatchTime] = useState<string>("19:00 - 20:30 • Tối nay");
+
+  useEffect(() => {
+    setCreateMatchTime(effectiveMatchTime);
+  }, [effectiveMatchTime]);
   const [createPitchType, setCreatePitchType] = useState("SAN_7");
   const [createPaymentModel, setCreatePaymentModel] = useState("SPLIT_EQUAL");
   const [createFee, setCreateFee] = useState(50000);
   const [createNote, setCreateNote] = useState("");
   const [createCaptainPhone, setCreateCaptainPhone] = useState(user?.phone || "");
   const [creating, setCreating] = useState(false);
+
+  // Mời đích danh đối thủ & Đối thủ gần đây
+  const [isDirectInvite, setIsDirectInvite] = useState(false);
+  const [directOpponentContact, setDirectOpponentContact] = useState("");
+  const DEFAULT_RECENT_OPPONENTS = [
+    { name: "FC Rồng Vàng", contact: "0905123456" },
+    { name: "FC Trẻ Đà Nẵng", contact: "0905987654" },
+    { name: "FC Sơn Trà United", contact: "sontra.fc@gmail.com" },
+    { name: "FC Cẩm Lệ", contact: "0914112233" },
+  ];
+  const [recentOpponents, setRecentOpponents] = useState<{ name: string; contact: string }[]>(DEFAULT_RECENT_OPPONENTS);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("turfzone_recent_opponents");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setRecentOpponents(parsed);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const saveRecentOpponent = (name: string, contact: string) => {
+    if (!name || !contact) return;
+    setRecentOpponents((prev) => {
+      const filtered = prev.filter(
+        (o) => o.contact.toLowerCase() !== contact.toLowerCase() && o.name.toLowerCase() !== name.toLowerCase()
+      );
+      const next = [{ name, contact }, ...filtered].slice(0, 8);
+      try {
+        localStorage.setItem("turfzone_recent_opponents", JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  // Cửa sổ phân tích phong độ AI (5, 10, 15, hoặc -1 = tất cả)
+  const [aiMatchWindow, setAiMatchWindow] = useState<number>(5);
+
+  // Trạng thái nhập tỷ số trận đấu & Chat nóng 2 đội
+  const [scoringPost, setScoringPost] = useState<any | null>(null);
+  const [scoreA, setScoreA] = useState<number>(0);
+  const [scoreB, setScoreB] = useState<number>(0);
+  const [submittingScore, setSubmittingScore] = useState<boolean>(false);
+  const [chatPostId, setChatPostId] = useState<number | null>(null);
+
+  // Deep-link & Highlight kèo khi click từ thông báo
+  const [highlightedMatchId, setHighlightedMatchId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const mId = urlParams.get("matchId");
+    if (mId) {
+      setHighlightedMatchId(Number(mId));
+    }
+
+    const handleHighlightEvent = (e: any) => {
+      const targetId = e?.detail?.matchId;
+      if (targetId) {
+        setHighlightedMatchId(Number(targetId));
+      }
+    };
+
+    window.addEventListener("turfzone_highlight_match", handleHighlightEvent);
+    return () => {
+      window.removeEventListener("turfzone_highlight_match", handleHighlightEvent);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (highlightedMatchId && typeof window !== "undefined") {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(`matchmaking-card-${highlightedMatchId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedMatchId, posts]);
 
   const PHONE_REGEX = /^0[1-9][0-9]{8}$/;
 
@@ -255,13 +395,25 @@ export default function MatchmakingMarketplace({
   const myWinRate = myTeamPost?.winRate ?? 50;
   const myForm: string = myTeamPost?.form ?? "";
   const myTeamName: string = myTeamPost?.teamName ?? userName;
+  const myElo: number = typeof user?.eloRating === "number" && user.eloRating > 0 ? user.eloRating : 1200;
 
   const [aiOrder, setAiOrder] = useState<string[] | null>(null);
   const [aiSorting, setAiSorting] = useState(false);
+  const [aiMatchDetails, setAiMatchDetails] = useState<
+    Record<
+      string,
+      {
+        winRateDiff: number;
+        formScore: number;
+        eloDiff?: number;
+        matchWindow?: number;
+      }
+    >
+  >({});
 
-  const formScoreOf = (a: string, b: string) => {
-    const x = (a || "").toUpperCase().slice(0, 5);
-    const y = (b || "").toUpperCase().slice(0, 5);
+  const formScoreOf = (a: string, b: string, window: number = 5) => {
+    const x = window > 0 ? (a || "").toUpperCase().slice(0, window) : (a || "").toUpperCase();
+    const y = window > 0 ? (b || "").toUpperCase().slice(0, window) : (b || "").toUpperCase();
     let s = 0;
     for (let i = 0; i < Math.min(x.length, y.length); i++) {
       if ("WDL".includes(x[i]) && x[i] === y[i]) s += 1;
@@ -278,6 +430,7 @@ export default function MatchmakingMarketplace({
           id: "me",
           name: myTeamName,
           win_rate: myWinRate,
+          elo_rating: myElo,
           played: myTeamPost?.played ?? 0,
           record: myTeamPost?.record ?? "",
           recent_form: myForm,
@@ -286,24 +439,48 @@ export default function MatchmakingMarketplace({
           id: String(p.id),
           name: p.teamName || "Kèo",
           win_rate: p.winRate ?? 50,
+          elo_rating: p.eloRating ?? 1200,
           played: p.played ?? 0,
           record: p.record ?? "",
           recent_form: p.form ?? "",
           contact_phone: p.captainPhone ?? null,
-        }))
+        })),
+        25,
+        aiMatchWindow
       );
       if (res && Array.isArray(res.matched_opponents) && res.matched_opponents.length > 0) {
         setAiOrder(res.matched_opponents.map((o: any) => String(o.id)));
+        const details: Record<string, { winRateDiff: number; formScore: number; eloDiff?: number; matchWindow?: number }> = {};
+        res.matched_opponents.forEach((o: any) => {
+          details[String(o.id)] = {
+            winRateDiff: Number(o.win_rate_diff ?? Math.abs((o.win_rate ?? 50) - myWinRate)),
+            formScore: Number(o.form_score ?? formScoreOf(o.recent_form ?? "", myForm, aiMatchWindow)),
+            eloDiff: Number(o.elo_diff ?? Math.abs((o.elo_rating ?? 1200) - myElo)),
+            matchWindow: aiMatchWindow,
+          };
+        });
+        setAiMatchDetails(details);
+        const windowText = aiMatchWindow > 0 ? `${aiMatchWindow} trận gần nhất` : "toàn bộ lịch sử";
+        toastOk(`AI đã so khớp và xếp hạng ${res.matched_opponents.length} đội cân sức nhất (xét ${windowText})!`);
       } else {
-        setAiOrder(
-          [...posts]
-            .sort(
-              (a: any, b: any) =>
-                Math.abs((a.winRate ?? 50) - myWinRate) - Math.abs((b.winRate ?? 50) - myWinRate) ||
-                formScoreOf(b.form, myForm) - formScoreOf(a.form, myForm)
-            )
-            .map((p: any) => String(p.id))
+        const sorted = [...posts].sort(
+          (a: any, b: any) =>
+            Math.abs((a.eloRating ?? 1200) - myElo) - Math.abs((b.eloRating ?? 1200) - myElo) ||
+            Math.abs((a.winRate ?? 50) - myWinRate) - Math.abs((b.winRate ?? 50) - myWinRate) ||
+            formScoreOf(b.form, myForm, aiMatchWindow) - formScoreOf(a.form, myForm, aiMatchWindow)
         );
+        setAiOrder(sorted.map((p: any) => String(p.id)));
+        const details: Record<string, { winRateDiff: number; formScore: number; eloDiff?: number; matchWindow?: number }> = {};
+        sorted.forEach((p: any) => {
+          details[String(p.id)] = {
+            winRateDiff: Math.abs((p.winRate ?? 50) - myWinRate),
+            formScore: formScoreOf(p.form, myForm, aiMatchWindow),
+            eloDiff: Math.abs((p.eloRating ?? 1200) - myElo),
+            matchWindow: aiMatchWindow,
+          };
+        });
+        setAiMatchDetails(details);
+        toastOk(`Đã xếp đối thủ theo điểm ELO và phong độ ${aiMatchWindow > 0 ? aiMatchWindow + ' trận' : 'toàn bộ'}.`);
       }
     } finally {
       setAiSorting(false);
@@ -485,12 +662,17 @@ export default function MatchmakingMarketplace({
           homeKitColor: createHomeKitColor,
           refereeOption: createRefereeOption,
           waterOption: createWaterOption,
+          isDirectInvite: isDirectInvite,
+          invitedContact: isDirectInvite ? directOpponentContact.trim() : null,
+          eloRating: myElo,
         }),
       });
 
       setShowCreateForm(false);
       setCreateTeamName("");
       setCreateNote("");
+      setIsDirectInvite(false);
+      setDirectOpponentContact("");
       fetchPosts();
       toastOk(createPostType === "SOS_GUEST" ? "Đã phát tin SOS mượn chân thành công!" : "Đã đăng kèo thành công!");
     } catch (err: any) {
@@ -524,6 +706,10 @@ export default function MatchmakingMarketplace({
       );
 
       toastOk(data?.message || (acceptingPost.postType === "SOS_GUEST" ? "Nhận chân thành công!" : "Ghép kèo thành công!"));
+      if (acceptingPost.teamName && acceptingPost.captainPhone) {
+        saveRecentOpponent(acceptingPost.teamName, acceptingPost.captainPhone);
+      }
+      setActiveTab("matched");
       setLastAcceptedPost({
         ...acceptingPost,
         captainPhone: acceptingPost.captainPhone,
@@ -540,6 +726,39 @@ export default function MatchmakingMarketplace({
       toastErr(err?.message || "Lỗi kết nối máy chủ khi nhận kèo.");
     } finally {
       setAccepting(false);
+    }
+  };
+
+  const handleCompleteMatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!scoringPost) return;
+    try {
+      setSubmittingScore(true);
+      const data = await apiRequest<any>(
+        `/api/v1/community/matchmaking-posts/${scoringPost.id}/complete`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            scoreA: Math.max(0, scoreA),
+            scoreB: Math.max(0, scoreB),
+          }),
+        }
+      );
+
+      if (scoringPost.opponentTeamName && scoringPost.opponentCaptainPhone) {
+        saveRecentOpponent(scoringPost.opponentTeamName, scoringPost.opponentCaptainPhone);
+      }
+      if (scoringPost.teamName && scoringPost.captainPhone) {
+        saveRecentOpponent(scoringPost.teamName, scoringPost.captainPhone);
+      }
+
+      toastOk(data?.message || "Đã lưu kết quả trận đấu và kết toán điểm ELO!");
+      setScoringPost(null);
+      fetchPosts();
+    } catch (err: any) {
+      toastErr(err?.message || "Không thể lưu kết quả trận đấu.");
+    } finally {
+      setSubmittingScore(false);
     }
   };
 
@@ -801,16 +1020,89 @@ export default function MatchmakingMarketplace({
                 </div>
               )}
 
-              <div>
-                <label className="block text-[13px] font-bold text-slate-700 mb-1">Khung giờ thi đấu *</label>
-                <input
-                  type="text"
-                  required
-                  value={createMatchTime}
-                  onChange={(e) => setCreateMatchTime(e.target.value)}
-                  placeholder="Ví dụ: 19:30 Tối nay"
-                  className="w-full bg-white px-3 py-2 rounded-md border border-slate-300 text-[13px] focus:outline-none focus:border-[#0369a1]"
-                />
+              <div className="sm:col-span-2 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[13px] font-bold text-slate-700">
+                    Khung giờ thi đấu *
+                  </label>
+                  <span className="text-[#0369a1] font-bold font-mono text-[12px] bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+                    {effectiveMatchTime}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {/* 1. Chọn ngày */}
+                  <div className="space-y-1">
+                    <div className="inline-flex rounded p-0.5 bg-slate-100 border border-slate-300 w-full">
+                      <button
+                        type="button"
+                        onClick={() => setMatchDateOption("TODAY")}
+                        className={`flex-1 py-1 text-center rounded text-[12px] font-bold transition-colors cursor-pointer ${
+                          matchDateOption === "TODAY"
+                            ? "bg-[#0369a1] text-white shadow-xs"
+                            : "text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        Hôm nay
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMatchDateOption("TOMORROW")}
+                        className={`flex-1 py-1 text-center rounded text-[12px] font-bold transition-colors cursor-pointer ${
+                          matchDateOption === "TOMORROW"
+                            ? "bg-[#0369a1] text-white shadow-xs"
+                            : "text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        Ngày mai
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMatchDateOption("CUSTOM")}
+                        className={`flex-1 py-1 text-center rounded text-[12px] font-bold transition-colors cursor-pointer ${
+                          matchDateOption === "CUSTOM"
+                            ? "bg-[#0369a1] text-white shadow-xs"
+                            : "text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        Ngày khác
+                      </button>
+                    </div>
+                    {matchDateOption === "CUSTOM" && (
+                      <input
+                        type="date"
+                        min={getTodayDateStr()}
+                        value={customMatchDate}
+                        onChange={(e) => setCustomMatchDate(e.target.value)}
+                        className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 text-[13px] font-semibold focus:outline-none focus:border-[#0369a1]"
+                      />
+                    )}
+                  </div>
+
+                  {/* 2. Chọn ca thi đấu */}
+                  <div className="space-y-1">
+                    <select
+                      value={matchSlotOption}
+                      onChange={(e) => setMatchSlotOption(e.target.value)}
+                      className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 text-[13px] font-bold text-slate-800 focus:outline-none focus:border-[#0369a1]"
+                    >
+                      {STANDARD_MATCH_SLOTS.map((s) => (
+                        <option key={s.value} value={s.value}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                    {matchSlotOption === "CUSTOM" && (
+                      <input
+                        type="text"
+                        value={customMatchSlot}
+                        onChange={(e) => setCustomMatchSlot(e.target.value)}
+                        placeholder="VD: 06:00 - 07:30..."
+                        className="w-full bg-white px-2.5 py-1.5 rounded border border-slate-300 text-[13px] focus:outline-none focus:border-[#0369a1]"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -930,6 +1222,65 @@ export default function MatchmakingMarketplace({
                           <option value="TU_BAT">🤝 Hai bên tự bắt Fairplay</option>
                           <option value="THUE_TRONG_TAI">⚖️ Thuê trọng tài (Cưa đôi)</option>
                         </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* MỜI ĐÍCH DANH ĐỐI THỦ (SĐT HOẶC EMAIL) + ĐỐI THỦ GẦN ĐÂY */}
+              {createPostType === "MATCH" && (
+                <div className="sm:col-span-2 lg:col-span-4 border border-indigo-200 rounded-md bg-indigo-50/40 p-3 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-[13px]">
+                      <input
+                        type="checkbox"
+                        checked={isDirectInvite}
+                        onChange={(e) => setIsDirectInvite(e.target.checked)}
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                      />
+                      <span>🎯 Mời đích danh đối thủ thi đấu (Nhập SĐT hoặc Email)</span>
+                    </label>
+                    <span className="text-slate-500 text-[12px] font-medium">Kèo riêng tư / Chỉ định</span>
+                  </div>
+
+                  {isDirectInvite && (
+                    <div className="space-y-2.5 pt-1 animate-fade-in">
+                      <div>
+                        <input
+                          type="text"
+                          value={directOpponentContact}
+                          onChange={(e) => setDirectOpponentContact(e.target.value)}
+                          placeholder="Nhập SĐT (0905...) hoặc Email đối thủ muốn mời đích danh..."
+                          className="w-full bg-white px-3 py-2 rounded-md border border-indigo-300 text-[13px] font-medium focus:outline-none focus:border-indigo-600"
+                        />
+                      </div>
+
+                      {/* Đối thủ gần đây - 1-Click chọn nhanh */}
+                      <div>
+                        <span className="text-[12px] font-bold text-slate-600 block mb-1.5">
+                          ⚡ Đối thủ đã giao lưu gần đây (Bấm để chọn nhanh):
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {recentOpponents.map((opp, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setDirectOpponentContact(opp.contact);
+                                toastOk(`Đã chọn đối thủ: ${opp.name} (${opp.contact})`);
+                              }}
+                              className={`px-2.5 py-1 rounded-md text-[13px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                                directOpponentContact === opp.contact
+                                  ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                                  : "bg-white text-slate-700 border-slate-300 hover:bg-indigo-50 hover:border-indigo-300"
+                              }`}
+                            >
+                              <span>⚽ {opp.name}</span>
+                              <span className="text-[12px] opacity-75 font-mono">({opp.contact})</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1146,14 +1497,54 @@ export default function MatchmakingMarketplace({
               <option value="LOSER_PAYS">Đội thua trả 100%</option>
             </select>
 
+            {/* Bộ chọn số trận phân tích phong độ AI (Mục 6) */}
+            <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-md border border-slate-300 text-[13px]">
+              <span className="text-slate-600 font-semibold flex items-center gap-1 whitespace-nowrap">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Xét phong độ:</span>
+              </span>
+              <div className="inline-flex rounded p-0.5 bg-white border border-slate-200">
+                {[
+                  { label: "5 trận", value: 5 },
+                  { label: "10 trận", value: 10 },
+                  { label: "15 trận", value: 15 },
+                  { label: "Tất cả", value: -1 },
+                ].map((item) => (
+                  <button
+                    key={item.value}
+                    type="button"
+                    onClick={() => {
+                      setAiMatchWindow(item.value);
+                      if (aiOrder) {
+                        toastOk(`Đã chọn xét ${item.label}. Bấm "AI Gợi Ý Tìm Đối" để cập nhật xếp hạng.`);
+                      }
+                    }}
+                    className={`px-2 py-0.5 rounded text-[12px] font-bold transition-colors cursor-pointer ${
+                      aiMatchWindow === item.value
+                        ? "bg-[#0369a1] text-white"
+                        : "text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <button
               type="button"
               onClick={sortBySkill}
               disabled={aiSorting || posts.length === 0}
-              className="px-3 py-1.5 rounded-md border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+              className="px-3 py-1.5 rounded-md border border-[#0369a1] bg-sky-50 hover:bg-sky-100 text-[#0369a1] font-bold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs"
             >
-              <ArrowUpDown className="w-3.5 h-3.5 text-[#0369a1]" />
-              <span>{aiSorting ? "Đang xếp..." : aiOrder ? "Đã xếp theo trình độ" : "Xếp theo trình độ"}</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>
+                {aiSorting
+                  ? "Đang phân tích AI..."
+                  : aiOrder
+                  ? `Đã xếp ELO & phong độ (${aiMatchWindow > 0 ? aiMatchWindow + ' trận' : 'tất cả'})`
+                  : "AI Gợi Ý Tìm Đối (Theo ELO & Phong Độ)"}
+              </span>
             </button>
           </div>
         )}
@@ -1194,16 +1585,38 @@ export default function MatchmakingMarketplace({
                 const isAcceptingThis = acceptingPost?.id === post.id;
                 const isSos = post.postType === "SOS_GUEST";
                 const neededSlots = Math.max(1, (post.neededCount || 1) - (post.joinedCount || 0));
+                const postElo = Number(post.eloRating ?? 1200);
+                const postRank = getEloRankInfo(postElo);
+
+                const isHighlighted = highlightedMatchId === post.id;
 
                 return (
                   <article
                     key={post.id}
+                    id={`matchmaking-card-${post.id}`}
                     className={`rounded-lg p-4 sm:p-5 border flex flex-col justify-between gap-3.5 transition-all ${
-                      isSos
+                      isHighlighted
+                        ? "ring-2 ring-indigo-500 border-indigo-400 bg-indigo-50/25 shadow-lg scale-[1.01]"
+                        : isSos
                         ? "bg-rose-50/20 border-rose-300 hover:border-rose-400"
                         : "bg-white border-slate-300"
                     }`}
                   >
+                    {isHighlighted && (
+                      <div className="p-2.5 rounded-md bg-indigo-100/80 border border-indigo-300 text-indigo-950 text-[13px] font-bold flex items-center justify-between shadow-2xs animate-pulse">
+                        <span className="flex items-center gap-1.5">
+                          <span className="text-base">🎯</span>
+                          <span>Kèo thi đấu giao hữu gửi đích danh cho bạn!</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setHighlightedMatchId(null)}
+                          className="text-indigo-700 hover:text-indigo-900 text-[12px] font-semibold underline cursor-pointer ml-2"
+                        >
+                          Đã xem
+                        </button>
+                      </div>
+                    )}
                     <div className="space-y-3">
                       {/* Top row: badges & form */}
                       <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
@@ -1232,6 +1645,19 @@ export default function MatchmakingMarketplace({
                               <span className="px-2.5 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200 font-bold text-[13px]">
                                 {pitchLabel(post.pitchType)}
                               </span>
+                              {/* ELO Rating & Rank (Mục 3) */}
+                              <span className={`px-2.5 py-0.5 rounded border text-[13px] font-bold inline-flex items-center gap-1 ${postRank.badgeClass}`}>
+                                <span>{postRank.badge}</span>
+                                <span>{postElo} ELO</span>
+                                <span className="text-[12px] opacity-75 font-semibold">• {postRank.name}</span>
+                              </span>
+                              {/* Kèo mời đích danh (Mục 5) */}
+                              {Boolean(post.isDirectInvite && post.invitedContact) && (
+                                <span className="px-2.5 py-0.5 rounded bg-indigo-50 text-indigo-800 border border-indigo-200 font-bold text-[13px] flex items-center gap-1">
+                                  <span>🎯 Mời riêng:</span>
+                                  <span className="font-mono text-indigo-900">{post.invitedContact}</span>
+                                </span>
+                              )}
                             </>
                           )}
                         </div>
@@ -1250,6 +1676,28 @@ export default function MatchmakingMarketplace({
                           </span>
                         )}
                       </div>
+
+                      {/* AI Match Compatibility Pill */}
+                      {aiMatchDetails[String(post.id)] && (
+                        <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50/50 border border-amber-300 text-[13px] shadow-2xs animate-fade-in">
+                          <div className="flex items-center gap-1.5 font-bold text-amber-950 flex-wrap">
+                            <Sparkles className="w-4 h-4 text-amber-600 fill-amber-500 animate-pulse shrink-0" />
+                            <span>
+                              {aiMatchDetails[String(post.id)].winRateDiff <= 5 && (aiMatchDetails[String(post.id)].eloDiff ?? 0) <= 60
+                                ? "🔥 Kèo Đồng Banh • Rất Cân Sức"
+                                : aiMatchDetails[String(post.id)].winRateDiff <= 15 && (aiMatchDetails[String(post.id)].eloDiff ?? 0) <= 150
+                                ? "⚖️ Kèo Cân Sức • Chênh Nhẹ"
+                                : "⚔️ Kèo Thử Thách"}
+                            </span>
+                            <span className="text-amber-800 font-semibold text-[13px]">
+                              (Lệch {aiMatchDetails[String(post.id)].winRateDiff}% tỷ lệ thắng • Lệch {aiMatchDetails[String(post.id)].eloDiff ?? Math.abs(postElo - myElo)} ELO)
+                            </span>
+                          </div>
+                          <span className="text-[12px] font-bold text-amber-900 bg-amber-200/60 px-2 py-0.5 rounded shrink-0">
+                            Trùng {aiMatchDetails[String(post.id)].formScore}/{(aiMatchDetails[String(post.id)].matchWindow ?? 5) > 0 ? aiMatchDetails[String(post.id)].matchWindow : "toàn bộ"} trận phong độ
+                          </span>
+                        </div>
+                      )}
 
                       {/* Team Name & Fee */}
                       <div className="flex items-start justify-between gap-3">
@@ -1662,12 +2110,153 @@ export default function MatchmakingMarketplace({
                           {post.pitchName} • {post.matchTime}
                         </p>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[13px] shrink-0">
-                        Đã chốt kèo
+                      <span className={`px-2.5 py-0.5 rounded font-bold text-[13px] shrink-0 border ${
+                        post.isCompleted || post.status === "COMPLETED"
+                          ? "bg-sky-50 text-[#0369a1] border-sky-200"
+                          : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                      }`}>
+                        {post.isCompleted || post.status === "COMPLETED" ? "Đã xong trận" : "Đã chốt kèo"}
                       </span>
                     </div>
 
                     <KeoPaymentInfo post={post} pitch={findPitchByName(post.pitchName)} />
+
+                    {/* HIỂN THỊ KẾT QUẢ TỶ SỐ & ELO NẾU TRẬN ĐÃ XONG */}
+                    {Boolean(post.isCompleted || post.status === "COMPLETED") && (
+                      <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 flex flex-wrap items-center justify-between gap-2 text-[13px]">
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-base text-emerald-950 font-mono">
+                            ⚽ Tỷ số: {post.scoreA ?? 0} - {post.scoreB ?? 0}
+                          </span>
+                          <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[12px]">
+                            Đã kết toán ELO
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 font-semibold text-emerald-900 flex-wrap">
+                          <span>Biến động ELO:</span>
+                          <span className="font-bold text-[#0369a1]">
+                            {post.teamName} ({(post.eloChangeA ?? 25) > 0 ? `+${post.eloChangeA ?? 25}` : post.eloChangeA ?? 25} ELO)
+                          </span>
+                          <span>•</span>
+                          <span className="font-bold text-amber-700">
+                            {post.opponentTeamName || "Đối thủ"} ({(post.eloChangeB ?? -18) > 0 ? `+${post.eloChangeB ?? -18}` : post.eloChangeB ?? -18} ELO)
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* FORM NHẬP TỶ SỐ TRẬN ĐẤU INLINE */}
+                    {scoringPost?.id === post.id && (
+                      <form
+                        onSubmit={handleCompleteMatch}
+                        className="p-3.5 rounded-lg bg-sky-50/60 border border-sky-300 space-y-3 text-[13px] animate-fade-in"
+                      >
+                        <div className="flex items-center justify-between border-b border-sky-200 pb-2">
+                          <span className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                            <span>⚽ Xác Nhận Kết Quả & Nhập Tỷ Số Trận Đấu</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setScoringPost(null)}
+                            className="text-slate-500 hover:text-slate-800 p-1"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                          <div className="p-2.5 rounded-md bg-white border border-slate-300 space-y-1">
+                            <span className="block font-bold text-slate-800 truncate">
+                              {post.teamName} (Đội nhà)
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number"
+                                min={0}
+                                max={99}
+                                value={scoreA}
+                                onChange={(e) => setScoreA(Math.max(0, parseInt(e.target.value) || 0))}
+                                className="w-20 px-3 py-1.5 rounded border border-slate-300 font-mono font-extrabold text-lg text-center focus:outline-none focus:border-[#0369a1]"
+                              />
+                              <span className="text-slate-500 text-[12px]">Bàn thắng</span>
+                            </div>
+                          </div>
+
+                          <div className="p-2.5 rounded-md bg-white border border-slate-300 space-y-1">
+                            <span className="block font-bold text-slate-800 truncate">
+                              {post.opponentTeamName || "Đội khách"}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number"
+                                min={0}
+                                max={99}
+                                value={scoreB}
+                                onChange={(e) => setScoreB(Math.max(0, parseInt(e.target.value) || 0))}
+                                className="w-20 px-3 py-1.5 rounded border border-slate-300 font-mono font-extrabold text-lg text-center focus:outline-none focus:border-[#0369a1]"
+                              />
+                              <span className="text-slate-500 text-[12px]">Bàn thắng</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-2 rounded bg-white border border-slate-200 text-[12px] flex items-center justify-between text-slate-700 flex-wrap gap-1">
+                          <span>Dự kiến cộng/trừ ELO:</span>
+                          <span className="font-bold text-[#0369a1]">
+                            {scoreA > scoreB
+                              ? `${post.teamName} (+25 ELO) • ${post.opponentTeamName || "Đối thủ"} (-18 ELO)`
+                              : scoreB > scoreA
+                              ? `${post.teamName} (-18 ELO) • ${post.opponentTeamName || "Đối thủ"} (+25 ELO)`
+                              : "Hòa trận: Cả hai đội (+5 ELO)"}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => setScoringPost(null)}
+                            className="px-3 py-1.5 rounded bg-white border border-slate-300 font-bold text-slate-700 cursor-pointer"
+                          >
+                            Hủy
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={submittingScore}
+                            className="px-4 py-1.5 rounded bg-[#0369a1] hover:bg-[#075985] text-white font-bold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                          >
+                            {submittingScore && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                            <span>Lưu & Kết Toán Trận Đấu</span>
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    {/* KHUNG CHAT TRAO ĐỔI NÓNG GIỮA 2 ĐỘI */}
+                    {chatPostId === post.id && (
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-300 space-y-2 animate-fade-in">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                          <span className="font-bold text-slate-900 text-[13px] flex items-center gap-1.5">
+                            <MessageCircle className="w-4 h-4 text-[#0369a1]" />
+                            <span>Phòng Chat Nóng: {post.teamName} ⚔️ {post.opponentTeamName || "Đối thủ"}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setChatPostId(null)}
+                            className="text-slate-500 hover:text-slate-800 p-1 cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="h-[380px] overflow-hidden rounded border border-slate-200 bg-white">
+                          <CommunityChat
+                            user={user}
+                            channel={`match_${post.id}`}
+                            channelName={`Kèo ${post.teamName} vs ${post.opponentTeamName || "Đối thủ"}`}
+                            channelDesc={`Trao đổi nóng giờ đá ${post.matchTime} tại ${post.pitchName}`}
+                          />
+                        </div>
+                      </div>
+                    )}
 
                     {isReviewingThis ? (
                       <div className="p-3 rounded-md bg-slate-50 border border-slate-300 space-y-2.5 text-[13px]">
@@ -1778,11 +2367,46 @@ export default function MatchmakingMarketplace({
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="text-[13px] text-slate-500 flex items-center gap-1">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                          Cặp đấu đã xác nhận
-                        </span>
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Nút 1: Nhập Tỷ Số & Kết toán ELO */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setScoringPost(post);
+                              setScoreA(post.scoreA ?? 0);
+                              setScoreB(post.scoreB ?? 0);
+                            }}
+                            className={`px-3 py-1.5 rounded-md text-[13px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                              post.isCompleted || post.status === "COMPLETED"
+                                ? "bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-300"
+                                : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300 shadow-2xs"
+                            }`}
+                          >
+                            <span>⚽</span>
+                            <span>
+                              {post.isCompleted || post.status === "COMPLETED"
+                                ? "Cập Nhật Lại Tỷ Số"
+                                : "Nhập Tỷ Số & ELO"}
+                            </span>
+                          </button>
+
+                          {/* Nút 2: Chat Nóng 2 Đội */}
+                          <button
+                            type="button"
+                            onClick={() => setChatPostId(chatPostId === post.id ? null : post.id)}
+                            className={`px-3 py-1.5 rounded-md text-[13px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                              chatPostId === post.id
+                                ? "bg-[#0369a1] text-white border-[#0369a1]"
+                                : "bg-sky-50 hover:bg-sky-100 text-[#0369a1] border-sky-300"
+                            }`}
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>{chatPostId === post.id ? "Đóng Chat" : "Trao Đổi Nhanh"}</span>
+                          </button>
+                        </div>
+
+                        {/* Nút 3: Đánh giá Fair-play */}
                         <button
                           type="button"
                           onClick={() => {

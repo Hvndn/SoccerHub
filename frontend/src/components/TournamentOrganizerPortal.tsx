@@ -31,6 +31,7 @@ import {
 } from "@/lib/tournamentService";
 import FormDots from "./FormDots";
 import BusinessContacts from "./BusinessContacts";
+import CommunityChat from "./CommunityChat";
 import {
   getPendingTeams, approveTeam, rejectTeam, addManualTeam,
   fetchJoinAccess, setJoinAccess, addTournamentInvite, removeTournamentInvite,
@@ -95,6 +96,7 @@ export default function TournamentOrganizerPortal({
 }: TournamentOrganizerPortalProps) {
  // Sport Filter State
  const [selectedSport, setSelectedSport] = useState<string>("all");
+ const [showInlineChat, setShowInlineChat] = useState<boolean>(false);
 
  // Bộ lọc chi tiết giải đấu
   const [filterSearch, setFilterSearch] = useState<string>("");
@@ -804,8 +806,73 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
   teamName: "",
   captainName: "",
   captainPhone: "",
+  captainEmail: "",
   memberCount: 12,
  });
+ const [repLookupContact, setRepLookupContact] = useState("");
+ const [lookingUpClub, setLookingUpClub] = useState(false);
+ const [repLookupResult, setRepLookupResult] = useState<{
+  checked: boolean;
+  found: boolean;
+  userName?: string;
+  userEmail?: string;
+  userPhone?: string;
+  clubs: Array<{ id: number; name: string; area?: string; phone?: string; memberCount: number; memberNames: string[] }>;
+ }>({ checked: false, found: false, clubs: [] });
+ const [manualRoster, setManualRoster] = useState<string[]>([]);
+ const [extraPlayerInput, setExtraPlayerInput] = useState("");
+
+ const handleLookupRepClubs = async () => {
+  const q = (repLookupContact || addTeamForm.captainPhone || addTeamForm.captainEmail).trim();
+  if (!q) return;
+  setLookingUpClub(true);
+  try {
+   const data = await apiRequest<any>(`/api/v1/clubs/lookup?contact=${encodeURIComponent(q)}`);
+   setRepLookupResult({
+    checked: true,
+    found: Boolean(data?.found),
+    userName: data?.userName || "",
+    userEmail: data?.userEmail || "",
+    userPhone: data?.userPhone || "",
+    clubs: Array.isArray(data?.clubs) ? data.clubs : [],
+   });
+   if (data?.found) {
+    setAddTeamForm((prev) => ({
+     ...prev,
+     captainName: prev.captainName || data.userName || "",
+     captainPhone: prev.captainPhone || data.userPhone || "",
+     captainEmail: prev.captainEmail || data.userEmail || "",
+    }));
+   }
+  } catch {
+   setRepLookupResult({ checked: true, found: false, clubs: [] });
+  } finally {
+   setLookingUpClub(false);
+  }
+ };
+
+ const handleSelectRepClub = (club: { name: string; phone?: string; memberNames: string[] }) => {
+  const members = Array.isArray(club.memberNames) ? club.memberNames : [];
+  setManualRoster(members);
+  setAddTeamForm((prev) => ({
+   ...prev,
+   teamName: club.name || prev.teamName,
+   captainPhone: prev.captainPhone || club.phone || "",
+   memberCount: members.length >= 5 ? members.length : prev.memberCount,
+  }));
+ };
+
+ const handleAddExtraManualPlayer = () => {
+  const name = extraPlayerInput.trim();
+  if (!name) return;
+  setManualRoster((prev) => {
+   if (prev.some((p) => p.toLowerCase() === name.toLowerCase())) return prev;
+   const next = [...prev, name];
+   setAddTeamForm((f) => ({ ...f, memberCount: Math.max(f.memberCount, next.length) }));
+   return next;
+  });
+  setExtraPlayerInput("");
+ };
 
  const manualTeamErrors = useMemo(() => {
    const errs: Record<string, string> = {};
@@ -869,10 +936,15 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
     teamName: addTeamForm.teamName.trim(),
     captainName: addTeamForm.captainName.trim() || undefined,
     captainPhone: addTeamForm.captainPhone.trim() || undefined,
+    captainEmail: addTeamForm.captainEmail.trim() || undefined,
     memberCount: Number(addTeamForm.memberCount) || 12,
+    memberNames: manualRoster.length > 0 ? manualRoster.join(", ") : undefined,
    });
    setVarNotice("✅ " + (res?.message || "Đã thêm đội vào giải."));
-   setAddTeamForm({ teamName: "", captainName: "", captainPhone: "", memberCount: 12 });
+   setAddTeamForm({ teamName: "", captainName: "", captainPhone: "", captainEmail: "", memberCount: 12 });
+   setManualRoster([]);
+   setRepLookupContact("");
+   setRepLookupResult({ checked: false, found: false, clubs: [] });
    setShowAddTeamForm(false);
    await fetchDbTournaments();
    await loadPendingTeams(tid);
@@ -1012,6 +1084,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  teamB: m.teamB.name,
  scoreA: m.scoreA ?? 0,
  scoreB: m.scoreB ?? 0,
+ winner: m.winner,
+ scorers: Array.isArray(m.scorers) ? m.scorers : [],
  matchDate: m.matchDate,
  }));
  }, [activeBracket]);
@@ -1029,6 +1103,8 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  teamB: m.teamB.name,
  scoreA: m.scoreA ?? 0,
  scoreB: m.scoreB ?? 0,
+ winner: m.winner,
+ scorers: Array.isArray(m.scorers) ? m.scorers : [],
  matchDate: m.matchDate,
  timeSlot: m.timeSlot,
  pitchName: m.pitchName,
@@ -2205,18 +2281,48 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
                     <span>Sửa Thông Tin</span>
                   </button>
 
-                  {user?.role === "ORGANIZER" && onOpenTournamentChat && (
-                    <button
-                      type="button"
-                      onClick={onOpenTournamentChat}
-                      className="px-3.5 py-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-bold text-[13px] transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-                    >
-                      <MessageCircle className="w-4 h-4 text-[#0369a1]" />
-                      <span>Phòng Chat Giải</span>
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowInlineChat((v) => !v)}
+                    className={`px-3.5 py-2 rounded-lg font-bold text-[13px] transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer border ${
+                      showInlineChat
+                        ? "bg-[#0369a1] text-white border-[#0369a1]"
+                        : "bg-sky-50 hover:bg-sky-100 border-sky-300 text-[#0369a1]"
+                    }`}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>{showInlineChat ? "Đóng Chat Giải" : "💬 Chat Giải Này"}</span>
+                  </button>
                 </div>
               </div>
+
+              {/* Khung Chat Nội Bộ Giải Đấu (Inline cho Chủ Sân & Ban Tổ Chức) */}
+              {showInlineChat && activeTournament && (
+                <div className="p-4 rounded-xl bg-slate-50 border border-sky-200 space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+                    <div>
+                      <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-1.5">
+                        <MessageCircle className="w-4 h-4 text-[#0369a1]" />
+                        <span>Kênh Trao Đổi Nội Bộ: {activeTournament.title}</span>
+                      </h3>
+                      <p className="text-[13px] text-slate-500">
+                        Trao đổi trực tiếp với các Đội Trưởng và Cầu Thủ tham gia giải đấu này
+                      </p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-md bg-sky-100 text-sky-900 text-[13px] font-bold">
+                      {user?.role === "OWNER" ? "Chủ Sân / BTC" : "Ban Tổ Chức"}
+                    </span>
+                  </div>
+                  <div className="h-[420px] overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <CommunityChat
+                      user={user}
+                      channel={`tournament_${activeTournament.id}`}
+                      channelName={`Giải: ${activeTournament.title}`}
+                      channelDesc={`Kênh thảo luận nội bộ giải đấu ${activeTournament.title}`}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Section: Tiến độ đăng ký & Bộ chuyển trạng thái vận hành */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2392,6 +2498,64 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
             <span>{manualTeamErrors.quota}</span>
           </div>
         )}
+
+        {/* Bước 1: Kiểm tra CLB của người đại diện theo SĐT / Email */}
+        <div className="p-3 rounded-lg bg-white border border-emerald-200 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[13px] font-bold text-slate-800">Kiểm tra CLB của người đại diện:</span>
+            <input
+              type="text"
+              value={repLookupContact}
+              onChange={(e) => setRepLookupContact(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleLookupRepClubs();
+                }
+              }}
+              placeholder="Nhập SĐT hoặc Email người đại diện..."
+              className="flex-1 min-w-[200px] px-3 py-1.5 rounded-lg border border-slate-300 text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <button
+              type="button"
+              onClick={handleLookupRepClubs}
+              disabled={lookingUpClub}
+              className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-[13px] font-bold transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {lookingUpClub ? "Đang tìm..." : "Kiểm Tra CLB"}
+            </button>
+          </div>
+          {repLookupResult.checked && (
+            <div className="text-[13px]">
+              {!repLookupResult.found ? (
+                <p className="text-slate-600">Chưa tìm thấy tài khoản khớp SĐT/Email này. Bạn vẫn có thể nhập tay thông tin bên dưới.</p>
+              ) : repLookupResult.clubs.length === 0 ? (
+                <p className="text-amber-800 font-semibold">
+                  Tài khoản {repLookupResult.userName || repLookupResult.userEmail} hiện chưa có CLB nào. Bạn có thể nhập tay thông tin đội bên dưới.
+                </p>
+              ) : (
+                <div className="space-y-1.5">
+                  <p className="font-bold text-emerald-800">
+                    Tìm thấy {repLookupResult.clubs.length} CLB của {repLookupResult.userName || repLookupResult.userEmail} — bấm để chọn nhanh:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {repLookupResult.clubs.map((clb) => (
+                      <button
+                        key={clb.id}
+                        type="button"
+                        onClick={() => handleSelectRepClub(clb)}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-900 font-bold text-[13px] flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <span>🛡️ {clb.name}</span>
+                        <span className="text-emerald-700 font-normal">({clb.memberCount} thành viên)</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
             <input
@@ -2463,6 +2627,57 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
               </p>
             )}
           </div>
+        </div>
+
+        {/* Danh sách cầu thủ (từ CLB + Thêm cầu thủ ngoài) */}
+        <div className="p-3 rounded-lg bg-white border border-slate-200 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[13px] font-bold text-slate-800">
+              Danh sách cầu thủ dự giải ({manualRoster.length} người — có thể thêm cầu thủ ngoài):
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              value={extraPlayerInput}
+              onChange={(e) => setExtraPlayerInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddExtraManualPlayer();
+                }
+              }}
+              placeholder="Nhập tên cầu thủ ngoài / tăng cường..."
+              className="flex-1 min-w-[200px] px-3 py-1.5 rounded-lg border border-slate-300 text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <button
+              type="button"
+              onClick={handleAddExtraManualPlayer}
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-[13px] font-bold cursor-pointer"
+            >
+              + Thêm Cầu Thủ Ngoài
+            </button>
+          </div>
+          {manualRoster.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {manualRoster.map((playerName, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-800 text-[13px] font-semibold"
+                >
+                  <span>{playerName}</span>
+                  <button
+                    type="button"
+                    onClick={() => setManualRoster((prev) => prev.filter((_, i) => i !== idx))}
+                    className="text-slate-400 hover:text-rose-600 cursor-pointer ml-0.5"
+                    title="Xóa cầu thủ"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     )}
@@ -3743,12 +3958,22 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2.5 text-[14px]"
  >
  <div className="flex flex-wrap items-center justify-between gap-2">
- <div className="flex items-center gap-2.5 min-w-0">
+ <div className="flex flex-wrap items-center gap-2.5 min-w-0">
  <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[13px] font-bold shrink-0">
  {m.matchId} {m.roundName ? `· ${m.roundName}` : ""}
  </span>
  <span className="font-bold text-slate-900 truncate">
- {m.teamA} vs {m.teamB}
+ {m.teamA}
+ </span>
+ {m.status === "DONE" ? (
+ <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 font-mono font-black text-[13px] shrink-0">
+ {m.scoreA} - {m.scoreB}
+ </span>
+ ) : (
+ <span className="text-slate-400 font-semibold text-[13px]">vs</span>
+ )}
+ <span className="font-bold text-slate-900 truncate">
+ {m.teamB}
  </span>
  </div>
  <div className="flex flex-wrap items-center gap-2 text-[13px]">
@@ -3783,6 +4008,17 @@ setVarNotice('✅ Đã tạo giải test và bốc thăm thành công.');
  </button>
  </div>
  </div>
+
+ {m.status === "DONE" && Array.isArray(m.scorers) && m.scorers.length > 0 && (
+ <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-[13px] text-slate-700">
+ <span className="font-bold text-emerald-700">⚽ Ghi bàn:</span>
+ {m.scorers.map((sc: any, idx: number) => (
+ <span key={idx} className="px-2 py-0.5 rounded bg-slate-50 border border-slate-200 text-slate-800">
+ <strong>{sc.playerName}</strong> ({sc.teamName}){sc.goals > 1 ? ` ×${sc.goals}` : ""}
+ </span>
+ ))}
+ </div>
+ )}
 
  {editingMatchScheduleId === m.matchId && (
  <div className="p-3 rounded-lg bg-slate-50 border border-sky-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-2.5">

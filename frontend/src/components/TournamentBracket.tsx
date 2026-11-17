@@ -38,6 +38,8 @@ import {
 } from "lucide-react";
 import DrawLotteryOverlay from "./DrawLotteryOverlay";
 import TournamentMatchDetail from "./TournamentMatchDetail";
+import CommunityChat from "./CommunityChat";
+import { MessageSquare, Layers } from "lucide-react";
 import UefaChampionsBracket from "./UefaChampionsBracket";
 import { ConfirmModal } from "./admin/AdminUI";
 import {
@@ -184,7 +186,7 @@ const [addCount, setAddCount] = useState("4");
      return () => cancelAnimationFrame(raf);
    }
  }, [lottery]);
-  const [activeTab, setActiveTab] = useState<"bracket" | "schedule" | "standings" | "my_team" | "info" | "esheet">("bracket");
+  const [activeTab, setActiveTab] = useState<"bracket" | "rounds" | "schedule" | "standings" | "my_team" | "info" | "esheet" | "chat">("bracket");
  const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>("ALL");
  const [selectedMatchDetail, setSelectedMatchDetail] = useState<{ match: BracketMatch; roundName?: string } | null>(null);
  const [bracketViewMode, setBracketViewMode] = useState<"uefa" | "tree">("uefa");
@@ -430,6 +432,12 @@ const [addCount, setAddCount] = useState("4");
     return (selected?.invitedEmails ?? []).some((e) => (e ?? "").toLowerCase().trim() === myEmail);
   }, [selected, authUser?.email]);
 
+  // Quyền truy cập Kênh Trao Đổi (Chat) giải đấu:
+  // Chỉ Ban Tổ Chức (canManage) hoặc Cầu thủ có đội bóng tham gia giải (myTeam) mới có quyền truy cập
+  const canAccessTournamentChat = useMemo(() => {
+    return Boolean(canManage || myTeam);
+  }, [canManage, myTeam]);
+
   // Trận đấu tiếp theo của đội Cầu thủ (nếu giải đã bốc thăm và có lịch)
   const myNextMatch = useMemo(() => {
     if (!bracket?.rounds || !myTeam) return null;
@@ -480,7 +488,7 @@ const [addCount, setAddCount] = useState("4");
   useEffect(() => {
     if (!selected) return;
     if (selected?.format === "ROUND_ROBIN") {
-      setActiveTab("standings");
+      setActiveTab("rounds");
     } else {
       setActiveTab("bracket");
     }
@@ -1817,19 +1825,37 @@ const [addCount, setAddCount] = useState("4");
   {/* THANH ĐIỀU HƯỚNG CON (SUB-NAVBAR) DÀNH CHO CẦU THỦ & KHÁN GIẢ */}
   {selected && (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth">
-      {/* 1. Sơ Đồ & Nhánh Đấu */}
-      <button
-        type="button"
-        onClick={() => { setSelectedMatchDetail(null); setActiveTab("bracket"); }}
-        className={`px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
-          activeTab === "bracket"
-            ? "bg-[#0369a1] text-white shadow-xs"
-            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
-        }`}
-      >
-        <Trophy className="w-4 h-4" />
-        <span>Sơ Đồ & Nhánh Đấu</span>
-      </button>
+      {/* 1. Sơ Đồ & Nhánh Đấu (Chỉ hiện khi KO phải giải Vòng Tròn) */}
+      {selected?.format !== "ROUND_ROBIN" && (
+        <button
+          type="button"
+          onClick={() => { setSelectedMatchDetail(null); setActiveTab("bracket"); }}
+          className={`px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+            activeTab === "bracket"
+              ? "bg-[#0369a1] text-white shadow-xs"
+              : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          <Trophy className="w-4 h-4" />
+          <span>Sơ Đồ & Nhánh Đấu</span>
+        </button>
+      )}
+
+      {/* 1b. Lịch Đấu Từng Vòng (Dành riêng cho thể thức Vòng Tròn) */}
+      {selected?.format === "ROUND_ROBIN" && (
+        <button
+          type="button"
+          onClick={() => { setSelectedMatchDetail(null); setActiveTab("rounds"); }}
+          className={`px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+            activeTab === "rounds"
+              ? "bg-[#0369a1] text-white shadow-xs"
+              : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>Lịch Đấu Từng Vòng</span>
+        </button>
+      )}
 
       {/* 2. Lịch Thi Đấu & Kết Quả */}
       <button
@@ -1882,7 +1908,28 @@ const [addCount, setAddCount] = useState("4");
         )}
       </button>
 
-      {/* 5. Điều Lệ & Thông Tin */}
+      {/* 5. Trao Đổi & Thảo Luận Giải Đấu (Chỉ hiển thị cho BTC hoặc Cầu thủ có đội tham gia) */}
+      {canAccessTournamentChat && (
+        <button
+          type="button"
+          onClick={() => { setSelectedMatchDetail(null); setActiveTab("chat"); }}
+          className={`px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+            activeTab === "chat"
+              ? "bg-[#0369a1] text-white shadow-xs"
+              : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span>Trao Đổi Giải Đấu</span>
+          {myTeam && (
+            <span className="text-[11px] px-1.5 py-0.2 bg-sky-100 text-sky-800 rounded font-semibold ml-0.5">
+              Đội của bạn
+            </span>
+          )}
+        </button>
+      )}
+
+      {/* 6. Điều Lệ & Thông Tin */}
       <button
         type="button"
         onClick={() => { setSelectedMatchDetail(null); setActiveTab("info"); }}
@@ -2451,6 +2498,166 @@ const [addCount, setAddCount] = useState("4");
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* TAB 1B: LỊCH THI ĐẤU TỪNG VÒNG ĐẤU CHO THỂ THỨC VÒNG TRÒN (ROUND_ROBIN) */}
+          {activeTab === "rounds" && selected && (
+            <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 sm:space-y-6 shadow-md animate-fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-[#0369a1]" />
+                    <span>Lịch Thi Đấu Vòng Tròn Từng Lượt Trận</span>
+                  </h2>
+                  <p className="text-[13px] text-slate-500 mt-0.5">
+                    Thể thức đá vòng tròn tính điểm ({bracket?.rounds?.length || 0} vòng đấu). Bấm chọn từng vòng để lọc lịch thi đấu và kết quả.
+                  </p>
+                </div>
+
+                {/* THANH CHỌN TỪNG VÒNG ĐẤU DẠNG PILL */}
+                {bracket?.rounds && bracket.rounds.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRoundFilter("ALL")}
+                      className={`px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${
+                        selectedRoundFilter === "ALL"
+                          ? "bg-[#0369a1] text-white shadow-xs"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      Tất Cả Các Vòng
+                    </button>
+                    {bracket.rounds.map((r, rIdx) => (
+                      <button
+                        key={rIdx}
+                        type="button"
+                        onClick={() => setSelectedRoundFilter(r.name || `Vòng ${rIdx + 1}`)}
+                        className={`px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${
+                          selectedRoundFilter === (r.name || `Vòng ${rIdx + 1}`)
+                            ? "bg-[#0369a1] text-white shadow-xs"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        {r.name || `Vòng ${rIdx + 1}`}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* DANH SÁCH CÁC CẶP ĐẤU THEO VÒNG */}
+              {(!bracket?.rounds || bracket.rounds.length === 0) ? (
+                <div className="py-12 text-center text-slate-500 text-sm italic bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  Ban tổ chức chưa tiến hành xếp lịch thi đấu vòng tròn.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {bracket.rounds
+                    .filter((r, rIdx) => selectedRoundFilter === "ALL" || selectedRoundFilter === (r.name || `Vòng ${rIdx + 1}`))
+                    .map((round, rIdx) => (
+                      <div key={rIdx} className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#0369a1]" />
+                          <h3 className="font-extrabold text-slate-900 text-base">
+                            {round.name || `Vòng ${rIdx + 1}`} ({round.matches?.length || 0} cặp đấu)
+                          </h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                          {(round.matches || []).map((m: any, mIdx: number) => {
+                            const isDone = m.status === "DONE";
+                            const isLive = m.status === "IN_PROGRESS";
+                            return (
+                              <div
+                                key={m.matchId || mIdx}
+                                onClick={() => setSelectedMatchDetail({ match: m, roundName: round.name })}
+                                className="p-4 rounded-2xl bg-slate-50 hover:bg-white border border-slate-200 hover:border-sky-300 transition-all shadow-2xs space-y-2.5 cursor-pointer"
+                              >
+                                <div className="flex items-center justify-between text-[13px] text-slate-500 font-mono">
+                                  <span>Trận #{m.matchId || (mIdx + 1)} • {m.timeSlot || "Chưa xếp giờ"}</span>
+                                  <span className={`px-2 py-0.5 rounded-full text-[12px] font-bold ${
+                                    isDone ? "bg-emerald-100 text-emerald-800" : isLive ? "bg-rose-100 text-rose-700 animate-pulse" : "bg-slate-200 text-slate-700"
+                                  }`}>
+                                    {isDone ? "Đã kết thúc" : isLive ? "Đang diễn ra" : "Chưa đấu"}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-3 py-1">
+                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
+                                      A
+                                    </span>
+                                    <span className="font-bold text-slate-900 text-sm truncate">
+                                      {m.teamA?.name || "Đang chờ"}
+                                    </span>
+                                  </div>
+
+                                  <div className="px-3 py-1 rounded-xl bg-white border border-slate-300 font-mono font-extrabold text-base text-slate-900 shadow-2xs shrink-0">
+                                    {isDone || isLive ? `${m.scoreA ?? 0} - ${m.scoreB ?? 0}` : "VS"}
+                                  </div>
+
+                                  <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+                                    <span className="font-bold text-slate-900 text-sm truncate text-right">
+                                      {m.teamB?.name || "Đang chờ"}
+                                    </span>
+                                    <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
+                                      B
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-between text-[12px] text-slate-500 pt-1 border-t border-slate-200/60">
+                                  <span className="truncate">📍 {m.pitchName || selected.pitchName || "Sân bóng TurfZone"}</span>
+                                  <span className="text-[#0369a1] font-bold hover:underline">Chi tiết & Biên bản →</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 5: TRAO ĐỔI GIẢI ĐẤU (CHAT GIẢI ĐẤU CỤ THỂ) - CHỈ CHO PHÉP THÀNH VIÊN VÀ BTC */}
+          {activeTab === "chat" && selected && canAccessTournamentChat && (
+            <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 space-y-4 shadow-md animate-fade-in">
+              <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-200 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0369a1] flex items-center justify-center border border-sky-200 shrink-0">
+                    <MessageSquare className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                      Kênh Trao Đổi Chính Thức: <span className="text-[#0369a1]">{selected.title}</span>
+                    </h2>
+                    <p className="text-[13px] text-slate-500">
+                      Kênh nội bộ dành riêng cho Ban Tổ Chức và các Cầu Thủ/Đội Bóng tham gia tranh tài
+                    </p>
+                  </div>
+                </div>
+                {myTeam && (
+                  <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-[13px] font-bold">
+                    Tư cách: {myTeam.teamName}
+                  </span>
+                )}
+                {canManage && !myTeam && (
+                  <span className="px-3 py-1 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 text-[13px] font-bold">
+                    Tư cách: Ban Tổ Chức
+                  </span>
+                )}
+              </div>
+
+              <CommunityChat
+                user={authUser}
+                channel={`tournament_${selected.id}`}
+                channelName={`Giải: ${selected.title}`}
+                channelDesc={`Kênh thảo luận nội bộ giải đấu ${selected.title}`}
+              />
             </div>
           )}
 

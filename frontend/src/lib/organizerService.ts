@@ -32,6 +32,7 @@ export interface RefereeInfo {
     teamName: string;
     captainName?: string;
     captainPhone?: string;
+    captainEmail?: string;
     memberCount?: number;
     memberNames?: string;
   }

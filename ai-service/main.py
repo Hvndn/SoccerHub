@@ -52,6 +52,7 @@ class TeamItem(BaseModel):
     id: str
     name: str
     win_rate: float = 50.0
+    elo_rating: Optional[int] = 1200
     # So tran da da: 0 = CHUA DA gi (khac voi 0% thang)
     played: int = 0
     record: str = ""
@@ -64,6 +65,8 @@ class MatchmakingRequest(BaseModel):
     my_team: TeamItem
     candidate_teams: List[TeamItem]
     max_win_rate_diff: float = 15.0
+    match_window: int = 5
+    max_elo_diff: Optional[float] = None
 
 # --- API Endpoints ---
 @app.get("/")
@@ -109,10 +112,18 @@ def api_recommend_pitches(req: PitchRecommendationRequest):
 def api_matchmaking(req: MatchmakingRequest):
     my_team_dict = req.my_team.model_dump()
     candidates_dict = [c.model_dump() for c in req.candidate_teams]
-    opponents = find_matchmaking_opponents(my_team_dict, candidates_dict, max_win_rate_diff=req.max_win_rate_diff)
+    opponents = find_matchmaking_opponents(
+        my_team_dict,
+        candidates_dict,
+        max_win_rate_diff=req.max_win_rate_diff,
+        match_window=req.match_window,
+        max_elo_diff=req.max_elo_diff,
+    )
     return {
         "status": "SUCCESS",
         "my_team_win_rate": req.my_team.win_rate,
+        "my_team_elo": req.my_team.elo_rating or 1200,
+        "match_window": req.match_window,
         "matched_opponents": opponents
     }
 

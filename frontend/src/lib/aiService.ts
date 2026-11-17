@@ -32,6 +32,7 @@ export interface AiTeam {
   id: string;
   name: string;
   win_rate: number;
+  elo_rating?: number;
   /** Số trận đã đá: 0 = chưa có dữ liệu (khác với 0% thắng). */
   played?: number;
   /** Thành tích T-H-B, ví dụ "3-1-2". */
@@ -41,7 +42,14 @@ export interface AiTeam {
   preferred_pitch_type?: string;
   contact_phone?: string | null;
   win_rate_diff?: number;
+  elo_diff?: number;
   form_score?: number;
+  match_window?: number;
+  rank_info?: {
+    rank: string;
+    tier: string;
+    badge: string;
+  };
 }
 
 // Mobile-friendly timeout (Render cold start can take 30-60s)
@@ -144,12 +152,16 @@ export async function recommendPitches(
 export async function matchmakingAi(
   myTeam: AiTeam,
   candidates: AiTeam[],
-  maxWinRateDiff = 15
-): Promise<{ matched_opponents: AiTeam[] } | null> {
+  maxWinRateDiff = 15,
+  matchWindow: number = 5,
+  maxEloDiff?: number
+): Promise<{ matched_opponents: AiTeam[]; my_team_elo?: number; match_window?: number } | null> {
   if (!candidates.length) return null;
   return postAi("/matchmaking", {
     my_team: myTeam,
     candidate_teams: candidates,
     max_win_rate_diff: maxWinRateDiff,
+    match_window: matchWindow,
+    max_elo_diff: maxEloDiff,
   });
 }

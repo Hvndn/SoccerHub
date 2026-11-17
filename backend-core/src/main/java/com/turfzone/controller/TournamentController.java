@@ -1495,7 +1495,24 @@ public class TournamentController {
         List<GoalEvent> goalEvents = new ArrayList<>();
         String currentSimulatedStage = null;
 
-        for (Map<String, Object> round : rounds) {
+        LocalDate simBaseDate = LocalDate.now();
+        if (tournament.getStartDate() != null && !tournament.getStartDate().isBlank()) {
+            try {
+                simBaseDate = LocalDate.parse(tournament.getStartDate().trim().substring(0, 10));
+            } catch (Exception ignored) {
+            }
+        }
+        String defaultPitch = (tournament.getPitchName() != null && !tournament.getPitchName().isBlank())
+                ? tournament.getPitchName()
+                : (tournament.getLocation() != null && !tournament.getLocation().isBlank() ? tournament.getLocation() : "Sân Trung Tâm");
+        String[][] simSlots = {
+            {"17:00", "18:30"},
+            {"18:30", "20:00"},
+            {"20:00", "21:30"}
+        };
+
+        for (int roundIdx = 0; roundIdx < rounds.size(); roundIdx++) {
+            Map<String, Object> round = rounds.get(roundIdx);
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> matches = (List<Map<String, Object>>) round.get("matches");
             if (matches == null) continue;
@@ -1552,6 +1569,27 @@ public class TournamentController {
                 m.put("winner", winner);
                 m.put("status", "DONE");
 
+                // Tự động gán ngày, giờ & sân cho trận chưa có lịch khi giả lập
+                Object existingDate = m.get("matchDate");
+                Object existingStart = m.get("startTime");
+                if (existingDate == null || String.valueOf(existingDate).isBlank() || "null".equals(String.valueOf(existingDate))) {
+                    int dayOffset = (roundIdx * 2) + (simulatedInThisRound / simSlots.length);
+                    m.put("matchDate", simBaseDate.plusDays(dayOffset).toString());
+                }
+                if (existingStart == null || String.valueOf(existingStart).isBlank() || "null".equals(String.valueOf(existingStart))) {
+                    String[] slot = simSlots[simulatedInThisRound % simSlots.length];
+                    m.put("startTime", slot[0]);
+                    m.put("endTime", slot[1]);
+                    m.put("timeSlot", slot[0] + " - " + slot[1]);
+                } else if (m.get("timeSlot") == null || String.valueOf(m.get("timeSlot")).isBlank()) {
+                    Object existingEnd = m.get("endTime");
+                    m.put("timeSlot", existingEnd != null ? existingStart + " - " + existingEnd : String.valueOf(existingStart));
+                }
+                Object existingPitch = m.get("pitchName");
+                if (existingPitch == null || String.valueOf(existingPitch).isBlank() || "null".equals(String.valueOf(existingPitch))) {
+                    m.put("pitchName", defaultPitch);
+                }
+
                 // Đẩy đội thắng vào vòng sau (khớp logic nhập tay)
                 if (winner != null) {
                     String slot = "Thắng " + matchId;
@@ -1592,18 +1630,22 @@ public class TournamentController {
                 // Ghi bàn ngẫu nhiên từ đội hình để demo vua phá lưới
                 Map<String, Integer> scorersA = randomScorers(nameA, rosters.getOrDefault(nameA, List.of()), scoreA, rnd);
                 Map<String, Integer> scorersB = randomScorers(nameB, rosters.getOrDefault(nameB, List.of()), scoreB, rnd);
+                List<Map<String, Object>> matchScorers = new ArrayList<>();
                 for (Map.Entry<String, Integer> e : scorersA.entrySet()) {
                     goalEvents.add(GoalEvent.builder()
                             .tournamentId(tournament.getId()).matchId(matchId)
                             .teamName(nameA).playerName(e.getKey())
                             .goals(e.getValue()).assists(0).build());
+                    matchScorers.add(Map.of("teamName", nameA, "playerName", e.getKey(), "goals", e.getValue()));
                 }
                 for (Map.Entry<String, Integer> e : scorersB.entrySet()) {
                     goalEvents.add(GoalEvent.builder()
                             .tournamentId(tournament.getId()).matchId(matchId)
                             .teamName(nameB).playerName(e.getKey())
                             .goals(e.getValue()).assists(0).build());
+                    matchScorers.add(Map.of("teamName", nameB, "playerName", e.getKey(), "goals", e.getValue()));
                 }
+                m.put("scorers", matchScorers);
                 simulated++;
                 simulatedInThisRound++;
             }
@@ -2121,6 +2163,8 @@ public class TournamentController {
             }
         }
 
+        String memberNames = req.get("memberNames") != null ? req.get("memberNames").toString().trim() : null;
+
         TournamentTeamEntry entry = TournamentTeamEntry.builder()
                 .teamName(teamName)
                 .captainName(captainName)
@@ -2128,6 +2172,7 @@ public class TournamentController {
                 .captainPhone(captainPhone)
                 .subCaptainPhone(subCaptainPhone)
                 .memberCount(memberCount)
+                .memberNames(memberNames)
                 .registrationStatus(initStatus)
                 .registeredAt(LocalDateTime.now())
                 .build();
@@ -2457,10 +2502,13 @@ public class TournamentController {
             }
             memberNames = String.join(",", names);
         }
+        String captainEmail = body.get("captainEmail") != null ? body.get("captainEmail").toString().trim().toLowerCase() : null;
+        if (captainEmail != null && captainEmail.isEmpty()) captainEmail = null;
+
         TournamentTeamEntry entry = TournamentTeamEntry.builder()
                 .teamName(teamName)
                 .captainName(captainName.isEmpty() ? "Đội trưởng " + teamName : captainName)
-                .captainEmail(null) // đội thêm tay: không gắn tài khoản nào
+                .captainEmail(captainEmail)
                 .captainPhone(captainPhone)
                 .subCaptainPhone(body.get("subCaptainPhone") != null
                         ? body.get("subCaptainPhone").toString().trim() : "")

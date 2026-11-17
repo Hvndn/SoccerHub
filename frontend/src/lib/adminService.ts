@@ -21,6 +21,8 @@ export interface AdminUser {
   area?: string | null;
   level?: string | null;
   enabled: boolean;
+  approvalStatus?: string | null;
+  approvalReason?: string | null;
   createdAt?: string | null;
 }
 
@@ -283,6 +285,28 @@ export async function getRevenueReport(): Promise<any> {
   } catch (err) {
     throw new Error(errMsg(err, 'Không tải được báo cáo doanh thu.'));
   }
+}
+
+/** Danh sách chủ sân chờ duyệt hoặc cần kiểm tra phòng chống spam/clone. */
+export async function listPendingOwnersApi(): Promise<any[]> {
+  try {
+    const data = await apiRequest<any[]>('/api/v1/admin/pending-owners');
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Phê duyệt hoặc từ chối chủ sân thủ công. */
+export async function setOwnerApprovalApi(
+  id: number,
+  status: 'APPROVED' | 'REJECTED',
+  reason?: string
+): Promise<any> {
+  return apiRequest(`/api/v1/admin/owners/${id}/approval`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, reason }),
+  });
 }
 
 export { fetchTournaments };

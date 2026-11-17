@@ -51,3 +51,6 @@ Thumbs.db
 
 # Temporary files & screenshots
 .tmp/
+
+docs/BAO_CAO_DO_AN_TOT_NGHIEP.*
+docs/*.docx

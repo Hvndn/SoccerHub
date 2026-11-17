@@ -1663,11 +1663,28 @@ export async function handleOfflineApi(urlStr: string, options: RequestInit = {}
         homeKitColor: body.homeKitColor || 'Đỏ',
         refereeOption: body.refereeOption || 'TU_BAT',
         waterOption: body.waterOption || 'CAM_THUNG',
+        eloRating: Number(body.eloRating ?? currentUser?.eloRating ?? 1200),
+        isDirectInvite: Boolean(body.isDirectInvite),
+        invitedContact: body.invitedContact || undefined,
         note: body.note || 'Giao lưu vui vẻ, fairplay đúng giờ.',
         status: 'OPEN',
         createdAt: new Date().toISOString(),
       };
       store.matchmakingPosts.unshift(created);
+      if (created.isDirectInvite && created.invitedContact) {
+        if (!store.notifications) store.notifications = [];
+        store.notifications.unshift({
+          id: Date.now() + 1,
+          targetRole: 'PLAYER',
+          targetEmail: created.invitedContact.includes('@') ? created.invitedContact : null,
+          title: `🎯 Lời mời thi đấu giao hữu từ ${created.teamName}`,
+          message: `${created.teamName} đã gửi lời mời giao hữu đích danh cho bạn tại ${created.pitchName} (${created.matchTime}). Bấm để xem chi tiết và nhận kèo!`,
+          type: 'MATCH_INVITE',
+          link: `/?tab=matchmaking&matchId=${created.id}`,
+          read: false,
+          createdAt: new Date().toISOString(),
+        });
+      }
       saveStore(store);
       return jsonResponse(created, 201);
     }
@@ -1685,6 +1702,39 @@ export async function handleOfflineApi(urlStr: string, options: RequestInit = {}
       saveStore(store);
     }
     return jsonResponse(post || { status: 'MATCHED' });
+  }
+
+  const completeMatchmaking = path.match(/^\/api\/v1\/community\/matchmaking-posts\/([^/]+)\/complete$/);
+  if (completeMatchmaking) {
+    const mid = Number(completeMatchmaking[1]);
+    const post = store.matchmakingPosts.find((p) => Number(p.id) === mid);
+    const scoreA = Math.max(0, Number(body.scoreA ?? 0));
+    const scoreB = Math.max(0, Number(body.scoreB ?? 0));
+    let eloChangeA = 5;
+    let eloChangeB = 5;
+    if (scoreA > scoreB) {
+      eloChangeA = 25;
+      eloChangeB = -18;
+    } else if (scoreB > scoreA) {
+      eloChangeA = -18;
+      eloChangeB = 25;
+    }
+    if (post) {
+      post.status = 'COMPLETED';
+      post.isCompleted = true;
+      post.scoreA = scoreA;
+      post.scoreB = scoreB;
+      post.eloChangeA = eloChangeA;
+      post.eloChangeB = eloChangeB;
+      post.completedAt = new Date().toISOString();
+      saveStore(store);
+    }
+    return jsonResponse({
+      message: 'Xác nhận kết quả trận đấu thành công!',
+      post: post || { status: 'COMPLETED' },
+      eloChangeA,
+      eloChangeB,
+    });
   }
 
   if (path === '/api/v1/community/players/leaderboard') {

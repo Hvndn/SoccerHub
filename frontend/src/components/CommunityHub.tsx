@@ -19,8 +19,10 @@ import {
   Scale,
   ShoppingBag,
   Building2,
+  Trophy,
 } from "lucide-react";
 import { apiRequest, ensureLoggedIn } from "@/lib/api";
+import { fetchTournaments, type Tournament } from "@/lib/tournamentService";
 import CommunityChat from "./CommunityChat";
 import GroupChatPanel from "./GroupChatPanel";
 import TeamClubManagement from "./TeamClubManagement";
@@ -120,6 +122,7 @@ export default function CommunityHub({
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [channels, setChannels] = useState<ChannelInfo[]>([]);
+  const [accessibleTournaments, setAccessibleTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -146,13 +149,38 @@ export default function CommunityHub({
     refreshingRef.current = true;
     const seq = ++refreshSeqRef.current;
     try {
-      const [chans, convos] = await Promise.all([
+      const [chans, convos, allTours] = await Promise.all([
         apiRequest<ChannelInfo[]>("/api/v1/chat/channels").catch(() => [] as ChannelInfo[]),
         apiRequest<Conversation[]>("/api/v1/chat/conversations").catch(() => [] as Conversation[]),
+        fetchTournaments().catch(() => [] as Tournament[]),
       ]);
       if (seq !== refreshSeqRef.current) return;
       setChannels(Array.isArray(chans) ? chans : []);
       setConversations(Array.isArray(convos) ? convos : []);
+
+      // Lọc các giải đấu mà tài khoản hiện tại có quyền tham gia phòng chat
+      const isManager =
+        user?.role === "OWNER" || user?.role === "ORGANIZER" || user?.role === "ADMIN";
+      const uEmail = (user?.email || "").toLowerCase().trim();
+      const uPhone = (user?.phone || "").trim();
+      const uName = (user?.fullName || (user as any)?.name || "").toLowerCase().trim();
+
+      const filteredTours = (Array.isArray(allTours) ? allTours : []).filter((t: any) => {
+        if (isManager) return true;
+        return (t.teams ?? []).some((tm: any) => {
+          const tEmail = (tm.captainEmail || "").toLowerCase().trim();
+          const tPhone = (tm.captainPhone || "").trim();
+          const tName = (tm.captainName || "").toLowerCase().trim();
+          const members = String(tm.memberNames || "").toLowerCase();
+          return (
+            (uEmail && tEmail === uEmail) ||
+            (uPhone && tPhone === uPhone) ||
+            (uName && tName === uName) ||
+            (uName && members.includes(uName))
+          );
+        });
+      });
+      setAccessibleTournaments(filteredTours);
     } finally {
       refreshingRef.current = false;
       if (seq === refreshSeqRef.current) setLoading(false);
@@ -518,7 +546,66 @@ export default function CommunityHub({
 
       {/* 2. MAIN CONTENT */}
       {mode === "chat" ? (
-        <div className="rounded-lg bg-white border border-slate-300 overflow-hidden">
+        <div className="space-y-4">
+          {/* CỤM CHỌN PHÒNG CHAT THEO TỪNG GIẢI ĐẤU CỤ THỂ (Chủ Sân / BTC / Thành Viên Giải) */}
+          {user && accessibleTournaments.length > 0 && (
+            <div className="rounded-lg bg-white border border-slate-300 p-4 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-sky-50 text-[#0369a1] border border-sky-200 flex items-center justify-center shrink-0">
+                    <Trophy className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-[14px] font-bold text-slate-900">
+                      Phòng Chat Riêng Từng Giải Đấu ({accessibleTournaments.length})
+                    </h3>
+                    <p className="text-[13px] text-slate-500">
+                      {user.role === "OWNER" || user.role === "ORGANIZER" || user.role === "ADMIN"
+                        ? "Chọn giải đấu bạn quản lý để vào trao đổi trực tiếp với các đội bóng tham gia"
+                        : "Các giải đấu mà đội bóng của bạn đang tham gia tranh tài"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                {accessibleTournaments.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() =>
+                      openChannel({
+                        slug: `tournament_${t.id}`,
+                        name: `Giải: ${t.title}`,
+                        desc: `Kênh thảo luận nội bộ giải đấu ${t.title}`,
+                        lastMessage: "",
+                        lastSender: "",
+                        lastSenderEmail: "",
+                        lastTime: null,
+                        memberCount: (t.teams ?? []).length,
+                        pinned: null,
+                      })
+                    }
+                    className="text-left p-3 rounded-lg border border-slate-200 hover:border-[#0369a1] hover:bg-sky-50/40 transition-all flex items-center justify-between gap-2 group cursor-pointer"
+                  >
+                    <div className="min-w-0 space-y-0.5">
+                      <p className="text-[14px] font-bold text-slate-900 group-hover:text-[#0369a1] line-clamp-1">
+                        {t.title}
+                      </p>
+                      <p className="text-[13px] text-slate-500 flex items-center gap-1.5">
+                        <span>{(t.teams ?? []).length} đội</span>
+                        <span>•</span>
+                        <span className="text-[#0369a1] font-semibold">Vào phòng chat</span>
+                      </p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#0369a1] shrink-0" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="rounded-lg bg-white border border-slate-300 overflow-hidden">
           {!user ? (
             <div className="px-5 py-10 text-center space-y-3">
               <Lock className="w-8 h-8 text-slate-500 mx-auto" />
@@ -597,6 +684,7 @@ export default function CommunityHub({
               })}
             </div>
           )}
+          </div>
         </div>
       ) : mode === "clan" ? (
         user ? (

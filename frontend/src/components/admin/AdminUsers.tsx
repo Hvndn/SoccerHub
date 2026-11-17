@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { Lock, Unlock, ShieldCheck, Trash2, Search, Eye, ChevronLeft, ChevronRight, X, Loader2 } from "lucide-react";
+import { Lock, Unlock, ShieldCheck, Trash2, Search, Eye, ChevronLeft, ChevronRight, X, Loader2, CheckCircle2, AlertCircle, Building2, Sparkles } from "lucide-react";
 import AdminTable, { type AdminColumn } from "./AdminTable";
 import { ConfirmModal, SectionCard, StatusBadge } from "./AdminUI";
 import {
@@ -10,6 +10,8 @@ import {
  setAdminUserRole,
  setAdminUserStatus,
  deleteAdminUser,
+ listPendingOwnersApi,
+ setOwnerApprovalApi,
  type AdminUser,
 } from "@/lib/adminService";
 
@@ -62,6 +64,40 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   const [countByRole, setCountByRole] = useState<Record<string, number>>({});
   // TỔNG số user (không lọc) — dùng cho nhãn "Tất cả (N)".
   const [totalUsers, setTotalUsers] = useState(0);
+
+  // Quản lý kiểm duyệt chủ sân (chống spam / acc clone)
+  const [pendingOwners, setPendingOwners] = useState<any[]>([]);
+  const [showPendingPanel, setShowPendingPanel] = useState<boolean>(false);
+  const [loadingPending, setLoadingPending] = useState<boolean>(false);
+
+  const loadPendingOwners = useCallback(async () => {
+    try {
+      setLoadingPending(true);
+      const data = await listPendingOwnersApi();
+      setPendingOwners(data);
+    } catch {
+      setPendingOwners([]);
+    } finally {
+      setLoadingPending(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPendingOwners();
+  }, [loadPendingOwners]);
+
+  const handleApproveOwner = async (ownerId: number, status: "APPROVED" | "REJECTED") => {
+    try {
+      setBusyId(ownerId);
+      await setOwnerApprovalApi(ownerId, status);
+      notify("ok", status === "APPROVED" ? "Đã phê duyệt chủ sân thành công!" : "Đã từ chối tài khoản chủ sân.");
+      await Promise.all([load(), loadPendingOwners()]);
+    } catch (err: any) {
+      notify("err", err?.message || "Không thể cập nhật trạng thái duyệt.");
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   // Modal chi tiết người dùng
   const [detail, setDetail] = useState<{ user: AdminUser; data: any } | null>(null);
@@ -184,11 +220,29 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
  header: "Trạng thái",
  sortable: true,
  sortValue: (r) => (r.enabled ? 1 : 0),
- render: (r) =>
- r.enabled ? (
- <StatusBadge tone="green">Đang hoạt động</StatusBadge>
- ) : (
- <StatusBadge tone="rose">Đã khóa</StatusBadge>
+ render: (r) => (
+  <div className="flex flex-col gap-1 items-start">
+   {r.enabled ? (
+    <StatusBadge tone="green">Đang hoạt động</StatusBadge>
+   ) : (
+    <StatusBadge tone="rose">Đã khóa</StatusBadge>
+   )}
+   {r.role === "OWNER" && (
+    r.approvalStatus === "PENDING_APPROVAL" ? (
+     <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+      ⏳ Chờ duyệt sân
+     </span>
+    ) : r.approvalStatus === "REJECTED" ? (
+     <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+      ✕ Từ chối sân
+     </span>
+    ) : (
+     <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+      ✓ Đã duyệt sân
+     </span>
+    )
+   )}
+  </div>
  ),
  },
  {
@@ -197,6 +251,17 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
  className: "whitespace-nowrap",
  render: (r) => (
   <div className="flex items-center gap-1.5">
+  {r.role === "OWNER" && r.approvalStatus === "PENDING_APPROVAL" && (
+   <button
+     type="button"
+     title="Phê duyệt nhanh chủ sân"
+     disabled={busyId === r.id}
+     onClick={() => handleApproveOwner(r.id, "APPROVED")}
+     className="px-2 py-1 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all text-xs font-bold shrink-0 cursor-pointer"
+   >
+     Duyệt
+   </button>
+  )}
   <button
   type="button"
   title="Xem chi tiết tài khoản"
@@ -286,6 +351,20 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   </option>
   ))}
   </select>
+  {pendingOwners.some((o: any) => o.approvalStatus === "PENDING_APPROVAL") && (
+    <button
+      type="button"
+      onClick={() => setShowPendingPanel(!showPendingPanel)}
+      className={`px-3 py-1.5 rounded-xl border text-[13px] font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+        showPendingPanel
+          ? "bg-amber-600 text-white border-amber-600 shadow-sm"
+          : "bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+      }`}
+    >
+      <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+      <span>Chờ Duyệt ({pendingOwners.filter((o: any) => o.approvalStatus === "PENDING_APPROVAL").length})</span>
+    </button>
+  )}
   <button
   type="button"
   onClick={load}
@@ -295,6 +374,84 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   </button>
   </div>
   </div>
+
+  {showPendingPanel && (
+    <div className="mb-4 p-4 rounded-xl bg-amber-50/70 border border-amber-200 space-y-3 animate-fade-in">
+      <div className="flex items-center justify-between pb-2 border-b border-amber-200">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-amber-700" />
+          <h3 className="font-bold text-slate-900 text-sm">
+            Chủ Sân Chờ Phê Duyệt (Chống Spam / Tạo Acc Clone)
+          </h3>
+        </div>
+        <span className="text-[13px] text-slate-500 hidden sm:inline">
+          Chủ sân có cụm sân & sân con đầy đủ sẽ được hệ thống duyệt tự động.
+        </span>
+      </div>
+
+      {pendingOwners.filter((o: any) => o.approvalStatus === "PENDING_APPROVAL").length === 0 ? (
+        <div className="py-4 text-center text-[13px] text-slate-500 italic bg-white rounded-lg border border-slate-200">
+          Hiện không có tài khoản chủ sân nào đang chờ duyệt.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {pendingOwners.filter((o: any) => o.approvalStatus === "PENDING_APPROVAL").map((owner: any) => (
+            <div key={owner.id} className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">{owner.fullName}</h4>
+                  <p className="text-[13px] font-mono text-slate-500">{owner.email} • {owner.phone || "Chưa có SĐT"}</p>
+                </div>
+                <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[12px] font-bold border border-amber-200 shrink-0">
+                  Chờ duyệt
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-[13px] space-y-1">
+                {owner.pitchName ? (
+                  <>
+                    <p className="font-bold text-[#0369a1] flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5" />
+                      <span>{owner.pitchName}</span>
+                    </p>
+                    <p className="text-slate-600 truncate">📍 {owner.pitchAddress || "Chưa có địa chỉ"}</p>
+                    <p className="text-slate-600">
+                      🏟️ Sân con: <strong>{owner.courtTypes?.length ? owner.courtTypes.join(", ") : "Chưa có sân con"}</strong>
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-amber-800 italic flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Chưa khai báo cụm sân (nguy cơ clone/spam).</span>
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
+                <button
+                  type="button"
+                  disabled={busyId === owner.id}
+                  onClick={() => handleApproveOwner(owner.id, "REJECTED")}
+                  className="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[13px] font-bold transition-all cursor-pointer disabled:opacity-50"
+                >
+                  ✕ Từ chối
+                </button>
+                <button
+                  type="button"
+                  disabled={busyId === owner.id}
+                  onClick={() => handleApproveOwner(owner.id, "APPROVED")}
+                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>✓ Phê duyệt</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )}
 
   <AdminTable
   rows={rows}

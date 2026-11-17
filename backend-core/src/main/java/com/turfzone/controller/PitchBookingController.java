@@ -1198,6 +1198,9 @@ Booking saved = bookingRepository.save(booking);
             pitch.setCourtPeakPrices(peakMap);
         }
         Pitch updated = pitchRepository.save(pitch);
+        if (me != null) {
+            pitchService.checkAndAutoApproveOwner(updated, me);
+        }
 
         return ResponseEntity.ok(Map.of(
                 "message", "Thêm sân con mới thành công!",

@@ -3,6 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { apiRequest } from "@/lib/api";
 import WizardStepper from "@/components/WizardStepper";
 import WizardPageShell from "@/components/WizardPageShell";
 import {
@@ -87,8 +88,69 @@ function RegisterTeamWizard() {
   const [captainName, setCaptainName] = useState("");
   const [captainPhone, setCaptainPhone] = useState("");
   const [subCaptainPhone, setSubCaptainPhone] = useState("");
+  const [myClubs, setMyClubs] = useState<any[]>([]);
+  const [selectedClubId, setSelectedClubId] = useState<number | null>(null);
+  const [rosterMembers, setRosterMembers] = useState<string[]>([]);
+  const [extraPlayerName, setExtraPlayerName] = useState("");
 
   const { user, updateProfile } = useAuth();
+
+  // Kiểm tra người đại diện hiện có CLB nào chưa để gợi ý chọn nhanh
+  useEffect(() => {
+    if (!user) {
+      setMyClubs([]);
+      return;
+    }
+    let alive = true;
+    apiRequest<any[]>("/api/v1/clubs/mine")
+      .then((list) => {
+        if (alive && Array.isArray(list)) {
+          setMyClubs(list);
+        }
+      })
+      .catch(() => {
+        if (alive) setMyClubs([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [user]);
+
+  const handleSelectMyClub = (club: any) => {
+    setSelectedClubId(club.id);
+    setTeamName(club.name || "");
+    if (club.phone && !captainPhone) {
+      setCaptainPhone(club.phone);
+    }
+    const membersList: string[] = Array.isArray(club.members)
+      ? club.members
+          .map((m: any) => (m?.memberName || m?.name || "").trim())
+          .filter(Boolean)
+      : [];
+    setRosterMembers(membersList);
+    if (membersList.length >= 5) {
+      setMemberCount(Math.min(25, membersList.length));
+    }
+    if (errors.teamName) {
+      setErrors((prev) => {
+        const n = { ...prev };
+        delete n.teamName;
+        return n;
+      });
+    }
+  };
+
+  const handleAddExtraPlayer = () => {
+    const n = extraPlayerName.trim();
+    if (!n) return;
+    setRosterMembers((prev) => {
+      if (prev.some((x) => x.toLowerCase() === n.toLowerCase())) return prev;
+      const next = [...prev, n];
+      setMemberCount((c) => Math.max(c, Math.min(25, next.length)));
+      return next;
+    });
+    setExtraPlayerName("");
+  };
 
   // Nạp danh sách giải đấu
   useEffect(() => {
@@ -305,6 +367,7 @@ function RegisterTeamWizard() {
         captainPhone: typedPhone,
         subCaptainPhone: subCaptainPhone.trim(),
         memberCount,
+        memberNames: rosterMembers.length > 0 ? rosterMembers.join(", ") : undefined,
       });
       setDone(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -587,6 +650,30 @@ function RegisterTeamWizard() {
             {/* GIAI ĐOẠN 1 — THÔNG TIN ĐỘI BÓNG */}
             {stage === 1 && (
               <div className="space-y-4">
+                {myClubs.length > 0 && (
+                  <div className="p-3.5 rounded-xl bg-sky-50/70 border border-sky-200 space-y-2">
+                    <p className="text-[13px] font-bold text-slate-900">
+                      🛡️ CLB hiện có của bạn (chọn nhanh để điền thông tin & danh sách cầu thủ):
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {myClubs.map((club) => (
+                        <button
+                          key={club.id}
+                          type="button"
+                          disabled={isBlockedByInvite || isSelectedFull}
+                          onClick={() => handleSelectMyClub(club)}
+                          className={`px-3 py-1.5 rounded-lg text-[13px] font-bold border transition-all cursor-pointer ${
+                            selectedClubId === club.id
+                              ? "bg-[#0369a1] text-white border-[#0369a1] shadow-xs"
+                              : "bg-white text-slate-800 border-slate-300 hover:border-[#0369a1]"
+                          }`}
+                        >
+                          {club.name} ({club.memberCount ?? club.members?.length ?? 0} thành viên)
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label htmlFor="r-team" className={labelCls}>
                     Tên Đội Bóng (FC) *
@@ -626,6 +713,59 @@ function RegisterTeamWizard() {
                     className={inputCls}
                   />
                   {errors.memberCount && <p className={errCls}>{errors.memberCount}</p>}
+                </div>
+
+                {/* Danh sách cầu thủ dự giải (từ CLB + thêm cầu thủ ngoài nếu muốn) */}
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label className="text-[13px] font-bold text-slate-800">
+                      Danh sách cầu thủ thi đấu ({rosterMembers.length} người — có thể thêm cầu thủ ngoài)
+                    </label>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="text"
+                      disabled={isBlockedByInvite || isSelectedFull}
+                      value={extraPlayerName}
+                      onChange={(e) => setExtraPlayerName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddExtraPlayer();
+                        }
+                      }}
+                      placeholder="Nhập tên cầu thủ ngoài / tăng cường..."
+                      className="flex-1 min-w-[200px] px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+                    />
+                    <button
+                      type="button"
+                      disabled={isBlockedByInvite || isSelectedFull}
+                      onClick={handleAddExtraPlayer}
+                      className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-[13px] font-bold cursor-pointer disabled:opacity-50"
+                    >
+                      + Thêm Cầu Thủ Ngoài
+                    </button>
+                  </div>
+                  {rosterMembers.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {rosterMembers.map((p, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-slate-300 text-slate-800 text-[13px] font-semibold"
+                        >
+                          <span>{p}</span>
+                          <button
+                            type="button"
+                            onClick={() => setRosterMembers((prev) => prev.filter((_, i) => i !== idx))}
+                            className="text-slate-400 hover:text-rose-600 font-bold cursor-pointer"
+                            title="Xóa khỏi danh sách"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

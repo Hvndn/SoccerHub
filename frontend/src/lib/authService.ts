@@ -22,6 +22,9 @@ export interface UserProfile {
   isClubRep?: boolean;
   /** null = da hoan tat khoi tao ho so; false = moi dang ky, can khoi tao. */
   profileCompleted?: boolean | null;
+  /** Trạng thái duyệt chủ sân (chống spam/acc clone): APPROVED, PENDING_APPROVAL, REJECTED. */
+  approvalStatus?: 'APPROVED' | 'PENDING_APPROVAL' | 'REJECTED';
+  approvalReason?: string;
   /**
    * Chỉ có khi vừa đổi email: backend cấp token mới vì JWT gắn với email cũ.
    * FE dùng để thay token đang lưu, không hiển thị cho người dùng.

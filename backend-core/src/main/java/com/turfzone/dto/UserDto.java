@@ -31,6 +31,11 @@ public class UserDto {
     private Boolean isClubRep;
     /** null = da hoan tat khoi tao ho so; false = moi dang ky, can khoi tao. */
     private Boolean profileCompleted;
+    /** Trạng thái duyệt chủ sân: APPROVED, PENDING_APPROVAL, REJECTED. */
+    private String approvalStatus;
+    private String approvalReason;
+    /** Điểm xếp hạng trình độ / ELO Rating. */
+    private Integer eloRating;
     /**
      * Chỉ được điền khi người dùng vừa ĐỔI EMAIL.
      * JWT lấy subject = email nên token đang dùng sẽ hết hiệu lực ngay sau khi đổi;

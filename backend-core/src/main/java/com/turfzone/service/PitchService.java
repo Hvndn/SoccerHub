@@ -3,7 +3,9 @@ package com.turfzone.service;
 import com.turfzone.dto.CreatePitchRequest;
 import com.turfzone.model.Pitch;
 import com.turfzone.model.User;
+import com.turfzone.model.UserRole;
 import com.turfzone.repository.PitchRepository;
+import com.turfzone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -16,6 +18,7 @@ import java.util.Map;
 public class PitchService {
 
     private final PitchRepository pitchRepository;
+    private final UserRepository userRepository;
 
     public Pitch createPitch(CreatePitchRequest req, User owner) {
         if (req.getName() == null || req.getName().trim().isEmpty()) {
@@ -49,7 +52,11 @@ public class PitchService {
                 .rating(5.0)
                 .build();
 
-        return pitchRepository.save(pitch);
+        Pitch saved = pitchRepository.save(pitch);
+        if (owner != null) {
+            checkAndAutoApproveOwner(saved, owner);
+        }
+        return saved;
     }
 
 /**
@@ -161,7 +168,11 @@ public class PitchService {
         if (amenities != null && !amenities.isEmpty()) pitch.setAmenities(new ArrayList<>(amenities));
 
         pitch.setUpdatedAt(LocalDateTime.now());
-        return pitchRepository.save(pitch);
+        Pitch saved = pitchRepository.save(pitch);
+        if (actor != null && actor.getRole() == UserRole.OWNER) {
+            checkAndAutoApproveOwner(saved, actor);
+        }
+        return saved;
     }
 
     /** Đọc chuỗi, tự cắt khoảng trắng; trả null nếu không có giá trị. */
@@ -217,5 +228,37 @@ public class PitchService {
 
     public void clearAllPitches() {
         pitchRepository.deleteAll();
+    }
+
+    /**
+     * Tự động kiểm tra điều kiện phê duyệt chủ sân (chống spam / acc clone).
+     * Điều kiện đạt:
+     * - Cụm sân có tên rõ ràng (>= 5 ký tự)
+     * - Địa chỉ cụ thể (>= 8 ký tự)
+     * - SĐT chuẩn liên lạc (10 số)
+     * - Có ít nhất 1 sân con (như Sân 5, Sân 7) trong pitchTypes
+     * - Giá giờ hợp lệ (> 0đ)
+     */
+    public boolean checkAndAutoApproveOwner(Pitch pitch, User owner) {
+        if (pitch == null || owner == null) return false;
+        if (owner.getRole() != UserRole.OWNER) return false;
+        if ("APPROVED".equals(owner.getApprovalStatus())) return true;
+
+        boolean nameValid = pitch.getName() != null && pitch.getName().trim().length() >= 5;
+        boolean addressValid = pitch.getAddress() != null && pitch.getAddress().trim().length() >= 8;
+        String digits = pitch.getPhone() != null ? pitch.getPhone().trim().replaceAll("\\D", "") : "";
+        boolean phoneValid = digits.length() >= 9;
+        boolean hasCourts = pitch.getPitchTypes() != null && !pitch.getPitchTypes().isEmpty();
+        boolean priceValid = (pitch.getAvgPricePerHour() != null && pitch.getAvgPricePerHour() > 0)
+                || (pitch.getCourtBasePrices() != null && !pitch.getCourtBasePrices().isEmpty());
+
+        if (nameValid && addressValid && phoneValid && hasCourts && priceValid) {
+            owner.setApprovalStatus("APPROVED");
+            owner.setProfileCompleted(true);
+            owner.setApprovalReason("Hệ thống tự động phê duyệt: Cụm sân và sân con có thông tin rõ ràng.");
+            userRepository.save(owner);
+            return true;
+        }
+        return false;
     }
 }

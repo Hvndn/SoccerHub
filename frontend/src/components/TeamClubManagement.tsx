@@ -30,6 +30,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { fetchTournaments, sportLabel } from "@/lib/tournamentService";
+import CommunityChat from "./CommunityChat";
+import { MessageSquare } from "lucide-react";
 
 interface TeamClubManagementProps {
   user?: any;
@@ -293,7 +295,7 @@ export default function TeamClubManagement({
 }: TeamClubManagementProps) {
   // Main Sub-tabs: Roster, Treasury, RSVP, Tournament
   const [activeSubTab, setActiveSubTab] = useState<
-    "roster" | "treasury" | "rsvp" | "tournament" | "sponsors"
+    "roster" | "treasury" | "rsvp" | "tournament" | "sponsors" | "chat"
   >("roster");
 
   // Tournament integration states
@@ -1107,7 +1109,12 @@ export default function TeamClubManagement({
       label: `🏆 Giải Đấu & Thành Tích (${myTeams.length})`,
       shortLabel: `🏆 Giải Đấu (${myTeams.length})`,
     },
-  ] as const;
+    {
+      key: "chat",
+      label: "💬 Phòng Chat CLB",
+      shortLabel: "💬 Chat CLB",
+    },
+  ];
 
   return (
     <div className="space-y-4">
@@ -1322,7 +1329,7 @@ export default function TeamClubManagement({
               <button
                 key={tab.key}
                 type="button"
-                onClick={() => setActiveSubTab(tab.key)}
+                onClick={() => setActiveSubTab(tab.key as any)}
                 className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-md text-[13px] sm:text-[14px] font-bold border transition-colors cursor-pointer ${
                   activeSubTab === tab.key
                     ? "bg-[#0369a1] text-white border-[#0369a1]"
@@ -3164,6 +3171,33 @@ export default function TeamClubManagement({
           )}
         </div>
       )}
-    </div>
+    
+
+      {/* 6. TAB PHÒNG CHAT CLB */}
+      {activeSubTab === "chat" && currentClub && (
+        <div className="bg-white rounded-lg border border-slate-300 p-4 sm:p-6 space-y-4 animate-fade-in shadow-xs">
+          <div className="flex items-center gap-3 pb-3 border-b border-slate-200">
+            <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0369a1] flex items-center justify-center border border-sky-200 shrink-0">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900 text-sm">
+                Phòng Chat Nội Bộ: <span className="text-[#0369a1]">{currentClub.name}</span>
+              </h3>
+              <p className="text-[13px] text-slate-500">
+                Kênh thảo luận riêng của các thành viên trong CLB điểm danh, chiến thuật và thông báo
+              </p>
+            </div>
+          </div>
+
+          <CommunityChat
+            user={user}
+            channel={`club_${currentClub.id || currentClub.name.replace(/\s+/g, '_')}`}
+            channelName={`CLB ${currentClub.name}`}
+            channelDesc={`Phòng chat nội bộ câu lạc bộ ${currentClub.name}`}
+          />
+        </div>
+      )}
+</div>
   );
 }

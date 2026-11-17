@@ -74,11 +74,17 @@ public class AuthService {
         }
 
         UserRole requested = req.getRole() != null ? req.getRole() : UserRole.PLAYER;
-        // KHÔNG BAO GIỜ cho phép tự đăng ký role ADMIN — chỉ cấp qua /admin/users/{id}/role.
-        // Nếu client gửi role=ADMIN thì hạ xuống PLAYER (coi như client cố ý leo thang).
-        // Đăng ký tự chọn role ORGANIZER/OWNER là leo thang đặc quyền (ORGANIZER quản lý
-        // được MỌI giải của hệ thống). Role thật chỉ cấp qua /admin/users/{id}/role.
+        // KHÔNG BAO GIỜ cho phép tự đăng ký role ADMIN hoặc ORGANIZER (leo thang đặc quyền).
+        // Cho phép đăng ký vai trò OWNER (Chủ Sân), nhưng mặc định đưa vào PENDING_APPROVAL
+        // để phòng chống tạo tài khoản clone/spam. Khi chủ sân khai báo đầy đủ thông tin
+        // cụm sân và các sân con hợp lệ, hệ thống sẽ tự động duyệt (Auto-Approve).
         UserRole role = UserRole.PLAYER;
+        String approvalStatus = "APPROVED";
+        if (requested == UserRole.OWNER) {
+            role = UserRole.OWNER;
+            approvalStatus = "PENDING_APPROVAL";
+        }
+
         String position = req.getPosition() != null ? req.getPosition() : 
                 (role == UserRole.PLAYER ? "Cầu Thủ Pro" : role == UserRole.OWNER ? "Chủ Cụm Sân" : "Ban Tổ Chức");
 
@@ -93,8 +99,9 @@ public class AuthService {
                 .favoriteSport(req.getFavoriteSport() != null ? req.getFavoriteSport() : "football")
                 .level(req.getLevel() != null ? req.getLevel() : "Nghiệp dư")
                 .avatar(getInitials(req.getFullName()))
-                // Tai khoan moi: chua hoan tat khoi tao ho so cau thu.
+                // Tai khoan moi: chua hoan tat khoi tao ho so.
                 .profileCompleted(false)
+                .approvalStatus(approvalStatus)
                 .build();
 
         userRepository.save(user);
@@ -263,6 +270,9 @@ public class AuthService {
                 .currentClub(user.getCurrentClub())
                 .isClubRep(user.getIsClubRep() != null && user.getIsClubRep())
                 .profileCompleted(user.getProfileCompleted())
+                .approvalStatus(user.getApprovalStatus() != null ? user.getApprovalStatus() : "APPROVED")
+                .approvalReason(user.getApprovalReason())
+                .eloRating(user.getEloRating() != null ? user.getEloRating() : 1200)
                 .build();
     }
 

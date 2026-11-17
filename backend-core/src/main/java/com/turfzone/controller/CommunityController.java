@@ -112,6 +112,15 @@ public class CommunityController {
         String waterOption = str(req.get("waterOption"));
         if (waterOption == null || waterOption.isBlank()) waterOption = "CAM_THUNG";
 
+        Boolean isDirectInvite = Boolean.TRUE.equals(req.get("isDirectInvite")) || "true".equalsIgnoreCase(str(req.get("isDirectInvite")));
+        String invitedContact = str(req.get("invitedContact"));
+        Integer eloRating = 1200;
+        if (req.get("eloRating") != null) {
+            try {
+                eloRating = Integer.parseInt(req.get("eloRating").toString().trim());
+            } catch (NumberFormatException ignored) {}
+        }
+
         MatchmakingPost post = MatchmakingPost.builder()
                 .teamName(teamName)
                 .captainName(captainName != null ? captainName : captainPhone)
@@ -132,12 +141,40 @@ public class CommunityController {
                 .homeKitColor(homeKitColor)
                 .refereeOption(refereeOption)
                 .waterOption(waterOption)
+                .isDirectInvite(isDirectInvite)
+                .invitedContact(invitedContact)
+                .eloRating(eloRating)
                 .status("OPEN")
                 .createdAt(LocalDateTime.now())
                 .build();
 
         MatchmakingPost saved = matchmakingPostRepository.save(post);
         attachForm(saved);
+
+        // Gửi thông báo đến đối thủ nếu là kèo mời đích danh (SĐT hoặc Email)
+        if (Boolean.TRUE.equals(saved.getIsDirectInvite()) && saved.getInvitedContact() != null) {
+            String contact = saved.getInvitedContact().trim();
+            String targetEmail = null;
+            if (contact.contains("@")) {
+                targetEmail = contact.toLowerCase();
+            } else {
+                String cleanPhone = contact.replaceAll("\\s+", "");
+                targetEmail = userRepository.findByPhone(cleanPhone).map(com.turfzone.model.User::getEmail).orElse(null);
+            }
+
+            if (targetEmail != null) {
+                notificationService.notify(
+                        "PLAYER",
+                        targetEmail,
+                        "🎯 Lời mời thi đấu giao hữu từ " + saved.getTeamName(),
+                        saved.getTeamName() + " đã gửi lời mời giao hữu đích danh cho bạn tại " 
+                                + saved.getPitchName() + " (" + saved.getMatchTime() + "). Bấm để xem chi tiết và nhận kèo!",
+                        "MATCH_INVITE",
+                        "/?tab=matchmaking&matchId=" + saved.getId()
+                );
+            }
+        }
+
         return ResponseEntity.ok(saved);
     }
 
@@ -237,6 +274,76 @@ public class CommunityController {
         return ResponseEntity.ok(Map.of(
                 "message", "Ghép kèo thành công! Chúc hai đội thi đấu Fairplay.",
                 "post", post
+        ));
+    }
+
+    @PostMapping("/matchmaking-posts/{id}/complete")
+    public ResponseEntity<?> completeMatchmakingPost(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> req,
+            @AuthenticationPrincipal com.turfzone.model.User me) {
+        MatchmakingPost post = matchmakingPostRepository.findById(id).orElse(null);
+        if (post == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Kèo giao lưu không tồn tại hoặc đã bị xóa."));
+        }
+
+        int scoreA = 0;
+        int scoreB = 0;
+        if (req.get("scoreA") != null) {
+            try { scoreA = Math.max(0, Integer.parseInt(req.get("scoreA").toString().trim())); } catch (NumberFormatException ignored) {}
+        }
+        if (req.get("scoreB") != null) {
+            try { scoreB = Math.max(0, Integer.parseInt(req.get("scoreB").toString().trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        post.setScoreA(scoreA);
+        post.setScoreB(scoreB);
+        post.setIsCompleted(true);
+        post.setStatus("COMPLETED");
+        post.setCompletedAt(LocalDateTime.now());
+
+        // Tính biến động ELO: Thắng +25, Thua -18, Hòa +5
+        int eloChangeA;
+        int eloChangeB;
+        if (scoreA > scoreB) {
+            eloChangeA = 25;
+            eloChangeB = -18;
+        } else if (scoreB > scoreA) {
+            eloChangeA = -18;
+            eloChangeB = 25;
+        } else {
+            eloChangeA = 5;
+            eloChangeB = 5;
+        }
+        post.setEloChangeA(eloChangeA);
+        post.setEloChangeB(eloChangeB);
+
+        // Cập nhật ELO cho đội đăng kèo nếu có tài khoản
+        if (post.getCaptainPhone() != null) {
+            userRepository.findByPhone(post.getCaptainPhone().replaceAll("\\s+", "")).ifPresent(u -> {
+                int currentElo = u.getEloRating() != null ? u.getEloRating() : 1200;
+                u.setEloRating(Math.max(800, currentElo + eloChangeA));
+                userRepository.save(u);
+            });
+        }
+
+        // Cập nhật ELO cho đội nhận kèo nếu có tài khoản
+        if (post.getOpponentCaptainPhone() != null) {
+            userRepository.findByPhone(post.getOpponentCaptainPhone().replaceAll("\\s+", "")).ifPresent(u -> {
+                int currentElo = u.getEloRating() != null ? u.getEloRating() : 1200;
+                u.setEloRating(Math.max(800, currentElo + eloChangeB));
+                userRepository.save(u);
+            });
+        }
+
+        MatchmakingPost saved = matchmakingPostRepository.save(post);
+        attachForm(saved);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Xác nhận kết quả trận đấu thành công! Đã kết toán điểm ELO cho 2 đội.",
+                "post", saved,
+                "eloChangeA", eloChangeA,
+                "eloChangeB", eloChangeB
         ));
     }
 

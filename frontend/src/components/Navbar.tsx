@@ -128,6 +128,7 @@ export default function Navbar({
 
   const getNotificationActionText = (type?: string) => {
     const t = (type || "").toUpperCase();
+    if (t.includes("MATCH_INVITE")) return "Xem lời mời & nhận kèo →";
     if (t.startsWith("BOOKING")) return "Xem lịch đặt sân →";
     if (t.startsWith("MATCH") || t.includes("COMMUNITY") || t.includes("SOS")) return "Xem chi tiết kèo →";
     if (t.startsWith("TOURNAMENT") || t.startsWith("BRACKET")) return "Xem giải đấu ngay →";
@@ -136,38 +137,54 @@ export default function Navbar({
   };
 
   const handleNotificationClick = (notif: any) => {
-   if (!notif.read) {
-     markSingleRead(notif.id);
-   }
-   setShowNotifications(false);
-   if (!notif.link) return;
+    if (!notif.read) {
+      markSingleRead(notif.id);
+    }
+    setShowNotifications(false);
+    if (!notif.link) return;
 
-   if (/^https?:\/\//i.test(notif.link)) {
-     window.location.href = notif.link;
-     return;
-   }
+    if (/^https?:\/\//i.test(notif.link)) {
+      window.location.href = notif.link;
+      return;
+    }
 
-   try {
-     const url = new URL(notif.link, window.location.origin);
-     const tabParam = url.searchParams.get("tab");
-     const tidParam = url.searchParams.get("tournamentId");
+    try {
+      const url = new URL(notif.link, window.location.origin);
+      const tabParam = url.searchParams.get("tab");
+      const tidParam = url.searchParams.get("tournamentId");
+      const matchParam = url.searchParams.get("matchId");
 
-     if (tidParam && !isNaN(Number(tidParam)) && onOpenTournament) {
-       onOpenTournament(Number(tidParam));
-       return;
-     }
+      if (tidParam && !isNaN(Number(tidParam))) {
+        setActiveTab("tournaments");
+        window.history.pushState({ tab: "tournaments", tournamentId: tidParam }, "", notif.link);
+        if (onOpenTournament) {
+          onOpenTournament(Number(tidParam));
+        }
+        return;
+      }
 
-     if (tabParam) {
-       setActiveTab(tabParam);
-       window.history.pushState({ tab: tabParam }, "", notif.link);
-       return;
-     }
+      if (matchParam && !isNaN(Number(matchParam))) {
+        setActiveTab("matchmaking");
+        window.history.pushState({ tab: "matchmaking", matchId: matchParam }, "", notif.link);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("turfzone_highlight_match", { detail: { matchId: Number(matchParam) } })
+          );
+        }
+        return;
+      }
 
-     router.push(notif.link);
-   } catch {
-     router.push(notif.link);
-   }
- };
+      if (tabParam) {
+        setActiveTab(tabParam);
+        window.history.pushState({ tab: tabParam }, "", notif.link);
+        return;
+      }
+
+      router.push(notif.link);
+    } catch {
+      router.push(notif.link);
+    }
+  };
 
  // Grouped Dropdown States
  const [showPitchMenu, setShowPitchMenu] = useState(false);

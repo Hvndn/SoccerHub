@@ -203,6 +203,56 @@ public class ClubController {
         return ResponseEntity.ok(out);
     }
 
+    /** Tra cứu CLB của một người đại diện theo SĐT hoặc Email (dùng khi BTC/Chủ sân thêm đội thủ công). */
+    @GetMapping("/lookup")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> lookupByContact(@RequestParam String contact) {
+        String raw = contact == null ? "" : contact.trim();
+        if (raw.isEmpty()) {
+            return ResponseEntity.ok(Map.of("found", false, "clubs", List.of()));
+        }
+        User targetUser = userRepository.findByEmailOrPhone(raw.toLowerCase(), raw).orElse(null);
+        if (targetUser == null) {
+            return ResponseEntity.ok(Map.of("found", false, "clubs", List.of()));
+        }
+        String targetEmail = norm(targetUser.getEmail());
+        java.util.Set<Long> seenIds = new java.util.LinkedHashSet<>();
+        List<Club> matched = new ArrayList<>();
+        for (Club c : clubRepository.findByOwnerEmailOrderByCreatedAtDesc(targetEmail)) {
+            if (seenIds.add(c.getId())) matched.add(c);
+        }
+        for (ClubMember cm : clubMemberRepository.findByMemberEmailOrderByJoinedAtDesc(targetEmail)) {
+            if (Boolean.TRUE.equals(cm.getIsRepresentative())) {
+                clubRepository.findById(cm.getClubId()).ifPresent(c -> {
+                    if (seenIds.add(c.getId())) matched.add(c);
+                });
+            }
+        }
+        List<Map<String, Object>> clubDtos = new ArrayList<>();
+        for (Club c : matched) {
+            List<ClubMember> mems = clubMemberRepository.findByClubIdOrderByIsRepresentativeDescJoinedAtAsc(c.getId());
+            List<String> memberNames = mems.stream()
+                    .map(ClubMember::getMemberName)
+                    .filter(n -> n != null && !n.isBlank())
+                    .toList();
+            Map<String, Object> dto = new LinkedHashMap<>();
+            dto.put("id", c.getId());
+            dto.put("name", c.getName());
+            dto.put("area", c.getArea());
+            dto.put("phone", c.getPhone());
+            dto.put("memberCount", mems.size());
+            dto.put("memberNames", memberNames);
+            clubDtos.add(dto);
+        }
+        return ResponseEntity.ok(Map.of(
+                "found", true,
+                "userName", targetUser.getFullName() != null ? targetUser.getFullName() : "",
+                "userEmail", targetEmail,
+                "userPhone", targetUser.getPhone() != null ? targetUser.getPhone() : "",
+                "clubs", clubDtos
+        ));
+    }
+
     /** Tạo CLB — người tạo tự động là đại diện. */
     @PostMapping
     @PreAuthorize("isAuthenticated()")

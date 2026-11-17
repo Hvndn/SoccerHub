@@ -79,6 +79,15 @@ public class MatchmakingPost {
     @Builder.Default
     private String waterOption = "CAM_THUNG"; // "CAM_THUNG" (Cưa đôi thùng nước), "TU_MANG" (Tự túc)
 
+    // --- Xếp hạng ELO & Mời đích danh đối thủ ---
+    @Builder.Default
+    private Integer eloRating = 1200;
+
+    @Builder.Default
+    private Boolean isDirectInvite = false;
+
+    private String invitedContact; // SĐT hoặc Email mời đích danh đối thủ
+
     // --- Phong độ live của đội đăng kèo (tính từ match_results, KHÔNG lưu DB) ---
     @Transient
     private String form;
@@ -92,6 +101,15 @@ public class MatchmakingPost {
     private String opponentCaptainName;
     private String opponentCaptainPhone;
     private LocalDateTime matchedAt;
+
+    // Kết quả trận đấu & Biến động ELO
+    private Integer scoreA;
+    private Integer scoreB;
+    @Builder.Default
+    private Boolean isCompleted = false;
+    private LocalDateTime completedAt;
+    private Integer eloChangeA;
+    private Integer eloChangeB;
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

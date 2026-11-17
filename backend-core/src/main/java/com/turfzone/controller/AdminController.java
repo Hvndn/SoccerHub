@@ -177,9 +177,13 @@ public class AdminController {
         // Dùng chung cờ profileCompleted: false = chưa hoàn tất onboarding.
         if (role == UserRole.OWNER) {
             user.setProfileCompleted(false);
+            if (user.getApprovalStatus() == null || "REJECTED".equals(user.getApprovalStatus())) {
+                user.setApprovalStatus("PENDING_APPROVAL");
+            }
         } else if (role == UserRole.PLAYER) {
             // Chuyển về cầu thủ: hồ sơ đã có, không bị ép khởi tạo lại.
             user.setProfileCompleted(true);
+            user.setApprovalStatus("APPROVED");
         }
         userRepository.save(user);
         audit(me, "USER", "CHANGE_ROLE", user.getEmail(),
@@ -189,6 +193,87 @@ public class AdminController {
                 "message", "Đã cập nhật vai trò thành " + role.name(),
                 "id", user.getId(),
                 "role", role.name()
+        ));
+    }
+
+    /**
+     * Danh sách chủ sân chờ duyệt hoặc cần quản lý kiểm duyệt chống clone/spam.
+     */
+    @GetMapping("/pending-owners")
+    public ResponseEntity<List<Map<String, Object>>> listPendingOwners() {
+        List<User> owners = userRepository.findAll().stream()
+                .filter(u -> u.getRole() == UserRole.OWNER)
+                .sorted(Comparator.comparing(User::getId).reversed())
+                .toList();
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (User u : owners) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", u.getId());
+            m.put("fullName", u.getFullName());
+            m.put("email", u.getEmail());
+            m.put("phone", u.getPhone());
+            m.put("area", u.getArea());
+            m.put("approvalStatus", u.getApprovalStatus() != null ? u.getApprovalStatus() : "APPROVED");
+            m.put("approvalReason", u.getApprovalReason());
+            m.put("profileCompleted", u.getProfileCompleted());
+            m.put("createdAt", u.getCreatedAt() != null ? u.getCreatedAt().toString() : null);
+
+            List<com.turfzone.model.Pitch> pitches = pitchRepository.findByOwnerId(u.getId());
+            m.put("pitchCount", pitches.size());
+            if (!pitches.isEmpty()) {
+                com.turfzone.model.Pitch p = pitches.get(0);
+                m.put("pitchName", p.getName());
+                m.put("pitchAddress", p.getAddress());
+                m.put("pitchPhone", p.getPhone());
+                m.put("courtTypes", p.getPitchTypes());
+                m.put("avgPrice", p.getAvgPricePerHour());
+            }
+            result.add(m);
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Phê duyệt hoặc từ chối chủ sân thủ công bởi Super Admin.
+     */
+    @PatchMapping("/owners/{id}/approval")
+    public ResponseEntity<?> setOwnerApproval(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal User me) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy người dùng."));
+        }
+        if (user.getRole() != UserRole.OWNER) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Người dùng không mang vai trò Chủ Sân."));
+        }
+
+        String status = String.valueOf(body.getOrDefault("status", "APPROVED")).trim().toUpperCase();
+        if (!"APPROVED".equals(status) && !"REJECTED".equals(status) && !"PENDING_APPROVAL".equals(status)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Trạng thái không hợp lệ: " + status));
+        }
+
+        String reason = body.containsKey("reason") && body.get("reason") != null
+                ? String.valueOf(body.get("reason")).trim()
+                : ("APPROVED".equals(status) ? "Được Super Admin phê duyệt thủ công." : "Từ chối bởi Super Admin.");
+
+        user.setApprovalStatus(status);
+        user.setApprovalReason(reason);
+        if ("APPROVED".equals(status)) {
+            user.setProfileCompleted(true);
+        }
+        userRepository.save(user);
+
+        audit(me, "USER", "OWNER_APPROVAL", user.getEmail(),
+                "Phê duyệt chủ sân " + user.getEmail() + " -> " + status + " (" + reason + ")");
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Cập nhật trạng thái duyệt chủ sân thành công!",
+                "id", user.getId(),
+                "approvalStatus", user.getApprovalStatus(),
+                "approvalReason", user.getApprovalReason()
         ));
     }
 
