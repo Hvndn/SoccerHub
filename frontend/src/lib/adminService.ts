@@ -54,8 +54,17 @@ export interface AdminPitch {
   phone?: string | null;
   ownerName?: string | null;
   avgPricePerHour?: number | null;
+  peakPricePerHour?: number | null;
   rating?: number | null;
   pitchTypes?: string[];
+  latitude?: number | null;
+  longitude?: number | null;
+  openTime?: string | null;
+  closeTime?: string | null;
+  bankCode?: string | null;
+  bankAccount?: string | null;
+  accountName?: string | null;
+  verified?: boolean | null;
 }
 
 export interface MatchmakingPost {
