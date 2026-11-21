@@ -276,48 +276,47 @@ def build_thesis_report():
     # -------------------------------------------------------------------------
     # TÓM TẮT
     # -------------------------------------------------------------------------
-    add_p(doc, "TÓM TẮT", align=WD_ALIGN_PARAGRAPH.CENTER, size=14, bold=True, space_before=0, space_after=14)
+    add_p(doc, "TÓM TẮT", align=WD_ALIGN_PARAGRAPH.CENTER, size=14, bold=True, space_before=0, space_after=0)
+    add_p(doc, "", align=WD_ALIGN_PARAGRAPH.LEFT, size=13, space_before=0, space_after=0)
     
     # Strictly LEFT ALIGNED metadata to prevent Word space-stretching bug!
-    p_t1 = add_p(doc, "", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=3)
+    p_t1 = add_p(doc, "", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=3, line_spacing=1.3)
     r = p_t1.add_run("Tên đề tài: ")
     set_run_font(r, size=13, bold=True)
     r2 = p_t1.add_run("Nghiên cứu và xây dựng nền tảng quản lý sân bóng và tổ chức giải đấu thể thao trực tuyến Turfzone")
     set_run_font(r2, size=13)
     
-    p_t2 = add_p(doc, "", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=3)
+    p_t2 = add_p(doc, "", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=3, line_spacing=1.3)
     r = p_t2.add_run("Sinh viên thực hiện: ")
     set_run_font(r, size=13, bold=True)
-    r2 = p_t2.add_run("Đại Chưởng Quỹ")
+    r2 = p_t2.add_run("Hồ Văn Diện")
     set_run_font(r2, size=13)
     
-    p_t3 = add_p(doc, "", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=3)
-    r = p_t3.add_run("Mã số sinh viên: ")
+    p_t3 = add_p(doc, "", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=10, line_spacing=1.3)
+    r = p_t3.add_run("Mã số SV: ")
     set_run_font(r, size=13, bold=True)
-    r2 = p_t3.add_run("2021-CNTT-01")
+    r2 = p_t3.add_run("2251220214          ")
     set_run_font(r2, size=13)
-
-    p_t4 = add_p(doc, "", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=10)
-    r = p_t4.add_run("Lớp: ")
-    set_run_font(r, size=13, bold=True)
-    r2 = p_t4.add_run("Kỹ thuật Phần mềm Khóa 2021")
-    set_run_font(r2, size=13)
+    r3 = p_t3.add_run("Lớp: ")
+    set_run_font(r3, size=13, bold=True)
+    r4 = p_t3.add_run("22CT5")
+    set_run_font(r4, size=13)
     
     add_p(doc, 
-          "Trong bối cảnh nền kinh tế số và phong trào rèn luyện thể chất phát triển bùng nổ, các cụm sân bóng đá cỏ nhân tạo và thể thao phong trào tại Việt Nam đang đứng trước thách thức lớn về tối ưu hóa quy trình quản trị và phục vụ khách hàng. Các phương thức vận hành truyền thống dựa trên sổ tay, bảng trắng và nhắn tin mạng xã hội bộc lộ nhiều điểm nghẽn nghiêm trọng: nguy cơ trùng ca (double-booking) cao, khách bỏ cọc gây thất thoát tài chính, tính tiền dịch vụ Canteen thủ công dễ nhầm lẫn và công tác tổ chức bốc thăm giải đấu thiếu minh bạch.",
-          align=WD_ALIGN_PARAGRAPH.JUSTIFY, size=13, space_before=0, space_after=5, first_line_indent=Cm(1.0))
+          "Trong bối cảnh chuyển đổi số và phong trào thể dục thể thao cộng đồng phát triển mạnh mẽ tại Việt Nam, các cụm sân bóng đá cỏ nhân tạo và đơn vị tổ chức giải đấu phong trào vẫn đang đối mặt với nhiều bất cập từ phương thức quản lý thủ công bằng sổ tay, bảng biểu rời rạc và tin nhắn mạng xã hội. Cách làm truyền thống này dễ dẫn đến tình trạng trùng lịch đặt sân (double-booking), thất thoát tài chính do khách hủy hoặc bỏ cọc, sai sót trong thanh toán dịch vụ Canteen và thiếu tính minh bạch, đồng bộ trong công tác điều hành giải đấu.",
+          align=WD_ALIGN_PARAGRAPH.JUSTIFY, size=13, space_before=0, space_after=5, line_spacing=1.3, first_line_indent=Cm(1.0))
           
     add_p(doc, 
-          "Đồ án tốt nghiệp tập trung nghiên cứu và hiện thực hóa nền tảng thể thao số toàn diện mang tên Turfzone (SoccerHub Monorepo), giải quyết trọn vẹn chuỗi giá trị kết nối giữa Cầu thủ (Player), Chủ cơ sở sân bóng (Owner), Ban tổ chức giải đấu (Organizer) và Quản trị viên (Admin). Hệ thống ứng dụng kiến trúc lai ghép Microservices kết hợp Modular Monolith, tích hợp Backend doanh nghiệp Spring Boot 3 (Java 17 LTS), Web Frontend Next.js 14 App Router (TypeScript) tuân thủ tiêu chuẩn thiết kế Zero-Modal (100% Inline form), và dịch vụ vi mô AI Service hiệu năng cao bằng FastAPI (Python).",
-          align=WD_ALIGN_PARAGRAPH.JUSTIFY, size=13, space_before=0, space_after=5, first_line_indent=Cm(1.0))
+          "Đồ án tốt nghiệp tập trung nghiên cứu, thiết kế và xây dựng hoàn chỉnh nền tảng thể thao số toàn diện Turfzone (SoccerHub Monorepo), kết nối xuyên suốt bốn nhóm đối tượng: Cầu thủ (Player), Chủ cụm sân (Owner), Ban tổ chức giải đấu (Organizer) và Quản trị viên (Admin). Hệ thống được xây dựng theo kiến trúc lai ghép giữa Modular Monolith và Microservices, kết hợp Backend doanh nghiệp Spring Boot 3 (Java 17 LTS) với cơ sở dữ liệu MySQL, giao diện Web Next.js 14 App Router (TypeScript) tuân thủ chuẩn thiết kế Zero-Modal (100% Inline UI) và dịch vụ trí tuệ nhân tạo AI Service phát triển trên nền tảng FastAPI (Python).",
+          align=WD_ALIGN_PARAGRAPH.JUSTIFY, size=13, space_before=0, space_after=5, line_spacing=1.3, first_line_indent=Cm(1.0))
           
     add_p(doc, 
-          "Các kết quả nghiên cứu và triển khai nổi bật của đồ án bao gồm: (1) Xây dựng cỗ máy trạng thái hữu hạn (FSM) quản lý chặt chẽ 4 trạng thái vòng đời ca sân (Chưa đặt, Đã cọc, Đang đá Live, Đang bảo trì); (2) Tích hợp cổng thanh toán cọc số hóa tự động qua chuẩn quốc gia VietQR Napas 24/7 với thời gian sinh mã dưới 3 giây; (3) Ứng dụng công thức khoảng cách địa lý đại vòng tròn Haversine và mô hình so khớp phong độ 5 trận gần nhất để gợi ý cụm sân tối ưu và ghép cặp thi đấu cân sức; (4) Xây dựng giải pháp điểm bán hàng POS quầy tích hợp bộ đếm giờ thi đấu Live theo thời gian thực (1 giây/tick), chọn nhanh đồ uống Canteen và tiện ích tự động chia đều tiền sân gửi vào nhóm Zalo; (5) Tự động hóa sân khấu bốc thăm giải đấu số hóa theo quy chuẩn cúp châu Âu (UEFA Champions League style) minh bạch tuyệt đối.",
-          align=WD_ALIGN_PARAGRAPH.JUSTIFY, size=13, space_before=0, space_after=5, first_line_indent=Cm(1.0))
+          "Các kết quả nghiên cứu và triển khai trọng tâm của đồ án bao gồm: (1) Xây dựng cỗ máy trạng thái hữu hạn (FSM) kiểm soát chặt chẽ vòng đời ca sân chống trùng lịch, kết hợp thanh toán cọc tự động theo chuẩn VietQR Napas 24/7 và quầy thu ngân POS Canteen tích hợp bộ đếm giờ thi đấu trực tiếp (Live Timer) cùng tiện ích chia đều tiền sân; (2) Ứng dụng công thức khoảng cách địa lý Haversine, thuật toán phân tích phong độ 5–15 trận gần nhất và hệ thống điểm ELO để gợi ý cụm sân, ghép kèo cân sức, hỗ trợ kèo mời đích danh kèm thông báo điều hướng trực tiếp (deep-link) và phòng chat nóng giữa hai đội; (3) Tự động hóa quy trình tổ chức giải đấu khép kín từ đăng ký đội bóng (liên kết nhanh danh sách từ Câu lạc bộ và bổ sung cầu thủ ngoài), sân khấu bốc thăm chia nhánh theo phong cách UEFA Champions League, tự động xếp lịch thi đấu, thống kê tỷ số – Vua phá lưới cho đến phòng chat nội bộ phân quyền riêng cho từng giải đấu.",
+          align=WD_ALIGN_PARAGRAPH.JUSTIFY, size=13, space_before=0, space_after=5, line_spacing=1.3, first_line_indent=Cm(1.0))
           
     add_p(doc, 
-          "Toàn bộ mã nguồn đã được kiểm thử nghiêm ngặt, đạt chuẩn 0 lỗi TypeScript (tsc --noEmit), vận hành mượt mà trên môi trường đám mây Vercel và Railway, khẳng định tính thực tiễn cao và khả năng thương mại hóa mở rộng trong tương lai.",
-          align=WD_ALIGN_PARAGRAPH.JUSTIFY, size=13, space_before=0, space_after=5, first_line_indent=Cm(1.0))
+          "Toàn bộ hệ thống đã được kiểm thử nghiêm ngặt qua biên dịch tĩnh TypeScript (tsc --noEmit đạt 0 lỗi), kiểm thử biên dịch Backend Maven (BUILD SUCCESS) và chạy thực nghiệm ổn định với đầy đủ các dịch vụ thời gian thực, khẳng định tính thực tiễn cao và khả năng thương mại hóa mở rộng trong tương lai.",
+          align=WD_ALIGN_PARAGRAPH.JUSTIFY, size=13, space_before=0, space_after=5, line_spacing=1.3, first_line_indent=Cm(1.0))
     
     # -------------------------------------------------------------------------
     # LỜI NÓI ĐẦU VÀ CẢM ƠN

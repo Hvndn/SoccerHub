@@ -103,6 +103,15 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   const [detail, setDetail] = useState<{ user: AdminUser; data: any } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  // Chi tiet nguoi dung hien INLINE -> tu cuon toi.
+  useEffect(() => {
+    if (!detail) return;
+    const raf = requestAnimationFrame(() => {
+      document.getElementById("admin-user-detail-inline")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [detail]);
+
   // Gõ xong 400ms mới gọi API, tránh dội request mỗi ký tự
   useEffect(() => {
     const t = setTimeout(() => {
@@ -533,16 +542,13 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   />
  </div>
 
-  {/* === MODAL CHI TIẾT NGƯỜI DÙNG === */}
+  {/* === BẢNG CHI TIẾT NGƯỜI DÙNG INLINE (Zero-Modal) === */}
   {detail && (
   <div
-  className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto"
-  onMouseDown={(e) => {
-  if (e.target === e.currentTarget) setDetail(null);
-  }}
+  id="admin-user-detail-inline"
+  className="w-full rounded-2xl sm:rounded-3xl bg-white border-2 border-sky-600 shadow-xl overflow-hidden my-4 animate-fade-in"
   >
-  <div className="bg-white w-full max-w-2xl rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl my-auto max-h-[90vh] overflow-y-auto animate-modal-pop">
-  <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 sticky top-0 bg-white rounded-t-3xl">
+  <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 sticky top-0 bg-white">
   <div className="min-w-0">
   <h3 className="font-black text-slate-900 text-base truncate">
   {detail.user.fullName}
@@ -647,7 +653,6 @@ export default function AdminUsers({ notify }: { notify: (type: "ok" | "err", te
   )}
   </div>
   ) : null}
-  </div>
   </div>
   )}
   </SectionCard>
