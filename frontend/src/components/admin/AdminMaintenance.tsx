@@ -79,6 +79,7 @@ export default function AdminMaintenance({ notify }: Props) {
     if (typeof window !== "undefined") {
       localStorage.setItem("turfzone_maintenance_mode", String(nextState));
       localStorage.setItem("turfzone_maintenance_msg", maintenanceMessage);
+      window.dispatchEvent(new Event("turfzone_maintenance_changed"));
     }
     notify(
       "ok",
@@ -92,6 +93,7 @@ export default function AdminMaintenance({ notify }: Props) {
     setIsSavingMsg(true);
     if (typeof window !== "undefined") {
       localStorage.setItem("turfzone_maintenance_msg", maintenanceMessage);
+      window.dispatchEvent(new Event("turfzone_maintenance_changed"));
     }
     setTimeout(() => {
       setIsSavingMsg(false);

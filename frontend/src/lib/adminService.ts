@@ -42,6 +42,8 @@ export interface AdminBooking {
   createdAt?: string | null;
   isClubBooking?: boolean | null;
   clubName?: string | null;
+  cancelReason?: string | null;
+  cancelledBy?: string | null;
 }
 
 export interface AdminPitch {
