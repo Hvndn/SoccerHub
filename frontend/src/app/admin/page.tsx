@@ -16,12 +16,12 @@ import {
   ScrollText,
   LogOut,
   ChevronRight,
-  Activity,
   Shield,
-  Layers,
   Sparkles,
-  BarChart3,
-  SlidersHorizontal,
+  Wrench,
+  Database,
+  Menu,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { AdminToast } from "@/components/admin/AdminUI";
@@ -34,6 +34,7 @@ import AdminModeration from "@/components/admin/AdminModeration";
 import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminChatModeration from "@/components/admin/AdminChatModeration";
 import AdminAuditLogs from "@/components/admin/AdminAuditLogs";
+import AdminMaintenance from "@/components/admin/AdminMaintenance";
 
 type Section =
   | "overview"
@@ -44,7 +45,8 @@ type Section =
   | "moderation"
   | "chat"
   | "notifications"
-  | "audit";
+  | "audit"
+  | "maintenance";
 
 interface NavItem {
   key: Section;
@@ -68,14 +70,14 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         key: "overview",
-        label: "Tổng Quan",
-        desc: "KPI toàn sàn & bảo trì",
+        label: "Tổng Quan Sàn",
+        desc: "KPI toàn sàn & biểu đồ tăng trưởng",
         icon: <LayoutDashboard className="w-4 h-4 shrink-0" />,
       },
       {
         key: "bookings",
-        label: "Đặt Sân & Cọc",
-        desc: "Đơn đặt & cọc VietQR",
+        label: "Đơn Đặt Sân & Cọc",
+        desc: "Đơn đặt & đối soát cọc VietQR",
         icon: <Ticket className="w-4 h-4 shrink-0" />,
       },
     ],
@@ -87,20 +89,20 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         key: "users",
-        label: "Người Dùng",
-        desc: "Phân quyền & duyệt chủ sân",
+        label: "Người Dùng & Phân Quyền",
+        desc: "Phân quyền RBAC & duyệt chủ sân",
         icon: <Users className="w-4 h-4 shrink-0" />,
       },
       {
         key: "pitches",
-        label: "Cụm Sân Bóng",
-        desc: "Kiểm duyệt & quản lý sân",
+        label: "Danh Mục Cụm Sân",
+        desc: "Kiểm duyệt & tọa độ GPS Haversine",
         icon: <MapPin className="w-4 h-4 shrink-0" />,
       },
       {
         key: "tournaments",
-        label: "Giải Đấu",
-        desc: "Giám sát giải & nhánh cúp",
+        label: "Giải Đấu Phong Trào",
+        desc: "Giám sát giải & sơ đồ nhánh cúp",
         icon: <Trophy className="w-4 h-4 shrink-0" />,
       },
     ],
@@ -108,12 +110,12 @@ const NAV_GROUPS: NavGroup[] = [
   {
     id: "security_system",
     groupTitle: "An Ninh & Hệ Thống",
-    groupDesc: "Kiểm duyệt, thông báo & truy vết",
+    groupDesc: "Kiểm duyệt, bảo trì & nhật ký",
     items: [
       {
         key: "moderation",
-        label: "Kiểm Duyệt Kèo",
-        desc: "Gỡ tin rác & chống gian lận",
+        label: "Kiểm Duyệt Chợ Kèo",
+        desc: "Gỡ tin rác & chống gian lận ELO",
         icon: <ShieldCheck className="w-4 h-4 shrink-0" />,
       },
       {
@@ -131,27 +133,34 @@ const NAV_GROUPS: NavGroup[] = [
       {
         key: "audit",
         label: "Nhật Ký Thao Tác",
-        desc: "Truy vết lịch sử quản trị",
+        desc: "Truy vết lịch sử quản trị viên",
         icon: <ScrollText className="w-4 h-4 shrink-0" />,
+      },
+      {
+        key: "maintenance",
+        label: "Bảo Trì Hệ Thống",
+        desc: "Viễn thám, dọn DB & sao lưu snapshot",
+        icon: <Wrench className="w-4 h-4 shrink-0" />,
       },
     ],
   },
 ];
 
 const SECTION_TITLE: Record<Section, string> = {
-  overview: "Tổng quan hệ thống",
-  users: "Quản lý người dùng & phân quyền",
-  tournaments: "Quản lý giải đấu phong trào",
-  pitches: "Quản lý danh mục cụm sân bóng",
-  bookings: "Theo dõi đơn đặt sân & tiền cọc VietQR",
-  moderation: "Kiểm duyệt chợ kèo & chống gian lận ELO",
-  chat: "Kiểm duyệt tin nhắn phòng chat",
-  notifications: "Gửi thông báo toàn hệ thống",
+  overview: "Tổng quan chỉ số sinh mệnh hệ thống",
+  users: "Quản lý người dùng, phân quyền RBAC & duyệt chủ sân",
+  tournaments: "Giám sát giải đấu & sơ đồ phân nhánh cúp",
+  pitches: "Danh mục cụm sân đối tác & xác thực GPS",
+  bookings: "Theo dõi đơn đặt sân & đối soát cọc VietQR",
+  moderation: "Kiểm duyệt bài đăng chợ kèo & xếp hạng ELO",
+  chat: "Kiểm duyệt tin nhắn phòng thảo luận",
+  notifications: "Soạn thảo & phát thông báo hệ thống",
   audit: "Nhật ký kiểm toán thao tác quản trị",
+  maintenance: "Quản trị hạ tầng, bảo trì sàn & dọn dẹp dữ liệu",
 };
 
 const SECTION_SUBTITLE: Record<Section, string> = {
-  overview: "Giám sát các chỉ số sinh mệnh, tăng trưởng doanh thu cọc VietQR và công cụ dọn dẹp dữ liệu.",
+  overview: "Giám sát tổng doanh thu cọc VietQR, lượng đơn đặt sân và người dùng hoạt động.",
   users: "Tra cứu tài khoản người dùng, phân cấp vai trò (RBAC), kiểm duyệt chủ sân mới và xử lý vi phạm.",
   tournaments: "Giám sát các giải đấu phong trào, kiểm duyệt thể thức thi đấu và sơ đồ phân nhánh cúp.",
   pitches: "Duyệt danh sách cụm sân đối tác, xác thực tọa độ GPS Haversine và biểu giá niêm yết theo ca.",
@@ -160,6 +169,7 @@ const SECTION_SUBTITLE: Record<Section, string> = {
   chat: "Giám sát các kênh thảo luận cộng đồng và phòng chat giải đấu, xử lý phát ngôn tiêu cực.",
   notifications: "Soạn thảo và phát thông báo tức thời tới toàn bộ người dùng hoặc lọc riêng theo nhóm vai trò.",
   audit: "Truy vết toàn bộ lịch sử thao tác của các Quản trị viên nhằm bảo đảm tính minh bạch và an toàn.",
+  maintenance: "Theo dõi viễn thám MySQL 8.0, AI Service, Spring Boot JVM, kích hoạt chế độ bảo trì và dọn dẹp dữ liệu.",
 };
 
 const SECTION_GROUP_NAME: Record<Section, string> = {
@@ -168,15 +178,22 @@ const SECTION_GROUP_NAME: Record<Section, string> = {
   users: "Quản Lý Đối Tác",
   pitches: "Quản Lý Đối Tác",
   tournaments: "Quản Lý Đối Tác",
-  moderation: "An Ninh & Vận Hành",
-  chat: "An Ninh & Vận Hành",
-  notifications: "An Ninh & Vận Hành",
-  audit: "An Ninh & Vận Hành",
+  moderation: "An Ninh & Hệ Thống",
+  chat: "An Ninh & Hệ Thống",
+  notifications: "An Ninh & Hệ Thống",
+  audit: "An Ninh & Hệ Thống",
+  maintenance: "An Ninh & Hệ Thống",
 };
 
 export default function AdminPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-[14px] text-slate-500 font-medium">Đang tải bảng quản trị...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8 text-[14px] text-slate-500 font-medium">
+          Đang tải bảng quản trị hệ thống...
+        </div>
+      }
+    >
       <AdminConsole />
     </Suspense>
   );
@@ -185,6 +202,7 @@ export default function AdminPage() {
 function AdminConsole() {
   const { user, isLoading, logout } = useAuth();
   const [section, setSection] = useState<Section>("overview");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   useEffect(() => {
@@ -201,6 +219,7 @@ function AdminConsole() {
       "chat",
       "notifications",
       "audit",
+      "maintenance",
     ];
     if (sec && validSections.includes(sec)) {
       setSection(sec);
@@ -211,54 +230,115 @@ function AdminConsole() {
     setToast({ type, text });
   }, []);
 
+  const handleSelectSection = (key: Section) => {
+    setSection(key);
+    setMobileMenuOpen(false);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
-      {/* HEADER QUẢN TRỊ CAO CẤP */}
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
-        <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-3 flex items-center justify-between gap-3">
-          {/* Logo & Trạng thái hệ thống */}
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-1.5 font-black text-xl tracking-tight">
-              <span className="text-sky-800">Turf</span>
-              <span className="text-slate-900">Zone</span>
-            </Link>
-            <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-slate-200">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[13px] font-black tracking-wide">
-                <Shield className="w-3.5 h-3.5" />
-                Trung Tâm Quản Trị
-              </span>
-              <span className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[13px] font-bold">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Hệ Thống Trực Tuyến 24/7
-              </span>
-            </div>
+    <div className="min-h-screen w-full bg-slate-100/70 text-slate-900 flex flex-col lg:flex-row font-sans selection:bg-[#0369a1] selection:text-white">
+      {/* =========================================================================
+          1. DESKTOP SIDEBAR: SÁT MÉP WEB BÊN TRÁI (LEFT-0, FULL HEIGHT, ENTERPRISE)
+          ========================================================================= */}
+      <aside
+        aria-label="Thanh điều hướng Quản Trị"
+        className="hidden lg:flex w-72 xl:w-80 shrink-0 bg-white border-r border-slate-200 min-h-screen sticky top-0 h-screen flex-col justify-between z-30 shadow-[1px_0_12px_rgba(0,0,0,0.03)]"
+      >
+        {/* Top Header: Logo & Danh tính hệ thống */}
+        <div className="p-5 border-b border-slate-100">
+          <Link href="/" className="flex items-center gap-2 font-black text-2xl tracking-tight">
+            <span className="text-[#0369a1]">Turf</span>
+            <span className="text-slate-900">Zone</span>
+          </Link>
+          <div className="mt-2.5 flex items-center justify-between gap-2">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[12px] font-black tracking-wide">
+              <Shield className="w-3.5 h-3.5" />
+              Super Admin Console
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-emerald-700 text-[12px] font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Online 24/7
+            </span>
           </div>
+        </div>
 
-          {/* Thông tin Admin & Nút hành động */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {user && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 border border-slate-200 text-left">
-                <div className="w-8 h-8 rounded-lg bg-[#0369a1] text-white flex items-center justify-center font-black text-[13px] shadow-xs">
-                  {user.fullName ? user.fullName.charAt(0).toUpperCase() : "A"}
-                </div>
-                <div className="min-w-0 pr-1">
-                  <p className="text-[13px] font-bold text-slate-800 truncate max-w-[140px] leading-tight">
-                    {user.fullName || user.email}
-                  </p>
-                  <p className="text-[12px] font-semibold text-rose-600 leading-tight">
-                    Quản Trị Viên Tối Cao
-                  </p>
-                </div>
+        {/* Danh sách các nhóm chức năng cuộn mượt (Scrollable Menu) */}
+        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-5 scrollbar-thin">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.id} className="space-y-1">
+              <div className="px-3 pb-1">
+                <p className="text-[12px] font-black text-slate-400 tracking-wider">
+                  {group.groupTitle}
+                </p>
               </div>
-            )}
 
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const active = section === item.key;
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => handleSelectSection(item.key)}
+                      aria-current={active ? "page" : undefined}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all cursor-pointer ${
+                        active
+                          ? "bg-[#0369a1] text-white shadow-md font-bold"
+                          : "hover:bg-slate-100/90 text-slate-700 font-medium"
+                      }`}
+                    >
+                      <span className={active ? "text-white" : "text-sky-700"}>
+                        {item.icon}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-[13px] font-bold truncate">
+                          {item.label}
+                        </span>
+                        <span
+                          className={`block text-[12px] truncate ${
+                            active ? "text-cyan-100" : "text-slate-500"
+                          }`}
+                        >
+                          {item.desc}
+                        </span>
+                      </div>
+                      {active && <ChevronRight className="w-3.5 h-3.5 text-white/70 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom Section: Admin Profile Card & Navigation */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50 space-y-3">
+          {user && (
+            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
+              <div className="w-9 h-9 rounded-xl bg-[#0369a1] text-white flex items-center justify-center font-black text-[14px] shadow-xs shrink-0">
+                {user.fullName ? user.fullName.charAt(0).toUpperCase() : "A"}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-bold text-slate-900 truncate leading-tight">
+                  {user.fullName || user.email}
+                </p>
+                <p className="text-[12px] font-semibold text-rose-600 leading-tight">
+                  Quản Trị Viên Tối Cao
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
             <Link
               href="/"
-              aria-label="Về trang chủ"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[13px] font-bold text-slate-700 transition-all active:scale-95 whitespace-nowrap"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-[13px] font-bold text-slate-700 transition-all active:scale-95 shadow-2xs"
             >
               <ArrowLeft className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">Về Trang Chủ</span>
+              <span>Về Trang Chủ</span>
             </Link>
 
             {user && (
@@ -268,167 +348,177 @@ function AdminConsole() {
                   logout();
                   window.location.assign("/");
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-rose-600 text-[13px] font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer"
-                title="Đăng xuất khỏi tài khoản Quản Trị"
+                className="inline-flex items-center justify-center p-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                title="Đăng xuất tài khoản quản trị"
               >
                 <LogOut className="w-4 h-4 shrink-0" />
-                <span className="hidden sm:inline">Đăng Xuất</span>
               </button>
             )}
           </div>
         </div>
-      </header>
+      </aside>
 
-      {/* NỘI DUNG CHÍNH */}
-      <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-[50px] py-4 sm:py-6">
-        {isLoading ? (
-          <div role="status" className="space-y-4 max-w-5xl mx-auto py-8" aria-label="Đang tải quyền quản trị">
-            <div className="h-10 w-64 rounded-xl bg-slate-200 animate-pulse" />
-            <div className="h-72 w-full rounded-2xl bg-slate-200 animate-pulse" />
-          </div>
-        ) : !user ? (
-          <div className="max-w-xl mx-auto text-center py-12 px-6 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
-              <LogIn className="w-8 h-8 text-rose-600" />
-            </div>
-            <h1 className="text-xl font-black text-slate-900">Khu vực quản trị hệ thống</h1>
-            <p className="text-[14px] text-slate-500 leading-relaxed">
-              Bạn cần đăng nhập tài khoản có thẩm quyền <strong>Quản Trị Viên</strong> để truy cập bảng điều khiển này.
-            </p>
-            <Link
-              href="/"
-              className="inline-block px-6 py-3 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] transition-all active:scale-95 shadow-md"
-            >
-              Về trang chủ để đăng nhập
-            </Link>
-          </div>
-        ) : user.role !== "ADMIN" ? (
-          <div className="max-w-xl mx-auto text-center py-12 px-6 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
-              <ShieldCheck className="w-8 h-8 text-rose-600" />
-            </div>
-            <h1 className="text-xl font-black text-slate-900">Truy cập bị từ chối</h1>
-            <p className="text-[14px] text-slate-500 leading-relaxed">
-              Tài khoản <strong>{user.fullName || user.email}</strong> (vai trò {String(user.role)}) không có
-              thẩm quyền quản trị hệ thống. Chỉ tài khoản Quản Trị mới được truy cập.
-            </p>
-            <Link
-              href="/"
-              className="inline-block px-6 py-3 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white font-black text-[14px] transition-all active:scale-95"
-            >
-              Về trang chủ
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 sm:gap-6 items-start">
-            {/* THANH ĐIỀU HƯỚNG PHÂN NHÓM CHUYÊN NGHIỆP */}
-            <aside aria-label="Mục quản trị" className="lg:sticky lg:top-[74px] space-y-3">
-              {/* Menu Mobile dạng phân nhóm chip */}
-              <div className="lg:hidden bg-white rounded-2xl border border-slate-200 p-2.5 shadow-xs overflow-x-auto flex gap-1.5 scrollbar-thin">
-                {NAV_GROUPS.flatMap((g) => g.items).map((s) => {
-                  const active = section === s.key;
+      {/* =========================================================================
+          2. MOBILE TOP BAR & NAVIGATION (CHO THIẾT BỊ DI ĐỘNG & TABLET)
+          ========================================================================= */}
+      <div className="lg:hidden sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs">
+        <Link href="/" className="flex items-center gap-1.5 font-black text-xl tracking-tight">
+          <span className="text-[#0369a1]">Turf</span>
+          <span className="text-slate-900">Zone</span>
+          <span className="ml-1 px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-[12px] font-black">
+            Admin
+          </span>
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer"
+          aria-label="Mở danh mục điều hướng"
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Mobile Drawer Navigation (Khi bấm mở menu) */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden bg-white border-b border-slate-200 p-4 space-y-4 shadow-xl animate-fade-in">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.id} className="space-y-1">
+              <p className="text-[12px] font-bold text-slate-400 px-2">{group.groupTitle}</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {group.items.map((item) => {
+                  const active = section === item.key;
                   return (
                     <button
-                      key={s.key}
+                      key={item.key}
                       type="button"
-                      onClick={() => {
-                        setSection(s.key);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                      onClick={() => handleSelectSection(item.key)}
+                      className={`flex items-center gap-2 p-2 rounded-xl text-left text-[13px] font-bold transition-all ${
                         active
                           ? "bg-[#0369a1] text-white shadow-xs"
-                          : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-700"
                       }`}
                     >
-                      <span>{s.icon}</span>
-                      <span>{s.label}</span>
+                      <span>{item.icon}</span>
+                      <span className="truncate">{item.label}</span>
                     </button>
                   );
                 })}
               </div>
+            </div>
+          ))}
 
-              {/* Sidebar Desktop dạng 3 Cụm thẻ */}
-              <nav className="hidden lg:block space-y-3">
-                {NAV_GROUPS.map((group) => (
-                  <div
-                    key={group.id}
-                    className="bg-white rounded-2xl border border-slate-200 p-2.5 shadow-xs space-y-1"
-                  >
-                    <div className="px-3 py-1.5">
-                      <p className="text-[12px] font-black text-slate-400 tracking-wider">
-                        {group.groupTitle}
-                      </p>
-                    </div>
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1 text-[13px] font-bold text-slate-600 hover:text-slate-900"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Về Trang Chủ</span>
+            </Link>
+            {user && (
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  window.location.assign("/");
+                }}
+                className="text-[13px] font-bold text-rose-600 hover:underline"
+              >
+                Đăng Xuất
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
-                    <div className="space-y-0.5">
-                      {group.items.map((item) => {
-                        const active = section === item.key;
-                        return (
-                          <button
-                            key={item.key}
-                            type="button"
-                            onClick={() => {
-                              setSection(item.key);
-                              window.scrollTo({ top: 0, behavior: "smooth" });
-                            }}
-                            aria-current={active ? "page" : undefined}
-                            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all cursor-pointer ${
-                              active
-                                ? "bg-[#0369a1] text-white shadow-md font-bold"
-                                : "hover:bg-slate-100/90 text-slate-700 font-medium"
-                            }`}
-                          >
-                            <span className={active ? "text-white" : "text-sky-700"}>
-                              {item.icon}
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <span className="block text-[13px] font-bold truncate">
-                                {item.label}
-                              </span>
-                              <span
-                                className={`block text-[12px] truncate ${
-                                  active ? "text-cyan-100" : "text-slate-500"
-                                }`}
-                              >
-                                {item.desc}
-                              </span>
-                            </div>
-                            {active && <ChevronRight className="w-3.5 h-3.5 text-white/70 shrink-0" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </nav>
-            </aside>
+      {/* =========================================================================
+          3. MAIN CONTENT AREA: TẬN DỤNG TOÀN BỘ PHẦN MÀN HÌNH CÒN LẠI (EDGE-TO-EDGE)
+          ========================================================================= */}
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen bg-slate-50">
+        {/* Top Header Bar trên Desktop */}
+        <header className="hidden lg:flex sticky top-0 z-20 border-b border-slate-200/90 bg-white/95 backdrop-blur-md px-6 xl:px-8 py-3.5 items-center justify-between gap-4 shadow-2xs">
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-2 text-[13px] font-bold text-slate-500">
+            <span>Trung Tâm Quản Trị</span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            <span className="text-[#0369a1] font-extrabold">{SECTION_GROUP_NAME[section]}</span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            <span className="text-slate-800 font-black">{SECTION_TITLE[section]}</span>
+          </div>
 
-            {/* KHU VỰC NỘI DUNG CHÍNH (CONTENT AREA) */}
-            <div className="min-w-0 space-y-4">
-              {/* Header Thẻ Phân Hệ */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          {/* Quick System Status Badges */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[12px] font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>MySQL 8.0: Ổn Định</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[12px] font-bold">
+              <span className="w-2 h-2 rounded-full bg-indigo-500" />
+              <span>AI Engine: 8000</span>
+            </div>
+          </div>
+        </header>
+
+        {/* VÙNG NỘI DUNG CHÍNH (CONTENT BODY) */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
+          {isLoading ? (
+            <div role="status" className="space-y-4 max-w-5xl py-8" aria-label="Đang tải quyền quản trị">
+              <div className="h-10 w-64 rounded-xl bg-slate-200 animate-pulse" />
+              <div className="h-72 w-full rounded-2xl bg-slate-200 animate-pulse" />
+            </div>
+          ) : !user ? (
+            <div className="max-w-xl mx-auto text-center py-12 px-6 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-4 my-12">
+              <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
+                <LogIn className="w-8 h-8 text-rose-600" />
+              </div>
+              <h1 className="text-xl font-black text-slate-900">Khu vực quản trị hệ thống</h1>
+              <p className="text-[14px] text-slate-500 leading-relaxed">
+                Bạn cần đăng nhập tài khoản có thẩm quyền <strong>Quản Trị Viên</strong> để truy cập bảng điều khiển này.
+              </p>
+              <Link
+                href="/"
+                className="inline-block px-6 py-3 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] transition-all active:scale-95 shadow-md"
+              >
+                Về trang chủ để đăng nhập
+              </Link>
+            </div>
+          ) : user.role !== "ADMIN" ? (
+            <div className="max-w-xl mx-auto text-center py-12 px-6 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-4 my-12">
+              <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
+                <ShieldCheck className="w-8 h-8 text-rose-600" />
+              </div>
+              <h1 className="text-xl font-black text-slate-900">Truy cập bị từ chối</h1>
+              <p className="text-[14px] text-slate-500 leading-relaxed">
+                Tài khoản <strong>{user.fullName || user.email}</strong> (vai trò {String(user.role)}) không có
+                thẩm quyền quản trị hệ thống. Chỉ tài khoản Quản Trị mới được truy cập.
+              </p>
+              <Link
+                href="/"
+                className="inline-block px-6 py-3 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white font-black text-[14px] transition-all active:scale-95"
+              >
+                Về trang chủ
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Thẻ Header mô tả phân hệ hiện tại */}
+              <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500 mb-1">
-                      <span>Quản Trị</span>
-                      <ChevronRight className="w-3 h-3 text-slate-400" />
-                      <span className="text-[#0369a1]">{SECTION_GROUP_NAME[section]}</span>
-                      <ChevronRight className="w-3 h-3 text-slate-400" />
-                      <span className="text-slate-800 font-extrabold">{SECTION_TITLE[section]}</span>
-                    </div>
                     <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                       {SECTION_TITLE[section]}
                     </h1>
-                    <p className="text-[13px] text-slate-500 mt-0.5 leading-relaxed">
+                    <p className="text-[13px] text-slate-500 mt-1 leading-relaxed">
                       {SECTION_SUBTITLE[section]}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Phân hệ Tương ứng */}
-              <div key={section} className="animate-fade-in space-y-4">
+              {/* Component phân hệ tương ứng */}
+              <div key={section} className="animate-fade-in">
                 {section === "overview" && <AdminOverview notify={notify} />}
                 {section === "users" && <AdminUsers notify={notify} />}
                 {section === "tournaments" && <AdminTournaments notify={notify} />}
@@ -438,18 +528,18 @@ function AdminConsole() {
                 {section === "chat" && <AdminChatModeration notify={notify} />}
                 {section === "notifications" && <AdminNotifications notify={notify} />}
                 {section === "audit" && <AdminAuditLogs notify={notify} />}
+                {section === "maintenance" && <AdminMaintenance notify={notify} />}
               </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </main>
 
-      {/* FOOTER */}
-      <footer className="border-t border-slate-200 py-4 bg-white/60 text-center">
-        <p className="text-[13px] text-slate-500 font-medium">
-          © 2026 Turfzone — Trung tâm điều hành & Quản trị hệ thống toàn sàn (Super Admin Console).
-        </p>
-      </footer>
+        {/* Footer */}
+        <footer className="border-t border-slate-200 py-4 px-6 bg-white/70 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-2 text-[13px] text-slate-500">
+          <p>© 2026 Turfzone — Trung tâm điều hành & Quản trị hệ thống toàn sàn.</p>
+          <p className="font-semibold text-slate-600">Phiên bản v4.2.0-Enterprise</p>
+        </footer>
+      </div>
 
       <AdminToast toast={toast} onClose={() => setToast(null)} />
     </div>
