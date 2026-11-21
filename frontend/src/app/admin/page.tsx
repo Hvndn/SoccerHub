@@ -17,9 +17,7 @@ import {
   LogOut,
   ChevronRight,
   Shield,
-  Sparkles,
   Wrench,
-  Database,
   Menu,
   X,
 } from "lucide-react";
@@ -239,26 +237,26 @@ function AdminConsole() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-100/70 text-slate-900 flex flex-col lg:flex-row font-sans selection:bg-[#0369a1] selection:text-white">
+    <div className="min-h-screen w-full bg-slate-100/60 text-slate-900 flex flex-col lg:flex-row font-sans selection:bg-slate-900 selection:text-white">
       {/* =========================================================================
-          1. DESKTOP SIDEBAR: SÁT MÉP WEB BÊN TRÁI (LEFT-0, FULL HEIGHT, ENTERPRISE)
+          1. DESKTOP SIDEBAR: SÁT MÉP WEB BÊN TRÁI - MONOCHROME SLATE TỐI GIẢN
           ========================================================================= */}
       <aside
         aria-label="Thanh điều hướng Quản Trị"
-        className="hidden lg:flex w-72 xl:w-80 shrink-0 bg-white border-r border-slate-200 min-h-screen sticky top-0 h-screen flex-col justify-between z-30 shadow-[1px_0_12px_rgba(0,0,0,0.03)]"
+        className="hidden lg:flex w-72 xl:w-80 shrink-0 bg-white border-r border-slate-200 min-h-screen sticky top-0 h-screen flex-col justify-between z-30 shadow-[1px_0_6px_rgba(0,0,0,0.02)]"
       >
         {/* Top Header: Logo & Danh tính hệ thống */}
         <div className="p-5 border-b border-slate-100">
-          <Link href="/" className="flex items-center gap-2 font-black text-2xl tracking-tight">
-            <span className="text-[#0369a1]">Turf</span>
-            <span className="text-slate-900">Zone</span>
+          <Link href="/" className="flex items-center gap-1.5 font-black text-2xl tracking-tight">
+            <span className="text-slate-900">Turf</span>
+            <span className="text-slate-500">Zone</span>
           </Link>
           <div className="mt-2.5 flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[12px] font-black tracking-wide">
-              <Shield className="w-3.5 h-3.5" />
-              Super Admin Console
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 text-[12px] font-bold">
+              <Shield className="w-3.5 h-3.5 text-slate-600" />
+              Quản Trị Hệ Thống
             </span>
-            <span className="inline-flex items-center gap-1.5 text-emerald-700 text-[12px] font-bold">
+            <span className="inline-flex items-center gap-1.5 text-slate-600 text-[12px] font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               Online 24/7
             </span>
@@ -275,7 +273,7 @@ function AdminConsole() {
                 </p>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {group.items.map((item) => {
                   const active = section === item.key;
                   return (
@@ -286,11 +284,11 @@ function AdminConsole() {
                       aria-current={active ? "page" : undefined}
                       className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all cursor-pointer ${
                         active
-                          ? "bg-[#0369a1] text-white shadow-md font-bold"
-                          : "hover:bg-slate-100/90 text-slate-700 font-medium"
+                          ? "bg-slate-900 text-white shadow-xs font-bold"
+                          : "hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-medium"
                       }`}
                     >
-                      <span className={active ? "text-white" : "text-sky-700"}>
+                      <span className={active ? "text-white" : "text-slate-500"}>
                         {item.icon}
                       </span>
                       <div className="min-w-0 flex-1">
@@ -299,13 +297,13 @@ function AdminConsole() {
                         </span>
                         <span
                           className={`block text-[12px] truncate ${
-                            active ? "text-cyan-100" : "text-slate-500"
+                            active ? "text-slate-300" : "text-slate-400"
                           }`}
                         >
                           {item.desc}
                         </span>
                       </div>
-                      {active && <ChevronRight className="w-3.5 h-3.5 text-white/70 shrink-0" />}
+                      {active && <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
                     </button>
                   );
                 })}
@@ -317,15 +315,15 @@ function AdminConsole() {
         {/* Bottom Section: Admin Profile Card & Navigation */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50 space-y-3">
           {user && (
-            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-              <div className="w-9 h-9 rounded-xl bg-[#0369a1] text-white flex items-center justify-center font-black text-[14px] shadow-xs shrink-0">
+            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-[14px] shadow-xs shrink-0">
                 {user.fullName ? user.fullName.charAt(0).toUpperCase() : "A"}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-bold text-slate-900 truncate leading-tight">
                   {user.fullName || user.email}
                 </p>
-                <p className="text-[12px] font-semibold text-rose-600 leading-tight">
+                <p className="text-[12px] font-medium text-slate-500 leading-tight">
                   Quản Trị Viên Tối Cao
                 </p>
               </div>
@@ -348,7 +346,7 @@ function AdminConsole() {
                   logout();
                   window.location.assign("/");
                 }}
-                className="inline-flex items-center justify-center p-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                className="inline-flex items-center justify-center p-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 transition-all active:scale-95 cursor-pointer shadow-2xs"
                 title="Đăng xuất tài khoản quản trị"
               >
                 <LogOut className="w-4 h-4 shrink-0" />
@@ -363,9 +361,9 @@ function AdminConsole() {
           ========================================================================= */}
       <div className="lg:hidden sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-xs">
         <Link href="/" className="flex items-center gap-1.5 font-black text-xl tracking-tight">
-          <span className="text-[#0369a1]">Turf</span>
-          <span className="text-slate-900">Zone</span>
-          <span className="ml-1 px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-[12px] font-black">
+          <span className="text-slate-900">Turf</span>
+          <span className="text-slate-500">Zone</span>
+          <span className="ml-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[12px] font-bold">
             Admin
           </span>
         </Link>
@@ -396,7 +394,7 @@ function AdminConsole() {
                       onClick={() => handleSelectSection(item.key)}
                       className={`flex items-center gap-2 p-2 rounded-xl text-left text-[13px] font-bold transition-all ${
                         active
-                          ? "bg-[#0369a1] text-white shadow-xs"
+                          ? "bg-slate-900 text-white shadow-xs"
                           : "bg-slate-50 hover:bg-slate-100 text-slate-700"
                       }`}
                     >
@@ -424,7 +422,7 @@ function AdminConsole() {
                   logout();
                   window.location.assign("/");
                 }}
-                className="text-[13px] font-bold text-rose-600 hover:underline"
+                className="text-[13px] font-bold text-slate-600 hover:text-slate-900"
               >
                 Đăng Xuất
               </button>
@@ -437,25 +435,25 @@ function AdminConsole() {
           3. MAIN CONTENT AREA: TẬN DỤNG TOÀN BỘ PHẦN MÀN HÌNH CÒN LẠI (EDGE-TO-EDGE)
           ========================================================================= */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen bg-slate-50">
-        {/* Top Header Bar trên Desktop */}
-        <header className="hidden lg:flex sticky top-0 z-20 border-b border-slate-200/90 bg-white/95 backdrop-blur-md px-6 xl:px-8 py-3.5 items-center justify-between gap-4 shadow-2xs">
+        {/* Top Header Bar trên Desktop - Tối giản thanh lịch */}
+        <header className="hidden lg:flex sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md px-6 xl:px-8 py-3.5 items-center justify-between gap-4 shadow-2xs">
           {/* Breadcrumbs */}
           <div className="flex items-center gap-2 text-[13px] font-bold text-slate-500">
-            <span>Trung Tâm Quản Trị</span>
+            <span>Quản Trị</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-[#0369a1] font-extrabold">{SECTION_GROUP_NAME[section]}</span>
+            <span className="text-slate-700 font-bold">{SECTION_GROUP_NAME[section]}</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-800 font-black">{SECTION_TITLE[section]}</span>
+            <span className="text-slate-900 font-black">{SECTION_TITLE[section]}</span>
           </div>
 
           {/* Quick System Status Badges */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[12px] font-bold">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[12px] font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>MySQL 8.0: Ổn Định</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[12px] font-bold">
-              <span className="w-2 h-2 rounded-full bg-indigo-500" />
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[12px] font-medium">
+              <span className="w-2 h-2 rounded-full bg-slate-400" />
               <span>AI Engine: 8000</span>
             </div>
           </div>
@@ -470,8 +468,8 @@ function AdminConsole() {
             </div>
           ) : !user ? (
             <div className="max-w-xl mx-auto text-center py-12 px-6 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-4 my-12">
-              <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
-                <LogIn className="w-8 h-8 text-rose-600" />
+              <div className="w-16 h-16 rounded-2xl bg-slate-100 mx-auto flex items-center justify-center">
+                <LogIn className="w-8 h-8 text-slate-700" />
               </div>
               <h1 className="text-xl font-black text-slate-900">Khu vực quản trị hệ thống</h1>
               <p className="text-[14px] text-slate-500 leading-relaxed">
@@ -479,15 +477,15 @@ function AdminConsole() {
               </p>
               <Link
                 href="/"
-                className="inline-block px-6 py-3 rounded-2xl bg-[#0369a1] hover:bg-[#075985] text-white font-black text-[14px] transition-all active:scale-95 shadow-md"
+                className="inline-block px-6 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-[14px] transition-all active:scale-95 shadow-md"
               >
                 Về trang chủ để đăng nhập
               </Link>
             </div>
           ) : user.role !== "ADMIN" ? (
             <div className="max-w-xl mx-auto text-center py-12 px-6 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-4 my-12">
-              <div className="w-16 h-16 rounded-2xl bg-rose-500/10 mx-auto flex items-center justify-center">
-                <ShieldCheck className="w-8 h-8 text-rose-600" />
+              <div className="w-16 h-16 rounded-2xl bg-slate-100 mx-auto flex items-center justify-center">
+                <ShieldCheck className="w-8 h-8 text-slate-700" />
               </div>
               <h1 className="text-xl font-black text-slate-900">Truy cập bị từ chối</h1>
               <p className="text-[14px] text-slate-500 leading-relaxed">
@@ -496,7 +494,7 @@ function AdminConsole() {
               </p>
               <Link
                 href="/"
-                className="inline-block px-6 py-3 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white font-black text-[14px] transition-all active:scale-95"
+                className="inline-block px-6 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-[14px] transition-all active:scale-95"
               >
                 Về trang chủ
               </Link>

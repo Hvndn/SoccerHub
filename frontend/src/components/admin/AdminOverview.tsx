@@ -38,12 +38,12 @@ export default function AdminOverview({ notify }: { notify: (type: "ok" | "err",
 
  const kpis = data
  ? [
- { label: "Người dùng", value: data.totalUsers, icon: <Users className="w-5 h-5" />, tone: "bg-sky-100 text-sky-700 " },
- { label: "Cụm sân", value: data.totalPitches, icon: <MapPin className="w-5 h-5" />, tone: "bg-sky-100 text-sky-800 " },
- { label: "Giải đấu (mở)", value: data.openTournaments, suffix: `/${data.totalTournaments}`, icon: <Trophy className="w-5 h-5" />, tone: "bg-amber-100 text-amber-700 " },
- { label: "Đơn đặt sân", value: data.totalBookings, icon: <Ticket className="w-5 h-5" />, tone: "bg-indigo-100 text-indigo-700 " },
- { label: "Tin chợ kèo", value: data.totalMatchmakingPosts, icon: <MessagesSquare className="w-5 h-5" />, tone: "bg-rose-100 text-rose-700 " },
- { label: "Cọc thu (đ)", value: data.totalRevenue, money: true, icon: <Wallet className="w-5 h-5" />, tone: "bg-sky-100 text-sky-800 " },
+ { label: "Người dùng", value: data.totalUsers, icon: <Users className="w-5 h-5" />, tone: "bg-slate-100 text-slate-700 " },
+ { label: "Cụm sân", value: data.totalPitches, icon: <MapPin className="w-5 h-5" />, tone: "bg-slate-100 text-slate-700 " },
+ { label: "Giải đấu (mở)", value: data.openTournaments, suffix: `/${data.totalTournaments}`, icon: <Trophy className="w-5 h-5" />, tone: "bg-slate-100 text-slate-700 " },
+ { label: "Đơn đặt sân", value: data.totalBookings, icon: <Ticket className="w-5 h-5" />, tone: "bg-slate-100 text-slate-700 " },
+ { label: "Tin chợ kèo", value: data.totalMatchmakingPosts, icon: <MessagesSquare className="w-5 h-5" />, tone: "bg-slate-100 text-slate-700 " },
+ { label: "Cọc thu (đ)", value: data.totalRevenue, money: true, icon: <Wallet className="w-5 h-5" />, tone: "bg-slate-100 text-slate-700 " },
  ]
  : [];
 

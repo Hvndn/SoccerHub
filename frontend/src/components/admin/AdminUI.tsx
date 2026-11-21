@@ -129,14 +129,14 @@ export function SectionCard({ children, className = "" }: { children: React.Reac
 /* ---------- Badge trạng thái ---------- */
 export function StatusBadge({ tone, children }: { tone: "green" | "amber" | "rose" | "sky" | "slate"; children: React.ReactNode }) {
  const map: Record<string, string> = {
- green: "bg-sky-100 text-sky-900 ",
- amber: "bg-amber-100 text-amber-800 ",
- rose: "bg-rose-100 text-rose-800 ",
- sky: "bg-sky-100 text-sky-800 ",
- slate: "bg-slate-100 text-slate-600 ",
+ green: "bg-slate-100 text-slate-700 border border-slate-200",
+ amber: "bg-slate-100 text-slate-700 border border-slate-200",
+ rose: "bg-rose-50 text-rose-700 border border-rose-200/80",
+ sky: "bg-slate-100 text-slate-700 border border-slate-200",
+ slate: "bg-slate-100 text-slate-600 border border-slate-200",
  };
  return (
- <span className={`inline-flex px-2 py-0.5 rounded-full text-[14px] font-bold whitespace-nowrap ${map[tone]}`}>
+ <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[13px] font-semibold whitespace-nowrap ${map[tone]}`}>
  {children}
  </span>
  );
