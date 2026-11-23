@@ -1,5 +1,22 @@
 # ERRORS.md - Error Tracking & Learning
 
+## [2026-11-23 21:00] - Next.js ChunkLoadError: Duplicate Port 3000/3001 Process & Webpack Cache Collision
+
+- **Type**: Runtime / Integration
+- **Severity**: Medium
+- **File**: `frontend/src/app/layout.tsx`
+- **Agent**: Antigravity Orchestrator (Thần)
+- **Root Cause**: Có 2 tiến trình Node dev server chạy đồng thời (PID 20660 trên cổng 3000 và PID 13964 trên cổng 3001). Cả 2 cùng đọc và ghi đè vào thư mục build tạm `frontend/.next`, dẫn tới xung đột khóa file webpack chunk `_next/static/chunks/app/layout.js`, gây lỗi timeout `ChunkLoadError` khi trình duyệt truy cập `localhost:3001/admin`.
+- **Error Message**: 
+  ```
+  ChunkLoadError: Loading chunk app/layout failed.
+  (timeout: http://localhost:3001/_next/static/chunks/app/layout.js)
+  ```
+- **Fix Applied**: Đóng toàn bộ tiến trình Node trùng lặp trên cả 2 cổng 3000 và 3001, xóa sạch thư mục cache `frontend/.next`, và khởi động lại duy nhất một máy chủ dev sạch sẽ trên cổng chuẩn 3000. Đã kiểm tra `http://localhost:3000/admin` phản hồi HTTP 200 OK.
+- **Prevention**: Khi khởi động server dev, luôn kiểm tra và đóng tiến trình cũ trước khi chạy mới, tránh tình trạng Next.js tự động fallback sang cổng 3001 cạnh tranh tài nguyên file `.next`.
+- **Status**: Fixed
+
+
 ## [2026-10-06 00:25] - Next.js CSS Cache Collision & Admin Tab Routing
 
 - **Type**: Integration / Process
