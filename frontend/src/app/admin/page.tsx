@@ -321,10 +321,13 @@ function AdminConsole() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-bold text-slate-900 truncate leading-tight">
-                  {user.fullName || user.email}
+                  {user.fullName || "Quản Trị Viên"}
                 </p>
-                <p className="text-[12px] font-medium text-slate-500 leading-tight">
-                  Quản Trị Viên Tối Cao
+                <p
+                  className="text-[12px] font-mono font-medium text-slate-500 leading-tight truncate"
+                  title={user.email}
+                >
+                  {user.email || "admin@turfzone.vn"}
                 </p>
               </div>
             </div>

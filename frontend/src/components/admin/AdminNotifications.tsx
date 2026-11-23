@@ -9,6 +9,10 @@ import {
   Link2,
   Users,
   Clock,
+  Radio,
+  Tv,
+  Eye,
+  Save,
   CheckCircle2,
   History,
 } from "lucide-react";
@@ -77,6 +81,73 @@ export default function AdminNotifications({
   const [link, setLink] = useState("");
   const [sending, setSending] = useState(false);
   const [history, setHistory] = useState<SentNotification[]>([]);
+
+  // --- TRẠNG THÁI BĂNG RÔN CHẠY CHỮ TOÀN SÀN (LIVE SMART TICKER) ---
+  const [tickerEnabled, setTickerEnabled] = useState(true);
+  const [tickerBadge, setTickerBadge] = useState("Thông Báo Sàn");
+  const [tickerBadgeColor, setTickerBadgeColor] = useState<"emerald" | "amber" | "blue" | "rose">("emerald");
+  const [tickerMessage, setTickerMessage] = useState(
+    "TurfZone mở cổng đặt sân trực tuyến 24/7 • Giữ chỗ tức thì qua VietQR • Chính sách hỗ trợ dời lịch & hoàn cọc 100% khi thời tiết mưa bão • Khởi tranh Cúp Mùa Đông với tổng giải thưởng 15 triệu VNĐ!"
+  );
+  const [tickerLinkText, setTickerLinkText] = useState("Xem Thể Lệ");
+  const [tickerLinkUrl, setTickerLinkUrl] = useState("/tournaments");
+
+  // Đọc cấu hình ticker hiện tại từ local storage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem("turfzone_smart_ticker");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setTickerEnabled(parsed.enabled ?? true);
+        setTickerBadge(parsed.badge || "Thông Báo Sàn");
+        setTickerBadgeColor(parsed.badgeColor || "emerald");
+        setTickerMessage(parsed.message || "");
+        setTickerLinkText(parsed.linkText || "Xem Chi Tiết");
+        setTickerLinkUrl(parsed.linkUrl || "");
+      }
+    } catch {
+      // fallback
+    }
+  }, []);
+
+  const handleSaveTicker = () => {
+    const text = tickerMessage.trim();
+    if (!text) {
+      notify("err", "Nội dung băng rôn chạy chữ không được để trống.");
+      return;
+    }
+    const payload = {
+      id: "ticker-" + Date.now(),
+      enabled: tickerEnabled,
+      scope: "ADMIN",
+      badge: tickerBadge.trim() || "Thông Báo Sàn",
+      badgeColor: tickerBadgeColor,
+      message: text,
+      linkText: tickerLinkText.trim() || undefined,
+      linkUrl: tickerLinkUrl.trim() || undefined,
+      updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem("turfzone_smart_ticker", JSON.stringify(payload));
+    window.dispatchEvent(new Event("turfzone_ticker_changed"));
+    notify("ok", "Đã cập nhật và phát Băng Rôn Chạy Chữ Toàn Sàn thành công!");
+  };
+
+  const applyTickerPreset = (preset: {
+    badge: string;
+    badgeColor: "emerald" | "amber" | "blue" | "rose";
+    message: string;
+    linkText: string;
+    linkUrl: string;
+  }) => {
+    setTickerBadge(preset.badge);
+    setTickerBadgeColor(preset.badgeColor);
+    setTickerMessage(preset.message);
+    setTickerLinkText(preset.linkText);
+    setTickerLinkUrl(preset.linkUrl);
+    setTickerEnabled(true);
+    notify("ok", `Đã tải mẫu băng rôn: ${preset.badge}`);
+  };
 
   // Đọc lịch sử thông báo từ local storage để hiển thị
   useEffect(() => {
@@ -289,7 +360,243 @@ export default function AdminNotifications({
         </form>
       </SectionCard>
 
-      {/* 2. KHỐI LỊCH SỬ CÁC THÔNG BÁO ĐÃ PHÁT GẦN ĐÂY */}
+      {/* 2. QUẢN LÝ BĂNG RÔN CHẠY CHỮ TRỰC TIẾP TOÀN SÀN (LIVE SMART TICKER) */}
+      <SectionCard>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs">
+              <Radio className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-black text-slate-900 text-base">
+                  Băng Rôn Chạy Chữ Trực Tiếp (Live Smart Ticker)
+                </h2>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
+                  <span className={`w-1.5 h-1.5 rounded-full ${tickerEnabled ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  {tickerEnabled ? "Đang Phát Trực Tiếp" : "Đã Tạm Dừng"}
+                </span>
+              </div>
+              <p className="text-[13px] text-slate-500 mt-0.5">
+                Hiển thị dải tin trượt ngang êm ái trên đầu trang web, hỗ trợ dừng khi rê chuột và có nút đóng tiện lợi.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={tickerEnabled}
+                onChange={(e) => setTickerEnabled(e.target.checked)}
+                className="w-4 h-4 rounded text-slate-900 focus:ring-slate-400 border-slate-300"
+              />
+              <span className="text-[13px] font-bold text-slate-800">
+                {tickerEnabled ? "Bật Băng Rôn" : "Tắt Băng Rôn"}
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {/* Các mẫu thông báo băng rôn soạn nhanh */}
+        <div className="mb-5 space-y-2">
+          <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500">
+            <Sparkles className="w-3.5 h-3.5 text-slate-700" />
+            <span>Mẫu băng rôn sự kiện sẵn có:</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                applyTickerPreset({
+                  badge: "Thông Báo Sàn",
+                  badgeColor: "emerald",
+                  message:
+                    "TurfZone mở cổng đặt sân trực tuyến 24/7 • Giữ chỗ tức thì qua VietQR • Chính sách hỗ trợ dời lịch & hoàn cọc 100% khi thời tiết xấu • Mở đăng ký Giải Cúp Mùa Đông 15 triệu VNĐ!",
+                  linkText: "Xem Thể Lệ",
+                  linkUrl: "/tournaments",
+                })
+              }
+              className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-all active:scale-95 cursor-pointer shadow-2xs"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="text-[12px] font-bold text-slate-900">Đặt Sân & VietQR</span>
+              </div>
+              <p className="text-[11px] text-slate-500 line-clamp-1">Giữ chỗ 24/7 & hoàn cọc tự động</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                applyTickerPreset({
+                  badge: "Cảnh Báo Thời Tiết",
+                  badgeColor: "amber",
+                  message:
+                    "Cảnh báo giông lốc diện rộng tại Đà Nẵng: Tất cả các trận đấu bị hủy vì sân ngập nước sẽ được Ban quản trị can thiệp hoàn cọc 100% an toàn cho các đội bóng!",
+                  linkText: "Xem Lịch Đặt",
+                  linkUrl: "/bookings",
+                })
+              }
+              className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-all active:scale-95 cursor-pointer shadow-2xs"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span className="text-[12px] font-bold text-slate-900">Mưa Bão & Hoàn Cọc</span>
+              </div>
+              <p className="text-[11px] text-slate-500 line-clamp-1">Hỗ trợ khẩn cấp khi ngập sân</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                applyTickerPreset({
+                  badge: "Giải Đấu Cúp",
+                  badgeColor: "blue",
+                  message:
+                    "Chính thức mở đăng ký Giải Bóng Đá Cúp Mùa Đông 2026: Tranh tài cùng 16 đội bóng phong trào hàng đầu với tổng quỹ giải thưởng 15.000.000đ!",
+                  linkText: "Ghi Danh Đội",
+                  linkUrl: "/tournaments",
+                })
+              }
+              className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-all active:scale-95 cursor-pointer shadow-2xs"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-sky-500" />
+                <span className="text-[12px] font-bold text-slate-900">Cúp Mùa Đông 2026</span>
+              </div>
+              <p className="text-[11px] text-slate-500 line-clamp-1">Tổng giải thưởng 15 triệu</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                applyTickerPreset({
+                  badge: "Bảo Trì Máy Chủ",
+                  badgeColor: "rose",
+                  message:
+                    "Hệ thống TurfZone sẽ bảo trì nâng cấp máy chủ từ 01:00 đến 02:00. Mọi thông tin đặt sân và số dư cọc VietQR đều được bảo toàn an toàn tuyệt đối!",
+                  linkText: "Chi Tiết",
+                  linkUrl: "/admin",
+                })
+              }
+              className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-all active:scale-95 cursor-pointer shadow-2xs"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                <span className="text-[12px] font-bold text-slate-900">Bảo Trì Hệ Thống</span>
+              </div>
+              <p className="text-[11px] text-slate-500 line-clamp-1">Nâng cấp hạ tầng định kỳ</p>
+            </button>
+          </div>
+        </div>
+
+        {/* Form thiết lập băng rôn */}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-[13px] font-bold text-slate-700 mb-1">
+                Tên nhãn huy hiệu (Badge)
+              </label>
+              <input
+                type="text"
+                value={tickerBadge}
+                onChange={(e) => setTickerBadge(e.target.value)}
+                placeholder="Ví dụ: Thông Báo Sàn, Cảnh Báo..."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-[13px] text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 font-bold shadow-2xs"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-bold text-slate-700 mb-1">
+                Tông màu chủ đạo
+              </label>
+              <select
+                value={tickerBadgeColor}
+                onChange={(e) => setTickerBadgeColor(e.target.value as any)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 cursor-pointer shadow-2xs"
+              >
+                <option value="emerald">Xanh lục (Emerald - Chuẩn Sàn)</option>
+                <option value="amber">Vàng cam (Amber - Cảnh Báo / Khẩn Cấp)</option>
+                <option value="blue">Xanh dương (Sky - Sự Kiện / Giải Đấu)</option>
+                <option value="rose">Đỏ hồng (Rose - Bảo Trì / Lưu Ý Đặc Biệt)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-bold text-slate-700 mb-1">
+                Đường dẫn liên kết (Link)
+              </label>
+              <div className="relative">
+                <Link2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={tickerLinkUrl}
+                  onChange={(e) => setTickerLinkUrl(e.target.value)}
+                  placeholder="Ví dụ: /tournaments hoặc /bookings"
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-[13px] text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium shadow-2xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[13px] font-bold text-slate-700 mb-1">
+              Nội dung dòng chữ chạy ngang
+            </label>
+            <textarea
+              rows={2}
+              value={tickerMessage}
+              onChange={(e) => setTickerMessage(e.target.value)}
+              placeholder="Nhập nội dung hiển thị trên băng rôn chạy ngang..."
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-[13px] text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium resize-none shadow-2xs"
+            />
+          </div>
+
+          {/* Xem trước trực tiếp tại chỗ (Live Inline Preview) */}
+          <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+            <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-400">
+              <Eye className="w-3.5 h-3.5" />
+              <span>Xem trước hiển thị thực tế (Live Preview):</span>
+            </div>
+            <div className="overflow-hidden rounded-lg bg-slate-950 p-2 flex items-center gap-3 border border-slate-800">
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold ${
+                tickerBadgeColor === "amber"
+                  ? "bg-amber-500/20 text-amber-300"
+                  : tickerBadgeColor === "blue"
+                  ? "bg-sky-500/20 text-sky-300"
+                  : tickerBadgeColor === "rose"
+                  ? "bg-rose-500/20 text-rose-300"
+                  : "bg-emerald-500/20 text-emerald-300"
+              }`}>
+                <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping" />
+                {tickerBadge || "Thông Báo Sàn"}
+              </span>
+              <p className="text-[12px] font-medium text-slate-200 truncate flex-1">
+                {tickerMessage || "Chưa có nội dung"}
+              </p>
+              {tickerLinkUrl && (
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-amber-300 text-[11px] font-bold">
+                  {tickerLinkText || "Chi tiết"}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleSaveTicker}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-[13px] transition-all active:scale-95 cursor-pointer shadow-2xs"
+            >
+              <Save className="w-4 h-4 text-emerald-400" />
+              <span>Lưu & Phát Băng Rôn Toàn Sàn</span>
+            </button>
+          </div>
+        </div>
+      </SectionCard>
+
+      {/* 3. KHỐI LỊCH SỬ CÁC THÔNG BÁO ĐÃ PHÁT GẦN ĐÂY */}
       <SectionCard>
         <div className="flex items-center gap-2 mb-4">
           <History className="w-4 h-4 text-slate-700" />
